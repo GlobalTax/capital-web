@@ -113,6 +113,8 @@ export function SFFundForm({ initialData, onSubmit, isSaving }: SFFundFormProps)
       source_url: values.source_url || null,
       source_last_verified_at: initialData?.source_last_verified_at || null,
       searcher_lead_id: initialData?.searcher_lead_id || null,
+      portfolio_url: initialData?.portfolio_url || null,
+      last_portfolio_scraped_at: initialData?.last_portfolio_scraped_at || null,
       deal_size_min: values.deal_size_min,
       deal_size_max: values.deal_size_max,
       ebitda_min: values.ebitda_min,

@@ -38,6 +38,8 @@ export interface SFFund {
   source_url: string | null;
   source_last_verified_at: string | null;
   searcher_lead_id: string | null;
+  portfolio_url: string | null;
+  last_portfolio_scraped_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -104,6 +106,9 @@ export interface SFAcquisition {
   status: SFAcquisitionStatus;
   exit_year: number | null;
   source_url: string | null;
+  website: string | null;
+  fund_name: string | null;
+  evidence: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
