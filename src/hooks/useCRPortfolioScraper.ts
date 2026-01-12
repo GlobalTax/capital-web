@@ -28,9 +28,9 @@ export function useCRPortfolioScraper() {
 
   // Single fund scraping
   const scrapePortfolioMutation = useMutation({
-    mutationFn: async (fundId: string): Promise<ScrapeResult> => {
+    mutationFn: async ({ fundId, customUrl }: { fundId: string; customUrl?: string }): Promise<ScrapeResult> => {
       const { data, error } = await supabase.functions.invoke('cr-extract-portfolio', {
-        body: { fund_id: fundId }
+        body: { fund_id: fundId, custom_url: customUrl }
       });
 
       if (error) {

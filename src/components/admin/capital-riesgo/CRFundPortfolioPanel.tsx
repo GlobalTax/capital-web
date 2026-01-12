@@ -12,7 +12,7 @@ interface CRFundPortfolioPanelProps {
   portfolio: CRPortfolio[];
   fundId: string;
   fundName: string;
-  hasWebsite: boolean;
+  fundWebsite?: string | null;
   onAdd: () => void;
   onEdit: (company: CRPortfolio) => void;
   onDelete: (company: CRPortfolio) => void;
@@ -29,7 +29,7 @@ export function CRFundPortfolioPanel({
   portfolio, 
   fundId,
   fundName,
-  hasWebsite,
+  fundWebsite,
   onAdd, 
   onEdit, 
   onDelete,
@@ -49,7 +49,7 @@ export function CRFundPortfolioPanel({
           <CRPortfolioScraperButton 
             fundId={fundId}
             fundName={fundName}
-            hasWebsite={hasWebsite}
+            fundWebsite={fundWebsite}
             onSuccess={onRefresh}
           />
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onAdd}>
