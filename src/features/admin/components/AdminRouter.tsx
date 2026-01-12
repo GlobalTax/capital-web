@@ -66,6 +66,7 @@ import {
   LazySFMatchingInbox,
   LazySFApolloImportPage,
   LazySFFundDetailPage,
+  LazySFAcquisitionDetailPage,
   LazyCRDirectoryPage,
   LazyCRFundDetailPage,
   LazyCRApolloImportPage,
@@ -179,6 +180,7 @@ const AdminRouter = () => {
           <Route path="/sf-directory" element={<LazySFDirectoryPage />} />
           <Route path="/sf-directory/new" element={<LazySFFundDetailPage />} />
           <Route path="/sf-directory/:id" element={<LazySFFundDetailPage />} />
+          <Route path="/sf-acquisitions/:id" element={<LazySFAcquisitionDetailPage />} />
           <Route path="/sf-backers" element={<LazySFBackersPage />} />
           <Route path="/sf-matches" element={<LazySFMatchingInbox />} />
           

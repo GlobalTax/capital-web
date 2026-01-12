@@ -243,6 +243,10 @@ export default function SFFundDetailPage() {
                   <CardContent className="p-4">
                     <SFFundAcquisitionsPanel
                       acquisitions={acquisitions.slice(0, 5)}
+                      fundId={id!}
+                      fundName={fund?.name || ''}
+                      portfolioUrl={fund?.portfolio_url}
+                      lastScrapedAt={fund?.last_portfolio_scraped_at}
                       onAdd={() => setEditingAcquisition('new')}
                       onEdit={(acq) => setEditingAcquisition(acq)}
                       onDelete={(acq) => setDeleteConfirm({ type: 'acquisition', id: acq.id, name: acq.company_name })}
@@ -280,6 +284,10 @@ export default function SFFundDetailPage() {
                   <CardContent className="p-4">
                     <SFFundAcquisitionsPanel
                       acquisitions={acquisitions}
+                      fundId={id!}
+                      fundName={fund?.name || ''}
+                      portfolioUrl={fund?.portfolio_url}
+                      lastScrapedAt={fund?.last_portfolio_scraped_at}
                       onAdd={() => setEditingAcquisition('new')}
                       onEdit={(acq) => setEditingAcquisition(acq)}
                       onDelete={(acq) => setDeleteConfirm({ type: 'acquisition', id: acq.id, name: acq.company_name })}
