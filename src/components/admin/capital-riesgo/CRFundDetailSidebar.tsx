@@ -55,7 +55,7 @@ export function CRFundDetailSidebar({ fund }: CRFundDetailSidebarProps) {
   const statusColor = statusColors[fund.status] || statusColors.closed;
 
   return (
-    <div className="w-80 border-r bg-muted/30 overflow-y-auto h-full">
+    <div className="w-72 border-r bg-muted/30 overflow-y-auto h-full">
       <div className="p-4 space-y-4">
         {/* Header con logo y nombre */}
         <div className="flex items-start gap-3">
