@@ -102,6 +102,8 @@ export function CRFundForm({ initialData, onSubmit, isSaving }: CRFundFormProps)
     const data: CRFundFormData = {
       name: values.name,
       website: values.website || null,
+      portfolio_url: initialData?.portfolio_url || null,
+      last_portfolio_scraped_at: initialData?.last_portfolio_scraped_at || null,
       fund_type: values.fund_type,
       status: values.status,
       country_base: values.country_base || null,

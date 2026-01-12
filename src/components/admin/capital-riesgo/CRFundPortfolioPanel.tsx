@@ -1,18 +1,25 @@
 // ============= CR FUND PORTFOLIO PANEL =============
 // Panel de empresas participadas de un fund de Capital Riesgo
 
-import React from 'react';
-import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Calendar, Globe, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CRPortfolio, CR_PORTFOLIO_STATUS_LABELS, CR_INVESTMENT_TYPE_LABELS, CR_OWNERSHIP_TYPE_LABELS } from '@/types/capitalRiesgo';
-import { CRPortfolioScraperButton } from './CRPortfolioScraperButton';
+import { Input } from '@/components/ui/input';
+import { CRPortfolio, CRFund, CR_PORTFOLIO_STATUS_LABELS, CR_OWNERSHIP_TYPE_LABELS } from '@/types/capitalRiesgo';
+import { useCRPortfolioScraper } from '@/hooks/useCRPortfolioScraper';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface CRFundPortfolioPanelProps {
   portfolio: CRPortfolio[];
   fundId: string;
   fundName: string;
   fundWebsite?: string | null;
+  portfolioUrl?: string | null;
+  lastScrapedAt?: string | null;
   onAdd: () => void;
   onEdit: (company: CRPortfolio) => void;
   onDelete: (company: CRPortfolio) => void;
@@ -30,33 +37,127 @@ export function CRFundPortfolioPanel({
   fundId,
   fundName,
   fundWebsite,
+  portfolioUrl: initialPortfolioUrl,
+  lastScrapedAt,
   onAdd, 
   onEdit, 
   onDelete,
   onRefresh 
 }: CRFundPortfolioPanelProps) {
+  const [portfolioUrl, setPortfolioUrl] = useState(initialPortfolioUrl || fundWebsite || '');
+  const { scrapePortfolio, isScraping } = useCRPortfolioScraper();
+
+  // Update local state when props change
+  useEffect(() => {
+    if (initialPortfolioUrl) {
+      setPortfolioUrl(initialPortfolioUrl);
+    } else if (fundWebsite && !portfolioUrl) {
+      setPortfolioUrl(fundWebsite);
+    }
+  }, [initialPortfolioUrl, fundWebsite]);
+
+  const handleExtract = async () => {
+    if (!portfolioUrl.trim()) {
+      toast.error('Introduce una URL de portfolio');
+      return;
+    }
+
+    try {
+      // First, save the portfolio URL to the fund
+      const { error: updateError } = await supabase
+        .from('cr_funds')
+        .update({ 
+          portfolio_url: portfolioUrl.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', fundId);
+
+      if (updateError) {
+        console.error('Error saving portfolio URL:', updateError);
+        toast.error('Error al guardar la URL');
+        return;
+      }
+
+      // Then trigger the scraping
+      const result = await scrapePortfolio({ 
+        fundId, 
+        customUrl: portfolioUrl.trim() 
+      });
+
+      if (result.success) {
+        // Update last_portfolio_scraped_at
+        await supabase
+          .from('cr_funds')
+          .update({ 
+            last_portfolio_scraped_at: new Date().toISOString()
+          })
+          .eq('id', fundId);
+        
+        onRefresh?.();
+      }
+    } catch (error) {
+      console.error('Error extracting portfolio:', error);
+    }
+  };
+
   return (
     <div className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium">Participadas</h3>
-          <Badge variant="secondary" className="text-xs">
-            {portfolio.length}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <CRPortfolioScraperButton 
-            fundId={fundId}
-            fundName={fundName}
-            fundWebsite={fundWebsite}
-            onSuccess={onRefresh}
-          />
+      {/* Header with URL input */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium">Participadas</h3>
+            <Badge variant="secondary" className="text-xs">
+              {portfolio.length}
+            </Badge>
+          </div>
           <Button size="sm" variant="outline" className="h-7 text-xs" onClick={onAdd}>
             <Plus className="h-3 w-3 mr-1" />
             Añadir
           </Button>
         </div>
+
+        {/* Portfolio URL input */}
+        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+          <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Input
+            placeholder="https://fondo.com/portfolio"
+            value={portfolioUrl}
+            onChange={(e) => setPortfolioUrl(e.target.value)}
+            className="h-8 text-sm flex-1"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleExtract();
+              }
+            }}
+          />
+          <Button 
+            size="sm" 
+            onClick={handleExtract}
+            disabled={isScraping || !portfolioUrl.trim()}
+            className="h-8 gap-1.5"
+          >
+            {isScraping ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Extrayendo...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-3.5 w-3.5" />
+                Extraer con IA
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Last scraped info */}
+        {lastScrapedAt && (
+          <p className="text-xs text-muted-foreground px-1">
+            Última extracción: {format(new Date(lastScrapedAt), "d MMM yyyy 'a las' HH:mm", { locale: es })}
+          </p>
+        )}
       </div>
 
       {/* Table header */}
@@ -175,9 +276,12 @@ export function CRFundPortfolioPanel({
       ) : (
         <div className="py-8 text-center">
           <p className="text-sm text-muted-foreground">No hay empresas participadas</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Introduce una URL de portfolio arriba para extraer automáticamente
+          </p>
           <Button size="sm" variant="outline" className="mt-3" onClick={onAdd}>
             <Plus className="h-3 w-3 mr-1" />
-            Añadir primera participada
+            Añadir manualmente
           </Button>
         </div>
       )}
