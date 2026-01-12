@@ -276,7 +276,7 @@ export default function CRFundDetailPage() {
                       portfolio={portfolio.slice(0, 5)}
                       fundId={fund?.id || ''}
                       fundName={fund?.name || ''}
-                      hasWebsite={!!fund?.website}
+                      fundWebsite={fund?.website}
                       onAdd={() => setEditingPortfolio('new')}
                       onEdit={(item) => setEditingPortfolio(item)}
                       onDelete={(item) => setDeleteConfirm({ type: 'portfolio', id: item.id, name: item.company_name })}
@@ -317,7 +317,7 @@ export default function CRFundDetailPage() {
                       portfolio={portfolio}
                       fundId={fund?.id || ''}
                       fundName={fund?.name || ''}
-                      hasWebsite={!!fund?.website}
+                      fundWebsite={fund?.website}
                       onAdd={() => setEditingPortfolio('new')}
                       onEdit={(item) => setEditingPortfolio(item)}
                       onDelete={(item) => setDeleteConfirm({ type: 'portfolio', id: item.id, name: item.company_name })}
