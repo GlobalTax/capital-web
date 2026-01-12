@@ -93,7 +93,7 @@ export const AdminDashboard = () => {
   return (
     <div className="space-y-8">
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl md:text-3xl font-normal">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
           Visión general de la plataforma
         </p>
@@ -105,7 +105,7 @@ export const AdminDashboard = () => {
           return (
             <Card key={stat.title} className="w-full shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-normal">
                   {stat.title}
                 </CardTitle>
                 <div className={`${stat.bgColor} p-2 rounded-lg`}>
@@ -113,7 +113,7 @@ export const AdminDashboard = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
+                <div className="text-2xl font-normal">{stat.value}</div>
                 <p className="text-xs text-muted-foreground">
                   {stat.description}
                 </p>

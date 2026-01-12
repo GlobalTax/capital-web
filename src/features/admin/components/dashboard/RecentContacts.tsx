@@ -53,7 +53,7 @@ export const RecentContacts = () => {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm truncate">{contact.contact_name}</p>
+                    <p className="font-normal text-sm truncate">{contact.contact_name}</p>
                     {contact.email_opened && (
                       <Badge variant="secondary" className="text-xs">
                         <Mail className="h-3 w-3 mr-1" />
@@ -66,7 +66,7 @@ export const RecentContacts = () => {
                 </div>
                 <div className="text-right ml-4">
                   {contact.final_valuation ? (
-                    <p className="text-sm font-semibold text-primary">
+                    <p className="text-sm font-normal text-primary">
                       {formatCurrency(contact.final_valuation)}
                     </p>
                   ) : (

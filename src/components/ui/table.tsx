@@ -12,7 +12,7 @@ const tableVariants = cva("w-full caption-bottom text-sm", {
     },
     variant: {
       default: "",
-      linear: "[&_tr]:border-b-0 [&_tr]:border-b [&_tr]:border-[hsl(var(--linear-border-subtle))] [&_th]:text-[hsl(var(--linear-text-tertiary))] [&_th]:font-medium [&_th]:text-[11px] [&_th]:uppercase [&_th]:tracking-wider",
+      linear: "[&_tr]:border-b-0 [&_tr]:border-b [&_tr]:border-[hsl(var(--linear-border-subtle))] [&_th]:text-[hsl(var(--linear-text-tertiary))] [&_th]:font-normal [&_th]:text-[11px] [&_th]:uppercase [&_th]:tracking-wider",
     }
   },
   defaultVariants: {
@@ -63,7 +63,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+      "border-t bg-muted/50 font-normal [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -106,7 +106,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-10 px-3 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      "h-10 px-3 text-left align-middle font-normal text-muted-foreground [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}

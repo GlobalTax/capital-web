@@ -137,7 +137,7 @@ export const ActivityTimeline = () => {
                   {getIcon(activity.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{activity.title}</p>
+                  <p className="text-sm font-normal">{activity.title}</p>
                   <p className="text-xs text-muted-foreground truncate">{activity.description}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {format(new Date(activity.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
