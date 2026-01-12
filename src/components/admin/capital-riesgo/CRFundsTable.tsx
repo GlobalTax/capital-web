@@ -11,10 +11,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { CRFund, CRFundStatus, CRFundType, CR_FUND_STATUS_LABELS, CR_FUND_TYPE_LABELS } from '@/types/capitalRiesgo';
 import { useDeleteCRFund } from '@/hooks/useCRFunds';
+import { CRFavoriteButton } from './CRFavoriteButton';
 
 interface CRFundsTableProps {
   funds: CRFund[];
   isLoading: boolean;
+  showFavorites?: boolean;
 }
 
 const statusColors: Record<CRFundStatus, string> = {
@@ -45,7 +47,7 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
-export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading }) => {
+export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading, showFavorites = false }) => {
   const deleteMutation = useDeleteCRFund();
 
   if (isLoading) {
@@ -63,6 +65,9 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading }) 
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30 border-b border-border/50 hover:bg-muted/30">
+            {showFavorites && (
+              <TableHead className="w-10 h-10"></TableHead>
+            )}
             <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Nombre
             </TableHead>
@@ -87,13 +92,18 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading }) 
         <TableBody>
           {funds.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+              <TableCell colSpan={showFavorites ? 8 : 7} className="text-center py-12 text-muted-foreground">
                 No se encontraron fondos de Capital Riesgo
               </TableCell>
             </TableRow>
           ) : (
             funds.map((fund) => (
               <TableRow key={fund.id} className="h-11 hover:bg-muted/50 border-b border-border/30">
+                {showFavorites && (
+                  <TableCell className="py-2 w-10">
+                    <CRFavoriteButton entityType="fund" entityId={fund.id} />
+                  </TableCell>
+                )}
                 <TableCell className="py-2">
                   <div>
                     <Link 

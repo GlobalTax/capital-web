@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CRPersonWithFund, CRPersonRole, CRPerson, CR_PERSON_ROLE_LABELS } from '@/types/capitalRiesgo';
 import { CRPersonEditModal } from './CRPersonEditModal';
+import { CRFavoriteButton } from './CRFavoriteButton';
 
 interface CRPeopleTableProps {
   people: CRPersonWithFund[];
@@ -19,6 +20,7 @@ interface CRPeopleTableProps {
   selectedIds: Set<string>;
   onToggleSelection: (id: string) => void;
   onSelectAll: () => void;
+  showFavorites?: boolean;
 }
 
 const roleColors: Record<CRPersonRole, string> = {
@@ -45,6 +47,7 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
   selectedIds,
   onToggleSelection,
   onSelectAll,
+  showFavorites = false,
 }) => {
   const [editingPerson, setEditingPerson] = useState<CRPerson | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -85,7 +88,10 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
       <div className="border border-border/50 rounded-lg overflow-hidden bg-background">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/30 border-b border-border/50 hover:bg-muted/30">
+          <TableRow className="bg-muted/30 border-b border-border/50 hover:bg-muted/30">
+              {showFavorites && (
+                <TableHead className="w-10 h-10"></TableHead>
+              )}
               <TableHead className="w-10 h-10">
                 <Checkbox 
                   checked={allSelected}
@@ -113,9 +119,9 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {people.length === 0 ? (
+          {people.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={showFavorites ? 8 : 7} className="text-center py-12 text-muted-foreground">
                   No se encontraron personas
                 </TableCell>
               </TableRow>
@@ -127,6 +133,11 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
                   data-selected={selectedIds.has(person.id)}
                   onClick={() => handleRowClick(person)}
                 >
+                  {showFavorites && (
+                    <TableCell className="py-2 w-10" onClick={(e) => e.stopPropagation()}>
+                      <CRFavoriteButton entityType="person" entityId={person.id} />
+                    </TableCell>
+                  )}
                   <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
                       checked={selectedIds.has(person.id)}
