@@ -1,5 +1,8 @@
 project_id = "fwhqtzkkvnjkazhaficj"
 
+[functions.apollo-import-fund]
+verify_jwt = false
+
 [functions.admin-create-user]
 verify_jwt = true
 
