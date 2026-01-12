@@ -763,11 +763,14 @@ serve(async (req) => {
       do {
         console.log(`[CR Apollo] Fetching page ${currentPage} of ${totalPages}...`);
         
+        // Apollo uses label_ids for saved lists
         const requestBody = {
           label_ids: [list_id],
           page: currentPage,
           per_page: 100, // Always use max per page
         };
+        
+        console.log(`[CR Apollo] Request body:`, JSON.stringify(requestBody));
         
         const response = await fetch('https://api.apollo.io/v1/contacts/search', {
           method: 'POST',
@@ -786,6 +789,14 @@ serve(async (req) => {
         }
 
         const data = await response.json();
+        
+        // Log raw response for debugging
+        console.log(`[CR Apollo] Raw response keys:`, Object.keys(data));
+        console.log(`[CR Apollo] Pagination:`, JSON.stringify(data.pagination));
+        console.log(`[CR Apollo] Contacts count:`, data.contacts?.length || 0);
+        if (data.contacts?.length === 0 && data.people?.length > 0) {
+          console.log(`[CR Apollo] NOTE: Found ${data.people.length} in 'people' array instead of 'contacts'`);
+        }
         
         // Calculate total pages on first iteration
         if (currentPage === 1) {
