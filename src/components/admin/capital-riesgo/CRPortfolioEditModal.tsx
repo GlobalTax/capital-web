@@ -59,6 +59,7 @@ const portfolioSchema = z.object({
   description: z.string().optional(),
   source_url: z.string().optional(),
   notes: z.string().optional(),
+  fund_name: z.string().optional(),
   fund_id: z.string().min(1, 'Fund requerido'),
 });
 
@@ -140,6 +141,7 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
       description: data.description || null,
       source_url: data.source_url || null,
       notes: data.notes || null,
+      fund_name: data.fund_name || null,
       fund_id: data.fund_id,
     };
 

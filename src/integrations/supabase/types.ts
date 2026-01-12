@@ -4213,6 +4213,7 @@ export type Database = {
           exit_type: string | null
           exit_year: number | null
           fund_id: string
+          fund_name: string | null
           id: string
           investment_type: string | null
           investment_year: number | null
@@ -4234,6 +4235,7 @@ export type Database = {
           exit_type?: string | null
           exit_year?: number | null
           fund_id: string
+          fund_name?: string | null
           id?: string
           investment_type?: string | null
           investment_year?: number | null
@@ -4255,6 +4257,7 @@ export type Database = {
           exit_type?: string | null
           exit_year?: number | null
           fund_id?: string
+          fund_name?: string | null
           id?: string
           investment_type?: string | null
           investment_year?: number | null

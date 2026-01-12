@@ -174,6 +174,7 @@ export interface CRPortfolio {
   description: string | null;
   source_url: string | null;
   notes: string | null;
+  fund_name: string | null; // Nombre del fondo específico (Fund I, II, etc.)
   is_deleted: boolean | null;
   deleted_at: string | null;
   created_at: string;

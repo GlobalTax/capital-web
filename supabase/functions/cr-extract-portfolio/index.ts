@@ -12,20 +12,31 @@ const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-interface PortfolioCompany {
+// Nuevo schema profesional para extracción
+interface CompanyRecord {
   company_name: string;
-  website?: string;
-  sector?: string;
-  country?: string;
-  status: 'active' | 'exited' | 'write_off' | 'partial_exit';
-  investment_year?: number;
-  exit_year?: number;
-  description?: string;
-  ownership_type?: 'majority' | 'minority' | 'growth' | 'control';
+  status: 'current' | 'exited' | 'unknown';
+  fund: string | null;
+  investment_year: number | null;
+  sector: string | null;
+  short_description: string | null;
+  location_countries: string[];
+  company_detail_url: string | null;
+  evidence: Array<{ field: string; quote: string }>;
+  notes: string | null;
 }
 
 interface ExtractionResult {
-  portfolio: PortfolioCompany[];
+  firm_name: string | null;
+  extracted_at: string;
+  current: CompanyRecord[];
+  exited: CompanyRecord[];
+  warnings: string[];
+  coverage: {
+    detected_sections: string[];
+    current_count: number;
+    exited_count: number;
+  };
 }
 
 serve(async (req) => {
@@ -44,7 +55,7 @@ serve(async (req) => {
     }
 
     if (!FIRECRAWL_API_KEY) {
-      console.error('FIRECRAWL_API_KEY not configured');
+      console.error('[cr-extract-portfolio] FIRECRAWL_API_KEY not configured');
       return new Response(
         JSON.stringify({ success: false, error: 'Firecrawl not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -52,7 +63,7 @@ serve(async (req) => {
     }
 
     if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY not configured');
+      console.error('[cr-extract-portfolio] OPENAI_API_KEY not configured');
       return new Response(
         JSON.stringify({ success: false, error: 'OpenAI not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -64,28 +75,28 @@ serve(async (req) => {
     // Get fund data
     const { data: fund, error: fundError } = await supabase
       .from('cr_funds')
-      .select('id, name, website')
+      .select('id, name, website, portfolio_url')
       .eq('id', fund_id)
       .single();
 
     if (fundError || !fund) {
-      console.error('Fund not found:', fundError);
+      console.error('[cr-extract-portfolio] Fund not found:', fundError);
       return new Response(
         JSON.stringify({ success: false, error: 'Fund not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const websiteUrl = custom_url || fund.website;
-    if (!websiteUrl) {
+    const portfolioUrl = custom_url || fund.portfolio_url || fund.website;
+    if (!portfolioUrl) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Fund has no website configured' }),
+        JSON.stringify({ success: false, error: 'Fund has no portfolio URL or website configured' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     console.log(`[cr-extract-portfolio] Starting extraction for fund ${fund.name} (${fund_id})`);
-    console.log(`[cr-extract-portfolio] Website: ${websiteUrl}`);
+    console.log(`[cr-extract-portfolio] Portfolio URL: ${portfolioUrl}`);
 
     // Step 1: Map the website to find portfolio pages
     console.log('[cr-extract-portfolio] Step 1: Mapping website for portfolio pages...');
@@ -96,8 +107,8 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        url: websiteUrl,
-        search: 'portfolio investments participadas companies empresas invertidas',
+        url: portfolioUrl,
+        search: 'portfolio investments participadas companies empresas invertidas exits realised',
         limit: 20,
         includeSubdomains: false,
       }),
@@ -114,13 +125,13 @@ serve(async (req) => {
     }
 
     // Filter URLs likely to contain portfolio info
-    const portfolioKeywords = ['portfolio', 'participadas', 'investments', 'empresas', 'companies', 'invertidas', 'cartera', 'exits'];
+    const portfolioKeywords = ['portfolio', 'participadas', 'investments', 'empresas', 'companies', 'invertidas', 'cartera', 'exits', 'realised', 'realized'];
     const portfolioUrls = (mapData.links || []).filter((url: string) => 
       portfolioKeywords.some(keyword => url.toLowerCase().includes(keyword))
-    ).slice(0, 5); // Limit to 5 pages
+    ).slice(0, 5);
 
-    // If no specific portfolio pages found, try the main website
-    const urlsToScrape = portfolioUrls.length > 0 ? portfolioUrls : [websiteUrl];
+    // If no specific portfolio pages found, try the main URL
+    const urlsToScrape = portfolioUrls.length > 0 ? portfolioUrls : [portfolioUrl];
     
     console.log(`[cr-extract-portfolio] Found ${portfolioUrls.length} portfolio pages. Scraping: ${urlsToScrape.join(', ')}`);
 
@@ -165,39 +176,65 @@ serve(async (req) => {
 
     console.log(`[cr-extract-portfolio] Scraped ${allMarkdown.length} characters of content`);
 
-    // Step 3: Extract structured data with OpenAI
+    // Step 3: Extract structured data with OpenAI using professional prompt
     console.log('[cr-extract-portfolio] Step 3: Extracting structured data with OpenAI...');
     
-    const systemPrompt = `You are a data extraction specialist for Private Equity and Venture Capital.
-Your task is to extract portfolio company information from fund websites.
+    const systemPrompt = `Eres un analista de M&A y Data Extractor especializado en private equity portfolios.
 
-Extract ALL companies mentioned as portfolio investments, current holdings, or exits.
+Tu objetivo es transformar una página web de "Portfolio" en datos estructurados y verificables.
 
-For each company, extract:
-- company_name: Exact name of the company (REQUIRED)
-- website: Company website URL if mentioned
-- sector: Industry/sector (e.g., technology, healthcare, industrial, fintech)
-- country: Country of operation if mentioned
-- status: "active" for current investments, "exited" for past investments/exits, "partial_exit" for partial exits
-- investment_year: Year of investment if mentioned (number)
-- exit_year: Year of exit if mentioned (number)
-- description: Brief description if available
-- ownership_type: Type of ownership stake - only use these exact values:
-  - "majority" for buyouts or >50% stake
-  - "minority" for <50% stake
-  - "growth" for growth equity investments
-  - "control" for control stakes
-  - Omit this field if not clear from the content
+Reglas: precisión > completitud. No inventes nada. Si algo no aparece en la web, devuelve null.
 
-IMPORTANT:
-- Only include actual portfolio companies, not team members or partners
-- If unsure about status, default to "active"
-- Respond ONLY with valid JSON, no additional text
-- If no companies found, return {"portfolio": []}`;
+TASK
+1) Identifica si la página lista inversiones/participadas. Detecta secciones: "Current", "Exited", "Realised", "Past", etc.
 
-    const userPrompt = `Extract portfolio companies from this content from ${fund.name}:
+2) Extrae TODAS las empresas "CURRENT/ACTIVE" y "EXITED" en bloques separados.
 
-${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
+3) Para cada empresa:
+   - company_name (string) - OBLIGATORIO, nombre exacto
+   - status ("current" | "exited" | "unknown")
+   - fund (string|null) - ej: "Fund I", "Fund II", "Growth Fund"
+   - investment_year (number|null) - 4 dígitos, si aparece "since 2018" → 2018
+   - sector (string|null) - SOLO si la web lo menciona explícitamente
+   - short_description (string|null) - resumen 1-2 frases con info de la web
+   - location_countries (array<string>) - países mencionados, [] si no hay
+   - company_detail_url (string|null) - URL de ficha interna/externa
+   - evidence (array) - 1-3 evidencias con quotes literales (máx 25 palabras cada una)
+     Formato: {"field": "status|fund|investment_year|sector", "quote": "texto literal"}
+   - notes (string|null) - aliases o aclaraciones si aplica
+
+4) Normaliza:
+   - Sin duplicados (mismo nombre)
+   - Años: "since 2018" o "2018" → 2018
+   - Captura badges de fondos si aparecen
+
+SCHEMA OBLIGATORIO:
+{
+  "firm_name": string|null,
+  "extracted_at": string (ISO-8601),
+  "current": [CompanyRecord],
+  "exited": [CompanyRecord],
+  "warnings": [string],
+  "coverage": {
+    "detected_sections": [string],
+    "current_count": number,
+    "exited_count": number
+  }
+}
+
+QUALITY CHECKS antes de responder:
+- ¿Hay al menos 1 evidencia para status de cada company?
+- ¿El JSON es válido y parseable?
+- Si la web no distingue current/exited claramente, status="unknown" y añade warning.
+
+Responde SOLO con JSON válido, sin texto adicional.`;
+
+    const userPrompt = `Extrae las participadas de ${fund.name}.
+
+URL del portfolio: ${portfolioUrl}
+
+Contenido de la página:
+${allMarkdown.substring(0, 20000)}`;
 
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -220,7 +257,7 @@ ${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
       const errorText = await openaiResponse.text();
       console.error('[cr-extract-portfolio] OpenAI error:', errorText);
       return new Response(
-        JSON.stringify({ success: false, error: 'AI extraction failed' }),
+        JSON.stringify({ success: false, error: 'AI extraction failed', details: errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -234,22 +271,35 @@ ${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
     } catch (parseError) {
       console.error('[cr-extract-portfolio] JSON parse error:', parseError, extractedContent);
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to parse AI response' }),
+        JSON.stringify({ success: false, error: 'Failed to parse AI response', raw: extractedContent?.substring(0, 500) }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const companies = extractionResult.portfolio || [];
-    console.log(`[cr-extract-portfolio] Extracted ${companies.length} companies`);
+    // Log extraction metadata
+    console.log(`[cr-extract-portfolio] Firm detected: ${extractionResult.firm_name}`);
+    console.log(`[cr-extract-portfolio] Coverage:`, extractionResult.coverage);
+    if (extractionResult.warnings?.length) {
+      console.log(`[cr-extract-portfolio] Warnings:`, extractionResult.warnings);
+    }
 
-    if (companies.length === 0) {
+    // Combine current + exited with proper status mapping
+    const allCompanies = [
+      ...(extractionResult.current || []).map(c => ({ ...c, mappedStatus: 'active' as const })),
+      ...(extractionResult.exited || []).map(c => ({ ...c, mappedStatus: 'exited' as const }))
+    ];
+
+    console.log(`[cr-extract-portfolio] Extracted ${allCompanies.length} companies (${extractionResult.coverage?.current_count || 0} current, ${extractionResult.coverage?.exited_count || 0} exited)`);
+
+    if (allCompanies.length === 0) {
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'No portfolio companies found',
           extracted: 0,
           inserted: 0,
-          fund_name: fund.name 
+          fund_name: fund.name,
+          warnings: extractionResult.warnings 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -259,14 +309,21 @@ ${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
     console.log('[cr-extract-portfolio] Step 4: Upserting companies into database...');
     
     let insertedCount = 0;
+    let updatedCount = 0;
     let skippedCount = 0;
     const errors: string[] = [];
 
-    for (const company of companies) {
+    for (const company of allCompanies) {
       if (!company.company_name) {
         skippedCount++;
         continue;
       }
+
+      // Prepare evidence as JSON string for notes
+      const evidenceJson = company.evidence?.length ? JSON.stringify(company.evidence) : null;
+      const notesWithEvidence = evidenceJson 
+        ? `${company.notes || ''}\n\n[Evidence]: ${evidenceJson}`.trim()
+        : company.notes;
 
       // Check if company already exists for this fund
       const { data: existing } = await supabase
@@ -281,21 +338,24 @@ ${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
         const { error: updateError } = await supabase
           .from('cr_portfolio')
           .update({
-            website: company.website || null,
+            website: company.company_detail_url || null,
             sector: company.sector || null,
-            country: company.country || null,
-            status: company.status || 'active',
+            country: company.location_countries?.[0] || null,
+            status: company.mappedStatus,
             investment_year: company.investment_year || null,
-            exit_year: company.exit_year || null,
-            description: company.description || null,
+            description: company.short_description || null,
+            fund_name: company.fund || null,
+            source_url: portfolioUrl,
+            notes: notesWithEvidence,
             updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id);
 
         if (updateError) {
+          console.error(`[cr-extract-portfolio] Update error for ${company.company_name}:`, updateError);
           errors.push(`Update error for ${company.company_name}: ${updateError.message}`);
         } else {
-          insertedCount++;
+          updatedCount++;
         }
       } else {
         // Insert new record
@@ -304,17 +364,20 @@ ${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
           .insert({
             fund_id,
             company_name: company.company_name,
-            website: company.website || null,
+            website: company.company_detail_url || null,
             sector: company.sector || null,
-            country: company.country || null,
-            status: company.status || 'active',
+            country: company.location_countries?.[0] || null,
+            status: company.mappedStatus,
             investment_year: company.investment_year || null,
-            exit_year: company.exit_year || null,
-            description: company.description || null,
-            ownership_type: company.ownership_type || null,
+            description: company.short_description || null,
+            fund_name: company.fund || null,
+            source_url: portfolioUrl,
+            notes: notesWithEvidence,
+            ownership_type: null,
           });
 
         if (insertError) {
+          console.error(`[cr-extract-portfolio] Insert error for ${company.company_name}:`, insertError);
           errors.push(`Insert error for ${company.company_name}: ${insertError.message}`);
         } else {
           insertedCount++;
@@ -322,29 +385,34 @@ ${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
       }
     }
 
-    // Update fund's last_scraped_at
+    // Update fund's last_portfolio_scraped_at
     await supabase
       .from('cr_funds')
       .update({ 
-        last_scraped_at: new Date().toISOString(),
+        last_portfolio_scraped_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', fund_id);
 
-    console.log(`[cr-extract-portfolio] Complete: ${insertedCount} inserted/updated, ${skippedCount} skipped, ${errors.length} errors`);
+    console.log(`[cr-extract-portfolio] Complete: ${insertedCount} inserted, ${updatedCount} updated, ${skippedCount} skipped, ${errors.length} errors`);
 
     return new Response(
       JSON.stringify({
         success: true,
         fund_name: fund.name,
-        extracted: companies.length,
+        extracted: allCompanies.length,
         inserted: insertedCount,
+        updated: updatedCount,
         skipped: skippedCount,
         errors: errors.length > 0 ? errors : undefined,
-        companies: companies.map(c => ({ 
+        warnings: extractionResult.warnings?.length ? extractionResult.warnings : undefined,
+        coverage: extractionResult.coverage,
+        companies: allCompanies.map(c => ({ 
           company_name: c.company_name, 
-          status: c.status,
-          sector: c.sector 
+          status: c.mappedStatus,
+          sector: c.sector,
+          fund: c.fund,
+          investment_year: c.investment_year
         })),
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

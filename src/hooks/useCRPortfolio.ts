@@ -49,7 +49,7 @@ export function useCRPortfolioWithFunds(filters?: CRPortfolioFilters) {
         .from('cr_portfolio')
         .select(`
           *,
-          fund:cr_funds(id, name, fund_type)
+          fund:cr_funds!inner(id, name, fund_type)
         `)
         .eq('is_deleted', false)
         .order('company_name', { ascending: true });
@@ -69,7 +69,16 @@ export function useCRPortfolioWithFunds(filters?: CRPortfolioFilters) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as CRPortfolioWithFund[];
+      
+      // Transform the data to match CRPortfolioWithFund interface
+      return (data || []).map(item => ({
+        ...item,
+        fund: item.fund ? {
+          id: item.fund.id,
+          name: item.fund.name,
+          fund_type: item.fund.fund_type,
+        } as Pick<import('@/types/capitalRiesgo').CRFund, 'id' | 'name' | 'fund_type'> : undefined,
+      })) as unknown as CRPortfolioWithFund[];
     },
   });
 }
