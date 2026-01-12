@@ -193,6 +193,12 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
           <p className="text-xs text-muted-foreground">
             💡 Encuentra el ID en la URL de tu lista: app.apollo.io/#/lists/<strong>6963a8a0d67d450011d306e1</strong>
           </p>
+          {isSearchingFromList && (
+            <p className="text-sm text-muted-foreground animate-pulse flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Cargando contactos de la lista... esto puede tardar hasta 30 segundos para listas grandes.
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
