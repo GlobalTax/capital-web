@@ -51,7 +51,7 @@ export const useToggleCRFavorite = () => {
       entityType: CRFavoriteEntityType; 
       entityId: string; 
       isFavorite: boolean;
-    }) => {
+    }): Promise<{ entityType: CRFavoriteEntityType; entityId: string; wasRemoved: boolean; peopleAdded?: number }> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No autenticado');
 
@@ -65,6 +65,7 @@ export const useToggleCRFavorite = () => {
           .eq('entity_id', entityId);
 
         if (error) throw error;
+        return { entityType, entityId, wasRemoved: true };
       } else {
         // Añadir favorito
         const { error } = await (supabase as any)
@@ -76,16 +77,54 @@ export const useToggleCRFavorite = () => {
           });
 
         if (error) throw error;
-      }
 
-      return { entityType, entityId, wasRemoved: isFavorite };
+        // Si es un fondo, también añadir todas sus personas como favoritas
+        let peopleAdded = 0;
+        if (entityType === 'fund') {
+          // Obtener todas las personas de este fondo
+          const { data: people } = await supabase
+            .from('cr_people')
+            .select('id')
+            .eq('fund_id', entityId)
+            .eq('is_deleted', false);
+
+          if (people && people.length > 0) {
+            // Añadir cada persona como favorita (ignorar duplicados)
+            const personFavorites = people.map(p => ({
+              user_id: user.id,
+              entity_type: 'person' as const,
+              entity_id: p.id,
+            }));
+
+            const { error: peopleError } = await (supabase as any)
+              .from('cr_favorites')
+              .upsert(personFavorites, { 
+                onConflict: 'user_id,entity_type,entity_id',
+                ignoreDuplicates: true 
+              });
+
+            if (!peopleError) {
+              peopleAdded = people.length;
+            }
+          }
+        }
+
+        return { entityType, entityId, wasRemoved: false, peopleAdded };
+      }
     },
-    onSuccess: ({ entityType, wasRemoved }) => {
-      queryClient.invalidateQueries({ queryKey: ['cr-favorite-ids', entityType] });
+    onSuccess: ({ entityType, wasRemoved, peopleAdded }) => {
+      queryClient.invalidateQueries({ queryKey: ['cr-favorite-ids', 'fund'] });
+      queryClient.invalidateQueries({ queryKey: ['cr-favorite-ids', 'person'] });
       queryClient.invalidateQueries({ queryKey: ['cr-favorite-funds'] });
       queryClient.invalidateQueries({ queryKey: ['cr-favorite-people'] });
       
-      toast.success(wasRemoved ? 'Eliminado de favoritos' : 'Añadido a favoritos');
+      if (wasRemoved) {
+        toast.success('Eliminado de favoritos');
+      } else if (entityType === 'fund' && peopleAdded && peopleAdded > 0) {
+        toast.success(`Fondo y ${peopleAdded} persona${peopleAdded > 1 ? 's' : ''} añadidos a favoritos`);
+      } else {
+        toast.success('Añadido a favoritos');
+      }
     },
     onError: () => {
       toast.error('Error al actualizar favorito');
