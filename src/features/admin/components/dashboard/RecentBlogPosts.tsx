@@ -53,7 +53,7 @@ export const RecentBlogPosts = () => {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm truncate">{post.title}</p>
+                    <p className="font-normal text-sm truncate">{post.title}</p>
                     <Badge variant={post.is_published ? "default" : "secondary"}>
                       {post.is_published ? 'Publicado' : 'Borrador'}
                     </Badge>

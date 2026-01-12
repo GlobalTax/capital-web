@@ -64,7 +64,7 @@ export const RecentAcquisitions = () => {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-sm truncate">{acquisition.full_name}</p>
+                      <p className="font-normal text-sm truncate">{acquisition.full_name}</p>
                       <Badge variant={statusInfo.variant}>
                         {statusInfo.label}
                       </Badge>
@@ -78,7 +78,7 @@ export const RecentAcquisitions = () => {
                   </div>
                   <div className="text-right ml-4">
                     {acquisition.investment_range && (
-                      <p className="text-xs font-medium">{acquisition.investment_range}</p>
+                      <p className="text-xs font-normal">{acquisition.investment_range}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
                       {format(new Date(acquisition.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}

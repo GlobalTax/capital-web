@@ -55,7 +55,7 @@ export function KPIWidget({ widget, isEditing, onEdit, onDelete, isDragging }: K
   return (
     <Card className={`${isDragging ? 'opacity-50' : ''} ${getSizeClasses()} hover:shadow-md transition-shadow`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-sm font-normal text-muted-foreground">
           {widget.title}
         </CardTitle>
         {isEditing && (
@@ -78,7 +78,7 @@ export function KPIWidget({ widget, isEditing, onEdit, onDelete, isDragging }: K
         )}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">
+        <div className="text-2xl font-normal">
           {formatValue(data.value, widget.config?.format)}
         </div>
         <div className="flex items-center space-x-1 text-xs text-muted-foreground mt-1">
