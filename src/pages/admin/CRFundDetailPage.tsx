@@ -219,7 +219,7 @@ export default function CRFundDetailPage() {
 
             <div className="flex-1 overflow-auto">
               {/* Overview Tab */}
-              <TabsContent value="overview" className="m-0 p-4 space-y-4">
+              <TabsContent value="overview" className="m-0 px-4 py-3 pr-6 space-y-4">
                 {/* Quick stats */}
                 <div className="grid grid-cols-4 gap-4">
                   <Card>
@@ -298,51 +298,39 @@ export default function CRFundDetailPage() {
               </TabsContent>
 
               {/* People Tab */}
-              <TabsContent value="people" className="m-0 p-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <CRFundPeoplePanel
-                      people={people}
-                      onAdd={() => setEditingPerson('new')}
-                      onEdit={(person) => setEditingPerson(person)}
-                      onDelete={(person) => setDeleteConfirm({ type: 'person', id: person.id, name: person.full_name })}
-                    />
-                  </CardContent>
-                </Card>
+              <TabsContent value="people" className="m-0 px-4 py-3 pr-6">
+                <CRFundPeoplePanel
+                  people={people}
+                  onAdd={() => setEditingPerson('new')}
+                  onEdit={(person) => setEditingPerson(person)}
+                  onDelete={(person) => setDeleteConfirm({ type: 'person', id: person.id, name: person.full_name })}
+                />
               </TabsContent>
 
               {/* Portfolio Tab */}
-              <TabsContent value="portfolio" className="m-0 p-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <CRFundPortfolioPanel
-                      portfolio={portfolio}
-                      fundId={fund?.id || ''}
-                      fundName={fund?.name || ''}
-                      fundWebsite={fund?.website}
-                      portfolioUrl={fund?.portfolio_url}
-                      lastScrapedAt={fund?.last_portfolio_scraped_at}
-                      onAdd={() => setEditingPortfolio('new')}
-                      onEdit={(item) => setEditingPortfolio(item)}
-                      onDelete={(item) => setDeleteConfirm({ type: 'portfolio', id: item.id, name: item.company_name })}
-                      onRefresh={() => refetchPortfolio()}
-                    />
-                  </CardContent>
-                </Card>
+              <TabsContent value="portfolio" className="m-0 px-4 py-3 pr-6">
+                <CRFundPortfolioPanel
+                  portfolio={portfolio}
+                  fundId={fund?.id || ''}
+                  fundName={fund?.name || ''}
+                  fundWebsite={fund?.website}
+                  portfolioUrl={fund?.portfolio_url}
+                  lastScrapedAt={fund?.last_portfolio_scraped_at}
+                  onAdd={() => setEditingPortfolio('new')}
+                  onEdit={(item) => setEditingPortfolio(item)}
+                  onDelete={(item) => setDeleteConfirm({ type: 'portfolio', id: item.id, name: item.company_name })}
+                  onRefresh={() => refetchPortfolio()}
+                />
               </TabsContent>
 
               {/* Deals Tab */}
-              <TabsContent value="deals" className="m-0 p-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <CRFundDealsPanel
-                      deals={deals}
-                      onAdd={() => setEditingDeal('new')}
-                      onEdit={(deal) => setEditingDeal(deal)}
-                      onDelete={(deal) => setDeleteConfirm({ type: 'deal', id: deal.id, name: deal.company_name })}
-                    />
-                  </CardContent>
-                </Card>
+              <TabsContent value="deals" className="m-0 px-4 py-3 pr-6">
+                <CRFundDealsPanel
+                  deals={deals}
+                  onAdd={() => setEditingDeal('new')}
+                  onEdit={(deal) => setEditingDeal(deal)}
+                  onDelete={(deal) => setDeleteConfirm({ type: 'deal', id: deal.id, name: deal.company_name })}
+                />
               </TabsContent>
 
               {/* Matches Tab */}

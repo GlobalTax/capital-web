@@ -175,13 +175,13 @@ export function CRFundPortfolioPanel({
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="min-w-[200px]">EMPRESA</TableHead>
-                  <TableHead className="w-[100px]">FONDO</TableHead>
-                  <TableHead className="w-[70px]">AÑO</TableHead>
-                  <TableHead className="min-w-[120px]">SECTOR</TableHead>
-                  <TableHead className="min-w-[280px]">DESCRIPCIÓN</TableHead>
-                  <TableHead className="w-[90px]">ESTADO</TableHead>
-                  <TableHead className="w-[80px] text-right">ACCIONES</TableHead>
+                  <TableHead className="min-w-[160px]">EMPRESA</TableHead>
+                  <TableHead className="w-[90px]">FONDO</TableHead>
+                  <TableHead className="w-[60px]">AÑO</TableHead>
+                  <TableHead className="min-w-[100px]">SECTOR</TableHead>
+                  <TableHead className="min-w-[180px]">DESCRIPCIÓN</TableHead>
+                  <TableHead className="w-[80px]">ESTADO</TableHead>
+                  <TableHead className="w-[70px] text-right">ACCIONES</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -269,7 +269,7 @@ export function CRFundPortfolioPanel({
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <p className="text-xs text-muted-foreground line-clamp-2 max-w-[280px]">
+                                <p className="text-xs text-muted-foreground line-clamp-2 max-w-[180px]">
                                   {company.description}
                                 </p>
                               </TooltipTrigger>
