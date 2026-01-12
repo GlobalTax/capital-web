@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -70,16 +71,18 @@ const CRApolloImportPage: React.FC = () => {
   const handleSearchFromList = async (listId: string) => {
     console.log('[UI] Starting list import for:', listId);
     
+    let createdImportId: string | null = null;
+    
     try {
-      const importId = await createImport({ q_keywords: `list:${listId}` });
-      console.log('[UI] Created import job:', importId);
+      createdImportId = await createImport({ q_keywords: `list:${listId}` });
+      console.log('[UI] Created import job:', createdImportId);
       
-      if (!importId) {
+      if (!createdImportId) {
         toast.error('No se pudo crear la sesión de importación');
         return;
       }
       
-      setCurrentImportId(importId);
+      setCurrentImportId(createdImportId);
       setCurrentCriteria(null);
 
       console.log('[UI] Calling searchFromList with list_id:', listId);
@@ -87,8 +90,18 @@ const CRApolloImportPage: React.FC = () => {
       console.log('[UI] searchFromList returned:', result?.people?.length || 0, 'people');
       
       if (!result?.people || result.people.length === 0) {
-        toast.error('La lista está vacía o hubo un error al cargarla. Verifica el ID de la lista.');
+        // Mark the job as failed so it doesn't stay pending
+        await supabase
+          .from('cr_apollo_imports')
+          .update({ 
+            status: 'failed', 
+            error_message: 'La lista está vacía o el ID es incorrecto' 
+          })
+          .eq('id', createdImportId);
+        
+        toast.error('La lista está vacía o el ID es incorrecto. Verifica el ID en Apollo.');
         setSearchResults([]);
+        refetchHistory();
         return;
       }
       
@@ -99,6 +112,19 @@ const CRApolloImportPage: React.FC = () => {
     } catch (error) {
       console.error('[UI] List search error:', error);
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+      
+      // Mark the job as failed with error message
+      if (createdImportId) {
+        await supabase
+          .from('cr_apollo_imports')
+          .update({ 
+            status: 'failed', 
+            error_message: errorMsg 
+          })
+          .eq('id', createdImportId);
+        refetchHistory();
+      }
+      
       toast.error(`Error cargando lista: ${errorMsg}`);
       setSearchResults([]);
     }
@@ -175,8 +201,17 @@ const CRApolloImportPage: React.FC = () => {
       const result = await searchFromList({ list_id: listId });
       
       if (!result?.people || result.people.length === 0) {
-        toast.error('La lista está vacía o hubo un error al cargarla');
+        await supabase
+          .from('cr_apollo_imports')
+          .update({ 
+            status: 'failed', 
+            error_message: 'La lista está vacía o el ID es incorrecto' 
+          })
+          .eq('id', importJob.id);
+        
+        toast.error('La lista está vacía o el ID es incorrecto');
         setSearchResults([]);
+        refetchHistory();
         return;
       }
       
