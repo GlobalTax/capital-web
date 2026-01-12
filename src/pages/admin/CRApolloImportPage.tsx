@@ -12,7 +12,7 @@ import {
   CheckCircle,
   Briefcase,
 } from 'lucide-react';
-import { useCRApolloSearchImport, CRApolloSearchCriteria, CRApolloPersonResult } from '@/hooks/useCRApolloSearchImport';
+import { useCRApolloSearchImport, CRApolloSearchCriteria, CRApolloPersonResult, CRApolloImportJob } from '@/hooks/useCRApolloSearchImport';
 import { CRApolloSearchForm } from '@/components/admin/capital-riesgo/CRApolloSearchForm';
 import { CRApolloSearchResults } from '@/components/admin/capital-riesgo/CRApolloSearchResults';
 import { CRApolloImportHistory } from '@/components/admin/capital-riesgo/CRApolloImportHistory';
@@ -44,6 +44,7 @@ const CRApolloImportPage: React.FC = () => {
   const [currentImportId, setCurrentImportId] = useState<string | null>(null);
   const [currentCriteria, setCurrentCriteria] = useState<CRApolloSearchCriteria | null>(null);
   const [listName, setListName] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const handleSearch = async (criteria: CRApolloSearchCriteria) => {
     try {
@@ -157,6 +158,39 @@ const CRApolloImportPage: React.FC = () => {
     
     setSearchResults(prev => [...prev, ...result.people]);
     setPagination(result.pagination);
+  };
+
+  const handleRetryImport = async (importJob: CRApolloImportJob) => {
+    const listKeyword = importJob.search_criteria?.q_keywords;
+    if (!listKeyword?.startsWith('list:')) {
+      toast.error('Este import no puede reintentarse');
+      return;
+    }
+    
+    const listId = listKeyword.replace('list:', '');
+    setIsRetrying(true);
+    setCurrentImportId(importJob.id);
+    
+    try {
+      const result = await searchFromList({ list_id: listId });
+      
+      if (!result?.people || result.people.length === 0) {
+        toast.error('La lista está vacía o hubo un error al cargarla');
+        setSearchResults([]);
+        return;
+      }
+      
+      setSearchResults(result.people);
+      setPagination(result.pagination);
+      setListName(result.list_name);
+      toast.success(`${result.people.length} contactos recuperados`);
+    } catch (error) {
+      console.error('[Retry] Error:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error(`Error reintentando: ${errorMsg}`);
+    } finally {
+      setIsRetrying(false);
+    }
   };
 
   const totalImported = history.reduce((sum, h) => sum + (h.imported_count || 0), 0);
@@ -289,6 +323,8 @@ const CRApolloImportPage: React.FC = () => {
         onRefresh={refetchHistory}
         onDelete={deleteImport}
         isDeleting={isDeleting}
+        onRetry={handleRetryImport}
+        isRetrying={isRetrying}
       />
     </div>
   );

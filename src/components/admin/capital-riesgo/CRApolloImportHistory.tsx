@@ -33,6 +33,8 @@ interface CRApolloImportHistoryProps {
   onRefresh: () => void;
   onDelete?: (importId: string) => Promise<void>;
   isDeleting?: boolean;
+  onRetry?: (importJob: CRApolloImportJob) => void;
+  isRetrying?: boolean;
 }
 
 const DELETABLE_STATUSES = ['pending', 'importing', 'failed', 'cancelled', 'searching', 'previewing'];
@@ -43,6 +45,8 @@ export const CRApolloImportHistory: React.FC<CRApolloImportHistoryProps> = ({
   onRefresh,
   onDelete,
   isDeleting = false,
+  onRetry,
+  isRetrying = false,
 }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -151,42 +155,62 @@ export const CRApolloImportHistory: React.FC<CRApolloImportHistoryProps> = ({
                     {getStatusBadge(imp.status)}
                   </TableCell>
                   <TableCell>
-                    {canDelete(imp.status) && onDelete && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar importación?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta acción eliminará el registro de importación incompleta. 
-                              No afecta a los contactos que ya fueron importados correctamente.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => onDelete(imp.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    <div className="flex items-center gap-1">
+                      {/* Retry button for list imports with pending/failed status */}
+                      {canDelete(imp.status) && onRetry && imp.search_criteria?.q_keywords?.startsWith('list:') && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          onClick={() => onRetry(imp)}
+                          disabled={isRetrying}
+                          title="Reintentar importación"
+                        >
+                          {isRetrying ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <RefreshCw className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                      {/* Delete button */}
+                      {canDelete(imp.status) && onDelete && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              disabled={isDeleting}
                             >
-                              Eliminar
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
+                              {isDeleting ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Eliminar importación?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción eliminará el registro de importación incompleta. 
+                                No afecta a los contactos que ya fueron importados correctamente.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => onDelete(imp.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
