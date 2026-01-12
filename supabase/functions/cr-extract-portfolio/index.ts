@@ -17,10 +17,11 @@ interface PortfolioCompany {
   website?: string;
   sector?: string;
   country?: string;
-  status: 'active' | 'exited' | 'write_off';
+  status: 'active' | 'exited' | 'write_off' | 'partial_exit';
   investment_year?: number;
   exit_year?: number;
   description?: string;
+  ownership_type?: 'majority' | 'minority' | 'growth' | 'control';
 }
 
 interface ExtractionResult {
@@ -177,10 +178,16 @@ For each company, extract:
 - website: Company website URL if mentioned
 - sector: Industry/sector (e.g., technology, healthcare, industrial, fintech)
 - country: Country of operation if mentioned
-- status: "active" for current investments, "exited" for past investments/exits
+- status: "active" for current investments, "exited" for past investments/exits, "partial_exit" for partial exits
 - investment_year: Year of investment if mentioned (number)
 - exit_year: Year of exit if mentioned (number)
 - description: Brief description if available
+- ownership_type: Type of ownership stake - only use these exact values:
+  - "majority" for buyouts or >50% stake
+  - "minority" for <50% stake
+  - "growth" for growth equity investments
+  - "control" for control stakes
+  - Omit this field if not clear from the content
 
 IMPORTANT:
 - Only include actual portfolio companies, not team members or partners
@@ -304,7 +311,7 @@ ${allMarkdown.substring(0, 15000)}`; // Limit to ~15k chars
             investment_year: company.investment_year || null,
             exit_year: company.exit_year || null,
             description: company.description || null,
-            ownership_type: 'unknown',
+            ownership_type: company.ownership_type || null,
           });
 
         if (insertError) {
