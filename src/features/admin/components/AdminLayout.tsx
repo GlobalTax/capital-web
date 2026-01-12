@@ -93,8 +93,8 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
             <KeyboardShortcutsHelp />
 
             {/* Main content area */}
-            <main className="flex-1 p-6 overflow-auto">
-              <div className="max-w-[1200px]">
+            <main className="flex-1 p-4 overflow-auto">
+              <div className="w-full">
                 {children}
               </div>
             </main>
