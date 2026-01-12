@@ -194,3 +194,6 @@ verify_jwt = false
 
 [functions.cr-extract-portfolio]
 verify_jwt = false
+
+[functions.cr-weekly-news-scan]
+verify_jwt = false
