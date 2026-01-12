@@ -161,11 +161,12 @@ export function CRFundPortfolioPanel({
       </div>
 
       {/* Table header */}
-      <div className="grid grid-cols-[1fr_100px_80px_80px_80px_60px] gap-2 px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground border-b">
+      <div className="grid grid-cols-[1fr_80px_60px_100px_1fr_80px_60px] gap-2 px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground border-b">
         <div>EMPRESA</div>
-        <div>SECTOR</div>
+        <div>FONDO</div>
         <div>AÑO</div>
-        <div>TIPO</div>
+        <div>SECTOR</div>
+        <div>DESCRIPCIÓN</div>
         <div>ESTADO</div>
         <div className="text-right">ACCIONES</div>
       </div>
@@ -179,7 +180,7 @@ export function CRFundPortfolioPanel({
             return (
               <div
                 key={company.id}
-                className="grid grid-cols-[1fr_100px_80px_80px_80px_60px] gap-2 items-center px-3 py-2 hover:bg-muted/50 group transition-colors"
+                className="grid grid-cols-[1fr_80px_60px_100px_1fr_80px_60px] gap-2 items-center px-3 py-2 hover:bg-muted/50 group transition-colors"
               >
                 {/* Empresa */}
                 <div className="min-w-0">
@@ -210,6 +211,26 @@ export function CRFundPortfolioPanel({
                   </div>
                 </div>
 
+                {/* Fondo */}
+                <div>
+                  {company.fund_name ? (
+                    <Badge variant="outline" className="text-[10px] font-normal">
+                      {company.fund_name}
+                    </Badge>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
+                </div>
+
+                {/* Año */}
+                <div>
+                  {company.investment_year ? (
+                    <span className="text-xs">{company.investment_year}</span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
+                </div>
+
                 {/* Sector */}
                 <div>
                   {company.sector ? (
@@ -221,23 +242,15 @@ export function CRFundPortfolioPanel({
                   )}
                 </div>
 
-                {/* Año */}
-                <div>
-                  {company.investment_year ? (
-                    <div className="flex items-center gap-1 text-xs">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      <span>{company.investment_year}</span>
-                    </div>
+                {/* Descripción */}
+                <div className="min-w-0">
+                  {company.description ? (
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {company.description}
+                    </p>
                   ) : (
                     <span className="text-xs text-muted-foreground">-</span>
                   )}
-                </div>
-
-                {/* Tipo */}
-                <div>
-                  <span className="text-xs text-muted-foreground">
-                    {CR_OWNERSHIP_TYPE_LABELS[company.ownership_type as keyof typeof CR_OWNERSHIP_TYPE_LABELS] || company.ownership_type}
-                  </span>
                 </div>
 
                 {/* Estado */}
