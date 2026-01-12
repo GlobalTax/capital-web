@@ -1,5 +1,6 @@
 // ============= CR FAVORITES HOOK =============
 // Hook para gestionar favoritos de fondos y personas de Capital Riesgo
+// NOTA: Los favoritos son GLOBALES para todo el equipo (no por usuario)
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,14 +11,14 @@ export type CRFavoriteEntityType = 'fund' | 'person';
 
 interface CRFavorite {
   id: string;
-  user_id: string;
   entity_type: CRFavoriteEntityType;
   entity_id: string;
+  added_by: string | null;
   notes: string | null;
   created_at: string;
 }
 
-// Hook para obtener los IDs de favoritos por tipo
+// Hook para obtener los IDs de favoritos por tipo (GLOBALES para todo el equipo)
 export const useCRFavoriteIds = (entityType: CRFavoriteEntityType) => {
   return useQuery({
     queryKey: ['cr-favorite-ids', entityType],
@@ -25,11 +26,10 @@ export const useCRFavoriteIds = (entityType: CRFavoriteEntityType) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // Usar .from() con any para tabla nueva no tipada aún
+      // Favoritos globales - sin filtro de user_id
       const { data, error } = await (supabase as any)
         .from('cr_favorites')
         .select('entity_id')
-        .eq('user_id', user.id)
         .eq('entity_type', entityType);
 
       if (error) throw error;
@@ -38,7 +38,7 @@ export const useCRFavoriteIds = (entityType: CRFavoriteEntityType) => {
   });
 };
 
-// Hook para toggle de favoritos
+// Hook para toggle de favoritos (COMPARTIDOS para todo el equipo)
 export const useToggleCRFavorite = () => {
   const queryClient = useQueryClient();
 
@@ -56,24 +56,23 @@ export const useToggleCRFavorite = () => {
       if (!user) throw new Error('No autenticado');
 
       if (isFavorite) {
-        // Eliminar favorito
+        // Eliminar favorito (global - sin filtro user_id)
         const { error } = await (supabase as any)
           .from('cr_favorites')
           .delete()
-          .eq('user_id', user.id)
           .eq('entity_type', entityType)
           .eq('entity_id', entityId);
 
         if (error) throw error;
         return { entityType, entityId, wasRemoved: true };
       } else {
-        // Añadir favorito
+        // Añadir favorito (global - registrar quién lo añadió)
         const { error } = await (supabase as any)
           .from('cr_favorites')
           .insert({
-            user_id: user.id,
             entity_type: entityType,
             entity_id: entityId,
+            added_by: user.id,
           });
 
         if (error) throw error;
@@ -91,15 +90,15 @@ export const useToggleCRFavorite = () => {
           if (people && people.length > 0) {
             // Añadir cada persona como favorita (ignorar duplicados)
             const personFavorites = people.map(p => ({
-              user_id: user.id,
               entity_type: 'person' as const,
               entity_id: p.id,
+              added_by: user.id,
             }));
 
             const { error: peopleError } = await (supabase as any)
               .from('cr_favorites')
               .upsert(personFavorites, { 
-                onConflict: 'user_id,entity_type,entity_id',
+                onConflict: 'entity_type,entity_id',
                 ignoreDuplicates: true 
               });
 
@@ -119,11 +118,11 @@ export const useToggleCRFavorite = () => {
       queryClient.invalidateQueries({ queryKey: ['cr-favorite-people'] });
       
       if (wasRemoved) {
-        toast.success('Eliminado de favoritos');
+        toast.success('Eliminado de favoritos del equipo');
       } else if (entityType === 'fund' && peopleAdded && peopleAdded > 0) {
-        toast.success(`Fondo y ${peopleAdded} persona${peopleAdded > 1 ? 's' : ''} añadidos a favoritos`);
+        toast.success(`Fondo y ${peopleAdded} persona${peopleAdded > 1 ? 's' : ''} añadidos a favoritos del equipo`);
       } else {
-        toast.success('Añadido a favoritos');
+        toast.success('Añadido a favoritos del equipo');
       }
     },
     onError: () => {
@@ -132,7 +131,7 @@ export const useToggleCRFavorite = () => {
   });
 };
 
-// Hook para obtener fondos favoritos con datos completos
+// Hook para obtener fondos favoritos con datos completos (GLOBALES)
 export const useFavoriteFunds = () => {
   return useQuery({
     queryKey: ['cr-favorite-funds'],
@@ -140,11 +139,10 @@ export const useFavoriteFunds = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // Primero obtener los IDs de favoritos
+      // Favoritos globales - sin filtro de user_id
       const { data: favorites, error: favError } = await (supabase as any)
         .from('cr_favorites')
         .select('entity_id')
-        .eq('user_id', user.id)
         .eq('entity_type', 'fund');
 
       if (favError) throw favError;
@@ -166,7 +164,7 @@ export const useFavoriteFunds = () => {
   });
 };
 
-// Hook para obtener personas favoritas con datos completos
+// Hook para obtener personas favoritas con datos completos (GLOBALES)
 export const useFavoritePeople = () => {
   return useQuery({
     queryKey: ['cr-favorite-people'],
@@ -174,11 +172,10 @@ export const useFavoritePeople = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // Primero obtener los IDs de favoritos
+      // Favoritos globales - sin filtro de user_id
       const { data: favorites, error: favError } = await (supabase as any)
         .from('cr_favorites')
         .select('entity_id')
-        .eq('user_id', user.id)
         .eq('entity_type', 'person');
 
       if (favError) throw favError;
