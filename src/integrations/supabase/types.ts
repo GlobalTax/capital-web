@@ -11485,6 +11485,7 @@ export type Database = {
           description: string | null
           exit_year: number | null
           fund_id: string
+          fund_name: string | null
           id: string
           notes: string | null
           region: string | null
@@ -11492,6 +11493,7 @@ export type Database = {
           source_url: string | null
           status: string | null
           updated_at: string
+          website: string | null
         }
         Insert: {
           cnae?: string | null
@@ -11503,6 +11505,7 @@ export type Database = {
           description?: string | null
           exit_year?: number | null
           fund_id: string
+          fund_name?: string | null
           id?: string
           notes?: string | null
           region?: string | null
@@ -11510,6 +11513,7 @@ export type Database = {
           source_url?: string | null
           status?: string | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
           cnae?: string | null
@@ -11521,6 +11525,7 @@ export type Database = {
           description?: string | null
           exit_year?: number | null
           fund_id?: string
+          fund_name?: string | null
           id?: string
           notes?: string | null
           region?: string | null
@@ -11528,6 +11533,7 @@ export type Database = {
           source_url?: string | null
           status?: string | null
           updated_at?: string
+          website?: string | null
         }
         Relationships: [
           {
@@ -11728,6 +11734,33 @@ export type Database = {
         }
         Relationships: []
       }
+      sf_favorites: {
+        Row: {
+          added_by: string | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: []
+      }
       sf_fund_audit_log: {
         Row: {
           action: string
@@ -11840,9 +11873,11 @@ export type Database = {
           id: string
           investment_style: string | null
           last_news_scan_at: string | null
+          last_portfolio_scraped_at: string | null
           last_scraped_at: string | null
           name: string
           notes_internal: string | null
+          portfolio_url: string | null
           revenue_max: number | null
           revenue_min: number | null
           scrape_source_urls: string[] | null
@@ -11873,9 +11908,11 @@ export type Database = {
           id?: string
           investment_style?: string | null
           last_news_scan_at?: string | null
+          last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
           name: string
           notes_internal?: string | null
+          portfolio_url?: string | null
           revenue_max?: number | null
           revenue_min?: number | null
           scrape_source_urls?: string[] | null
@@ -11906,9 +11943,11 @@ export type Database = {
           id?: string
           investment_style?: string | null
           last_news_scan_at?: string | null
+          last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
           name?: string
           notes_internal?: string | null
+          portfolio_url?: string | null
           revenue_max?: number | null
           revenue_min?: number | null
           scrape_source_urls?: string[] | null
