@@ -254,7 +254,7 @@ async function searchFundNews(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-5-nano-2025-08-07',
           messages: [
             { 
               role: 'system', 
@@ -273,7 +273,7 @@ Solo noticias relevantes (score >= 6). Array vacío si ninguna es relevante.`
             },
             { role: 'user', content: JSON.stringify(allResults) }
           ],
-          temperature: 0.1,
+          max_completion_tokens: 2000,
         }),
       });
 
