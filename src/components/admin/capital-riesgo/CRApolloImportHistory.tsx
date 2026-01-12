@@ -152,7 +152,14 @@ export const CRApolloImportHistory: React.FC<CRApolloImportHistoryProps> = ({
                     )}
                   </TableCell>
                   <TableCell>
-                    {getStatusBadge(imp.status)}
+                    <div className="flex flex-col gap-1">
+                      {getStatusBadge(imp.status)}
+                      {imp.status === 'failed' && imp.error_message && (
+                        <p className="text-xs text-destructive max-w-[200px] truncate" title={imp.error_message}>
+                          {imp.error_message}
+                        </p>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
