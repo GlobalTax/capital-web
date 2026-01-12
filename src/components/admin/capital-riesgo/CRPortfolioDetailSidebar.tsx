@@ -74,7 +74,7 @@ export function CRPortfolioDetailSidebar({ company }: CRPortfolioDetailSidebarPr
           />
           <InfoRow
             icon={<Globe className="h-3.5 w-3.5" />}
-            label="Website"
+            label="Sitio web"
             value={
               company.website ? (
                 <a 
@@ -137,7 +137,7 @@ export function CRPortfolioDetailSidebar({ company }: CRPortfolioDetailSidebarPr
                     : 'bg-red-500/10 text-red-700 border-red-200'
                 }`}
               >
-                {company.status === 'active' ? 'Activo' : company.status === 'exited' ? 'Exit' : 'Write-off'}
+                {company.status === 'active' ? 'Activo' : company.status === 'exited' ? 'Desinvertida' : 'Fallida'}
                 {company.status === 'exited' && company.exit_year && (
                   <span className="ml-1">({company.exit_year})</span>
                 )}

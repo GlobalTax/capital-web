@@ -58,7 +58,7 @@ export function CRPortfolioDetailHeader({ company, fundName, onEdit, onDelete }:
         </div>
 
         <Badge className={`${statusColors[company.status] || 'bg-muted'} border text-xs ml-2`}>
-          {company.status === 'active' ? 'Activo' : company.status === 'exited' ? 'Exit' : 'Write-off'}
+          {company.status === 'active' ? 'Activo' : company.status === 'exited' ? 'Desinvertida' : 'Fallida'}
         </Badge>
       </div>
 
@@ -67,7 +67,7 @@ export function CRPortfolioDetailHeader({ company, fundName, onEdit, onDelete }:
           <Button variant="outline" size="sm" className="h-8" asChild>
             <a href={company.website} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-              Website
+              Sitio web
             </a>
           </Button>
         )}
