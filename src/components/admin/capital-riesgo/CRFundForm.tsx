@@ -31,6 +31,7 @@ import {
   CR_FUND_TYPE_LABELS,
   CR_INVESTMENT_STAGE_LABELS,
 } from '@/types/capitalRiesgo';
+import { ApolloFundImporter, ApolloFundData } from '@/components/admin/shared/ApolloFundImporter';
 
 const fundSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -98,6 +99,20 @@ export function CRFundForm({ initialData, onSubmit, isSaving }: CRFundFormProps)
     },
   });
 
+  const handleApolloImport = (data: ApolloFundData) => {
+    form.reset({
+      ...form.getValues(),
+      name: data.name,
+      website: data.website || '',
+      source_url: data.source_url || '',
+      description: data.description || '',
+      country_base: data.country_base || '',
+      cities: data.cities || [],
+      founded_year: data.founded_year,
+      sector_focus: data.sector_focus || [],
+    });
+  };
+
   const handleSubmit = async (values: FormValues) => {
     const data: CRFundFormData = {
       name: values.name,
@@ -134,6 +149,11 @@ export function CRFundForm({ initialData, onSubmit, isSaving }: CRFundFormProps)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Apollo Import - only show for new funds */}
+        {!initialData && (
+          <ApolloFundImporter onImport={handleApolloImport} disabled={isSaving} />
+        )}
+
         {/* Basic Info */}
         <Card>
           <CardHeader>

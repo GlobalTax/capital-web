@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/form';
 import { SFFundTagEditor } from './SFFundTagEditor';
 import { SFFundFormData, SFFundWithRelations, SFStatus, SFInvestmentStyle } from '@/types/searchFunds';
+import { ApolloFundImporter, ApolloFundData } from '@/components/admin/shared/ApolloFundImporter';
 
 const fundSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -96,6 +97,20 @@ export function SFFundForm({ initialData, onSubmit, isSaving }: SFFundFormProps)
     },
   });
 
+  const handleApolloImport = (data: ApolloFundData) => {
+    form.reset({
+      ...form.getValues(),
+      name: data.name,
+      website: data.website || '',
+      source_url: data.source_url || '',
+      description: data.description || '',
+      country_base: data.country_base || '',
+      cities: data.cities || [],
+      founded_year: data.founded_year,
+      sector_focus: data.sector_focus || [],
+    });
+  };
+
   const handleSubmit = async (values: FormValues) => {
     const data = {
       name: values.name,
@@ -128,6 +143,11 @@ export function SFFundForm({ initialData, onSubmit, isSaving }: SFFundFormProps)
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Apollo Import - only show for new funds */}
+        {!initialData && (
+          <ApolloFundImporter onImport={handleApolloImport} disabled={isSaving} />
+        )}
+
         {/* Basic Info */}
         <Card>
           <CardHeader>
