@@ -3803,28 +3803,28 @@ export type Database = {
       }
       cr_favorites: {
         Row: {
+          added_by: string | null
           created_at: string | null
           entity_id: string
           entity_type: string
           id: string
           notes: string | null
-          user_id: string
         }
         Insert: {
+          added_by?: string | null
           created_at?: string | null
           entity_id: string
           entity_type: string
           id?: string
           notes?: string | null
-          user_id: string
         }
         Update: {
+          added_by?: string | null
           created_at?: string | null
           entity_id?: string
           entity_type?: string
           id?: string
           notes?: string | null
-          user_id?: string
         }
         Relationships: []
       }
