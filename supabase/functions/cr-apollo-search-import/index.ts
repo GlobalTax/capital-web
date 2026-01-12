@@ -763,13 +763,14 @@ serve(async (req) => {
       do {
         console.log(`[CR Apollo] Fetching page ${currentPage} of ${totalPages}...`);
         
-        // Apollo uses label_ids for saved lists
+        // Apollo uses contact_list_ids for saved lists (not label_ids which is for tags)
         const requestBody = {
-          label_ids: [list_id],
+          contact_list_ids: [list_id],
           page: currentPage,
           per_page: 100, // Always use max per page
         };
         
+        console.log(`[CR Apollo] Using contact_list_ids:`, list_id);
         console.log(`[CR Apollo] Request body:`, JSON.stringify(requestBody));
         
         const response = await fetch('https://api.apollo.io/v1/contacts/search', {
