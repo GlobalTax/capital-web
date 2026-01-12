@@ -94,7 +94,7 @@ export function CRPortfolioDetailContent({ company, onRefresh }: CRPortfolioDeta
                       : 'bg-red-500/10 text-red-700 border-red-200'
                   }`}
                 >
-                  {company.status === 'active' ? 'Activo' : company.status === 'exited' ? 'Exit' : 'Write-off'}
+                  {company.status === 'active' ? 'Activo' : company.status === 'exited' ? 'Desinvertida' : 'Fallida'}
                 </Badge>
               </CardContent>
             </Card>
@@ -153,7 +153,7 @@ export function CRPortfolioDetailContent({ company, onRefresh }: CRPortfolioDeta
                       className="text-primary hover:underline text-sm flex items-center gap-1"
                     >
                       <Globe className="h-3.5 w-3.5" />
-                      Website
+                      Sitio web
                     </a>
                   )}
                 </div>
