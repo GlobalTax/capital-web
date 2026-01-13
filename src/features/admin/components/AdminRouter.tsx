@@ -81,6 +81,8 @@ const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/adm
 const LazyManualLeadEntryPage = React.lazy(() => import('@/pages/admin/ManualLeadEntryPage'));
 const LazyFase0TemplatesPage = React.lazy(() => import('@/pages/admin/Fase0TemplatesPage'));
 const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news/NewsArticlesManager').then(m => ({ default: m.NewsArticlesManager })));
+const LazyMNADirectoryPage = React.lazy(() => import('@/pages/admin/MNADirectoryPage'));
+const LazyMNABoutiqueDetailPage = React.lazy(() => import('@/pages/admin/MNABoutiqueDetailPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -200,6 +202,10 @@ const AdminRouter = () => {
           
           {/* Fund Intelligence (Firecrawl) */}
           <Route path="/fund-intelligence" element={<LazyFundIntelligencePage />} />
+          
+          {/* MNA Boutiques */}
+          <Route path="/mna-directory" element={<LazyMNADirectoryPage />} />
+          <Route path="/mna-directory/:id" element={<LazyMNABoutiqueDetailPage />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />

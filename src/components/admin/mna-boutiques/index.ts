@@ -1,0 +1,8 @@
+// MNA Boutiques components barrel export
+export { MNABoutiquesTable } from './MNABoutiquesTable';
+export { MNABoutiqueForm } from './MNABoutiqueForm';
+export { MNABoutiqueDetailSidebar } from './MNABoutiqueDetailSidebar';
+export { MNABoutiquePeoplePanel } from './MNABoutiquePeoplePanel';
+export { MNABoutiqueDealsPanel } from './MNABoutiqueDealsPanel';
+export { MNAPersonForm } from './MNAPersonForm';
+export { MNADealForm } from './MNADealForm';
