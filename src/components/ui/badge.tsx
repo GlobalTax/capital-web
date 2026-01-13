@@ -47,18 +47,21 @@ export interface BadgeProps
   dotColor?: string;
 }
 
-function Badge({ className, variant, size, dotColor, children, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
-      {variant === "dot" && (
-        <span 
-          className="w-1.5 h-1.5 rounded-full flex-shrink-0" 
-          style={{ backgroundColor: dotColor || 'currentColor' }}
-        />
-      )}
-      {children}
-    </div>
-  )
-}
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+  ({ className, variant, size, dotColor, children, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn(badgeVariants({ variant, size }), className)} {...props}>
+        {variant === "dot" && (
+          <span 
+            className="w-1.5 h-1.5 rounded-full flex-shrink-0" 
+            style={{ backgroundColor: dotColor || 'currentColor' }}
+          />
+        )}
+        {children}
+      </div>
+    )
+  }
+)
+Badge.displayName = "Badge"
 
 export { Badge, badgeVariants }
