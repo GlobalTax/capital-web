@@ -888,6 +888,154 @@ serve(async (req) => {
       });
     }
 
+    // ============= ACTION: SEARCH ORGANIZATIONS FROM LIST (FOR COMPANY LISTS) =============
+    if (action === 'search_organizations_from_list') {
+      console.log('🚀 [CR Apollo] ACTION: search_organizations_from_list STARTING');
+      console.log('🚀 [CR Apollo] Params received:', JSON.stringify(params));
+      
+      const { list_id, max_pages = 20 } = params;
+      
+      if (!list_id) {
+        console.error('❌ [CR Apollo] list_id is missing from params');
+        throw new Error('list_id is required');
+      }
+
+      console.log('🔍 [CR Apollo] Fetching organizations from list:', list_id);
+      
+      let allOrganizations: any[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+      let detectedListName = 'Lista Apollo Empresas';
+      let totalEntries = 0;
+      
+      // Pagination loop - fetch all pages
+      do {
+        console.log(`[CR Apollo] Fetching organizations page ${currentPage} of ${totalPages}...`);
+        
+        // For organization lists, Apollo uses account_list_ids
+        const requestBody = {
+          account_list_ids: [list_id],
+          page: currentPage,
+          per_page: 100,
+        };
+        
+        console.log(`[CR Apollo] Using account_list_ids:`, list_id);
+        console.log(`[CR Apollo] Request body:`, JSON.stringify(requestBody));
+        
+        const response = await fetch('https://api.apollo.io/v1/accounts/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'X-Api-Key': APOLLO_API_KEY!,
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[CR Apollo] Organization list fetch error:', response.status, errorText);
+          throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        
+        // Log raw response for debugging
+        console.log(`[CR Apollo] Raw response keys:`, Object.keys(data));
+        console.log(`[CR Apollo] Pagination:`, JSON.stringify(data.pagination));
+        console.log(`[CR Apollo] Accounts count:`, data.accounts?.length || 0);
+        
+        // Calculate total pages on first iteration
+        if (currentPage === 1) {
+          totalEntries = data.pagination?.total_entries || 0;
+          totalPages = Math.min(Math.ceil(totalEntries / 100), max_pages);
+          detectedListName = 'Lista Apollo Empresas';
+          
+          console.log(`[CR Apollo] Total entries: ${totalEntries}, Pages needed: ${totalPages}`);
+        }
+        
+        // Map organizations to fund-compatible format
+        const accounts = data.accounts || [];
+        const mappedOrganizations = accounts.map((account: any) => ({
+          id: account.id,
+          // Map to person-like structure for UI compatibility
+          first_name: account.name,
+          last_name: '',
+          name: account.name,
+          title: account.industry || 'Organization',
+          email: null, // Organizations don't have email directly
+          email_status: null,
+          linkedin_url: account.linkedin_url,
+          city: account.city,
+          state: account.state,
+          country: account.country,
+          organization: {
+            id: account.id,
+            name: account.name,
+            website_url: account.website_url || (account.primary_domain ? `https://${account.primary_domain}` : null),
+            linkedin_url: account.linkedin_url,
+            primary_domain: account.primary_domain,
+            industry: account.industry,
+            estimated_num_employees: account.estimated_num_employees,
+            city: account.city,
+            country: account.country,
+          },
+          phone_numbers: account.phone_numbers || [],
+          seniority: null,
+          // Extra org fields for fund creation
+          _is_organization: true,
+          _org_description: account.short_description || account.seo_description,
+          _org_keywords: account.keywords,
+          _org_founded_year: account.founded_year,
+          _org_technologies: account.technologies,
+          _org_annual_revenue: account.annual_revenue_printed,
+        }));
+        
+        allOrganizations.push(...mappedOrganizations);
+        console.log(`[CR Apollo] Page ${currentPage}: Got ${mappedOrganizations.length} organizations, total so far: ${allOrganizations.length}`);
+        
+        currentPage++;
+        
+        // Small delay between requests to avoid rate limiting
+        if (currentPage <= totalPages) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+      } while (currentPage <= totalPages);
+      
+      // Deduplicate by ID
+      const uniqueMap = new Map<string, any>();
+      allOrganizations.forEach((org: any) => {
+        if (org.id && !uniqueMap.has(org.id)) {
+          uniqueMap.set(org.id, org);
+        }
+      });
+      const dedupedOrgs = Array.from(uniqueMap.values());
+      
+      // Filter invalid entries
+      const validOrgs = dedupedOrgs.filter((o: any) => 
+        o.name && o.name.trim() !== ''
+      );
+      
+      console.log(`[CR Apollo] Deduped: ${dedupedOrgs.length} unique from ${allOrganizations.length} total`);
+      console.log(`[CR Apollo] Final: ${validOrgs.length} valid organizations (${totalPages} pages)`);
+
+      return new Response(JSON.stringify({
+        success: true,
+        people: validOrgs, // Use 'people' key for UI compatibility
+        pagination: {
+          total_entries: totalEntries,
+          pages_fetched: totalPages,
+          filtered_count: validOrgs.length,
+          original_count: allOrganizations.length,
+        },
+        list_name: detectedListName,
+        list_type: 'organizations',
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // ============= ACTION: PRESETS =============
     if (action === 'get_presets') {
       const presets = [

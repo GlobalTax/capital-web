@@ -306,11 +306,18 @@ export const useCRSearchFromList = () => {
   return useMutation({
     mutationFn: async (params: { 
       list_id: string; 
+      list_type?: 'contacts' | 'organizations';
       max_pages?: number; // Max pages to fetch (default 20 = 2000 contacts)
-    }): Promise<{ people: CRApolloPersonResult[]; pagination: any; list_name: string }> => {
+    }): Promise<{ people: CRApolloPersonResult[]; pagination: any; list_name: string; list_type?: string }> => {
+      const action = params.list_type === 'organizations' 
+        ? 'search_organizations_from_list' 
+        : 'search_from_list';
+      
+      console.log(`[useCRSearchFromList] Calling action: ${action} for list: ${params.list_id}`);
+      
       const { data, error } = await supabase.functions.invoke('cr-apollo-search-import', {
         body: { 
-          action: 'search_from_list', 
+          action,
           list_id: params.list_id,
           max_pages: params.max_pages || 20,
         },
@@ -319,13 +326,19 @@ export const useCRSearchFromList = () => {
       if (error) throw error;
       if (!data.success) throw new Error(data.error);
 
-      return { people: data.people, pagination: data.pagination, list_name: data.list_name };
+      return { 
+        people: data.people, 
+        pagination: data.pagination, 
+        list_name: data.list_name,
+        list_type: data.list_type,
+      };
     },
     onSuccess: (data) => {
       const pagesInfo = data.pagination?.pages_fetched > 1 
         ? ` (${data.pagination.pages_fetched} páginas)` 
         : '';
-      toast.success(`Cargados ${data.people.length} contactos de "${data.list_name}"${pagesInfo}`);
+      const typeLabel = data.list_type === 'organizations' ? 'empresas' : 'contactos';
+      toast.success(`Cargados ${data.people.length} ${typeLabel} de "${data.list_name}"${pagesInfo}`);
     },
     onError: (error: Error) => {
       toast.error(`Error cargando lista: ${error.message}`);
