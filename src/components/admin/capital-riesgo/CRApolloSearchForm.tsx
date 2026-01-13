@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, 
   ChevronDown, 
@@ -16,14 +17,18 @@ import {
   Loader2,
   Sparkles,
   List,
-  Link2
+  Link2,
+  Building2,
+  User
 } from 'lucide-react';
 import { CRApolloSearchCriteria, CRApolloSearchPreset } from '@/hooks/useCRApolloSearchImport';
+
+export type ListType = 'contacts' | 'organizations';
 
 interface CRApolloSearchFormProps {
   presets: CRApolloSearchPreset[];
   onSearch: (criteria: CRApolloSearchCriteria) => void;
-  onSearchFromList: (listId: string) => void;
+  onSearchFromList: (listId: string, listType: ListType) => void;
   isSearching: boolean;
   isSearchingFromList: boolean;
 }
@@ -102,6 +107,7 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [listInput, setListInput] = useState('');
+  const [listType, setListType] = useState<ListType>('contacts');
 
   const applyPreset = (preset: CRApolloSearchPreset) => {
     setCriteria(prev => ({
@@ -117,7 +123,7 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
   const handleSearchFromList = () => {
     const listId = extractListId(listInput);
     if (listId) {
-      onSearchFromList(listId);
+      onSearchFromList(listId, listType);
     }
   };
 
@@ -160,8 +166,38 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
             Importar desde Lista de Apollo
           </Label>
           <p className="text-xs text-muted-foreground">
-            Pega el ID o URL de una lista guardada con contactos PE/VC
+            Pega el ID o URL de una lista guardada de Apollo
           </p>
+          
+          {/* List Type Selector */}
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Tipo de lista</Label>
+            <Select value={listType} onValueChange={(v: ListType) => setListType(v)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Selecciona el tipo de lista" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="contacts">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>Contactos (personas)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="organizations">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    <span>Empresas (organizaciones)</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {listType === 'contacts' 
+                ? '👤 Importa personas con su cargo, email y empresa asociada' 
+                : '🏢 Importa empresas directamente para crear fondos sin contactos'}
+            </p>
+          </div>
+          
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -180,11 +216,11 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
               {isSearchingFromList ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Cargando todos...
+                  Cargando...
                 </>
               ) : (
                 <>
-                  <List className="h-4 w-4" />
+                  {listType === 'organizations' ? <Building2 className="h-4 w-4" /> : <List className="h-4 w-4" />}
                   Cargar Lista
                 </>
               )}
@@ -196,7 +232,7 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
           {isSearchingFromList && (
             <p className="text-sm text-muted-foreground animate-pulse flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Cargando contactos de la lista... esto puede tardar hasta 30 segundos para listas grandes.
+              Cargando {listType === 'organizations' ? 'empresas' : 'contactos'} de la lista... esto puede tardar hasta 30 segundos para listas grandes.
             </p>
           )}
         </div>

@@ -12,9 +12,10 @@ import {
   TrendingUp,
   CheckCircle,
   Briefcase,
+  Building2,
 } from 'lucide-react';
 import { useCRApolloSearchImport, CRApolloSearchCriteria, CRApolloPersonResult, CRApolloImportJob } from '@/hooks/useCRApolloSearchImport';
-import { CRApolloSearchForm } from '@/components/admin/capital-riesgo/CRApolloSearchForm';
+import { CRApolloSearchForm, ListType } from '@/components/admin/capital-riesgo/CRApolloSearchForm';
 import { CRApolloSearchResults } from '@/components/admin/capital-riesgo/CRApolloSearchResults';
 import { CRApolloImportHistory } from '@/components/admin/capital-riesgo/CRApolloImportHistory';
 import { toast } from 'sonner';
@@ -45,6 +46,7 @@ const CRApolloImportPage: React.FC = () => {
   const [currentImportId, setCurrentImportId] = useState<string | null>(null);
   const [currentCriteria, setCurrentCriteria] = useState<CRApolloSearchCriteria | null>(null);
   const [listName, setListName] = useState<string | null>(null);
+  const [currentListType, setCurrentListType] = useState<ListType>('contacts');
   const [isRetrying, setIsRetrying] = useState(false);
 
   const handleSearch = async (criteria: CRApolloSearchCriteria) => {
@@ -68,13 +70,13 @@ const CRApolloImportPage: React.FC = () => {
     }
   };
 
-  const handleSearchFromList = async (listId: string) => {
-    console.log('[UI] Starting list import for:', listId);
+  const handleSearchFromList = async (listId: string, listType: ListType = 'contacts') => {
+    console.log('[UI] Starting list import for:', listId, 'type:', listType);
     
     let createdImportId: string | null = null;
     
     try {
-      createdImportId = await createImport({ q_keywords: `list:${listId}` });
+      createdImportId = await createImport({ q_keywords: `list:${listId}:${listType}` });
       console.log('[UI] Created import job:', createdImportId);
       
       if (!createdImportId) {
@@ -84,10 +86,11 @@ const CRApolloImportPage: React.FC = () => {
       
       setCurrentImportId(createdImportId);
       setCurrentCriteria(null);
+      setCurrentListType(listType);
 
-      console.log('[UI] Calling searchFromList with list_id:', listId);
-      const result = await searchFromList({ list_id: listId });
-      console.log('[UI] searchFromList returned:', result?.people?.length || 0, 'people');
+      console.log('[UI] Calling searchFromList with list_id:', listId, 'list_type:', listType);
+      const result = await searchFromList({ list_id: listId, list_type: listType });
+      console.log('[UI] searchFromList returned:', result?.people?.length || 0, 'items');
       
       if (!result?.people || result.people.length === 0) {
         // Mark the job as failed so it doesn't stay pending
@@ -95,11 +98,11 @@ const CRApolloImportPage: React.FC = () => {
           .from('cr_apollo_imports')
           .update({ 
             status: 'failed', 
-            error_message: 'La lista está vacía o el ID es incorrecto' 
+            error_message: `La lista de ${listType === 'organizations' ? 'empresas' : 'contactos'} está vacía o el ID es incorrecto` 
           })
           .eq('id', createdImportId);
         
-        toast.error('La lista está vacía o el ID es incorrecto. Verifica el ID en Apollo.');
+        toast.error(`La lista está vacía o el ID es incorrecto. Verifica el ID en Apollo.`);
         setSearchResults([]);
         refetchHistory();
         return;
@@ -108,7 +111,9 @@ const CRApolloImportPage: React.FC = () => {
       setSearchResults(result.people);
       setPagination(result.pagination);
       setListName(result.list_name);
-      toast.success(`${result.people.length} contactos cargados correctamente`);
+      
+      const typeLabel = listType === 'organizations' ? 'empresas' : 'contactos';
+      toast.success(`${result.people.length} ${typeLabel} cargados correctamente`);
     } catch (error) {
       console.error('[UI] List search error:', error);
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
@@ -328,12 +333,12 @@ const CRApolloImportPage: React.FC = () => {
             )}
             {listName && (
               <Badge variant="default" className="gap-1">
-                <Database className="h-3 w-3" />
+                {currentListType === 'organizations' ? <Building2 className="h-3 w-3" /> : <Database className="h-3 w-3" />}
                 Lista: {listName}
               </Badge>
             )}
             <span className="text-sm text-muted-foreground">
-              {searchResults.length} contactos PE/VC cargados
+              {searchResults.length} {currentListType === 'organizations' ? 'empresas' : 'contactos PE/VC'} cargados
             </span>
           </div>
           
