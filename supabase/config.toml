@@ -203,3 +203,6 @@ verify_jwt = false
 
 [functions.sf-extract-portfolio]
 verify_jwt = false
+
+[functions.mna-apollo-search-import]
+verify_jwt = false
