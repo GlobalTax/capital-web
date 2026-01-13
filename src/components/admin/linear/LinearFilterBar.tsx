@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Filter } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -28,7 +28,7 @@ export const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
 
   return (
     <div className={cn(
-      "flex items-center gap-2 py-2 border-b border-[hsl(var(--linear-border-subtle))]",
+      "flex flex-col gap-2 py-2 border-b border-[hsl(var(--linear-border-subtle))]",
       className
     )}>
       {/* Filter trigger/controls */}
@@ -36,7 +36,7 @@ export const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
 
       {/* Active filter chips */}
       {hasFilters && (
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="w-px h-4 bg-[hsl(var(--linear-border))]" />
           {filters.map((filter) => (
             <Badge
@@ -59,9 +59,9 @@ export const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
           {onClearAll && filters.length > 1 && (
             <Button
               variant="ghost"
-              size="xs"
+              size="sm"
               onClick={onClearAll}
-              className="text-[hsl(var(--linear-text-tertiary))] hover:text-[hsl(var(--linear-text-primary))]"
+              className="h-6 text-xs text-[hsl(var(--linear-text-tertiary))] hover:text-[hsl(var(--linear-text-primary))]"
             >
               Limpiar
             </Button>

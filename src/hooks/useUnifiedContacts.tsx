@@ -119,7 +119,15 @@ export interface ContactFilters {
   budget?: string;
   sector?: string;
   companySize?: string;
-  showUniqueContacts?: boolean; // 🔥 NEW: Toggle para contactos únicos
+  showUniqueContacts?: boolean;
+  // Advanced filters for smart search
+  revenueMin?: number;
+  revenueMax?: number;
+  ebitdaMin?: number;
+  ebitdaMax?: number;
+  employeeMin?: number;
+  employeeMax?: number;
+  location?: string;
 }
 
 export interface ContactStats {
@@ -706,8 +714,60 @@ export const useUnifiedContacts = () => {
       );
     }
 
+    // 🔥 NEW: Revenue filter (advanced smart search)
+    if (newFilters.revenueMin) {
+      filtered = filtered.filter(c => 
+        (c.revenue || 0) >= newFilters.revenueMin!
+      );
+    }
+    if (newFilters.revenueMax) {
+      filtered = filtered.filter(c => 
+        (c.revenue || Infinity) <= newFilters.revenueMax!
+      );
+    }
+
+    // 🔥 NEW: EBITDA filter
+    if (newFilters.ebitdaMin) {
+      filtered = filtered.filter(c => 
+        (c.ebitda || 0) >= newFilters.ebitdaMin!
+      );
+    }
+    if (newFilters.ebitdaMax) {
+      filtered = filtered.filter(c => 
+        (c.ebitda || Infinity) <= newFilters.ebitdaMax!
+      );
+    }
+
+    // 🔥 NEW: Location filter (fuzzy match)
+    if (newFilters.location) {
+      const loc = newFilters.location.toLowerCase();
+      filtered = filtered.filter(c => 
+        c.location?.toLowerCase().includes(loc) ||
+        c.preferred_location?.toLowerCase().includes(loc) ||
+        c.country?.toLowerCase().includes(loc)
+      );
+    }
+
+    // 🔥 NEW: Employee range filter
+    if (newFilters.employeeMin || newFilters.employeeMax) {
+      filtered = filtered.filter(c => {
+        const empCount = parseEmployeeRange(c.employee_range);
+        if (newFilters.employeeMin && empCount < newFilters.employeeMin) return false;
+        if (newFilters.employeeMax && empCount > newFilters.employeeMax) return false;
+        return true;
+      });
+    }
+
     setFilteredContacts(filtered);
     calculateStats(filtered);
+  };
+
+  // Helper to parse employee range strings like "1-10", "11-50", "50+"
+  const parseEmployeeRange = (range?: string): number => {
+    if (!range) return 0;
+    // Extract first number from the range
+    const match = range.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
   };
 
   const updateContactStatus = async (contactId: string, origin: ContactOrigin, newStatus: string) => {
