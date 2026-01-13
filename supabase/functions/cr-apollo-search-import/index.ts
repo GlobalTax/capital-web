@@ -1036,6 +1036,180 @@ serve(async (req) => {
       });
     }
 
+    // ============= ACTION: IMPORT ORGANIZATIONS BATCH (FOR FUND IMPORTS) =============
+    if (action === 'import_organizations_batch') {
+      const { import_id, people, batch_index = 0, batch_size = 50 } = params;
+      
+      console.log(`[CR Apollo] IMPORT_ORGANIZATIONS_BATCH: batch ${batch_index}, size ${batch_size}, total orgs: ${people.length}`);
+      
+      // Calculate which organizations belong to this batch
+      const startIdx = batch_index * batch_size;
+      const endIdx = Math.min(startIdx + batch_size, people.length);
+      const batchOrgs = people.slice(startIdx, endIdx);
+      const totalBatches = Math.ceil(people.length / batch_size);
+      
+      console.log(`[CR Apollo] Processing org batch ${batch_index + 1}/${totalBatches}: items ${startIdx}-${endIdx} (${batchOrgs.length} orgs)`);
+
+      // Mark as importing on first batch
+      if (batch_index === 0) {
+        await supabase
+          .from('cr_apollo_imports')
+          .update({ status: 'importing', started_at: new Date().toISOString() })
+          .eq('id', import_id);
+      }
+
+      const results = {
+        imported: 0,
+        updated: 0,
+        skipped: 0,
+        errors: 0,
+        details: [] as any[],
+      };
+
+      for (const org of batchOrgs) {
+        const orgData = org.organization || org;
+        const orgName = orgData?.name || org.name;
+        
+        if (!orgName || orgName.trim() === '') {
+          results.skipped++;
+          results.details.push({ name: 'Sin nombre', success: false, action: 'skipped', error: 'Sin nombre de empresa' });
+          continue;
+        }
+
+        try {
+          const normalizedName = orgName.trim();
+          
+          // Check for existing fund by name
+          const { data: existing } = await supabase
+            .from('cr_funds')
+            .select('id')
+            .ilike('name', normalizedName)
+            .eq('is_deleted', false)
+            .limit(1)
+            .maybeSingle();
+
+          if (existing) {
+            // Update existing fund with new data
+            const updateData: any = {};
+            if (orgData.website_url) updateData.website = orgData.website_url;
+            if (orgData.linkedin_url) updateData.linkedin_url = orgData.linkedin_url;
+            if (org._org_description) updateData.notes = org._org_description;
+            
+            if (Object.keys(updateData).length > 0) {
+              await supabase
+                .from('cr_funds')
+                .update(updateData)
+                .eq('id', existing.id);
+            }
+            
+            results.updated++;
+            results.details.push({ name: normalizedName, success: true, action: 'updated', fundId: existing.id });
+            console.log('[CR Import] Updated org as fund:', normalizedName);
+          } else {
+            // Create new fund
+            const fundType = detectFundType(orgData);
+            const { data: newFund, error: insertError } = await supabase
+              .from('cr_funds')
+              .insert({
+                name: normalizedName,
+                website: orgData.website_url || (orgData.primary_domain ? `https://${orgData.primary_domain}` : null),
+                linkedin_url: orgData.linkedin_url,
+                country_base: orgData.country || 'Spain',
+                sector_focus: orgData.industry ? [orgData.industry] : [],
+                status: 'active',
+                fund_type: fundType,
+                notes: org._org_description || null,
+                source_url: 'apollo_import',
+              })
+              .select('id')
+              .single();
+
+            if (insertError) {
+              // Handle duplicate (race condition)
+              const { data: fallback } = await supabase
+                .from('cr_funds')
+                .select('id')
+                .ilike('name', normalizedName)
+                .eq('is_deleted', false)
+                .limit(1)
+                .maybeSingle();
+              
+              if (fallback) {
+                results.updated++;
+                results.details.push({ name: normalizedName, success: true, action: 'updated', fundId: fallback.id });
+              } else {
+                results.errors++;
+                results.details.push({ name: normalizedName, success: false, action: 'skipped', error: insertError.message });
+              }
+            } else {
+              results.imported++;
+              results.details.push({ name: normalizedName, success: true, action: 'created', fundId: newFund.id });
+              console.log('[CR Import] Created new fund from org:', normalizedName, newFund.id, 'type:', fundType);
+            }
+          }
+        } catch (error) {
+          console.error('[CR Import] Error importing org:', error);
+          results.errors++;
+          results.details.push({ name: orgName, success: false, action: 'skipped', error: String(error) });
+        }
+
+        // Small delay between imports
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      // Check if this is the last batch
+      const isLastBatch = endIdx >= people.length;
+      
+      // Get current counts from database to accumulate
+      const { data: currentImport } = await supabase
+        .from('cr_apollo_imports')
+        .select('imported_count, updated_count, skipped_count, error_count')
+        .eq('id', import_id)
+        .single();
+      
+      const newImportedCount = (currentImport?.imported_count || 0) + results.imported;
+      const newUpdatedCount = (currentImport?.updated_count || 0) + results.updated;
+      const newSkippedCount = (currentImport?.skipped_count || 0) + results.skipped;
+      const newErrorCount = (currentImport?.error_count || 0) + results.errors;
+      
+      // Update import job with accumulated counts
+      const updateData: any = {
+        imported_count: newImportedCount,
+        updated_count: newUpdatedCount,
+        skipped_count: newSkippedCount,
+        error_count: newErrorCount,
+      };
+      
+      if (isLastBatch) {
+        updateData.status = 'completed';
+        updateData.completed_at = new Date().toISOString();
+        updateData.credits_used = 0; // Organizations don't use credits
+      }
+      
+      await supabase
+        .from('cr_apollo_imports')
+        .update(updateData)
+        .eq('id', import_id);
+
+      console.log(`[CR Apollo] Org batch ${batch_index + 1}/${totalBatches} complete: imported=${results.imported}, updated=${results.updated}`);
+
+      return new Response(JSON.stringify({
+        success: true,
+        batch_index,
+        total_batches: totalBatches,
+        is_last_batch: isLastBatch,
+        batch_results: results,
+        accumulated: {
+          imported: newImportedCount,
+          updated: newUpdatedCount,
+          skipped: newSkippedCount,
+          errors: newErrorCount,
+        },
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // ============= ACTION: PRESETS =============
     if (action === 'get_presets') {
       const presets = [

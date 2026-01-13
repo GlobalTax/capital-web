@@ -165,15 +165,19 @@ const CRApolloImportPage: React.FC = () => {
     }
     
     if (people.length === 0) {
-      toast.error('Selecciona al menos una persona para importar');
-      throw new Error('No people selected');
+      toast.error('Selecciona al menos un elemento para importar');
+      throw new Error('No items selected');
     }
+    
+    // Determine import type based on current list type
+    const importType = currentListType === 'organizations' ? 'organizations' : 'people';
     
     // Use batch import for large imports
     return await importInBatches({
       import_id: currentImportId,
       people,
       enrich,
+      import_type: importType,
       onProgress,
     });
   };
@@ -198,19 +202,26 @@ const CRApolloImportPage: React.FC = () => {
       return;
     }
     
-    const listId = listKeyword.replace('list:', '');
+    // Parse correctly: "list:<id>:<type>" or "list:<id>"
+    const parts = listKeyword.replace('list:', '').split(':');
+    const listId = parts[0];
+    const listType: ListType = parts[1] === 'organizations' ? 'organizations' : 'contacts';
+    
+    console.log('[Retry] Parsed listId:', listId, 'listType:', listType);
+    
     setIsRetrying(true);
     setCurrentImportId(importJob.id);
+    setCurrentListType(listType);
     
     try {
-      const result = await searchFromList({ list_id: listId });
+      const result = await searchFromList({ list_id: listId, list_type: listType });
       
       if (!result?.people || result.people.length === 0) {
         await supabase
           .from('cr_apollo_imports')
           .update({ 
             status: 'failed', 
-            error_message: 'La lista está vacía o el ID es incorrecto' 
+            error_message: `La lista de ${listType === 'organizations' ? 'empresas' : 'contactos'} está vacía o el ID es incorrecto` 
           })
           .eq('id', importJob.id);
         
@@ -223,7 +234,8 @@ const CRApolloImportPage: React.FC = () => {
       setSearchResults(result.people);
       setPagination(result.pagination);
       setListName(result.list_name);
-      toast.success(`${result.people.length} contactos recuperados`);
+      const typeLabel = listType === 'organizations' ? 'empresas' : 'contactos';
+      toast.success(`${result.people.length} ${typeLabel} recuperados`);
     } catch (error) {
       console.error('[Retry] Error:', error);
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
