@@ -33,6 +33,8 @@ export function ApolloFundImporter({ onImport, disabled }: ApolloFundImporterPro
   const [importedName, setImportedName] = useState<string | null>(null);
 
   const handleImport = async () => {
+    console.log('[ApolloFundImporter] Starting import with input:', input);
+    
     if (!input.trim()) {
       toast.error('Introduce una URL o dominio');
       return;
@@ -40,25 +42,31 @@ export function ApolloFundImporter({ onImport, disabled }: ApolloFundImporterPro
 
     setIsLoading(true);
     try {
+      console.log('[ApolloFundImporter] Invoking apollo-import-fund edge function...');
       const { data, error } = await supabase.functions.invoke('apollo-import-fund', {
         body: { input: input.trim() },
       });
 
+      console.log('[ApolloFundImporter] Response received:', { data, error });
+
       if (error) {
+        console.error('[ApolloFundImporter] Function error:', error);
         throw new Error(error.message || 'Error al buscar en Apollo');
       }
 
       if (!data?.success || !data?.data) {
+        console.error('[ApolloFundImporter] No data in response:', data);
         throw new Error(data?.error || 'Organización no encontrada');
       }
 
       const fundData = data.data as ApolloFundData;
+      console.log('[ApolloFundImporter] Fund data imported:', fundData);
       onImport(fundData);
       setImported(true);
       setImportedName(fundData.name);
       toast.success(`Datos importados: ${fundData.name}`);
     } catch (error) {
-      console.error('Apollo import error:', error);
+      console.error('[ApolloFundImporter] Catch error:', error);
       toast.error(error instanceof Error ? error.message : 'Error al importar desde Apollo');
     } finally {
       setIsLoading(false);
