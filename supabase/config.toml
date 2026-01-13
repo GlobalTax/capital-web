@@ -206,3 +206,6 @@ verify_jwt = false
 
 [functions.mna-apollo-search-import]
 verify_jwt = false
+
+[functions.parse-contact-search]
+verify_jwt = false

@@ -1,34 +1,26 @@
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  Search, 
   X, 
   Filter, 
   Download, 
   RefreshCw,
   ChevronDown,
-  Calendar,
   Building2,
   Mail,
-  Users
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { ContactFilters, ContactOrigin } from '@/hooks/useUnifiedContacts';
+import { SmartSearchFilters } from '@/hooks/useSmartSearch';
+import SmartSearchInput from './SmartSearchInput';
 import { cn } from '@/lib/utils';
 
 interface LinearFilterBarProps {
@@ -79,10 +71,64 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
   onExport,
   isRefreshing = false,
 }) => {
-  const [searchFocused, setSearchFocused] = useState(false);
-
   const handleFilterChange = (key: keyof ContactFilters, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
+  };
+
+  const handleSmartFiltersChange = (smartFilters: SmartSearchFilters) => {
+    // Map smart search filters to contact filters
+    const newFilters: ContactFilters = {
+      ...filters,
+      // Text search
+      search: smartFilters.text_search || filters.search,
+      // Origin mapping
+      origin: smartFilters.origin as ContactOrigin || filters.origin,
+      // Status mapping
+      status: smartFilters.status || smartFilters.lead_status_crm || filters.status,
+      // Email status
+      emailStatus: smartFilters.email_status as any || filters.emailStatus,
+      // Sector
+      sector: smartFilters.sector || filters.sector,
+      // Advanced filters
+      revenueMin: smartFilters.revenue_min,
+      revenueMax: smartFilters.revenue_max,
+      ebitdaMin: smartFilters.ebitda_min,
+      ebitdaMax: smartFilters.ebitda_max,
+      employeeMin: smartFilters.employee_min,
+      employeeMax: smartFilters.employee_max,
+      location: smartFilters.location,
+    };
+
+    // Date range handling
+    if (smartFilters.date_range) {
+      const today = new Date();
+      let dateFrom: Date | undefined;
+      
+      switch (smartFilters.date_range) {
+        case 'today':
+          dateFrom = new Date(today.setHours(0, 0, 0, 0));
+          break;
+        case 'last_7_days':
+          dateFrom = new Date(today.setDate(today.getDate() - 7));
+          break;
+        case 'last_30_days':
+          dateFrom = new Date(today.setDate(today.getDate() - 30));
+          break;
+        case 'last_90_days':
+          dateFrom = new Date(today.setDate(today.getDate() - 90));
+          break;
+        case 'this_year':
+          dateFrom = new Date(today.getFullYear(), 0, 1);
+          break;
+      }
+      
+      if (dateFrom) {
+        newFilters.dateFrom = dateFrom.toISOString().split('T')[0];
+        newFilters.dateRangeLabel = smartFilters.date_range;
+      }
+    }
+
+    onFiltersChange(newFilters);
   };
 
   const clearAllFilters = () => {
@@ -99,38 +145,23 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
     filters.status,
     filters.emailStatus && filters.emailStatus !== 'all',
     filters.dateFrom || filters.dateTo,
+    filters.sector,
+    filters.revenueMin || filters.revenueMax,
+    filters.ebitdaMin || filters.ebitdaMax,
+    filters.employeeMin || filters.employeeMax,
+    filters.location,
   ].filter(Boolean).length;
 
   return (
     <div className="space-y-3">
-      {/* Main filter bar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Search */}
-        <div className={cn(
-          "relative transition-all duration-200",
-          searchFocused ? "w-80" : "w-64"
-        )}>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar contacto..."
-            value={filters.search || ''}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            className="h-8 pl-9 pr-8 text-sm bg-[hsl(var(--linear-bg))] border-[hsl(var(--linear-border))] focus:border-[hsl(var(--accent-primary))]"
-          />
-          {filters.search && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
-              onClick={() => handleFilterChange('search', '')}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
+      {/* Smart AI Search */}
+      <SmartSearchInput
+        onFiltersChange={handleSmartFiltersChange}
+        onTextSearchChange={(text) => handleFilterChange('search', text)}
+      />
 
+      {/* Traditional filter dropdowns */}
+      <div className="flex items-center gap-2 flex-wrap">
         {/* Origin filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
