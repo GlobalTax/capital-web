@@ -231,11 +231,16 @@ export const useImportCRApolloInBatches = () => {
       import_id: string;
       people: CRApolloPersonResult[];
       enrich?: boolean;
+      import_type?: 'people' | 'organizations';
       onProgress?: (progress: BatchImportProgress) => void;
     }): Promise<CRImportResults> => {
-      const { import_id, people, enrich = false, onProgress } = params;
+      const { import_id, people, enrich = false, import_type = 'people', onProgress } = params;
       const BATCH_SIZE = 50;
       const totalBatches = Math.ceil(people.length / BATCH_SIZE);
+      
+      // Use different action based on import type
+      const action = import_type === 'organizations' ? 'import_organizations_batch' : 'import_batch';
+      console.log(`[CR Batch Import] Using action: ${action} for ${people.length} items`);
       
       let accumulated: CRImportResults = {
         imported: 0,
@@ -250,7 +255,7 @@ export const useImportCRApolloInBatches = () => {
         
         const { data, error } = await supabase.functions.invoke('cr-apollo-search-import', {
           body: { 
-            action: 'import_batch',
+            action,
             import_id,
             people,
             enrich,
