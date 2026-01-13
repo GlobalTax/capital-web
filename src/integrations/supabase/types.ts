@@ -9005,6 +9005,223 @@ export type Database = {
           },
         ]
       }
+      mna_boutique_deals: {
+        Row: {
+          acquirer_name: string | null
+          boutique_id: string
+          company_name: string
+          country: string | null
+          created_at: string
+          deal_type: string | null
+          deal_value: number | null
+          deal_value_currency: string | null
+          deal_year: number | null
+          deleted_at: string | null
+          description: string | null
+          id: string
+          is_deleted: boolean | null
+          notes: string | null
+          role_in_deal: string | null
+          sector: string | null
+          source_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          acquirer_name?: string | null
+          boutique_id: string
+          company_name: string
+          country?: string | null
+          created_at?: string
+          deal_type?: string | null
+          deal_value?: number | null
+          deal_value_currency?: string | null
+          deal_year?: number | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          notes?: string | null
+          role_in_deal?: string | null
+          sector?: string | null
+          source_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acquirer_name?: string | null
+          boutique_id?: string
+          company_name?: string
+          country?: string | null
+          created_at?: string
+          deal_type?: string | null
+          deal_value?: number | null
+          deal_value_currency?: string | null
+          deal_year?: number | null
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          notes?: string | null
+          role_in_deal?: string | null
+          sector?: string | null
+          source_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mna_boutique_deals_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "mna_boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mna_boutique_people: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          deleted_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_deleted: boolean | null
+          is_primary_contact: boolean | null
+          linkedin_url: string | null
+          location: string | null
+          notes: string | null
+          phone: string | null
+          role: string | null
+          sector_expertise: string[] | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          is_deleted?: boolean | null
+          is_primary_contact?: boolean | null
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          sector_expertise?: string[] | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_deleted?: boolean | null
+          is_primary_contact?: boolean | null
+          linkedin_url?: string | null
+          location?: string | null
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          sector_expertise?: string[] | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mna_boutique_people_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "mna_boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mna_boutiques: {
+        Row: {
+          cities: string[] | null
+          country_base: string | null
+          created_at: string
+          deal_size_max: number | null
+          deal_size_min: number | null
+          deleted_at: string | null
+          deleted_by: string | null
+          description: string | null
+          employee_count: number | null
+          employee_count_source: string | null
+          founded_year: number | null
+          geography_focus: string[] | null
+          id: string
+          is_deleted: boolean | null
+          linkedin_url: string | null
+          name: string
+          notes_internal: string | null
+          sector_focus: string[] | null
+          source_url: string | null
+          specialization: string[] | null
+          status: string | null
+          tier: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          cities?: string[] | null
+          country_base?: string | null
+          created_at?: string
+          deal_size_max?: number | null
+          deal_size_min?: number | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          employee_count?: number | null
+          employee_count_source?: string | null
+          founded_year?: number | null
+          geography_focus?: string[] | null
+          id?: string
+          is_deleted?: boolean | null
+          linkedin_url?: string | null
+          name: string
+          notes_internal?: string | null
+          sector_focus?: string[] | null
+          source_url?: string | null
+          specialization?: string[] | null
+          status?: string | null
+          tier?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          cities?: string[] | null
+          country_base?: string | null
+          created_at?: string
+          deal_size_max?: number | null
+          deal_size_min?: number | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          description?: string | null
+          employee_count?: number | null
+          employee_count_source?: string | null
+          founded_year?: number | null
+          geography_focus?: string[] | null
+          id?: string
+          is_deleted?: boolean | null
+          linkedin_url?: string | null
+          name?: string
+          notes_internal?: string | null
+          sector_focus?: string[] | null
+          source_url?: string | null
+          specialization?: string[] | null
+          status?: string | null
+          tier?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       news_articles: {
         Row: {
           ai_metadata: Json | null

@@ -385,6 +385,19 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "🏛️ BOUTIQUES M&A",
+    description: "Directorio de competencia",
+    items: [
+      { 
+        title: "Directorio Boutiques", 
+        url: "/admin/mna-directory", 
+        icon: Building2,
+        badge: "NEW",
+        description: "Competidores y asesores M&A"
+      },
+    ]
+  },
+  {
     title: "📚 RECURSOS",
     description: "Gestión de recursos y herramientas",
     items: [
