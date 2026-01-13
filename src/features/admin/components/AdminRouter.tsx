@@ -83,6 +83,7 @@ const LazyFase0TemplatesPage = React.lazy(() => import('@/pages/admin/Fase0Templ
 const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news/NewsArticlesManager').then(m => ({ default: m.NewsArticlesManager })));
 const LazyMNADirectoryPage = React.lazy(() => import('@/pages/admin/MNADirectoryPage'));
 const LazyMNABoutiqueDetailPage = React.lazy(() => import('@/pages/admin/MNABoutiqueDetailPage'));
+const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApolloImportPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -204,6 +205,7 @@ const AdminRouter = () => {
           <Route path="/fund-intelligence" element={<LazyFundIntelligencePage />} />
           
           {/* MNA Boutiques */}
+          <Route path="/mna-apollo-import" element={<LazyMNAApolloImportPage />} />
           <Route path="/mna-directory" element={<LazyMNADirectoryPage />} />
           <Route path="/mna-directory/:id" element={<LazyMNABoutiqueDetailPage />} />
           

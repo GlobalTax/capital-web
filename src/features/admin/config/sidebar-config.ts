@@ -389,6 +389,13 @@ export const sidebarSections: SidebarSection[] = [
     description: "Directorio de competencia",
     items: [
       { 
+        title: "Apollo Import", 
+        url: "/admin/mna-apollo-import", 
+        icon: Users,
+        badge: "NEW",
+        description: "Importar boutiques desde Apollo"
+      },
+      { 
         title: "Directorio Boutiques", 
         url: "/admin/mna-directory", 
         icon: Building2,
