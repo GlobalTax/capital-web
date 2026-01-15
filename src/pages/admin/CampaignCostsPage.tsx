@@ -2,13 +2,14 @@
 // Página de análisis de costes de campañas vs leads
 
 import React, { useState } from 'react';
-import { Plus, RefreshCw, TrendingUp, Euro, Target, Download } from 'lucide-react';
+import { Plus, RefreshCw, Euro, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCampaignCosts, CampaignCost, CampaignCostInput } from '@/hooks/useCampaignCosts';
 import CostEntryForm from '@/components/admin/campaigns/CostEntryForm';
 import ChannelCACCards from '@/components/admin/campaigns/ChannelCACCards';
 import CostVsLeadsChart from '@/components/admin/campaigns/CostVsLeadsChart';
 import CostsTable from '@/components/admin/campaigns/CostsTable';
+import { ScreenshotUploader, ExtractedCampaignData } from '@/components/admin/campaigns/ScreenshotUploader';
 
 const CampaignCostsPage: React.FC = () => {
   const {
@@ -27,11 +28,30 @@ const CampaignCostsPage: React.FC = () => {
   } = useCampaignCosts();
 
   const [showForm, setShowForm] = useState(false);
+  const [showScreenshotUploader, setShowScreenshotUploader] = useState(false);
+  const [prefillData, setPrefillData] = useState<Partial<CampaignCostInput> | undefined>(undefined);
   const [editingCost, setEditingCost] = useState<CampaignCost | null>(null);
 
   const handleAddCost = (data: CampaignCostInput) => {
     addCost(data);
     setShowForm(false);
+    setPrefillData(undefined);
+  };
+
+  const handleScreenshotData = (data: ExtractedCampaignData) => {
+    setPrefillData({
+      channel: data.channel,
+      campaign_name: data.campaign_name || undefined,
+      period_start: data.period_start,
+      period_end: data.period_end,
+      amount: data.amount,
+      impressions: data.impressions || undefined,
+      clicks: data.clicks || undefined,
+      ctr: data.ctr || undefined,
+      cpc: data.cpc || undefined,
+    });
+    setShowScreenshotUploader(false);
+    setShowForm(true);
   };
 
   const handleUpdateCost = (data: CampaignCostInput) => {
@@ -72,7 +92,14 @@ const CampaignCostsPage: React.FC = () => {
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
           </Button>
-          <Button onClick={() => setShowForm(true)}>
+          <Button 
+            variant="outline"
+            onClick={() => setShowScreenshotUploader(true)}
+          >
+            <ImageIcon className="h-4 w-4 mr-2" />
+            Importar Pantallazo
+          </Button>
+          <Button onClick={() => { setPrefillData(undefined); setShowForm(true); }}>
             <Plus className="h-4 w-4 mr-2" />
             Añadir Gasto
           </Button>
@@ -102,10 +129,18 @@ const CampaignCostsPage: React.FC = () => {
       {/* Add Form Modal */}
       <CostEntryForm
         open={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => { setShowForm(false); setPrefillData(undefined); }}
         onSubmit={handleAddCost}
         isSubmitting={isAdding}
         mode="create"
+        defaultValues={prefillData}
+      />
+
+      {/* Screenshot Uploader */}
+      <ScreenshotUploader
+        open={showScreenshotUploader}
+        onOpenChange={setShowScreenshotUploader}
+        onDataExtracted={handleScreenshotData}
       />
 
       {/* Edit Form Modal */}
