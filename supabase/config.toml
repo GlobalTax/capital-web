@@ -209,3 +209,6 @@ verify_jwt = false
 
 [functions.parse-contact-search]
 verify_jwt = false
+
+[functions.parse-campaign-screenshot]
+verify_jwt = false

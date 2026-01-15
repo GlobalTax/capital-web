@@ -1,13 +1,13 @@
 // ============= COST ENTRY FORM =============
 // Formulario para añadir/editar gastos de campañas
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, Euro, MousePointer, Eye, Plus, X } from 'lucide-react';
+import { Calendar, Euro, MousePointer, Eye, Plus, Image as ImageIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CampaignCostInput } from '@/hooks/useCampaignCosts';
+import { ScreenshotUploader, ExtractedCampaignData } from './ScreenshotUploader';
 
 const formSchema = z.object({
   channel: z.enum(['meta_ads', 'google_ads', 'linkedin_ads', 'other']),
@@ -98,6 +99,8 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
   defaultValues,
   mode = 'create'
 }) => {
+  const [showScreenshotUploader, setShowScreenshotUploader] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -115,6 +118,19 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
       ...defaultValues
     }
   });
+
+  const handleScreenshotData = (data: ExtractedCampaignData) => {
+    setValue('channel', data.channel);
+    if (data.campaign_name) setValue('campaign_name', data.campaign_name);
+    setValue('period_start', data.period_start);
+    setValue('period_end', data.period_end);
+    setValue('amount', data.amount);
+    if (data.impressions) setValue('impressions', data.impressions);
+    if (data.clicks) setValue('clicks', data.clicks);
+    if (data.ctr) setValue('ctr', data.ctr);
+    if (data.cpc) setValue('cpc', data.cpc);
+    setShowScreenshotUploader(false);
+  };
 
   const channel = watch('channel');
   const clicks = watch('clicks');
@@ -152,9 +168,22 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {mode === 'create' ? <Plus className="h-5 w-5" /> : null}
-            {mode === 'create' ? 'Añadir Gasto de Campaña' : 'Editar Gasto'}
+          <DialogTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              {mode === 'create' ? <Plus className="h-5 w-5" /> : null}
+              {mode === 'create' ? 'Añadir Gasto de Campaña' : 'Editar Gasto'}
+            </span>
+            {mode === 'create' && (
+              <Button 
+                type="button"
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowScreenshotUploader(true)}
+              >
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Importar pantallazo
+              </Button>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -366,6 +395,13 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
             </Button>
           </DialogFooter>
         </form>
+
+        {/* Screenshot Uploader Modal */}
+        <ScreenshotUploader
+          open={showScreenshotUploader}
+          onOpenChange={setShowScreenshotUploader}
+          onDataExtracted={handleScreenshotData}
+        />
       </DialogContent>
     </Dialog>
   );
