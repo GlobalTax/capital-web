@@ -422,6 +422,13 @@ export const sidebarSections: SidebarSection[] = [
     description: "Comunicación con leads",
     items: [
       { 
+        title: "Costes Campañas", 
+        url: "/admin/campaign-costs", 
+        icon: TrendingUp,
+        badge: "NEW",
+        description: "Análisis CAC Meta Ads y Google Ads"
+      },
+      { 
         title: "Newsletter Semanal", 
         url: "/admin/newsletter", 
         icon: Mail,
