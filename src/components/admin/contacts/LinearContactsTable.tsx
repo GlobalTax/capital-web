@@ -23,6 +23,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { EditableCell } from '@/components/admin/shared/EditableCell';
+import { EditableSelect, SelectOption } from '@/components/admin/shared/EditableSelect';
+import { useAcquisitionChannels, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
+import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 
 interface LinearContactsTableProps {
   contacts: UnifiedContact[];
@@ -89,6 +93,20 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
 }) => {
   const allSelected = contacts.length > 0 && selectedContacts.length === contacts.length;
   const someSelected = selectedContacts.length > 0 && selectedContacts.length < contacts.length;
+  
+  // Hooks for inline editing
+  const { channels } = useAcquisitionChannels();
+  const { update: updateContact } = useContactInlineUpdate();
+  
+  // Convert channels to select options
+  const channelOptions: SelectOption[] = channels.map(ch => ({
+    value: ch.id,
+    label: ch.name,
+    color: CATEGORY_COLORS[ch.category]?.includes('rose') ? '#f43f5e' :
+           CATEGORY_COLORS[ch.category]?.includes('emerald') ? '#10b981' :
+           CATEGORY_COLORS[ch.category]?.includes('blue') ? '#3b82f6' :
+           CATEGORY_COLORS[ch.category]?.includes('amber') ? '#f59e0b' : '#6b7280',
+  }));
 
   if (contacts.length === 0 && !isLoading) {
     return (
@@ -234,32 +252,41 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                     </Badge>
                   </TableCell>
                   
-                  {/* Channel */}
-                  <TableCell className="py-2">
-                    {contact.acquisition_channel_name ? (
-                      <Badge variant="outline" className={cn("h-5 text-[10px] font-medium border", getChannelConfig(contact.acquisition_channel_category).color)}>
-                        {contact.acquisition_channel_name}
-                      </Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/50">—</span>
-                    )}
+                  {/* Channel - Editable */}
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                    <EditableSelect
+                      value={contact.acquisition_channel_id ?? undefined}
+                      options={channelOptions}
+                      placeholder="Seleccionar..."
+                      emptyText="—"
+                      allowClear
+                      onSave={async (newValue) => {
+                        await updateContact(contact.id, contact.origin, 'acquisition_channel_id', newValue || null);
+                      }}
+                    />
                   </TableCell>
                   
-                  
-                  {/* Company with location */}
-                <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex flex-col gap-0.5">
-                    {contact.empresa_id ? (
-                      <Link 
-                        to={`/admin/empresas/${contact.empresa_id}`}
-                        className="text-sm truncate max-w-[140px] text-primary hover:underline cursor-pointer"
-                      >
-                        {contact.empresa_nombre || contact.company || '—'}
-                      </Link>
-                    ) : (
-                        <span className="text-sm truncate max-w-[140px]">
-                          {contact.company || '—'}
-                        </span>
+                  {/* Company with location - Editable when not linked */}
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-col gap-0.5">
+                      {contact.empresa_id ? (
+                        <Link 
+                          to={`/admin/empresas/${contact.empresa_id}`}
+                          className="text-sm truncate max-w-[140px] text-primary hover:underline cursor-pointer"
+                        >
+                          {contact.empresa_nombre || contact.company || '—'}
+                        </Link>
+                      ) : (
+                        <EditableCell
+                          value={contact.company}
+                          type="text"
+                          placeholder="Empresa..."
+                          emptyText="—"
+                          displayClassName="truncate max-w-[140px]"
+                          onSave={async (newValue) => {
+                            await updateContact(contact.id, contact.origin, 'company', newValue);
+                          }}
+                        />
                       )}
                       {contact.industry && (
                         <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
