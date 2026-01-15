@@ -1,8 +1,8 @@
 // ============= CAMPAIGN COSTS PAGE =============
 // Página de análisis de costes de campañas vs leads
 
-import React, { useState } from 'react';
-import { Plus, RefreshCw, Euro, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, RefreshCw, Euro, Image as ImageIcon, Clipboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCampaignCosts, CampaignCost, CampaignCostInput } from '@/hooks/useCampaignCosts';
 import CostEntryForm from '@/components/admin/campaigns/CostEntryForm';
@@ -10,6 +10,8 @@ import ChannelCACCards from '@/components/admin/campaigns/ChannelCACCards';
 import CostVsLeadsChart from '@/components/admin/campaigns/CostVsLeadsChart';
 import CostsTable from '@/components/admin/campaigns/CostsTable';
 import { ScreenshotUploader, ExtractedCampaignData } from '@/components/admin/campaigns/ScreenshotUploader';
+import { PasteImageProcessor } from '@/components/admin/campaigns/PasteImageProcessor';
+import { toast } from 'sonner';
 
 const CampaignCostsPage: React.FC = () => {
   const {
@@ -31,6 +33,30 @@ const CampaignCostsPage: React.FC = () => {
   const [showScreenshotUploader, setShowScreenshotUploader] = useState(false);
   const [prefillData, setPrefillData] = useState<Partial<CampaignCostInput> | undefined>(undefined);
   const [editingCost, setEditingCost] = useState<CampaignCost | null>(null);
+  const [pastedImage, setPastedImage] = useState<File | null>(null);
+
+  // Listen for paste events (Ctrl+V / Cmd+V)
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith('image/')) {
+          event.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            setPastedImage(file);
+            toast.info('Imagen detectada, procesando...');
+          }
+          break;
+        }
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, []);
 
   const handleAddCost = (data: CampaignCostInput) => {
     addCost(data);
@@ -51,8 +77,24 @@ const CampaignCostsPage: React.FC = () => {
       cpc: data.cpc || undefined,
     });
     setShowScreenshotUploader(false);
+    setPastedImage(null);
     setShowForm(true);
   };
+
+  const handleSaveDirectly = useCallback((data: ExtractedCampaignData) => {
+    addCost({
+      channel: data.channel,
+      campaign_name: data.campaign_name || undefined,
+      period_start: data.period_start,
+      period_end: data.period_end,
+      amount: data.amount,
+      impressions: data.impressions || undefined,
+      clicks: data.clicks || undefined,
+      ctr: data.ctr || undefined,
+      cpc: data.cpc || undefined,
+    });
+    setPastedImage(null);
+  }, [addCost]);
 
   const handleUpdateCost = (data: CampaignCostInput) => {
     if (editingCost) {
@@ -83,28 +125,46 @@ const CampaignCostsPage: React.FC = () => {
           </p>
         </div>
         
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => window.location.reload()}
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => setShowScreenshotUploader(true)}
-          >
-            <ImageIcon className="h-4 w-4 mr-2" />
-            Importar Pantallazo
-          </Button>
-          <Button onClick={() => { setPrefillData(undefined); setShowForm(true); }}>
-            <Plus className="h-4 w-4 mr-2" />
-            Añadir Gasto
-          </Button>
+        <div className="flex items-center gap-4">
+          {/* Paste hint */}
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+            <Clipboard className="h-3 w-3" />
+            <span>Ctrl+V para pegar pantallazo</span>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => setShowScreenshotUploader(true)}
+            >
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Importar Pantallazo
+            </Button>
+            <Button onClick={() => { setPrefillData(undefined); setShowForm(true); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Añadir Gasto
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Pasted Image Processor (inline) */}
+      {pastedImage && (
+        <PasteImageProcessor
+          imageFile={pastedImage}
+          onDataExtracted={handleScreenshotData}
+          onDiscard={() => setPastedImage(null)}
+          onSaveDirectly={handleSaveDirectly}
+        />
+      )}
 
       {/* KPI Cards */}
       <ChannelCACCards 

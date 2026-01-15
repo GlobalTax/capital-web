@@ -93,6 +93,34 @@ export const ScreenshotUploader: React.FC<ScreenshotUploaderProps> = ({
     }
   };
 
+  // Handle paste inside modal
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handlePaste = (event: ClipboardEvent) => {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith('image/')) {
+          event.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            if (file.size > 4 * 1024 * 1024) {
+              toast.error('La imagen es demasiado grande. Máximo 4MB.');
+              return;
+            }
+            processImage(file);
+          }
+          break;
+        }
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [open]);
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
@@ -161,11 +189,11 @@ export const ScreenshotUploader: React.FC<ScreenshotUploaderProps> = ({
                   <p className="text-sm text-muted-foreground">Analizando imagen con IA...</p>
                 </div>
               ) : (
-                <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col items-center gap-3">
                   <Upload className="h-10 w-10 text-muted-foreground" />
                   <div>
-                    <p className="font-medium">Arrastra un pantallazo aquí</p>
-                    <p className="text-sm text-muted-foreground">o haz clic para seleccionar</p>
+                    <p className="font-medium">Pega una imagen (Ctrl+V)</p>
+                    <p className="text-sm text-muted-foreground">o arrastra un archivo aquí</p>
                   </div>
                   <p className="text-xs text-muted-foreground">PNG, JPG, WEBP • Máx 4MB</p>
                 </div>

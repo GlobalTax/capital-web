@@ -4717,6 +4717,7 @@ export type Database = {
           file_size_bytes: number
           folder_id: string | null
           id: string
+          idioma: string | null
           is_latest_version: boolean | null
           mandato_id: string | null
           mime_type: string
@@ -4735,6 +4736,7 @@ export type Database = {
           file_size_bytes: number
           folder_id?: string | null
           id?: string
+          idioma?: string | null
           is_latest_version?: boolean | null
           mandato_id?: string | null
           mime_type: string
@@ -4753,6 +4755,7 @@ export type Database = {
           file_size_bytes?: number
           folder_id?: string | null
           id?: string
+          idioma?: string | null
           is_latest_version?: boolean | null
           mandato_id?: string | null
           mime_type?: string
