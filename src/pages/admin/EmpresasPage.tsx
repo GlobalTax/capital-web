@@ -229,8 +229,12 @@ export default function EmpresasPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {empresas.map((empresa) => (
-                    <TableRow key={empresa.id}>
+                {empresas.map((empresa) => (
+                    <TableRow 
+                      key={empresa.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+                    >
                       <TableCell>
                         <div>
                           <div className="font-medium">{empresa.nombre}</div>
