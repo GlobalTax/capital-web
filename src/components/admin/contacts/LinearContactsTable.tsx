@@ -50,25 +50,6 @@ const getOriginConfig = (origin: ContactOrigin) => {
   return configs[origin] || configs.general;
 };
 
-// Status badge with Linear styling
-const getStatusConfig = (status: string | null | undefined) => {
-  if (!status) return { label: '—', color: 'text-muted-foreground' };
-  
-  const configs: Record<string, { label: string; color: string }> = {
-    'nuevo': { label: 'Nuevo', color: 'bg-blue-500/10 text-blue-600' },
-    'contactado': { label: 'Contactado', color: 'bg-violet-500/10 text-violet-600' },
-    'contactando': { label: 'Contactando', color: 'bg-indigo-500/10 text-indigo-600' },
-    'calificado': { label: 'Calificado', color: 'bg-emerald-500/10 text-emerald-600' },
-    'en_espera': { label: 'Espera', color: 'bg-gray-500/10 text-gray-600' },
-    'propuesta_enviada': { label: 'Propuesta', color: 'bg-cyan-500/10 text-cyan-600' },
-    'negociacion': { label: 'Negociación', color: 'bg-orange-500/10 text-orange-600' },
-    'ganado': { label: 'Ganado', color: 'bg-green-500/10 text-green-600' },
-    'perdido': { label: 'Perdido', color: 'bg-red-500/10 text-red-600' },
-    'descartado': { label: 'Descartado', color: 'bg-rose-500/10 text-rose-600' },
-    'archivado': { label: 'Archivado', color: 'bg-slate-500/10 text-slate-600' },
-  };
-  return configs[status] || { label: status, color: 'bg-gray-500/10 text-gray-600' };
-};
 
 // Channel badge with Linear styling
 const getChannelConfig = (category?: string | null) => {
@@ -139,7 +120,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Contacto</TableHead>
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Origen</TableHead>
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Canal</TableHead>
-              <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</TableHead>
+              
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Empresa</TableHead>
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Financieros</TableHead>
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Apollo</TableHead>
@@ -151,7 +132,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
             {contacts.map((contact, index) => {
               const isSelected = selectedContacts.includes(contact.id);
               const originConfig = getOriginConfig(contact.origin);
-              const statusConfig = getStatusConfig(contact.lead_status_crm);
+              
               
               // Financial data
               const revenue = formatCurrency(contact.revenue);
@@ -263,16 +244,6 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                     )}
                   </TableCell>
                   
-                  {/* Status */}
-                  <TableCell className="py-2">
-                    {statusConfig.label !== '—' ? (
-                      <Badge variant="secondary" className={cn("h-5 text-[10px] font-medium", statusConfig.color)}>
-                        {statusConfig.label}
-                      </Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/50">—</span>
-                    )}
-                  </TableCell>
                   
                   {/* Company with location */}
                   <TableCell className="py-2">
