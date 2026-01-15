@@ -82,7 +82,7 @@ export interface UnifiedContact {
   // 🔥 NEW: Empresa vinculada
   empresa_id?: string;
   empresa_nombre?: string;
-  
+  empresa_facturacion?: number;
   // 🔥 NEW: Origen Valoración Pro
   is_from_pro_valuation?: boolean;
   
@@ -177,7 +177,7 @@ export const useUnifiedContacts = () => {
       // Fetch contact_leads with linked empresa and acquisition channel (exclude soft deleted)
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
-        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, empresas:empresa_id(id, nombre), acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -289,6 +289,7 @@ export const useUnifiedContacts = () => {
             // 🔥 NEW: Empresa vinculada
             empresa_id: lead.empresa_id,
             empresa_nombre: (lead.empresas as any)?.nombre || null,
+            empresa_facturacion: (lead.empresas as any)?.facturacion || undefined,
             // 🔥 NEW: Indicador de origen Valoración Pro
             is_from_pro_valuation: lead.referral === 'Valoración Pro',
             // 🔥 NEW: Canal de adquisición

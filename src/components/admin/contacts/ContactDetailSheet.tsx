@@ -39,6 +39,7 @@ import { useAcquisitionChannels, CATEGORY_LABELS, CATEGORY_COLORS } from '@/hook
 import ContactEditForm from './ContactEditForm';
 import { useContactUpdate, ContactUpdateData } from '@/hooks/useContactUpdate';
 import { Fase0DocumentButtons, Fase0DocumentsList } from '@/features/fase0-documents';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -119,18 +120,20 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   onArchive,
 }) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { channels } = useAcquisitionChannels();
   const { updateContact, isUpdating } = useContactUpdate();
-  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
-    (contact as any)?.acquisition_channel_id || null
-  );
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
   const [isSavingChannel, setIsSavingChannel] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ContactUpdateData>({});
 
-  // Initialize form data when contact changes
+  // Initialize form data and channel when contact changes
   useEffect(() => {
     if (contact) {
+      // Sync channel with contact data
+      setSelectedChannelId(contact.acquisition_channel_id || null);
+      
       setFormData({
         name: contact.name,
         email: contact.email,
@@ -225,6 +228,10 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
       if (error) throw error;
       
       setSelectedChannelId(channelId);
+      
+      // Invalidate cache to refresh table immediately
+      queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
+      
       toast({ title: 'Canal actualizado' });
     } catch (error) {
       toast({ title: 'Error', description: 'No se pudo actualizar el canal', variant: 'destructive' });

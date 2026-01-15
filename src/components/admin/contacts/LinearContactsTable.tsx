@@ -135,8 +135,8 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
               const originConfig = getOriginConfig(contact.origin);
               
               
-              // Financial data
-              const revenue = formatCurrency(contact.revenue);
+              // Financial data - prioritize empresa_facturacion over contact.revenue
+              const revenue = formatCurrency(contact.empresa_facturacion || contact.revenue);
               const ebitda = formatCurrency(contact.ebitda);
               const valuation = formatCurrency(contact.final_valuation);
               const hasFinancials = revenue || ebitda || valuation || contact.employee_range;
