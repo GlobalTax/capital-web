@@ -247,17 +247,16 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                   
                   
                   {/* Company with location */}
-                  <TableCell className="py-2">
-                    <div className="flex flex-col gap-0.5">
-                      {contact.empresa_id ? (
-                        <Link 
-                          to={`/admin/empresas/${contact.empresa_id}`}
-                          className="text-sm truncate max-w-[140px] text-primary hover:underline cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {contact.empresa_nombre || contact.company || '—'}
-                        </Link>
-                      ) : (
+                <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex flex-col gap-0.5">
+                    {contact.empresa_id ? (
+                      <Link 
+                        to={`/admin/empresas/${contact.empresa_id}`}
+                        className="text-sm truncate max-w-[140px] text-primary hover:underline cursor-pointer"
+                      >
+                        {contact.empresa_nombre || contact.company || '—'}
+                      </Link>
+                    ) : (
                         <span className="text-sm truncate max-w-[140px]">
                           {contact.company || '—'}
                         </span>
