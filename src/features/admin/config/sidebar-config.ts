@@ -270,6 +270,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Base de contactos"
       },
       { 
+        title: "Empresas",
+        url: "/admin/empresas", 
+        icon: Building2,
+        badge: "NEW",
+        description: "Base de datos de empresas"
+      },
+      { 
         title: "Leads Inversores (ROD)",
         url: "/admin/investor-leads", 
         icon: TrendingUp,

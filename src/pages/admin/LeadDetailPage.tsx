@@ -41,6 +41,7 @@ import { LeadToOperationConverter } from '@/features/operations-management/compo
 import { useBrevoEvents } from '@/hooks/useBrevoEvents';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AICompanySummaryBlock } from '@/components/admin/leads/AICompanySummaryBlock';
+import { CompanyLinkCard } from '@/components/admin/companies/CompanyLinkCard';
 
 interface LeadData {
   id: string;
@@ -554,6 +555,15 @@ export default function LeadDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Empresa Vinculada */}
+          <CompanyLinkCard
+            contactId={lead.id}
+            contactOrigin={lead.origin}
+            empresaId={lead.empresa_id}
+            companyName={lead.company}
+            onCompanyLinked={refetch}
+          />
 
           {/* Datos específicos según origen */}
           {lead.origin === 'valuation' && (

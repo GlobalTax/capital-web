@@ -85,6 +85,7 @@ const LazyMNADirectoryPage = React.lazy(() => import('@/pages/admin/MNADirectory
 const LazyMNABoutiqueDetailPage = React.lazy(() => import('@/pages/admin/MNABoutiqueDetailPage'));
 const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApolloImportPage'));
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
+const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -113,6 +114,7 @@ const AdminRouter = () => {
           <Route path="/contacts" element={<LazyContactsPage />} />
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
+          <Route path="/empresas" element={<LazyEmpresasPage />} />
           <Route path="/investor-leads" element={<LazyInvestorLeadsManager />} />
           <Route path="/calculadora-manual" element={<LazyManualLeadEntryPage />} />
           
