@@ -31,6 +31,9 @@ interface EditableSelectProps {
 
 type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 
+// Special value for "clear" option since Radix UI doesn't allow empty string values
+const CLEAR_VALUE = "__clear__";
+
 export const EditableSelect: React.FC<EditableSelectProps> = ({
   value,
   options,
@@ -51,7 +54,10 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
   const isEmpty = !value || value === '';
 
   const handleValueChange = useCallback(async (newValue: string) => {
-    if (newValue === value) {
+    // Convert special clear value back to empty string
+    const actualValue = newValue === CLEAR_VALUE ? '' : newValue;
+    
+    if (actualValue === value) {
       setIsOpen(false);
       return;
     }
@@ -60,7 +66,7 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
     setIsOpen(false);
 
     try {
-      await onSave(newValue);
+      await onSave(actualValue);
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 1500);
     } catch (error) {
@@ -113,24 +119,26 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
         </SelectTrigger>
         <SelectContent>
           {allowClear && value && (
-            <SelectItem value="">
+            <SelectItem value={CLEAR_VALUE}>
               <span className="text-muted-foreground">Sin asignar</span>
             </SelectItem>
           )}
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              <span className="flex items-center gap-1.5">
-                {option.icon}
-                {option.color && (
-                  <span 
-                    className="w-2 h-2 rounded-full flex-shrink-0" 
-                    style={{ backgroundColor: option.color }} 
-                  />
-                )}
-                {option.label}
-              </span>
-            </SelectItem>
-          ))}
+          {options
+            .filter(option => option.value && option.value !== '')
+            .map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <span className="flex items-center gap-1.5">
+                  {option.icon}
+                  {option.color && (
+                    <span 
+                      className="w-2 h-2 rounded-full flex-shrink-0" 
+                      style={{ backgroundColor: option.color }} 
+                    />
+                  )}
+                  {option.label}
+                </span>
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
 
