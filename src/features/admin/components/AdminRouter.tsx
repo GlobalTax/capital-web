@@ -84,6 +84,7 @@ const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news
 const LazyMNADirectoryPage = React.lazy(() => import('@/pages/admin/MNADirectoryPage'));
 const LazyMNABoutiqueDetailPage = React.lazy(() => import('@/pages/admin/MNABoutiqueDetailPage'));
 const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApolloImportPage'));
+const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -175,6 +176,7 @@ const AdminRouter = () => {
           <Route path="/configuracion/firma-pdf" element={<LazyPdfSignatureConfig />} />
           <Route path="/configuracion/workflow-templates" element={<LazyWorkflowTemplatesPage />} />
           <Route path="/newsletter" element={<LazyNewsletterPage />} />
+          <Route path="/campaign-costs" element={<LazyCampaignCostsPage />} />
           <Route path="/mandatos-compra" element={<LazyBuySideMandatesPage />} />
           <Route path="/notifications" element={<LazyNotificationsPage />} />
           <Route path="/brevo-sync" element={<LazyBrevoSyncDashboard />} />

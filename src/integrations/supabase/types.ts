@@ -2013,6 +2013,57 @@ export type Database = {
           },
         ]
       }
+      campaign_costs: {
+        Row: {
+          amount: number
+          campaign_name: string | null
+          channel: string
+          clicks: number | null
+          cpc: number | null
+          created_at: string
+          created_by: string | null
+          ctr: number | null
+          id: string
+          impressions: number | null
+          notes: string | null
+          period_end: string
+          period_start: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          campaign_name?: string | null
+          channel: string
+          clicks?: number | null
+          cpc?: number | null
+          created_at?: string
+          created_by?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          notes?: string | null
+          period_end: string
+          period_start: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          campaign_name?: string | null
+          channel?: string
+          clicks?: number | null
+          cpc?: number | null
+          created_at?: string
+          created_by?: string | null
+          ctr?: number | null
+          id?: string
+          impressions?: number | null
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       carousel_logos: {
         Row: {
           company_name: string
@@ -8706,6 +8757,7 @@ export type Database = {
           platform_arx: string | null
           platform_deale: string | null
           platform_dealsuite: string | null
+          potencial_searchfund: boolean | null
           prioridad: string | null
           probability: number | null
           rango_inversion_max: number | null
@@ -8768,6 +8820,7 @@ export type Database = {
           platform_arx?: string | null
           platform_deale?: string | null
           platform_dealsuite?: string | null
+          potencial_searchfund?: boolean | null
           prioridad?: string | null
           probability?: number | null
           rango_inversion_max?: number | null
@@ -8830,6 +8883,7 @@ export type Database = {
           platform_arx?: string | null
           platform_deale?: string | null
           platform_dealsuite?: string | null
+          potencial_searchfund?: boolean | null
           prioridad?: string | null
           probability?: number | null
           rango_inversion_max?: number | null
