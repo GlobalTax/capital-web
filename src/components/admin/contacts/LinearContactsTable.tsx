@@ -108,6 +108,19 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
            CATEGORY_COLORS[ch.category]?.includes('amber') ? '#f59e0b' : '#6b7280',
   }));
 
+  // Status CRM options
+  const statusOptions: SelectOption[] = [
+    { value: 'nuevo', label: 'Nuevo', color: '#6b7280' },
+    { value: 'contactado', label: 'Contactado', color: '#3b82f6' },
+    { value: 'calificado', label: 'Calificado', color: '#10b981' },
+    { value: 'contactando', label: 'Contactando', color: '#f59e0b' },
+    { value: 'propuesta_enviada', label: 'Propuesta', color: '#8b5cf6' },
+    { value: 'negociacion', label: 'Negociación', color: '#ec4899' },
+    { value: 'ganado', label: 'Ganado', color: '#22c55e' },
+    { value: 'perdido', label: 'Perdido', color: '#ef4444' },
+    { value: 'descartado', label: 'Descartado', color: '#94a3b8' },
+  ];
+
   if (contacts.length === 0 && !isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -141,6 +154,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Canal</TableHead>
               
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Empresa</TableHead>
+              <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</TableHead>
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Financieros</TableHead>
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Apollo</TableHead>
               <TableHead className="h-10 text-xs font-medium text-muted-foreground uppercase tracking-wider">Fecha</TableHead>
@@ -220,10 +234,10 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-muted-foreground truncate max-w-[160px]">
+                        <span className="text-xs text-muted-foreground truncate max-w-[140px]">
                           {contact.email}
                         </span>
-                        {hasPhone && (
+                        {hasPhone ? (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -240,6 +254,17 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                             </TooltipTrigger>
                             <TooltipContent>{contact.phone}</TooltipContent>
                           </Tooltip>
+                        ) : (
+                          <EditableCell
+                            value=""
+                            type="phone"
+                            placeholder="+34..."
+                            emptyText=""
+                            displayClassName="text-[10px] text-muted-foreground/50"
+                            onSave={async (newValue) => {
+                              await updateContact(contact.id, contact.origin, 'phone', newValue);
+                            }}
+                          />
                         )}
                       </div>
                     </div>
@@ -288,22 +313,46 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                           }}
                         />
                       )}
-                      {contact.industry && (
-                        <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
-                          {contact.industry}
-                        </span>
-                      )}
-                      {contact.location && (
-                        <div className="flex items-center gap-0.5">
-                          <MapPin className="h-2.5 w-2.5 text-muted-foreground/70" />
-                          <span className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]">
-                            {contact.location}
-                          </span>
-                        </div>
-                      )}
+                      <EditableCell
+                        value={contact.industry}
+                        type="text"
+                        placeholder="Sector..."
+                        emptyText=""
+                        displayClassName="text-[10px] text-muted-foreground truncate max-w-[140px]"
+                        onSave={async (newValue) => {
+                          await updateContact(contact.id, contact.origin, 'industry', newValue);
+                        }}
+                      />
+                      <div className="flex items-center gap-0.5">
+                        <MapPin className="h-2.5 w-2.5 text-muted-foreground/70" />
+                        <EditableCell
+                          value={contact.location}
+                          type="text"
+                          placeholder="Ubicación..."
+                          emptyText=""
+                          displayClassName="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
+                          onSave={async (newValue) => {
+                            await updateContact(contact.id, contact.origin, 'location', newValue);
+                          }}
+                        />
+                      </div>
                     </div>
                   </TableCell>
                   
+                  {/* Estado CRM - Editable */}
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                    <EditableSelect
+                      value={(contact as any).lead_status_crm ?? undefined}
+                      options={statusOptions}
+                      placeholder="Estado..."
+                      emptyText="—"
+                      allowClear
+                      onSave={async (newValue) => {
+                        await updateContact(contact.id, contact.origin, 'lead_status_crm', newValue || null);
+                      }}
+                    />
+                  </TableCell>
+
                   {/* Financials: Revenue, EBITDA, Employees */}
                   <TableCell className="py-2">
                     {hasFinancials ? (

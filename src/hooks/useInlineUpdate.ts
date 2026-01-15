@@ -179,18 +179,24 @@ export const useContactInlineUpdate = () => {
       'company_valuations': {
         'company': 'company_name',
         'name': 'contact_name',
+        'industry': 'industry',
+        'location': 'location',
       },
       'collaborator_applications': {
         'name': 'full_name',
       },
       'acquisition_leads': {
         'name': 'full_name',
+        'industry': 'sectors_of_interest',
       },
       'contact_leads': {
         'name': 'full_name',
+        'industry': 'sector',
+        'location': 'location',
       },
       'accountex_leads': {
         'name': 'full_name',
+        'industry': 'sectors_of_interest',
       },
       'advisor_valuations': {
         'company': 'company_name',
