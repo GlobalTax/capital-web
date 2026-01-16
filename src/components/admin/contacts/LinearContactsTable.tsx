@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -79,6 +79,29 @@ const formatCurrency = (value?: number) => {
   return `${value}€`;
 };
 
+// Static options - moved outside component to prevent recreation
+const STATUS_OPTIONS: SelectOption[] = [
+  { value: 'nuevo', label: 'Nuevo', color: '#6b7280' },
+  { value: 'contactado', label: 'Contactado', color: '#3b82f6' },
+  { value: 'calificado', label: 'Calificado', color: '#10b981' },
+  { value: 'contactando', label: 'Contactando', color: '#f59e0b' },
+  { value: 'propuesta_enviada', label: 'Propuesta', color: '#8b5cf6' },
+  { value: 'negociacion', label: 'Negociación', color: '#ec4899' },
+  { value: 'ganado', label: 'Ganado', color: '#22c55e' },
+  { value: 'perdido', label: 'Perdido', color: '#ef4444' },
+  { value: 'descartado', label: 'Descartado', color: '#94a3b8' },
+];
+
+// Helper to get channel color
+const getChannelColor = (category?: string) => {
+  if (!category) return '#6b7280';
+  if (CATEGORY_COLORS[category]?.includes('rose')) return '#f43f5e';
+  if (CATEGORY_COLORS[category]?.includes('emerald')) return '#10b981';
+  if (CATEGORY_COLORS[category]?.includes('blue')) return '#3b82f6';
+  if (CATEGORY_COLORS[category]?.includes('amber')) return '#f59e0b';
+  return '#6b7280';
+};
+
 const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   contacts,
   selectedContacts,
@@ -98,28 +121,23 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   const { channels } = useAcquisitionChannels();
   const { update: updateContact } = useContactInlineUpdate();
   
-  // Convert channels to select options
-  const channelOptions: SelectOption[] = channels.map(ch => ({
-    value: ch.id,
-    label: ch.name,
-    color: CATEGORY_COLORS[ch.category]?.includes('rose') ? '#f43f5e' :
-           CATEGORY_COLORS[ch.category]?.includes('emerald') ? '#10b981' :
-           CATEGORY_COLORS[ch.category]?.includes('blue') ? '#3b82f6' :
-           CATEGORY_COLORS[ch.category]?.includes('amber') ? '#f59e0b' : '#6b7280',
-  }));
+  // Memoize channel options - only recalculate when channels change
+  const channelOptions = useMemo<SelectOption[]>(() => 
+    channels.map(ch => ({
+      value: ch.id,
+      label: ch.name,
+      color: getChannelColor(ch.category),
+    })), [channels]
+  );
 
-  // Status CRM options
-  const statusOptions: SelectOption[] = [
-    { value: 'nuevo', label: 'Nuevo', color: '#6b7280' },
-    { value: 'contactado', label: 'Contactado', color: '#3b82f6' },
-    { value: 'calificado', label: 'Calificado', color: '#10b981' },
-    { value: 'contactando', label: 'Contactando', color: '#f59e0b' },
-    { value: 'propuesta_enviada', label: 'Propuesta', color: '#8b5cf6' },
-    { value: 'negociacion', label: 'Negociación', color: '#ec4899' },
-    { value: 'ganado', label: 'Ganado', color: '#22c55e' },
-    { value: 'perdido', label: 'Perdido', color: '#ef4444' },
-    { value: 'descartado', label: 'Descartado', color: '#94a3b8' },
-  ];
+  // Memoize update handler factory
+  const createUpdateHandler = useCallback(
+    (contactId: string, origin: ContactOrigin, field: string) => 
+      async (newValue: string | null) => {
+        await updateContact(contactId, origin, field, newValue);
+      },
+    [updateContact]
+  );
 
   if (contacts.length === 0 && !isLoading) {
     return (
@@ -261,9 +279,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                             placeholder="+34..."
                             emptyText=""
                             displayClassName="text-[10px] text-muted-foreground/50"
-                            onSave={async (newValue) => {
-                              await updateContact(contact.id, contact.origin, 'phone', newValue);
-                            }}
+                            onSave={createUpdateHandler(contact.id, contact.origin, 'phone')}
                           />
                         )}
                       </div>
@@ -285,9 +301,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                       placeholder="Seleccionar..."
                       emptyText="—"
                       allowClear
-                      onSave={async (newValue) => {
-                        await updateContact(contact.id, contact.origin, 'acquisition_channel_id', newValue || null);
-                      }}
+                      onSave={createUpdateHandler(contact.id, contact.origin, 'acquisition_channel_id')}
                     />
                   </TableCell>
                   
@@ -308,9 +322,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                           placeholder="Empresa..."
                           emptyText="—"
                           displayClassName="truncate max-w-[140px]"
-                          onSave={async (newValue) => {
-                            await updateContact(contact.id, contact.origin, 'company', newValue);
-                          }}
+                          onSave={createUpdateHandler(contact.id, contact.origin, 'company')}
                         />
                       )}
                       <EditableCell
@@ -319,9 +331,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                         placeholder="Sector..."
                         emptyText=""
                         displayClassName="text-[10px] text-muted-foreground truncate max-w-[140px]"
-                        onSave={async (newValue) => {
-                          await updateContact(contact.id, contact.origin, 'industry', newValue);
-                        }}
+                        onSave={createUpdateHandler(contact.id, contact.origin, 'industry')}
                       />
                       <div className="flex items-center gap-0.5">
                         <MapPin className="h-2.5 w-2.5 text-muted-foreground/70" />
@@ -331,9 +341,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                           placeholder="Ubicación..."
                           emptyText=""
                           displayClassName="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
-                          onSave={async (newValue) => {
-                            await updateContact(contact.id, contact.origin, 'location', newValue);
-                          }}
+                          onSave={createUpdateHandler(contact.id, contact.origin, 'location')}
                         />
                       </div>
                     </div>
@@ -343,13 +351,11 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
                   <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
                     <EditableSelect
                       value={(contact as any).lead_status_crm ?? undefined}
-                      options={statusOptions}
+                      options={STATUS_OPTIONS}
                       placeholder="Estado..."
                       emptyText="—"
                       allowClear
-                      onSave={async (newValue) => {
-                        await updateContact(contact.id, contact.origin, 'lead_status_crm', newValue || null);
-                      }}
+                      onSave={createUpdateHandler(contact.id, contact.origin, 'lead_status_crm')}
                     />
                   </TableCell>
 
@@ -472,4 +478,4 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   );
 };
 
-export default LinearContactsTable;
+export default React.memo(LinearContactsTable);
