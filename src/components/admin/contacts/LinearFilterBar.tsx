@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -11,10 +11,8 @@ import {
   ChevronDown,
   Building2,
   Mail,
-  SlidersHorizontal,
   TrendingUp,
   Euro,
-  Search,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -23,17 +21,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { ContactFilters, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { SmartSearchFilters } from '@/hooks/useSmartSearch';
 import SmartSearchInput from './SmartSearchInput';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/shared/utils/format';
+
 interface LinearFilterBarProps {
   filters: ContactFilters;
   onFiltersChange: (filters: ContactFilters) => void;
@@ -197,36 +191,12 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* 🔥 Primary Search Bar - Simple Text Search + AI Search */}
-      <div className="flex items-center gap-3">
-        {/* Simple Text Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre, email o empresa..."
-            value={filters.search || ''}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
-            className="pl-9 h-10 bg-background border-[hsl(var(--linear-border))]"
-          />
-          {filters.search && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-              onClick={() => handleFilterChange('search', '')}
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
-        
-        {/* AI Search Toggle */}
-        <SmartSearchInput
-          onFiltersChange={handleSmartFiltersChange}
-          onTextSearchChange={(text) => handleFilterChange('search', text)}
-          className="flex-1"
-        />
-      </div>
+      {/* 🔥 Single Unified Search Bar with AI */}
+      <SmartSearchInput
+        onFiltersChange={handleSmartFiltersChange}
+        onTextSearchChange={(text) => handleFilterChange('search', text)}
+        className="w-full"
+      />
 
       {/* Traditional filter dropdowns */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -338,170 +308,127 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Advanced numeric filters */}
-        <Popover>
-          <PopoverTrigger asChild>
+        {/* 💰 Revenue filter dropdown - VISIBLE */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button 
               variant="outline" 
               size="sm" 
               className={cn(
                 "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
-                (filters.revenueMin || filters.revenueMax || filters.ebitdaMin || filters.ebitdaMax) && 
-                "border-[hsl(var(--accent-primary))] text-[hsl(var(--accent-primary))]"
+                (filters.revenueMin || filters.revenueMax) && "border-emerald-500 text-emerald-600 bg-emerald-500/5"
               )}
             >
-              <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
-              Avanzado
-              {(filters.revenueMin || filters.revenueMax || filters.ebitdaMin || filters.ebitdaMax) && (
-                <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">
-                  {[filters.revenueMin, filters.revenueMax, filters.ebitdaMin, filters.ebitdaMax].filter(Boolean).length}
+              <Euro className="h-3.5 w-3.5 mr-1.5" />
+              Facturación
+              {filters.revenueMin && (
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-emerald-500/20 text-emerald-600">
+                  {'>'}{formatCurrency(filters.revenueMin)}
                 </Badge>
               )}
               <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent 
-            className="w-80 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]" 
-            align="start"
-          >
-            <div className="space-y-4">
-              <div className="font-medium text-sm flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Filtros Financieros
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]">
+            <DropdownMenuCheckboxItem
+              checked={!filters.revenueMin && !filters.revenueMax}
+              onCheckedChange={() => clearRevenueFilters()}
+            >
+              Todos
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            {REVENUE_PRESETS.map((preset) => (
+              <DropdownMenuCheckboxItem
+                key={preset.value}
+                checked={filters.revenueMin === preset.value}
+                onCheckedChange={() => handleFilterChange('revenueMin', filters.revenueMin === preset.value ? undefined : preset.value)}
+              >
+                &gt; {preset.label} €
+              </DropdownMenuCheckboxItem>
+            ))}
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            <div className="px-2 py-2 space-y-2">
+              <Label className="text-xs text-muted-foreground">Rango personalizado</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Mín"
+                  value={filters.revenueMin || ''}
+                  onChange={(e) => handleFilterChange('revenueMin', e.target.value ? Number(e.target.value) : undefined)}
+                  className="h-7 text-xs"
+                />
+                <Input
+                  type="number"
+                  placeholder="Máx"
+                  value={filters.revenueMax || ''}
+                  onChange={(e) => handleFilterChange('revenueMax', e.target.value ? Number(e.target.value) : undefined)}
+                  className="h-7 text-xs"
+                />
               </div>
-              
-              {/* Revenue range */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium flex items-center gap-1.5">
-                  <Euro className="h-3 w-3" />
-                  Facturación
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Mín (€)"
-                    value={filters.revenueMin || ''}
-                    onChange={(e) => handleFilterChange('revenueMin', 
-                      e.target.value ? Number(e.target.value) : undefined)}
-                    className="h-8 text-sm bg-[hsl(var(--linear-bg))] border-[hsl(var(--linear-border))]"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Máx (€)"
-                    value={filters.revenueMax || ''}
-                    onChange={(e) => handleFilterChange('revenueMax', 
-                      e.target.value ? Number(e.target.value) : undefined)}
-                    className="h-8 text-sm bg-[hsl(var(--linear-bg))] border-[hsl(var(--linear-border))]"
-                  />
-                </div>
-                <div className="flex gap-1 flex-wrap">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleFilterChange('revenueMin', 500000)}
-                  >
-                    &gt;500k
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleFilterChange('revenueMin', 1000000)}
-                  >
-                    &gt;1M
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleFilterChange('revenueMin', 5000000)}
-                  >
-                    &gt;5M
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleFilterChange('revenueMin', 10000000)}
-                  >
-                    &gt;10M
-                  </Button>
-                </div>
-              </div>
-
-              {/* EBITDA range */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium flex items-center gap-1.5">
-                  <TrendingUp className="h-3 w-3" />
-                  EBITDA
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Mín (€)"
-                    value={filters.ebitdaMin || ''}
-                    onChange={(e) => handleFilterChange('ebitdaMin', 
-                      e.target.value ? Number(e.target.value) : undefined)}
-                    className="h-8 text-sm bg-[hsl(var(--linear-bg))] border-[hsl(var(--linear-border))]"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Máx (€)"
-                    value={filters.ebitdaMax || ''}
-                    onChange={(e) => handleFilterChange('ebitdaMax', 
-                      e.target.value ? Number(e.target.value) : undefined)}
-                    className="h-8 text-sm bg-[hsl(var(--linear-bg))] border-[hsl(var(--linear-border))]"
-                  />
-                </div>
-                <div className="flex gap-1 flex-wrap">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleFilterChange('ebitdaMin', 100000)}
-                  >
-                    &gt;100k
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleFilterChange('ebitdaMin', 500000)}
-                  >
-                    &gt;500k
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 text-xs px-2"
-                    onClick={() => handleFilterChange('ebitdaMin', 1000000)}
-                  >
-                    &gt;1M
-                  </Button>
-                </div>
-              </div>
-
-              {/* Clear advanced filters */}
-              {(filters.revenueMin || filters.revenueMax || filters.ebitdaMin || filters.ebitdaMax) && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full h-7 text-xs"
-                  onClick={() => {
-                    handleFilterChange('revenueMin', undefined);
-                    handleFilterChange('revenueMax', undefined);
-                    handleFilterChange('ebitdaMin', undefined);
-                    handleFilterChange('ebitdaMax', undefined);
-                  }}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Limpiar filtros financieros
-                </Button>
-              )}
             </div>
-          </PopoverContent>
-        </Popover>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* 📊 EBITDA filter dropdown - VISIBLE */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                (filters.ebitdaMin || filters.ebitdaMax) && "border-blue-500 text-blue-600 bg-blue-500/5"
+              )}
+            >
+              <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+              EBITDA
+              {filters.ebitdaMin && (
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px] bg-blue-500/20 text-blue-600">
+                  {'>'}{formatCurrency(filters.ebitdaMin)}
+                </Badge>
+              )}
+              <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]">
+            <DropdownMenuCheckboxItem
+              checked={!filters.ebitdaMin && !filters.ebitdaMax}
+              onCheckedChange={() => clearEbitdaFilters()}
+            >
+              Todos
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            {EBITDA_PRESETS.map((preset) => (
+              <DropdownMenuCheckboxItem
+                key={preset.value}
+                checked={filters.ebitdaMin === preset.value}
+                onCheckedChange={() => handleFilterChange('ebitdaMin', filters.ebitdaMin === preset.value ? undefined : preset.value)}
+              >
+                &gt; {preset.label} €
+              </DropdownMenuCheckboxItem>
+            ))}
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            <div className="px-2 py-2 space-y-2">
+              <Label className="text-xs text-muted-foreground">Rango personalizado</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Mín"
+                  value={filters.ebitdaMin || ''}
+                  onChange={(e) => handleFilterChange('ebitdaMin', e.target.value ? Number(e.target.value) : undefined)}
+                  className="h-7 text-xs"
+                />
+                <Input
+                  type="number"
+                  placeholder="Máx"
+                  value={filters.ebitdaMax || ''}
+                  onChange={(e) => handleFilterChange('ebitdaMax', e.target.value ? Number(e.target.value) : undefined)}
+                  className="h-7 text-xs"
+                />
+              </div>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Clear all filters */}
         {activeFilterCount > 0 && (
