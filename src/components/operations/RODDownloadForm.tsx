@@ -332,42 +332,72 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
             </div>
           </div>
 
-          {/* Selector de Idioma del Documento - Solo si hay >1 idioma */}
-          {availableLanguages.length > 1 && (
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Idioma del Documento</h3>
-              <p className="text-sm text-muted-foreground">
-                El documento está disponible en varios idiomas
+          {/* Selector de Idioma del Documento */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">Idioma del Documento</h3>
+            
+            {/* Mensaje si no hay documentos disponibles */}
+            {availableLanguages.length === 0 && (
+              <p className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                ⚠️ No hay documentos disponibles en este momento. Por favor, inténtalo más tarde.
               </p>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => form.setValue('document_language', 'es')}
-                  className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-colors ${
-                    form.watch('document_language') === 'es'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <span className="text-2xl">🇪🇸</span>
-                  <span className="font-medium">Español</span>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => form.setValue('document_language', 'en')}
-                  className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-colors ${
-                    form.watch('document_language') === 'en'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <span className="text-2xl">🇬🇧</span>
-                  <span className="font-medium">English</span>
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+            
+            {/* Mensaje si solo hay un idioma */}
+            {availableLanguages.length === 1 && (
+              <p className="text-sm text-muted-foreground">
+                Documento disponible en {availableLanguages[0] === 'es' ? '🇪🇸 Español' : '🇬🇧 English'}
+              </p>
+            )}
+            
+            {/* Selector si hay múltiples idiomas */}
+            {availableLanguages.length > 1 && (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Elige el idioma del documento
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => form.setValue('document_language', 'es')}
+                    disabled={!availableLanguages.includes('es')}
+                    className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-colors ${
+                      form.watch('document_language') === 'es'
+                        ? 'border-primary bg-primary/5'
+                        : availableLanguages.includes('es')
+                          ? 'border-border hover:border-primary/50'
+                          : 'border-border opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="text-2xl">🇪🇸</span>
+                    <span className="font-medium">Español</span>
+                    {!availableLanguages.includes('es') && (
+                      <span className="text-xs text-muted-foreground">No disponible</span>
+                    )}
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => form.setValue('document_language', 'en')}
+                    disabled={!availableLanguages.includes('en')}
+                    className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-colors ${
+                      form.watch('document_language') === 'en'
+                        ? 'border-primary bg-primary/5'
+                        : availableLanguages.includes('en')
+                          ? 'border-border hover:border-primary/50'
+                          : 'border-border opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="text-2xl">🇬🇧</span>
+                    <span className="font-medium">English</span>
+                    {!availableLanguages.includes('en') && (
+                      <span className="text-xs text-muted-foreground">No disponible</span>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Consentimientos GDPR */}
           <div className="space-y-4">
