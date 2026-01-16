@@ -39,6 +39,9 @@ const LandingAccountex = lazy(() => import('@/pages/LandingAccountex'));
 const LandingValoracion2026 = lazy(() => import('@/pages/LandingValoracion2026'));
 const LandingValoracion2026Thanks = lazy(() => import('@/pages/LandingValoracion2026Thanks'));
 const HubVentaEmpresa = lazy(() => import('@/pages/HubVentaEmpresa'));
+const LandingCompraEmpresasMeta = lazy(() => import('@/pages/LandingCompraEmpresasMeta'));
+const LandingOpenDeals = lazy(() => import('@/pages/LandingOpenDeals'));
+const LandingOportunidadesMeta = lazy(() => import('@/pages/LandingOportunidadesMeta'));
 import SecurityCalculator from '@/pages/SecurityCalculator';
 
 // === SERVICE PAGES ===
@@ -191,6 +194,9 @@ export const AppRoutes = () => {
         <Route path="/lp/valoracion-2026/gracias" element={<LandingValoracion2026Thanks />} />
         <Route path="/lp/valoracion-2026/*" element={<LandingValoracion2026 />} />
         <Route path="/venta-de-empresa" element={<HubVentaEmpresa />} />
+        <Route path="/lp/compra-empresas-meta" element={<LandingCompraEmpresasMeta />} />
+        <Route path="/lp/open-deals" element={<LandingOpenDeals />} />
+        <Route path="/lp/oportunidades-meta" element={<LandingOportunidadesMeta />} />
         <Route path="/accountex" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/accountex-2025" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/seguridad/calculadora" element={<SecurityCalculator />} />
