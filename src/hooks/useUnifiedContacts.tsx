@@ -646,14 +646,27 @@ export const useUnifiedContacts = () => {
       filtered = groupContactsByEmail(filtered);
     }
 
-    // Search filter
+    // Search filter - normalized text search including empresa_nombre
     if (newFilters.search) {
-      const search = newFilters.search.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.name.toLowerCase().includes(search) ||
-        c.email.toLowerCase().includes(search) ||
-        c.company?.toLowerCase().includes(search)
-      );
+      // Normalize text: lowercase + remove accents
+      const normalizeText = (text: string) => 
+        text.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+      
+      const search = normalizeText(newFilters.search);
+      
+      filtered = filtered.filter(c => {
+        const name = normalizeText(c.name || '');
+        const email = normalizeText(c.email || '');
+        const company = normalizeText(c.company || '');
+        const empresaNombre = normalizeText(c.empresa_nombre || '');
+        
+        return name.includes(search) ||
+               email.includes(search) ||
+               company.includes(search) ||
+               empresaNombre.includes(search);
+      });
     }
 
     // Origin filter
@@ -715,19 +728,21 @@ export const useUnifiedContacts = () => {
       );
     }
 
-    // 🔥 NEW: Revenue filter (advanced smart search)
+    // 🔥 Revenue filter - prioritize empresa_facturacion over revenue
     if (newFilters.revenueMin) {
-      filtered = filtered.filter(c => 
-        (c.revenue || 0) >= newFilters.revenueMin!
-      );
+      filtered = filtered.filter(c => {
+        const facturacion = c.empresa_facturacion ?? c.revenue ?? 0;
+        return facturacion >= newFilters.revenueMin!;
+      });
     }
     if (newFilters.revenueMax) {
-      filtered = filtered.filter(c => 
-        (c.revenue || Infinity) <= newFilters.revenueMax!
-      );
+      filtered = filtered.filter(c => {
+        const facturacion = c.empresa_facturacion ?? c.revenue ?? Infinity;
+        return facturacion <= newFilters.revenueMax!;
+      });
     }
 
-    // 🔥 NEW: EBITDA filter
+    // 🔥 EBITDA filter
     if (newFilters.ebitdaMin) {
       filtered = filtered.filter(c => 
         (c.ebitda || 0) >= newFilters.ebitdaMin!

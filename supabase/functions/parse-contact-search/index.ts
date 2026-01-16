@@ -9,9 +9,10 @@ const SYSTEM_PROMPT = `Eres un parser de búsqueda para un CRM de contactos empr
 Tu tarea es extraer filtros estructurados de consultas en lenguaje natural en español.
 
 CAMPOS DISPONIBLES:
+- text_search: texto libre para búsqueda por nombre de contacto O nombre de empresa (ej: "Montajes Acai", "Juan García")
 - sector: texto (tecnología, salud, industrial, servicios, retail, software, fintech, etc.)
 - location: texto (ciudad o provincia española: Barcelona, Madrid, Valencia, Bilbao, etc.)
-- revenue_min, revenue_max: número en euros (interpreta "1M" como 1000000, "500k" como 500000)
+- revenue_min, revenue_max: número en euros (interpreta "1M" como 1000000, "500k" como 500000, "millón" como 1000000)
 - ebitda_min, ebitda_max: número en euros
 - employee_min, employee_max: número de empleados (interpreta "pyme" como 1-50, "grande" como >250)
 - status: nuevo|contactado|calificado|perdido|ganado
@@ -19,7 +20,6 @@ CAMPOS DISPONIBLES:
 - origin: valuation|contact|collaborator|acquisition|company_acquisition
 - email_status: opened|sent|not_contacted
 - date_range: last_7_days|last_30_days|last_90_days|this_year|today
-- text_search: texto libre para búsqueda fuzzy (solo si no encaja en ningún otro campo)
 
 REGLAS:
 1. Extrae SOLO los campos que puedas inferir claramente de la consulta
@@ -29,6 +29,9 @@ REGLAS:
 5. Si mencionan "nuevos" o "recientes", considera date_range: "last_7_days" o status: "nuevo"
 6. Para sectores, normaliza: "tech" → "tecnología", "health" → "salud"
 7. No inventes campos que no existen
+8. IMPORTANTE: Si buscan una empresa específica por nombre, usa text_search con el nombre exacto
+9. Si buscan contactos con facturación/revenue, usa revenue_min o revenue_max
+10. Si buscan por EBITDA, usa ebitda_min o ebitda_max
 
 Responde SOLO con JSON válido, sin explicaciones. Si no hay filtros claros, devuelve {}.
 
@@ -46,7 +49,22 @@ Input: "valoraciones de más de 50 empleados en Madrid últimos 30 días"
 Output: {"employee_min":50,"location":"Madrid","date_range":"last_30_days","origin":"valuation"}
 
 Input: "pymes industriales"
-Output: {"sector":"industrial","employee_max":50}`;
+Output: {"sector":"industrial","employee_max":50}
+
+Input: "Montajes Acai"
+Output: {"text_search":"Montajes Acai"}
+
+Input: "contactos de la empresa Fitness Ortiz"
+Output: {"text_search":"Fitness Ortiz"}
+
+Input: "empresas con facturación mayor a 2 millones"
+Output: {"revenue_min":2000000}
+
+Input: "negocios con más de 500000 euros de facturacion"
+Output: {"revenue_min":500000}
+
+Input: "empresas entre 1M y 5M de facturacion"
+Output: {"revenue_min":1000000,"revenue_max":5000000}`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
