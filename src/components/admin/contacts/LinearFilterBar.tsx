@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
   TrendingUp,
   Euro,
+  Search,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -43,6 +44,20 @@ interface LinearFilterBarProps {
   onExport?: () => void;
   isRefreshing?: boolean;
 }
+
+// 🔥 Quick presets for financial filters
+const REVENUE_PRESETS = [
+  { label: '>500k', value: 500000 },
+  { label: '>1M', value: 1000000 },
+  { label: '>5M', value: 5000000 },
+  { label: '>10M', value: 10000000 },
+];
+
+const EBITDA_PRESETS = [
+  { label: '>100k', value: 100000 },
+  { label: '>500k', value: 500000 },
+  { label: '>1M', value: 1000000 },
+];
 
 const originOptions: { value: ContactOrigin; label: string }[] = [
   { value: 'valuation', label: 'Valoración' },
@@ -162,13 +177,56 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
     filters.location,
   ].filter(Boolean).length;
 
+  // 🔥 Clear revenue filters helper
+  const clearRevenueFilters = () => {
+    onFiltersChange({
+      ...filters,
+      revenueMin: undefined,
+      revenueMax: undefined,
+    });
+  };
+
+  // 🔥 Clear EBITDA filters helper
+  const clearEbitdaFilters = () => {
+    onFiltersChange({
+      ...filters,
+      ebitdaMin: undefined,
+      ebitdaMax: undefined,
+    });
+  };
+
   return (
     <div className="space-y-3">
-      {/* Smart AI Search */}
-      <SmartSearchInput
-        onFiltersChange={handleSmartFiltersChange}
-        onTextSearchChange={(text) => handleFilterChange('search', text)}
-      />
+      {/* 🔥 Primary Search Bar - Simple Text Search + AI Search */}
+      <div className="flex items-center gap-3">
+        {/* Simple Text Search */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nombre, email o empresa..."
+            value={filters.search || ''}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
+            className="pl-9 h-10 bg-background border-[hsl(var(--linear-border))]"
+          />
+          {filters.search && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+              onClick={() => handleFilterChange('search', '')}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </div>
+        
+        {/* AI Search Toggle */}
+        <SmartSearchInput
+          onFiltersChange={handleSmartFiltersChange}
+          onTextSearchChange={(text) => handleFilterChange('search', text)}
+          className="flex-1"
+        />
+      </div>
 
       {/* Traditional filter dropdowns */}
       <div className="flex items-center gap-2 flex-wrap">
@@ -498,6 +556,87 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
           </Button>
         )}
       </div>
+
+      {/* 🔥 Active Financial Filters Badges */}
+      {(filters.revenueMin || filters.revenueMax || filters.ebitdaMin || filters.ebitdaMax || filters.location) && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground">Filtros activos:</span>
+          
+          {/* Revenue filters */}
+          {(filters.revenueMin || filters.revenueMax) && (
+            <Badge
+              variant="secondary"
+              className="gap-1.5 pr-1 bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+            >
+              <Euro className="h-3 w-3" />
+              <span className="text-[10px]">Facturación:</span>
+              <span className="font-medium">
+                {filters.revenueMin && `>${formatCurrency(filters.revenueMin)}`}
+                {filters.revenueMin && filters.revenueMax && ' - '}
+                {filters.revenueMax && `<${formatCurrency(filters.revenueMax)}`}
+              </span>
+              <button
+                onClick={clearRevenueFilters}
+                className="ml-1 p-0.5 hover:bg-emerald-500/20 rounded"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          
+          {/* EBITDA filters */}
+          {(filters.ebitdaMin || filters.ebitdaMax) && (
+            <Badge
+              variant="secondary"
+              className="gap-1.5 pr-1 bg-blue-500/10 text-blue-600 border-blue-500/20"
+            >
+              <TrendingUp className="h-3 w-3" />
+              <span className="text-[10px]">EBITDA:</span>
+              <span className="font-medium">
+                {filters.ebitdaMin && `>${formatCurrency(filters.ebitdaMin)}`}
+                {filters.ebitdaMin && filters.ebitdaMax && ' - '}
+                {filters.ebitdaMax && `<${formatCurrency(filters.ebitdaMax)}`}
+              </span>
+              <button
+                onClick={clearEbitdaFilters}
+                className="ml-1 p-0.5 hover:bg-blue-500/20 rounded"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          
+          {/* Location filter */}
+          {filters.location && (
+            <Badge
+              variant="secondary"
+              className="gap-1.5 pr-1 bg-purple-500/10 text-purple-600 border-purple-500/20"
+            >
+              <span className="text-[10px]">📍</span>
+              <span className="font-medium">{filters.location}</span>
+              <button
+                onClick={() => handleFilterChange('location', undefined)}
+                className="ml-1 p-0.5 hover:bg-purple-500/20 rounded"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              clearRevenueFilters();
+              clearEbitdaFilters();
+              handleFilterChange('location', undefined);
+            }}
+            className="h-5 text-xs px-2 text-muted-foreground hover:text-foreground"
+          >
+            Limpiar todo
+          </Button>
+        </div>
+      )}
 
       {/* Results count & selection info */}
       <div className="flex items-center gap-3 text-xs text-muted-foreground">

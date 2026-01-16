@@ -647,6 +647,7 @@ export const useUnifiedContacts = () => {
     }
 
     // Search filter - normalized text search including empresa_nombre
+    // 🔥 Improved: Search by individual words for better matching
     if (newFilters.search) {
       // Normalize text: lowercase + remove accents
       const normalizeText = (text: string) => 
@@ -654,18 +655,25 @@ export const useUnifiedContacts = () => {
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
       
-      const search = normalizeText(newFilters.search);
+      const searchInput = normalizeText(newFilters.search);
+      // Split into individual terms for word-based matching
+      const searchTerms = searchInput.split(/\s+/).filter(t => t.length >= 2);
       
       filtered = filtered.filter(c => {
         const name = normalizeText(c.name || '');
         const email = normalizeText(c.email || '');
         const company = normalizeText(c.company || '');
         const empresaNombre = normalizeText(c.empresa_nombre || '');
+        const industry = normalizeText(c.industry || '');
+        const location = normalizeText(c.location || '');
         
-        return name.includes(search) ||
-               email.includes(search) ||
-               company.includes(search) ||
-               empresaNombre.includes(search);
+        // Concatenate all searchable fields
+        const allFields = `${name} ${email} ${company} ${empresaNombre} ${industry} ${location}`;
+        
+        // Match if ALL search terms are found in any field combination
+        // OR if the complete search string is found
+        return searchTerms.every(term => allFields.includes(term)) ||
+               allFields.includes(searchInput);
       });
     }
 
