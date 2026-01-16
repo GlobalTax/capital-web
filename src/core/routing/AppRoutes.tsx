@@ -173,10 +173,9 @@ export const AppRoutes = () => {
         
         {/* === LANDING CALCULATOR ROUTES === */}
         <Route path="/lp" element={<Navigate to="/lp/calculadora" replace />} />
-        <Route path="/lp/*" element={<Navigate to="/lp/calculadora" replace />} />
         <Route path="/lp/calculadora" element={<LandingCalculator />} />
         <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
-        <Route path="/lp/calculadora-b" element={<LandingCalculatorB />} /> {/* 🔥 NUEVO - Variante B */}
+        <Route path="/lp/calculadora-b" element={<LandingCalculatorB />} />
         <Route path="/lp/calculadora-b/*" element={<LandingCalculatorB />} />
         <Route path="/lp/calculadora-fiscal" element={<LandingCalculadoraFiscal />} />
         <Route path="/lp/calculadora-fiscal/*" element={<LandingCalculadoraFiscal />} />
@@ -193,7 +192,6 @@ export const AppRoutes = () => {
         <Route path="/lp/valoracion-2026" element={<LandingValoracion2026 />} />
         <Route path="/lp/valoracion-2026/gracias" element={<LandingValoracion2026Thanks />} />
         <Route path="/lp/valoracion-2026/*" element={<LandingValoracion2026 />} />
-        <Route path="/venta-de-empresa" element={<HubVentaEmpresa />} />
         <Route path="/lp/compra-empresas-meta" element={<LandingCompraEmpresasMeta />} />
         <Route path="/lp/open-deals" element={<LandingOpenDeals />} />
         <Route path="/lp/oportunidades-meta" element={<LandingOportunidadesMeta />} />
