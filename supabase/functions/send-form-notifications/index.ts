@@ -370,28 +370,22 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
     case 'contact':
     case 'general_contact':
       return {
-        subject: `✅ Hemos recibido tu consulta - Capittal`,
+        subject: `Hemos recibido tu información`,
         html: `
           ${baseStyle}
           <div class="header">
-            <h1>¡Gracias por contactarnos!</h1>
+            <h1>Hemos recibido tu información</h1>
           </div>
           <div class="content">
             <div class="info-box">
               <p>Hola <strong>${data.fullName}</strong>,</p>
-              <p>Hemos recibido tu consulta y queremos agradecerte por ponerte en contacto con nosotros.</p>
-              <p>Nuestro equipo revisará tu mensaje y se pondrá en contacto contigo en las próximas 24-48 horas para dar seguimiento a tu consulta.</p>
-              <p>Mientras tanto, te invitamos a:</p>
-              <ul>
-                <li>Explorar nuestros casos de éxito en <a href="https://capittal.es/casos-exito">capittal.es/casos-exito</a></li>
-                <li>Conocer más sobre nuestros servicios en <a href="https://capittal.es/servicios">capittal.es/servicios</a></li>
-                <li>Probar nuestra calculadora de valoración gratuita en <a href="https://capittal.es/lp/calculadora">capittal.es/lp/calculadora</a></li>
-              </ul>
-              <p>Si tienes alguna pregunta urgente, no dudes en llamarnos.</p>
+              <p>Gracias por ponerte en contacto con Capittal.</p>
+              <p>Hemos recibido correctamente tu información y nuestro equipo la está revisando. En breve nos pondremos en contacto contigo para comentar los siguientes pasos y resolver cualquier duda que puedas tener.</p>
+              <p>Mientras tanto, si necesitas ampliar información o quieres adelantarnos algún detalle adicional, no dudes en responder a este email.</p>
             </div>
           </div>
           <div class="footer">
-            <p>Saludos cordiales,<br><strong>El equipo de Capittal</strong></p>
+            <p>Un cordial saludo,<br><strong>El equipo de Capittal</strong></p>
             <p>📧 info@capittal.es | 🌐 capittal.es</p>
           </div>
         `
@@ -1081,18 +1075,26 @@ const handler = async (req: Request): Promise<Response> => {
       // Configuración especial para campaign_valuation
       const isCampaignValuation = formType === 'campaign_valuation';
       
+      // BCC interno para control de calidad (copia oculta al equipo)
+      const CONFIRMATION_BCC_EMAILS = [
+        'samuel@capittal.es',
+        'lluis@capittal.es',
+        'oriol@capittal.es'
+      ];
+      
       const result = await resend.emails.send({
         from: isCampaignValuation 
           ? "Samuel Navarro - Capittal <samuel@capittal.es>"
           : "Capittal <info@capittal.es>",
         to: [email],
+        bcc: CONFIRMATION_BCC_EMAILS, // Copia oculta al equipo interno
         cc: isCampaignValuation ? ["lluis@capittal.es"] : undefined,
         reply_to: isCampaignValuation ? "samuel@capittal.es" : undefined,
         subject: userTemplate.subject,
         html: userTemplate.html,
       });
       userResult = { status: 'fulfilled', value: result };
-      console.log(`✅ Email de confirmación enviado a ${email}${isCampaignValuation ? ' (CC: lluis@capittal.es)' : ''}`);
+      console.log(`✅ Email de confirmación enviado a ${email} (BCC: ${CONFIRMATION_BCC_EMAILS.join(', ')})${isCampaignValuation ? ' (CC: lluis@capittal.es)' : ''}`);
     } catch (error) {
       userResult = { status: 'rejected', reason: error };
       console.error(`❌ Error enviando confirmación a ${email}:`, error);
