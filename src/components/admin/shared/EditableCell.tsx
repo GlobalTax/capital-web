@@ -20,7 +20,7 @@ interface EditableCellProps {
 
 type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 
-export const EditableCell: React.FC<EditableCellProps> = ({
+export const EditableCell = React.memo<EditableCellProps>(({
   value,
   type = 'text',
   onSave,
@@ -187,6 +187,6 @@ export const EditableCell: React.FC<EditableCellProps> = ({
       )}
     </div>
   );
-};
+});
 
 EditableCell.displayName = "EditableCell";

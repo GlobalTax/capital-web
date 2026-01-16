@@ -34,7 +34,7 @@ type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 // Special value for "clear" option since Radix UI doesn't allow empty string values
 const CLEAR_VALUE = "__clear__";
 
-export const EditableSelect: React.FC<EditableSelectProps> = ({
+export const EditableSelect = React.memo<EditableSelectProps>(({
   value,
   options,
   onSave,
@@ -154,6 +154,6 @@ export const EditableSelect: React.FC<EditableSelectProps> = ({
       )}
     </div>
   );
-};
+});
 
 EditableSelect.displayName = "EditableSelect";
