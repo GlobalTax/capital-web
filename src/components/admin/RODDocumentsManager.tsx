@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { FileText, Upload, Trash2, Eye, Download, CheckCircle, XCircle, BarChart3, GitCompare, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Upload, Trash2, Eye, Download, CheckCircle, XCircle, BarChart3, GitCompare, ChevronDown, ChevronUp, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -54,6 +54,7 @@ export const RODDocumentsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
+  const [activatingId, setActivatingId] = useState<string | null>(null);
   const [uploadData, setUploadData] = useState({
     title: '',
     version: '',
@@ -79,8 +80,8 @@ export const RODDocumentsManager = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [expandedStats, setExpandedStats] = useState<string[]>([]);
 
-  // Fetch ROD documents
-  const { data: documents, isLoading } = useQuery({
+  // Fetch ROD documents - force fresh data
+  const { data: documents, isLoading, refetch } = useQuery({
     queryKey: ['rod-documents'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -91,7 +92,9 @@ export const RODDocumentsManager = () => {
       
       if (error) throw error;
       return data as RODDocument[];
-    }
+    },
+    refetchOnMount: true,
+    staleTime: 0
   });
 
   // Upload document mutation
@@ -155,6 +158,8 @@ export const RODDocumentsManager = () => {
   // Activate document mutation - por idioma (consulta directa a DB para evitar stale data)
   const activateMutation = useMutation({
     mutationFn: async (docId: string) => {
+      setActivatingId(docId);
+      
       // 1. Consultar documento DIRECTAMENTE desde DB para garantizar datos frescos
       const { data: doc, error: fetchError } = await supabase
         .from('rod_documents')
@@ -198,15 +203,19 @@ export const RODDocumentsManager = () => {
       
       return { language: doc.language, file_type: doc.file_type };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const langLabel = data.language === 'es' ? '🇪🇸 Español' : '🇬🇧 English';
       toast({
         title: "✅ ROD activada",
         description: `Versión ${langLabel} ahora activa. Otros idiomas no afectados.`
       });
-      queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
+      // Force immediate refetch to ensure UI is in sync
+      await queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
+      await refetch();
+      setActivatingId(null);
     },
     onError: (error: Error) => {
+      setActivatingId(null);
       toast({
         title: "❌ Error al activar",
         description: error.message,
@@ -373,6 +382,71 @@ export const RODDocumentsManager = () => {
           </Card>
         </div>
       </div>
+
+      {/* Active Versions Status Panel - Prominent display */}
+      <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-2 border-primary/20">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            Estado de Versiones Activas por Idioma
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Spanish Status */}
+            <div className="space-y-2">
+              <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
+                <span className="text-2xl">🇪🇸</span> Español
+              </h4>
+              {activeDocsES.length > 0 ? (
+                <div className="bg-white dark:bg-background p-4 rounded-lg border-2 border-green-400 shadow-sm">
+                  <p className="font-semibold text-green-700 dark:text-green-400 text-lg">{activeDocsES[0].title}</p>
+                  <p className="text-sm text-muted-foreground">Versión {activeDocsES[0].version}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {activeDocsES[0].total_downloads} descargas • {activeDocsES[0].file_type.toUpperCase()}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-amber-100 dark:bg-amber-950/30 p-4 rounded-lg border-2 border-amber-400 shadow-sm">
+                  <p className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Sin versión activa
+                  </p>
+                  <p className="text-sm text-amber-600 dark:text-amber-500 mt-1">
+                    Los usuarios no podrán descargar en español
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* English Status */}
+            <div className="space-y-2">
+              <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
+                <span className="text-2xl">🇬🇧</span> English
+              </h4>
+              {activeDocsEN.length > 0 ? (
+                <div className="bg-white dark:bg-background p-4 rounded-lg border-2 border-green-400 shadow-sm">
+                  <p className="font-semibold text-green-700 dark:text-green-400 text-lg">{activeDocsEN[0].title}</p>
+                  <p className="text-sm text-muted-foreground">Version {activeDocsEN[0].version}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {activeDocsEN[0].total_downloads} downloads • {activeDocsEN[0].file_type.toUpperCase()}
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-amber-100 dark:bg-amber-950/30 p-4 rounded-lg border-2 border-amber-400 shadow-sm">
+                  <p className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    No active version
+                  </p>
+                  <p className="text-sm text-amber-600 dark:text-amber-500 mt-1">
+                    Users won't be able to download in English
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Upload form */}
       <Card>
@@ -646,9 +720,19 @@ export const RODDocumentsManager = () => {
                                 variant="default"
                                 size="sm"
                                 onClick={() => activateMutation.mutate(doc.id)}
+                                disabled={activatingId === doc.id}
                               >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Activar
+                                {activatingId === doc.id ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                    Activando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 mr-1" />
+                                    Activar {doc.language.toUpperCase()}
+                                  </>
+                                )}
                               </Button>
                             )}
 
