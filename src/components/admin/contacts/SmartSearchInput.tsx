@@ -98,12 +98,27 @@ const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
     if (!inputValue.trim()) {
       clearFilters();
       onFiltersChange({});
+      onTextSearchChange?.('');
       return;
     }
 
     const filters = await parseQuery(inputValue);
     onFiltersChange(filters);
   };
+
+  // 🔥 Auto-search with debounce when typing
+  useEffect(() => {
+    if (!inputValue.trim()) {
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      // Trigger search automatically after 600ms of inactivity
+      handleSearch();
+    }, 600);
+    
+    return () => clearTimeout(timer);
+  }, [inputValue]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -118,6 +133,9 @@ const SmartSearchInput: React.FC<SmartSearchInputProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
+    
+    // Also update text search immediately for simple text filtering
+    onTextSearchChange?.(value);
     
     // Debounce for showing suggestions
     if (debounceRef.current) clearTimeout(debounceRef.current);
