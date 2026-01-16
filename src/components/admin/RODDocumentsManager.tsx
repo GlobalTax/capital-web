@@ -152,15 +152,25 @@ export const RODDocumentsManager = () => {
     }
   });
 
-  // Activate document mutation - ahora por idioma
+  // Activate document mutation - por idioma (consulta directa a DB para evitar stale data)
   const activateMutation = useMutation({
     mutationFn: async (docId: string) => {
-      // Obtener el documento para saber su idioma y tipo
-      const doc = documents?.find(d => d.id === docId);
-      if (!doc) throw new Error('Documento no encontrado');
+      // 1. Consultar documento DIRECTAMENTE desde DB para garantizar datos frescos
+      const { data: doc, error: fetchError } = await supabase
+        .from('rod_documents')
+        .select('id, language, file_type')
+        .eq('id', docId)
+        .single();
       
-      // Desactivar otros documentos del MISMO idioma y tipo
-      const { error: deactivateError } = await supabase
+      if (fetchError || !doc) {
+        console.error('❌ Error fetching document:', fetchError);
+        throw new Error('Documento no encontrado');
+      }
+      
+      console.log(`🔄 Activando ROD: id=${docId}, idioma=${doc.language}, tipo=${doc.file_type}`);
+      
+      // 2. Desactivar SOLO documentos del MISMO idioma y tipo (no afecta otros idiomas)
+      const { error: deactivateError, count } = await supabase
         .from('rod_documents')
         .update({ is_active: false, deactivated_at: new Date().toISOString() })
         .eq('language', doc.language)
@@ -168,22 +178,40 @@ export const RODDocumentsManager = () => {
         .eq('is_deleted', false)
         .neq('id', docId);
       
-      if (deactivateError) throw deactivateError;
+      if (deactivateError) {
+        console.error('❌ Error deactivating:', deactivateError);
+        throw deactivateError;
+      }
       
-      // Activar el documento seleccionado
+      console.log(`✅ Desactivados ${count || 0} documentos ${doc.language.toUpperCase()} anteriores`);
+      
+      // 3. Activar el documento seleccionado
       const { error } = await supabase
         .from('rod_documents')
         .update({ is_active: true, activated_at: new Date().toISOString() })
         .eq('id', docId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error activating:', error);
+        throw error;
+      }
+      
+      return { language: doc.language, file_type: doc.file_type };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      const langLabel = data.language === 'es' ? '🇪🇸 Español' : '🇬🇧 English';
       toast({
         title: "✅ ROD activada",
-        description: "Este documento ahora se enviará a nuevos leads de su idioma"
+        description: `Versión ${langLabel} ahora activa. Otros idiomas no afectados.`
       });
       queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "❌ Error al activar",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   });
 
@@ -548,14 +576,19 @@ export const RODDocumentsManager = () => {
                             />
                             <FileText className="h-8 w-8 text-muted-foreground" />
                             <div className="flex-1">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <h4 className="font-semibold">{doc.title}</h4>
-                                {doc.is_active && <Badge variant="default">ACTIVA</Badge>}
+                                {doc.is_active ? (
+                                  <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                    {doc.language === 'es' ? '🇪🇸' : '🇬🇧'} ACTIVO
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className={doc.language === 'es' ? 'bg-amber-50 border-amber-300' : 'bg-blue-50 border-blue-300'}>
+                                    {doc.language === 'es' ? '🇪🇸 ES' : '🇬🇧 EN'}
+                                  </Badge>
+                                )}
                                 {doc.is_latest && <Badge variant="outline">ÚLTIMA</Badge>}
                                 <Badge variant="secondary">{doc.file_type.toUpperCase()}</Badge>
-                                <Badge variant="outline" className={doc.language === 'es' ? 'bg-amber-50' : 'bg-blue-50'}>
-                                  {doc.language === 'es' ? '🇪🇸 ES' : '🇬🇧 EN'}
-                                </Badge>
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 Versión {doc.version} • {format(new Date(doc.created_at), "d 'de' MMMM yyyy", { locale: es })}

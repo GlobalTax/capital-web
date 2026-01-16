@@ -124,13 +124,15 @@ serve(async (req) => {
     
     const availableLanguages = [...new Set(activeRODs.map(r => r.language))];
 
-    console.log('✅ Using active ROD:', {
-      id: selectedROD.id,
-      version: selectedROD.version,
-      title: selectedROD.title,
-      language: selectedROD.language,
+    console.log('📊 ROD Selection Debug:', {
+      total_active_rods: activeRODs.length,
+      available_languages: availableLanguages,
       requested_language: requestedLang,
-      available_languages: availableLanguages
+      selected_rod_id: selectedROD.id,
+      selected_rod_language: selectedROD.language,
+      selected_rod_version: selectedROD.version,
+      fallback_used: selectedROD.language !== requestedLang,
+      all_active_rods: activeRODs.map(r => ({ id: r.id, lang: r.language, version: r.version }))
     });
     
     console.log('event=open_deals_download_served', {
