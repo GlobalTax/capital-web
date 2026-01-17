@@ -330,10 +330,7 @@ export const useCRSearchFromList = () => {
 
       // Handle Supabase invoke error - when edge function returns 400, need to parse context.json()
       if (error) {
-        console.error('[useCRSearchFromList] Supabase error object:', error);
-        console.error('[useCRSearchFromList] Error name:', error.name);
-        console.error('[useCRSearchFromList] Error message:', error.message);
-        console.error('[useCRSearchFromList] Data received:', data);
+        console.error('[useCRSearchFromList] Supabase error, attempting to extract message...');
         
         // When edge function returns 400, the error body might be in data
         if (data && data.error) {
@@ -343,27 +340,22 @@ export const useCRSearchFromList = () => {
         
         // FunctionsHttpError: context is a Response-like object, need to await .json()
         if (error.context) {
-          console.log('[useCRSearchFromList] Error has context, type:', typeof error.context);
+          let errorMessage: string | null = null;
+          
           try {
             if (typeof error.context.json === 'function') {
               const errorData = await error.context.json();
               console.log('[useCRSearchFromList] Parsed error context:', errorData);
-              if (errorData.error) {
-                throw new Error(errorData.error);
-              }
-            } else if (typeof error.context === 'object') {
-              // Maybe it's already parsed?
-              console.log('[useCRSearchFromList] Context is object:', error.context);
-              if ((error.context as any).error) {
-                throw new Error((error.context as any).error);
-              }
+              errorMessage = errorData.error || null;
+            } else if (typeof error.context === 'object' && (error.context as any).error) {
+              errorMessage = (error.context as any).error;
             }
-          } catch (parseError: any) {
-            // Check if it's our thrown error
-            if (parseError.message && parseError.message !== 'Error de conexión con el servidor') {
-              throw parseError;
-            }
+          } catch (parseError) {
             console.warn('[useCRSearchFromList] Could not parse error context:', parseError);
+          }
+          
+          if (errorMessage) {
+            throw new Error(errorMessage);
           }
         }
         
