@@ -109,7 +109,7 @@ export function useApolloVisitorImport() {
   const [isImporting, setIsImporting] = useState(false);
 
   // Create import job
-  const createImport = async (listId: string, listType: 'static' | 'dynamic' = 'static') => {
+  const createImport = async (listId: string, listType: 'contacts' | 'accounts' | 'static' | 'dynamic' = 'contacts') => {
     const { data: { user } } = await supabase.auth.getUser();
     
     const { data, error } = await supabase.functions.invoke('apollo-visitor-import', {
@@ -130,7 +130,7 @@ export function useApolloVisitorImport() {
   // Search organizations from Apollo list
   const searchOrganizations = async (
     listId: string, 
-    listType: 'static' | 'dynamic' = 'static',
+    listType: 'contacts' | 'accounts' = 'contacts',
     importId?: string,
     page: number = 1,
     perPage: number = 25

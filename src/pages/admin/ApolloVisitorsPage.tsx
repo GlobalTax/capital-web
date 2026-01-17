@@ -48,7 +48,7 @@ export default function ApolloVisitorsPage() {
   
   // List ID mode state
   const [listId, setListId] = useState('');
-  const [listType, setListType] = useState<'static' | 'dynamic'>('static');
+  const [listType, setListType] = useState<'contacts' | 'accounts'>('contacts');
   
   // Website Visitors mode state
   const [dateFrom, setDateFrom] = useState(() => format(subDays(new Date(), 30), 'yyyy-MM-dd'));
@@ -427,43 +427,49 @@ export default function ApolloVisitorsPage() {
 
               {/* List ID Mode */}
               {searchMode === 'list_id' && (
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="listId">URL o ID de Lista</Label>
-                    <Input
-                      id="listId"
-                      placeholder="https://app.apollo.io/lists/abc123 o abc123"
-                      value={listId}
-                      onChange={(e) => setListId(e.target.value)}
-                    />
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <Label htmlFor="listId">URL o ID de Lista</Label>
+                      <Input
+                        id="listId"
+                        placeholder="https://app.apollo.io/lists/abc123 o abc123"
+                        value={listId}
+                        onChange={(e) => setListId(e.target.value)}
+                      />
+                    </div>
+                    <div className="w-48">
+                      <Label htmlFor="listType">Tipo de Lista</Label>
+                      <select
+                        id="listType"
+                        className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        value={listType}
+                        onChange={(e) => setListType(e.target.value as 'contacts' | 'accounts')}
+                      >
+                        <option value="contacts">👤 Contactos (Personas)</option>
+                        <option value="accounts">🏢 Cuentas (Empresas)</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button onClick={handleSearch} disabled={isSearching || !listId.trim()}>
+                        {isSearching ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Buscando...
+                          </>
+                        ) : (
+                          <>
+                            <Search className="h-4 w-4 mr-2" />
+                            Buscar
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="w-40">
-                    <Label htmlFor="listType">Tipo de Lista</Label>
-                    <select
-                      id="listType"
-                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={listType}
-                      onChange={(e) => setListType(e.target.value as 'static' | 'dynamic')}
-                    >
-                      <option value="static">Estática</option>
-                      <option value="dynamic">Dinámica</option>
-                    </select>
-                  </div>
-                  <div className="flex items-end">
-                    <Button onClick={handleSearch} disabled={isSearching || !listId.trim()}>
-                      {isSearching ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Buscando...
-                        </>
-                      ) : (
-                        <>
-                          <Search className="h-4 w-4 mr-2" />
-                          Buscar
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    💡 Selecciona "Contactos" si tu lista es de personas, o "Cuentas" si es de empresas. 
+                    Esto usa los endpoints correctos de Apollo: <code>contact_list_ids</code> o <code>account_list_ids</code>.
+                  </p>
                 </div>
               )}
             </CardContent>
