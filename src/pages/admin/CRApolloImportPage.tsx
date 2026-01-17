@@ -145,38 +145,46 @@ const CRApolloImportPage: React.FC = () => {
         );
       }
     } catch (error: any) {
-      console.error('[UI] List search error:', error);
+      console.error('[UI] List search error caught:', error);
+      console.error('[UI] Error message:', error?.message);
       
       // Parse the error - check if it's a "filter ignored" error from the Edge Function
       let errorMsg = 'Error desconocido';
       let isFilterIgnored = false;
       
-      if (error instanceof Error) {
-        errorMsg = error.message;
-        // Check if error message contains our special marker
-        if (errorMsg.includes('sin filtrar') || errorMsg.includes('no existe o fue eliminada')) {
-          isFilterIgnored = true;
+      try {
+        if (error instanceof Error) {
+          errorMsg = error.message;
+          // Check if error message contains our special marker
+          if (errorMsg.includes('sin filtrar') || 
+              errorMsg.includes('no existe') || 
+              errorMsg.includes('Website Visitors')) {
+            isFilterIgnored = true;
+          }
         }
+      } catch (parseErr) {
+        console.error('[UI] Error parsing error:', parseErr);
       }
       
       // Mark the job as failed with error message
-      if (createdImportId) {
-        await supabase
-          .from('cr_apollo_imports')
-          .update({ 
-            status: 'failed', 
-            error_message: errorMsg 
-          })
-          .eq('id', createdImportId);
-        refetchHistory();
+      try {
+        if (createdImportId) {
+          await supabase
+            .from('cr_apollo_imports')
+            .update({ 
+              status: 'failed', 
+              error_message: errorMsg 
+            })
+            .eq('id', createdImportId);
+          refetchHistory();
+        }
+      } catch (dbErr) {
+        console.error('[UI] Error updating import status:', dbErr);
       }
       
       // Show appropriate toast based on error type
       if (isFilterIgnored) {
-        toast.error(
-          `⚠️ La lista no existe o fue eliminada en Apollo. Verifica el ID en app.apollo.io/#/lists/`,
-          { duration: 8000 }
-        );
+        toast.error(errorMsg, { duration: 8000 });
       } else {
         toast.error(`Error cargando lista: ${errorMsg}`);
       }

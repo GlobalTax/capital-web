@@ -387,8 +387,10 @@ export const useCRSearchFromList = () => {
       const typeLabel = data.list_type === 'organizations' ? 'empresas' : 'contactos';
       toast.success(`Cargados ${data.people.length} ${typeLabel} de "${data.list_name}"${pagesInfo}`);
     },
+    // Don't show toast here - let the caller handle errors to avoid double toasts
+    // and ensure proper error propagation
     onError: (error: Error) => {
-      toast.error(`Error cargando lista: ${error.message}`);
+      console.error('[useCRSearchFromList] Mutation error:', error.message);
     },
   });
 };
