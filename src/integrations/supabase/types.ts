@@ -1051,6 +1051,60 @@ export type Database = {
         }
         Relationships: []
       }
+      apollo_visitor_imports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error_count: number | null
+          error_message: string | null
+          id: string
+          import_type: string
+          imported_count: number | null
+          list_id: string
+          list_type: string
+          results: Json | null
+          skipped_count: number | null
+          status: string
+          total_found: number | null
+          updated_at: string
+          updated_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          import_type?: string
+          imported_count?: number | null
+          list_id: string
+          list_type?: string
+          results?: Json | null
+          skipped_count?: number | null
+          status?: string
+          total_found?: number | null
+          updated_at?: string
+          updated_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          import_type?: string
+          imported_count?: number | null
+          list_id?: string
+          list_type?: string
+          results?: Json | null
+          skipped_count?: number | null
+          status?: string
+          total_found?: number | null
+          updated_at?: string
+          updated_count?: number | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -5393,6 +5447,11 @@ export type Database = {
         Row: {
           actividades_destacadas: string[] | null
           año_datos_financieros: number | null
+          apollo_intent_level: string | null
+          apollo_last_synced_at: string | null
+          apollo_org_id: string | null
+          apollo_raw_data: Json | null
+          apollo_score: number | null
           brevo_id: string | null
           brevo_last_modified_at: string | null
           brevo_synced_at: string | null
@@ -5430,6 +5489,11 @@ export type Database = {
         Insert: {
           actividades_destacadas?: string[] | null
           año_datos_financieros?: number | null
+          apollo_intent_level?: string | null
+          apollo_last_synced_at?: string | null
+          apollo_org_id?: string | null
+          apollo_raw_data?: Json | null
+          apollo_score?: number | null
           brevo_id?: string | null
           brevo_last_modified_at?: string | null
           brevo_synced_at?: string | null
@@ -5467,6 +5531,11 @@ export type Database = {
         Update: {
           actividades_destacadas?: string[] | null
           año_datos_financieros?: number | null
+          apollo_intent_level?: string | null
+          apollo_last_synced_at?: string | null
+          apollo_org_id?: string | null
+          apollo_raw_data?: Json | null
+          apollo_score?: number | null
           brevo_id?: string | null
           brevo_last_modified_at?: string | null
           brevo_synced_at?: string | null
