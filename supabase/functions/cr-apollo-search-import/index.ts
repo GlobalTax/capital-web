@@ -804,12 +804,43 @@ serve(async (req) => {
           totalEntries = data.pagination?.total_entries || 0;
           totalPages = Math.min(Math.ceil(totalEntries / 100), max_pages);
           
+          // ============= FILTER VALIDATION =============
+          // Check if Apollo ignored the list filter (returns entire CRM instead)
+          const contacts = data.contacts || [];
+          const contactsWithListNames = contacts.filter((c: any) => 
+            c.contact_list_names && c.contact_list_names.length > 0
+          );
+          const contactsWithOrg = contacts.filter((c: any) => c.organization?.name);
+          
+          console.log(`[CR Apollo] Quality check: ${contactsWithListNames.length}/${contacts.length} have list_names, ${contactsWithOrg.length}/${contacts.length} have org`);
+          
+          // DETECTION: If total_entries > 10,000 AND contacts don't have contact_list_names,
+          // Apollo likely ignored the filter and returned entire CRM
+          if (totalEntries > 10000 && contactsWithListNames.length === 0) {
+            console.error(`⚠️ [CR Apollo] FILTER IGNORED! total_entries: ${totalEntries}, no contacts have list_names`);
+            return new Response(JSON.stringify({
+              success: false,
+              error: `La lista "${list_id}" no existe o fue eliminada. Apollo devolvió ${totalEntries.toLocaleString()} contactos sin filtrar.`,
+              suggestion: 'Verifica el ID de la lista en Apollo: app.apollo.io/#/lists/',
+              total_entries: totalEntries,
+              filter_ignored: true,
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          
+          // WARNING: If < 10% of contacts have organization data, log quality concern
+          if (contacts.length > 0 && contactsWithOrg.length < contacts.length * 0.1) {
+            console.warn(`⚠️ [CR Apollo] Low quality data: only ${contactsWithOrg.length}/${contacts.length} contacts have organization`);
+          }
+          
           // Detect list name from first contact
-          detectedListName = data.contacts?.[0]?.contact_list_names?.find(
+          detectedListName = contacts[0]?.contact_list_names?.find(
             (name: string) => name.toLowerCase().includes('private equity') || 
                              name.toLowerCase().includes('venture') ||
                              name.toLowerCase().includes('capital')
-          ) || data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo PE/VC';
+          ) || contacts[0]?.contact_list_names?.[0] || 'Lista Apollo PE/VC';
           
           console.log(`[CR Apollo] Total entries: ${totalEntries}, Pages needed: ${totalPages}, List: ${detectedListName}`);
         }

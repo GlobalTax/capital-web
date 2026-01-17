@@ -136,9 +136,20 @@ const CRApolloImportPage: React.FC = () => {
       
       const typeLabel = listType === 'organizations' ? 'empresas' : 'contactos';
       toast.success(`${result.people.length} ${typeLabel} cargados correctamente`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('[UI] List search error:', error);
-      const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
+      
+      // Parse the error - check if it's a "filter ignored" error from the Edge Function
+      let errorMsg = 'Error desconocido';
+      let isFilterIgnored = false;
+      
+      if (error instanceof Error) {
+        errorMsg = error.message;
+        // Check if error message contains our special marker
+        if (errorMsg.includes('sin filtrar') || errorMsg.includes('no existe o fue eliminada')) {
+          isFilterIgnored = true;
+        }
+      }
       
       // Mark the job as failed with error message
       if (createdImportId) {
@@ -152,7 +163,16 @@ const CRApolloImportPage: React.FC = () => {
         refetchHistory();
       }
       
-      toast.error(`Error cargando lista: ${errorMsg}`);
+      // Show appropriate toast based on error type
+      if (isFilterIgnored) {
+        toast.error(
+          `⚠️ La lista no existe o fue eliminada en Apollo. Verifica el ID en app.apollo.io/#/lists/`,
+          { duration: 8000 }
+        );
+      } else {
+        toast.error(`Error cargando lista: ${errorMsg}`);
+      }
+      
       setSearchResults([]);
     }
   };
