@@ -328,20 +328,27 @@ export const useCRSearchFromList = () => {
         },
       });
 
-      // Handle Supabase invoke error - but check if data contains the actual error message
+      // Handle Supabase invoke error - when edge function returns 400, need to parse context.json()
       if (error) {
         console.error('[useCRSearchFromList] Supabase error:', error);
-        // When edge function returns 400, the error body is in data
+        
+        // When edge function returns 400, the error body is in data (sometimes)
         if (data && data.error) {
           throw new Error(data.error);
         }
-        // Check if error has context with response body
-        if (error.context && typeof error.context === 'object') {
-          const ctx = error.context as any;
-          if (ctx.error) {
-            throw new Error(ctx.error);
+        
+        // FunctionsHttpError: context is a Response-like object, need to await .json()
+        if (error.context && typeof error.context.json === 'function') {
+          try {
+            const errorData = await error.context.json();
+            if (errorData.error) {
+              throw new Error(errorData.error);
+            }
+          } catch (parseError) {
+            console.warn('[useCRSearchFromList] Could not parse error context:', parseError);
           }
         }
+        
         throw new Error(error.message || 'Error de conexión con el servidor');
       }
       
