@@ -88,6 +88,7 @@ const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApollo
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
 const LazyEmpresaDetailPage = React.lazy(() => import('@/pages/admin/EmpresaDetailPage'));
+const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisitorsPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -216,6 +217,9 @@ const AdminRouter = () => {
           <Route path="/mna-apollo-import" element={<LazyMNAApolloImportPage />} />
           <Route path="/mna-directory" element={<LazyMNADirectoryPage />} />
           <Route path="/mna-directory/:id" element={<LazyMNABoutiqueDetailPage />} />
+          
+          {/* Apollo Website Visitors */}
+          <Route path="/apollo-visitors" element={<LazyApolloVisitorsPage />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />

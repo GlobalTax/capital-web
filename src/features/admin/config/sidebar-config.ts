@@ -232,6 +232,19 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "🌐 WEB INTELLIGENCE",
+    description: "Empresas visitantes de la web",
+    items: [
+      { 
+        title: "Apollo Visitors", 
+        url: "/admin/apollo-visitors", 
+        icon: Eye,
+        badge: "NEW",
+        description: "Importar visitantes desde Apollo"
+      },
+    ]
+  },
+  {
     title: "📈 ANALIZAR LEADS",
     description: "Gestión de prospectos",
     items: [
