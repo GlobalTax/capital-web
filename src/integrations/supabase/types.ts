@@ -5447,11 +5447,14 @@ export type Database = {
         Row: {
           actividades_destacadas: string[] | null
           año_datos_financieros: number | null
+          apollo_enriched_at: string | null
           apollo_intent_level: string | null
           apollo_last_synced_at: string | null
           apollo_org_id: string | null
           apollo_raw_data: Json | null
           apollo_score: number | null
+          apollo_visitor_date: string | null
+          apollo_visitor_source: string | null
           brevo_id: string | null
           brevo_last_modified_at: string | null
           brevo_synced_at: string | null
@@ -5489,11 +5492,14 @@ export type Database = {
         Insert: {
           actividades_destacadas?: string[] | null
           año_datos_financieros?: number | null
+          apollo_enriched_at?: string | null
           apollo_intent_level?: string | null
           apollo_last_synced_at?: string | null
           apollo_org_id?: string | null
           apollo_raw_data?: Json | null
           apollo_score?: number | null
+          apollo_visitor_date?: string | null
+          apollo_visitor_source?: string | null
           brevo_id?: string | null
           brevo_last_modified_at?: string | null
           brevo_synced_at?: string | null
@@ -5531,11 +5537,14 @@ export type Database = {
         Update: {
           actividades_destacadas?: string[] | null
           año_datos_financieros?: number | null
+          apollo_enriched_at?: string | null
           apollo_intent_level?: string | null
           apollo_last_synced_at?: string | null
           apollo_org_id?: string | null
           apollo_raw_data?: Json | null
           apollo_score?: number | null
+          apollo_visitor_date?: string | null
+          apollo_visitor_source?: string | null
           brevo_id?: string | null
           brevo_last_modified_at?: string | null
           brevo_synced_at?: string | null

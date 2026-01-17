@@ -27,6 +27,14 @@ interface ApolloOrganization {
   annual_revenue?: number;
   intent_level?: string;
   account_score?: number;
+  // Enrichment data
+  founded_year?: number;
+  technologies?: string[];
+  // Visitor data (when source is website visitors)
+  visitor_data?: {
+    visit_date?: string;
+    intent_level?: string;
+  };
 }
 
 interface ApolloPerson {
@@ -103,226 +111,79 @@ async function findExistingEmpresa(
   return null;
 }
 
-async function importOrganizationToEmpresa(
-  supabase: ReturnType<typeof createClient>,
-  org: ApolloOrganization
-): Promise<{ success: boolean; action: 'created' | 'updated' | 'skipped'; empresaId?: string; error?: string }> {
-  try {
-    const existing = await findExistingEmpresa(supabase, org);
-    const domain = normalizeWebsite(org.website_url || org.primary_domain);
+// ============= APOLLO API FUNCTIONS =============
 
-    const empresaData = {
-      nombre: org.name,
-      sitio_web: org.website_url || org.primary_domain,
-      sector: org.industry,
-      ubicacion: [org.city, org.state, org.country].filter(Boolean).join(', ') || null,
-      empleados: org.estimated_num_employees?.toString(),
-      apollo_org_id: org.id,
-      apollo_intent_level: org.intent_level,
-      apollo_score: org.account_score,
-      apollo_last_synced_at: new Date().toISOString(),
-      apollo_raw_data: org,
-    };
-
-    if (existing) {
-      // Update existing empresa with Apollo data
-      const { error } = await supabase
-        .from('empresas')
-        .update({
-          apollo_org_id: org.id,
-          apollo_intent_level: org.intent_level,
-          apollo_score: org.account_score,
-          apollo_last_synced_at: new Date().toISOString(),
-          apollo_raw_data: org,
-          // Only update if empty
-          ...(domain && { sitio_web: org.website_url || org.primary_domain }),
-        })
-        .eq('id', existing.id);
-
-      if (error) {
-        console.error('[Visitor Import] Update error:', error);
-        return { success: false, action: 'skipped', error: error.message };
-      }
-
-      console.log('[Visitor Import] Updated empresa:', org.name, existing.id);
-      return { success: true, action: 'updated', empresaId: existing.id };
+// NEW: Enrich organization by domain - THE RELIABLE WAY
+// Uses /v1/organizations/enrich which is designed for single-org lookups
+async function enrichOrganization(domain: string): Promise<ApolloOrganization | null> {
+  console.log('[Apollo API] Enriching organization by domain:', domain);
+  
+  const response = await fetch(
+    `https://api.apollo.io/v1/organizations/enrich?domain=${encodeURIComponent(domain)}`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': APOLLO_API_KEY!,
+      },
     }
+  );
 
-    // Create new empresa
-    const { data: newEmpresa, error } = await supabase
-      .from('empresas')
-      .insert(empresaData)
-      .select('id')
-      .single();
-
-    if (error) {
-      console.error('[Visitor Import] Insert error:', error);
-      return { success: false, action: 'skipped', error: error.message };
-    }
-
-    console.log('[Visitor Import] Created empresa:', org.name, newEmpresa.id);
-    return { success: true, action: 'created', empresaId: newEmpresa.id };
-  } catch (error) {
-    console.error('[Visitor Import] Error:', error);
-    return { success: false, action: 'skipped', error: String(error) };
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.log(`[Apollo Enrich] No data for domain ${domain}: ${response.status} ${errorText}`);
+    return null;
   }
+
+  const data = await response.json();
+  console.log('[Apollo Enrich] Success for domain:', domain, '- Org:', data.organization?.name);
+  
+  return data.organization || null;
 }
 
-// CRITICAL: Multi-strategy search for organizations from Apollo lists
-// Strategy 1: label_ids in mixed_companies/search (works for Website Visitor lists)
-// Strategy 2: organization_list_ids in mixed_companies/search 
-// Strategy 3: Fallback to accounts/search (only CRM accounts)
+// SIMPLIFIED: Search organizations from Apollo list (CRM only)
+// WARNING: This ONLY works for companies already in Apollo CRM, not "net new"
 async function searchOrganizationsFromList(
   listId: string,
-  _listType: 'static' | 'dynamic', // Kept for backwards compatibility, not used
   page: number = 1,
   perPage: number = 25
 ): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any; warning?: string }> {
   
-  // ========== STRATEGY 1: Try label_ids (works for Website Visitor lists) ==========
-  console.log('[Apollo API] Strategy 1: Trying label_ids in mixed_companies/search');
+  console.log('[Apollo API] Searching organizations from list (CRM only):', listId);
   
-  const labelRequestBody = {
-    q_organization_search_criteria: {
-      label_ids: [listId],
-    },
-    page,
-    per_page: perPage,
-  };
-
-  console.log('[Apollo API] Request body:', JSON.stringify(labelRequestBody, null, 2));
-
-  let response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Api-Key': APOLLO_API_KEY!,
-    },
-    body: JSON.stringify(labelRequestBody),
-  });
-
-  if (response.ok) {
-    const data = await response.json();
-    
-    // Log RAW response for debugging
-    console.log('[Apollo API] RAW Response keys:', Object.keys(data));
-    console.log('[Apollo API] Has organizations:', !!data.organizations, 'count:', data.organizations?.length);
-    console.log('[Apollo API] Has accounts:', !!data.accounts, 'count:', data.accounts?.length);
-    console.log('[Apollo API] Pagination:', JSON.stringify(data.pagination));
-    
-    // CRITICAL: mixed_companies/search returns data in "accounts" field, not "organizations"
-    const organizations = data.accounts || data.organizations || [];
-    const totalEntries = data.pagination?.total_entries || 0;
-    
-    // If we got reasonable results, return them
-    if (organizations.length > 0 && totalEntries < 1000000) {
-      console.log('[Apollo API] Strategy 1 SUCCESS:', { total: totalEntries, returned: organizations.length });
-      return {
-        organizations,
-        totalEntries,
-        pagination: data.pagination,
-        warning: totalEntries > 500 ? `Se encontraron ${totalEntries} resultados.` : undefined,
-      };
-    }
-    
-    console.log('[Apollo API] Strategy 1 returned 0 results or too many, trying next strategy');
-  } else {
-    console.log('[Apollo API] Strategy 1 failed with status:', response.status);
-  }
-
-  // ========== STRATEGY 2: Try organization_list_ids ==========
-  console.log('[Apollo API] Strategy 2: Trying organization_list_ids in mixed_companies/search');
-  
-  const orgListRequestBody = {
-    q_organization_search_criteria: {
-      organization_list_ids: [listId],
-    },
-    page,
-    per_page: perPage,
-  };
-
-  response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Api-Key': APOLLO_API_KEY!,
-    },
-    body: JSON.stringify(orgListRequestBody),
-  });
-
-  if (response.ok) {
-    const data = await response.json();
-    console.log('[Apollo API] Strategy 2 RAW Response:', {
-      keys: Object.keys(data),
-      organizations: data.organizations?.length,
-      accounts: data.accounts?.length,
-      total: data.pagination?.total_entries,
-    });
-    
-    // CRITICAL: mixed_companies/search returns data in "accounts" field, not "organizations"
-    const organizations = data.accounts || data.organizations || [];
-    const totalEntries = data.pagination?.total_entries || 0;
-    
-    if (organizations.length > 0 && totalEntries < 1000000) {
-      console.log('[Apollo API] Strategy 2 SUCCESS:', { total: totalEntries, returned: organizations.length });
-      return {
-        organizations,
-        totalEntries,
-        pagination: data.pagination,
-        warning: totalEntries > 500 ? `Se encontraron ${totalEntries} resultados.` : undefined,
-      };
-    }
-  }
-
-  // ========== STRATEGY 3: Fallback to accounts/search (CRM accounts only) ==========
-  console.log('[Apollo API] Strategy 3 FALLBACK: Trying accounts/search with account_list_ids');
-  
-  const accountsRequestBody = {
+  // ONLY use accounts/search - the other strategies don't work for lists
+  const requestBody = {
     account_list_ids: [listId],
     page,
     per_page: perPage,
   };
 
-  response = await fetch('https://api.apollo.io/v1/accounts/search', {
+  const response = await fetch('https://api.apollo.io/v1/accounts/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Api-Key': APOLLO_API_KEY!,
     },
-    body: JSON.stringify(accountsRequestBody),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[Apollo API] All strategies failed. Last error:', response.status, errorText);
+    console.error('[Apollo API] accounts/search failed:', response.status, errorText);
     throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
-  console.log('[Apollo API] Strategy 3 RAW Response:', {
-    keys: Object.keys(data),
-    accounts: data.accounts?.length,
-    total: data.pagination?.total_entries,
-  });
-  
-  // accounts/search returns "accounts" not "organizations"
   const organizations = data.accounts || [];
   const totalEntries = data.pagination?.total_entries || 0;
-  
-  console.log('[Apollo API] Strategy 3 Result:', { 
-    total: totalEntries, 
+
+  console.log('[Apollo API] accounts/search result:', {
+    total: totalEntries,
     returned: organizations.length,
     firstResult: organizations[0]?.name,
   });
 
-  // Warn if the list had companies but accounts/search returned too many (filter issue)
-  let warning: string | undefined;
-  if (totalEntries > 10000) {
-    warning = `⚠️ Usando fallback CRM. Se encontraron ${totalEntries} cuentas. El filtro por lista puede no estar funcionando.`;
-    console.warn('[Apollo API] WARNING: Fallback to accounts/search, high count suggests filter not working');
-  } else if (organizations.length > 0) {
-    warning = `ℹ️ Usando búsqueda CRM (accounts/search). Solo se muestran empresas ya en el CRM de Apollo.`;
-  }
+  // ALWAYS show warning since this method only works for CRM accounts
+  const warning = `⚠️ Este método solo muestra empresas que ya están en el CRM de Apollo (${totalEntries} encontradas). Para importar visitantes "Net New", usa el modo "Website Visitors".`;
 
   return {
     organizations,
@@ -332,8 +193,8 @@ async function searchOrganizationsFromList(
   };
 }
 
-// NEW: Search website visitors with native Apollo filters
-// CRITICAL: Uses /v1/mixed_companies/search endpoint with q_organization_search_criteria
+// PRIMARY: Search website visitors with native Apollo filters
+// This is the RECOMMENDED method - uses date range + intent filters
 async function searchWebsiteVisitors(
   dateFrom: string,
   dateTo: string,
@@ -343,7 +204,9 @@ async function searchWebsiteVisitors(
   perPage: number = 25
 ): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any; warning?: string }> {
   
-  // Build the search criteria object - this MUST be nested in q_organization_search_criteria
+  console.log('[Apollo API] Searching website visitors:', { dateFrom, dateTo, intentLevels, onlyNew });
+
+  // Build the search criteria
   const searchCriteria: Record<string, any> = {
     website_visitor_visit_date_range: {
       min: dateFrom,
@@ -351,26 +214,22 @@ async function searchWebsiteVisitors(
     },
   };
 
-  // Add intent level filter
   if (intentLevels.length > 0) {
     searchCriteria.website_visitor_intent_level = intentLevels;
   }
 
-  // Only show visitors not yet prospected by team
   if (onlyNew) {
     searchCriteria.prospected_by_current_team = [false];
   }
 
-  // CORRECT structure: filters nested in q_organization_search_criteria
   const requestBody = {
     q_organization_search_criteria: searchCriteria,
     page,
     per_page: perPage,
   };
 
-  console.log('[Apollo API] Website Visitors Request to /v1/mixed_companies/search:', JSON.stringify(requestBody, null, 2));
+  console.log('[Apollo API] Request body:', JSON.stringify(requestBody, null, 2));
 
-  // CORRECT endpoint: mixed_companies/search for website visitors
   const response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
     method: 'POST',
     headers: {
@@ -388,22 +247,19 @@ async function searchWebsiteVisitors(
 
   const data = await response.json();
   
-  // mixed_companies/search returns "organizations" not "accounts"
+  // mixed_companies/search returns "organizations" for website visitors
   const organizations = data.organizations || [];
   const totalEntries = data.pagination?.total_entries || 0;
-  
-  console.log('[Apollo API] Website Visitors Response:', {
-    endpoint: 'mixed_companies/search',
+
+  console.log('[Apollo API] Website visitors result:', {
     total: totalEntries,
     returned: organizations.length,
     firstResult: organizations[0]?.name,
   });
 
-  // Warning if result count is suspiciously high
   let warning: string | undefined;
   if (totalEntries > 500) {
-    warning = `Se encontraron ${totalEntries} resultados. Si esto parece demasiado, verifica los filtros de fecha e intent.`;
-    console.warn('[Apollo API] WARNING: High result count may indicate filter issue');
+    warning = `Se encontraron ${totalEntries} resultados. Considera reducir el rango de fechas o aumentar el nivel de intent.`;
   }
 
   return {
@@ -453,6 +309,79 @@ async function searchContactsForOrganization(
     totalEntries: data.pagination?.total_entries || 0,
     pagination: data.pagination,
   };
+}
+
+// ============= IMPORT FUNCTIONS =============
+
+async function importOrganizationToEmpresa(
+  supabase: ReturnType<typeof createClient>,
+  org: ApolloOrganization,
+  source: string = 'manual_import'
+): Promise<{ success: boolean; action: 'created' | 'updated' | 'skipped'; empresaId?: string; error?: string }> {
+  try {
+    const existing = await findExistingEmpresa(supabase, org);
+    const domain = normalizeWebsite(org.website_url || org.primary_domain);
+
+    const empresaData = {
+      nombre: org.name,
+      sitio_web: org.website_url || org.primary_domain,
+      sector: org.industry,
+      ubicacion: [org.city, org.state, org.country].filter(Boolean).join(', ') || null,
+      empleados: org.estimated_num_employees?.toString(),
+      apollo_org_id: org.id,
+      apollo_intent_level: org.intent_level,
+      apollo_score: org.account_score,
+      apollo_last_synced_at: new Date().toISOString(),
+      apollo_raw_data: org,
+      // NEW: Track source and visitor date
+      apollo_visitor_source: source,
+      apollo_visitor_date: org.visitor_data?.visit_date || null,
+    };
+
+    if (existing) {
+      // Update existing empresa with Apollo data
+      const { error } = await supabase
+        .from('empresas')
+        .update({
+          apollo_org_id: org.id,
+          apollo_intent_level: org.intent_level,
+          apollo_score: org.account_score,
+          apollo_last_synced_at: new Date().toISOString(),
+          apollo_raw_data: org,
+          apollo_visitor_source: source,
+          ...(org.visitor_data?.visit_date && { apollo_visitor_date: org.visitor_data.visit_date }),
+          // Only update if empty
+          ...(domain && { sitio_web: org.website_url || org.primary_domain }),
+        })
+        .eq('id', existing.id);
+
+      if (error) {
+        console.error('[Visitor Import] Update error:', error);
+        return { success: false, action: 'skipped', error: error.message };
+      }
+
+      console.log('[Visitor Import] Updated empresa:', org.name, existing.id);
+      return { success: true, action: 'updated', empresaId: existing.id };
+    }
+
+    // Create new empresa
+    const { data: newEmpresa, error } = await supabase
+      .from('empresas')
+      .insert(empresaData)
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('[Visitor Import] Insert error:', error);
+      return { success: false, action: 'skipped', error: error.message };
+    }
+
+    console.log('[Visitor Import] Created empresa:', org.name, newEmpresa.id);
+    return { success: true, action: 'created', empresaId: newEmpresa.id };
+  } catch (error) {
+    console.error('[Visitor Import] Error:', error);
+    return { success: false, action: 'skipped', error: String(error) };
+  }
 }
 
 async function importContactToLead(
@@ -564,9 +493,9 @@ serve(async (req) => {
       });
     }
 
-    // ============= ACTION: SEARCH ORGANIZATIONS FROM LIST =============
+    // ============= ACTION: SEARCH ORGANIZATIONS FROM LIST (CRM ONLY) =============
     if (action === 'search_organizations') {
-      const { import_id, list_id, list_type = 'static', page = 1, per_page = 25 } = params;
+      const { import_id, list_id, page = 1, per_page = 25 } = params;
 
       // Update import status
       if (import_id) {
@@ -576,7 +505,7 @@ serve(async (req) => {
           .eq('id', import_id);
       }
 
-      const result = await searchOrganizationsFromList(list_id, list_type, page, per_page);
+      const result = await searchOrganizationsFromList(list_id, page, per_page);
 
       // Check which organizations already exist in empresas
       const orgsWithStatus = await Promise.all(
@@ -601,23 +530,18 @@ serve(async (req) => {
           .eq('id', import_id);
       }
 
-      // Add warning if filter seems to not be working
-      const filterWarning = result.totalEntries > 1000 
-        ? 'ADVERTENCIA: El resultado parece incluir todo el CRM en lugar de solo la lista. Verifica que el ID de lista es correcto o usa el modo "Website Visitors".'
-        : null;
-
       return new Response(JSON.stringify({
         success: true,
         organizations: orgsWithStatus,
         total: result.totalEntries,
         pagination: result.pagination,
-        warning: filterWarning,
+        warning: result.warning,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // ============= ACTION: SEARCH WEBSITE VISITORS (Native filters) =============
+    // ============= ACTION: SEARCH WEBSITE VISITORS (RECOMMENDED) =============
     if (action === 'search_website_visitors') {
       const { 
         import_id, 
@@ -671,6 +595,159 @@ serve(async (req) => {
         organizations: orgsWithStatus,
         total: result.totalEntries,
         pagination: result.pagination,
+        warning: result.warning,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: ENRICH AND IMPORT (NEW - CAMINO A) =============
+    // This action: 1) Searches website visitors, 2) Enriches by domain, 3) Imports
+    if (action === 'enrich_and_import') {
+      const { 
+        import_id,
+        date_from, 
+        date_to, 
+        intent_levels = ['high', 'medium'],
+        only_new = true,
+        auto_import_contacts = false,
+        max_contacts_per_company = 5,
+      } = params;
+
+      if (!date_from || !date_to) {
+        throw new Error('date_from and date_to are required');
+      }
+
+      // Update import status
+      if (import_id) {
+        await supabase
+          .from('apollo_visitor_imports')
+          .update({ status: 'searching' })
+          .eq('id', import_id);
+      }
+
+      console.log('[Enrich & Import] Step 1: Searching website visitors...');
+      const visitors = await searchWebsiteVisitors(date_from, date_to, intent_levels, only_new, 1, 100);
+      
+      console.log(`[Enrich & Import] Found ${visitors.totalEntries} visitors, processing ${visitors.organizations.length}`);
+
+      // Update import with total found
+      if (import_id) {
+        await supabase
+          .from('apollo_visitor_imports')
+          .update({ 
+            total_found: visitors.totalEntries,
+            status: 'importing',
+          })
+          .eq('id', import_id);
+      }
+
+      const results = {
+        imported: 0,
+        updated: 0,
+        skipped: 0,
+        enriched: 0,
+        errors: [] as string[],
+        empresas: [] as { id: string; name: string; apollo_org_id: string }[],
+        contacts: {
+          imported: 0,
+          updated: 0,
+          skipped: 0,
+          errors: [] as string[],
+        },
+      };
+
+      // Step 2: Enrich and import each visitor
+      for (const org of visitors.organizations) {
+        const domain = normalizeWebsite(org.website_url || org.primary_domain);
+        
+        let enrichedOrg = org;
+        
+        // Enrich by domain if we have one
+        if (domain) {
+          console.log(`[Enrich & Import] Enriching ${org.name} (${domain})...`);
+          const enriched = await enrichOrganization(domain);
+          
+          if (enriched) {
+            enrichedOrg = {
+              ...org,
+              ...enriched,
+              // Keep visitor data
+              visitor_data: {
+                visit_date: new Date().toISOString(),
+                intent_level: org.intent_level,
+              },
+            };
+            results.enriched++;
+          }
+        }
+
+        // Import to empresas
+        const importResult = await importOrganizationToEmpresa(supabase, enrichedOrg, 'website_visitor');
+
+        if (importResult.success) {
+          if (importResult.action === 'created') results.imported++;
+          if (importResult.action === 'updated') results.updated++;
+          
+          if (importResult.empresaId) {
+            results.empresas.push({
+              id: importResult.empresaId,
+              name: org.name,
+              apollo_org_id: org.id,
+            });
+
+            // Auto-import contacts if enabled
+            if (auto_import_contacts && org.id) {
+              try {
+                const contactsResult = await searchContactsForOrganization(org.id, 1, max_contacts_per_company);
+                const contactsToImport = contactsResult.contacts.slice(0, max_contacts_per_company);
+                
+                for (const contact of contactsToImport) {
+                  const contactResult = await importContactToLead(supabase, contact, importResult.empresaId);
+                  
+                  if (contactResult.success) {
+                    if (contactResult.action === 'created') results.contacts.imported++;
+                    if (contactResult.action === 'updated') results.contacts.updated++;
+                  } else {
+                    results.contacts.skipped++;
+                  }
+                }
+              } catch (contactError) {
+                console.error(`[Enrich & Import] Error fetching contacts for ${org.name}:`, contactError);
+              }
+            }
+          }
+        } else {
+          results.skipped++;
+          if (importResult.error) results.errors.push(`${org.name}: ${importResult.error}`);
+        }
+      }
+
+      // Update import job
+      if (import_id) {
+        await supabase
+          .from('apollo_visitor_imports')
+          .update({
+            status: 'completed',
+            imported_count: results.imported,
+            updated_count: results.updated,
+            skipped_count: results.skipped,
+            error_count: results.errors.length,
+            error_message: results.errors.length > 0 ? results.errors.join('; ') : null,
+            results: {
+              empresas: results.empresas,
+              contacts: results.contacts,
+              enriched: results.enriched,
+            },
+          })
+          .eq('id', import_id);
+      }
+
+      console.log(`[Enrich & Import] Complete:`, results);
+
+      return new Response(JSON.stringify({
+        success: true,
+        results,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -682,7 +759,8 @@ serve(async (req) => {
         import_id, 
         organizations, 
         auto_import_contacts = false,
-        max_contacts_per_company = 5 
+        max_contacts_per_company = 5,
+        source = 'manual_import',
       } = params;
 
       if (!organizations || !Array.isArray(organizations)) {
@@ -703,7 +781,6 @@ serve(async (req) => {
         skipped: 0,
         errors: [] as string[],
         empresas: [] as { id: string; name: string; apollo_org_id: string }[],
-        // New: contact stats
         contacts: {
           imported: 0,
           updated: 0,
@@ -712,14 +789,10 @@ serve(async (req) => {
         },
       };
 
-      const totalOrgs = organizations.length;
-      let processedOrgs = 0;
-
       for (const org of organizations) {
-        processedOrgs++;
-        console.log(`[Visitor Import] Processing ${processedOrgs}/${totalOrgs}: ${org.name}`);
+        console.log(`[Visitor Import] Processing: ${org.name}`);
         
-        const result = await importOrganizationToEmpresa(supabase, org);
+        const result = await importOrganizationToEmpresa(supabase, org, source);
         
         if (result.success) {
           if (result.action === 'created') results.imported++;
@@ -736,10 +809,7 @@ serve(async (req) => {
               try {
                 console.log(`[Visitor Import] Searching contacts for ${org.name} (${org.id})`);
                 const contactsResult = await searchContactsForOrganization(org.id, 1, max_contacts_per_company);
-                
-                // Import up to max_contacts_per_company
                 const contactsToImport = contactsResult.contacts.slice(0, max_contacts_per_company);
-                console.log(`[Visitor Import] Found ${contactsResult.contacts.length} contacts, importing ${contactsToImport.length}`);
                 
                 for (const contact of contactsToImport) {
                   const contactResult = await importContactToLead(supabase, contact, result.empresaId);
@@ -884,7 +954,7 @@ serve(async (req) => {
       
       const { data, error } = await supabase
         .from('empresas')
-        .select('id, nombre, sitio_web, sector, ubicacion, empleados, apollo_org_id, apollo_intent_level, apollo_score, apollo_last_synced_at')
+        .select('id, nombre, sitio_web, sector, ubicacion, empleados, apollo_org_id, apollo_intent_level, apollo_score, apollo_last_synced_at, apollo_visitor_source, apollo_visitor_date, apollo_enriched_at')
         .not('apollo_org_id', 'is', null)
         .order('apollo_last_synced_at', { ascending: false })
         .limit(limit);
