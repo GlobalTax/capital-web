@@ -55,6 +55,60 @@ interface ApolloPersonResult {
 
 // ============= HELPER FUNCTIONS =============
 
+// Verify if a list exists in Apollo using the labels endpoint
+async function verifyListExists(listId: string, apiKey: string): Promise<{exists: boolean, name?: string, total?: number}> {
+  try {
+    console.log(`[CR Apollo] Verifying list exists: ${listId}`);
+    
+    // Try a minimal search with the list ID to check if it returns filtered results
+    const response = await fetch('https://api.apollo.io/v1/contacts/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': apiKey,
+      },
+      body: JSON.stringify({
+        contact_list_ids: [listId],
+        page: 1,
+        per_page: 5, // Just get a few to verify
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('[CR Apollo] Could not verify list - API error');
+      return { exists: true }; // Assume exists if can't verify
+    }
+
+    const data = await response.json();
+    const totalEntries = data.pagination?.total_entries || 0;
+    const contacts = data.contacts || [];
+    
+    // Check if contacts have list names (indicates valid list)
+    const hasListNames = contacts.some((c: any) => 
+      c.contact_list_names && c.contact_list_names.length > 0
+    );
+    
+    console.log(`[CR Apollo] List verification: total=${totalEntries}, hasListNames=${hasListNames}, contacts=${contacts.length}`);
+    
+    // If total > 40,000 and no list names, likely entire CRM (filter ignored)
+    if (totalEntries > 40000 && !hasListNames) {
+      console.warn(`[CR Apollo] List ${listId} appears invalid - returned ${totalEntries} contacts without list names`);
+      return { exists: false, total: totalEntries };
+    }
+    
+    // If we got some results with reasonable count, list exists
+    const listName = contacts[0]?.contact_list_names?.[0];
+    return { 
+      exists: true, 
+      name: listName,
+      total: totalEntries 
+    };
+  } catch (error) {
+    console.warn('[CR Apollo] Error verifying list:', error);
+    return { exists: true }; // Proceed if verification fails
+  }
+}
+
 // Map roles specific to Capital Riesgo (PE/VC)
 function mapRoleFromTitle(title: string): string {
   const titleLower = title.toLowerCase();
@@ -753,11 +807,28 @@ serve(async (req) => {
 
       console.log('🔍 [CR Apollo] Fetching ALL contacts from list:', list_id, 'max_pages:', max_pages);
       
+      // ============= PRE-VERIFICATION: Check if list exists =============
+      const listCheck = await verifyListExists(list_id, APOLLO_API_KEY!);
+      console.log(`[CR Apollo] List pre-check: exists=${listCheck.exists}, name=${listCheck.name}, total=${listCheck.total}`);
+      
+      if (!listCheck.exists) {
+        console.error(`❌ [CR Apollo] List "${list_id}" does not exist or was deleted`);
+        return new Response(JSON.stringify({
+          success: false,
+          error: `La lista "${list_id}" no existe en Apollo o fue eliminada. Apollo devolvió ${listCheck.total?.toLocaleString() || 'N/A'} contactos sin filtrar.`,
+          suggestion: 'Verifica el ID de la lista en Apollo: app.apollo.io/#/lists/',
+          filter_ignored: true,
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       let allPeople: any[] = [];
       let currentPage = 1;
       let totalPages = 1;
-      let detectedListName = 'Lista Apollo PE/VC';
-      let totalEntries = 0;
+      let detectedListName = listCheck.name || 'Lista Apollo PE/VC';
+      let totalEntries = listCheck.total || 0;
       
       // Pagination loop - fetch all pages
       do {
@@ -804,43 +875,27 @@ serve(async (req) => {
           totalEntries = data.pagination?.total_entries || 0;
           totalPages = Math.min(Math.ceil(totalEntries / 100), max_pages);
           
-          // ============= FILTER VALIDATION =============
-          // Check if Apollo ignored the list filter (returns entire CRM instead)
+          // ============= DATA QUALITY CHECK (relaxed - pre-verification already done) =============
           const contacts = data.contacts || [];
-          const contactsWithListNames = contacts.filter((c: any) => 
-            c.contact_list_names && c.contact_list_names.length > 0
-          );
           const contactsWithOrg = contacts.filter((c: any) => c.organization?.name);
           
-          console.log(`[CR Apollo] Quality check: ${contactsWithListNames.length}/${contacts.length} have list_names, ${contactsWithOrg.length}/${contacts.length} have org`);
-          
-          // DETECTION: If total_entries > 10,000 AND contacts don't have contact_list_names,
-          // Apollo likely ignored the filter and returned entire CRM
-          if (totalEntries > 10000 && contactsWithListNames.length === 0) {
-            console.error(`⚠️ [CR Apollo] FILTER IGNORED! total_entries: ${totalEntries}, no contacts have list_names`);
-            return new Response(JSON.stringify({
-              success: false,
-              error: `La lista "${list_id}" no existe o fue eliminada. Apollo devolvió ${totalEntries.toLocaleString()} contactos sin filtrar.`,
-              suggestion: 'Verifica el ID de la lista en Apollo: app.apollo.io/#/lists/',
-              total_entries: totalEntries,
-              filter_ignored: true,
-            }), {
-              status: 400,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
+          console.log(`[CR Apollo] Quality check: ${contactsWithOrg.length}/${contacts.length} have org data`);
           
           // WARNING: If < 10% of contacts have organization data, log quality concern
           if (contacts.length > 0 && contactsWithOrg.length < contacts.length * 0.1) {
             console.warn(`⚠️ [CR Apollo] Low quality data: only ${contactsWithOrg.length}/${contacts.length} contacts have organization`);
           }
           
-          // Detect list name from first contact
-          detectedListName = contacts[0]?.contact_list_names?.find(
+          // Try to get better list name from contacts if available
+          const betterListName = contacts[0]?.contact_list_names?.find(
             (name: string) => name.toLowerCase().includes('private equity') || 
                              name.toLowerCase().includes('venture') ||
                              name.toLowerCase().includes('capital')
-          ) || contacts[0]?.contact_list_names?.[0] || 'Lista Apollo PE/VC';
+          ) || contacts[0]?.contact_list_names?.[0];
+          
+          if (betterListName) {
+            detectedListName = betterListName;
+          }
           
           console.log(`[CR Apollo] Total entries: ${totalEntries}, Pages needed: ${totalPages}, List: ${detectedListName}`);
         }
