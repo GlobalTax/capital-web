@@ -328,13 +328,27 @@ export const useCRSearchFromList = () => {
         },
       });
 
-      if (error) throw error;
-      if (!data.success) throw new Error(data.error);
+      // Handle Supabase invoke error
+      if (error) {
+        console.error('[useCRSearchFromList] Supabase error:', error);
+        throw error;
+      }
+      
+      // Handle null data (can happen with 4xx responses)
+      if (!data) {
+        throw new Error('No se recibió respuesta del servidor');
+      }
+      
+      // Handle API error response
+      if (!data.success) {
+        console.error('[useCRSearchFromList] API error:', data.error);
+        throw new Error(data.error || 'Error desconocido del servidor');
+      }
 
       return { 
-        people: data.people, 
+        people: data.people || [], 
         pagination: data.pagination, 
-        list_name: data.list_name,
+        list_name: data.list_name || 'Lista Apollo',
         list_type: data.list_type,
       };
     },
