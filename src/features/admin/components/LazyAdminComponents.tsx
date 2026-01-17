@@ -97,6 +97,7 @@ export const LazyNotificationsPage = lazy(() => import('@/pages/admin/Notificati
 
 // === BREVO SYNC ===
 export const LazyBrevoSyncDashboard = lazy(() => import('@/pages/admin/BrevoSyncDashboard'));
+export const LazyBrevoContactsImport = lazy(() => import('@/pages/admin/BrevoContactsImport'));
 
 // === SEARCH FUNDS INTELLIGENCE ===
 export const LazySFRadarPage = lazy(() => import('@/pages/admin/SFRadarPage'));

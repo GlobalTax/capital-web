@@ -212,3 +212,6 @@ verify_jwt = false
 
 [functions.parse-campaign-screenshot]
 verify_jwt = false
+
+[functions.brevo-list-contacts]
+verify_jwt = false
