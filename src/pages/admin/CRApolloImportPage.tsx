@@ -136,6 +136,14 @@ const CRApolloImportPage: React.FC = () => {
       
       const typeLabel = listType === 'organizations' ? 'empresas' : 'contactos';
       toast.success(`${result.people.length} ${typeLabel} cargados correctamente`);
+      
+      // Show info toast for large lists
+      if (result.pagination?.total_entries > 5000) {
+        toast.info(
+          `Lista grande: ${result.pagination.total_entries.toLocaleString()} contactos totales`,
+          { duration: 4000 }
+        );
+      }
     } catch (error: any) {
       console.error('[UI] List search error:', error);
       
