@@ -92,6 +92,15 @@ export interface WebsiteVisitorSearchParams {
   onlyNew: boolean;
 }
 
+export interface EnrichAndImportParams extends WebsiteVisitorSearchParams {
+  autoImportContacts?: boolean;
+  maxContactsPerCompany?: number;
+}
+
+export interface EnrichAndImportResults extends ImportResults {
+  enriched: number;
+}
+
 // ============= HOOKS =============
 
 export function useApolloVisitorImport() {
@@ -281,6 +290,46 @@ export function useApolloVisitorImport() {
     return results;
   };
 
+  // NEW: Enrich and import in one step (Camino A)
+  const enrichAndImport = async (
+    params: EnrichAndImportParams,
+    importId?: string
+  ): Promise<EnrichAndImportResults> => {
+    setIsImporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('apollo-visitor-import', {
+        body: {
+          action: 'enrich_and_import',
+          date_from: params.dateFrom,
+          date_to: params.dateTo,
+          intent_levels: params.intentLevels,
+          only_new: params.onlyNew,
+          auto_import_contacts: params.autoImportContacts ?? false,
+          max_contacts_per_company: params.maxContactsPerCompany ?? 5,
+          import_id: importId,
+        },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      queryClient.invalidateQueries({ queryKey: ['apollo-visitor-imports'] });
+      queryClient.invalidateQueries({ queryKey: ['apollo-imported-empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-leads'] });
+      
+      const results = data.results as EnrichAndImportResults;
+      
+      toast.success(
+        `✅ Importación completada: ${results.imported} nuevas, ${results.updated} actualizadas, ${results.enriched} enriquecidas. ` +
+        (params.autoImportContacts ? `Contactos: ${results.contacts.imported} nuevos.` : '')
+      );
+      
+      return results;
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return {
     isSearching,
     isImporting,
@@ -290,6 +339,7 @@ export function useApolloVisitorImport() {
     importOrganizations,
     searchContacts,
     importContacts,
+    enrichAndImport,
   };
 }
 

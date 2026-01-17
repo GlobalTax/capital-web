@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Globe, 
   Search, 
@@ -22,6 +23,8 @@ import {
   UserPlus,
   Calendar,
   List,
+  Sparkles,
+  AlertTriangle,
 } from 'lucide-react';
 import { 
   useApolloVisitorImport, 
@@ -78,6 +81,7 @@ export default function ApolloVisitorsPage() {
     searchOrganizations,
     searchWebsiteVisitors,
     importOrganizations,
+    enrichAndImport,
   } = useApolloVisitorImport();
 
   const { data: importHistory, isLoading: historyLoading } = useVisitorImportHistory();
@@ -147,6 +151,34 @@ export default function ApolloVisitorsPage() {
     } catch (error) {
       console.error('Search error:', error);
       toast.error('Error al buscar: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+    }
+  };
+
+  // NEW: Enrich and import in one step
+  const handleEnrichAndImport = async () => {
+    if (!dateFrom || !dateTo) {
+      toast.error('Selecciona un rango de fechas');
+      return;
+    }
+    
+    try {
+      const importJob = await createImport(`enrich_${dateFrom}_${dateTo}`, 'static');
+      setCurrentImportId(importJob.id);
+      
+      const results = await enrichAndImport({
+        dateFrom,
+        dateTo,
+        intentLevels,
+        onlyNew,
+        autoImportContacts,
+        maxContactsPerCompany: parseInt(maxContactsPerCompany, 10),
+      }, importJob.id);
+      
+      setLastImportResults(results);
+      refetchEmpresas();
+    } catch (error) {
+      console.error('Enrich & Import error:', error);
+      toast.error('Error: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   };
 
@@ -247,6 +279,9 @@ export default function ApolloVisitorsPage() {
                 >
                   <Calendar className="h-4 w-4" />
                   Website Visitors
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 bg-primary/10 text-primary">
+                    Recomendado
+                  </Badge>
                 </Button>
                 <Button
                   variant={searchMode === 'list_id' ? 'default' : 'ghost'}
@@ -256,12 +291,50 @@ export default function ApolloVisitorsPage() {
                 >
                   <List className="h-4 w-4" />
                   Lista por ID
+                  <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0 text-muted-foreground">
+                    Solo CRM
+                  </Badge>
                 </Button>
               </div>
+
+              {/* Warning for List ID mode */}
+              {searchMode === 'list_id' && (
+                <Alert variant="default" className="border-amber-200 bg-amber-50/50">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-700">
+                    <strong>Limitación:</strong> Este modo solo muestra empresas que ya están en el CRM de Apollo, 
+                    no visitantes "Net New". Para importar nuevos visitantes del sitio web, usa el modo "Website Visitors".
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Website Visitors Mode */}
               {searchMode === 'website_visitors' && (
                 <div className="space-y-4">
+                  {/* Date presets */}
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm text-muted-foreground">Rango rápido:</span>
+                    {[
+                      { label: '7 días', days: 7 },
+                      { label: '14 días', days: 14 },
+                      { label: '30 días', days: 30 },
+                      { label: '90 días', days: 90 },
+                    ].map(preset => (
+                      <Button
+                        key={preset.days}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => {
+                          setDateFrom(format(subDays(new Date(), preset.days), 'yyyy-MM-dd'));
+                          setDateTo(format(new Date(), 'yyyy-MM-dd'));
+                        }}
+                      >
+                        {preset.label}
+                      </Button>
+                    ))}
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <Label htmlFor="dateFrom">Fecha inicio</Label>
@@ -290,9 +363,9 @@ export default function ApolloVisitorsPage() {
                             variant={intentLevels.includes(level) ? 'default' : 'outline'}
                             size="sm"
                             onClick={() => toggleIntentLevel(level)}
-                            className={level === 'high' ? 'text-xs' : level === 'medium' ? 'text-xs' : 'text-xs'}
+                            className="text-xs"
                           >
-                            {level === 'high' ? 'Alto' : level === 'medium' ? 'Medio' : 'Bajo'}
+                            {level === 'high' ? '🔥 Alto' : level === 'medium' ? '⚡ Medio' : 'Bajo'}
                           </Button>
                         ))}
                       </div>
@@ -310,19 +383,45 @@ export default function ApolloVisitorsPage() {
                       </div>
                     </div>
                   </div>
-                  <Button onClick={handleSearch} disabled={isSearching}>
-                    {isSearching ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Buscando visitantes...
-                      </>
-                    ) : (
-                      <>
-                        <Search className="h-4 w-4 mr-2" />
-                        Buscar Website Visitors
-                      </>
-                    )}
-                  </Button>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-3">
+                    <Button onClick={handleSearch} disabled={isSearching || isImporting} variant="outline">
+                      {isSearching ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Buscando...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Buscar y Previsualizar
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      onClick={handleEnrichAndImport} 
+                      disabled={isSearching || isImporting}
+                      className="gap-2"
+                    >
+                      {isImporting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Importando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4" />
+                          Enriquecer y Guardar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    💡 "Enriquecer y Guardar" busca visitantes, enriquece cada empresa por dominio y las guarda automáticamente en tu CRM.
+                  </p>
                 </div>
               )}
 
