@@ -215,3 +215,6 @@ verify_jwt = false
 
 [functions.brevo-list-contacts]
 verify_jwt = false
+
+[functions.apollo-visitor-import]
+verify_jwt = false
