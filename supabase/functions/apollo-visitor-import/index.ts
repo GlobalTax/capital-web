@@ -141,54 +141,125 @@ async function enrichOrganization(domain: string): Promise<ApolloOrganization | 
 }
 
 // SIMPLIFIED: Search organizations from Apollo list (CRM only)
-// WARNING: This ONLY works for companies already in Apollo CRM, not "net new"
+// Supports both contact lists and account lists
+// WARNING: This ONLY works for items already in Apollo CRM, not "net new"
 async function searchOrganizationsFromList(
   listId: string,
+  listType: 'contacts' | 'accounts' = 'accounts',
   page: number = 1,
   perPage: number = 25
 ): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any; warning?: string }> {
   
-  console.log('[Apollo API] Searching organizations from list (CRM only):', listId);
+  console.log('[Apollo API] Searching from list:', { listId, listType });
   
-  // ONLY use accounts/search - the other strategies don't work for lists
-  const requestBody = {
-    account_list_ids: [listId],
-    page,
-    per_page: perPage,
-  };
+  let organizations: ApolloOrganization[] = [];
+  let totalEntries = 0;
+  let pagination: any = {};
 
-  const response = await fetch('https://api.apollo.io/v1/accounts/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Api-Key': APOLLO_API_KEY!,
-    },
-    body: JSON.stringify(requestBody),
-  });
+  if (listType === 'contacts') {
+    // Use contacts/search for contact lists
+    const requestBody = {
+      contact_list_ids: [listId],
+      page,
+      per_page: perPage,
+    };
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[Apollo API] accounts/search failed:', response.status, errorText);
-    throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+    console.log('[Apollo API] Using /v1/contacts/search with contact_list_ids');
+    
+    const response = await fetch('https://api.apollo.io/v1/contacts/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': APOLLO_API_KEY!,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Apollo API] contacts/search failed:', response.status, errorText);
+      throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    const contacts = data.contacts || data.people || [];
+    totalEntries = data.pagination?.total_entries || 0;
+    pagination = data.pagination;
+
+    console.log('[Apollo API] contacts/search result:', {
+      total: totalEntries,
+      returned: contacts.length,
+      firstResult: contacts[0]?.name || contacts[0]?.first_name,
+    });
+
+    // Extract organizations from contacts
+    const orgMap = new Map<string, ApolloOrganization>();
+    for (const contact of contacts) {
+      const org = contact.organization;
+      if (org && org.id && !orgMap.has(org.id)) {
+        orgMap.set(org.id, {
+          id: org.id,
+          name: org.name,
+          website_url: org.website_url,
+          primary_domain: org.primary_domain,
+          linkedin_url: org.linkedin_url,
+          industry: org.industry,
+          estimated_num_employees: org.estimated_num_employees,
+          city: org.city,
+          state: org.state,
+          country: org.country,
+        });
+      }
+    }
+    organizations = Array.from(orgMap.values());
+    console.log('[Apollo API] Extracted', organizations.length, 'unique organizations from contacts');
+    
+  } else {
+    // Use accounts/search for account lists
+    const requestBody = {
+      account_list_ids: [listId],
+      page,
+      per_page: perPage,
+    };
+
+    console.log('[Apollo API] Using /v1/accounts/search with account_list_ids');
+
+    const response = await fetch('https://api.apollo.io/v1/accounts/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': APOLLO_API_KEY!,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Apollo API] accounts/search failed:', response.status, errorText);
+      throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    organizations = data.accounts || [];
+    totalEntries = data.pagination?.total_entries || 0;
+    pagination = data.pagination;
+
+    console.log('[Apollo API] accounts/search result:', {
+      total: totalEntries,
+      returned: organizations.length,
+      firstResult: organizations[0]?.name,
+    });
   }
 
-  const data = await response.json();
-  const organizations = data.accounts || [];
-  const totalEntries = data.pagination?.total_entries || 0;
-
-  console.log('[Apollo API] accounts/search result:', {
-    total: totalEntries,
-    returned: organizations.length,
-    firstResult: organizations[0]?.name,
-  });
-
-  // ALWAYS show warning since this method only works for CRM accounts
-  const warning = `⚠️ Este método solo muestra empresas que ya están en el CRM de Apollo (${totalEntries} encontradas). Para importar visitantes "Net New", usa el modo "Website Visitors".`;
+  // Warning about CRM-only limitation
+  const warning = listType === 'contacts'
+    ? `ℹ️ Lista de contactos: Se encontraron ${totalEntries} contactos → ${organizations.length} empresas únicas.`
+    : `⚠️ Lista de cuentas: Solo muestra empresas ya en el CRM de Apollo (${totalEntries} encontradas).`;
 
   return {
     organizations,
-    totalEntries,
-    pagination: data.pagination,
+    totalEntries: organizations.length,
+    pagination,
     warning,
   };
 }
@@ -495,7 +566,7 @@ serve(async (req) => {
 
     // ============= ACTION: SEARCH ORGANIZATIONS FROM LIST (CRM ONLY) =============
     if (action === 'search_organizations') {
-      const { import_id, list_id, page = 1, per_page = 25 } = params;
+      const { import_id, list_id, list_type = 'contacts', page = 1, per_page = 25 } = params;
 
       // Update import status
       if (import_id) {
@@ -505,7 +576,8 @@ serve(async (req) => {
           .eq('id', import_id);
       }
 
-      const result = await searchOrganizationsFromList(list_id, page, per_page);
+      // Pass list_type to determine contacts vs accounts endpoint
+      const result = await searchOrganizationsFromList(list_id, list_type, page, per_page);
 
       // Check which organizations already exist in empresas
       const orgsWithStatus = await Promise.all(
