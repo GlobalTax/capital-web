@@ -48,7 +48,7 @@ export interface VisitorImport {
   skipped_count: number;
   error_count: number;
   error_message: string | null;
-  results: any[];
+  results: any;
   created_at: string;
   updated_at: string;
 }
@@ -64,6 +64,25 @@ export interface ImportedEmpresa {
   apollo_intent_level: string | null;
   apollo_score: number | null;
   apollo_last_synced_at: string;
+}
+
+export interface ImportResults {
+  imported: number;
+  updated: number;
+  skipped: number;
+  errors: string[];
+  empresas: { id: string; name: string; apollo_org_id: string }[];
+  contacts: {
+    imported: number;
+    updated: number;
+    skipped: number;
+    errors: string[];
+  };
+}
+
+export interface ImportOptions {
+  autoImportContacts?: boolean;
+  maxContactsPerCompany?: number;
 }
 
 // ============= HOOKS =============
@@ -126,11 +145,14 @@ export function useApolloVisitorImport() {
     }
   };
 
-  // Import selected organizations
+  // Import selected organizations with optional auto-import contacts
   const importOrganizations = async (
     organizations: ApolloOrganization[],
-    importId?: string
-  ) => {
+    importId?: string,
+    options: ImportOptions = {}
+  ): Promise<ImportResults> => {
+    const { autoImportContacts = false, maxContactsPerCompany = 5 } = options;
+    
     setIsImporting(true);
     try {
       const { data, error } = await supabase.functions.invoke('apollo-visitor-import', {
@@ -138,6 +160,8 @@ export function useApolloVisitorImport() {
           action: 'import_organizations',
           organizations,
           import_id: importId,
+          auto_import_contacts: autoImportContacts,
+          max_contacts_per_company: maxContactsPerCompany,
         },
       });
 
@@ -146,9 +170,19 @@ export function useApolloVisitorImport() {
       
       queryClient.invalidateQueries({ queryKey: ['apollo-visitor-imports'] });
       queryClient.invalidateQueries({ queryKey: ['apollo-imported-empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-leads'] });
       
-      const results = data.results;
-      toast.success(`Importación completada: ${results.imported} nuevas, ${results.updated} actualizadas`);
+      const results = data.results as ImportResults;
+      
+      // Show toast with combined results
+      if (autoImportContacts) {
+        toast.success(
+          `Importación completada: ${results.imported} empresas nuevas, ${results.updated} actualizadas. ` +
+          `Contactos: ${results.contacts.imported} nuevos, ${results.contacts.updated} actualizados.`
+        );
+      } else {
+        toast.success(`Importación completada: ${results.imported} nuevas, ${results.updated} actualizadas`);
+      }
       
       return results;
     } finally {

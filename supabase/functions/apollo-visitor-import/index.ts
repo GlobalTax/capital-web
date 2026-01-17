@@ -404,7 +404,12 @@ serve(async (req) => {
 
     // ============= ACTION: IMPORT ORGANIZATIONS =============
     if (action === 'import_organizations') {
-      const { import_id, organizations } = params;
+      const { 
+        import_id, 
+        organizations, 
+        auto_import_contacts = false,
+        max_contacts_per_company = 5 
+      } = params;
 
       if (!organizations || !Array.isArray(organizations)) {
         throw new Error('Organizations array required');
@@ -424,9 +429,22 @@ serve(async (req) => {
         skipped: 0,
         errors: [] as string[],
         empresas: [] as { id: string; name: string; apollo_org_id: string }[],
+        // New: contact stats
+        contacts: {
+          imported: 0,
+          updated: 0,
+          skipped: 0,
+          errors: [] as string[],
+        },
       };
 
+      const totalOrgs = organizations.length;
+      let processedOrgs = 0;
+
       for (const org of organizations) {
+        processedOrgs++;
+        console.log(`[Visitor Import] Processing ${processedOrgs}/${totalOrgs}: ${org.name}`);
+        
         const result = await importOrganizationToEmpresa(supabase, org);
         
         if (result.success) {
@@ -438,6 +456,35 @@ serve(async (req) => {
               name: org.name,
               apollo_org_id: org.id,
             });
+
+            // Auto-import contacts if enabled
+            if (auto_import_contacts && org.id) {
+              try {
+                console.log(`[Visitor Import] Searching contacts for ${org.name} (${org.id})`);
+                const contactsResult = await searchContactsForOrganization(org.id, 1, max_contacts_per_company);
+                
+                // Import up to max_contacts_per_company
+                const contactsToImport = contactsResult.contacts.slice(0, max_contacts_per_company);
+                console.log(`[Visitor Import] Found ${contactsResult.contacts.length} contacts, importing ${contactsToImport.length}`);
+                
+                for (const contact of contactsToImport) {
+                  const contactResult = await importContactToLead(supabase, contact, result.empresaId);
+                  
+                  if (contactResult.success) {
+                    if (contactResult.action === 'created') results.contacts.imported++;
+                    if (contactResult.action === 'updated') results.contacts.updated++;
+                  } else {
+                    results.contacts.skipped++;
+                    if (contactResult.error) {
+                      results.contacts.errors.push(`${contact.name}: ${contactResult.error}`);
+                    }
+                  }
+                }
+              } catch (contactError) {
+                console.error(`[Visitor Import] Error fetching contacts for ${org.name}:`, contactError);
+                results.contacts.errors.push(`${org.name}: ${String(contactError)}`);
+              }
+            }
           }
         } else {
           results.skipped++;
@@ -456,7 +503,10 @@ serve(async (req) => {
             skipped_count: results.skipped,
             error_count: results.errors.length,
             error_message: results.errors.length > 0 ? results.errors.join('; ') : null,
-            results: results.empresas,
+            results: {
+              empresas: results.empresas,
+              contacts: results.contacts,
+            },
           })
           .eq('id', import_id);
       }

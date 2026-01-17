@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Globe, 
   Search, 
@@ -15,16 +17,16 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  ExternalLink,
   RefreshCw,
   Clock,
-  TrendingUp,
+  UserPlus,
 } from 'lucide-react';
 import { 
   useApolloVisitorImport, 
   useVisitorImportHistory, 
   useImportedEmpresas,
   ApolloOrganization,
+  ImportResults,
 } from '@/hooks/useApolloVisitorImport';
 import { OrganizationPreviewTable } from '@/components/admin/apollo-visitors/OrganizationPreviewTable';
 import { ImportedEmpresasTable } from '@/components/admin/apollo-visitors/ImportedEmpresasTable';
@@ -39,6 +41,13 @@ export default function ApolloVisitorsPage() {
   const [selectedOrgs, setSelectedOrgs] = useState<Set<string>>(new Set());
   const [currentImportId, setCurrentImportId] = useState<string | null>(null);
   const [totalFound, setTotalFound] = useState(0);
+  
+  // Auto-import contacts settings
+  const [autoImportContacts, setAutoImportContacts] = useState(true);
+  const [maxContactsPerCompany, setMaxContactsPerCompany] = useState<string>('5');
+  
+  // Last import results
+  const [lastImportResults, setLastImportResults] = useState<ImportResults | null>(null);
   
   // Contact search state
   const [contactSearchOpen, setContactSearchOpen] = useState(false);
@@ -76,6 +85,7 @@ export default function ApolloVisitorsPage() {
       setOrganizations(result.organizations);
       setTotalFound(result.total);
       setSelectedOrgs(new Set());
+      setLastImportResults(null);
     } catch (error) {
       console.error('Search error:', error);
     }
@@ -86,7 +96,12 @@ export default function ApolloVisitorsPage() {
     if (orgsToImport.length === 0) return;
     
     try {
-      await importOrganizations(orgsToImport, currentImportId || undefined);
+      const results = await importOrganizations(orgsToImport, currentImportId || undefined, {
+        autoImportContacts,
+        maxContactsPerCompany: parseInt(maxContactsPerCompany, 10),
+      });
+      
+      setLastImportResults(results);
       // Refresh the lists
       setOrganizations([]);
       setSelectedOrgs(new Set());
@@ -218,31 +233,116 @@ export default function ApolloVisitorsPage() {
                   <Button variant="outline" size="sm" onClick={toggleSelectAll}>
                     {selectedOrgs.size === organizations.length ? 'Deseleccionar' : 'Seleccionar'} todas
                   </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Auto-import contacts option */}
+                <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg border">
+                  <div className="flex items-center gap-2">
+                    <Checkbox 
+                      id="autoImportContacts"
+                      checked={autoImportContacts} 
+                      onCheckedChange={(checked) => setAutoImportContacts(checked === true)}
+                    />
+                    <Label htmlFor="autoImportContacts" className="flex items-center gap-2 cursor-pointer">
+                      <UserPlus className="h-4 w-4 text-primary" />
+                      Importar contactos automáticamente
+                    </Label>
+                  </div>
+                  {autoImportContacts && (
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="maxContacts" className="text-sm text-muted-foreground whitespace-nowrap">
+                        Máximo por empresa:
+                      </Label>
+                      <Select value={maxContactsPerCompany} onValueChange={setMaxContactsPerCompany}>
+                        <SelectTrigger className="w-24">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="3">3</SelectItem>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="10">10</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                <OrganizationPreviewTable
+                  organizations={organizations}
+                  selectedIds={selectedOrgs}
+                  onToggleSelect={toggleSelect}
+                />
+                
+                {/* Import button and progress */}
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    {autoImportContacts && (
+                      <span className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Se buscarán hasta {maxContactsPerCompany} contactos por empresa (CEO, CFO, Directors...)
+                      </span>
+                    )}
+                  </div>
                   <Button 
-                    size="sm" 
+                    size="lg" 
                     onClick={handleImport} 
                     disabled={selectedOrgs.size === 0 || isImporting}
                   >
                     {isImporting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Importando...
+                        Importando {selectedOrgs.size} empresas...
                       </>
                     ) : (
                       <>
                         <Download className="h-4 w-4 mr-2" />
-                        Importar ({selectedOrgs.size})
+                        Importar ({selectedOrgs.size}) {autoImportContacts ? '+ contactos' : ''}
                       </>
                     )}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Last import results */}
+          {lastImportResults && (
+            <Card className="border-green-200 bg-green-50/50">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+                  <CheckCircle2 className="h-5 w-5" />
+                  Importación Completada
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <OrganizationPreviewTable
-                  organizations={organizations}
-                  selectedIds={selectedOrgs}
-                  onToggleSelect={toggleSelect}
-                />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-3 bg-white rounded-lg border">
+                    <p className="text-2xl font-bold text-green-600">{lastImportResults.imported}</p>
+                    <p className="text-sm text-muted-foreground">Empresas nuevas</p>
+                  </div>
+                  <div className="text-center p-3 bg-white rounded-lg border">
+                    <p className="text-2xl font-bold text-blue-600">{lastImportResults.updated}</p>
+                    <p className="text-sm text-muted-foreground">Empresas actualizadas</p>
+                  </div>
+                  <div className="text-center p-3 bg-white rounded-lg border">
+                    <p className="text-2xl font-bold text-green-600">{lastImportResults.contacts.imported}</p>
+                    <p className="text-sm text-muted-foreground">Contactos nuevos</p>
+                  </div>
+                  <div className="text-center p-3 bg-white rounded-lg border">
+                    <p className="text-2xl font-bold text-blue-600">{lastImportResults.contacts.updated}</p>
+                    <p className="text-sm text-muted-foreground">Contactos actualizados</p>
+                  </div>
+                </div>
+                {(lastImportResults.skipped > 0 || lastImportResults.contacts.skipped > 0) && (
+                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <p className="text-sm text-amber-700">
+                      <AlertCircle className="h-4 w-4 inline mr-1" />
+                      {lastImportResults.skipped > 0 && `${lastImportResults.skipped} empresas omitidas. `}
+                      {lastImportResults.contacts.skipped > 0 && `${lastImportResults.contacts.skipped} contactos omitidos (sin email).`}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -301,48 +401,53 @@ export default function ApolloVisitorsPage() {
               ) : importHistory && importHistory.length > 0 ? (
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-3">
-                    {importHistory.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-3 rounded-lg border bg-card"
-                      >
-                        <div className="flex items-center gap-3">
-                          {item.status === 'completed' ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-500" />
-                          ) : item.status === 'failed' ? (
-                            <AlertCircle className="h-5 w-5 text-destructive" />
-                          ) : (
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                          )}
-                          <div>
-                            <p className="font-medium text-sm">Lista: {item.list_id}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(item.created_at), { 
-                                addSuffix: true, 
-                                locale: es 
-                              })}
-                            </p>
+                    {importHistory.map((item) => {
+                      const contactStats = item.results?.contacts;
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-3 rounded-lg border bg-card"
+                        >
+                          <div className="flex items-center gap-3">
+                            {item.status === 'completed' ? (
+                              <CheckCircle2 className="h-5 w-5 text-green-500" />
+                            ) : item.status === 'failed' ? (
+                              <AlertCircle className="h-5 w-5 text-destructive" />
+                            ) : (
+                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            )}
+                            <div>
+                              <p className="font-medium text-sm">Lista: {item.list_id}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(new Date(item.created_at), { 
+                                  addSuffix: true, 
+                                  locale: es 
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="text-right">
+                              <p className="text-muted-foreground">Empresas</p>
+                              <p className="font-medium text-green-600">
+                                +{item.imported_count} / ~{item.updated_count}
+                              </p>
+                            </div>
+                            {contactStats && (
+                              <div className="text-right">
+                                <p className="text-muted-foreground">Contactos</p>
+                                <p className="font-medium text-blue-600">
+                                  +{contactStats.imported} / ~{contactStats.updated}
+                                </p>
+                              </div>
+                            )}
+                            <Badge variant={item.status === 'completed' ? 'default' : item.status === 'failed' ? 'destructive' : 'secondary'}>
+                              {item.status}
+                            </Badge>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 text-sm">
-                          <div className="text-right">
-                            <p className="text-muted-foreground">Encontradas</p>
-                            <p className="font-medium">{item.total_found}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-muted-foreground">Importadas</p>
-                            <p className="font-medium text-green-600">{item.imported_count}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-muted-foreground">Actualizadas</p>
-                            <p className="font-medium text-blue-600">{item.updated_count}</p>
-                          </div>
-                          <Badge variant={item.status === 'completed' ? 'default' : item.status === 'failed' ? 'destructive' : 'secondary'}>
-                            {item.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </ScrollArea>
               ) : (
