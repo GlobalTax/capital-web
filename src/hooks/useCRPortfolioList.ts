@@ -12,7 +12,7 @@ export interface CRPortfolioListItem {
   website: string | null;
   investment_year: number | null;
   status: string | null;
-  deal_type: string | null;
+  investment_type: string | null;
   description: string | null;
   fund_id: string | null;
   fund_name: string | null;
@@ -42,7 +42,7 @@ export const useCRPortfolioList = (filters?: CRPortfolioListFilters) => {
           website,
           investment_year,
           status,
-          deal_type,
+          investment_type,
           description,
           fund_id,
           created_at,
@@ -83,7 +83,7 @@ export const useCRPortfolioList = (filters?: CRPortfolioListFilters) => {
         website: item.website,
         investment_year: item.investment_year,
         status: item.status,
-        deal_type: item.deal_type,
+        investment_type: item.investment_type,
         description: item.description,
         fund_id: item.fund_id,
         fund_name: item.cr_funds?.name || null,

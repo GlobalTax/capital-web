@@ -165,9 +165,9 @@ serve(async (req) => {
             }
           }
 
-          // Logging mejorado
+          // Logging mejorado - use brevo_id for email string (TEXT field)
           await supabase.from('brevo_sync_log').insert({
-            entity_id: email,
+            brevo_id: email,
             entity_type: 'contact',
             sync_type: syncType,
             sync_status: updated ? 'success' : 'no_match',
@@ -210,7 +210,7 @@ serve(async (req) => {
           }
 
           await supabase.from('brevo_sync_log').insert({
-            entity_id: email,
+            brevo_id: email,
             entity_type: 'contact',
             sync_type: syncType,
             sync_status: updated ? 'success' : 'no_match',
@@ -255,7 +255,7 @@ serve(async (req) => {
           }
 
           await supabase.from('brevo_sync_log').insert({
-            entity_id: email,
+            brevo_id: email,
             entity_type: 'contact',
             sync_type: syncType,
             sync_status: updated ? 'success' : 'no_match',
@@ -406,9 +406,9 @@ serve(async (req) => {
           }
         }
 
-        // Log del evento
+        // Log del evento - use brevo_id for email string (TEXT field)
         await supabase.from('brevo_sync_log').insert({
-          entity_id: email,
+          brevo_id: email,
           entity_type: 'webhook_event',
           sync_type: syncType,
           sync_status: updated ? 'success' : 'no_match',
