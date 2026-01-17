@@ -85,6 +85,13 @@ export interface ImportOptions {
   maxContactsPerCompany?: number;
 }
 
+export interface WebsiteVisitorSearchParams {
+  dateFrom: string;
+  dateTo: string;
+  intentLevels: string[];
+  onlyNew: boolean;
+}
+
 // ============= HOOKS =============
 
 export function useApolloVisitorImport() {
@@ -126,6 +133,41 @@ export function useApolloVisitorImport() {
           action: 'search_organizations',
           list_id: listId,
           list_type: listType,
+          import_id: importId,
+          page,
+          per_page: perPage,
+        },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+      
+      return {
+        organizations: data.organizations as ApolloOrganization[],
+        total: data.total as number,
+        pagination: data.pagination,
+      };
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Search website visitors with native Apollo filters (date range + intent)
+  const searchWebsiteVisitors = async (
+    params: WebsiteVisitorSearchParams,
+    importId?: string,
+    page: number = 1,
+    perPage: number = 25
+  ) => {
+    setIsSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('apollo-visitor-import', {
+        body: {
+          action: 'search_website_visitors',
+          date_from: params.dateFrom,
+          date_to: params.dateTo,
+          intent_levels: params.intentLevels,
+          only_new: params.onlyNew,
           import_id: importId,
           page,
           per_page: perPage,
@@ -244,6 +286,7 @@ export function useApolloVisitorImport() {
     isImporting,
     createImport,
     searchOrganizations,
+    searchWebsiteVisitors,
     importOrganizations,
     searchContacts,
     importContacts,

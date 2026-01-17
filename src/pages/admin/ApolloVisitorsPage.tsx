@@ -20,6 +20,8 @@ import {
   RefreshCw,
   Clock,
   UserPlus,
+  Calendar,
+  List,
 } from 'lucide-react';
 import { 
   useApolloVisitorImport, 
@@ -31,16 +33,32 @@ import {
 import { OrganizationPreviewTable } from '@/components/admin/apollo-visitors/OrganizationPreviewTable';
 import { ImportedEmpresasTable } from '@/components/admin/apollo-visitors/ImportedEmpresasTable';
 import { ContactSearchSheet } from '@/components/admin/apollo-visitors/ContactSearchSheet';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, subDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
+
+type SearchMode = 'website_visitors' | 'list_id';
 
 export default function ApolloVisitorsPage() {
+  // Search mode
+  const [searchMode, setSearchMode] = useState<SearchMode>('website_visitors');
+  
+  // List ID mode state
   const [listId, setListId] = useState('');
   const [listType, setListType] = useState<'static' | 'dynamic'>('static');
+  
+  // Website Visitors mode state
+  const [dateFrom, setDateFrom] = useState(() => format(subDays(new Date(), 30), 'yyyy-MM-dd'));
+  const [dateTo, setDateTo] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  const [intentLevels, setIntentLevels] = useState<string[]>(['high', 'medium']);
+  const [onlyNew, setOnlyNew] = useState(true);
+  
+  // Common state
   const [organizations, setOrganizations] = useState<ApolloOrganization[]>([]);
   const [selectedOrgs, setSelectedOrgs] = useState<Set<string>>(new Set());
   const [currentImportId, setCurrentImportId] = useState<string | null>(null);
   const [totalFound, setTotalFound] = useState(0);
+  const [searchWarning, setSearchWarning] = useState<string | null>(null);
   
   // Auto-import contacts settings
   const [autoImportContacts, setAutoImportContacts] = useState(true);
@@ -58,6 +76,7 @@ export default function ApolloVisitorsPage() {
     isImporting,
     createImport,
     searchOrganizations,
+    searchWebsiteVisitors,
     importOrganizations,
   } = useApolloVisitorImport();
 
@@ -73,21 +92,61 @@ export default function ApolloVisitorsPage() {
     return input.trim();
   };
 
+  const toggleIntentLevel = (level: string) => {
+    setIntentLevels(prev => 
+      prev.includes(level) 
+        ? prev.filter(l => l !== level)
+        : [...prev, level]
+    );
+  };
+
   const handleSearch = async () => {
-    if (!listId.trim()) return;
-    
     try {
-      const parsedId = parseListId(listId);
-      const importJob = await createImport(parsedId, listType);
-      setCurrentImportId(importJob.id);
+      setSearchWarning(null);
       
-      const result = await searchOrganizations(parsedId, listType, importJob.id);
-      setOrganizations(result.organizations);
-      setTotalFound(result.total);
-      setSelectedOrgs(new Set());
-      setLastImportResults(null);
+      if (searchMode === 'website_visitors') {
+        // Use native website visitors search
+        if (!dateFrom || !dateTo) {
+          toast.error('Selecciona un rango de fechas');
+          return;
+        }
+        
+        const importJob = await createImport(`visitors_${dateFrom}_${dateTo}`, 'static');
+        setCurrentImportId(importJob.id);
+        
+        const result = await searchWebsiteVisitors(
+          { dateFrom, dateTo, intentLevels, onlyNew },
+          importJob.id
+        );
+        setOrganizations(result.organizations);
+        setTotalFound(result.total);
+        setSelectedOrgs(new Set());
+        setLastImportResults(null);
+      } else {
+        // Use list ID search
+        if (!listId.trim()) {
+          toast.error('Introduce un ID de lista');
+          return;
+        }
+        
+        const parsedId = parseListId(listId);
+        const importJob = await createImport(parsedId, listType);
+        setCurrentImportId(importJob.id);
+        
+        const result = await searchOrganizations(parsedId, listType, importJob.id);
+        setOrganizations(result.organizations);
+        setTotalFound(result.total);
+        setSelectedOrgs(new Set());
+        setLastImportResults(null);
+        
+        // Show warning if present (means filter may not be working)
+        if ((result as any).warning) {
+          setSearchWarning((result as any).warning);
+        }
+      }
     } catch (error) {
       console.error('Search error:', error);
+      toast.error('Error al buscar: ' + (error instanceof Error ? error.message : 'Error desconocido'));
     }
   };
 
@@ -172,52 +231,156 @@ export default function ApolloVisitorsPage() {
         <TabsContent value="import" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Buscar en Lista Apollo</CardTitle>
+              <CardTitle className="text-lg">Buscar Visitantes o Lista Apollo</CardTitle>
               <CardDescription>
-                Pega la URL o ID de tu lista de Apollo (ej: "webbers")
+                Elige el modo de búsqueda: Website Visitors (recomendado) o Lista por ID
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="listId">URL o ID de Lista</Label>
-                  <Input
-                    id="listId"
-                    placeholder="https://app.apollo.io/lists/abc123 o abc123"
-                    value={listId}
-                    onChange={(e) => setListId(e.target.value)}
-                  />
-                </div>
-                <div className="w-40">
-                  <Label htmlFor="listType">Tipo de Lista</Label>
-                  <select
-                    id="listType"
-                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    value={listType}
-                    onChange={(e) => setListType(e.target.value as 'static' | 'dynamic')}
-                  >
-                    <option value="static">Estática</option>
-                    <option value="dynamic">Dinámica</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
-                  <Button onClick={handleSearch} disabled={isSearching || !listId.trim()}>
+              {/* Mode Selector */}
+              <div className="flex gap-2 p-1 bg-muted rounded-lg w-fit">
+                <Button
+                  variant={searchMode === 'website_visitors' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSearchMode('website_visitors')}
+                  className="gap-2"
+                >
+                  <Calendar className="h-4 w-4" />
+                  Website Visitors
+                </Button>
+                <Button
+                  variant={searchMode === 'list_id' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSearchMode('list_id')}
+                  className="gap-2"
+                >
+                  <List className="h-4 w-4" />
+                  Lista por ID
+                </Button>
+              </div>
+
+              {/* Website Visitors Mode */}
+              {searchMode === 'website_visitors' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label htmlFor="dateFrom">Fecha inicio</Label>
+                      <Input
+                        id="dateFrom"
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="dateTo">Fecha fin</Label>
+                      <Input
+                        id="dateTo"
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Nivel de Intent</Label>
+                      <div className="flex gap-2 mt-2">
+                        {['high', 'medium', 'low'].map(level => (
+                          <Button
+                            key={level}
+                            variant={intentLevels.includes(level) ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => toggleIntentLevel(level)}
+                            className={level === 'high' ? 'text-xs' : level === 'medium' ? 'text-xs' : 'text-xs'}
+                          >
+                            {level === 'high' ? 'Alto' : level === 'medium' ? 'Medio' : 'Bajo'}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-end">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Checkbox
+                          id="onlyNew"
+                          checked={onlyNew}
+                          onCheckedChange={(checked) => setOnlyNew(checked === true)}
+                        />
+                        <Label htmlFor="onlyNew" className="text-sm cursor-pointer">
+                          Solo visitantes nuevos
+                        </Label>
+                      </div>
+                    </div>
+                  </div>
+                  <Button onClick={handleSearch} disabled={isSearching}>
                     {isSearching ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Buscando...
+                        Buscando visitantes...
                       </>
                     ) : (
                       <>
                         <Search className="h-4 w-4 mr-2" />
-                        Buscar
+                        Buscar Website Visitors
                       </>
                     )}
                   </Button>
                 </div>
-              </div>
+              )}
+
+              {/* List ID Mode */}
+              {searchMode === 'list_id' && (
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="listId">URL o ID de Lista</Label>
+                    <Input
+                      id="listId"
+                      placeholder="https://app.apollo.io/lists/abc123 o abc123"
+                      value={listId}
+                      onChange={(e) => setListId(e.target.value)}
+                    />
+                  </div>
+                  <div className="w-40">
+                    <Label htmlFor="listType">Tipo de Lista</Label>
+                    <select
+                      id="listType"
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      value={listType}
+                      onChange={(e) => setListType(e.target.value as 'static' | 'dynamic')}
+                    >
+                      <option value="static">Estática</option>
+                      <option value="dynamic">Dinámica</option>
+                    </select>
+                  </div>
+                  <div className="flex items-end">
+                    <Button onClick={handleSearch} disabled={isSearching || !listId.trim()}>
+                      {isSearching ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Buscando...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Buscar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* Warning message */}
+          {searchWarning && (
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardContent className="py-4">
+                <p className="text-sm text-amber-700 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  {searchWarning}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Results */}
           {organizations.length > 0 && (

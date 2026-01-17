@@ -176,17 +176,21 @@ async function searchOrganizationsFromList(
 ): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any }> {
   const listKey = listType === 'static' ? 'account_list_ids' : 'saved_list_ids';
   
+  const requestBody = {
+    [listKey]: [listId],
+    page,
+    per_page: perPage,
+  };
+
+  console.log('[Apollo API] Request:', JSON.stringify(requestBody));
+
   const response = await fetch('https://api.apollo.io/v1/accounts/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Api-Key': APOLLO_API_KEY!,
     },
-    body: JSON.stringify({
-      [listKey]: [listId],
-      page,
-      per_page: perPage,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
@@ -197,6 +201,66 @@ async function searchOrganizationsFromList(
 
   const data = await response.json();
   console.log('[Apollo API] Found', data.accounts?.length || 0, 'organizations, total:', data.pagination?.total_entries);
+
+  // Warn if result count seems suspiciously high (filter might not be working)
+  if (data.pagination?.total_entries > 1000) {
+    console.warn('[Apollo API] WARNING: High result count - list filter may not be working correctly');
+  }
+
+  return {
+    organizations: data.accounts || [],
+    totalEntries: data.pagination?.total_entries || 0,
+    pagination: data.pagination,
+  };
+}
+
+// NEW: Search website visitors with native Apollo filters
+async function searchWebsiteVisitors(
+  dateFrom: string,
+  dateTo: string,
+  intentLevels: string[] = ['high', 'medium', 'low'],
+  onlyNew: boolean = false,
+  page: number = 1,
+  perPage: number = 25
+): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any }> {
+  const requestBody: Record<string, any> = {
+    website_visitor_visit_date_range: {
+      min: dateFrom,
+      max: dateTo,
+    },
+    page,
+    per_page: perPage,
+  };
+
+  // Only add intent filter if specific levels selected
+  if (intentLevels.length > 0 && intentLevels.length < 3) {
+    requestBody.website_visitor_intent_level = intentLevels;
+  }
+
+  // Only show visitors not yet in CRM
+  if (onlyNew) {
+    requestBody.prospected_by_current_team = false;
+  }
+
+  console.log('[Apollo API] Website Visitors Request:', JSON.stringify(requestBody));
+
+  const response = await fetch('https://api.apollo.io/v1/accounts/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Api-Key': APOLLO_API_KEY!,
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Apollo API] Error:', response.status, errorText);
+    throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  console.log('[Apollo API] Website Visitors Found:', data.accounts?.length || 0, 'total:', data.pagination?.total_entries);
 
   return {
     organizations: data.accounts || [],
@@ -368,6 +432,71 @@ serve(async (req) => {
       }
 
       const result = await searchOrganizationsFromList(list_id, list_type, page, per_page);
+
+      // Check which organizations already exist in empresas
+      const orgsWithStatus = await Promise.all(
+        result.organizations.map(async (org) => {
+          const existing = await findExistingEmpresa(supabase, org);
+          return {
+            ...org,
+            existsInEmpresas: !!existing,
+            existingEmpresaId: existing?.id,
+          };
+        })
+      );
+
+      // Update import with total found
+      if (import_id) {
+        await supabase
+          .from('apollo_visitor_imports')
+          .update({ 
+            total_found: result.totalEntries,
+            status: 'pending',
+          })
+          .eq('id', import_id);
+      }
+
+      // Add warning if filter seems to not be working
+      const filterWarning = result.totalEntries > 1000 
+        ? 'ADVERTENCIA: El resultado parece incluir todo el CRM en lugar de solo la lista. Verifica que el ID de lista es correcto o usa el modo "Website Visitors".'
+        : null;
+
+      return new Response(JSON.stringify({
+        success: true,
+        organizations: orgsWithStatus,
+        total: result.totalEntries,
+        pagination: result.pagination,
+        warning: filterWarning,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============= ACTION: SEARCH WEBSITE VISITORS (Native filters) =============
+    if (action === 'search_website_visitors') {
+      const { 
+        import_id, 
+        date_from, 
+        date_to, 
+        intent_levels = ['high', 'medium', 'low'],
+        only_new = false,
+        page = 1, 
+        per_page = 25 
+      } = params;
+
+      if (!date_from || !date_to) {
+        throw new Error('date_from and date_to are required');
+      }
+
+      // Update import status
+      if (import_id) {
+        await supabase
+          .from('apollo_visitor_imports')
+          .update({ status: 'searching' })
+          .eq('id', import_id);
+      }
+
+      const result = await searchWebsiteVisitors(date_from, date_to, intent_levels, only_new, page, per_page);
 
       // Check which organizations already exist in empresas
       const orgsWithStatus = await Promise.all(
