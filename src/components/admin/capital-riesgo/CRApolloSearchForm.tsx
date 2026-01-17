@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Search, 
   ChevronDown, 
@@ -19,8 +20,11 @@ import {
   List,
   Link2,
   Building2,
-  User
+  User,
+  AlertTriangle,
+  Globe
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { CRApolloSearchCriteria, CRApolloSearchPreset } from '@/hooks/useCRApolloSearchImport';
 
 export type ListType = 'contacts' | 'organizations';
@@ -96,6 +100,7 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
   isSearching,
   isSearchingFromList,
 }) => {
+  const navigate = useNavigate();
   const [criteria, setCriteria] = useState<CRApolloSearchCriteria>({
     person_titles: [],
     person_locations: [],
@@ -196,6 +201,28 @@ export const CRApolloSearchForm: React.FC<CRApolloSearchFormProps> = ({
                 ? '👤 Importa personas con su cargo, email y empresa asociada' 
                 : '🏢 Importa empresas directamente para crear fondos sin contactos'}
             </p>
+            
+            {/* Warning for Website Visitors lists */}
+            {listType === 'organizations' && (
+              <Alert variant="default" className="mt-2 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
+                  <strong>⚠️ Importante:</strong> Si tu lista contiene <strong>"Website Visitors" (Net New)</strong>, 
+                  no funcionará aquí porque esas empresas aún no están en tu CRM de Apollo.
+                  <br />
+                  Para visitantes web, usa el módulo <strong>Apollo Visitors</strong>.
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="h-auto p-0 text-xs text-amber-700 dark:text-amber-300 underline ml-1"
+                    onClick={() => navigate('/admin/apollo-visitors')}
+                  >
+                    <Globe className="h-3 w-3 mr-1" />
+                    Ir a Apollo Visitors →
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
           
           <div className="flex gap-2">

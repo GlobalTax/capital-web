@@ -952,6 +952,28 @@ serve(async (req) => {
           detectedListName = 'Lista Apollo Empresas';
           
           console.log(`[CR Apollo] Total entries: ${totalEntries}, Pages needed: ${totalPages}`);
+          
+          // WARNING: If total_entries is suspiciously high (>10000), the filter likely didn't apply
+          // This happens with "Website Visitors Net New" lists - they are NOT Accounts in CRM
+          if (totalEntries > 10000 && data.accounts?.length === 100) {
+            console.warn(`⚠️ [CR Apollo] WARNING: total_entries=${totalEntries} is very high!`);
+            console.warn(`⚠️ [CR Apollo] The account_list_ids filter may not have applied.`);
+            console.warn(`⚠️ [CR Apollo] This list (${list_id}) might be a "Website Visitors Net New" list.`);
+            console.warn(`⚠️ [CR Apollo] For Website Visitors, use /admin/apollo-visitors instead.`);
+            
+            // Return early with warning
+            return new Response(JSON.stringify({
+              success: false,
+              error: 'Esta lista parece contener "Website Visitors Net New" que no son Accounts en Apollo CRM. Usa el módulo Apollo Visitors para importar visitantes web.',
+              warning: 'HIGH_TOTAL_ENTRIES',
+              total_entries: totalEntries,
+              suggestion: 'Use /admin/apollo-visitors for Website Visitors lists',
+              list_id,
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
         }
         
         // Map organizations to fund-compatible format
