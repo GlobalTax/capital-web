@@ -210,7 +210,8 @@ async function searchOrganizationsFromList(
     console.log('[Apollo API] Has accounts:', !!data.accounts, 'count:', data.accounts?.length);
     console.log('[Apollo API] Pagination:', JSON.stringify(data.pagination));
     
-    const organizations = data.organizations || [];
+    // CRITICAL: mixed_companies/search returns data in "accounts" field, not "organizations"
+    const organizations = data.accounts || data.organizations || [];
     const totalEntries = data.pagination?.total_entries || 0;
     
     // If we got reasonable results, return them
@@ -258,7 +259,8 @@ async function searchOrganizationsFromList(
       total: data.pagination?.total_entries,
     });
     
-    const organizations = data.organizations || [];
+    // CRITICAL: mixed_companies/search returns data in "accounts" field, not "organizations"
+    const organizations = data.accounts || data.organizations || [];
     const totalEntries = data.pagination?.total_entries || 0;
     
     if (organizations.length > 0 && totalEntries < 1000000) {
