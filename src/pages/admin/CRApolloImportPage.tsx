@@ -65,6 +65,18 @@ const CRApolloImportPage: React.FC = () => {
       const result = await search({ criteria, import_id: importId });
       setSearchResults(result.people);
       setPagination(result.pagination);
+      
+      // Update the job in database to 'previewing' status with total_results
+      if (result.people.length > 0) {
+        await supabase
+          .from('cr_apollo_imports')
+          .update({ 
+            status: 'previewing', 
+            total_results: result.people.length,
+          })
+          .eq('id', importId);
+        refetchHistory();
+      }
     } catch (error) {
       console.error('Search error:', error);
     }
@@ -111,6 +123,16 @@ const CRApolloImportPage: React.FC = () => {
       setSearchResults(result.people);
       setPagination(result.pagination);
       setListName(result.list_name);
+      
+      // Update the job in database to 'previewing' status with total_results
+      await supabase
+        .from('cr_apollo_imports')
+        .update({ 
+          status: 'previewing', 
+          total_results: result.people.length,
+        })
+        .eq('id', createdImportId);
+      refetchHistory();
       
       const typeLabel = listType === 'organizations' ? 'empresas' : 'contactos';
       toast.success(`${result.people.length} ${typeLabel} cargados correctamente`);
@@ -234,6 +256,17 @@ const CRApolloImportPage: React.FC = () => {
       setSearchResults(result.people);
       setPagination(result.pagination);
       setListName(result.list_name);
+      
+      // Update the job in database to 'previewing' status with total_results
+      await supabase
+        .from('cr_apollo_imports')
+        .update({ 
+          status: 'previewing', 
+          total_results: result.people.length,
+        })
+        .eq('id', importJob.id);
+      refetchHistory();
+      
       const typeLabel = listType === 'organizations' ? 'empresas' : 'contactos';
       toast.success(`${result.people.length} ${typeLabel} recuperados`);
     } catch (error) {
