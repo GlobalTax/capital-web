@@ -215,6 +215,7 @@ async function searchOrganizationsFromList(
 }
 
 // NEW: Search website visitors with native Apollo filters
+// CRITICAL: Uses /v1/mixed_companies/search endpoint with q_organization_search_criteria
 async function searchWebsiteVisitors(
   dateFrom: string,
   dateTo: string,
@@ -222,29 +223,37 @@ async function searchWebsiteVisitors(
   onlyNew: boolean = false,
   page: number = 1,
   perPage: number = 25
-): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any }> {
-  const requestBody: Record<string, any> = {
+): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any; warning?: string }> {
+  
+  // Build the search criteria object - this MUST be nested in q_organization_search_criteria
+  const searchCriteria: Record<string, any> = {
     website_visitor_visit_date_range: {
       min: dateFrom,
       max: dateTo,
     },
+  };
+
+  // Add intent level filter
+  if (intentLevels.length > 0) {
+    searchCriteria.website_visitor_intent_level = intentLevels;
+  }
+
+  // Only show visitors not yet prospected by team
+  if (onlyNew) {
+    searchCriteria.prospected_by_current_team = [false];
+  }
+
+  // CORRECT structure: filters nested in q_organization_search_criteria
+  const requestBody = {
+    q_organization_search_criteria: searchCriteria,
     page,
     per_page: perPage,
   };
 
-  // Only add intent filter if specific levels selected
-  if (intentLevels.length > 0 && intentLevels.length < 3) {
-    requestBody.website_visitor_intent_level = intentLevels;
-  }
+  console.log('[Apollo API] Website Visitors Request to /v1/mixed_companies/search:', JSON.stringify(requestBody, null, 2));
 
-  // Only show visitors not yet in CRM
-  if (onlyNew) {
-    requestBody.prospected_by_current_team = false;
-  }
-
-  console.log('[Apollo API] Website Visitors Request:', JSON.stringify(requestBody));
-
-  const response = await fetch('https://api.apollo.io/v1/accounts/search', {
+  // CORRECT endpoint: mixed_companies/search for website visitors
+  const response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -260,12 +269,30 @@ async function searchWebsiteVisitors(
   }
 
   const data = await response.json();
-  console.log('[Apollo API] Website Visitors Found:', data.accounts?.length || 0, 'total:', data.pagination?.total_entries);
+  
+  // mixed_companies/search returns "organizations" not "accounts"
+  const organizations = data.organizations || [];
+  const totalEntries = data.pagination?.total_entries || 0;
+  
+  console.log('[Apollo API] Website Visitors Response:', {
+    endpoint: 'mixed_companies/search',
+    total: totalEntries,
+    returned: organizations.length,
+    firstResult: organizations[0]?.name,
+  });
+
+  // Warning if result count is suspiciously high
+  let warning: string | undefined;
+  if (totalEntries > 500) {
+    warning = `Se encontraron ${totalEntries} resultados. Si esto parece demasiado, verifica los filtros de fecha e intent.`;
+    console.warn('[Apollo API] WARNING: High result count may indicate filter issue');
+  }
 
   return {
-    organizations: data.accounts || [],
-    totalEntries: data.pagination?.total_entries || 0,
+    organizations,
+    totalEntries,
     pagination: data.pagination,
+    warning,
   };
 }
 
