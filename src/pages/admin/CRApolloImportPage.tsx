@@ -102,9 +102,31 @@ const CRApolloImportPage: React.FC = () => {
 
       console.log('[UI] Calling searchFromList with list_id:', listId, 'list_type:', listType);
       const result = await searchFromList({ list_id: listId, list_type: listType });
-      console.log('[UI] searchFromList returned:', result?.people?.length || 0, 'items');
+      console.log('[UI] searchFromList returned:', result);
       
-      if (!result?.people || result.people.length === 0) {
+      // Handle error returned in result (not thrown)
+      if (result.error) {
+        console.error('[UI] List search returned error:', result.error);
+        
+        // Mark the job as failed with error message
+        if (createdImportId) {
+          await supabase
+            .from('cr_apollo_imports')
+            .update({ 
+              status: 'failed', 
+              error_message: result.error 
+            })
+            .eq('id', createdImportId);
+          refetchHistory();
+        }
+        
+        // Show error toast
+        toast.error(result.error, { duration: 8000 });
+        setSearchResults([]);
+        return;
+      }
+      
+      if (!result.people || result.people.length === 0) {
         // Mark the job as failed so it doesn't stay pending
         await supabase
           .from('cr_apollo_imports')
@@ -134,9 +156,6 @@ const CRApolloImportPage: React.FC = () => {
         .eq('id', createdImportId);
       refetchHistory();
       
-      const typeLabel = listType === 'organizations' ? 'empresas' : 'contactos';
-      toast.success(`${result.people.length} ${typeLabel} cargados correctamente`);
-      
       // Show info toast for large lists
       if (result.pagination?.total_entries > 5000) {
         toast.info(
@@ -145,50 +164,21 @@ const CRApolloImportPage: React.FC = () => {
         );
       }
     } catch (error: any) {
-      console.error('[UI] List search error caught:', error);
-      console.error('[UI] Error message:', error?.message);
+      // This catch is for unexpected errors (network, etc.)
+      console.error('[UI] Unexpected error:', error);
       
-      // Parse the error - check if it's a "filter ignored" error from the Edge Function
-      let errorMsg = 'Error desconocido';
-      let isFilterIgnored = false;
-      
-      try {
-        if (error instanceof Error) {
-          errorMsg = error.message;
-          // Check if error message contains our special marker
-          if (errorMsg.includes('sin filtrar') || 
-              errorMsg.includes('no existe') || 
-              errorMsg.includes('Website Visitors')) {
-            isFilterIgnored = true;
-          }
-        }
-      } catch (parseErr) {
-        console.error('[UI] Error parsing error:', parseErr);
+      if (createdImportId) {
+        await supabase
+          .from('cr_apollo_imports')
+          .update({ 
+            status: 'failed', 
+            error_message: error?.message || 'Error inesperado'
+          })
+          .eq('id', createdImportId);
+        refetchHistory();
       }
       
-      // Mark the job as failed with error message
-      try {
-        if (createdImportId) {
-          await supabase
-            .from('cr_apollo_imports')
-            .update({ 
-              status: 'failed', 
-              error_message: errorMsg 
-            })
-            .eq('id', createdImportId);
-          refetchHistory();
-        }
-      } catch (dbErr) {
-        console.error('[UI] Error updating import status:', dbErr);
-      }
-      
-      // Show appropriate toast based on error type
-      if (isFilterIgnored) {
-        toast.error(errorMsg, { duration: 8000 });
-      } else {
-        toast.error(`Error cargando lista: ${errorMsg}`);
-      }
-      
+      toast.error(`Error inesperado: ${error?.message || 'Error desconocido'}`);
       setSearchResults([]);
     }
   };
