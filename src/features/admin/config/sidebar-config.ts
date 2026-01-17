@@ -442,6 +442,13 @@ export const sidebarSections: SidebarSection[] = [
         badge: "NEW",
         description: "Envío de newsletters a suscriptores"
       },
+      { 
+        title: "Importar Brevo", 
+        url: "/admin/brevo-import", 
+        icon: Users,
+        badge: "NEW",
+        description: "Importar contactos desde Brevo"
+      },
     ]
   },
   {

@@ -60,6 +60,7 @@ import {
   LazyNotificationsPage,
   LazyAcquisitionChannelsSettings,
   LazyBrevoSyncDashboard,
+  LazyBrevoContactsImport,
   LazySFRadarPage,
   LazySFDirectoryPage,
   LazySFBackersPage,
@@ -184,6 +185,7 @@ const AdminRouter = () => {
           <Route path="/mandatos-compra" element={<LazyBuySideMandatesPage />} />
           <Route path="/notifications" element={<LazyNotificationsPage />} />
           <Route path="/brevo-sync" element={<LazyBrevoSyncDashboard />} />
+          <Route path="/brevo-import" element={<LazyBrevoContactsImport />} />
           
           {/* Search Funds Intelligence */}
           <Route path="/sf-apollo-import" element={<LazySFApolloImportPage />} />

@@ -1526,6 +1526,78 @@ export type Database = {
         }
         Relationships: []
       }
+      brevo_contacts: {
+        Row: {
+          attributes: Json | null
+          brevo_created_at: string | null
+          brevo_id: number | null
+          brevo_modified_at: string | null
+          company: string | null
+          crm_entity_id: string | null
+          crm_entity_type: string | null
+          email: string
+          email_blacklisted: boolean | null
+          first_name: string | null
+          id: string
+          import_batch_id: string | null
+          imported_at: string
+          is_synced_to_crm: boolean | null
+          last_name: string | null
+          list_ids: number[] | null
+          list_names: string[] | null
+          notes: string | null
+          sms: string | null
+          sms_blacklisted: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          attributes?: Json | null
+          brevo_created_at?: string | null
+          brevo_id?: number | null
+          brevo_modified_at?: string | null
+          company?: string | null
+          crm_entity_id?: string | null
+          crm_entity_type?: string | null
+          email: string
+          email_blacklisted?: boolean | null
+          first_name?: string | null
+          id?: string
+          import_batch_id?: string | null
+          imported_at?: string
+          is_synced_to_crm?: boolean | null
+          last_name?: string | null
+          list_ids?: number[] | null
+          list_names?: string[] | null
+          notes?: string | null
+          sms?: string | null
+          sms_blacklisted?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          attributes?: Json | null
+          brevo_created_at?: string | null
+          brevo_id?: number | null
+          brevo_modified_at?: string | null
+          company?: string | null
+          crm_entity_id?: string | null
+          crm_entity_type?: string | null
+          email?: string
+          email_blacklisted?: boolean | null
+          first_name?: string | null
+          id?: string
+          import_batch_id?: string | null
+          imported_at?: string
+          is_synced_to_crm?: boolean | null
+          last_name?: string | null
+          list_ids?: number[] | null
+          list_names?: string[] | null
+          notes?: string | null
+          sms?: string | null
+          sms_blacklisted?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       brevo_sync_log: {
         Row: {
           attributes_sent: Json | null
