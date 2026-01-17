@@ -168,7 +168,10 @@ async function importOrganizationToEmpresa(
   }
 }
 
-// CRITICAL: Uses /v1/mixed_companies/search with organization_list_ids for global search
+// CRITICAL: Multi-strategy search for organizations from Apollo lists
+// Strategy 1: label_ids in mixed_companies/search (works for Website Visitor lists)
+// Strategy 2: organization_list_ids in mixed_companies/search 
+// Strategy 3: Fallback to accounts/search (only CRM accounts)
 async function searchOrganizationsFromList(
   listId: string,
   _listType: 'static' | 'dynamic', // Kept for backwards compatibility, not used
@@ -176,9 +179,60 @@ async function searchOrganizationsFromList(
   perPage: number = 25
 ): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any; warning?: string }> {
   
-  // CORRECT structure: organization_list_ids nested in q_organization_search_criteria
-  // This searches the GLOBAL Apollo database, not just CRM accounts
-  const requestBody = {
+  // ========== STRATEGY 1: Try label_ids (works for Website Visitor lists) ==========
+  console.log('[Apollo API] Strategy 1: Trying label_ids in mixed_companies/search');
+  
+  const labelRequestBody = {
+    q_organization_search_criteria: {
+      label_ids: [listId],
+    },
+    page,
+    per_page: perPage,
+  };
+
+  console.log('[Apollo API] Request body:', JSON.stringify(labelRequestBody, null, 2));
+
+  let response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Api-Key': APOLLO_API_KEY!,
+    },
+    body: JSON.stringify(labelRequestBody),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    
+    // Log RAW response for debugging
+    console.log('[Apollo API] RAW Response keys:', Object.keys(data));
+    console.log('[Apollo API] Has organizations:', !!data.organizations, 'count:', data.organizations?.length);
+    console.log('[Apollo API] Has accounts:', !!data.accounts, 'count:', data.accounts?.length);
+    console.log('[Apollo API] Pagination:', JSON.stringify(data.pagination));
+    
+    const organizations = data.organizations || [];
+    const totalEntries = data.pagination?.total_entries || 0;
+    
+    // If we got reasonable results, return them
+    if (organizations.length > 0 && totalEntries < 1000000) {
+      console.log('[Apollo API] Strategy 1 SUCCESS:', { total: totalEntries, returned: organizations.length });
+      return {
+        organizations,
+        totalEntries,
+        pagination: data.pagination,
+        warning: totalEntries > 500 ? `Se encontraron ${totalEntries} resultados.` : undefined,
+      };
+    }
+    
+    console.log('[Apollo API] Strategy 1 returned 0 results or too many, trying next strategy');
+  } else {
+    console.log('[Apollo API] Strategy 1 failed with status:', response.status);
+  }
+
+  // ========== STRATEGY 2: Try organization_list_ids ==========
+  console.log('[Apollo API] Strategy 2: Trying organization_list_ids in mixed_companies/search');
+  
+  const orgListRequestBody = {
     q_organization_search_criteria: {
       organization_list_ids: [listId],
     },
@@ -186,43 +240,86 @@ async function searchOrganizationsFromList(
     per_page: perPage,
   };
 
-  console.log('[Apollo API] List Search Request to /v1/mixed_companies/search:', JSON.stringify(requestBody, null, 2));
-
-  // CORRECT endpoint: mixed_companies/search for global search (including Net New companies)
-  const response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
+  response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Api-Key': APOLLO_API_KEY!,
     },
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(orgListRequestBody),
+  });
+
+  if (response.ok) {
+    const data = await response.json();
+    console.log('[Apollo API] Strategy 2 RAW Response:', {
+      keys: Object.keys(data),
+      organizations: data.organizations?.length,
+      accounts: data.accounts?.length,
+      total: data.pagination?.total_entries,
+    });
+    
+    const organizations = data.organizations || [];
+    const totalEntries = data.pagination?.total_entries || 0;
+    
+    if (organizations.length > 0 && totalEntries < 1000000) {
+      console.log('[Apollo API] Strategy 2 SUCCESS:', { total: totalEntries, returned: organizations.length });
+      return {
+        organizations,
+        totalEntries,
+        pagination: data.pagination,
+        warning: totalEntries > 500 ? `Se encontraron ${totalEntries} resultados.` : undefined,
+      };
+    }
+  }
+
+  // ========== STRATEGY 3: Fallback to accounts/search (CRM accounts only) ==========
+  console.log('[Apollo API] Strategy 3 FALLBACK: Trying accounts/search with account_list_ids');
+  
+  const accountsRequestBody = {
+    account_list_ids: [listId],
+    page,
+    per_page: perPage,
+  };
+
+  response = await fetch('https://api.apollo.io/v1/accounts/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Api-Key': APOLLO_API_KEY!,
+    },
+    body: JSON.stringify(accountsRequestBody),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[Apollo API] Error:', response.status, errorText);
+    console.error('[Apollo API] All strategies failed. Last error:', response.status, errorText);
     throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
+  console.log('[Apollo API] Strategy 3 RAW Response:', {
+    keys: Object.keys(data),
+    accounts: data.accounts?.length,
+    total: data.pagination?.total_entries,
+  });
   
-  // mixed_companies/search returns "organizations" not "accounts"
-  const organizations = data.organizations || [];
+  // accounts/search returns "accounts" not "organizations"
+  const organizations = data.accounts || [];
   const totalEntries = data.pagination?.total_entries || 0;
   
-  console.log('[Apollo API] List Search Response:', {
-    listId,
-    endpoint: 'mixed_companies/search',
-    total: totalEntries,
+  console.log('[Apollo API] Strategy 3 Result:', { 
+    total: totalEntries, 
     returned: organizations.length,
     firstResult: organizations[0]?.name,
   });
 
-  // Warning if result count is suspiciously high (filter might not be working)
+  // Warn if the list had companies but accounts/search returned too many (filter issue)
   let warning: string | undefined;
-  if (totalEntries > 500) {
-    warning = `Se encontraron ${totalEntries} resultados. Verifica que el ID de lista sea correcto.`;
-    console.warn('[Apollo API] WARNING: High result count may indicate filter issue');
+  if (totalEntries > 10000) {
+    warning = `⚠️ Usando fallback CRM. Se encontraron ${totalEntries} cuentas. El filtro por lista puede no estar funcionando.`;
+    console.warn('[Apollo API] WARNING: Fallback to accounts/search, high count suggests filter not working');
+  } else if (organizations.length > 0) {
+    warning = `ℹ️ Usando búsqueda CRM (accounts/search). Solo se muestran empresas ya en el CRM de Apollo.`;
   }
 
   return {
