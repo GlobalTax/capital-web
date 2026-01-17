@@ -312,85 +312,88 @@ export const useCRSearchFromList = () => {
     mutationFn: async (params: { 
       list_id: string; 
       list_type?: 'contacts' | 'organizations';
-      max_pages?: number; // Max pages to fetch (default 20 = 2000 contacts)
-    }): Promise<{ people: CRApolloPersonResult[]; pagination: any; list_name: string; list_type?: string }> => {
+      max_pages?: number;
+    }): Promise<{ 
+      people: CRApolloPersonResult[]; 
+      pagination: any; 
+      list_name: string; 
+      list_type?: string;
+      error?: string; 
+    }> => {
       const action = params.list_type === 'organizations' 
         ? 'search_organizations_from_list' 
         : 'search_from_list';
       
       console.log(`[useCRSearchFromList] Calling action: ${action} for list: ${params.list_id}`);
       
-      const { data, error } = await supabase.functions.invoke('cr-apollo-search-import', {
-        body: { 
-          action,
-          list_id: params.list_id,
-          max_pages: params.max_pages || 20,
-        },
-      });
+      try {
+        const { data, error } = await supabase.functions.invoke('cr-apollo-search-import', {
+          body: { 
+            action,
+            list_id: params.list_id,
+            max_pages: params.max_pages || 20,
+          },
+        });
 
-      // Handle Supabase invoke error - when edge function returns 400, need to parse context.json()
-      if (error) {
-        console.error('[useCRSearchFromList] Supabase error, attempting to extract message...');
-        
-        // When edge function returns 400, the error body might be in data
-        if (data && data.error) {
-          console.log('[useCRSearchFromList] Found error in data:', data.error);
-          throw new Error(data.error);
-        }
-        
-        // FunctionsHttpError: context is a Response-like object, need to await .json()
-        if (error.context) {
-          let errorMessage: string | null = null;
+        // Handle Supabase invoke error - when edge function returns 400
+        if (error) {
+          console.error('[useCRSearchFromList] Supabase error:', error.message);
           
-          try {
-            if (typeof error.context.json === 'function') {
+          // When edge function returns 400, the error body might be in data
+          if (data && data.error) {
+            return { people: [], pagination: null, list_name: '', error: data.error };
+          }
+          
+          // FunctionsHttpError: context is a Response-like object
+          if (error.context && typeof error.context.json === 'function') {
+            try {
               const errorData = await error.context.json();
-              console.log('[useCRSearchFromList] Parsed error context:', errorData);
-              errorMessage = errorData.error || null;
-            } else if (typeof error.context === 'object' && (error.context as any).error) {
-              errorMessage = (error.context as any).error;
+              if (errorData.error) {
+                return { people: [], pagination: null, list_name: '', error: errorData.error };
+              }
+            } catch (parseError) {
+              console.warn('[useCRSearchFromList] Could not parse error context');
             }
-          } catch (parseError) {
-            console.warn('[useCRSearchFromList] Could not parse error context:', parseError);
           }
           
-          if (errorMessage) {
-            throw new Error(errorMessage);
-          }
+          return { people: [], pagination: null, list_name: '', error: error.message || 'Error de conexión' };
         }
         
-        throw new Error(error.message || 'Error de conexión con el servidor');
-      }
-      
-      // Handle null data (can happen with 4xx responses)
-      if (!data) {
-        throw new Error('No se recibió respuesta del servidor');
-      }
-      
-      // Handle API error response
-      if (!data.success) {
-        console.error('[useCRSearchFromList] API error:', data.error);
-        throw new Error(data.error || 'Error desconocido del servidor');
-      }
+        // Handle null data
+        if (!data) {
+          return { people: [], pagination: null, list_name: '', error: 'No se recibió respuesta del servidor' };
+        }
+        
+        // Handle API error response
+        if (!data.success) {
+          return { people: [], pagination: null, list_name: '', error: data.error || 'Error desconocido' };
+        }
 
-      return { 
-        people: data.people || [], 
-        pagination: data.pagination, 
-        list_name: data.list_name || 'Lista Apollo',
-        list_type: data.list_type,
-      };
+        return { 
+          people: data.people || [], 
+          pagination: data.pagination, 
+          list_name: data.list_name || 'Lista Apollo',
+          list_type: data.list_type,
+        };
+      } catch (unexpectedError: any) {
+        console.error('[useCRSearchFromList] Unexpected error:', unexpectedError);
+        return { 
+          people: [], 
+          pagination: null, 
+          list_name: '', 
+          error: unexpectedError?.message || 'Error inesperado' 
+        };
+      }
     },
     onSuccess: (data) => {
-      const pagesInfo = data.pagination?.pages_fetched > 1 
-        ? ` (${data.pagination.pages_fetched} páginas)` 
-        : '';
-      const typeLabel = data.list_type === 'organizations' ? 'empresas' : 'contactos';
-      toast.success(`Cargados ${data.people.length} ${typeLabel} de "${data.list_name}"${pagesInfo}`);
-    },
-    // Don't show toast here - let the caller handle errors to avoid double toasts
-    // and ensure proper error propagation
-    onError: (error: Error) => {
-      console.error('[useCRSearchFromList] Mutation error:', error.message);
+      // Only show success toast if no error
+      if (!data.error && data.people.length > 0) {
+        const pagesInfo = data.pagination?.pages_fetched > 1 
+          ? ` (${data.pagination.pages_fetched} páginas)` 
+          : '';
+        const typeLabel = data.list_type === 'organizations' ? 'empresas' : 'contactos';
+        toast.success(`Cargados ${data.people.length} ${typeLabel} de "${data.list_name}"${pagesInfo}`);
+      }
     },
   });
 };
