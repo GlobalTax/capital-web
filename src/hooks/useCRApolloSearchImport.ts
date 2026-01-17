@@ -328,10 +328,21 @@ export const useCRSearchFromList = () => {
         },
       });
 
-      // Handle Supabase invoke error
+      // Handle Supabase invoke error - but check if data contains the actual error message
       if (error) {
         console.error('[useCRSearchFromList] Supabase error:', error);
-        throw error;
+        // When edge function returns 400, the error body is in data
+        if (data && data.error) {
+          throw new Error(data.error);
+        }
+        // Check if error has context with response body
+        if (error.context && typeof error.context === 'object') {
+          const ctx = error.context as any;
+          if (ctx.error) {
+            throw new Error(ctx.error);
+          }
+        }
+        throw new Error(error.message || 'Error de conexión con el servidor');
       }
       
       // Handle null data (can happen with 4xx responses)
