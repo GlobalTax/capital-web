@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Edit, Send, ArrowLeft } from 'lucide-react';
+import { Edit, Send, ArrowLeft, ExternalLink } from 'lucide-react';
 
 interface BlogPreviewBannerProps {
   postId: string;
@@ -29,6 +29,15 @@ const BlogPreviewBanner = ({ postId, onPublish }: BlogPreviewBannerProps) => {
         </div>
         
         <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="text-amber-950 hover:bg-amber-600/20"
+            onClick={() => window.open(window.location.href, '_blank')}
+            title="Abrir en nueva pestaña"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
           <Button 
             variant="ghost" 
             size="sm"

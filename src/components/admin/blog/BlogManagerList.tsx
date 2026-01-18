@@ -183,7 +183,8 @@ const BlogManagerList = ({ posts, onDelete }: BlogManagerListProps) => {
                         if (post.is_published) {
                           window.open(`/blog/${post.slug}`, '_blank');
                         } else {
-                          window.open(`/admin/blog/preview/${post.id}`, '_blank');
+                          // Navigate within same tab to preserve auth session
+                          navigate(`/admin/blog/preview/${post.id}`);
                         }
                       }}
                     >
