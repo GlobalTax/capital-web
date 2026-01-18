@@ -72,18 +72,18 @@ export interface ContactRowProps {
   isLast?: boolean;
 }
 
-// Column widths (must match header)
-const COL_WIDTHS = {
-  checkbox: 40,
-  contact: 180,
-  origin: 90,
-  channel: 120,
-  company: 160,
-  status: 110,
-  financials: 100,
-  apollo: 80,
-  date: 80,
-  actions: 40,
+// Column styles with flex for proper expansion
+export const COL_STYLES = {
+  checkbox: { minWidth: 40, flex: '0 0 40px' },
+  contact: { minWidth: 180, flex: '2 0 180px' },
+  origin: { minWidth: 90, flex: '0 0 90px' },
+  channel: { minWidth: 120, flex: '1 0 120px' },
+  company: { minWidth: 160, flex: '2 0 160px' },
+  status: { minWidth: 110, flex: '0 0 110px' },
+  financials: { minWidth: 100, flex: '1 0 100px' },
+  apollo: { minWidth: 80, flex: '0 0 80px' },
+  date: { minWidth: 80, flex: '0 0 80px' },
+  actions: { minWidth: 40, flex: '0 0 40px' },
 };
 
 export const ContactTableRow = memo<ContactRowProps>(({
@@ -160,7 +160,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       {/* Checkbox */}
       <div 
         className="flex items-center justify-center px-2" 
-        style={{ width: COL_WIDTHS.checkbox }}
+        style={{ flex: COL_STYLES.checkbox.flex, minWidth: COL_STYLES.checkbox.minWidth }}
         onClick={(e) => e.stopPropagation()}
       >
         <Checkbox
@@ -171,7 +171,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Contact info */}
-      <div className="flex flex-col gap-0.5 px-2" style={{ width: COL_WIDTHS.contact }}>
+      <div className="flex flex-col gap-0.5 px-2 overflow-hidden" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
         <div className="flex items-center gap-1.5">
           <span className="font-medium text-sm text-foreground truncate max-w-[140px]">
             {contact.name}
@@ -240,14 +240,14 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Origin */}
-      <div className="px-2" style={{ width: COL_WIDTHS.origin }}>
+      <div className="px-2 flex items-center" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
         <Badge variant="outline" className={cn("h-5 text-[10px] font-medium border", originConfig.color)}>
           {originConfig.label}
         </Badge>
       </div>
       
       {/* Channel */}
-      <div className="px-2" style={{ width: COL_WIDTHS.channel }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-2 overflow-hidden" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }} onClick={(e) => e.stopPropagation()}>
         <EditableSelect
           value={contact.acquisition_channel_id ?? undefined}
           options={channelOptions}
@@ -259,7 +259,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Company */}
-      <div className="flex flex-col gap-0.5 px-2" style={{ width: COL_WIDTHS.company }} onClick={(e) => e.stopPropagation()}>
+      <div className="flex flex-col gap-0.5 px-2 overflow-hidden" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }} onClick={(e) => e.stopPropagation()}>
         {contact.empresa_id ? (
           <Link 
             to={`/admin/empresas/${contact.empresa_id}`}
@@ -299,7 +299,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Status */}
-      <div className="px-2" style={{ width: COL_WIDTHS.status }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-2" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }} onClick={(e) => e.stopPropagation()}>
         <EditableSelect
           value={(contact as any).lead_status_crm ?? undefined}
           options={STATUS_OPTIONS}
@@ -311,7 +311,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
 
       {/* Financials */}
-      <div className="px-2" style={{ width: COL_WIDTHS.financials }}>
+      <div className="px-2" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
         {hasFinancials ? (
           <div className="flex flex-col gap-0.5">
             {(revenue || valuation) && (
@@ -345,7 +345,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Apollo */}
-      <div className="px-2" style={{ width: COL_WIDTHS.apollo }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-2" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }} onClick={(e) => e.stopPropagation()}>
         <ApolloEnrichButton
           status={contact.apollo_status}
           error={contact.apollo_error}
@@ -357,7 +357,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Date */}
-      <div className="flex items-center gap-1.5 px-2" style={{ width: COL_WIDTHS.date }}>
+      <div className="flex items-center gap-1.5 px-2" style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}>
         <span className="text-xs text-muted-foreground">
           {format(new Date(contact.created_at), 'dd MMM', { locale: es })}
         </span>
@@ -372,7 +372,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Actions */}
-      <div className="px-1" style={{ width: COL_WIDTHS.actions }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-1 flex items-center justify-center" style={{ flex: COL_STYLES.actions.flex, minWidth: COL_STYLES.actions.minWidth }} onClick={(e) => e.stopPropagation()}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
@@ -437,6 +437,3 @@ export const ContactTableRow = memo<ContactRowProps>(({
 });
 
 ContactTableRow.displayName = 'ContactTableRow';
-
-// Export column widths for header
-export { COL_WIDTHS };
