@@ -9522,6 +9522,9 @@ export type Database = {
       }
       mna_boutiques: {
         Row: {
+          apollo_last_synced_at: string | null
+          apollo_org_id: string | null
+          apollo_raw_data: Json | null
           cities: string[] | null
           country_base: string | null
           created_at: string
@@ -9535,6 +9538,7 @@ export type Database = {
           founded_year: number | null
           geography_focus: string[] | null
           id: string
+          import_source: string | null
           is_deleted: boolean | null
           linkedin_url: string | null
           name: string
@@ -9548,6 +9552,9 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          apollo_last_synced_at?: string | null
+          apollo_org_id?: string | null
+          apollo_raw_data?: Json | null
           cities?: string[] | null
           country_base?: string | null
           created_at?: string
@@ -9561,6 +9568,7 @@ export type Database = {
           founded_year?: number | null
           geography_focus?: string[] | null
           id?: string
+          import_source?: string | null
           is_deleted?: boolean | null
           linkedin_url?: string | null
           name: string
@@ -9574,6 +9582,9 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          apollo_last_synced_at?: string | null
+          apollo_org_id?: string | null
+          apollo_raw_data?: Json | null
           cities?: string[] | null
           country_base?: string | null
           created_at?: string
@@ -9587,6 +9598,7 @@ export type Database = {
           founded_year?: number | null
           geography_focus?: string[] | null
           id?: string
+          import_source?: string | null
           is_deleted?: boolean | null
           linkedin_url?: string | null
           name?: string
