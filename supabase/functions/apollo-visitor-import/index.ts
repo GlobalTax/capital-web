@@ -523,17 +523,41 @@ async function importContactToLead(
 // ============= MAIN HANDLER =============
 
 serve(async (req) => {
+  // Handle CORS preflight - MUST return 200 with headers
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders, status: 200 });
   }
 
   try {
+    // Check API key upfront with proper CORS response
     if (!APOLLO_API_KEY) {
-      throw new Error('APOLLO_API_KEY not configured');
+      console.error('[apollo-visitor-import] APOLLO_API_KEY not configured');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'APOLLO_API_KEY not configured',
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const body = await req.json();
+    
+    // Safely parse JSON body with dedicated error handling
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch (parseError) {
+      console.error('[apollo-visitor-import] JSON parse error:', parseError);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid JSON body',
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     const { action, ...params } = body;
 
     console.log('[apollo-visitor-import] Action:', action, 'Params:', JSON.stringify(params));
