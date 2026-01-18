@@ -12,8 +12,7 @@ export function useCRFunds(filters?: CRFundFilters) {
         .select(`
           *,
           people_count:cr_people(count),
-          portfolio_count:cr_portfolio(count),
-          portfolio_sample:cr_portfolio(company_name, website)
+          portfolio_sample:cr_portfolio(company_name, website, status)
         `)
         .eq('is_deleted', false)
         .order('name', { ascending: true });
@@ -48,12 +47,21 @@ export function useCRFunds(filters?: CRFundFilters) {
       if (error) throw error;
       
       // Process counts and portfolio sample from aggregation
-      return (data || []).map(fund => ({
-        ...fund,
-        people_count: (fund.people_count as any)?.[0]?.count || 0,
-        portfolio_count: (fund.portfolio_count as any)?.[0]?.count || 0,
-        portfolio_sample: (fund.portfolio_sample as any) || []
-      })) as (CRFund & { 
+      // Filter portfolio to only active companies
+      return (data || []).map(fund => {
+        const allPortfolio = (fund.portfolio_sample as any[]) || [];
+        const activePortfolio = allPortfolio.filter(p => p.status === 'active');
+        
+        return {
+          ...fund,
+          people_count: (fund.people_count as any)?.[0]?.count || 0,
+          portfolio_count: activePortfolio.length,
+          portfolio_sample: activePortfolio.map(p => ({ 
+            company_name: p.company_name, 
+            website: p.website 
+          }))
+        };
+      }) as (CRFund & { 
         people_count: number;
         portfolio_count: number;
         portfolio_sample: { company_name: string; website: string | null }[];

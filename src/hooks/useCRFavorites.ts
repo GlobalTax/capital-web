@@ -156,8 +156,7 @@ export const useFavoriteFunds = () => {
         .select(`
           *,
           people_count:cr_people(count),
-          portfolio_count:cr_portfolio(count),
-          portfolio_sample:cr_portfolio(company_name, website)
+          portfolio_sample:cr_portfolio(company_name, website, status)
         `)
         .in('id', fundIds)
         .eq('is_deleted', false)
@@ -165,13 +164,21 @@ export const useFavoriteFunds = () => {
 
       if (fundsError) throw fundsError;
       
-      // Procesar el count de personas y portfolio (igual que en useCRFunds)
-      return (funds || []).map(fund => ({
-        ...fund,
-        people_count: fund.people_count?.[0]?.count || 0,
-        portfolio_count: fund.portfolio_count?.[0]?.count || 0,
-        portfolio_sample: fund.portfolio_sample || []
-      })) as (CRFund & { 
+      // Procesar el count de personas y portfolio (solo activas)
+      return (funds || []).map(fund => {
+        const allPortfolio = (fund.portfolio_sample as any[]) || [];
+        const activePortfolio = allPortfolio.filter((p: any) => p.status === 'active');
+        
+        return {
+          ...fund,
+          people_count: fund.people_count?.[0]?.count || 0,
+          portfolio_count: activePortfolio.length,
+          portfolio_sample: activePortfolio.map((p: any) => ({ 
+            company_name: p.company_name, 
+            website: p.website 
+          }))
+        };
+      }) as (CRFund & { 
         people_count: number;
         portfolio_count: number;
         portfolio_sample: { company_name: string; website: string | null }[];
