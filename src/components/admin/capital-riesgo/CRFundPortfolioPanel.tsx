@@ -3,10 +3,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Globe, Sparkles, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, MapPin, ExternalLink, Globe, Sparkles, Loader2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CRPortfolio, CR_PORTFOLIO_STATUS_LABELS } from '@/types/capitalRiesgo';
@@ -35,6 +36,8 @@ const statusColors: Record<string, string> = {
   write_off: 'bg-red-500/10 text-red-700 border-red-200',
 };
 
+type InputMode = 'url' | 'text';
+
 export function CRFundPortfolioPanel({ 
   portfolio, 
   fundId,
@@ -49,6 +52,9 @@ export function CRFundPortfolioPanel({
 }: CRFundPortfolioPanelProps) {
   const navigate = useNavigate();
   const [portfolioUrl, setPortfolioUrl] = useState(initialPortfolioUrl || fundWebsite || '');
+  const [inputMode, setInputMode] = useState<InputMode>('url');
+  const [rawText, setRawText] = useState('');
+  const [isProcessingText, setIsProcessingText] = useState(false);
   const { scrapePortfolio, isScraping } = useCRPortfolioScraper();
 
   // Update local state when props change
@@ -104,13 +110,54 @@ export function CRFundPortfolioPanel({
     }
   };
 
+  const handleExtractFromText = async () => {
+    if (!rawText.trim() || rawText.trim().length < 50) {
+      toast.error('El texto debe tener al menos 50 caracteres');
+      return;
+    }
+
+    setIsProcessingText(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('cr-extract-portfolio-from-text', {
+        body: { 
+          fund_id: fundId, 
+          raw_text: rawText.trim(),
+          fund_name: fundName 
+        }
+      });
+
+      if (error) {
+        console.error('Error extracting from text:', error);
+        toast.error('Error al procesar el texto');
+        return;
+      }
+
+      if (data?.success) {
+        const { inserted, updated, extracted, warnings } = data;
+        toast.success(`✅ ${inserted} añadidas, ${updated} actualizadas de ${extracted} empresas detectadas`);
+        if (warnings?.length) {
+          console.log('[Portfolio Text Extract] Warnings:', warnings);
+        }
+        setRawText('');
+        onRefresh?.();
+      } else {
+        toast.error(data?.error || 'Error al extraer participadas');
+      }
+    } catch (error) {
+      console.error('Error calling edge function:', error);
+      toast.error('Error de conexión');
+    } finally {
+      setIsProcessingText(false);
+    }
+  };
+
   const handleRowClick = (company: CRPortfolio) => {
     navigate(`/admin/cr-portfolio/${company.id}`);
   };
 
   return (
     <div className="space-y-3">
-      {/* Header with URL input */}
+      {/* Header with mode toggle */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -125,40 +172,117 @@ export function CRFundPortfolioPanel({
           </Button>
         </div>
 
-        {/* Portfolio URL input */}
-        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
-          <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
-          <Input
-            placeholder="https://fondo.com/portfolio"
-            value={portfolioUrl}
-            onChange={(e) => setPortfolioUrl(e.target.value)}
-            className="h-8 text-sm flex-1"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleExtract();
-              }
-            }}
-          />
-          <Button 
-            size="sm" 
-            onClick={handleExtract}
-            disabled={isScraping || !portfolioUrl.trim()}
-            className="h-8 gap-1.5"
+        {/* Mode Toggle */}
+        <div className="flex gap-1 bg-muted rounded-lg p-0.5 w-fit">
+          <button
+            onClick={() => setInputMode('url')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              inputMode === 'url' 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
           >
-            {isScraping ? (
-              <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Extrayendo...
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-3.5 w-3.5" />
-                Extraer con IA
-              </>
-            )}
-          </Button>
+            <Globe className="h-3.5 w-3.5" />
+            Por URL
+          </button>
+          <button
+            onClick={() => setInputMode('text')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 ${
+              inputMode === 'text' 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <FileText className="h-3.5 w-3.5" />
+            Por Texto
+          </button>
         </div>
+
+        {/* URL Input Mode */}
+        {inputMode === 'url' && (
+          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+            <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+            <Input
+              placeholder="https://fondo.com/portfolio"
+              value={portfolioUrl}
+              onChange={(e) => setPortfolioUrl(e.target.value)}
+              className="h-8 text-sm flex-1"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleExtract();
+                }
+              }}
+            />
+            <Button 
+              size="sm" 
+              onClick={handleExtract}
+              disabled={isScraping || !portfolioUrl.trim()}
+              className="h-8 gap-1.5"
+            >
+              {isScraping ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Extrayendo...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Extraer con IA
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Text Input Mode */}
+        {inputMode === 'text' && (
+          <div className="space-y-2 p-3 bg-muted/50 rounded-lg border">
+            <div className="flex items-start gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />
+              <Textarea
+                placeholder="Pega aquí el texto con las participadas copiado de webs, PDFs, emails...
+
+Ejemplo:
+📌 Participadas Actuales
+Alquiler Seguro Grupo – Sector inmobiliario
+Canitas – Red de clínicas veterinarias
+...
+
+📌 Participadas Históricas
+STI Norland
+Babel
+..."
+                value={rawText}
+                onChange={(e) => setRawText(e.target.value)}
+                className="min-h-[150px] text-sm flex-1 resize-y"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-muted-foreground">
+                {rawText.length} caracteres {rawText.length > 0 && rawText.length < 50 && '(mínimo 50)'}
+              </p>
+              <Button 
+                size="sm" 
+                onClick={handleExtractFromText}
+                disabled={isProcessingText || rawText.trim().length < 50}
+                className="h-8 gap-1.5"
+              >
+                {isProcessingText ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Procesar con IA
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Last scraped info */}
         {lastScrapedAt && (

@@ -227,3 +227,6 @@ verify_jwt = false
 
 [functions.process-blog-quick-create]
 verify_jwt = false
+
+[functions.cr-extract-portfolio-from-text]
+verify_jwt = false
