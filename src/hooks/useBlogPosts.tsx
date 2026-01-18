@@ -56,7 +56,7 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
     try {
       const { data, error } = await supabase
         .from('blog_posts')
-        .select('*') // Simplified to avoid query conflicts
+        .select('*')
         .eq('slug', slug)
         .eq('is_published', true)
         .maybeSingle();
@@ -69,6 +69,26 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
       return data;
     } catch (error) {
       console.error('Error in getPostBySlug:', error);
+      return null;
+    }
+  };
+
+  const getPostById = async (id: string): Promise<BlogPost | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching blog post by id:', error);
+        throw error;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error in getPostById:', error);
       return null;
     }
   };
@@ -232,6 +252,7 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
     isLoading,
     error,
     getPostBySlug,
+    getPostById,
     createPost,
     updatePost,
     deletePost,

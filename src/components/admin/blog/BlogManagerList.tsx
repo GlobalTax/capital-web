@@ -175,15 +175,20 @@ const BlogManagerList = ({ posts, onDelete }: BlogManagerListProps) => {
 
                   {/* Actions */}
                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {post.is_published && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      title={post.is_published ? "Ver post publicado" : "Vista previa del borrador"}
+                      onClick={() => {
+                        if (post.is_published) {
+                          window.open(`/blog/${post.slug}`, '_blank');
+                        } else {
+                          window.open(`/admin/blog/preview/${post.id}`, '_blank');
+                        }
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
