@@ -128,6 +128,8 @@ export interface ContactFilters {
   employeeMin?: number;
   employeeMax?: number;
   location?: string;
+  // 🔥 NEW: Channel filter
+  acquisitionChannelId?: string;
 }
 
 export interface ContactStats {
@@ -780,6 +782,13 @@ export const useUnifiedContacts = () => {
         if (newFilters.employeeMax && empCount > newFilters.employeeMax) return false;
         return true;
       });
+    }
+
+    // 🔥 NEW: Acquisition channel filter
+    if (newFilters.acquisitionChannelId) {
+      filtered = filtered.filter(c => 
+        c.acquisition_channel_id === newFilters.acquisitionChannelId
+      );
     }
 
     setFilteredContacts(filtered);

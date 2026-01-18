@@ -13,6 +13,7 @@ import {
   Mail,
   TrendingUp,
   Euro,
+  Megaphone,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -27,6 +28,7 @@ import { SmartSearchFilters } from '@/hooks/useSmartSearch';
 import SmartSearchInput from './SmartSearchInput';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/shared/utils/format';
+import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
 
 interface LinearFilterBarProps {
   filters: ContactFilters;
@@ -90,6 +92,8 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
   onExport,
   isRefreshing = false,
 }) => {
+  const { channels } = useAcquisitionChannels();
+  
   const handleFilterChange = (key: keyof ContactFilters, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
   };
@@ -154,6 +158,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
     onFiltersChange({
       origin: 'all',
       emailStatus: 'all',
+      acquisitionChannelId: undefined,
       showUniqueContacts: filters.showUniqueContacts,
     });
   };
@@ -169,7 +174,13 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
     filters.ebitdaMin || filters.ebitdaMax,
     filters.employeeMin || filters.employeeMax,
     filters.location,
+    filters.acquisitionChannelId,
   ].filter(Boolean).length;
+
+  // Get selected channel name for display
+  const selectedChannelName = filters.acquisitionChannelId 
+    ? channels?.find(c => c.id === filters.acquisitionChannelId)?.name 
+    : null;
 
   // 🔥 Clear revenue filters helper
   const clearRevenueFilters = () => {
@@ -303,6 +314,47 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
                 onCheckedChange={() => handleFilterChange('emailStatus', option.value as any)}
               >
                 {option.label}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* 📢 Channel filter dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                filters.acquisitionChannelId && "border-purple-500 text-purple-600 bg-purple-500/5"
+              )}
+            >
+              <Megaphone className="h-3.5 w-3.5 mr-1.5" />
+              Canal
+              {selectedChannelName && (
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1.5 text-[10px] bg-purple-500/20 text-purple-600 max-w-[80px] truncate">
+                  {selectedChannelName}
+                </Badge>
+              )}
+              <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]">
+            <DropdownMenuCheckboxItem
+              checked={!filters.acquisitionChannelId}
+              onCheckedChange={() => handleFilterChange('acquisitionChannelId', undefined)}
+            >
+              Todos los canales
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            {channels?.map((channel) => (
+              <DropdownMenuCheckboxItem
+                key={channel.id}
+                checked={filters.acquisitionChannelId === channel.id}
+                onCheckedChange={() => handleFilterChange('acquisitionChannelId', channel.id)}
+              >
+                {channel.name}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
