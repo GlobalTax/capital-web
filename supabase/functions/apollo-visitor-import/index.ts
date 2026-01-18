@@ -490,7 +490,9 @@ async function searchContactsForOrganization(
   page: number = 1,
   perPage: number = 25
 ): Promise<{ contacts: ApolloPerson[]; totalEntries: number; pagination: any }> {
-  // Updated to use new mixed_people/search endpoint (people/search is deprecated)
+  console.log(`[Apollo API] Searching contacts for org: ${apolloOrgId}, page: ${page}, perPage: ${perPage}`);
+  
+  // Use mixed_people/search endpoint (people/search is deprecated since 2024)
   const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
     method: 'POST',
     headers: {
@@ -755,7 +757,7 @@ serve(async (req) => {
 
     // ============= ACTION: SEARCH ORGANIZATIONS FROM LIST (CRM ONLY) =============
     if (action === 'search_organizations') {
-      const { import_id, list_id, list_type = 'contacts', page = 1, per_page = 25 } = params;
+      const { import_id, list_id, list_type = 'contacts', max_results = 2000 } = params;
 
       // Update import status
       if (import_id) {
@@ -765,8 +767,11 @@ serve(async (req) => {
           .eq('id', import_id);
       }
 
-      // Pass list_type to determine contacts vs accounts endpoint
-      const result = await searchOrganizationsFromList(list_id, list_type, page, per_page);
+      // FIX: Pass correct arguments - listId, listType, maxResults (not page/per_page)
+      // searchOrganizationsFromList handles pagination internally
+      console.log(`[Search Orgs] Starting search: list=${list_id}, type=${list_type}, max=${max_results}`);
+      const result = await searchOrganizationsFromList(list_id, list_type, max_results);
+      console.log(`[Search Orgs] Search complete: found=${result.organizations.length}, total=${result.totalEntries}`);
 
       // Check which organizations already exist in empresas
       const orgsWithStatus = await Promise.all(
@@ -780,13 +785,14 @@ serve(async (req) => {
         })
       );
 
-      // Update import with total found
+      // Update import with total found (from Apollo's total_entries, not just what we fetched)
       if (import_id) {
         await supabase
           .from('apollo_visitor_imports')
           .update({ 
             total_found: result.totalEntries,
-            status: 'pending',
+            status: 'previewing',
+            import_type: list_type === 'contacts' ? 'contacts' : 'organizations',
           })
           .eq('id', import_id);
       }
