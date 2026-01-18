@@ -86,13 +86,17 @@ async function verifyListExists(listId: string, apiKey: string): Promise<{exists
         }
         
         // Look for our list ID in the labels
-        const foundLabel = labels.find((label: any) => label.id === listId);
+        const foundLabel = labels.find((label: any) => label.id === listId || label._id === listId);
         if (foundLabel) {
-          console.log(`[CR Apollo] ✅ Found list via labels: "${foundLabel.name}" (type: ${foundLabel.label_type})`);
+          // All entries from /v1/labels endpoint are labels (not saved lists)
+          // They have 'modality' field (e.g., 'contacts') but not 'label_type'
+          const listType = foundLabel.label_type || foundLabel.modality || 'label';
+          console.log(`[CR Apollo] ✅ Found list via labels: "${foundLabel.name}" (type: ${listType}, cached_count: ${foundLabel.cached_count})`);
           return { 
             exists: true, 
             name: foundLabel.name,
-            listType: foundLabel.label_type 
+            listType: 'label', // Force 'label' type since this comes from /v1/labels endpoint
+            total: foundLabel.cached_count,
           };
         }
         console.log(`[CR Apollo] List ${listId} not found in labels endpoint`);
@@ -916,18 +920,30 @@ serve(async (req) => {
       let detectedListName = listCheck.name || 'Lista Apollo PE/VC';
       let totalEntries = listCheck.total || 0;
       
+      // Determine correct filter based on list type
+      const listType = listCheck.listType || '';
+      const isLabel = listType.includes('label') || listType === 'tag';
+      console.log(`[CR Apollo] List type detected: "${listType}", using ${isLabel ? 'label_ids' : 'contact_list_ids'}`);
+      
       // Pagination loop - fetch all pages
       do {
         console.log(`[CR Apollo] Fetching page ${currentPage} of ${totalPages}...`);
         
-        // Apollo uses contact_list_ids for saved lists (not label_ids which is for tags)
-        const requestBody = {
-          contact_list_ids: [list_id],
+        // Apollo uses different filter params for labels vs saved lists:
+        // - label_ids: for labels/tags assigned to contacts
+        // - contact_list_ids: for saved contact lists
+        const requestBody: Record<string, unknown> = {
           page: currentPage,
           per_page: 100, // Always use max per page
         };
         
-        console.log(`[CR Apollo] Using contact_list_ids:`, list_id);
+        if (isLabel) {
+          requestBody.label_ids = [list_id];
+          console.log(`[CR Apollo] Using label_ids:`, list_id);
+        } else {
+          requestBody.contact_list_ids = [list_id];
+          console.log(`[CR Apollo] Using contact_list_ids:`, list_id);
+        }
         console.log(`[CR Apollo] Request body:`, JSON.stringify(requestBody));
         
         const response = await fetch('https://api.apollo.io/v1/contacts/search', {
