@@ -485,6 +485,42 @@ async function searchWebsiteVisitors(
   };
 }
 
+// Enrich people by IDs to get email/phone data
+// Uses bulk_match endpoint which reveals contact details (1 credit per person)
+async function enrichPeopleBulk(
+  personIds: string[]
+): Promise<ApolloPerson[]> {
+  if (personIds.length === 0) return [];
+  
+  console.log(`[Apollo API] Enriching ${personIds.length} people via bulk_match...`);
+  
+  const response = await fetch('https://api.apollo.io/api/v1/people/bulk_match', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Api-Key': APOLLO_API_KEY!,
+    },
+    body: JSON.stringify({
+      details: personIds.map(id => ({ id })),
+      reveal_personal_emails: false,
+      reveal_phone_number: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[Apollo API] bulk_match failed:', response.status, errorText);
+    // Don't throw - return empty array so search results still work
+    return [];
+  }
+
+  const data = await response.json();
+  const matches = data.matches || [];
+  console.log(`[Apollo API] Enriched ${matches.length} people with contact details`);
+  
+  return matches;
+}
+
 async function searchContactsForOrganization(
   apolloOrgId: string,
   page: number = 1,
@@ -492,15 +528,16 @@ async function searchContactsForOrganization(
 ): Promise<{ contacts: ApolloPerson[]; totalEntries: number; pagination: any }> {
   console.log(`[Apollo API] Searching contacts for org: ${apolloOrgId}, page: ${page}, perPage: ${perPage}`);
   
-  // Use mixed_people/search endpoint (people/search is deprecated since 2024)
-  const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
+  // STEP 1: Search for people using the correct endpoint and parameter
+  // api/v1/mixed_people/api_search is the current endpoint (free, no credits)
+  const response = await fetch('https://api.apollo.io/api/v1/mixed_people/api_search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Api-Key': APOLLO_API_KEY!,
     },
     body: JSON.stringify({
-      organization_ids: [apolloOrgId],
+      q_organization_ids: [apolloOrgId], // Correct parameter name
       person_titles: [
         'CEO', 'Chief Executive', 'Founder', 'Co-Founder',
         'CFO', 'Chief Financial', 'Finance Director',
@@ -515,16 +552,54 @@ async function searchContactsForOrganization(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[Apollo API] Error:', response.status, errorText);
+    console.error('[Apollo API] mixed_people/api_search error:', response.status, errorText);
     throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
-  console.log('[Apollo API] Found', data.people?.length || 0, 'contacts for org:', apolloOrgId);
+  const basicPeople = data.people || [];
+  const totalEntries = data.pagination?.total_entries || 0;
+  
+  console.log('[Apollo API] Found', basicPeople.length, 'contacts for org:', apolloOrgId, '(total:', totalEntries, ')');
+
+  if (basicPeople.length === 0) {
+    return {
+      contacts: [],
+      totalEntries: 0,
+      pagination: data.pagination,
+    };
+  }
+
+  // STEP 2: Enrich with email and phone data (bulk_match)
+  // Limit to first 10 to save Apollo credits
+  const peopleToEnrich = basicPeople.slice(0, 10);
+  const personIds = peopleToEnrich.map((p: ApolloPerson) => p.id);
+  const enrichedPeople = await enrichPeopleBulk(personIds);
+
+  // STEP 3: Combine basic search data with enriched contact details
+  const contacts: ApolloPerson[] = basicPeople.map((basic: ApolloPerson) => {
+    const enriched = enrichedPeople.find((e: ApolloPerson) => e.id === basic.id);
+    return {
+      id: basic.id,
+      first_name: basic.first_name,
+      last_name: basic.last_name,
+      name: basic.name || `${basic.first_name} ${basic.last_name}`,
+      title: basic.title,
+      linkedin_url: enriched?.linkedin_url || basic.linkedin_url,
+      organization_id: basic.organization_id,
+      organization: basic.organization,
+      // Enriched data (only available if person was enriched)
+      email: enriched?.email || null,
+      email_status: enriched?.email_status || null,
+      phone_numbers: enriched?.phone_numbers || [],
+    };
+  });
+
+  console.log('[Apollo API] Contacts with email:', contacts.filter((c: ApolloPerson) => c.email).length);
 
   return {
-    contacts: data.people || [],
-    totalEntries: data.pagination?.total_entries || 0,
+    contacts,
+    totalEntries,
     pagination: data.pagination,
   };
 }
