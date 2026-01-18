@@ -218,3 +218,9 @@ verify_jwt = false
 
 [functions.apollo-visitor-import]
 verify_jwt = false
+
+[functions.sf-execute-radar]
+verify_jwt = false
+
+[functions.sf-weekly-news-scan]
+verify_jwt = false

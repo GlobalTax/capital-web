@@ -62,27 +62,33 @@ export const useSFScrapedUrls = (filters?: { isRelevant?: boolean | null }) => {
   });
 };
 
-// Execute a radar query (placeholder - would integrate with Firecrawl)
+// Execute a radar query using sf-execute-radar Edge Function
 export const useExecuteRadarQuery = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (queryId: string) => {
-      // Update last_executed_at
-      const { error } = await supabase
-        .from('sf_search_queries')
-        .update({ last_executed_at: new Date().toISOString() })
-        .eq('id', queryId);
+      // Call the sf-execute-radar edge function
+      const { data, error } = await supabase.functions.invoke('sf-execute-radar', {
+        body: { query_id: queryId, limit: 10 }
+      });
 
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to execute radar query');
 
-      // TODO: Integrate with Firecrawl search
-      // For now, just update the timestamp
-      return { success: true };
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['sf-search-queries'] });
       queryClient.invalidateQueries({ queryKey: ['sf-scraped-urls'] });
+      if (data?.data?.relevant > 0) {
+        toast.success(`Encontrados ${data.data.relevant} resultados relevantes de ${data.data.total_results}`);
+      } else {
+        toast.info(`Búsqueda completada: ${data?.data?.processed || 0} resultados procesados`);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(`Error en búsqueda: ${error.message}`);
     }
   });
 };

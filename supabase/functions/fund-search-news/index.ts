@@ -113,7 +113,8 @@ serve(async (req) => {
       }
     }
 
-    // Use AI to filter and classify results
+    // Use AI to filter and classify results (prefer Lovable AI for cost saving)
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     let processedNews: Array<{
       title: string;
@@ -125,20 +126,7 @@ serve(async (req) => {
       is_material_change: boolean;
     }> = [];
 
-    if (openaiApiKey && allResults.length > 0) {
-      try {
-        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openaiApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { 
-                role: 'system', 
-                content: `Eres un analista de M&A. Analiza estos resultados de búsqueda sobre el fondo "${fundName}" y clasifícalos.
+    const systemPrompt = `Eres un analista de M&A. Analiza estos resultados de búsqueda sobre el fondo "${fundName}" y clasifícalos.
 Responde SOLO con un JSON array con esta estructura para cada resultado relevante:
 [{
   "title": "título original",
@@ -149,42 +137,83 @@ Responde SOLO con un JSON array con esta estructura para cada resultado relevant
   "relevance_score": 1-10,
   "is_material_change": true/false (si es una operación concreta)
 }]
-Incluye solo noticias realmente relacionadas con el fondo (relevance >= 5). Excluye resultados genéricos o no relacionados.`
-              },
-              { 
-                role: 'user', 
-                content: `Resultados de búsqueda:\n${JSON.stringify(allResults, null, 2)}` 
-              }
-            ],
+Incluye solo noticias realmente relacionadas con el fondo (relevance >= 5). Excluye resultados genéricos o no relacionados.`;
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Resultados de búsqueda:\n${JSON.stringify(allResults, null, 2)}` }
+    ];
+
+    // Try Lovable AI first (free tier)
+    if (lovableApiKey && allResults.length > 0) {
+      try {
+        console.log('[fund-search-news] Using Lovable AI for classification');
+        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages,
             temperature: 0.1,
           }),
         });
 
-        const aiData = await aiResponse.json();
-        const content = aiData.choices?.[0]?.message?.content;
-        
-        if (content) {
-          try {
-            processedNews = JSON.parse(content.replace(/```json\n?|\n?```/g, ''));
-          } catch (e) {
-            console.error('Failed to parse AI response:', e);
-            // Fallback: use raw results
-            processedNews = allResults.map(r => ({
-              title: r.title,
-              url: r.url,
-              source_name: r.source,
-              content_preview: r.description,
-              news_type: 'other' as const,
-              relevance_score: 5,
-              is_material_change: false,
-            }));
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          const content = aiData.choices?.[0]?.message?.content;
+          if (content) {
+            try {
+              processedNews = JSON.parse(content.replace(/```json\n?|\n?```/g, ''));
+            } catch (e) {
+              console.warn('[fund-search-news] Failed to parse Lovable AI response:', e);
+            }
+          }
+        } else {
+          console.warn('[fund-search-news] Lovable AI request failed, trying OpenAI fallback');
+        }
+      } catch (aiError) {
+        console.warn('[fund-search-news] Lovable AI error, trying OpenAI fallback:', aiError);
+      }
+    }
+
+    // Fallback to OpenAI if Lovable AI failed or didn't return results
+    if (processedNews.length === 0 && openaiApiKey && allResults.length > 0) {
+      try {
+        console.log('[fund-search-news] Using OpenAI for classification (fallback)');
+        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openaiApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages,
+            temperature: 0.1,
+          }),
+        });
+
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          const content = aiData.choices?.[0]?.message?.content;
+          if (content) {
+            try {
+              processedNews = JSON.parse(content.replace(/```json\n?|\n?```/g, ''));
+            } catch (e) {
+              console.error('[fund-search-news] Failed to parse OpenAI response:', e);
+            }
           }
         }
       } catch (aiError) {
-        console.error('AI classification failed:', aiError);
+        console.error('[fund-search-news] OpenAI classification failed:', aiError);
       }
-    } else {
-      // No AI, use raw results
+    }
+
+    // Final fallback: use raw results if no AI worked
+    if (processedNews.length === 0 && allResults.length > 0) {
       processedNews = allResults.map(r => ({
         title: r.title,
         url: r.url,
