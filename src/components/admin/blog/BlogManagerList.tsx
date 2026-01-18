@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Edit, Trash2, Eye, Filter } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Sparkles } from 'lucide-react';
+import { QuickCreateBlogModal } from './QuickCreateBlogModal';
 import { BlogPost } from '@/types/blog';
 import { useNavigate } from 'react-router-dom';
 
@@ -59,13 +60,22 @@ const BlogManagerList = ({ posts, onDelete }: BlogManagerListProps) => {
             </p>
           </div>
           
-          <Button 
-            onClick={() => navigate('/admin/blog/new')}
-            className="flex items-center gap-2 shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo Post
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <QuickCreateBlogModal onPostCreated={(id) => navigate(`/admin/blog/edit/${id}`)}>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Creación Rápida
+              </Button>
+            </QuickCreateBlogModal>
+            
+            <Button 
+              onClick={() => navigate('/admin/blog/new')}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Nuevo Post
+            </Button>
+          </div>
         </div>
       </div>
 
