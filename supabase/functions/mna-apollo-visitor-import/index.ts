@@ -304,19 +304,18 @@ async function importOrganizationToBoutique(
       name: org.name,
       website: org.website_url || org.primary_domain || null,
       linkedin_url: org.linkedin_url || null,
-      city: org.city || null,
-      country: org.country || 'España',
+      cities: org.city ? [org.city] : null,
+      country_base: org.country || 'España',
       description: org.short_description || org.seo_description || null,
       specialization,
       tier,
       status: 'active' as const,
-      deal_focus: 'both' as const,
       // Apollo data
       apollo_org_id: org.id,
       apollo_raw_data: org,
       apollo_last_synced_at: new Date().toISOString(),
       // Source tracking
-      source,
+      import_source: source,
       founded_year: org.founded_year || null,
     };
 
@@ -706,7 +705,7 @@ serve(async (req) => {
     if (action === 'get_imported_boutiques') {
       const { data: boutiques, error, count } = await supabase
         .from('mna_boutiques')
-        .select('id, name, website, city, country, specialization, tier, status, apollo_org_id, apollo_last_synced_at', { count: 'exact' })
+        .select('id, name, website, cities, country_base, specialization, tier, status, apollo_org_id, apollo_last_synced_at', { count: 'exact' })
         .not('apollo_org_id', 'is', null)
         .eq('is_deleted', false)
         .order('apollo_last_synced_at', { ascending: false })
