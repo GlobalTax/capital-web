@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { FixedSizeList } from 'react-window';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -9,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Users, 
   Zap, 
@@ -72,6 +72,16 @@ const MNAApolloImportPage: React.FC = () => {
   const [listInput, setListInput] = useState('');
   const [listType, setListType] = useState<MNAListType>('contacts');
   const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null);
+  
+  // Ref for auto-scroll to results
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll when results arrive
+  useEffect(() => {
+    if (searchResults.length > 0 && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [searchResults.length]);
 
   const handleSearchFromList = async () => {
     const listId = extractListId(listInput);
@@ -113,9 +123,15 @@ const MNAApolloImportPage: React.FC = () => {
         return;
       }
       
+      console.log('[MNA Import] Search completed:', result.people.length, 'results');
       setSearchResults(result.people);
       setListName(result.list_name);
       setSelectedIds(new Set(result.people.map(p => p.id)));
+      
+      // Show prominent success toast
+      toast.success(`✅ ${result.people.length} ${listType === 'organizations' ? 'boutiques' : 'contactos'} encontrados. ¡Haz clic en "Importar" para guardarlos!`, {
+        duration: 8000,
+      });
     } catch (error) {
       console.error('[UI] List search error:', error);
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
@@ -357,11 +373,23 @@ const MNAApolloImportPage: React.FC = () => {
 
       {/* Search Results */}
       {searchResults.length > 0 && (
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {currentImportId ? (
+        <div ref={resultsRef}>
+          {/* Prominent Action Banner */}
+          <Alert className="mb-4 bg-amber-50 border-amber-300 dark:bg-amber-950/30 dark:border-amber-700">
+            <Zap className="h-5 w-5 text-amber-600" />
+            <AlertDescription className="text-amber-800 dark:text-amber-200 ml-2">
+              <strong className="text-base">Paso 2: ¡Importa los resultados!</strong>
+              <br />
+              Tienes <strong>{searchResults.length}</strong> {currentListType === 'organizations' ? 'boutiques' : 'contactos'} listos. 
+              Haz clic en el botón <strong>"Importar ({selectedIds.size})"</strong> de abajo para guardarlos en tu directorio.
+            </AlertDescription>
+          </Alert>
+          
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {currentImportId ? (
                   <Badge variant="outline" className="gap-1 text-green-600 border-green-200 bg-green-50">
                     <CheckCircle className="h-3 w-3" />
                     Sesión activa
@@ -416,40 +444,50 @@ const MNAApolloImportPage: React.FC = () => {
               </div>
             )}
 
-            <ScrollArea className="h-[400px] border rounded-lg">
-              <div className="divide-y">
-                {searchResults.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className={`p-3 flex items-center gap-3 hover:bg-muted/50 cursor-pointer ${
-                      selectedIds.has(item.id) ? 'bg-primary/5' : ''
-                    }`}
-                    onClick={() => toggleSelect(item.id)}
-                  >
-                    <Checkbox 
-                      checked={selectedIds.has(item.id)}
-                      onCheckedChange={() => toggleSelect(item.id)}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{item.name}</div>
-                      <div className="text-sm text-muted-foreground truncate">
-                        {item.title} {item.organization?.name && `@ ${item.organization.name}`}
+            {/* Virtualized List for performance with 2000+ items */}
+            <div className="border rounded-lg overflow-hidden">
+              <FixedSizeList
+                height={400}
+                itemCount={searchResults.length}
+                itemSize={64}
+                width="100%"
+              >
+                {({ index, style }: { index: number; style: React.CSSProperties }) => {
+                  const item = searchResults[index];
+                  return (
+                    <div 
+                      style={style}
+                      className={`p-3 flex items-center gap-3 hover:bg-muted/50 cursor-pointer border-b ${
+                        selectedIds.has(item.id) ? 'bg-primary/5' : ''
+                      }`}
+                      onClick={() => toggleSelect(item.id)}
+                    >
+                      <Checkbox 
+                        checked={selectedIds.has(item.id)}
+                        onCheckedChange={() => toggleSelect(item.id)}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{item.name}</div>
+                        <div className="text-sm text-muted-foreground truncate">
+                          {item.title} {item.organization?.name && `@ ${item.organization.name}`}
+                        </div>
                       </div>
+                      <div className="text-xs text-muted-foreground">
+                        {item.country || item.organization?.country || '-'}
+                      </div>
+                      {item.organization?.estimated_num_employees && (
+                        <Badge variant="outline" className="text-xs">
+                          {item.organization.estimated_num_employees} emp
+                        </Badge>
+                      )}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {item.country || item.organization?.country || '-'}
-                    </div>
-                    {item.organization?.estimated_num_employees && (
-                      <Badge variant="outline" className="text-xs">
-                        {item.organization.estimated_num_employees} emp
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+                  );
+                }}
+              </FixedSizeList>
+            </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Import History */}
