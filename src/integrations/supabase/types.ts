@@ -5486,7 +5486,7 @@ export type Database = {
           nombre: string
           potencial_search_fund: boolean | null
           revenue: number | null
-          sector: string
+          sector: string | null
           sector_id: string | null
           sitio_web: string | null
           source_pro_valuation_id: string | null
@@ -5538,7 +5538,7 @@ export type Database = {
           nombre: string
           potencial_search_fund?: boolean | null
           revenue?: number | null
-          sector: string
+          sector?: string | null
           sector_id?: string | null
           sitio_web?: string | null
           source_pro_valuation_id?: string | null
@@ -5590,7 +5590,7 @@ export type Database = {
           nombre?: string
           potencial_search_fund?: boolean | null
           revenue?: number | null
-          sector?: string
+          sector?: string | null
           sector_id?: string | null
           sitio_web?: string | null
           source_pro_valuation_id?: string | null
