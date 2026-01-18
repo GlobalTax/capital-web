@@ -425,13 +425,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Importar boutiques desde Apollo"
       },
       { 
-        title: "Apollo Visitors", 
-        url: "/admin/mna-apollo-visitors", 
-        icon: Globe,
-        badge: "NEW",
-        description: "Importar visitantes web como boutiques"
-      },
-      { 
         title: "Directorio Boutiques", 
         url: "/admin/mna-directory", 
         icon: Building2,
