@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -14,11 +14,14 @@ import {
   FileText,
   Hash,
   Eye,
-  Wand2
+  Wand2,
+  Loader2
 } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
 import { useBlogSEO } from '@/hooks/useBlogSEO';
 import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface BlogSEOPanelProps {
   post: BlogPost;
@@ -26,6 +29,8 @@ interface BlogSEOPanelProps {
 }
 
 const BlogSEOPanel = ({ post, updatePost }: BlogSEOPanelProps) => {
+  const { toast } = useToast();
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const { 
     analysis, 
     seoErrors, 
@@ -57,15 +62,91 @@ const BlogSEOPanel = ({ post, updatePost }: BlogSEOPanelProps) => {
     }
   }, [analysis.readingTime]);
 
-  const handleAutoGenerateMetaTags = () => {
-    const metaUpdates = generateMetaTags(post);
-    updatePost(metaUpdates);
+  const handleAutoGenerateMetaTags = async () => {
+    if (!post.title && !post.content) {
+      toast({
+        title: "Contenido requerido",
+        description: "Necesitas un título o contenido para generar meta tags",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsGeneratingAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-blog-content', {
+        body: {
+          type: 'seo',
+          prompt: post.title || 'Artículo de blog',
+          context: {
+            title: post.title,
+            content: post.content?.substring(0, 1500),
+            category: post.category
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      const content = data?.content || '';
+      const lines = content.split('\n').filter((l: string) => l.trim());
+      
+      const updates: Partial<BlogPost> = {};
+      
+      // Extraer meta título
+      const titleLine = lines.find((l: string) => 
+        l.toLowerCase().includes('título') || l.toLowerCase().includes('title')
+      );
+      if (titleLine) {
+        updates.meta_title = titleLine
+          .replace(/^[\d.)\-\s]*/g, '')
+          .replace(/^(meta\s*)?t[íi]tulo:?\s*/i, '')
+          .replace(/["']/g, '')
+          .trim()
+          .substring(0, 60);
+      }
+      
+      // Extraer meta descripción
+      const descLine = lines.find((l: string) => 
+        l.toLowerCase().includes('descripción') || l.toLowerCase().includes('description')
+      );
+      if (descLine) {
+        updates.meta_description = descLine
+          .replace(/^[\d.)\-\s]*/g, '')
+          .replace(/^(meta\s*)?descripci[óo]n:?\s*/i, '')
+          .replace(/["']/g, '')
+          .trim()
+          .substring(0, 160);
+      }
+      
+      if (Object.keys(updates).length > 0) {
+        updatePost(updates);
+        toast({ title: "Meta tags generados", description: "Se han generado los meta tags con IA" });
+      } else {
+        // Fallback al método simple
+        const fallback = generateMetaTags(post);
+        updatePost(fallback);
+        toast({ title: "Meta tags generados", description: "Generados con método básico" });
+      }
+    } catch (error) {
+      console.error('Error generating meta tags:', error);
+      // Fallback al método simple
+      const fallback = generateMetaTags(post);
+      updatePost(fallback);
+      toast({ title: "Meta tags generados", description: "Generados con método básico (IA no disponible)" });
+    } finally {
+      setIsGeneratingAI(false);
+    }
   };
 
   const handleGenerateSlug = () => {
     if (post.title) {
       const newSlug = generateSlug(post.title);
       updatePost({ slug: newSlug });
+      toast({ 
+        title: "Slug regenerado", 
+        description: `Nuevo slug: ${newSlug}` 
+      });
     }
   };
 
@@ -147,10 +228,15 @@ const BlogSEOPanel = ({ post, updatePost }: BlogSEOPanelProps) => {
             variant="outline"
             size="sm"
             onClick={handleAutoGenerateMetaTags}
+            disabled={isGeneratingAI}
             className="flex items-center gap-1"
           >
-            <Wand2 className="h-3 w-3" />
-            Auto-generar
+            {isGeneratingAI ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Wand2 className="h-3 w-3" />
+            )}
+            {isGeneratingAI ? 'Generando...' : 'Auto-generar'}
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
