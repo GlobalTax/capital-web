@@ -490,7 +490,8 @@ async function searchContactsForOrganization(
   page: number = 1,
   perPage: number = 25
 ): Promise<{ contacts: ApolloPerson[]; totalEntries: number; pagination: any }> {
-  const response = await fetch('https://api.apollo.io/v1/people/search', {
+  // Updated to use new mixed_people/search endpoint (people/search is deprecated)
+  const response = await fetch('https://api.apollo.io/v1/mixed_people/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
