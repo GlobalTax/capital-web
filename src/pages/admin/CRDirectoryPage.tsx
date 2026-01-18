@@ -17,7 +17,7 @@ import { CRPersonRole, CRFundType, CR_PERSON_ROLE_LABELS, CR_FUND_TYPE_LABELS } 
 
 export const CRDirectoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('funds');
+  const [activeTab, setActiveTab] = useState('favorite-funds');
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<CRPersonRole | 'all'>('all');
   const [fundTypeFilter, setFundTypeFilter] = useState<CRFundType | 'all'>('all');
