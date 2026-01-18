@@ -1,8 +1,7 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,6 +15,10 @@ serve(async (req) => {
   }
 
   try {
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
     const { type, prompt, context = {} } = await req.json();
     
     let systemMessage = '';
@@ -49,11 +52,7 @@ Estructura requerida:
       
       case 'seo':
         systemMessage = 'Eres un especialista en SEO para el sector financiero y M&A. Creas meta títulos y descripciones optimizadas para búsquedas relacionadas con fusiones, adquisiciones, valoraciones y finanzas corporativas.';
-        userMessage = `Para un artículo titulado "${context.title}", crea:
-        1. Meta título (máximo 60 caracteres) optimizado para SEO
-        2. Meta descripción (máximo 160 caracteres) que incluya palabras clave relevantes del sector M&A
-        
-        Palabras clave a considerar: fusiones, adquisiciones, valoración empresarial, due diligence, M&A, finanzas corporativas, empresa, valorar empresa`;
+        userMessage = `Para un artículo titulado "${context.title}" con contenido sobre: "${context.content?.substring(0, 500) || prompt}", genera meta tags SEO optimizados.`;
         break;
       
       case 'tags':
@@ -65,28 +64,95 @@ Estructura requerida:
         throw new Error('Tipo de generación no válido');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Build request body
+    const body: Record<string, unknown> = {
+      model: 'google/gemini-3-flash-preview',
+      messages: [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: userMessage }
+      ],
+      max_tokens: type === 'content' ? 3000 : 500,
+    };
+
+    // Use tool calling for structured SEO output
+    if (type === 'seo') {
+      body.tools = [
+        {
+          type: "function",
+          function: {
+            name: "generate_seo_metadata",
+            description: "Genera meta título y descripción optimizados para SEO",
+            parameters: {
+              type: "object",
+              properties: {
+                meta_title: { 
+                  type: "string", 
+                  description: "Meta título SEO optimizado (máximo 60 caracteres)" 
+                },
+                meta_description: { 
+                  type: "string", 
+                  description: "Meta descripción SEO atractiva (máximo 160 caracteres)" 
+                }
+              },
+              required: ["meta_title", "meta_description"],
+              additionalProperties: false
+            }
+          }
+        }
+      ];
+      body.tool_choice = { type: "function", function: { name: "generate_seo_metadata" } };
+    }
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: userMessage }
-        ],
-        max_tokens: type === 'content' ? 3000 : 500,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limits exceeded, please try again later." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required, please add funds to your Lovable AI workspace." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
+    
+    // Handle tool calling response for SEO
+    if (type === 'seo' && data.choices?.[0]?.message?.tool_calls?.[0]) {
+      const toolCall = data.choices[0].message.tool_calls[0];
+      if (toolCall.function?.name === 'generate_seo_metadata') {
+        try {
+          const seoData = JSON.parse(toolCall.function.arguments);
+          return new Response(JSON.stringify({ 
+            content: '', 
+            type,
+            tool_calls: data.choices[0].message.tool_calls,
+            seo_data: seoData
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } catch (parseError) {
+          console.error('Error parsing tool call arguments:', parseError);
+        }
+      }
+    }
+
+    const generatedContent = data.choices?.[0]?.message?.content || '';
 
     return new Response(JSON.stringify({ content: generatedContent, type }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
