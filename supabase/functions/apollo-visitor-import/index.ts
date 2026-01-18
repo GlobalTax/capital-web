@@ -114,6 +114,61 @@ async function findExistingEmpresa(
 
 // ============= APOLLO API FUNCTIONS =============
 
+// Verify if a list exists and detect its type (label vs saved list)
+async function verifyListExists(listId: string): Promise<{ 
+  exists: boolean; 
+  name?: string; 
+  listType?: string;
+  total?: number;
+} | null> {
+  console.log('[Apollo Visitor] Verifying list exists:', listId);
+  
+  // First, try the /v1/labels endpoint to check if it's a label/tag
+  try {
+    const labelsResponse = await fetch('https://api.apollo.io/v1/labels', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': APOLLO_API_KEY!,
+      },
+    });
+    
+    if (labelsResponse.ok) {
+      const labelsData = await labelsResponse.json();
+      // Handle both array response and object with labels key
+      const labels = Array.isArray(labelsData) ? labelsData : (labelsData.labels || []);
+      
+      if (Array.isArray(labels)) {
+        // Look for our list ID in the labels
+        const foundLabel = labels.find((label: any) => label.id === listId || label._id === listId);
+        if (foundLabel) {
+          const listType = foundLabel.label_type || foundLabel.modality || 'label';
+          console.log(`[Apollo Visitor] ✅ Found list via labels: "${foundLabel.name}" (type: ${listType}, cached_count: ${foundLabel.cached_count})`);
+          return { 
+            exists: true, 
+            name: foundLabel.name,
+            listType: 'label', // Force 'label' type since this comes from /v1/labels endpoint
+            total: foundLabel.cached_count,
+          };
+        }
+        console.log(`[Apollo Visitor] List ${listId} not found in labels endpoint`);
+      }
+    } else {
+      console.log('[Apollo Visitor] Labels endpoint returned:', labelsResponse.status);
+    }
+  } catch (e) {
+    console.log('[Apollo Visitor] Error checking labels:', e);
+  }
+  
+  // If not found in labels, assume it's a saved list
+  console.log(`[Apollo Visitor] List ${listId} not found in labels, assuming it's a saved list`);
+  return { 
+    exists: true, 
+    name: 'Lista guardada',
+    listType: 'saved_list',
+  };
+}
+
 // NEW: Enrich organization by domain - THE RELIABLE WAY
 // Uses /v1/organizations/enrich which is designed for single-org lookups
 async function enrichOrganization(domain: string): Promise<ApolloOrganization | null> {
@@ -142,7 +197,7 @@ async function enrichOrganization(domain: string): Promise<ApolloOrganization | 
 }
 
 // SIMPLIFIED: Search organizations from Apollo list (CRM only)
-// Supports both contact lists and account lists
+// Supports both contact lists and account lists, and detects labels vs saved lists
 // WARNING: This ONLY works for items already in Apollo CRM, not "net new"
 async function searchOrganizationsFromList(
   listId: string,
@@ -153,20 +208,31 @@ async function searchOrganizationsFromList(
   
   console.log('[Apollo API] Searching from list:', { listId, listType });
   
+  // First, verify if this is a label or a saved list
+  const listCheck = await verifyListExists(listId);
+  const isLabel = listCheck?.listType === 'label';
+  console.log(`[Apollo Visitor] List type detected: "${listCheck?.listType}", using ${isLabel ? 'label_ids' : (listType === 'contacts' ? 'contact_list_ids' : 'account_list_ids')}`);
+  
   let organizations: ApolloOrganization[] = [];
   let totalEntries = 0;
   let pagination: any = {};
 
   if (listType === 'contacts') {
     // Use contacts/search for contact lists
-    const requestBody = {
-      contact_list_ids: [listId],
+    // Choose correct filter param based on whether it's a label or saved list
+    const requestBody: Record<string, unknown> = {
       page,
       per_page: perPage,
     };
-
-    console.log('[Apollo API] Using /v1/contacts/search with contact_list_ids');
     
+    if (isLabel) {
+      requestBody.label_ids = [listId];
+      console.log('[Apollo API] Using /v1/contacts/search with label_ids:', listId);
+    } else {
+      requestBody.contact_list_ids = [listId];
+      console.log('[Apollo API] Using /v1/contacts/search with contact_list_ids:', listId);
+    }
+
     const response = await fetch('https://api.apollo.io/v1/contacts/search', {
       method: 'POST',
       headers: {
@@ -191,7 +257,13 @@ async function searchOrganizationsFromList(
       total: totalEntries,
       returned: contacts.length,
       firstResult: contacts[0]?.name || contacts[0]?.first_name,
+      isLabel,
     });
+    
+    // SAFETY CHECK: If we get way more results than expected for a label, something went wrong
+    if (isLabel && listCheck?.total && totalEntries > listCheck.total * 2) {
+      console.error(`[Apollo Visitor] ⚠️ WARNING: Got ${totalEntries} results but label only has ${listCheck.total}. Apollo may have ignored the filter.`);
+    }
 
     // Extract organizations from contacts
     const orgMap = new Map<string, ApolloOrganization>();
@@ -217,13 +289,18 @@ async function searchOrganizationsFromList(
     
   } else {
     // Use accounts/search for account lists
-    const requestBody = {
-      account_list_ids: [listId],
+    const requestBody: Record<string, unknown> = {
       page,
       per_page: perPage,
     };
-
-    console.log('[Apollo API] Using /v1/accounts/search with account_list_ids');
+    
+    if (isLabel) {
+      requestBody.label_ids = [listId];
+      console.log('[Apollo API] Using /v1/accounts/search with label_ids:', listId);
+    } else {
+      requestBody.account_list_ids = [listId];
+      console.log('[Apollo API] Using /v1/accounts/search with account_list_ids:', listId);
+    }
 
     const response = await fetch('https://api.apollo.io/v1/accounts/search', {
       method: 'POST',
@@ -249,13 +326,15 @@ async function searchOrganizationsFromList(
       total: totalEntries,
       returned: organizations.length,
       firstResult: organizations[0]?.name,
+      isLabel,
     });
   }
 
   // Warning about CRM-only limitation
+  const labelInfo = isLabel ? ' (Label/Tag detectado)' : '';
   const warning = listType === 'contacts'
-    ? `ℹ️ Lista de contactos: Se encontraron ${totalEntries} contactos → ${organizations.length} empresas únicas.`
-    : `⚠️ Lista de cuentas: Solo muestra empresas ya en el CRM de Apollo (${totalEntries} encontradas).`;
+    ? `ℹ️ Lista de contactos${labelInfo}: Se encontraron ${totalEntries} contactos → ${organizations.length} empresas únicas.`
+    : `⚠️ Lista de cuentas${labelInfo}: Solo muestra empresas ya en el CRM de Apollo (${totalEntries} encontradas).`;
 
   return {
     organizations,
