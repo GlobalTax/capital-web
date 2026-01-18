@@ -27,8 +27,8 @@ interface LinearContactsTableProps {
   isEnriching?: string | null;
 }
 
-// Row height for virtualization
-const ROW_HEIGHT = 52;
+// Row height for virtualization - compact
+const ROW_HEIGHT = 44;
 
 // Helper to get channel color
 const getChannelColor = (category?: string) => {
@@ -55,7 +55,7 @@ const TableHeader = React.memo<{
         transform: `translateX(-${scrollLeft}px)` 
       }}
     >
-      <div className="flex items-center justify-center h-10 px-2" style={{ flex: COL_STYLES.checkbox.flex, minWidth: COL_STYLES.checkbox.minWidth }}>
+      <div className="flex items-center justify-center h-8 px-1.5" style={{ flex: COL_STYLES.checkbox.flex, minWidth: COL_STYLES.checkbox.minWidth }}>
         <Checkbox
           checked={allSelected}
           ref={(el) => {
@@ -65,28 +65,28 @@ const TableHeader = React.memo<{
           className="border-muted-foreground/30"
         />
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
         Contacto
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
         Origen
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }}>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }}>
         Canal
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }}>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }}>
         Empresa
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }}>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }}>
         Estado
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
-        Financieros
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
+        Fin.
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }}>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }}>
         Apollo
       </div>
-      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}>
         Fecha
       </div>
       <div style={{ flex: COL_STYLES.actions.flex, minWidth: COL_STYLES.actions.minWidth }} />

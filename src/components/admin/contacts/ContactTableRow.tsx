@@ -149,7 +149,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
     <div 
       style={style}
       className={cn(
-        "flex items-center h-[52px] cursor-pointer transition-colors border-b border-[hsl(var(--linear-border))]",
+        "flex items-center h-[44px] cursor-pointer transition-colors border-b border-[hsl(var(--linear-border))]",
         isSelected 
           ? "bg-[hsl(var(--accent-primary)/0.05)]" 
           : "hover:bg-[hsl(var(--linear-bg-hover))]",
@@ -159,7 +159,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
     >
       {/* Checkbox */}
       <div 
-        className="flex items-center justify-center px-2" 
+        className="flex items-center justify-center px-1.5" 
         style={{ flex: COL_STYLES.checkbox.flex, minWidth: COL_STYLES.checkbox.minWidth }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -170,100 +170,61 @@ export const ContactTableRow = memo<ContactRowProps>(({
         />
       </div>
       
-      {/* Contact info */}
-      <div className="flex flex-col gap-0.5 px-2 overflow-hidden" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
-        <div className="flex items-center gap-1.5">
-          <span className="font-medium text-sm text-foreground truncate max-w-[140px]">
+      {/* Contact info - compact 2 lines */}
+      <div className="flex flex-col px-1.5 overflow-hidden" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
+        <div className="flex items-center gap-1">
+          <span className="font-medium text-xs text-foreground truncate max-w-[130px]">
             {contact.name}
           </span>
-          {isHotLead && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Flame className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-              </TooltipTrigger>
-              <TooltipContent>Lead caliente</TooltipContent>
-            </Tooltip>
-          )}
+          {isHotLead && <Flame className="h-3 w-3 text-orange-500 flex-shrink-0" />}
           {contact.valuation_count && contact.valuation_count > 1 && (
-            <Badge variant="outline" className="h-4 px-1 text-[10px] bg-orange-500/10 text-orange-600 border-orange-500/20">
-              ×{contact.valuation_count}
-            </Badge>
+            <span className="text-[9px] text-orange-600">×{contact.valuation_count}</span>
           )}
           {contact.is_from_pro_valuation && (
-            <Badge variant="outline" className="h-4 px-1 text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-              Pro
-            </Badge>
+            <span className="text-[9px] text-emerald-600">Pro</span>
           )}
-          {hasAiSummary && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Bot className="h-3.5 w-3.5 text-violet-500 flex-shrink-0" />
-              </TooltipTrigger>
-              <TooltipContent>Tiene resumen IA</TooltipContent>
-            </Tooltip>
-          )}
+          {hasAiSummary && <Bot className="h-3 w-3 text-violet-500 flex-shrink-0" />}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-muted-foreground truncate max-w-[110px]">
             {contact.email}
           </span>
-          {hasPhone ? (
+          {hasPhone && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-4 w-4 p-0 hover:bg-transparent"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(`tel:${contact.phone}`);
-                  }}
-                >
-                  <Phone className="h-3 w-3 text-muted-foreground hover:text-emerald-500 transition-colors" />
-                </Button>
+                <Phone className="h-2.5 w-2.5 text-muted-foreground/70 cursor-pointer hover:text-emerald-500" onClick={(e) => { e.stopPropagation(); window.open(`tel:${contact.phone}`); }} />
               </TooltipTrigger>
               <TooltipContent>{contact.phone}</TooltipContent>
             </Tooltip>
-          ) : (
-            <div onClick={(e) => e.stopPropagation()}>
-              <EditableCell
-                value=""
-                type="phone"
-                placeholder="+34..."
-                emptyText=""
-                displayClassName="text-[10px] text-muted-foreground/50"
-                onSave={handlePhoneUpdate}
-              />
-            </div>
           )}
         </div>
       </div>
       
       {/* Origin */}
-      <div className="px-2 flex items-center" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
-        <Badge variant="outline" className={cn("h-5 text-[10px] font-medium border", originConfig.color)}>
+      <div className="px-1.5 flex items-center" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
+        <Badge variant="outline" className={cn("h-4 text-[9px] font-medium border px-1.5", originConfig.color)}>
           {originConfig.label}
         </Badge>
       </div>
       
       {/* Channel */}
-      <div className="px-2 overflow-hidden" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-1.5 overflow-hidden" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }} onClick={(e) => e.stopPropagation()}>
         <EditableSelect
           value={contact.acquisition_channel_id ?? undefined}
           options={channelOptions}
-          placeholder="Seleccionar..."
+          placeholder="—"
           emptyText="—"
           allowClear
           onSave={handleChannelUpdate}
         />
       </div>
       
-      {/* Company */}
-      <div className="flex flex-col gap-0.5 px-2 overflow-hidden" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }} onClick={(e) => e.stopPropagation()}>
+      {/* Company - compact 2 lines */}
+      <div className="flex flex-col px-1.5 overflow-hidden" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }} onClick={(e) => e.stopPropagation()}>
         {contact.empresa_id ? (
           <Link 
             to={`/admin/empresas/${contact.empresa_id}`}
-            className="text-sm truncate max-w-[140px] text-primary hover:underline cursor-pointer"
+            className="text-xs truncate max-w-[140px] text-primary hover:underline cursor-pointer"
           >
             {contact.empresa_nombre || contact.company || '—'}
           </Link>
@@ -273,79 +234,60 @@ export const ContactTableRow = memo<ContactRowProps>(({
             type="text"
             placeholder="Empresa..."
             emptyText="—"
-            displayClassName="truncate max-w-[140px]"
+            displayClassName="text-xs truncate max-w-[140px]"
             onSave={handleCompanyUpdate}
           />
         )}
-        <EditableCell
-          value={contact.industry}
-          type="text"
-          placeholder="Sector..."
-          emptyText=""
-          displayClassName="text-[10px] text-muted-foreground truncate max-w-[140px]"
-          onSave={handleIndustryUpdate}
-        />
-        <div className="flex items-center gap-0.5">
-          <MapPin className="h-2.5 w-2.5 text-muted-foreground/70" />
-          <EditableCell
-            value={contact.location}
-            type="text"
-            placeholder="Ubicación..."
-            emptyText=""
-            displayClassName="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
-            onSave={handleLocationUpdate}
-          />
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
+              {[contact.industry, contact.location].filter(Boolean).join(' · ') || '—'}
+            </span>
+          </TooltipTrigger>
+          {(contact.industry || contact.location) && (
+            <TooltipContent>
+              {contact.industry && <div>Sector: {contact.industry}</div>}
+              {contact.location && <div>Ubicación: {contact.location}</div>}
+            </TooltipContent>
+          )}
+        </Tooltip>
       </div>
       
       {/* Status */}
-      <div className="px-2" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-1.5" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }} onClick={(e) => e.stopPropagation()}>
         <EditableSelect
           value={(contact as any).lead_status_crm ?? undefined}
           options={STATUS_OPTIONS}
-          placeholder="Estado..."
+          placeholder="—"
           emptyText="—"
           allowClear
           onSave={handleStatusUpdate}
         />
       </div>
 
-      {/* Financials */}
-      <div className="px-2" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
+      {/* Financials - single line */}
+      <div className="px-1.5" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
         {hasFinancials ? (
-          <div className="flex flex-col gap-0.5">
-            {(revenue || valuation) && (
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] text-muted-foreground w-8">
-                  {revenue ? 'Fact' : 'Val'}:
-                </span>
-                <span className="text-xs font-medium text-foreground">
-                  {revenue || valuation}
-                </span>
-              </div>
-            )}
-            {ebitda && (
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] text-muted-foreground w-8">EBI:</span>
-                <span className="text-xs text-foreground">{ebitda}</span>
-              </div>
-            )}
-            {contact.employee_range && (
-              <div className="flex items-center gap-1">
-                <Users className="h-2.5 w-2.5 text-muted-foreground/70" />
-                <span className="text-[10px] text-muted-foreground">
-                  {contact.employee_range}
-                </span>
-              </div>
-            )}
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-[10px] text-foreground truncate block">
+                {[revenue, ebitda, contact.employee_range].filter(Boolean).join(' · ')}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {revenue && <div>Facturación: {revenue}</div>}
+              {ebitda && <div>EBITDA: {ebitda}</div>}
+              {valuation && <div>Valoración: {valuation}</div>}
+              {contact.employee_range && <div>Empleados: {contact.employee_range}</div>}
+            </TooltipContent>
+          </Tooltip>
         ) : (
-          <span className="text-xs text-muted-foreground/50">—</span>
+          <span className="text-[10px] text-muted-foreground/50">—</span>
         )}
       </div>
       
       {/* Apollo */}
-      <div className="px-2" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-1.5" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }} onClick={(e) => e.stopPropagation()}>
         <ApolloEnrichButton
           status={contact.apollo_status}
           error={contact.apollo_error}
@@ -357,18 +299,11 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Date */}
-      <div className="flex items-center gap-1.5 px-2" style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}>
-        <span className="text-xs text-muted-foreground">
+      <div className="flex items-center gap-1 px-1.5" style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}>
+        <span className="text-[10px] text-muted-foreground">
           {format(new Date(contact.created_at), 'dd MMM', { locale: es })}
         </span>
-        {emailOpened && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <MailOpen className="h-3 w-3 text-emerald-500" />
-            </TooltipTrigger>
-            <TooltipContent>Email abierto</TooltipContent>
-          </Tooltip>
-        )}
+        {emailOpened && <MailOpen className="h-2.5 w-2.5 text-emerald-500" />}
       </div>
       
       {/* Actions */}
