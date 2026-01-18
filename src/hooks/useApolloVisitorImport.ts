@@ -363,17 +363,13 @@ export function useVisitorImportHistory(limit: number = 20) {
   });
 }
 
-// Get imported empresas with total count
-export function useImportedEmpresas(limit: number = 500, offset: number = 0) {
+// Get imported empresas (all, no limit)
+export function useImportedEmpresas() {
   return useQuery({
-    queryKey: ['apollo-imported-empresas', limit, offset],
+    queryKey: ['apollo-imported-empresas'],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke('apollo-visitor-import', {
-        body: {
-          action: 'get_imported_empresas',
-          limit,
-          offset,
-        },
+        body: { action: 'get_imported_empresas' },
       });
 
       if (error) throw error;
@@ -382,7 +378,6 @@ export function useImportedEmpresas(limit: number = 500, offset: number = 0) {
       return {
         empresas: data.empresas as ImportedEmpresa[],
         total: data.total as number,
-        pagination: data.pagination,
       };
     },
   });

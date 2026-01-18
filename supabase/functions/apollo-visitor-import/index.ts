@@ -1246,41 +1246,23 @@ serve(async (req) => {
 
     // ============= ACTION: GET IMPORTED EMPRESAS =============
     if (action === 'get_imported_empresas') {
-      const { limit = 500, offset = 0 } = params;
-      
-      // First get total count
-      const { count, error: countError } = await supabase
+      // Fetch ALL empresas with apollo_org_id (no limit)
+      const { data, error, count } = await supabase
         .from('empresas')
-        .select('id', { count: 'exact', head: true })
-        .not('apollo_org_id', 'is', null);
-
-      if (countError) {
-        throw new Error(`Failed to count empresas: ${countError.message}`);
-      }
-      
-      // Then get paginated data
-      const { data, error } = await supabase
-        .from('empresas')
-        .select('id, nombre, sitio_web, sector, ubicacion, empleados, apollo_org_id, apollo_intent_level, apollo_score, apollo_last_synced_at, apollo_visitor_source, apollo_visitor_date, apollo_enriched_at')
+        .select('id, nombre, sitio_web, sector, ubicacion, empleados, apollo_org_id, apollo_intent_level, apollo_score, apollo_last_synced_at, apollo_visitor_source, apollo_visitor_date, apollo_enriched_at', { count: 'exact' })
         .not('apollo_org_id', 'is', null)
-        .order('apollo_last_synced_at', { ascending: false })
-        .range(offset, offset + limit - 1);
+        .order('apollo_last_synced_at', { ascending: false });
 
       if (error) {
         throw new Error(`Failed to fetch empresas: ${error.message}`);
       }
 
-      console.log(`[Get Empresas] Fetched ${data?.length || 0} of ${count} total empresas (offset: ${offset}, limit: ${limit})`);
+      console.log(`[Get Empresas] Fetched all ${data?.length || 0} empresas`);
 
       return new Response(JSON.stringify({
         success: true,
         empresas: data,
         total: count,
-        pagination: {
-          limit,
-          offset,
-          hasMore: (offset + limit) < (count || 0),
-        },
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
