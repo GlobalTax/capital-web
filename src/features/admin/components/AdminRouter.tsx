@@ -86,6 +86,7 @@ const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news
 const LazyMNADirectoryPage = React.lazy(() => import('@/pages/admin/MNADirectoryPage'));
 const LazyMNABoutiqueDetailPage = React.lazy(() => import('@/pages/admin/MNABoutiqueDetailPage'));
 const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApolloImportPage'));
+const LazyMNAApolloVisitorsPage = React.lazy(() => import('@/pages/admin/MNAApolloVisitorsPage'));
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
 const LazyEmpresaDetailPage = React.lazy(() => import('@/pages/admin/EmpresaDetailPage'));
@@ -217,6 +218,7 @@ const AdminRouter = () => {
           
           {/* MNA Boutiques */}
           <Route path="/mna-apollo-import" element={<LazyMNAApolloImportPage />} />
+          <Route path="/mna-apollo-visitors" element={<LazyMNAApolloVisitorsPage />} />
           <Route path="/mna-directory" element={<LazyMNADirectoryPage />} />
           <Route path="/mna-directory/:id" element={<LazyMNABoutiqueDetailPage />} />
           
