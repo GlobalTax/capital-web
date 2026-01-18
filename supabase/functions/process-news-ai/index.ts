@@ -45,14 +45,15 @@ serve(async (req) => {
   }
 
   try {
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    if (!openAIApiKey) {
-      console.error('OPENAI_API_KEY not configured');
+    if (!lovableApiKey && !openAIApiKey) {
+      console.error('No AI API key configured');
       return new Response(
-        JSON.stringify({ success: false, error: 'OpenAI API key not configured' }),
+        JSON.stringify({ success: false, error: 'No AI API key configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -114,22 +115,64 @@ Evalúa si es una operación REAL de compra-venta y responde en JSON:
 
 IMPORTANTE: Solo asigna relevance_score >= 7 si hay una operación CONCRETA y REAL de compra-venta con partes identificables.`;
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.3, // Lower temperature for more consistent categorization
-            max_tokens: 1200,
-          }),
-        });
+        // Try Lovable AI first (free tier)
+        let response: Response | null = null;
+        let usedProvider = 'lovable';
+        
+        if (lovableApiKey) {
+          try {
+            response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${lovableApiKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'google/gemini-2.5-flash',
+                messages: [
+                  { role: 'system', content: SYSTEM_PROMPT },
+                  { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.3,
+                max_tokens: 1200,
+              }),
+            });
+            
+            if (!response.ok) {
+              console.warn(`[process-news-ai] Lovable AI failed for article ${article.id}, trying OpenAI...`);
+              response = null;
+            }
+          } catch (lovableError) {
+            console.warn(`[process-news-ai] Lovable AI error:`, lovableError);
+            response = null;
+          }
+        }
+
+        // Fallback to OpenAI
+        if (!response && openAIApiKey) {
+          usedProvider = 'openai';
+          response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openAIApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: userPrompt }
+              ],
+              temperature: 0.3,
+              max_tokens: 1200,
+            }),
+          });
+        }
+
+        if (!response) {
+          console.error(`[process-news-ai] No AI service available for article ${article.id}`);
+          continue;
+        }
 
         if (!response.ok) {
           console.error(`OpenAI API error for article ${article.id}:`, response.status);
