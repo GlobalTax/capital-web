@@ -9,7 +9,10 @@ export function useCRFunds(filters?: CRFundFilters) {
     queryFn: async () => {
       let query = supabase
         .from('cr_funds')
-        .select('*')
+        .select(`
+          *,
+          people_count:cr_people(count)
+        `)
         .eq('is_deleted', false)
         .order('name', { ascending: true });
 
@@ -41,7 +44,12 @@ export function useCRFunds(filters?: CRFundFilters) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as CRFund[];
+      
+      // Process people count from aggregation
+      return (data || []).map(fund => ({
+        ...fund,
+        people_count: (fund.people_count as any)?.[0]?.count || 0
+      })) as (CRFund & { people_count: number })[];
     },
   });
 }
