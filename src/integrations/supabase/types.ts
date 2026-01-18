@@ -5446,6 +5446,7 @@ export type Database = {
       empresas: {
         Row: {
           actividades_destacadas: string[] | null
+          alexa_ranking: number | null
           año_datos_financieros: number | null
           apollo_enriched_at: string | null
           apollo_intent_level: string | null
@@ -5463,6 +5464,7 @@ export type Database = {
           cnae_codigo: string | null
           cnae_descripcion: string | null
           created_at: string | null
+          departmental_headcount: Json | null
           descripcion: string | null
           deuda: number | null
           ebitda: number | null
@@ -5470,11 +5472,15 @@ export type Database = {
           empleados: number | null
           es_target: boolean | null
           estado_target: string | null
+          facebook_url: string | null
           facturacion: number | null
           fecha_enriquecimiento: string | null
+          founded_year: number | null
           fuente_enriquecimiento: string | null
           id: string
           import_log_id: string | null
+          keywords: string[] | null
+          linkedin_url: string | null
           margen_ebitda: number | null
           nivel_interes: string | null
           nombre: string
@@ -5486,11 +5492,13 @@ export type Database = {
           source_pro_valuation_id: string | null
           source_valuation_id: string | null
           subsector: string | null
+          technologies: Json | null
           ubicacion: string | null
           updated_at: string | null
         }
         Insert: {
           actividades_destacadas?: string[] | null
+          alexa_ranking?: number | null
           año_datos_financieros?: number | null
           apollo_enriched_at?: string | null
           apollo_intent_level?: string | null
@@ -5508,6 +5516,7 @@ export type Database = {
           cnae_codigo?: string | null
           cnae_descripcion?: string | null
           created_at?: string | null
+          departmental_headcount?: Json | null
           descripcion?: string | null
           deuda?: number | null
           ebitda?: number | null
@@ -5515,11 +5524,15 @@ export type Database = {
           empleados?: number | null
           es_target?: boolean | null
           estado_target?: string | null
+          facebook_url?: string | null
           facturacion?: number | null
           fecha_enriquecimiento?: string | null
+          founded_year?: number | null
           fuente_enriquecimiento?: string | null
           id?: string
           import_log_id?: string | null
+          keywords?: string[] | null
+          linkedin_url?: string | null
           margen_ebitda?: number | null
           nivel_interes?: string | null
           nombre: string
@@ -5531,11 +5544,13 @@ export type Database = {
           source_pro_valuation_id?: string | null
           source_valuation_id?: string | null
           subsector?: string | null
+          technologies?: Json | null
           ubicacion?: string | null
           updated_at?: string | null
         }
         Update: {
           actividades_destacadas?: string[] | null
+          alexa_ranking?: number | null
           año_datos_financieros?: number | null
           apollo_enriched_at?: string | null
           apollo_intent_level?: string | null
@@ -5553,6 +5568,7 @@ export type Database = {
           cnae_codigo?: string | null
           cnae_descripcion?: string | null
           created_at?: string | null
+          departmental_headcount?: Json | null
           descripcion?: string | null
           deuda?: number | null
           ebitda?: number | null
@@ -5560,11 +5576,15 @@ export type Database = {
           empleados?: number | null
           es_target?: boolean | null
           estado_target?: string | null
+          facebook_url?: string | null
           facturacion?: number | null
           fecha_enriquecimiento?: string | null
+          founded_year?: number | null
           fuente_enriquecimiento?: string | null
           id?: string
           import_log_id?: string | null
+          keywords?: string[] | null
+          linkedin_url?: string | null
           margen_ebitda?: number | null
           nivel_interes?: string | null
           nombre?: string
@@ -5576,6 +5596,7 @@ export type Database = {
           source_pro_valuation_id?: string | null
           source_valuation_id?: string | null
           subsector?: string | null
+          technologies?: Json | null
           ubicacion?: string | null
           updated_at?: string | null
         }

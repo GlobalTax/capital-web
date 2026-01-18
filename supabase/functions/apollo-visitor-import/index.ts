@@ -19,6 +19,8 @@ interface ApolloOrganization {
   website_url?: string;
   primary_domain?: string;
   linkedin_url?: string;
+  facebook_url?: string;
+  twitter_url?: string;
   industry?: string;
   estimated_num_employees?: number;
   city?: string;
@@ -26,11 +28,23 @@ interface ApolloOrganization {
   country?: string;
   raw_address?: string;
   annual_revenue?: number;
+  annual_revenue_printed?: string;
   intent_level?: string;
   account_score?: number;
   // Enrichment data
   founded_year?: number;
   technologies?: string[];
+  current_technologies?: any[];
+  keywords?: string[];
+  departmental_head_count?: Record<string, number>;
+  alexa_ranking?: number;
+  // Extra fields from Apollo
+  short_description?: string;
+  seo_description?: string;
+  total_funding?: number;
+  total_funding_printed?: string;
+  latest_funding_round_date?: string;
+  latest_funding_stage?: string;
   // Visitor data (when source is website visitors)
   visitor_data?: {
     visit_date?: string;
@@ -492,21 +506,41 @@ async function importOrganizationToEmpresa(
       sector: org.industry,
       ubicacion: [org.city, org.state, org.country].filter(Boolean).join(', ') || null,
       empleados: org.estimated_num_employees?.toString(),
+      // NEW: Enhanced Apollo data mapping
+      facturacion: org.annual_revenue || null,
+      linkedin_url: org.linkedin_url || null,
+      facebook_url: org.facebook_url || null,
+      founded_year: org.founded_year || null,
+      keywords: org.keywords || null,
+      technologies: org.current_technologies || org.technologies || null,
+      departmental_headcount: org.departmental_head_count || null,
+      alexa_ranking: org.alexa_ranking || null,
+      // Apollo sync metadata
       apollo_org_id: org.id,
       apollo_intent_level: org.intent_level,
       apollo_score: org.account_score,
       apollo_last_synced_at: new Date().toISOString(),
       apollo_raw_data: org,
-      // NEW: Track source and visitor date
+      // Track source and visitor date
       apollo_visitor_source: source,
       apollo_visitor_date: org.visitor_data?.visit_date || null,
     };
 
     if (existing) {
-      // Update existing empresa with Apollo data
+      // Update existing empresa with Apollo data (enhanced mapping)
       const { error } = await supabase
         .from('empresas')
         .update({
+          // Enhanced Apollo data
+          facturacion: org.annual_revenue || null,
+          linkedin_url: org.linkedin_url || null,
+          facebook_url: org.facebook_url || null,
+          founded_year: org.founded_year || null,
+          keywords: org.keywords || null,
+          technologies: org.current_technologies || org.technologies || null,
+          departmental_headcount: org.departmental_head_count || null,
+          alexa_ranking: org.alexa_ranking || null,
+          // Apollo sync metadata
           apollo_org_id: org.id,
           apollo_intent_level: org.intent_level,
           apollo_score: org.account_score,
