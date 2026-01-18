@@ -29,6 +29,9 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
   const { toast } = useToast();
   const { errors, validatePost, clearErrors } = useBlogValidation();
   
+  // Track if user has manually edited the slug
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  
   const [formData, setFormData] = useState<BlogPostFormData>({
     title: '',
     slug: '',
@@ -125,9 +128,16 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
     setFormData(prev => ({
       ...prev,
       title,
-      slug: generateSlug(title),
+      // Only auto-generate slug if user hasn't manually edited it
+      slug: slugManuallyEdited ? prev.slug : generateSlug(title),
       meta_title: prev.meta_title || title
     }));
+  };
+
+  // Handle manual slug changes - mark as manually edited
+  const handleSlugChange = (newSlug: string) => {
+    setSlugManuallyEdited(true);
+    setFormData(prev => ({ ...prev, slug: newSlug }));
   };
 
   const handleTagsChange = (tagsString: string) => {
@@ -398,7 +408,7 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
               <span>URL:</span>
               <Input
                 value={formData.slug}
-                onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                onChange={(e) => handleSlugChange(e.target.value)}
                 placeholder="url-del-post"
                 className="font-mono text-xs h-8 max-w-xs"
               />

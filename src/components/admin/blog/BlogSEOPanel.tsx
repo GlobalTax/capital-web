@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { BlogPost } from '@/types/blog';
 import { useBlogSEO } from '@/hooks/useBlogSEO';
-import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,27 +39,20 @@ const BlogSEOPanel = ({ post, updatePost }: BlogSEOPanelProps) => {
     generateMetaTags 
   } = useBlogSEO();
 
+  // Memoize analyzePost call
+  const memoizedAnalyzePost = useCallback((postToAnalyze: BlogPost) => {
+    analyzePost(postToAnalyze);
+  }, [analyzePost]);
+
   // Analizar el post cuando cambie
   useEffect(() => {
     if (post.title || post.content || post.slug) {
-      analyzePost(post);
+      memoizedAnalyzePost(post);
     }
-  }, [post.title, post.content, post.slug, post.meta_title, post.meta_description]);
+  }, [post.title, post.content, post.slug, post.meta_title, post.meta_description, memoizedAnalyzePost]);
 
-  // Auto-generar slug cuando cambie el título
-  useEffect(() => {
-    if (post.title && !post.slug) {
-      const newSlug = generateSlug(post.title);
-      updatePost({ slug: newSlug });
-    }
-  }, [post.title]);
-
-  // Auto-actualizar tiempo de lectura
-  useEffect(() => {
-    if (analysis.readingTime !== post.reading_time) {
-      updatePost({ reading_time: analysis.readingTime });
-    }
-  }, [analysis.readingTime]);
+  // NOTE: Slug generation is now centralized in EnhancedBlogEditor.tsx
+  // NOTE: Reading time calculation is now centralized in EnhancedBlogEditor.tsx
 
   const handleAutoGenerateMetaTags = async () => {
     if (!post.title && !post.content) {
@@ -88,6 +80,18 @@ const BlogSEOPanel = ({ post, updatePost }: BlogSEOPanelProps) => {
       
       if (error) throw error;
       
+      // Handle structured tool calling response (new format)
+      if (data?.seo_data) {
+        const seoData = data.seo_data;
+        updatePost({
+          meta_title: seoData.meta_title?.substring(0, 60),
+          meta_description: seoData.meta_description?.substring(0, 160)
+        });
+        toast({ title: "Meta tags generados", description: "Se han generado los meta tags con IA" });
+        return;
+      }
+      
+      // Fallback: Parse text response (legacy format)
       const content = data?.content || '';
       const lines = content.split('\n').filter((l: string) => l.trim());
       
@@ -150,12 +154,6 @@ const BlogSEOPanel = ({ post, updatePost }: BlogSEOPanelProps) => {
     }
   };
 
-  const getSEOScoreColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
-
   const getSEOScoreText = (score: number) => {
     if (score >= 80) return 'Excelente';
     if (score >= 60) return 'Bueno';
@@ -184,6 +182,29 @@ const BlogSEOPanel = ({ post, updatePost }: BlogSEOPanelProps) => {
             value={analysis.seoScore} 
             className="h-2"
           />
+        </CardContent>
+      </Card>
+
+      {/* Google Snippet Preview */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Vista previa en Google
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-white border rounded-lg p-4 space-y-1">
+            <div className="text-blue-600 text-lg hover:underline cursor-pointer truncate font-medium">
+              {post.meta_title || post.title || 'Título del artículo'}
+            </div>
+            <div className="text-green-700 text-sm truncate">
+              capittal.es/blog/{post.slug || 'url-del-post'}
+            </div>
+            <div className="text-gray-600 text-sm line-clamp-2">
+              {post.meta_description || post.excerpt || 'Descripción del artículo que aparecerá en los resultados de búsqueda...'}
+            </div>
+          </div>
         </CardContent>
       </Card>
 

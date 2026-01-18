@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { BlogPost } from '@/types/blog';
 import { supabase } from '@/integrations/supabase/client';
+import { debounce } from 'lodash';
 
 interface SEOAnalysis {
   titleLength: number;
@@ -77,15 +78,14 @@ export const useBlogSEO = () => {
       .replace(/^-+|-+$/g, '');
   };
 
-  // Verificar si el slug es único
-  const checkSlugUniqueness = async (slug: string, currentPostId?: string): Promise<boolean> => {
+  // Verificar si el slug es único (internal function)
+  const checkSlugUniquenessInternal = async (slug: string, currentPostId?: string): Promise<boolean> => {
     if (!slug) return false;
     
-    setIsCheckingSlug(true);
     try {
       let query = supabase
         .from('blog_posts')
-        .select('id') // Keep specific column for efficiency
+        .select('id')
         .eq('slug', slug);
       
       if (currentPostId) {
@@ -103,9 +103,28 @@ export const useBlogSEO = () => {
     } catch (error) {
       console.error('Error checking slug uniqueness:', error);
       return false;
-    } finally {
-      setIsCheckingSlug(false);
     }
+  };
+
+  // Debounced slug check to prevent excessive DB calls
+  const debouncedCheckSlug = useMemo(
+    () => debounce(async (slug: string, postId?: string) => {
+      setIsCheckingSlug(true);
+      try {
+        const isUnique = await checkSlugUniquenessInternal(slug, postId);
+        setAnalysis(prev => ({ ...prev, isSlugUnique: isUnique }));
+      } finally {
+        setIsCheckingSlug(false);
+      }
+    }, 500),
+    []
+  );
+
+  // Public checkSlugUniqueness that uses debounce
+  const checkSlugUniqueness = async (slug: string, currentPostId?: string): Promise<boolean> => {
+    if (!slug) return false;
+    debouncedCheckSlug(slug, currentPostId);
+    return checkSlugUniquenessInternal(slug, currentPostId);
   };
 
   // Auto-generar meta tags
@@ -127,7 +146,7 @@ export const useBlogSEO = () => {
   };
 
   // Calcular puntuación SEO
-  const calculateSEOScore = (post: BlogPost, analysis: SEOAnalysis): number => {
+  const calculateSEOScore = (post: BlogPost, currentAnalysis: SEOAnalysis): number => {
     let score = 0;
     const maxScore = 100;
     
@@ -146,18 +165,18 @@ export const useBlogSEO = () => {
     }
     
     // Contenido (30 puntos)
-    if (analysis.wordCount >= 300) {
+    if (currentAnalysis.wordCount >= 300) {
       score += 20;
-    } else if (analysis.wordCount >= 150) {
+    } else if (currentAnalysis.wordCount >= 150) {
       score += 10;
     }
     
-    if (analysis.headingCount > 0) {
+    if (currentAnalysis.headingCount > 0) {
       score += 10;
     }
     
     // Slug (10 puntos)
-    if (analysis.isSlugUnique && post.slug) {
+    if (currentAnalysis.isSlugUnique && post.slug) {
       score += 10;
     }
     
@@ -175,7 +194,7 @@ export const useBlogSEO = () => {
   };
 
   // Generar sugerencias de mejora
-  const generateSuggestions = (post: BlogPost, analysis: SEOAnalysis): string[] => {
+  const generateSuggestions = (post: BlogPost, currentAnalysis: SEOAnalysis): string[] => {
     const suggestions: string[] = [];
     
     if (!post.title || post.title.length < 30) {
@@ -193,11 +212,11 @@ export const useBlogSEO = () => {
       suggestions.push('La meta descripción es muy larga, considera reducirla a 160 caracteres');
     }
     
-    if (analysis.wordCount < 300) {
+    if (currentAnalysis.wordCount < 300) {
       suggestions.push('El contenido debería tener al menos 300 palabras para mejor posicionamiento');
     }
     
-    if (analysis.headingCount === 0) {
+    if (currentAnalysis.headingCount === 0) {
       suggestions.push('Agrega encabezados (H2, H3) para mejorar la estructura del contenido');
     }
     
@@ -209,7 +228,7 @@ export const useBlogSEO = () => {
       suggestions.push('Agrega un extracto descriptivo de al menos 50 caracteres');
     }
     
-    if (!analysis.isSlugUnique) {
+    if (!currentAnalysis.isSlugUnique) {
       suggestions.push('El slug debe ser único. Este slug ya existe en otro post');
     }
     
@@ -217,7 +236,7 @@ export const useBlogSEO = () => {
   };
 
   // Validar campos SEO
-  const validateSEO = (post: BlogPost): SEOValidationErrors => {
+  const validateSEO = useCallback((post: BlogPost): SEOValidationErrors => {
     const errors: SEOValidationErrors = {};
     
     if (post.meta_title && post.meta_title.length > 70) {
@@ -232,18 +251,20 @@ export const useBlogSEO = () => {
       errors.slug = 'El slug es requerido';
     } else if (!/^[a-z0-9-]+$/.test(post.slug)) {
       errors.slug = 'El slug solo puede contener letras minúsculas, números y guiones';
-    } else if (!analysis.isSlugUnique) {
-      errors.slug = 'Este slug ya existe. Debe ser único';
     }
     
     return errors;
-  };
+  }, []);
 
   // Analizar post completo
-  const analyzePost = async (post: BlogPost) => {
+  const analyzePost = useCallback(async (post: BlogPost) => {
     const contentAnalysis = analyzeContent(post.content || '');
     const readingTime = calculateReadingTime(post.content || '');
-    const isSlugUnique = post.slug ? await checkSlugUniqueness(post.slug, post.id) : true;
+    
+    // Check slug uniqueness with debounce
+    if (post.slug) {
+      debouncedCheckSlug(post.slug, post.id);
+    }
     
     const newAnalysis: SEOAnalysis = {
       titleLength: post.title?.length || 0,
@@ -253,7 +274,7 @@ export const useBlogSEO = () => {
       wordCount: contentAnalysis.words,
       paragraphCount: contentAnalysis.paragraphs,
       headingCount: contentAnalysis.headings,
-      isSlugUnique,
+      isSlugUnique: analysis.isSlugUnique, // Keep previous value until debounced check completes
       seoScore: 0,
       suggestions: []
     };
@@ -265,7 +286,7 @@ export const useBlogSEO = () => {
     setSeoErrors(validateSEO(post));
     
     return newAnalysis;
-  };
+  }, [debouncedCheckSlug, analysis.isSlugUnique, validateSEO]);
 
   return {
     analysis,
