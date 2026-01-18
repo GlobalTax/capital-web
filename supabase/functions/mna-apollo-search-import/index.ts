@@ -816,23 +816,112 @@ serve(async (req) => {
 
       console.log('🔍 [MNA Apollo] Fetching organizations from list:', list_id);
       
+      // Detect list type to use correct endpoint
+      let listType: 'crm_account' | 'website_visitors' = 'crm_account';
+      let detectedListName = 'Lista Apollo Empresas M&A';
+      
+      // Check if list exists as Label or Saved View (CRM Accounts)
+      try {
+        // Check labels
+        const labelsRes = await fetch('https://api.apollo.io/v1/labels', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'X-Api-Key': APOLLO_API_KEY! },
+        });
+        if (labelsRes.ok) {
+          const labelsData = await labelsRes.json();
+          const labels = Array.isArray(labelsData) ? labelsData : (labelsData.labels || []);
+          const foundLabel = labels.find((l: any) => l.id === list_id || l._id === list_id);
+          if (foundLabel) {
+            listType = 'crm_account';
+            detectedListName = foundLabel.name || detectedListName;
+            console.log(`[MNA Apollo] ✅ List is CRM Label: "${detectedListName}"`);
+          }
+        }
+        
+        // Check saved views if not found in labels
+        if (listType === 'crm_account') {
+          const viewsRes = await fetch('https://api.apollo.io/v1/saved_views', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', 'X-Api-Key': APOLLO_API_KEY! },
+          });
+          if (viewsRes.ok) {
+            const viewsData = await viewsRes.json();
+            const views = viewsData.saved_views || [];
+            const foundView = views.find((v: any) => v.id === list_id);
+            if (foundView) {
+              listType = 'crm_account';
+              detectedListName = foundView.name || detectedListName;
+              console.log(`[MNA Apollo] ✅ List is CRM Saved View: "${detectedListName}"`);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[MNA Apollo] Could not detect list type, defaulting to CRM Account');
+      }
+      
+      // If list wasn't found in CRM endpoints, check if it's Website Visitors
+      // by doing a test search with mixed_companies
+      if (listType === 'crm_account') {
+        try {
+          const testRes = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Api-Key': APOLLO_API_KEY! },
+            body: JSON.stringify({ organization_ids_from_list: list_id, page: 1, per_page: 5 }),
+          });
+          if (testRes.ok) {
+            const testData = await testRes.json();
+            const testOrgs = testData.organizations || [];
+            const testTotal = testData.pagination?.total_entries || 0;
+            
+            // If we get specific results (< 10000) from mixed_companies, it's likely Website Visitors
+            if (testTotal > 0 && testTotal < 10000 && testOrgs.length > 0) {
+              // Verify it's not returning global database by checking org names
+              const genericOrgs = ['LinkedIn', 'Google', 'Microsoft', 'Apple', 'Dell'];
+              const hasGeneric = testOrgs.some((o: any) => genericOrgs.includes(o.name));
+              if (!hasGeneric) {
+                listType = 'website_visitors';
+                console.log(`[MNA Apollo] ✅ List appears to be Website Visitors (${testTotal} entries)`);
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('[MNA Apollo] Could not test mixed_companies endpoint');
+        }
+      }
+      
+      console.log(`[MNA Apollo] Using list type: ${listType}`);
+      
       let allOrganizations: any[] = [];
       let currentPage = 1;
       let totalPages = 1;
-      let detectedListName = 'Lista Apollo Empresas M&A';
       let totalEntries = 0;
       
       do {
         console.log(`[MNA Apollo] Fetching organizations page ${currentPage}...`);
         
-        // Use mixed_companies/search for Website Visitors lists
-        const requestBody = {
-          organization_ids_from_list: list_id,
-          page: currentPage,
-          per_page: 100,
-        };
+        // Use correct endpoint based on list type
+        let apiUrl: string;
+        let requestBody: Record<string, unknown>;
         
-        const response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
+        if (listType === 'website_visitors') {
+          // Website Visitors - use mixed_companies/search
+          apiUrl = 'https://api.apollo.io/v1/mixed_companies/search';
+          requestBody = {
+            organization_ids_from_list: list_id,
+            page: currentPage,
+            per_page: 100,
+          };
+        } else {
+          // CRM Accounts - use accounts/search
+          apiUrl = 'https://api.apollo.io/v1/accounts/search';
+          requestBody = {
+            account_list_ids: [list_id],
+            page: currentPage,
+            per_page: 100,
+          };
+        }
+        
+        const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
