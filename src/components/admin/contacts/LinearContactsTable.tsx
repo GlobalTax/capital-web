@@ -9,7 +9,10 @@ import { cn } from '@/lib/utils';
 import { SelectOption } from '@/components/admin/shared/EditableSelect';
 import { useAcquisitionChannels, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
-import { ContactTableRow, COL_WIDTHS, STATUS_OPTIONS } from './ContactTableRow';
+import { ContactTableRow, COL_STYLES, STATUS_OPTIONS } from './ContactTableRow';
+
+// Minimum table width to ensure all columns fit
+const MIN_TABLE_WIDTH = 1000;
 
 interface LinearContactsTableProps {
   contacts: UnifiedContact[];
@@ -37,48 +40,57 @@ const getChannelColor = (category?: string) => {
   return '#6b7280';
 };
 
-// Table Header Component - memoized
+// Table Header Component - memoized with scroll sync
 const TableHeader = React.memo<{
   allSelected: boolean;
   someSelected: boolean;
   onSelectAll: () => void;
-}>(({ allSelected, someSelected, onSelectAll }) => (
-  <div className="flex bg-[hsl(var(--linear-bg-elevated))] border-b border-[hsl(var(--linear-border))] sticky top-0 z-10">
-    <div className="flex items-center justify-center h-10 px-2" style={{ width: COL_WIDTHS.checkbox }}>
-      <Checkbox
-        checked={allSelected}
-        ref={(el) => {
-          if (el) (el as any).indeterminate = someSelected;
-        }}
-        onCheckedChange={onSelectAll}
-        className="border-muted-foreground/30"
-      />
+  scrollLeft: number;
+}>(({ allSelected, someSelected, onSelectAll, scrollLeft }) => (
+  <div className="overflow-hidden border-b border-[hsl(var(--linear-border))]">
+    <div 
+      className="flex bg-[hsl(var(--linear-bg-elevated))]"
+      style={{ 
+        minWidth: MIN_TABLE_WIDTH, 
+        transform: `translateX(-${scrollLeft}px)` 
+      }}
+    >
+      <div className="flex items-center justify-center h-10 px-2" style={{ flex: COL_STYLES.checkbox.flex, minWidth: COL_STYLES.checkbox.minWidth }}>
+        <Checkbox
+          checked={allSelected}
+          ref={(el) => {
+            if (el) (el as any).indeterminate = someSelected;
+          }}
+          onCheckedChange={onSelectAll}
+          className="border-muted-foreground/30"
+        />
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
+        Contacto
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
+        Origen
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }}>
+        Canal
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }}>
+        Empresa
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }}>
+        Estado
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
+        Financieros
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }}>
+        Apollo
+      </div>
+      <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}>
+        Fecha
+      </div>
+      <div style={{ flex: COL_STYLES.actions.flex, minWidth: COL_STYLES.actions.minWidth }} />
     </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.contact }}>
-      Contacto
-    </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.origin }}>
-      Origen
-    </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.channel }}>
-      Canal
-    </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.company }}>
-      Empresa
-    </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.status }}>
-      Estado
-    </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.financials }}>
-      Financieros
-    </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.apollo }}>
-      Apollo
-    </div>
-    <div className="flex items-center h-10 px-2 text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ width: COL_WIDTHS.date }}>
-      Fecha
-    </div>
-    <div style={{ width: COL_WIDTHS.actions }} />
   </div>
 ));
 
@@ -141,7 +153,9 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   isEnriching,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(500);
+  const [scrollLeft, setScrollLeft] = useState(0);
   
   const allSelected = contacts.length > 0 && selectedContacts.length === contacts.length;
   const someSelected = selectedContacts.length > 0 && selectedContacts.length < contacts.length;
@@ -186,6 +200,19 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     [updateContact]
   );
 
+  // Handle horizontal scroll sync via native scroll event
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+    
+    const handleHorizontalScroll = () => {
+      setScrollLeft(scrollContainer.scrollLeft);
+    };
+    
+    scrollContainer.addEventListener('scroll', handleHorizontalScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleHorizontalScroll);
+  }, []);
+
   // Item data for virtualized list - memoized
   const itemData = useMemo<ItemData>(() => ({
     contacts,
@@ -229,24 +256,29 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
         ref={containerRef}
         className="border border-[hsl(var(--linear-border))] rounded-lg overflow-hidden bg-[hsl(var(--linear-bg))]"
       >
-        {/* Header */}
+        {/* Header with scroll sync */}
         <TableHeader 
           allSelected={allSelected}
           someSelected={someSelected}
           onSelectAll={onSelectAll}
+          scrollLeft={scrollLeft}
         />
         
-        {/* Virtualized List */}
-        <List
-          height={listHeight}
-          width="100%"
-          itemCount={contacts.length}
-          itemSize={ROW_HEIGHT}
-          itemData={itemData}
-          overscanCount={5}
-        >
-          {VirtualizedRow}
-        </List>
+        {/* Virtualized List with horizontal scroll */}
+        <div ref={scrollContainerRef} className="overflow-x-auto">
+          <div style={{ minWidth: MIN_TABLE_WIDTH }}>
+            <List
+              height={listHeight}
+              width="100%"
+              itemCount={contacts.length}
+              itemSize={ROW_HEIGHT}
+              itemData={itemData}
+              overscanCount={5}
+            >
+              {VirtualizedRow}
+            </List>
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   );
