@@ -91,6 +91,7 @@ const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCos
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
 const LazyEmpresaDetailPage = React.lazy(() => import('@/pages/admin/EmpresaDetailPage'));
 const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisitorsPage'));
+const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -133,6 +134,7 @@ const AdminRouter = () => {
           <Route path="/blog-v2" element={<LazyModernBlogManager />} />
           <Route path="/blog/new" element={<LazyBlogEditorPage />} />
           <Route path="/blog/edit/:id" element={<LazyBlogEditorPage />} />
+          <Route path="/blog/preview/:id" element={<LazyBlogPreviewPage />} />
           <Route path="/sector-reports" element={<LazySectorReportsGenerator />} />
           <Route path="/sector-dossiers" element={<LazySectorDossierStudio />} />
           <Route path="/sectors" element={<LazySectorsPage />} />
