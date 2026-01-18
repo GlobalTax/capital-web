@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ExternalLink, MoreHorizontal, TrendingUp } from 'lucide-react';
+import { MapPin, ExternalLink, MoreHorizontal, TrendingUp, Users } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { useDeleteCRFund } from '@/hooks/useCRFunds';
 import { CRFavoriteButton } from './CRFavoriteButton';
 
 interface CRFundsTableProps {
-  funds: CRFund[];
+  funds: (CRFund & { people_count?: number })[];
   isLoading: boolean;
   showFavorites?: boolean;
 }
@@ -85,6 +85,9 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading, sh
             </TableHead>
             <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Estado
+            </TableHead>
+            <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Contactos
             </TableHead>
             <TableHead className="w-10"></TableHead>
           </TableRow>
@@ -166,6 +169,12 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading, sh
                   <Badge className={`text-[10px] h-5 ${statusColors[fund.status as CRFundStatus] || 'bg-gray-100'}`}>
                     {CR_FUND_STATUS_LABELS[fund.status as keyof typeof CR_FUND_STATUS_LABELS] || fund.status}
                   </Badge>
+                </TableCell>
+                <TableCell className="py-2">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Users className="h-3 w-3" />
+                    <span>{fund.people_count || 0}</span>
+                  </div>
                 </TableCell>
                 <TableCell className="py-2">
                   <DropdownMenu>
