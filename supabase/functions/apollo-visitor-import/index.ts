@@ -342,9 +342,46 @@ async function searchOrganizationsFromList(
 
       console.log(`[Apollo API] Page ${currentPage}: ${accounts.length} accounts (total: ${totalEntries})`);
       
-      allOrganizations.push(...accounts);
+      // Log sample fields for debugging
+      if (currentPage === 1 && accounts.length > 0) {
+        console.log('[Apollo API] Sample account fields:', Object.keys(accounts[0]));
+        console.log('[Apollo API] Sample account data:', JSON.stringify(accounts[0], null, 2).substring(0, 1000));
+      }
+      
+      // Normalize Apollo fields to ensure consistent mapping
+      const normalizedAccounts = accounts.map((acc: any) => ({
+        id: acc.id,
+        name: acc.name,
+        website_url: acc.website_url,
+        primary_domain: acc.primary_domain || acc.domain,
+        linkedin_url: acc.linkedin_url,
+        facebook_url: acc.facebook_url,
+        twitter_url: acc.twitter_url,
+        industry: acc.industry || acc.organization_industry,
+        estimated_num_employees: acc.estimated_num_employees || acc.employee_count,
+        city: acc.city || acc.organization_city,
+        state: acc.state || acc.organization_state,
+        country: acc.country || acc.organization_country,
+        annual_revenue: acc.annual_revenue,
+        annual_revenue_printed: acc.annual_revenue_printed,
+        intent_level: acc.intent_level || acc.website_visitor_intent_level,
+        account_score: acc.account_score || acc.score,
+        founded_year: acc.founded_year,
+        keywords: acc.keywords,
+        current_technologies: acc.current_technologies || acc.technologies,
+        departmental_head_count: acc.departmental_head_count,
+        alexa_ranking: acc.alexa_ranking,
+        short_description: acc.short_description || acc.seo_description,
+        logo_url: acc.logo_url,
+        phone: acc.phone,
+        raw_address: acc.raw_address,
+        organization_id: acc.organization_id || acc.id,
+      }));
+      
+      allOrganizations.push(...normalizedAccounts);
 
-      hasMore = accounts.length === perPage && (currentPage * perPage) < totalEntries;
+      // Fixed pagination: continue while there are more results
+      hasMore = accounts.length > 0 && allOrganizations.length < totalEntries && allOrganizations.length < maxResults;
       currentPage++;
       
       // Rate limiting: small delay between pages
