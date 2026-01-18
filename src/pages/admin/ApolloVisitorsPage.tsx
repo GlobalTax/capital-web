@@ -87,7 +87,9 @@ export default function ApolloVisitorsPage() {
   } = useApolloVisitorImport();
 
   const { data: importHistory, isLoading: historyLoading, refetch: refetchHistory } = useVisitorImportHistory();
-  const { data: importedEmpresas, isLoading: empresasLoading, refetch: refetchEmpresas } = useImportedEmpresas();
+  const { data: empresasData, isLoading: empresasLoading, refetch: refetchEmpresas } = useImportedEmpresas();
+  const importedEmpresas = empresasData?.empresas || [];
+  const totalEmpresas = empresasData?.total || 0;
   const deleteImport = useDeleteVisitorImport();
 
   // Extract list ID from URL or use raw ID
@@ -242,7 +244,7 @@ export default function ApolloVisitorsPage() {
           </p>
         </div>
         <Badge variant="outline" className="text-sm">
-          {importedEmpresas?.length || 0} empresas importadas
+          {totalEmpresas} empresas importadas
         </Badge>
       </div>
 
