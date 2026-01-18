@@ -540,9 +540,9 @@ async function importOrganizationToEmpresa(
     const empresaData = {
       nombre: org.name,
       sitio_web: org.website_url || org.primary_domain,
-      sector: org.industry,
+      sector: org.industry || null, // Allow NULL for companies without industry
       ubicacion: [org.city, org.state, org.country].filter(Boolean).join(', ') || null,
-      empleados: org.estimated_num_employees?.toString(),
+      empleados: org.estimated_num_employees || null, // Keep as integer, not string
       // NEW: Enhanced Apollo data mapping
       facturacion: org.annual_revenue || null,
       linkedin_url: org.linkedin_url || null,
