@@ -5260,6 +5260,45 @@ export type Database = {
           },
         ]
       }
+      empresa_favorites: {
+        Row: {
+          added_by: string | null
+          created_at: string | null
+          empresa_id: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string | null
+          empresa_id: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string | null
+          empresa_id?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresa_favorites_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: true
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empresa_favorites_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: true
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+        ]
+      }
       empresa_financial_statements: {
         Row: {
           cash_equivalents: number | null

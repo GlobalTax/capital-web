@@ -1,17 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -23,27 +14,26 @@ import {
   Building2, 
   Plus, 
   Search, 
-  Filter,
   TrendingUp,
-  Users,
   Euro,
   Target,
-  Edit,
-  Trash2,
-  ExternalLink
+  Star
 } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
+import { useFavoriteEmpresas } from '@/hooks/useEmpresaFavorites';
 import { CompanyFormDialog } from '@/components/admin/companies/CompanyFormDialog';
+import { EmpresasTable } from '@/components/admin/empresas/EmpresasTable';
 import { formatCompactCurrency } from '@/shared/utils/format';
 
 export default function EmpresasPage() {
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('favorites');
   const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState<string>('all');
   const [targetFilter, setTargetFilter] = useState<string>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
 
+  // Hook para todas las empresas (con filtros)
   const { 
     empresas, 
     isLoading, 
@@ -54,6 +44,14 @@ export default function EmpresasPage() {
     search: searchQuery,
     sector: sectorFilter !== 'all' ? sectorFilter : undefined,
     esTarget: targetFilter === 'target' ? true : targetFilter === 'no-target' ? false : undefined,
+  });
+
+  // Hook para empresas favoritas
+  const { data: favoriteEmpresas = [], isLoading: isLoadingFavorites } = useFavoriteEmpresas();
+
+  // Hook para targets (sin otros filtros)
+  const { empresas: targetEmpresas, isLoading: isLoadingTargets } = useEmpresas({
+    esTarget: true,
   });
 
   const handleEdit = (empresa: Empresa) => {
@@ -78,14 +76,10 @@ export default function EmpresasPage() {
     setEditingEmpresa(null);
   };
 
-  const calculateMargin = (empresa: Empresa) => {
-    if (!empresa.ebitda || !empresa.facturacion) return null;
-    return ((empresa.ebitda / empresa.facturacion) * 100).toFixed(1);
-  };
-
   // Stats
   const totalEmpresas = empresas.length;
-  const targetEmpresas = empresas.filter(e => e.es_target).length;
+  const totalTargets = targetEmpresas?.length || 0;
+  const totalFavorites = favoriteEmpresas.length;
   const totalFacturacion = empresas.reduce((sum, e) => sum + (e.facturacion || 0), 0);
   const avgEbitda = empresas.length > 0 
     ? empresas.reduce((sum, e) => sum + (e.ebitda || 0), 0) / empresas.filter(e => e.ebitda).length 
@@ -111,12 +105,21 @@ export default function EmpresasPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm text-muted-foreground">Favoritos</span>
+            </div>
+            <p className="text-2xl font-bold mt-1">{totalFavorites}</p>
+          </CardContent>
+        </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Total Empresas</span>
+              <span className="text-sm text-muted-foreground">Total</span>
             </div>
             <p className="text-2xl font-bold mt-1">{totalEmpresas}</p>
           </CardContent>
@@ -127,14 +130,14 @@ export default function EmpresasPage() {
               <Target className="h-4 w-4 text-green-600" />
               <span className="text-sm text-muted-foreground">Targets</span>
             </div>
-            <p className="text-2xl font-bold mt-1">{targetEmpresas}</p>
+            <p className="text-2xl font-bold mt-1">{totalTargets}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Euro className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Facturación Total</span>
+              <span className="text-sm text-muted-foreground">Facturación</span>
             </div>
             <p className="text-2xl font-bold mt-1">{formatCompactCurrency(totalFacturacion)}</p>
           </CardContent>
@@ -152,192 +155,122 @@ export default function EmpresasPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre o CIF..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={sectorFilter} onValueChange={setSectorFilter}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Sector" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los sectores</SelectItem>
-                {sectors.map((sector) => (
-                  <SelectItem key={sector} value={sector}>
-                    {sector}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={targetFilter} onValueChange={setTargetFilter}>
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SelectValue placeholder="Target" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="target">Solo Targets</SelectItem>
-                <SelectItem value="no-target">No Targets</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="favorites" className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            <span>Favoritos</span>
+            <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">
+              {totalFavorites}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="all" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            <span>Todas</span>
+            <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">
+              {totalEmpresas}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="targets" className="flex items-center gap-2">
+            <Target className="h-4 w-4" />
+            <span>Targets</span>
+            <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">
+              {totalTargets}
+            </span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : empresas.length === 0 ? (
-            <div className="text-center py-12">
-              <Building2 className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">No se encontraron empresas</p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => setIsFormOpen(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Crear primera empresa
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Empresa</TableHead>
-                    <TableHead>Sector</TableHead>
-                    <TableHead>Ubicación</TableHead>
-                    <TableHead className="text-right">Facturación</TableHead>
-                    <TableHead className="text-right">EBITDA</TableHead>
-                    <TableHead className="text-right">Margen</TableHead>
-                    <TableHead className="text-center">Empleados</TableHead>
-                    <TableHead className="text-center">Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                {empresas.map((empresa) => (
-                    <TableRow 
-                      key={empresa.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
-                    >
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{empresa.nombre}</div>
-                          {empresa.cif && (
-                            <div className="text-xs text-muted-foreground">
-                              CIF: {empresa.cif}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Badge variant="outline" className="w-fit">
-                            {empresa.sector}
-                          </Badge>
-                          {empresa.subsector && (
-                            <span className="text-xs text-muted-foreground">
-                              {empresa.subsector}
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {empresa.ubicacion || '-'}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {empresa.facturacion 
-                          ? formatCompactCurrency(empresa.facturacion) 
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {empresa.ebitda 
-                          ? formatCompactCurrency(empresa.ebitda) 
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {calculateMargin(empresa) 
-                          ? `${calculateMargin(empresa)}%` 
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {empresa.empleados ?? '-'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex flex-wrap gap-1 justify-center">
-                          {empresa.es_target && (
-                            <Badge className="bg-green-100 text-green-800">
-                              Target
-                            </Badge>
-                          )}
-                          {empresa.potencial_search_fund && (
-                            <Badge className="bg-purple-100 text-purple-800">
-                              SF
-                            </Badge>
-                          )}
-                          {!empresa.es_target && !empresa.potencial_search_fund && (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {empresa.sitio_web && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => window.open(
-                                empresa.sitio_web?.startsWith('http') 
-                                  ? empresa.sitio_web 
-                                  : `https://${empresa.sitio_web}`,
-                                '_blank'
-                              )}
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleEdit(empresa)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(empresa)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* Tab: Favoritos */}
+        <TabsContent value="favorites" className="mt-4">
+          <Card>
+            <CardContent className="p-0">
+              <EmpresasTable
+                empresas={favoriteEmpresas}
+                isLoading={isLoadingFavorites}
+                showFavorites={true}
+                emptyMessage="No hay empresas favoritas. Añade empresas desde la pestaña 'Todas'."
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Todas */}
+        <TabsContent value="all" className="mt-4 space-y-4">
+          {/* Filters */}
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nombre o CIF..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Select value={sectorFilter} onValueChange={setSectorFilter}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Sector" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los sectores</SelectItem>
+                    {sectors.map((sector) => (
+                      <SelectItem key={sector} value={sector}>
+                        {sector}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={targetFilter} onValueChange={setTargetFilter}>
+                  <SelectTrigger className="w-full md:w-[150px]">
+                    <SelectValue placeholder="Target" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="target">Solo Targets</SelectItem>
+                    <SelectItem value="no-target">No Targets</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-0">
+              <EmpresasTable
+                empresas={empresas}
+                isLoading={isLoading}
+                showFavorites={true}
+                emptyMessage="No se encontraron empresas"
+                emptyAction={() => setIsFormOpen(true)}
+                emptyActionLabel="Crear primera empresa"
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Targets */}
+        <TabsContent value="targets" className="mt-4">
+          <Card>
+            <CardContent className="p-0">
+              <EmpresasTable
+                empresas={targetEmpresas || []}
+                isLoading={isLoadingTargets}
+                showFavorites={true}
+                emptyMessage="No hay empresas marcadas como target"
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Form Dialog */}
       <CompanyFormDialog
