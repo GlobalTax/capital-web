@@ -855,24 +855,9 @@ serve(async (req) => {
           detectedListName = 'Lista Apollo Empresas M&A';
           console.log(`[MNA Apollo] Total entries: ${totalEntries}, Pages: ${totalPages}`);
           
-          // WARNING: If total_entries is suspiciously high (>10000), the filter likely didn't apply
-          // This happens with "Website Visitors Net New" lists - they are NOT Accounts in CRM
-          if (totalEntries > 10000 && data.accounts?.length === 100) {
-            console.warn(`⚠️ [MNA Apollo] WARNING: total_entries=${totalEntries} is very high!`);
-            console.warn(`⚠️ [MNA Apollo] The account_list_ids filter may not have applied.`);
-            console.warn(`⚠️ [MNA Apollo] This list (${list_id}) might be a "Website Visitors Net New" list.`);
-            
-            return new Response(JSON.stringify({
-              success: false,
-              error: 'Esta lista parece contener "Website Visitors Net New" que no son Accounts en Apollo CRM. Las listas de Website Visitors no se pueden importar como Empresas.',
-              warning: 'HIGH_TOTAL_ENTRIES',
-              total_entries: totalEntries,
-              suggestion: 'Para listas de Website Visitors, usa el módulo Apollo Visitors en Capital Riesgo o importa como Contactos.',
-              list_id,
-            }), {
-              status: 400,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
+          // Log large lists but don't block them - users may have legitimately large lists
+          if (totalEntries > 10000) {
+            console.log(`[MNA Apollo] Large list detected: ${totalEntries} entries. Proceeding with import (max ${max_pages} pages = ${max_pages * 100} results).`);
           }
         }
         
