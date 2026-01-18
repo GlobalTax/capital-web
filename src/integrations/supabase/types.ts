@@ -9437,6 +9437,38 @@ export type Database = {
           },
         ]
       }
+      mna_boutique_favorites: {
+        Row: {
+          added_by: string | null
+          boutique_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          boutique_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          boutique_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mna_boutique_favorites_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: true
+            referencedRelation: "mna_boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mna_boutique_people: {
         Row: {
           boutique_id: string

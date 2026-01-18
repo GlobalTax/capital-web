@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { SFPersonWithFund, SFPersonRole, SFPerson } from '@/types/searchFunds';
 import { SFPersonEditModal } from './SFPersonEditModal';
 import { SFBulkEmailDialog } from './SFBulkEmailDialog';
+import { SFFavoriteButton } from './SFFavoriteButton';
 
 interface SFPeopleTableProps {
   people: SFPersonWithFund[];
@@ -17,6 +18,7 @@ interface SFPeopleTableProps {
   selectedIds: Set<string>;
   onToggleSelection: (id: string) => void;
   onSelectAll: () => void;
+  showFavoriteColumn?: boolean;
 }
 
 const roleLabels: Record<SFPersonRole, string> = {
@@ -38,6 +40,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
   selectedIds,
   onToggleSelection,
   onSelectAll,
+  showFavoriteColumn = false,
 }) => {
   const [editingPerson, setEditingPerson] = useState<SFPerson | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -90,6 +93,9 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
                   onCheckedChange={onSelectAll}
                 />
               </TableHead>
+              {showFavoriteColumn && (
+                <TableHead className="w-10 h-10"></TableHead>
+              )}
               <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Nombre
               </TableHead>
@@ -111,7 +117,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
           <TableBody>
             {people.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={showFavoriteColumn ? 8 : 7} className="text-center py-12 text-muted-foreground">
                   No se encontraron personas
                 </TableCell>
               </TableRow>
@@ -129,6 +135,11 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
                       onCheckedChange={() => onToggleSelection(person.id)}
                     />
                   </TableCell>
+                  {showFavoriteColumn && (
+                    <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                      <SFFavoriteButton entityType="person" entityId={person.id} />
+                    </TableCell>
+                  )}
                   <TableCell className="py-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-sm">{person.full_name}</span>

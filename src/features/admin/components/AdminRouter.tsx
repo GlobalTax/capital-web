@@ -106,8 +106,8 @@ const AdminRouter = () => {
     <AdminErrorBoundary>
       <Suspense fallback={<PageLoadingSkeleton />}>
         <Routes>
-          {/* Dashboard */}
-          <Route index element={<LazyAdminDashboard />} />
+          {/* Dashboard - Redirect to Empresas by default */}
+          <Route index element={<Navigate to="/admin/empresas" replace />} />
           <Route path="/dashboard" element={<LazyAdminDashboard />} />
           <Route path="/valuation-analytics" element={<LazyValuationAnalyticsDashboard />} />
           <Route path="/search-analytics" element={<LazySearchAnalyticsPage />} />

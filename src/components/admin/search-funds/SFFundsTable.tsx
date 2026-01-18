@@ -8,10 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SFFund, SFStatus } from '@/types/searchFunds';
 import { useDeleteSFFund } from '@/hooks/useSFFunds';
+import { SFFavoriteButton } from './SFFavoriteButton';
 
 interface SFFundsTableProps {
   funds: SFFund[];
   isLoading: boolean;
+  showFavoriteColumn?: boolean;
 }
 
 const statusColors: Record<SFStatus, string> = {
@@ -39,7 +41,7 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
-export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading }) => {
+export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, showFavoriteColumn = false }) => {
   const deleteMutation = useDeleteSFFund();
 
   if (isLoading) {
@@ -57,6 +59,9 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading }) 
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30 border-b border-border/50 hover:bg-muted/30">
+            {showFavoriteColumn && (
+              <TableHead className="w-10 h-10"></TableHead>
+            )}
             <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Nombre
             </TableHead>
@@ -78,13 +83,18 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading }) 
         <TableBody>
           {funds.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+              <TableCell colSpan={showFavoriteColumn ? 7 : 6} className="text-center py-12 text-muted-foreground">
                 No se encontraron Search Funds
               </TableCell>
             </TableRow>
           ) : (
             funds.map((fund) => (
               <TableRow key={fund.id} className="h-11 hover:bg-muted/50 border-b border-border/30">
+                {showFavoriteColumn && (
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                    <SFFavoriteButton entityType="fund" entityId={fund.id} />
+                  </TableCell>
+                )}
                 <TableCell className="py-2">
                   <div>
                     <Link 

@@ -1,3 +1,6 @@
+// ============= MNA FAVORITES TABLE =============
+// Tabla de boutiques favoritas M&A
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, Globe, Linkedin, Users, MapPin, MoreHorizontal, Trash2, ExternalLink } from 'lucide-react';
@@ -5,13 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMNABoutiques, useMNABoutiqueCountries, useDeleteMNABoutique } from '@/hooks/useMNABoutiques';
+import { useFavoriteMNABoutiques } from '@/hooks/useMNABoutiqueFavorites';
+import { useDeleteMNABoutique } from '@/hooks/useMNABoutiques';
 import { MNABoutiqueFavoriteButton } from './MNABoutiqueFavoriteButton';
-import type { MNABoutique, MNABoutiqueFilters, MNABoutiqueStatus, MNABoutiqueTier } from '@/types/mnaBoutique';
+import type { MNABoutique, MNABoutiqueStatus, MNABoutiqueTier } from '@/types/mnaBoutique';
 import { MNA_BOUTIQUE_STATUS_LABELS, MNA_TIER_LABELS } from '@/types/mnaBoutique';
 
 const getTierBadgeVariant = (tier: MNABoutiqueTier | null) => {
@@ -34,12 +37,19 @@ const getStatusBadgeVariant = (status: MNABoutiqueStatus) => {
   }
 };
 
-export function MNABoutiquesTable() {
+export function MNAFavoritesTable() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<MNABoutiqueFilters>({});
-  const { data: boutiques, isLoading } = useMNABoutiques(filters);
-  const { data: countries } = useMNABoutiqueCountries();
+  const [search, setSearch] = useState('');
+  const { data: boutiques, isLoading } = useFavoriteMNABoutiques();
   const deleteMutation = useDeleteMNABoutique();
+
+  // Filter by search
+  const filteredBoutiques = boutiques?.filter(b => {
+    if (!search) return true;
+    const s = search.toLowerCase();
+    return b.name?.toLowerCase().includes(s) || 
+           b.country_base?.toLowerCase().includes(s);
+  }) || [];
 
   const handleRowClick = (boutique: MNABoutique) => {
     navigate(`/admin/mna-directory/${boutique.id}`);
@@ -55,11 +65,7 @@ export function MNABoutiquesTable() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="flex gap-4">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-10 w-40" />
-          <Skeleton className="h-10 w-40" />
-        </div>
+        <Skeleton className="h-10 w-64" />
         <div className="space-y-2">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-16 w-full" />
@@ -72,61 +78,17 @@ export function MNABoutiquesTable() {
   return (
     <TooltipProvider>
       <div className="space-y-4">
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4">
-          <Input
-            placeholder="Buscar boutique..."
-            value={filters.search || ''}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            className="w-64"
-          />
-          <Select
-            value={filters.status || 'all'}
-            onValueChange={(v) => setFilters({ ...filters, status: v === 'all' ? undefined : v as MNABoutiqueStatus })}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {Object.entries(MNA_BOUTIQUE_STATUS_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.tier || 'all'}
-            onValueChange={(v) => setFilters({ ...filters, tier: v === 'all' ? undefined : v as MNABoutiqueTier })}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Tier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {Object.entries(MNA_TIER_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.country || 'all'}
-            onValueChange={(v) => setFilters({ ...filters, country: v === 'all' ? undefined : v })}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="País" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {countries?.map((country) => (
-                <SelectItem key={country} value={country}>{country}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Search */}
+        <Input
+          placeholder="Buscar en favoritos..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-64"
+        />
 
         {/* Results count */}
         <p className="text-sm text-muted-foreground">
-          {boutiques?.length || 0} boutiques encontradas
+          {filteredBoutiques.length} boutiques favoritas
         </p>
 
         {/* Table */}
@@ -146,14 +108,14 @@ export function MNABoutiquesTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {boutiques?.length === 0 ? (
+              {filteredBoutiques.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                    No hay boutiques registradas
+                    No hay boutiques favoritas
                   </TableCell>
                 </TableRow>
               ) : (
-                boutiques?.map((boutique) => (
+                filteredBoutiques.map((boutique) => (
                   <TableRow 
                     key={boutique.id} 
                     className="cursor-pointer hover:bg-muted/50"
