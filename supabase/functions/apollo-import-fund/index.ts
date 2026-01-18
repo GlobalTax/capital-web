@@ -39,10 +39,17 @@ interface ImportFundResult {
 function parseApolloInput(input: string): { type: 'apollo_id' | 'domain' | 'search'; value: string } {
   const trimmed = input.trim();
   
-  // Apollo organization URL: https://app.apollo.io/#/companies/5e66b6381e05b4008c8331b8
-  if (trimmed.includes('apollo.io') && trimmed.includes('/companies/')) {
-    const match = trimmed.match(/\/companies\/([a-f0-9]+)/i);
-    if (match) return { type: 'apollo_id', value: match[1] };
+// Apollo organization URL: 
+  // - https://app.apollo.io/#/companies/5e66b6381e05b4008c8331b8
+  // - https://app.apollo.io/#/accounts/67dc122e71f6900014360594
+  if (trimmed.includes('apollo.io')) {
+    // Check for /companies/ pattern
+    const companiesMatch = trimmed.match(/\/companies\/([a-f0-9]+)/i);
+    if (companiesMatch) return { type: 'apollo_id', value: companiesMatch[1] };
+    
+    // Check for /accounts/ pattern (also valid for organizations)
+    const accountsMatch = trimmed.match(/\/accounts\/([a-f0-9]+)/i);
+    if (accountsMatch) return { type: 'apollo_id', value: accountsMatch[1] };
   }
   
   // Domain pattern: example.com or www.example.com
