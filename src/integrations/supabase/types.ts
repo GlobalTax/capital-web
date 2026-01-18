@@ -11590,6 +11590,48 @@ export type Database = {
           },
         ]
       }
+      search_analytics: {
+        Row: {
+          created_at: string | null
+          filters_applied: Json | null
+          id: string
+          result_clicked_id: string | null
+          result_clicked_type: string | null
+          results_count: number | null
+          search_query: string
+          search_source: string | null
+          search_type: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          filters_applied?: Json | null
+          id?: string
+          result_clicked_id?: string | null
+          result_clicked_type?: string | null
+          results_count?: number | null
+          search_query: string
+          search_source?: string | null
+          search_type?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          filters_applied?: Json | null
+          id?: string
+          result_clicked_id?: string | null
+          result_clicked_type?: string | null
+          results_count?: number | null
+          search_query?: string
+          search_source?: string | null
+          search_type?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       searcher_leads: {
         Row: {
           additional_criteria: string | null
