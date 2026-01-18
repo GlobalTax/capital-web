@@ -11,8 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CRFund, CRFundStatus, CRFundType, CR_FUND_STATUS_LABELS, CR_FUND_TYPE_LABELS } from '@/types/capitalRiesgo';
-import { useDeleteCRFund } from '@/hooks/useCRFunds';
+import { useDeleteCRFund, useUpdateCRFund } from '@/hooks/useCRFunds';
 import { CRFavoriteButton } from './CRFavoriteButton';
+import { EditableSelect, SelectOption } from '@/components/admin/shared/EditableSelect';
 
 interface PortfolioCompany {
   company_name: string;
@@ -48,6 +49,12 @@ const typeColors: Record<CRFundType, string> = {
   corporate: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400',
   fund_of_funds: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400',
 };
+
+// Options for fund type select
+const fundTypeOptions: SelectOption[] = Object.entries(CR_FUND_TYPE_LABELS).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 const formatCurrency = (value: number | null) => {
   if (!value) return '—';
@@ -112,6 +119,11 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({
   onSort 
 }) => {
   const deleteMutation = useDeleteCRFund();
+  const updateMutation = useUpdateCRFund();
+
+  const handleUpdateFundType = async (fundId: string, newType: string) => {
+    await updateMutation.mutateAsync({ id: fundId, data: { fund_type: newType as CRFundType } });
+  };
 
   if (isLoading) {
     return (
@@ -221,9 +233,12 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({
                   </div>
                 </TableCell>
                 <TableCell className="py-2">
-                  <Badge className={`text-[10px] h-5 ${typeColors[fund.fund_type as CRFundType] || 'bg-gray-100'}`}>
-                    {CR_FUND_TYPE_LABELS[fund.fund_type as keyof typeof CR_FUND_TYPE_LABELS] || fund.fund_type}
-                  </Badge>
+                  <EditableSelect
+                    value={fund.fund_type}
+                    options={fundTypeOptions}
+                    onSave={(newValue) => handleUpdateFundType(fund.id, newValue)}
+                    placeholder="Seleccionar tipo..."
+                  />
                 </TableCell>
                 <TableCell className="py-2">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
