@@ -467,17 +467,31 @@ const MNAApolloImportPage: React.FC = () => {
                         onCheckedChange={() => toggleSelect(item.id)}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{item.name}</div>
+                        <div className="font-medium truncate flex items-center gap-2">
+                          {item._is_organization && <Building2 className="h-4 w-4 text-primary shrink-0" />}
+                          {item._is_organization ? (item.organization?.name || item.name) : item.name}
+                        </div>
                         <div className="text-sm text-muted-foreground truncate">
-                          {item.title} {item.organization?.name && `@ ${item.organization.name}`}
+                          {item._is_organization ? (
+                            <>
+                              {item.organization?.industry && <span>{item.organization.industry}</span>}
+                              {item.organization?.primary_domain && (
+                                <span className="ml-2 text-blue-600">{item.organization.primary_domain}</span>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              {item.title} {item.organization?.name && `@ ${item.organization.name}`}
+                            </>
+                          )}
                         </div>
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {item.country || item.organization?.country || '-'}
                       </div>
-                      {item.organization?.estimated_num_employees && (
+                      {(item.organization?.estimated_num_employees || item._is_organization) && (
                         <Badge variant="outline" className="text-xs">
-                          {item.organization.estimated_num_employees} emp
+                          {item.organization?.estimated_num_employees || '-'} emp
                         </Badge>
                       )}
                     </div>
