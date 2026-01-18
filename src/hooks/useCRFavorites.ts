@@ -150,16 +150,24 @@ export const useFavoriteFunds = () => {
 
       const fundIds = (favorites as CRFavorite[]).map(f => f.entity_id);
 
-      // Luego obtener los datos de los fondos
+      // Luego obtener los datos de los fondos con conteo de personas
       const { data: funds, error: fundsError } = await supabase
         .from('cr_funds')
-        .select('*')
+        .select(`
+          *,
+          people_count:cr_people(count)
+        `)
         .in('id', fundIds)
         .eq('is_deleted', false)
         .order('name');
 
       if (fundsError) throw fundsError;
-      return funds as CRFund[];
+      
+      // Procesar el count de personas (igual que en useCRFunds)
+      return (funds || []).map(fund => ({
+        ...fund,
+        people_count: fund.people_count?.[0]?.count || 0
+      })) as (CRFund & { people_count: number })[];
     },
   });
 };
