@@ -14,7 +14,16 @@ import {
   TrendingUp,
   Euro,
   Megaphone,
+  CalendarDays,
 } from 'lucide-react';
+import {
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  startOfMonth,
+  startOfQuarter,
+  subDays,
+} from 'date-fns';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +90,40 @@ const emailStatusOptions = [
   { value: 'sent', label: 'Enviados' },
   { value: 'not_contacted', label: 'Sin contactar' },
 ];
+
+// 📅 Date period presets
+const DATE_PERIOD_PRESETS = [
+  { value: 'today', label: 'Hoy' },
+  { value: 'this_week', label: 'Esta semana' },
+  { value: 'this_month', label: 'Este mes' },
+  { value: 'this_quarter', label: 'Este trimestre' },
+  { value: 'last_7_days', label: 'Últimos 7 días' },
+  { value: 'last_30_days', label: 'Últimos 30 días' },
+  { value: 'last_90_days', label: 'Últimos 90 días' },
+];
+
+// Helper to calculate date range from period
+const getDateRangeFromPeriod = (period: string) => {
+  const now = new Date();
+  switch (period) {
+    case 'today':
+      return { from: startOfDay(now), to: endOfDay(now) };
+    case 'this_week':
+      return { from: startOfWeek(now, { weekStartsOn: 1 }), to: endOfDay(now) };
+    case 'this_month':
+      return { from: startOfMonth(now), to: endOfDay(now) };
+    case 'this_quarter':
+      return { from: startOfQuarter(now), to: endOfDay(now) };
+    case 'last_7_days':
+      return { from: subDays(startOfDay(now), 7), to: endOfDay(now) };
+    case 'last_30_days':
+      return { from: subDays(startOfDay(now), 30), to: endOfDay(now) };
+    case 'last_90_days':
+      return { from: subDays(startOfDay(now), 90), to: endOfDay(now) };
+    default:
+      return null;
+  }
+};
 
 const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
   filters,
@@ -159,9 +202,40 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
       origin: 'all',
       emailStatus: 'all',
       acquisitionChannelId: undefined,
+      dateFrom: undefined,
+      dateTo: undefined,
+      dateRangeLabel: undefined,
       showUniqueContacts: filters.showUniqueContacts,
     });
   };
+
+  // 📅 Handle period change
+  const handlePeriodChange = (period: string | undefined) => {
+    if (!period) {
+      onFiltersChange({
+        ...filters,
+        dateFrom: undefined,
+        dateTo: undefined,
+        dateRangeLabel: undefined,
+      });
+      return;
+    }
+    
+    const range = getDateRangeFromPeriod(period);
+    if (range) {
+      onFiltersChange({
+        ...filters,
+        dateFrom: range.from.toISOString().split('T')[0],
+        dateTo: range.to.toISOString().split('T')[0],
+        dateRangeLabel: period,
+      });
+    }
+  };
+
+  // Get selected period label for display
+  const selectedPeriodLabel = filters.dateRangeLabel 
+    ? DATE_PERIOD_PRESETS.find(p => p.value === filters.dateRangeLabel)?.label 
+    : null;
 
   const activeFilterCount = [
     filters.search,
@@ -355,6 +429,47 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
                 onCheckedChange={() => handleFilterChange('acquisitionChannelId', channel.id)}
               >
                 {channel.name}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* 📅 Period filter dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                filters.dateRangeLabel && "border-orange-500 text-orange-600 bg-orange-500/5"
+              )}
+            >
+              <CalendarDays className="h-3.5 w-3.5 mr-1.5" />
+              Período
+              {selectedPeriodLabel && (
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1.5 text-[10px] bg-orange-500/20 text-orange-600">
+                  {selectedPeriodLabel}
+                </Badge>
+              )}
+              <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]">
+            <DropdownMenuCheckboxItem
+              checked={!filters.dateRangeLabel}
+              onCheckedChange={() => handlePeriodChange(undefined)}
+            >
+              Todo el tiempo
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            {DATE_PERIOD_PRESETS.map((preset) => (
+              <DropdownMenuCheckboxItem
+                key={preset.value}
+                checked={filters.dateRangeLabel === preset.value}
+                onCheckedChange={() => handlePeriodChange(preset.value)}
+              >
+                {preset.label}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
