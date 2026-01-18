@@ -55,12 +55,85 @@ interface ApolloPersonResult {
 
 // ============= HELPER FUNCTIONS =============
 
-// Verify if a list exists in Apollo using the labels endpoint
-async function verifyListExists(listId: string, apiKey: string): Promise<{exists: boolean, name?: string, total?: number}> {
+// Verify if a list exists in Apollo using multiple methods
+async function verifyListExists(listId: string, apiKey: string): Promise<{exists: boolean, name?: string, total?: number, listType?: string}> {
   try {
     console.log(`[CR Apollo] Verifying list exists: ${listId}`);
     
-    // Try a minimal search with the list ID to check if it returns filtered results
+    // Method 1: Try to get list info directly via labels endpoint
+    try {
+      const labelsResponse = await fetch('https://api.apollo.io/v1/labels', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': apiKey,
+        },
+      });
+      
+      console.log(`[CR Apollo] Labels endpoint status: ${labelsResponse.status}`);
+      
+      if (labelsResponse.ok) {
+        const labelsData = await labelsResponse.json();
+        console.log(`[CR Apollo] Labels response type: ${Array.isArray(labelsData) ? 'array' : typeof labelsData}`);
+        
+        // Apollo returns labels as direct array or as { labels: [] }
+        const labels = Array.isArray(labelsData) ? labelsData : (labelsData.labels || labelsData.data || labelsData.contact_labels || []);
+        console.log(`[CR Apollo] Fetched ${labels.length} labels from Apollo`);
+        
+        // Log first few labels for debugging
+        if (labels.length > 0) {
+          console.log(`[CR Apollo] Sample labels: ${JSON.stringify(labels.slice(0, 3))}`);
+        }
+        
+        // Look for our list ID in the labels
+        const foundLabel = labels.find((label: any) => label.id === listId);
+        if (foundLabel) {
+          console.log(`[CR Apollo] ✅ Found list via labels: "${foundLabel.name}" (type: ${foundLabel.label_type})`);
+          return { 
+            exists: true, 
+            name: foundLabel.name,
+            listType: foundLabel.label_type 
+          };
+        }
+        console.log(`[CR Apollo] List ${listId} not found in labels endpoint`);
+      } else {
+        const errorText = await labelsResponse.text();
+        console.warn(`[CR Apollo] Labels endpoint error: ${labelsResponse.status} - ${errorText}`);
+      }
+    } catch (labelError) {
+      console.warn('[CR Apollo] Labels endpoint failed:', labelError);
+    }
+    
+    // Method 2: Try saved_views endpoint for dynamic lists
+    try {
+      const savedViewsResponse = await fetch('https://api.apollo.io/v1/saved_views', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': apiKey,
+        },
+      });
+      
+      if (savedViewsResponse.ok) {
+        const savedViewsData = await savedViewsResponse.json();
+        const views = savedViewsData.saved_views || [];
+        console.log(`[CR Apollo] Fetched ${views.length} saved views from Apollo`);
+        
+        const foundView = views.find((view: any) => view.id === listId);
+        if (foundView) {
+          console.log(`[CR Apollo] ✅ Found list via saved_views: "${foundView.name}"`);
+          return { 
+            exists: true, 
+            name: foundView.name,
+            listType: 'saved_view' 
+          };
+        }
+      }
+    } catch (viewError) {
+      console.warn('[CR Apollo] Saved views endpoint failed:', viewError);
+    }
+    
+    // Method 3: Fallback - do a search and check if results look filtered
     const response = await fetch('https://api.apollo.io/v1/contacts/search', {
       method: 'POST',
       headers: {
@@ -70,7 +143,7 @@ async function verifyListExists(listId: string, apiKey: string): Promise<{exists
       body: JSON.stringify({
         contact_list_ids: [listId],
         page: 1,
-        per_page: 5, // Just get a few to verify
+        per_page: 10,
       }),
     });
 
@@ -88,19 +161,32 @@ async function verifyListExists(listId: string, apiKey: string): Promise<{exists
       c.contact_list_names && c.contact_list_names.length > 0
     );
     
-    console.log(`[CR Apollo] List verification: total=${totalEntries}, hasListNames=${hasListNames}, contacts=${contacts.length}`);
+    // Check if any contact is in our target list
+    const isInTargetList = contacts.some((c: any) => 
+      c.contact_list_ids && c.contact_list_ids.includes(listId)
+    );
     
-    // If total > 40,000 and no list names, likely entire CRM (filter ignored)
-    if (totalEntries > 40000 && !hasListNames) {
-      console.warn(`[CR Apollo] List ${listId} appears invalid - returned ${totalEntries} contacts without list names`);
+    console.log(`[CR Apollo] Search verification: total=${totalEntries}, hasListNames=${hasListNames}, isInTargetList=${isInTargetList}`);
+    
+    // If we found contacts that are explicitly in this list, it's valid
+    if (isInTargetList || hasListNames) {
+      const listName = contacts[0]?.contact_list_names?.[0];
+      return { 
+        exists: true, 
+        name: listName,
+        total: totalEntries 
+      };
+    }
+    
+    // If total > 40,000 and no list evidence, likely entire CRM (filter ignored)
+    if (totalEntries > 40000) {
+      console.warn(`[CR Apollo] List ${listId} appears invalid - returned ${totalEntries} contacts without list association`);
       return { exists: false, total: totalEntries };
     }
     
-    // If we got some results with reasonable count, list exists
-    const listName = contacts[0]?.contact_list_names?.[0];
+    // For smaller results, assume the list is valid (could be a small list)
     return { 
       exists: true, 
-      name: listName,
       total: totalEntries 
     };
   } catch (error) {
