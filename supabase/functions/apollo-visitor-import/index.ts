@@ -1209,6 +1209,35 @@ serve(async (req) => {
       });
     }
 
+    // ============= ACTION: DELETE IMPORT =============
+    if (action === 'delete_import') {
+      const { import_id } = params;
+      
+      if (!import_id) {
+        throw new Error('import_id is required');
+      }
+      
+      console.log('[Apollo Visitor] Deleting import:', import_id);
+      
+      const { error } = await supabase
+        .from('apollo_visitor_imports')
+        .delete()
+        .eq('id', import_id);
+
+      if (error) {
+        throw new Error(`Failed to delete import: ${error.message}`);
+      }
+
+      console.log('[Apollo Visitor] Import deleted successfully:', import_id);
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'Import deleted successfully',
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // ============= ACTION: GET IMPORTED EMPRESAS =============
     if (action === 'get_imported_empresas') {
       const { limit = 50 } = params;

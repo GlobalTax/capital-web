@@ -30,12 +30,14 @@ import {
   useApolloVisitorImport, 
   useVisitorImportHistory, 
   useImportedEmpresas,
+  useDeleteVisitorImport,
   ApolloOrganization,
   ImportResults,
 } from '@/hooks/useApolloVisitorImport';
 import { OrganizationPreviewTable } from '@/components/admin/apollo-visitors/OrganizationPreviewTable';
 import { ImportedEmpresasTable } from '@/components/admin/apollo-visitors/ImportedEmpresasTable';
 import { ContactSearchSheet } from '@/components/admin/apollo-visitors/ContactSearchSheet';
+import { VisitorImportHistory } from '@/components/admin/apollo-visitors/VisitorImportHistory';
 import { formatDistanceToNow, subDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -84,8 +86,9 @@ export default function ApolloVisitorsPage() {
     enrichAndImport,
   } = useApolloVisitorImport();
 
-  const { data: importHistory, isLoading: historyLoading } = useVisitorImportHistory();
+  const { data: importHistory, isLoading: historyLoading, refetch: refetchHistory } = useVisitorImportHistory();
   const { data: importedEmpresas, isLoading: empresasLoading, refetch: refetchEmpresas } = useImportedEmpresas();
+  const deleteImport = useDeleteVisitorImport();
 
   // Extract list ID from URL or use raw ID
   const parseListId = (input: string): string => {
@@ -654,76 +657,54 @@ export default function ApolloVisitorsPage() {
 
         {/* History Tab */}
         <TabsContent value="history" className="space-y-4">
+          {/* Summary Stats Card */}
           <Card>
-            <CardHeader>
+            <CardContent className="py-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-green-600">
+                    {importHistory?.reduce((sum, i) => sum + (i.imported_count || 0), 0) || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Empresas Nuevas</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {importHistory?.reduce((sum, i) => sum + (i.updated_count || 0), 0) || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Actualizadas</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {importHistory?.reduce((sum, i) => sum + (i.results?.contacts?.imported || 0), 0) || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Contactos Nuevos</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-muted-foreground">
+                    {importHistory?.length || 0}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Total Importaciones</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* History Table */}
+          <Card>
+            <CardHeader className="pb-3">
               <CardTitle className="text-lg">Historial de Importaciones</CardTitle>
               <CardDescription>
-                Últimas importaciones realizadas
+                Registro detallado de todas las importaciones realizadas desde Apollo
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              {historyLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : importHistory && importHistory.length > 0 ? (
-                <ScrollArea className="h-[400px]">
-                  <div className="space-y-3">
-                    {importHistory.map((item) => {
-                      const contactStats = item.results?.contacts;
-                      return (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-card"
-                        >
-                          <div className="flex items-center gap-3">
-                            {item.status === 'completed' ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-500" />
-                            ) : item.status === 'failed' ? (
-                              <AlertCircle className="h-5 w-5 text-destructive" />
-                            ) : (
-                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                            )}
-                            <div>
-                              <p className="font-medium text-sm">Lista: {item.list_id}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatDistanceToNow(new Date(item.created_at), { 
-                                  addSuffix: true, 
-                                  locale: es 
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm">
-                            <div className="text-right">
-                              <p className="text-muted-foreground">Empresas</p>
-                              <p className="font-medium text-green-600">
-                                +{item.imported_count} / ~{item.updated_count}
-                              </p>
-                            </div>
-                            {contactStats && (
-                              <div className="text-right">
-                                <p className="text-muted-foreground">Contactos</p>
-                                <p className="font-medium text-blue-600">
-                                  +{contactStats.imported} / ~{contactStats.updated}
-                                </p>
-                              </div>
-                            )}
-                            <Badge variant={item.status === 'completed' ? 'default' : item.status === 'failed' ? 'destructive' : 'secondary'}>
-                              {item.status}
-                            </Badge>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No hay importaciones en el historial</p>
-                </div>
-              )}
+            <CardContent className="pt-0">
+              <VisitorImportHistory
+                imports={importHistory || []}
+                isLoading={historyLoading}
+                onRefresh={() => refetchHistory()}
+                onDelete={(id) => deleteImport.mutate(id)}
+                isDeleting={deleteImport.isPending}
+              />
             </CardContent>
           </Card>
         </TabsContent>

@@ -382,3 +382,26 @@ export function useImportedEmpresas(limit: number = 50) {
     },
   });
 }
+
+// Delete import from history
+export function useDeleteVisitorImport() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (importId: string): Promise<void> => {
+      const { data, error } = await supabase.functions.invoke('apollo-visitor-import', {
+        body: { action: 'delete_import', import_id: importId },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Error eliminando importación');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['apollo-visitor-imports'] });
+      toast.success('Importación eliminada del historial');
+    },
+    onError: (error: Error) => {
+      toast.error(`Error: ${error.message}`);
+    },
+  });
+}
