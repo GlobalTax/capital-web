@@ -40,11 +40,8 @@ serve(async (req) => {
     const wordCount = raw_content.split(/\s+/).length;
     const reading_time = Math.max(1, Math.ceil(wordCount / 200));
 
-    // Process content: convert markdown-style to HTML
-    const processedContent = processContentToHtml(raw_content);
-
     // Call AI to extract metadata using tool calling
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const metadataResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -127,27 +124,27 @@ Instrucciones:
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+    if (!metadataResponse.ok) {
+      const errorText = await metadataResponse.text();
+      console.error("AI gateway error (metadata):", metadataResponse.status, errorText);
       
-      if (response.status === 429) {
+      if (metadataResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: "Límite de peticiones excedido. Inténtalo de nuevo en unos minutos." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (metadataResponse.status === 402) {
         return new Response(
           JSON.stringify({ error: "Créditos de IA agotados. Contacta con el administrador." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
-      throw new Error(`AI gateway error: ${response.status}`);
+      throw new Error(`AI gateway error: ${metadataResponse.status}`);
     }
 
-    const aiResult = await response.json();
+    const aiResult = await metadataResponse.json();
     
     // Extract the tool call result
     const toolCall = aiResult.choices?.[0]?.message?.tool_calls?.[0];
@@ -156,16 +153,26 @@ Instrucciones:
     }
 
     const metadata = JSON.parse(toolCall.function.arguments);
+    const extractedTitle = metadata.title || extractTitleFromContent(raw_content);
+
+    // Now format the content with AI for professional HTML structure
+    let processedContent: string;
+    try {
+      processedContent = await formatContentWithAI(raw_content, extractedTitle, LOVABLE_API_KEY);
+    } catch (formatError) {
+      console.error("AI content formatting failed, using basic parser:", formatError);
+      processedContent = processContentToHtml(raw_content);
+    }
 
     // Validate and sanitize the response
     const result = {
-      title: metadata.title || extractTitleFromContent(raw_content),
+      title: extractedTitle,
       slug: sanitizeSlug(metadata.slug),
       excerpt: metadata.excerpt?.substring(0, 250) || "",
       content: processedContent,
       category: VALID_CATEGORIES.includes(metadata.category) ? metadata.category : "M&A",
       tags: Array.isArray(metadata.tags) ? metadata.tags.slice(0, 7) : [],
-      meta_title: metadata.meta_title?.substring(0, 60) || metadata.title?.substring(0, 60) || "",
+      meta_title: metadata.meta_title?.substring(0, 60) || extractedTitle?.substring(0, 60) || "",
       meta_description: metadata.meta_description?.substring(0, 160) || metadata.excerpt?.substring(0, 160) || "",
       reading_time
     };
@@ -193,6 +200,98 @@ function extractTitleFromContent(content: string): string {
   }
   
   return "Nuevo artículo";
+}
+
+async function formatContentWithAI(rawContent: string, title: string, apiKey: string): Promise<string> {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3-flash-preview",
+      messages: [
+        {
+          role: "system",
+          content: `Eres un editor experto en formatear artículos profesionales de M&A, finanzas corporativas y Private Equity para Capittal.
+
+Tu tarea es convertir texto en bruto a HTML semántico, bien estructurado y profesional.
+
+REGLAS DE FORMATEO:
+
+1. **Estructura general**:
+   - NO incluyas el título principal (ya va en otro campo)
+   - Empieza directamente con el contenido
+   - Crea una estructura lógica: introducción → secciones → conclusión
+
+2. **Headings**:
+   - Usa <h2> para secciones principales (máximo 4-6 por artículo)
+   - Usa <h3> para subsecciones dentro de un <h2>
+   - Los headings deben ser descriptivos y claros
+
+3. **Párrafos**:
+   - Agrupa oraciones relacionadas en <p> coherentes (2-4 oraciones por párrafo)
+   - NO hagas un párrafo por cada línea del original
+   - Mantén la cohesión temática
+
+4. **Listas**:
+   - Usa <ul><li> para enumerar elementos (3+ items)
+   - Usa listas cuando el contenido original enumere beneficios, pasos, características, etc.
+   - Cada <li> debe ser conciso y claro
+
+5. **Negritas**:
+   - Usa <strong> para destacar conceptos clave, términos técnicos importantes o datos relevantes
+   - Máximo 3-5 negritas por sección (no abuses)
+
+6. **Formato prohibido**:
+   - NO uses clases CSS ni estilos inline
+   - NO uses <h1> (reservado para el título)
+   - NO uses markdown, solo HTML puro
+   - NO añadas contenido que no esté en el original
+
+DEVUELVE SOLO EL HTML, sin explicaciones, sin bloques de código, sin markdown.`
+        },
+        {
+          role: "user",
+          content: `Título del artículo: "${title}"
+
+Contenido a formatear profesionalmente:
+
+${rawContent}`
+        }
+      ],
+      max_tokens: 8000,
+      temperature: 0.3 // Low temperature for consistent formatting
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`AI formatting error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  let formattedContent = data.choices?.[0]?.message?.content;
+
+  if (!formattedContent) {
+    throw new Error("No content returned from AI");
+  }
+
+  // Clean up any markdown code blocks the AI might have added
+  formattedContent = formattedContent
+    .replace(/^```html?\n?/gm, "")
+    .replace(/\n?```$/gm, "")
+    .trim();
+
+  // Remove the title if AI included it (check for h1 or first h2 matching title)
+  const titleRegex = new RegExp(`<h[12]>\\s*${escapeRegex(title)}\\s*</h[12]>\\n?`, "i");
+  formattedContent = formattedContent.replace(titleRegex, "");
+
+  return formattedContent;
+}
+
+function escapeRegex(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function sanitizeSlug(slug: string): string {
