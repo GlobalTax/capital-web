@@ -199,147 +199,160 @@ async function enrichOrganization(domain: string): Promise<ApolloOrganization | 
 // SIMPLIFIED: Search organizations from Apollo list (CRM only)
 // Supports both contact lists and account lists, and detects labels vs saved lists
 // WARNING: This ONLY works for items already in Apollo CRM, not "net new"
+// Now with FULL PAGINATION to fetch ALL results
 async function searchOrganizationsFromList(
   listId: string,
   listType: 'contacts' | 'accounts' = 'accounts',
-  page: number = 1,
-  perPage: number = 25
+  maxResults: number = 2000 // Safety limit
 ): Promise<{ organizations: ApolloOrganization[]; totalEntries: number; pagination: any; warning?: string }> {
   
-  console.log('[Apollo API] Searching from list:', { listId, listType });
+  console.log('[Apollo API] Searching from list:', { listId, listType, maxResults });
   
   // First, verify if this is a label or a saved list
   const listCheck = await verifyListExists(listId);
   const isLabel = listCheck?.listType === 'label';
-  console.log(`[Apollo Visitor] List type detected: "${listCheck?.listType}", using ${isLabel ? 'label_ids' : (listType === 'contacts' ? 'contact_list_ids' : 'account_list_ids')}`);
+  const filterParam = isLabel ? 'label_ids' : (listType === 'contacts' ? 'contact_list_ids' : 'account_list_ids');
+  console.log(`[Apollo Visitor] List type detected: "${listCheck?.listType}", using ${filterParam}`);
   
-  let organizations: ApolloOrganization[] = [];
+  let allOrganizations: ApolloOrganization[] = [];
   let totalEntries = 0;
-  let pagination: any = {};
+  let lastPagination: any = {};
+  const perPage = 100; // Max per page for Apollo API
+  let currentPage = 1;
+  let hasMore = true;
 
   if (listType === 'contacts') {
-    // Use contacts/search for contact lists
-    // Choose correct filter param based on whether it's a label or saved list
-    const requestBody: Record<string, unknown> = {
-      page,
-      per_page: perPage,
-    };
-    
-    if (isLabel) {
-      requestBody.label_ids = [listId];
-      console.log('[Apollo API] Using /v1/contacts/search with label_ids:', listId);
-    } else {
-      requestBody.contact_list_ids = [listId];
-      console.log('[Apollo API] Using /v1/contacts/search with contact_list_ids:', listId);
-    }
-
-    const response = await fetch('https://api.apollo.io/v1/contacts/search', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Api-Key': APOLLO_API_KEY!,
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Apollo API] contacts/search failed:', response.status, errorText);
-      throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    const contacts = data.contacts || data.people || [];
-    totalEntries = data.pagination?.total_entries || 0;
-    pagination = data.pagination;
-
-    console.log('[Apollo API] contacts/search result:', {
-      total: totalEntries,
-      returned: contacts.length,
-      firstResult: contacts[0]?.name || contacts[0]?.first_name,
-      isLabel,
-    });
-    
-    // SAFETY CHECK: If we get way more results than expected for a label, something went wrong
-    if (isLabel && listCheck?.total && totalEntries > listCheck.total * 2) {
-      console.error(`[Apollo Visitor] ⚠️ WARNING: Got ${totalEntries} results but label only has ${listCheck.total}. Apollo may have ignored the filter.`);
-    }
-
-    // Extract organizations from contacts
+    // Paginate through contacts/search
     const orgMap = new Map<string, ApolloOrganization>();
-    for (const contact of contacts) {
-      const org = contact.organization;
-      if (org && org.id && !orgMap.has(org.id)) {
-        orgMap.set(org.id, {
-          id: org.id,
-          name: org.name,
-          website_url: org.website_url,
-          primary_domain: org.primary_domain,
-          linkedin_url: org.linkedin_url,
-          industry: org.industry,
-          estimated_num_employees: org.estimated_num_employees,
-          city: org.city,
-          state: org.state,
-          country: org.country,
-        });
+    
+    while (hasMore && allOrganizations.length < maxResults) {
+      const requestBody: Record<string, unknown> = {
+        page: currentPage,
+        per_page: perPage,
+      };
+      
+      if (isLabel) {
+        requestBody.label_ids = [listId];
+      } else {
+        requestBody.contact_list_ids = [listId];
+      }
+
+      console.log(`[Apollo API] contacts/search page ${currentPage}...`);
+      const response = await fetch('https://api.apollo.io/v1/contacts/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': APOLLO_API_KEY!,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Apollo API] contacts/search failed:', response.status, errorText);
+        throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      const contacts = data.contacts || data.people || [];
+      totalEntries = data.pagination?.total_entries || 0;
+      lastPagination = data.pagination;
+
+      console.log(`[Apollo API] Page ${currentPage}: ${contacts.length} contacts (total: ${totalEntries})`);
+      
+      // Extract organizations from contacts
+      for (const contact of contacts) {
+        const org = contact.organization;
+        if (org && org.id && !orgMap.has(org.id)) {
+          orgMap.set(org.id, {
+            id: org.id,
+            name: org.name,
+            website_url: org.website_url,
+            primary_domain: org.primary_domain,
+            linkedin_url: org.linkedin_url,
+            industry: org.industry,
+            estimated_num_employees: org.estimated_num_employees,
+            city: org.city,
+            state: org.state,
+            country: org.country,
+          });
+        }
+      }
+
+      hasMore = contacts.length === perPage && (currentPage * perPage) < totalEntries;
+      currentPage++;
+      
+      // Rate limiting: small delay between pages
+      if (hasMore) {
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
-    organizations = Array.from(orgMap.values());
-    console.log('[Apollo API] Extracted', organizations.length, 'unique organizations from contacts');
+    
+    allOrganizations = Array.from(orgMap.values());
+    console.log(`[Apollo API] Total: ${totalEntries} contacts → ${allOrganizations.length} unique organizations`);
     
   } else {
-    // Use accounts/search for account lists
-    const requestBody: Record<string, unknown> = {
-      page,
-      per_page: perPage,
-    };
+    // Paginate through accounts/search
+    while (hasMore && allOrganizations.length < maxResults) {
+      const requestBody: Record<string, unknown> = {
+        page: currentPage,
+        per_page: perPage,
+      };
+      
+      if (isLabel) {
+        requestBody.label_ids = [listId];
+      } else {
+        requestBody.account_list_ids = [listId];
+      }
+
+      console.log(`[Apollo API] accounts/search page ${currentPage}...`);
+      const response = await fetch('https://api.apollo.io/v1/accounts/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': APOLLO_API_KEY!,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Apollo API] accounts/search failed:', response.status, errorText);
+        throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      const accounts = data.accounts || [];
+      totalEntries = data.pagination?.total_entries || 0;
+      lastPagination = data.pagination;
+
+      console.log(`[Apollo API] Page ${currentPage}: ${accounts.length} accounts (total: ${totalEntries})`);
+      
+      allOrganizations.push(...accounts);
+
+      hasMore = accounts.length === perPage && (currentPage * perPage) < totalEntries;
+      currentPage++;
+      
+      // Rate limiting: small delay between pages
+      if (hasMore) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+    }
     
-    if (isLabel) {
-      requestBody.label_ids = [listId];
-      console.log('[Apollo API] Using /v1/accounts/search with label_ids:', listId);
-    } else {
-      requestBody.account_list_ids = [listId];
-      console.log('[Apollo API] Using /v1/accounts/search with account_list_ids:', listId);
-    }
-
-    const response = await fetch('https://api.apollo.io/v1/accounts/search', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Api-Key': APOLLO_API_KEY!,
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Apollo API] accounts/search failed:', response.status, errorText);
-      throw new Error(`Apollo API error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    organizations = data.accounts || [];
-    totalEntries = data.pagination?.total_entries || 0;
-    pagination = data.pagination;
-
-    console.log('[Apollo API] accounts/search result:', {
-      total: totalEntries,
-      returned: organizations.length,
-      firstResult: organizations[0]?.name,
-      isLabel,
-    });
+    console.log(`[Apollo API] Total fetched: ${allOrganizations.length} accounts of ${totalEntries}`);
   }
 
   // Warning about CRM-only limitation
   const labelInfo = isLabel ? ' (Label/Tag detectado)' : '';
+  const pagesInfo = currentPage > 2 ? ` [${currentPage - 1} páginas]` : '';
   const warning = listType === 'contacts'
-    ? `ℹ️ Lista de contactos${labelInfo}: Se encontraron ${totalEntries} contactos → ${organizations.length} empresas únicas.`
-    : `⚠️ Lista de cuentas${labelInfo}: Solo muestra empresas ya en el CRM de Apollo (${totalEntries} encontradas).`;
+    ? `ℹ️ Lista de contactos${labelInfo}: ${totalEntries} contactos → ${allOrganizations.length} empresas únicas.${pagesInfo}`
+    : `✅ Lista de cuentas${labelInfo}: ${allOrganizations.length} de ${totalEntries} empresas.${pagesInfo}`;
 
   return {
-    organizations,
-    totalEntries: organizations.length,
-    pagination,
+    organizations: allOrganizations,
+    totalEntries,
+    pagination: lastPagination,
     warning,
   };
 }
