@@ -5,6 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const APOLLO_API_BASE_URL = 'https://api.apollo.io/v1';
+
 interface ApolloOrganization {
   id: string;
   name: string;
@@ -67,17 +69,17 @@ function parseApolloInput(input: string): { type: 'apollo_id' | 'domain' | 'sear
 async function enrichByDomain(apiKey: string, domain: string): Promise<ApolloOrganization | null> {
   console.log('[Apollo Import Fund] Enriching by domain:', domain);
   
-  const response = await fetch('https://api.apollo.io/api/v1/organizations/enrich', {
-    method: 'POST',
+  const response = await fetch(`${APOLLO_API_BASE_URL}/organizations/enrich?domain=${encodeURIComponent(domain)}`, {
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       'X-Api-Key': apiKey,
     },
-    body: JSON.stringify({ domain }),
   });
   
   if (!response.ok) {
-    console.error('[Apollo Import Fund] Enrich failed:', response.status);
+    const errorText = await response.text();
+    console.error('[Apollo Import Fund] Enrich failed:', response.status, errorText);
     return null;
   }
   
@@ -88,7 +90,7 @@ async function enrichByDomain(apiKey: string, domain: string): Promise<ApolloOrg
 async function searchByName(apiKey: string, name: string): Promise<ApolloOrganization | null> {
   console.log('[Apollo Import Fund] Searching by name:', name);
   
-  const response = await fetch('https://api.apollo.io/api/v1/mixed_companies/search', {
+  const response = await fetch(`${APOLLO_API_BASE_URL}/mixed_companies/search`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -114,18 +116,18 @@ async function getOrganizationById(apiKey: string, id: string): Promise<ApolloOr
   console.log('[Apollo Import Fund] Getting org by ID:', id);
   
   // Apollo doesn't have a direct get-by-id endpoint for organizations
-  // We'll use the enrichment search approach instead
-  const response = await fetch('https://api.apollo.io/api/v1/organizations/enrich', {
-    method: 'POST',
+  // We'll use the enrichment approach that accepts organization_id when available
+  const response = await fetch(`${APOLLO_API_BASE_URL}/organizations/enrich?organization_id=${encodeURIComponent(id)}`, {
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       'X-Api-Key': apiKey,
     },
-    body: JSON.stringify({ organization_id: id }),
   });
   
   if (!response.ok) {
-    console.error('[Apollo Import Fund] Get by ID failed:', response.status);
+    const errorText = await response.text();
+    console.error('[Apollo Import Fund] Get by ID failed:', response.status, errorText);
     return null;
   }
   
