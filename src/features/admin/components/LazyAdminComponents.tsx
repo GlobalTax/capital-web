@@ -65,6 +65,9 @@ export const LazyIncompleteValuationsManager = lazy(() => import('@/components/a
 // === VALUATION ANALYTICS ===
 export const LazyValuationAnalyticsDashboard = lazy(() => import('./valuation-analytics/ValuationAnalyticsDashboard').then(m => ({ default: m.ValuationAnalyticsDashboard })));
 
+// === SEARCH ANALYTICS ===
+export const LazySearchAnalyticsPage = lazy(() => import('@/pages/admin/SearchAnalyticsPage'));
+
 // === PROFESSIONAL VALUATIONS ===
 export const LazyValoracionesPro = lazy(() => import('@/pages/admin/ValoracionesPro'));
 export const LazyValoracionProForm = lazy(() => import('@/pages/admin/ValoracionProForm'));

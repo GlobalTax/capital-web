@@ -32,7 +32,8 @@ import {
   Bell,
   UserPlus,
   Shield,
-  Newspaper
+  Newspaper,
+  Search
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -69,6 +70,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Activity,
         badge: "NEW",
         description: "Analytics de valoraciones"
+      },
+      { 
+        title: "Search Analytics", 
+        url: "/admin/search-analytics", 
+        icon: Search,
+        badge: "NEW",
+        description: "Análisis de búsquedas"
       },
     ]
   },
