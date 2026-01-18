@@ -150,12 +150,14 @@ export const useFavoriteFunds = () => {
 
       const fundIds = (favorites as CRFavorite[]).map(f => f.entity_id);
 
-      // Luego obtener los datos de los fondos con conteo de personas
+      // Luego obtener los datos de los fondos con conteo de personas y portfolio
       const { data: funds, error: fundsError } = await supabase
         .from('cr_funds')
         .select(`
           *,
-          people_count:cr_people(count)
+          people_count:cr_people(count),
+          portfolio_count:cr_portfolio(count),
+          portfolio_sample:cr_portfolio(company_name, website)
         `)
         .in('id', fundIds)
         .eq('is_deleted', false)
@@ -163,11 +165,17 @@ export const useFavoriteFunds = () => {
 
       if (fundsError) throw fundsError;
       
-      // Procesar el count de personas (igual que en useCRFunds)
+      // Procesar el count de personas y portfolio (igual que en useCRFunds)
       return (funds || []).map(fund => ({
         ...fund,
-        people_count: fund.people_count?.[0]?.count || 0
-      })) as (CRFund & { people_count: number })[];
+        people_count: fund.people_count?.[0]?.count || 0,
+        portfolio_count: fund.portfolio_count?.[0]?.count || 0,
+        portfolio_sample: fund.portfolio_sample || []
+      })) as (CRFund & { 
+        people_count: number;
+        portfolio_count: number;
+        portfolio_sample: { company_name: string; website: string | null }[];
+      })[];
     },
   });
 };
