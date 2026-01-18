@@ -101,7 +101,7 @@ const BlogPost = () => {
           post.author_name || 'Equipo Capittal'
         )}
       />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         <BlogPostContent post={post} />
         
         {/* Navegación entre posts */}

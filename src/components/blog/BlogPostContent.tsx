@@ -192,17 +192,17 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
           </Link>
         </div>
 
-        <h1 className="mb-8 mt-4 max-w-4xl text-3xl font-normal md:text-5xl">
+        <h1 className="mb-10 mt-6 max-w-5xl text-3xl font-normal md:text-5xl tracking-tight leading-tight">
           {post.title}
         </h1>
 
         {post.excerpt && (
-          <p className="text-xl text-gray-600 max-w-3xl mb-8 leading-relaxed">
+          <p className="text-xl text-muted-foreground max-w-4xl mb-10 leading-loose tracking-normal">
             {post.excerpt}
           </p>
         )}
 
-        <div className="flex items-center gap-3 text-sm mb-8">
+        <div className="flex items-center gap-4 text-sm mb-10">
           <Avatar className="h-8 w-8 border">
             {post.author_avatar_url ? (
               <AvatarImage src={post.author_avatar_url} alt={post.author_name} />
@@ -239,11 +239,11 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
           </div>
         )}
 
-        <Separator className="mb-20 mt-12" />
+        <Separator className="mb-24 mt-14" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-16">
           <div className="lg:col-span-8">
-            <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:font-normal prose-h2:mt-10 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-normal prose-h3:mt-8 prose-h3:mb-3 prose-p:leading-relaxed prose-p:mb-4 prose-li:leading-relaxed">
+            <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:font-normal prose-h2:mt-12 prose-h2:mb-6 prose-h2:tracking-tight prose-h3:text-xl prose-h3:font-normal prose-h3:mt-10 prose-h3:mb-4 prose-h3:tracking-tight prose-p:leading-loose prose-p:mb-6 prose-p:tracking-normal prose-li:leading-loose prose-li:mb-2 prose-strong:font-semibold prose-blockquote:border-l-4 prose-blockquote:pl-6 prose-blockquote:italic">
               <div 
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(getFormattedContent(post.content)) 
