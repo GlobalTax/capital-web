@@ -9327,63 +9327,6 @@ export type Database = {
         }
         Relationships: []
       }
-      mna_apollo_visitor_imports: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          error_log: Json | null
-          id: string
-          imported_boutique_ids: string[] | null
-          imported_data: Json | null
-          list_id: string
-          list_name: string | null
-          list_type: string | null
-          status: string | null
-          total_errors: number | null
-          total_found: number | null
-          total_imported: number | null
-          total_skipped: number | null
-          total_updated: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          error_log?: Json | null
-          id?: string
-          imported_boutique_ids?: string[] | null
-          imported_data?: Json | null
-          list_id: string
-          list_name?: string | null
-          list_type?: string | null
-          status?: string | null
-          total_errors?: number | null
-          total_found?: number | null
-          total_imported?: number | null
-          total_skipped?: number | null
-          total_updated?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          error_log?: Json | null
-          id?: string
-          imported_boutique_ids?: string[] | null
-          imported_data?: Json | null
-          list_id?: string
-          list_name?: string | null
-          list_type?: string | null
-          status?: string | null
-          total_errors?: number | null
-          total_found?: number | null
-          total_imported?: number | null
-          total_skipped?: number | null
-          total_updated?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       mna_boutique_deals: {
         Row: {
           acquirer_name: string | null
