@@ -11,7 +11,9 @@ export function useCRFunds(filters?: CRFundFilters) {
         .from('cr_funds')
         .select(`
           *,
-          people_count:cr_people(count)
+          people_count:cr_people(count),
+          portfolio_count:cr_portfolio(count),
+          portfolio_sample:cr_portfolio(company_name, website)
         `)
         .eq('is_deleted', false)
         .order('name', { ascending: true });
@@ -45,11 +47,17 @@ export function useCRFunds(filters?: CRFundFilters) {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Process people count from aggregation
+      // Process counts and portfolio sample from aggregation
       return (data || []).map(fund => ({
         ...fund,
-        people_count: (fund.people_count as any)?.[0]?.count || 0
-      })) as (CRFund & { people_count: number })[];
+        people_count: (fund.people_count as any)?.[0]?.count || 0,
+        portfolio_count: (fund.portfolio_count as any)?.[0]?.count || 0,
+        portfolio_sample: (fund.portfolio_sample as any) || []
+      })) as (CRFund & { 
+        people_count: number;
+        portfolio_count: number;
+        portfolio_sample: { company_name: string; website: string | null }[];
+      })[];
     },
   });
 }

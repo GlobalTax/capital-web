@@ -3,18 +3,28 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ExternalLink, MoreHorizontal, TrendingUp, Users, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { MapPin, ExternalLink, MoreHorizontal, TrendingUp, Users, ArrowUp, ArrowDown, ArrowUpDown, Building2, Globe } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CRFund, CRFundStatus, CRFundType, CR_FUND_STATUS_LABELS, CR_FUND_TYPE_LABELS } from '@/types/capitalRiesgo';
 import { useDeleteCRFund } from '@/hooks/useCRFunds';
 import { CRFavoriteButton } from './CRFavoriteButton';
 
+interface PortfolioCompany {
+  company_name: string;
+  website: string | null;
+}
+
 interface CRFundsTableProps {
-  funds: (CRFund & { people_count?: number })[];
+  funds: (CRFund & { 
+    people_count?: number;
+    portfolio_count?: number;
+    portfolio_sample?: PortfolioCompany[];
+  })[];
   isLoading: boolean;
   showFavorites?: boolean;
   sortBy?: 'name' | 'people_count';
@@ -48,6 +58,49 @@ const formatCurrency = (value: number | null) => {
     currency: 'EUR',
     maximumFractionDigits: 0 
   }).format(value);
+};
+
+// Component for portfolio websites tooltip
+const PortfolioWebsTooltip: React.FC<{ portfolioSample: PortfolioCompany[] }> = ({ portfolioSample }) => {
+  const companiesWithWebsite = portfolioSample.filter(p => p.website);
+  
+  if (companiesWithWebsite.length === 0) {
+    return <span className="text-muted-foreground">—</span>;
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="flex items-center gap-1 text-sm text-primary cursor-pointer hover:underline">
+            <Globe className="h-3 w-3" />
+            {companiesWithWebsite.length}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="left" className="max-w-xs">
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground mb-2">Webs de participadas:</p>
+            {companiesWithWebsite.slice(0, 10).map((company, i) => (
+              <a
+                key={i}
+                href={company.website!.startsWith('http') ? company.website! : `https://${company.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs hover:text-primary"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">{company.company_name}</span>
+              </a>
+            ))}
+            {companiesWithWebsite.length > 10 && (
+              <p className="text-xs text-muted-foreground">+{companiesWithWebsite.length - 10} más</p>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
 };
 
 export const CRFundsTable: React.FC<CRFundsTableProps> = ({ 
@@ -106,6 +159,12 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({
             <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Estado
             </TableHead>
+            <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Participadas
+            </TableHead>
+            <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Webs Port.
+            </TableHead>
             <TableHead 
               className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground cursor-pointer hover:bg-muted/50 select-none"
               onClick={() => onSort?.('people_count')}
@@ -125,7 +184,7 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({
         <TableBody>
           {funds.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={showFavorites ? 8 : 7} className="text-center py-12 text-muted-foreground">
+              <TableCell colSpan={showFavorites ? 11 : 10} className="text-center py-12 text-muted-foreground">
                 No se encontraron fondos de Capital Riesgo
               </TableCell>
             </TableRow>
@@ -199,6 +258,15 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({
                   <Badge className={`text-[10px] h-5 ${statusColors[fund.status as CRFundStatus] || 'bg-gray-100'}`}>
                     {CR_FUND_STATUS_LABELS[fund.status as keyof typeof CR_FUND_STATUS_LABELS] || fund.status}
                   </Badge>
+                </TableCell>
+                <TableCell className="py-2">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Building2 className="h-3 w-3" />
+                    <span>{fund.portfolio_count || 0}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="py-2">
+                  <PortfolioWebsTooltip portfolioSample={fund.portfolio_sample || []} />
                 </TableCell>
                 <TableCell className="py-2">
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">

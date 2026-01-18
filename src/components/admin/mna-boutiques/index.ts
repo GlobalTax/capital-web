@@ -6,3 +6,5 @@ export { MNABoutiquePeoplePanel } from './MNABoutiquePeoplePanel';
 export { MNABoutiqueDealsPanel } from './MNABoutiqueDealsPanel';
 export { MNAPersonForm } from './MNAPersonForm';
 export { MNADealForm } from './MNADealForm';
+export { MNABoutiqueFavoriteButton } from './MNABoutiqueFavoriteButton';
+export { MNAFavoritesTable } from './MNAFavoritesTable';
