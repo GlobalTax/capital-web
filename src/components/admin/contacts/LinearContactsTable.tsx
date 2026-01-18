@@ -77,6 +77,9 @@ const TableHeader = React.memo<{
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }}>
         Empresa
       </div>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.sector.flex, minWidth: COL_STYLES.sector.minWidth }}>
+        Sector
+      </div>
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }}>
         Estado
       </div>

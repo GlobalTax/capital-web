@@ -78,7 +78,8 @@ export const COL_STYLES = {
   contact: { minWidth: 180, flex: '2 0 180px' },
   origin: { minWidth: 90, flex: '0 0 90px' },
   channel: { minWidth: 120, flex: '1 0 120px' },
-  company: { minWidth: 160, flex: '2 0 160px' },
+  company: { minWidth: 140, flex: '1.5 0 140px' },
+  sector: { minWidth: 100, flex: '1 0 100px' },
   status: { minWidth: 110, flex: '0 0 110px' },
   financials: { minWidth: 100, flex: '1 0 100px' },
   apollo: { minWidth: 80, flex: '0 0 80px' },
@@ -219,12 +220,12 @@ export const ContactTableRow = memo<ContactRowProps>(({
         />
       </div>
       
-      {/* Company - compact 2 lines */}
+      {/* Company */}
       <div className="flex flex-col px-1.5 overflow-hidden" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }} onClick={(e) => e.stopPropagation()}>
         {contact.empresa_id ? (
           <Link 
             to={`/admin/empresas/${contact.empresa_id}`}
-            className="text-xs truncate max-w-[140px] text-primary hover:underline cursor-pointer"
+            className="text-xs truncate max-w-[130px] text-primary hover:underline cursor-pointer"
           >
             {contact.empresa_nombre || contact.company || '—'}
           </Link>
@@ -234,23 +235,31 @@ export const ContactTableRow = memo<ContactRowProps>(({
             type="text"
             placeholder="Empresa..."
             emptyText="—"
-            displayClassName="text-xs truncate max-w-[140px]"
+            displayClassName="text-xs truncate max-w-[130px]"
             onSave={handleCompanyUpdate}
           />
         )}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
-              {[contact.industry, contact.location].filter(Boolean).join(' · ') || '—'}
-            </span>
-          </TooltipTrigger>
-          {(contact.industry || contact.location) && (
-            <TooltipContent>
-              {contact.industry && <div>Sector: {contact.industry}</div>}
-              {contact.location && <div>Ubicación: {contact.location}</div>}
-            </TooltipContent>
-          )}
-        </Tooltip>
+        {contact.location && (
+          <span className="text-[10px] text-muted-foreground truncate max-w-[130px]">
+            {contact.location}
+          </span>
+        )}
+      </div>
+      
+      {/* Sector - editable */}
+      <div 
+        className="flex items-center px-1.5 overflow-hidden" 
+        style={{ flex: COL_STYLES.sector.flex, minWidth: COL_STYLES.sector.minWidth }} 
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EditableCell
+          value={contact.industry}
+          type="text"
+          placeholder="Sector..."
+          emptyText="—"
+          displayClassName="text-xs truncate max-w-[90px]"
+          onSave={handleIndustryUpdate}
+        />
       </div>
       
       {/* Status */}
