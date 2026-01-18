@@ -36,20 +36,20 @@ interface ImportFundResult {
   logo_url: string | null;
 }
 
-function parseApolloInput(input: string): { type: 'apollo_id' | 'domain' | 'search'; value: string } {
+function parseApolloInput(input: string): { type: 'apollo_org_id' | 'apollo_account_id' | 'domain' | 'search'; value: string } {
   const trimmed = input.trim();
   
-// Apollo organization URL: 
-  // - https://app.apollo.io/#/companies/5e66b6381e05b4008c8331b8
-  // - https://app.apollo.io/#/accounts/67dc122e71f6900014360594
+  // Apollo URLs:
+  // - /companies/ → Organization (public database)
+  // - /accounts/ → Account (user's CRM)
   if (trimmed.includes('apollo.io')) {
-    // Check for /companies/ pattern
+    // Check for /companies/ pattern → Organization ID
     const companiesMatch = trimmed.match(/\/companies\/([a-f0-9]+)/i);
-    if (companiesMatch) return { type: 'apollo_id', value: companiesMatch[1] };
+    if (companiesMatch) return { type: 'apollo_org_id', value: companiesMatch[1] };
     
-    // Check for /accounts/ pattern (also valid for organizations)
+    // Check for /accounts/ pattern → Account ID (CRM)
     const accountsMatch = trimmed.match(/\/accounts\/([a-f0-9]+)/i);
-    if (accountsMatch) return { type: 'apollo_id', value: accountsMatch[1] };
+    if (accountsMatch) return { type: 'apollo_account_id', value: accountsMatch[1] };
   }
   
   // Domain pattern: example.com or www.example.com
@@ -132,12 +132,60 @@ async function getOrganizationById(apiKey: string, id: string): Promise<ApolloOr
   });
   
   if (!response.ok) {
-    console.error('[Apollo Import Fund] Get by ID failed:', response.status);
+    console.error('[Apollo Import Fund] Get org by ID failed:', response.status);
     return null;
   }
   
   const data = await response.json();
   return data.organization || null;
+}
+
+async function getAccountById(apiKey: string, id: string): Promise<ApolloOrganization | null> {
+  console.log('[Apollo Import Fund] Getting account by ID (CRM):', id);
+  
+  // Use Apollo's Accounts API for CRM accounts
+  const response = await fetch(`https://api.apollo.io/api/v1/accounts/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Api-Key': apiKey,
+    },
+  });
+  
+  if (!response.ok) {
+    console.error('[Apollo Import Fund] Get account by ID failed:', response.status);
+    const errorText = await response.text();
+    console.error('[Apollo Import Fund] Error response:', errorText);
+    return null;
+  }
+  
+  const data = await response.json();
+  console.log('[Apollo Import Fund] Account response keys:', Object.keys(data));
+  
+  // Map account fields to our ApolloOrganization interface
+  const account = data.account || data;
+  if (!account || !account.name) {
+    console.error('[Apollo Import Fund] Invalid account data');
+    return null;
+  }
+  
+  return {
+    id: account.id,
+    name: account.name,
+    website_url: account.website_url || null,
+    primary_domain: account.domain || null,
+    linkedin_url: account.linkedin_url || null,
+    industry: account.industry || null,
+    short_description: null, // Accounts don't have descriptions
+    founded_year: account.founded_year || null,
+    city: account.city || null,
+    state: account.state || null,
+    country: account.country || null,
+    estimated_num_employees: account.estimated_num_employees || null,
+    annual_revenue: null,
+    annual_revenue_printed: null,
+    logo_url: account.logo_url || null,
+  };
 }
 
 function mapApolloToFundData(org: ApolloOrganization): ImportFundResult {
@@ -180,8 +228,11 @@ serve(async (req) => {
     let organization: ApolloOrganization | null = null;
 
     switch (parsed.type) {
-      case 'apollo_id':
+      case 'apollo_org_id':
         organization = await getOrganizationById(APOLLO_API_KEY, parsed.value);
+        break;
+      case 'apollo_account_id':
+        organization = await getAccountById(APOLLO_API_KEY, parsed.value);
         break;
       case 'domain':
         organization = await enrichByDomain(APOLLO_API_KEY, parsed.value);
