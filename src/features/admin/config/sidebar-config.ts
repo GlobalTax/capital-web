@@ -33,7 +33,8 @@ import {
   UserPlus,
   Shield,
   Newspaper,
-  Search
+  Search,
+  Globe
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -422,6 +423,13 @@ export const sidebarSections: SidebarSection[] = [
         icon: Users,
         badge: "NEW",
         description: "Importar boutiques desde Apollo"
+      },
+      { 
+        title: "Apollo Visitors", 
+        url: "/admin/mna-apollo-visitors", 
+        icon: Globe,
+        badge: "NEW",
+        description: "Importar visitantes web como boutiques"
       },
       { 
         title: "Directorio Boutiques", 
