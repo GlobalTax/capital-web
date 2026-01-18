@@ -196,7 +196,7 @@ TASK
    - fund (string|null) - ej: "Fund I", "Fund II", "Growth Fund"
    - investment_year (number|null) - 4 dígitos, si aparece "since 2018" → 2018
    - sector (string|null) - SOLO si la web lo menciona explícitamente
-   - short_description (string|null) - resumen 1-2 frases con info de la web
+   - short_description (string|null) - descripción detallada de la empresa: qué hace, sector, productos/servicios, mercados, posicionamiento. SIN LÍMITE de extensión. Incluye toda la información relevante disponible. EN CASTELLANO.
    - location_countries (array<string>) - países mencionados, [] si no hay
    - company_detail_url (string|null) - URL de ficha interna/externa
    - evidence (array) - 1-3 evidencias con quotes literales (máx 25 palabras cada una)
