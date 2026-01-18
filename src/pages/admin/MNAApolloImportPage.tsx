@@ -27,6 +27,7 @@ import {
   Clock,
   XCircle,
   RefreshCw,
+  Globe,
 } from 'lucide-react';
 import { 
   useMNAApolloSearchImport, 
@@ -476,7 +477,16 @@ const MNAApolloImportPage: React.FC = () => {
                             <>
                               {item.organization?.industry && <span>{item.organization.industry}</span>}
                               {item.organization?.primary_domain && (
-                                <span className="ml-2 text-blue-600">{item.organization.primary_domain}</span>
+                                <a
+                                  href={item.organization.website_url || `https://${item.organization.primary_domain}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="ml-2 text-blue-600 hover:underline inline-flex items-center gap-1"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Globe className="h-3 w-3" />
+                                  {item.organization.primary_domain}
+                                </a>
                               )}
                             </>
                           ) : (
