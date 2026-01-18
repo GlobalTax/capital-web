@@ -1,7 +1,7 @@
 // ============= CR DIRECTORY PAGE =============
 // Directorio de Capital Riesgo (PE/VC) - Estilo Apollo
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Search, Users, Building2, Upload, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,10 @@ export const CRDirectoryPage: React.FC = () => {
   const [fundTypeFilter, setFundTypeFilter] = useState<CRFundType | 'all'>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  // Sorting state for funds
+  const [sortBy, setSortBy] = useState<'name' | 'people_count'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // People query
   const { data: people, isLoading: loadingPeople } = useCRPeopleWithFunds({
@@ -47,6 +51,35 @@ export const CRDirectoryPage: React.FC = () => {
     const unique = [...new Set(fromFunds)];
     return unique.sort() as string[];
   }, [funds]);
+
+  // Sort funds client-side
+  const sortedFunds = useMemo(() => {
+    if (!funds) return [];
+    
+    return [...funds].sort((a, b) => {
+      if (sortBy === 'people_count') {
+        const countA = a.people_count || 0;
+        const countB = b.people_count || 0;
+        return sortOrder === 'asc' ? countA - countB : countB - countA;
+      }
+      // Default: sort by name
+      const nameA = a.name?.toLowerCase() || '';
+      const nameB = b.name?.toLowerCase() || '';
+      return sortOrder === 'asc' 
+        ? nameA.localeCompare(nameB) 
+        : nameB.localeCompare(nameA);
+    });
+  }, [funds, sortBy, sortOrder]);
+
+  // Handle sort toggle
+  const handleSort = useCallback((field: 'name' | 'people_count') => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder(field === 'people_count' ? 'desc' : 'asc');
+    }
+  }, [sortBy]);
 
   const handleToggleSelection = (id: string) => {
     setSelectedIds(prev => {
@@ -199,9 +232,12 @@ export const CRDirectoryPage: React.FC = () => {
 
         <TabsContent value="funds" className="mt-0">
           <CRFundsTable 
-            funds={funds || []}
+            funds={sortedFunds}
             isLoading={loadingFunds}
             showFavorites
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
           />
         </TabsContent>
 

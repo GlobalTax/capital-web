@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ExternalLink, MoreHorizontal, TrendingUp, Users } from 'lucide-react';
+import { MapPin, ExternalLink, MoreHorizontal, TrendingUp, Users, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,9 @@ interface CRFundsTableProps {
   funds: (CRFund & { people_count?: number })[];
   isLoading: boolean;
   showFavorites?: boolean;
+  sortBy?: 'name' | 'people_count';
+  sortOrder?: 'asc' | 'desc';
+  onSort?: (field: 'name' | 'people_count') => void;
 }
 
 const statusColors: Record<CRFundStatus, string> = {
@@ -47,7 +50,14 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
-export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading, showFavorites = false }) => {
+export const CRFundsTable: React.FC<CRFundsTableProps> = ({ 
+  funds, 
+  isLoading, 
+  showFavorites = false,
+  sortBy,
+  sortOrder,
+  onSort 
+}) => {
   const deleteMutation = useDeleteCRFund();
 
   if (isLoading) {
@@ -68,8 +78,18 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading, sh
             {showFavorites && (
               <TableHead className="w-10 h-10"></TableHead>
             )}
-            <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Nombre
+            <TableHead 
+              className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground cursor-pointer hover:bg-muted/50 select-none"
+              onClick={() => onSort?.('name')}
+            >
+              <div className="flex items-center gap-1">
+                Nombre
+                {sortBy === 'name' ? (
+                  sortOrder === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
+                )}
+              </div>
             </TableHead>
             <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Tipo
@@ -86,8 +106,18 @@ export const CRFundsTable: React.FC<CRFundsTableProps> = ({ funds, isLoading, sh
             <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Estado
             </TableHead>
-            <TableHead className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Contactos
+            <TableHead 
+              className="h-10 text-[11px] font-medium uppercase tracking-wider text-muted-foreground cursor-pointer hover:bg-muted/50 select-none"
+              onClick={() => onSort?.('people_count')}
+            >
+              <div className="flex items-center gap-1">
+                Contactos
+                {sortBy === 'people_count' ? (
+                  sortOrder === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                ) : (
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
+                )}
+              </div>
             </TableHead>
             <TableHead className="w-10"></TableHead>
           </TableRow>
