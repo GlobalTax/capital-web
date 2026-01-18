@@ -173,8 +173,30 @@ export const useMNASearchFromList = () => {
         },
       });
 
-      if (error) throw error;
-      if (!data.success) throw new Error(data.error);
+      // Handle HTTP errors (400, 500, etc.)
+      if (error) {
+        console.error('[useMNASearchFromList] Supabase error:', error);
+        
+        // Try to extract error message from response context
+        let errorMessage = 'Error desconocido';
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const errorData = await error.context.json();
+            errorMessage = errorData?.error || errorData?.message || error.message;
+          } else {
+            errorMessage = error.message;
+          }
+        } catch {
+          errorMessage = error.message || 'Error de conexión';
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      // Handle logical errors in successful responses
+      if (!data.success) {
+        throw new Error(data.error || 'Error en la búsqueda');
+      }
 
       return { 
         people: data.people, 
@@ -185,10 +207,12 @@ export const useMNASearchFromList = () => {
     },
     onSuccess: (data) => {
       const typeLabel = data.list_type === 'organizations' ? 'empresas' : 'contactos';
-      toast.success(`Cargados ${data.people.length} ${typeLabel} de "${data.list_name}"`);
+      toast.success(`✅ Cargados ${data.people.length} ${typeLabel} de "${data.list_name}". ¡Haz clic en Importar!`, {
+        duration: 8000,
+      });
     },
     onError: (error: Error) => {
-      toast.error(`Error cargando lista: ${error.message}`);
+      toast.error(`Error: ${error.message}`, { duration: 10000 });
     },
   });
 };
