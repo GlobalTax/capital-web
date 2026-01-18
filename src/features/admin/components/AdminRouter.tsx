@@ -47,6 +47,7 @@ import {
   LazySectorDossierStudio,
   LazyIncompleteValuationsManager,
   LazyValuationAnalyticsDashboard,
+  LazySearchAnalyticsPage,
   LazyValoracionesPro,
   LazyValoracionProForm,
   LazyEmailRecipientsConfig,
@@ -107,6 +108,7 @@ const AdminRouter = () => {
           <Route index element={<LazyAdminDashboard />} />
           <Route path="/dashboard" element={<LazyAdminDashboard />} />
           <Route path="/valuation-analytics" element={<LazyValuationAnalyticsDashboard />} />
+          <Route path="/search-analytics" element={<LazySearchAnalyticsPage />} />
           <Route path="/marketplace-analytics" element={<LazyMarketplaceAnalytics />} />
           
           {/* Lead Management */}
