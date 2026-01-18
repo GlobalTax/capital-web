@@ -56,6 +56,140 @@ interface ApolloPersonResult {
 
 // ============= HELPER FUNCTIONS =============
 
+// Verify if a list exists in Apollo using multiple methods (copied from CR)
+async function verifyListExists(listId: string, apiKey: string): Promise<{exists: boolean, name?: string, total?: number, listType?: string}> {
+  try {
+    console.log(`[MNA Apollo] Verifying list exists: ${listId}`);
+    
+    // Method 1: Try to get list info directly via labels endpoint
+    try {
+      const labelsResponse = await fetch('https://api.apollo.io/v1/labels', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': apiKey,
+        },
+      });
+      
+      console.log(`[MNA Apollo] Labels endpoint status: ${labelsResponse.status}`);
+      
+      if (labelsResponse.ok) {
+        const labelsData = await labelsResponse.json();
+        console.log(`[MNA Apollo] Labels response type: ${Array.isArray(labelsData) ? 'array' : typeof labelsData}`);
+        
+        const labels = Array.isArray(labelsData) ? labelsData : (labelsData.labels || labelsData.data || labelsData.contact_labels || []);
+        console.log(`[MNA Apollo] Fetched ${labels.length} labels from Apollo`);
+        
+        if (labels.length > 0) {
+          console.log(`[MNA Apollo] Sample labels: ${JSON.stringify(labels.slice(0, 3))}`);
+        }
+        
+        const foundLabel = labels.find((label: any) => label.id === listId || label._id === listId);
+        if (foundLabel) {
+          const listType = foundLabel.label_type || foundLabel.modality || 'label';
+          console.log(`[MNA Apollo] ✅ Found list via labels: "${foundLabel.name}" (type: ${listType}, cached_count: ${foundLabel.cached_count})`);
+          return { 
+            exists: true, 
+            name: foundLabel.name,
+            listType: 'label',
+            total: foundLabel.cached_count,
+          };
+        }
+        console.log(`[MNA Apollo] List ${listId} not found in labels endpoint`);
+      } else {
+        const errorText = await labelsResponse.text();
+        console.warn(`[MNA Apollo] Labels endpoint error: ${labelsResponse.status} - ${errorText}`);
+      }
+    } catch (labelError) {
+      console.warn('[MNA Apollo] Labels endpoint failed:', labelError);
+    }
+    
+    // Method 2: Try saved_views endpoint for dynamic lists
+    try {
+      const savedViewsResponse = await fetch('https://api.apollo.io/v1/saved_views', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Api-Key': apiKey,
+        },
+      });
+      
+      if (savedViewsResponse.ok) {
+        const savedViewsData = await savedViewsResponse.json();
+        const views = savedViewsData.saved_views || [];
+        console.log(`[MNA Apollo] Fetched ${views.length} saved views from Apollo`);
+        
+        const foundView = views.find((view: any) => view.id === listId);
+        if (foundView) {
+          console.log(`[MNA Apollo] ✅ Found list via saved_views: "${foundView.name}"`);
+          return { 
+            exists: true, 
+            name: foundView.name,
+            listType: 'saved_view' 
+          };
+        }
+      }
+    } catch (viewError) {
+      console.warn('[MNA Apollo] Saved views endpoint failed:', viewError);
+    }
+    
+    // Method 3: Fallback - do a search and check if results look filtered
+    const response = await fetch('https://api.apollo.io/v1/contacts/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': apiKey,
+      },
+      body: JSON.stringify({
+        contact_list_ids: [listId],
+        page: 1,
+        per_page: 10,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('[MNA Apollo] Could not verify list - API error');
+      return { exists: true };
+    }
+
+    const data = await response.json();
+    const totalEntries = data.pagination?.total_entries || 0;
+    const contacts = data.contacts || [];
+    
+    const hasListNames = contacts.some((c: any) => 
+      c.contact_list_names && c.contact_list_names.length > 0
+    );
+    
+    const isInTargetList = contacts.some((c: any) => 
+      c.contact_list_ids && c.contact_list_ids.includes(listId)
+    );
+    
+    console.log(`[MNA Apollo] Search verification: total=${totalEntries}, hasListNames=${hasListNames}, isInTargetList=${isInTargetList}`);
+    
+    if (isInTargetList || hasListNames) {
+      const listName = contacts[0]?.contact_list_names?.[0];
+      return { 
+        exists: true, 
+        name: listName,
+        total: totalEntries 
+      };
+    }
+    
+    if (totalEntries > 40000) {
+      console.warn(`[MNA Apollo] List ${listId} appears invalid - returned ${totalEntries} contacts without list association`);
+      return { exists: false, total: totalEntries };
+    }
+    
+    return { 
+      exists: true, 
+      total: totalEntries 
+    };
+  } catch (error) {
+    console.warn('[MNA Apollo] Error verifying list:', error);
+    return { exists: true };
+  }
+}
+
 // Map roles specific to M&A Boutiques
 function mapMNARoleFromTitle(title: string): string {
   const titleLower = title.toLowerCase();
@@ -92,18 +226,15 @@ function detectBoutiqueTier(org: ApolloPersonResult['organization']): string {
   const employees = org.estimated_num_employees || 0;
   const name = (org.name || '').toLowerCase();
   
-  // Tier 1: Large investment banks
   const tier1Names = ['goldman', 'morgan stanley', 'jp morgan', 'lazard', 'rothschild', 'evercore', 'moelis'];
   if (tier1Names.some(n => name.includes(n)) || employees > 500) {
     return 'tier_1';
   }
   
-  // Tier 2: Mid-market boutiques
   if (employees > 50) {
     return 'tier_2';
   }
   
-  // Regional or specialist
   if (employees > 10) {
     return 'regional';
   }
@@ -531,20 +662,47 @@ serve(async (req) => {
 
       console.log('🔍 [MNA Apollo] Fetching contacts from list:', list_id);
       
+      // ============= PRE-VERIFICATION: Check if list exists =============
+      const listCheck = await verifyListExists(list_id, APOLLO_API_KEY!);
+      console.log(`[MNA Apollo] List pre-check: exists=${listCheck.exists}, name=${listCheck.name}, total=${listCheck.total}`);
+      
+      if (!listCheck.exists) {
+        console.error(`❌ [MNA Apollo] List "${list_id}" does not exist or was deleted`);
+        return new Response(JSON.stringify({
+          success: false,
+          error: `La lista "${list_id}" no existe en Apollo o fue eliminada. Apollo devolvió ${listCheck.total?.toLocaleString() || 'N/A'} contactos sin filtrar.`,
+          suggestion: 'Verifica el ID de la lista en Apollo: app.apollo.io/#/lists/',
+          filter_ignored: true,
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       let allPeople: any[] = [];
       let currentPage = 1;
       let totalPages = 1;
-      let detectedListName = 'Lista Apollo M&A';
-      let totalEntries = 0;
+      let detectedListName = listCheck.name || 'Lista Apollo M&A';
+      let totalEntries = listCheck.total || 0;
+      
+      // Determine correct filter based on list type
+      const listType = listCheck.listType || '';
+      const isLabel = listType.includes('label') || listType === 'tag';
+      console.log(`[MNA Apollo] List type detected: "${listType}", using ${isLabel ? 'label_ids' : 'contact_list_ids'}`);
       
       do {
         console.log(`[MNA Apollo] Fetching page ${currentPage} of ${totalPages}...`);
         
-        const requestBody = {
-          contact_list_ids: [list_id],
+        const requestBody: Record<string, unknown> = {
           page: currentPage,
           per_page: 100,
         };
+        
+        if (isLabel) {
+          requestBody.label_ids = [list_id];
+        } else {
+          requestBody.contact_list_ids = [list_id];
+        }
         
         const response = await fetch('https://api.apollo.io/v1/contacts/search', {
           method: 'POST',
@@ -567,8 +725,13 @@ serve(async (req) => {
         if (currentPage === 1) {
           totalEntries = data.pagination?.total_entries || 0;
           totalPages = Math.min(Math.ceil(totalEntries / 100), max_pages);
-          detectedListName = data.contacts?.[0]?.contact_list_names?.[0] || 'Lista Apollo M&A';
-          console.log(`[MNA Apollo] Total entries: ${totalEntries}, Pages: ${totalPages}`);
+          
+          const betterListName = data.contacts?.[0]?.contact_list_names?.[0];
+          if (betterListName) {
+            detectedListName = betterListName;
+          }
+          
+          console.log(`[MNA Apollo] Total entries: ${totalEntries}, Pages: ${totalPages}, List: ${detectedListName}`);
         }
         
         const contacts = data.contacts || [];
@@ -597,6 +760,7 @@ serve(async (req) => {
           } : undefined,
           phone_numbers: contact.phone_numbers,
           seniority: contact.seniority,
+          contact_list_names: contact.contact_list_names,
         }));
         
         allPeople.push(...mappedContacts);
@@ -622,6 +786,7 @@ serve(async (req) => {
         p.name && p.name !== '(No Name)' && p.name.trim() !== ''
       );
       
+      console.log(`[MNA Apollo] Deduped: ${dedupedPeople.length} unique from ${allPeople.length} total`);
       console.log(`[MNA Apollo] Final: ${validPeople.length} valid people`);
 
       return new Response(JSON.stringify({
@@ -689,6 +854,26 @@ serve(async (req) => {
           totalPages = Math.min(Math.ceil(totalEntries / 100), max_pages);
           detectedListName = 'Lista Apollo Empresas M&A';
           console.log(`[MNA Apollo] Total entries: ${totalEntries}, Pages: ${totalPages}`);
+          
+          // WARNING: If total_entries is suspiciously high (>10000), the filter likely didn't apply
+          // This happens with "Website Visitors Net New" lists - they are NOT Accounts in CRM
+          if (totalEntries > 10000 && data.accounts?.length === 100) {
+            console.warn(`⚠️ [MNA Apollo] WARNING: total_entries=${totalEntries} is very high!`);
+            console.warn(`⚠️ [MNA Apollo] The account_list_ids filter may not have applied.`);
+            console.warn(`⚠️ [MNA Apollo] This list (${list_id}) might be a "Website Visitors Net New" list.`);
+            
+            return new Response(JSON.stringify({
+              success: false,
+              error: 'Esta lista parece contener "Website Visitors Net New" que no son Accounts en Apollo CRM. Las listas de Website Visitors no se pueden importar como Empresas.',
+              warning: 'HIGH_TOTAL_ENTRIES',
+              total_entries: totalEntries,
+              suggestion: 'Para listas de Website Visitors, usa el módulo Apollo Visitors en Capital Riesgo o importa como Contactos.',
+              list_id,
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
         }
         
         const accounts = data.accounts || [];
@@ -705,7 +890,7 @@ serve(async (req) => {
           organization: {
             id: account.id,
             name: account.name,
-            website_url: account.website_url,
+            website_url: account.website_url || (account.primary_domain ? `https://${account.primary_domain}` : null),
             linkedin_url: account.linkedin_url,
             primary_domain: account.primary_domain,
             industry: account.industry,
@@ -714,6 +899,12 @@ serve(async (req) => {
             country: account.country,
           },
           _is_organization: true,
+          // Extra org fields for boutique creation
+          _org_description: account.short_description || account.seo_description,
+          _org_keywords: account.keywords,
+          _org_founded_year: account.founded_year,
+          _org_technologies: account.technologies,
+          _org_annual_revenue: account.annual_revenue_printed,
         }));
         
         allOrganizations.push(...mappedOrganizations);
@@ -739,6 +930,7 @@ serve(async (req) => {
         o.name && o.name !== '(No Name)' && o.name.trim() !== ''
       );
       
+      console.log(`[MNA Apollo] Deduped: ${dedupedOrgs.length} unique from ${allOrganizations.length} total`);
       console.log(`[MNA Apollo] Final: ${validOrgs.length} valid organizations`);
 
       return new Response(JSON.stringify({
