@@ -825,13 +825,14 @@ serve(async (req) => {
       do {
         console.log(`[MNA Apollo] Fetching organizations page ${currentPage}...`);
         
+        // Use mixed_companies/search for Website Visitors lists
         const requestBody = {
-          account_list_ids: [list_id],
+          organization_ids_from_list: list_id,
           page: currentPage,
           per_page: 100,
         };
         
-        const response = await fetch('https://api.apollo.io/v1/accounts/search', {
+        const response = await fetch('https://api.apollo.io/v1/mixed_companies/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -861,7 +862,8 @@ serve(async (req) => {
           }
         }
         
-        const accounts = data.accounts || [];
+        // Prioritize organizations (from mixed_companies) over accounts
+        const accounts = data.organizations || data.accounts || [];
         const mappedOrganizations = accounts.map((account: any) => ({
           id: account.id,
           first_name: account.name,
