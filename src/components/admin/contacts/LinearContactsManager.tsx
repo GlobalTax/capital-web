@@ -12,8 +12,10 @@ import { BulkChannelSelect } from './BulkChannelSelect';
 import BulkArchiveDialog from './BulkArchiveDialog';
 import BulkDeleteDialog from './BulkDeleteDialog';
 import { ApolloMatchModal } from './ApolloMatchModal';
+import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
 import { Button } from '@/components/ui/button';
-import { Send, RefreshCw, CheckCircle2, Archive, Trash2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Send, RefreshCw, CheckCircle2, Archive, Trash2, BarChart3, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -163,14 +165,26 @@ const LinearContactsManager = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <Tabs defaultValue="directory" className="space-y-6">
+      {/* Header with Tabs */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">Contactos</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Gestión unificada de leads y contactos
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">Contactos</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Gestión unificada de leads y contactos
+            </p>
+          </div>
+          <TabsList className="h-8">
+            <TabsTrigger value="directory" className="text-xs px-3 h-6 gap-1.5">
+              <Users className="h-3 w-3" />
+              Directorio
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="text-xs px-3 h-6 gap-1.5">
+              <BarChart3 className="h-3 w-3" />
+              Estadísticas
+            </TabsTrigger>
+          </TabsList>
         </div>
         
         {selectedIds.length > 0 && (
@@ -228,51 +242,59 @@ const LinearContactsManager = () => {
         )}
       </div>
 
-      {/* Stats Cards - Compact version */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">Total</p>
-          <p className="text-2xl font-semibold mt-1">{stats.total}</p>
+      {/* Directory Tab */}
+      <TabsContent value="directory" className="space-y-6 mt-0">
+        {/* Stats Cards - Compact version */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Total</p>
+            <p className="text-2xl font-semibold mt-1">{stats.total}</p>
+          </div>
+          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Valoraciones</p>
+            <p className="text-2xl font-semibold mt-1 text-emerald-600">{stats.byOrigin.valuation || 0}</p>
+          </div>
+          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Únicos</p>
+            <p className="text-2xl font-semibold mt-1 text-blue-600">{stats.uniqueContacts || 0}</p>
+          </div>
+          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">Calificados</p>
+            <p className="text-2xl font-semibold mt-1 text-amber-600">{stats.qualified || 0}</p>
+          </div>
         </div>
-        <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">Valoraciones</p>
-          <p className="text-2xl font-semibold mt-1 text-emerald-600">{stats.byOrigin.valuation || 0}</p>
-        </div>
-        <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">Únicos</p>
-          <p className="text-2xl font-semibold mt-1 text-blue-600">{stats.uniqueContacts || 0}</p>
-        </div>
-        <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">Calificados</p>
-          <p className="text-2xl font-semibold mt-1 text-amber-600">{stats.qualified || 0}</p>
-        </div>
-      </div>
 
-      {/* Filter Bar */}
-      <LinearFilterBar
-        filters={filters}
-        onFiltersChange={applyFilters}
-        totalCount={allContacts.length}
-        filteredCount={contacts.length}
-        selectedCount={selectedIds.length}
-        onRefresh={handleRefresh}
-        onExport={() => exportContacts('excel')}
-        isRefreshing={isRefreshing}
-      />
+        {/* Filter Bar */}
+        <LinearFilterBar
+          filters={filters}
+          onFiltersChange={applyFilters}
+          totalCount={allContacts.length}
+          filteredCount={contacts.length}
+          selectedCount={selectedIds.length}
+          onRefresh={handleRefresh}
+          onExport={() => exportContacts('excel')}
+          isRefreshing={isRefreshing}
+        />
 
-      {/* Table */}
-      <LinearContactsTable
-        contacts={contacts}
-        selectedContacts={selectedIds}
-        onSelectContact={selectContact}
-        onSelectAll={selectAll}
-        onViewDetails={handleViewDetails}
-        onSoftDelete={handleSoftDelete}
-        isLoading={isLoading}
-        onApolloEnrich={handleApolloEnrich}
-        onApolloSelectCandidate={handleApolloSelectCandidate}
-        isEnriching={isEnriching}
-      />
+        {/* Table */}
+        <LinearContactsTable
+          contacts={contacts}
+          selectedContacts={selectedIds}
+          onSelectContact={selectContact}
+          onSelectAll={selectAll}
+          onViewDetails={handleViewDetails}
+          onSoftDelete={handleSoftDelete}
+          isLoading={isLoading}
+          onApolloEnrich={handleApolloEnrich}
+          onApolloSelectCandidate={handleApolloSelectCandidate}
+          isEnriching={isEnriching}
+        />
+      </TabsContent>
+
+      {/* Statistics Tab */}
+      <TabsContent value="stats" className="mt-0">
+        <ContactsStatsPanel />
+      </TabsContent>
 
       {/* Detail Sheet */}
       <ContactDetailSheet
@@ -314,7 +336,7 @@ const LinearContactsManager = () => {
         onConfirm={handleApolloConfirmMatch}
         isConfirming={!!isConfirming}
       />
-    </div>
+    </Tabs>
   );
 };
 
