@@ -3,36 +3,45 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 import { localeForIntl, LangCode } from '@/shared/i18n/locale';
 
-// Registrar fuentes
-Font.register({
-  family: 'Plus Jakarta Sans',
-  fonts: [
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Light.ttf',
-      fontWeight: 300,
-    },
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Regular.ttf',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Medium.ttf',
-      fontWeight: 500,
-    },
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Bold.ttf',
-      fontWeight: 700,
-    },
-  ],
-});
+// Registrar fuentes con fallback en caso de error de red
+let fontsRegistered = false;
+try {
+  Font.register({
+    family: 'Plus Jakarta Sans',
+    fonts: [
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Light.ttf',
+        fontWeight: 300,
+      },
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Regular.ttf',
+        fontWeight: 400,
+      },
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Medium.ttf',
+        fontWeight: 500,
+      },
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Bold.ttf',
+        fontWeight: 700,
+      },
+    ],
+  });
+  fontsRegistered = true;
+} catch (fontError) {
+  console.warn('[PDF_FONT_REGISTRATION_FAILED]', fontError);
+  // Will fall back to Helvetica (built-in)
+}
 
-// Estilos para el PDF
+// Estilos para el PDF - Usa Helvetica como fallback si las fuentes custom no cargan
+const PDF_FONT_FAMILY = fontsRegistered ? 'Plus Jakarta Sans' : 'Helvetica';
+
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
     backgroundColor: '#FFFFFF',
     padding: 30,
-    fontFamily: 'Plus Jakarta Sans',
+    fontFamily: PDF_FONT_FAMILY,
     fontSize: 10,
     lineHeight: 1.4,
   },
