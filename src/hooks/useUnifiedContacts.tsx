@@ -136,6 +136,8 @@ export interface ContactFilters {
   acquisitionChannelId?: string;
   // 🔥 NEW: Lead Form filter
   leadFormId?: string;
+  // 🔥 NEW: Valuation type filter (Pro vs Standard)
+  valuationType?: 'all' | 'pro' | 'standard';
 }
 
 export interface ContactStats {
@@ -175,6 +177,7 @@ export const useUnifiedContacts = () => {
     origin: 'all',
     emailStatus: 'all',
     showUniqueContacts: false,
+    valuationType: 'all',
   });
   const { toast } = useToast();
 
@@ -802,6 +805,15 @@ export const useUnifiedContacts = () => {
       filtered = filtered.filter(c => 
         c.lead_form === newFilters.leadFormId
       );
+    }
+
+    // 🔥 NEW: Valuation Type filter (Pro vs Standard)
+    if (newFilters.valuationType && newFilters.valuationType !== 'all') {
+      if (newFilters.valuationType === 'pro') {
+        filtered = filtered.filter(c => c.is_from_pro_valuation === true);
+      } else if (newFilters.valuationType === 'standard') {
+        filtered = filtered.filter(c => !c.is_from_pro_valuation);
+      }
     }
 
     setFilteredContacts(filtered);
