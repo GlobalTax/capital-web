@@ -379,38 +379,72 @@ export const useOptimizedSupabaseValuation = () => {
             source: options?.sourceProject || 'lp-calculadora'
           }));
 
-          // Background: Generate and send PDF
-          await handleAsyncError(async () => {
-            const lang = getPreferredLang();
+          // Background: Generate PDF and send email (DECOUPLED - email always attempts)
+          const backgroundStartTime = Date.now();
+          console.log('[BACKGROUND_OPS_START]', JSON.stringify({
+            valuation_id: savedValuationId,
+            email: companyData.email,
+            timestamp: new Date().toISOString()
+          }));
+
+          const lang = getPreferredLang();
+          let pdfBase64: string | null = null;
+          let pdfGenerationSuccess = false;
+          
+          const pdfCompanyData = {
+            contactName: companyData.contactName,
+            companyName: companyData.companyName,
+            cif: companyData.cif,
+            email: companyData.email,
+            phone: companyData.phone,
+            industry: companyData.industry,
+            yearsOfOperation: 5,
+            employeeRange: companyData.employeeRange,
+            revenue: companyData.revenue,
+            ebitda: companyData.ebitda,
+            netProfitMargin: 10,
+            growthRate: 5,
+            location: companyData.location,
+            ownershipParticipation: companyData.ownershipParticipation,
+            competitiveAdvantage: companyData.competitiveAdvantage
+          };
+
+          const pdfFilename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replace(/\s+/g, '-')}.pdf`;
+
+          // STEP 1: Try to generate PDF (NON-BLOCKING - email will still be sent if this fails)
+          try {
+            console.log('[PDF_GENERATE_ATTEMPT]', JSON.stringify({
+              valuation_id: savedValuationId,
+              company_name: companyData.companyName,
+              timestamp: new Date().toISOString()
+            }));
             
-            const pdfCompanyData = {
-              contactName: companyData.contactName,
-              companyName: companyData.companyName,
-              cif: companyData.cif,
-              email: companyData.email,
-              phone: companyData.phone,
-              industry: companyData.industry,
-              yearsOfOperation: 5,
-              employeeRange: companyData.employeeRange,
-              revenue: companyData.revenue,
-              ebitda: companyData.ebitda,
-              netProfitMargin: 10,
-              growthRate: 5,
-              location: companyData.location,
-              ownershipParticipation: companyData.ownershipParticipation,
-              competitiveAdvantage: companyData.competitiveAdvantage
-            };
-
             const blob = await generateValuationPDFWithReactPDF(pdfCompanyData, result, lang);
-            const pdfBase64 = await blobToBase64(blob);
+            pdfBase64 = await blobToBase64(blob);
+            pdfGenerationSuccess = true;
+            
+            console.log('[PDF_GENERATE_SUCCESS]', JSON.stringify({
+              valuation_id: savedValuationId,
+              size_bytes: pdfBase64?.length || 0,
+              timestamp: new Date().toISOString()
+            }));
+          } catch (pdfError: any) {
+            console.error('[PDF_GENERATE_FAILED]', JSON.stringify({
+              valuation_id: savedValuationId,
+              error: pdfError?.message || 'Unknown PDF error',
+              stack: pdfError?.stack?.substring(0, 500),
+              timestamp: new Date().toISOString()
+            }));
+            // Continue WITHOUT PDF - email will still be sent (edge function can generate PDF as fallback)
+          }
 
-            const pdfFilename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replace(/\s+/g, '-')}.pdf`;
-
-            // 🔥 STRUCTURED LOG: EMAIL_ENQUEUE_ATTEMPT
+          // STEP 2: Send email ALWAYS (even if PDF failed - edge function has fallback)
+          try {
             console.log('[EMAIL_ENQUEUE_ATTEMPT]', JSON.stringify({
               valuation_id: savedValuationId,
               function: 'send-valuation-email',
               recipient: companyData.email,
+              has_pdf: pdfGenerationSuccess,
               timestamp: new Date().toISOString()
             }));
 
@@ -420,8 +454,9 @@ export const useOptimizedSupabaseValuation = () => {
                 recipientEmail: companyData.email,
                 companyData: companyData,
                 result: result,
-                pdfBase64,
-                pdfFilename,
+                pdfBase64: pdfBase64 || undefined, // Send without PDF if generation failed
+                pdfFilename: pdfBase64 ? pdfFilename : undefined,
+                generatePdfFallback: !pdfBase64, // Signal edge function to generate PDF if needed
                 enlaces: {
                   escenariosUrl: `${window.location.origin}/lp/calculadora`,
                   calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora-fiscal`
@@ -433,16 +468,13 @@ export const useOptimizedSupabaseValuation = () => {
                 },
                 subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal',
                 lang,
-                // 🔥 CRITICAL: Pass valuationId for outbox tracking
                 valuationId: savedValuationId,
-                // Manual entry metadata
                 sourceProject: options?.sourceProject,
                 leadSource: options?.leadSource,
                 leadSourceDetail: options?.leadSourceDetail
               }
             });
 
-            // 🔥 STRUCTURED LOG: EMAIL_SEND_RESULT
             console.log('[EMAIL_SEND_RESULT]', JSON.stringify({
               valuation_id: savedValuationId,
               success: !emailResponse.error,
@@ -457,7 +489,20 @@ export const useOptimizedSupabaseValuation = () => {
             } else {
               console.log('✅ Background email sent successfully:', emailResponse.data);
             }
-          }, { component: 'OptimizedSupabaseValuation', action: 'backgroundEmail' });
+          } catch (emailError: any) {
+            console.error('[EMAIL_SEND_FAILED]', JSON.stringify({
+              valuation_id: savedValuationId,
+              error: emailError?.message || 'Unknown email error',
+              timestamp: new Date().toISOString()
+            }));
+          }
+
+          console.log('[BACKGROUND_OPS_END]', JSON.stringify({
+            valuation_id: savedValuationId,
+            pdf_generated: pdfGenerationSuccess,
+            duration_ms: Date.now() - backgroundStartTime,
+            timestamp: new Date().toISOString()
+          }));
 
           // Background: Unified tracking via EventSynchronizer (Facebook Pixel + GA4)
           await handleAsyncError(async () => {
