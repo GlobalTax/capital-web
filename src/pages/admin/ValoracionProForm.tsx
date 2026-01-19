@@ -314,7 +314,30 @@ export default function ValoracionProForm() {
 
       if (error) {
         console.error('[ValoracionProForm] Error de edge function:', error);
+        // Parse specific error types for better UX
+        const errorMsg = error.message?.toLowerCase() || '';
+        if (errorMsg.includes('api key') || errorMsg.includes('unauthorized') || errorMsg.includes('401')) {
+          throw new Error('Error de configuración de email (API key inválida). Contacta al administrador.');
+        } else if (errorMsg.includes('rate limit') || errorMsg.includes('429')) {
+          throw new Error('Demasiados emails enviados. Espera unos minutos e intenta de nuevo.');
+        } else if (errorMsg.includes('domain') || errorMsg.includes('sender')) {
+          throw new Error('Error de dominio de email. Contacta al administrador.');
+        }
         throw new Error(error.message || 'Error al enviar el email');
+      }
+
+      // Check for provider errors even if no exception (silent failures)
+      if (result && !result.success) {
+        console.warn('[ValoracionProForm] Provider warning:', result.warning || result.providerError);
+        if (result.providerError?.includes('API key') || result.providerError?.includes('Unauthorized')) {
+          throw new Error('Error de configuración de email (API key). El administrador debe verificar las credenciales.');
+        }
+        // Still show as partial success if outbox was created
+        if (result.outboxId) {
+          toast.warning(`Email encolado pero puede haber fallado. Verifica en el panel de Email Outbox.`);
+        } else {
+          throw new Error(result.providerError || 'Error desconocido del proveedor de email');
+        }
       }
 
       console.log('[ValoracionProForm] Email enviado:', result);
@@ -331,7 +354,18 @@ export default function ValoracionProForm() {
     } catch (error) {
       console.error('[ValoracionProForm] Error enviando email:', error);
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      toast.error(`Error al enviar el email: ${errorMessage}`);
+      
+      // Provide actionable error messages
+      if (errorMessage.includes('API key') || errorMessage.includes('configuración')) {
+        toast.error(errorMessage, {
+          description: 'Verifica las credenciales en Supabase Edge Functions → Secrets',
+          duration: 8000
+        });
+      } else if (errorMessage.includes('Demasiados emails')) {
+        toast.warning(errorMessage, { duration: 5000 });
+      } else {
+        toast.error(`Error al enviar: ${errorMessage}`);
+      }
     } finally {
       setIsSendingEmail(false);
     }
