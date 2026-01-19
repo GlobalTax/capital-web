@@ -360,11 +360,24 @@ export const useOptimizedSupabaseValuation = () => {
         throw new Error('Failed to save core valuation data');
       }
 
+      // Get the valuation ID from the core update result if available
+      const savedValuationId = coreUpdateResult?.valuationId || coreUpdateResult?.id;
+      
       // Step 2: Background operations (non-blocking)
       // These will run asynchronously without blocking the user response
       setTimeout(async () => {
         try {
           console.log('🔄 Starting background operations (post-Exchange)...');
+          
+          // 🔥 STRUCTURED LOG: VALUATION_CREATED
+          console.log('[VALUATION_CREATED]', JSON.stringify({
+            valuation_id: savedValuationId || finalUniqueToken,
+            valuation_type: 'standard',
+            to_email: companyData.email,
+            company_name: companyData.companyName,
+            timestamp: new Date().toISOString(),
+            source: options?.sourceProject || 'lp-calculadora'
+          }));
 
           // Background: Generate and send PDF
           await handleAsyncError(async () => {
@@ -393,6 +406,14 @@ export const useOptimizedSupabaseValuation = () => {
 
             const pdfFilename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replace(/\s+/g, '-')}.pdf`;
 
+            // 🔥 STRUCTURED LOG: EMAIL_ENQUEUE_ATTEMPT
+            console.log('[EMAIL_ENQUEUE_ATTEMPT]', JSON.stringify({
+              valuation_id: savedValuationId,
+              function: 'send-valuation-email',
+              recipient: companyData.email,
+              timestamp: new Date().toISOString()
+            }));
+
             console.log('📧 Sending valuation email (post-Exchange)...');
             const emailResponse = await supabase.functions.invoke('send-valuation-email', {
               body: {
@@ -412,18 +433,29 @@ export const useOptimizedSupabaseValuation = () => {
                 },
                 subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal',
                 lang,
-                // 🔥 NEW: Pass manual entry metadata
+                // 🔥 CRITICAL: Pass valuationId for outbox tracking
+                valuationId: savedValuationId,
+                // Manual entry metadata
                 sourceProject: options?.sourceProject,
                 leadSource: options?.leadSource,
                 leadSourceDetail: options?.leadSourceDetail
               }
             });
 
-            console.log('📧 Email response:', emailResponse);
+            // 🔥 STRUCTURED LOG: EMAIL_SEND_RESULT
+            console.log('[EMAIL_SEND_RESULT]', JSON.stringify({
+              valuation_id: savedValuationId,
+              success: !emailResponse.error,
+              messageId: emailResponse.data?.emailId || emailResponse.data?.messageId,
+              outboxId: emailResponse.data?.outboxId,
+              error: emailResponse.error?.message,
+              timestamp: new Date().toISOString()
+            }));
+
             if (emailResponse.error) {
-              console.warn('⚠️ Email sending failed (possibly Exchange-related):', emailResponse.error);
+              console.warn('⚠️ Email sending failed:', emailResponse.error);
             } else {
-              console.log('✅ Background email sent successfully');
+              console.log('✅ Background email sent successfully:', emailResponse.data);
             }
           }, { component: 'OptimizedSupabaseValuation', action: 'backgroundEmail' });
 

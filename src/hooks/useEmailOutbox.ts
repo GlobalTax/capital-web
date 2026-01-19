@@ -260,6 +260,79 @@ export function useEmailOutbox(filters: EmailOutboxFilters = {}) {
     }
   });
 
+  // Regenerate missing email outbox entries for valuations without emails sent
+  const regenerateMissingMutation = useMutation({
+    mutationFn: async () => {
+      // Find company_valuations with email_sent = false and no outbox entry
+      const { data: missingValuations, error: fetchError } = await supabase
+        .from('company_valuations')
+        .select('id, email, contact_name, company_name, created_at')
+        .eq('email_sent', false)
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (fetchError) throw fetchError;
+
+      if (!missingValuations || missingValuations.length === 0) {
+        return { created: 0, message: 'No hay valoraciones pendientes' };
+      }
+
+      // Check which ones already have outbox entries
+      const valuationIds = missingValuations.map(v => v.id);
+      const { data: existingOutbox } = await supabase
+        .from('email_outbox')
+        .select('valuation_id')
+        .in('valuation_id', valuationIds);
+
+      const existingIds = new Set(existingOutbox?.map(e => e.valuation_id) || []);
+      const toCreate = missingValuations.filter(v => !existingIds.has(v.id));
+
+      if (toCreate.length === 0) {
+        return { created: 0, message: 'Todas las valoraciones ya tienen entrada en outbox' };
+      }
+
+      // Create outbox entries
+      const entries = toCreate.map(v => ({
+        valuation_id: v.id,
+        valuation_type: 'standard' as const,
+        recipient_email: v.email || 'unknown',
+        recipient_name: v.contact_name,
+        email_type: 'both' as const,
+        status: 'pending' as const,
+        attempts: 0,
+        max_attempts: 3,
+        metadata: { 
+          companyName: v.company_name, 
+          source: 'recovery',
+          originalCreatedAt: v.created_at
+        }
+      }));
+
+      const { error: insertError } = await supabase
+        .from('email_outbox')
+        .insert(entries);
+
+      if (insertError) throw insertError;
+
+      // Trigger retry function
+      await supabase.functions.invoke('retry-failed-emails');
+
+      return { created: toCreate.length };
+    },
+    onSuccess: (data) => {
+      if (data.created === 0) {
+        toast.info(data.message || 'No hay emails pendientes que regenerar');
+      } else {
+        toast.success(`${data.created} email(s) creado(s) y encolado(s) para envío`);
+      }
+      queryClient.invalidateQueries({ queryKey: ['email-outbox'] });
+    },
+    onError: (error: any) => {
+      toast.error(`Error al regenerar emails: ${error.message}`);
+    }
+  });
+
   return {
     entries: entries || [],
     stats,
@@ -270,8 +343,10 @@ export function useEmailOutbox(filters: EmailOutboxFilters = {}) {
     retryAllFailed: retryAllFailedMutation.mutate,
     cleanupOldEntries: cleanupOldEntriesMutation.mutate,
     fixFalsePositives: fixFalsePositivesMutation.mutate,
+    regenerateMissing: regenerateMissingMutation.mutate,
     isRetrying: retryEmailMutation.isPending || retryAllFailedMutation.isPending,
-    isFixingFalsePositives: fixFalsePositivesMutation.isPending
+    isFixingFalsePositives: fixFalsePositivesMutation.isPending,
+    isRegeneratingMissing: regenerateMissingMutation.isPending
   };
 }
 

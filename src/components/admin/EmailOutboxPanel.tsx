@@ -48,8 +48,10 @@ const EmailOutboxPanel: React.FC = () => {
     retryAllFailed,
     cleanupOldEntries,
     fixFalsePositives,
+    regenerateMissing,
     isRetrying,
-    isFixingFalsePositives
+    isFixingFalsePositives,
+    isRegeneratingMissing
   } = useEmailOutbox(filters);
 
   const toggleRow = (id: string) => {
@@ -242,6 +244,20 @@ const EmailOutboxPanel: React.FC = () => {
                 Corregir {stats.falsePositives} falso(s) positivo(s)
               </Button>
             )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => regenerateMissing()}
+              disabled={isRegeneratingMissing}
+              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              {isRegeneratingMissing ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Mail className="h-4 w-4 mr-2" />
+              )}
+              Regenerar emails faltantes
+            </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
             Envía un email de prueba a samuel@capittal.es para verificar la configuración de Resend.
