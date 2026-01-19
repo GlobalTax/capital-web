@@ -536,6 +536,19 @@ export const useOptimizedSupabaseValuation = () => {
             console.log('✅ [Tracking] EventSynchronizer: VALUATION_COMPLETED sent with Advanced Matching');
           }, { component: 'OptimizedSupabaseValuation', action: 'unifiedTracking' });
 
+          // Background: Google Ads Enhanced Conversions
+          await handleAsyncError(async () => {
+            const { trackValuationEnhanced } = await import('@/utils/analytics/EnhancedConversions');
+            await trackValuationEnhanced({
+              email: companyData.email || '',
+              phone: companyData.phone,
+              contactName: companyData.contactName,
+              valuationValue: result.finalValuation || 0,
+              valuationId: savedValuationId
+            });
+            console.log('✅ [Tracking] Google Ads Enhanced Conversion sent');
+          }, { component: 'OptimizedSupabaseValuation', action: 'enhancedConversions' });
+
           // Background: Sync with external systems
           await handleAsyncError(async () => {
             const urlParams = new URLSearchParams(window.location.search);
