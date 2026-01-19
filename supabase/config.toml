@@ -236,3 +236,6 @@ verify_jwt = false
 
 [functions.migrate-sectors-to-pe]
 verify_jwt = false
+
+[functions.meta-conversions-api]
+verify_jwt = false
