@@ -3001,6 +3001,7 @@ export type Database = {
           email_opened: boolean | null
           email_opened_at: string | null
           email_opens_count: number | null
+          email_outbox_id: string | null
           email_sent: boolean | null
           email_sent_at: string | null
           email_soft_bounced: boolean | null
@@ -3105,6 +3106,7 @@ export type Database = {
           email_opened?: boolean | null
           email_opened_at?: string | null
           email_opens_count?: number | null
+          email_outbox_id?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           email_soft_bounced?: boolean | null
@@ -3209,6 +3211,7 @@ export type Database = {
           email_opened?: boolean | null
           email_opened_at?: string | null
           email_opens_count?: number | null
+          email_outbox_id?: string | null
           email_sent?: boolean | null
           email_sent_at?: string | null
           email_soft_bounced?: boolean | null
@@ -3292,6 +3295,13 @@ export type Database = {
             columns: ["crm_contacto_id"]
             isOneToOne: false
             referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_valuations_email_outbox_id_fkey"
+            columns: ["email_outbox_id"]
+            isOneToOne: false
+            referencedRelation: "email_outbox"
             referencedColumns: ["id"]
           },
           {
@@ -5151,6 +5161,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          email_type: string
+          error_details: Json | null
+          first_attempt_at: string | null
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          max_attempts: number
+          metadata: Json | null
+          next_retry_at: string | null
+          provider_message_id: string | null
+          provider_name: string | null
+          provider_response: Json | null
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          template_id: string | null
+          valuation_id: string | null
+          valuation_type: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          email_type: string
+          error_details?: Json | null
+          first_attempt_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          max_attempts?: number
+          metadata?: Json | null
+          next_retry_at?: string | null
+          provider_message_id?: string | null
+          provider_name?: string | null
+          provider_response?: Json | null
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_id?: string | null
+          valuation_id?: string | null
+          valuation_type: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          email_type?: string
+          error_details?: Json | null
+          first_attempt_at?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          max_attempts?: number
+          metadata?: Json | null
+          next_retry_at?: string | null
+          provider_message_id?: string | null
+          provider_name?: string | null
+          provider_response?: Json | null
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          template_id?: string | null
+          valuation_id?: string | null
+          valuation_type?: string
+        }
+        Relationships: []
       }
       email_recipients_config: {
         Row: {
@@ -10946,6 +11031,7 @@ export type Database = {
           ebitda_multiple_used: number | null
           email_opened: boolean | null
           email_opened_at: string | null
+          email_outbox_id: string | null
           email_subject: string | null
           financial_years: Json
           id: string
@@ -11000,6 +11086,7 @@ export type Database = {
           ebitda_multiple_used?: number | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_outbox_id?: string | null
           email_subject?: string | null
           financial_years?: Json
           id?: string
@@ -11054,6 +11141,7 @@ export type Database = {
           ebitda_multiple_used?: number | null
           email_opened?: boolean | null
           email_opened_at?: string | null
+          email_outbox_id?: string | null
           email_subject?: string | null
           financial_years?: Json
           id?: string
@@ -11088,6 +11176,13 @@ export type Database = {
           weaknesses?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "professional_valuations_email_outbox_id_fkey"
+            columns: ["email_outbox_id"]
+            isOneToOne: false
+            referencedRelation: "email_outbox"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "professional_valuations_parent_id_fkey"
             columns: ["parent_id"]
