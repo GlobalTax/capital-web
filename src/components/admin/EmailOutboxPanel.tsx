@@ -19,6 +19,20 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
   retrying: { label: 'Reintentando', color: 'bg-orange-100 text-orange-800', icon: <RotateCcw className="h-3 w-3" /> },
 };
 
+// Helper to detect provider errors in entries marked as "sent"
+const hasProviderError = (entry: EmailOutboxEntry): boolean => {
+  if (entry.status !== 'sent') return false;
+  
+  // Check if provider_response contains error
+  const response = entry.provider_response as any;
+  if (!response) return !entry.provider_message_id; // No response and no message ID = suspicious
+  
+  if (response.error) return true;
+  if (!response.data?.id && !entry.provider_message_id) return true;
+  
+  return false;
+};
+
 const EmailOutboxPanel: React.FC = () => {
   const [filters, setFilters] = useState<EmailOutboxFilters>({});
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -238,10 +252,17 @@ const EmailOutboxPanel: React.FC = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${statusConfig[entry.status]?.color || 'bg-gray-100'} flex items-center gap-1 w-fit`}>
-                          {statusConfig[entry.status]?.icon}
-                          {statusConfig[entry.status]?.label || entry.status}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Badge className={`${statusConfig[entry.status]?.color || 'bg-gray-100'} flex items-center gap-1 w-fit`}>
+                            {statusConfig[entry.status]?.icon}
+                            {statusConfig[entry.status]?.label || entry.status}
+                          </Badge>
+                          {hasProviderError(entry) && (
+                            <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                              ⚠️ Error proveedor
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <span className={entry.attempts >= entry.max_attempts ? 'text-red-600 font-medium' : ''}>
@@ -316,6 +337,16 @@ const EmailOutboxPanel: React.FC = () => {
                                 <p className="font-medium mb-2">Metadata</p>
                                 <pre className="bg-muted rounded p-2 text-xs overflow-auto max-h-32">
                                   {JSON.stringify(entry.metadata, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+                            {entry.provider_response && (
+                              <div className="col-span-2">
+                                <p className="font-medium mb-2">Respuesta del Proveedor</p>
+                                <pre className={`rounded p-2 text-xs overflow-auto max-h-32 ${
+                                  hasProviderError(entry) ? 'bg-red-50 border border-red-200 text-red-800' : 'bg-muted'
+                                }`}>
+                                  {JSON.stringify(entry.provider_response, null, 2)}
                                 </pre>
                               </div>
                             )}

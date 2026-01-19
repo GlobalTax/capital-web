@@ -681,15 +681,34 @@ const handler = async (req: Request): Promise<Response> => {
     // =====================================================
     // UPDATE OUTBOX AND VALUATION STATUS
     // =====================================================
+    // CRITICAL: Validate provider response before marking as sent
+    const emailSentSuccessfully = emailResponse?.data?.id && !emailResponse?.error;
+    
     if (outboxId) {
-      await updateOutboxStatus(outboxId, 'sent', {
-        provider_message_id: emailResponse?.data?.id,
-        provider_response: emailResponse
-      });
+      if (emailSentSuccessfully) {
+        await updateOutboxStatus(outboxId, 'sent', {
+          provider_message_id: emailResponse.data.id,
+          provider_response: emailResponse
+        });
+        log('info', 'OUTBOX_MARKED_SENT', { outbox_id: outboxId, message_id: emailResponse.data.id });
+      } else {
+        // Provider returned error - mark as failed even though no exception was thrown
+        const providerError = emailResponse?.error?.message || emailResponse?.error?.name || 'Provider returned error without message ID';
+        await updateOutboxStatus(outboxId, 'failed', {
+          last_error: providerError,
+          error_details: { provider_response: emailResponse },
+          provider_response: emailResponse
+        });
+        log('error', 'OUTBOX_MARKED_FAILED_PROVIDER_ERROR', { 
+          outbox_id: outboxId, 
+          error: providerError,
+          response: emailResponse 
+        });
+      }
     }
 
-    // Update email_sent by valuation ID (more robust than email)
-    if (payload.valuationId) {
+    // Update email_sent by valuation ID (more robust than email) - ONLY if email was actually sent
+    if (emailSentSuccessfully && payload.valuationId) {
       try {
         const { error: updateError } = await supabase
           .from('company_valuations')
@@ -709,7 +728,7 @@ const handler = async (req: Request): Promise<Response> => {
       } catch (e: any) {
         log('warn', 'VALUATION_UPDATE_EXCEPTION', { error: e?.message });
       }
-    } else if (companyData.email) {
+    } else if (emailSentSuccessfully && companyData.email) {
       // Fallback to email-based update
       try {
         const { error: updateError } = await supabase
@@ -760,7 +779,18 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, emailId: emailResponse?.data?.id, pdfUrl: pdfPublicUrl, filename, outboxId }),
+      JSON.stringify({ 
+        success: emailSentSuccessfully, 
+        emailId: emailResponse?.data?.id, 
+        pdfUrl: pdfPublicUrl, 
+        filename, 
+        outboxId,
+        // Include error info if provider failed silently
+        ...(emailSentSuccessfully ? {} : { 
+          warning: 'Email may not have been sent - provider did not return message ID',
+          providerError: emailResponse?.error?.message || null
+        })
+      }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {

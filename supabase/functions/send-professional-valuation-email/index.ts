@@ -650,22 +650,41 @@ const handler = async (req: Request): Promise<Response> => {
     // =====================================================
     // UPDATE OUTBOX AND VALUATION STATUS
     // =====================================================
+    // CRITICAL: Validate provider response before marking as sent
+    const emailSentSuccessfully = clientEmailResponse?.data?.id && !clientEmailResponse?.error;
+    
     if (outboxId) {
-      await updateOutboxStatus(outboxId, 'sent', {
-        provider_message_id: clientEmailResponse.data?.id,
-        provider_response: clientEmailResponse
-      });
+      if (emailSentSuccessfully) {
+        await updateOutboxStatus(outboxId, 'sent', {
+          provider_message_id: clientEmailResponse.data.id,
+          provider_response: clientEmailResponse
+        });
+        log('info', 'OUTBOX_MARKED_SENT', { outbox_id: outboxId, message_id: clientEmailResponse.data.id });
+      } else {
+        // Provider returned error - mark as failed even though no exception was thrown
+        const providerError = clientEmailResponse?.error?.message || clientEmailResponse?.error?.name || 'Provider returned error without message ID';
+        await updateOutboxStatus(outboxId, 'failed', {
+          last_error: providerError,
+          error_details: { provider_response: clientEmailResponse },
+          provider_response: clientEmailResponse
+        });
+        log('error', 'OUTBOX_MARKED_FAILED_PROVIDER_ERROR', { 
+          outbox_id: outboxId, 
+          error: providerError,
+          response: clientEmailResponse 
+        });
+      }
     }
 
-    // Update professional_valuations if we have the ID
-    if (requestData.valuationId) {
+    // Update professional_valuations if we have the ID - ONLY if email was actually sent
+    if (emailSentSuccessfully && requestData.valuationId) {
       try {
         const { error: updateError } = await supabase
           .from('professional_valuations')
           .update({ 
             email_sent: true, 
             email_sent_at: new Date().toISOString(),
-            email_message_id: clientEmailResponse.data?.id || null,
+            email_message_id: clientEmailResponse?.data?.id || null,
             email_outbox_id: outboxId
           })
           .eq('id', requestData.valuationId);
@@ -682,13 +701,18 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
+        success: emailSentSuccessfully, 
         messageId: clientEmailResponse.data?.id,
         sentTo: requestData.recipientEmail,
         pdfUrl: pdfPublicUrl,
         teamNotified: ccRecipients.length,
         ccRecipients: ccRecipients,
-        outboxId
+        outboxId,
+        // Include error info if provider failed silently
+        ...(emailSentSuccessfully ? {} : { 
+          warning: 'Email may not have been sent - provider did not return message ID',
+          providerError: clientEmailResponse?.error?.message || null
+        })
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
