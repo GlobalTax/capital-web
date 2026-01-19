@@ -994,6 +994,43 @@ const getEmailTemplate = (formType: string, data: any) => {
       };
     }
 
+    case 'operation_inquiry': {
+      const contentHtml = `
+        ${getContactDataSection(data)}
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            🏢 Operación de Interés
+          </h3>
+          <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; border-left: 4px solid #22c55e;">
+            <p style="margin: 0 0 8px; color: #0f172a; font-size: 16px; font-weight: 600;">${data.companyName || 'Operación'}</p>
+            ${data.operationId ? `<p style="margin: 0; color: #64748b; font-size: 13px;">ID: <a href="https://capittal.es/oportunidades?operation=${data.operationId}" style="color: #2563eb;">${data.operationId}</a></p>` : ''}
+          </div>
+        </div>
+        ${data.serviceType ? `
+        <div style="margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
+            🎯 Tipo de Servicio
+          </h3>
+          <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 500;">${data.serviceType}</span>
+        </div>
+        ` : ''}
+        ${getMessageSection(data.message)}
+      `;
+      
+      return {
+        subject: `Interés en operación – ${data.companyName || 'Marketplace'} – Capittal`,
+        html: getAdminEmailBaseHtml(
+          '🏢 Nueva Consulta de Operación',
+          'Marketplace de Operaciones',
+          contentHtml,
+          'Marketplace',
+          data.operationId ? `https://capittal.es/oportunidades?operation=${data.operationId}` : 'https://capittal.es/oportunidades',
+          'Ver Operación',
+          utmData
+        )
+      };
+    }
+
     default:
       return {
         subject: `Nueva submission – ${formType} – Capittal`,
