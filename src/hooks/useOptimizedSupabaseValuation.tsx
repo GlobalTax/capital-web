@@ -5,6 +5,7 @@ import { getPreferredLang } from '@/shared/i18n/locale';
 import { CompanyData, ValuationResult } from '@/types/valuation';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { blobToBase64 } from '@/utils/blobToBase64';
+import { getUTMDataForDB } from '@/utils/utm/utmCapture';
 
 interface RetryConfig {
   maxRetries: number;
@@ -105,6 +106,9 @@ export const useOptimizedSupabaseValuation = () => {
     
     try {
       // MÉTODO PRINCIPAL: Inserción directa (más confiable post-migración Exchange)
+      // Capture UTM parameters for campaign attribution
+      const utmData = getUTMDataForDB();
+      
       const fallbackData = {
         contact_name: stepOneData.contactName,
         company_name: stepOneData.companyName,
@@ -120,7 +124,9 @@ export const useOptimizedSupabaseValuation = () => {
         completion_percentage: 25,
         current_step: 1,
         ip_address: await getIPAddress(),
-        user_agent: navigator.userAgent
+        user_agent: navigator.userAgent,
+        // UTM and campaign attribution
+        ...utmData
       };
       
       console.log('🎯 TRYING PRIMARY METHOD: Direct database insertion');
