@@ -95,6 +95,10 @@ export interface UnifiedContact {
   ai_company_summary?: string;
   ai_company_summary_at?: string;
 
+  // 🔥 NEW: Lead Form (Subcanal/Formulario de origen)
+  lead_form?: string;
+  lead_form_name?: string;
+
   // 🔥 Apollo enrichment fields
   apollo_status?: 'none' | 'running' | 'ok' | 'needs_review' | 'error';
   apollo_error?: string;
@@ -130,6 +134,8 @@ export interface ContactFilters {
   location?: string;
   // 🔥 NEW: Channel filter
   acquisitionChannelId?: string;
+  // 🔥 NEW: Lead Form filter
+  leadFormId?: string;
 }
 
 export interface ContactStats {
@@ -788,6 +794,13 @@ export const useUnifiedContacts = () => {
     if (newFilters.acquisitionChannelId) {
       filtered = filtered.filter(c => 
         c.acquisition_channel_id === newFilters.acquisitionChannelId
+      );
+    }
+
+    // 🔥 NEW: Lead Form filter
+    if (newFilters.leadFormId) {
+      filtered = filtered.filter(c => 
+        c.lead_form === newFilters.leadFormId
       );
     }
 

@@ -10,6 +10,7 @@ interface BulkUpdateRequest {
   contact_ids: string[]; // Format: "origin_uuid" e.g. "contact_abc123"
   updates: {
     acquisition_channel_id?: string;
+    lead_form?: string;
   };
 }
 
@@ -70,6 +71,25 @@ serve(async (req) => {
         );
       }
       console.log(`[bulk-update-contacts] Valid channel: ${channel.name}`);
+    }
+
+    // Validate lead_form if provided
+    if (updates.lead_form) {
+      const { data: form, error: formError } = await supabase
+        .from('lead_forms')
+        .select('id, name')
+        .eq('id', updates.lead_form)
+        .eq('is_active', true)
+        .single();
+
+      if (formError || !form) {
+        console.error('[bulk-update-contacts] Invalid lead_form:', formError);
+        return new Response(
+          JSON.stringify({ error: 'Invalid lead_form' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log(`[bulk-update-contacts] Valid lead form: ${form.name}`);
     }
 
     // Group contacts by origin table
@@ -167,9 +187,14 @@ serve(async (req) => {
 
       try {
         // Build update payload - only include updated_at if the table supports it
-        const updatePayload: Record<string, unknown> = {
-          acquisition_channel_id: updates.acquisition_channel_id,
-        };
+        const updatePayload: Record<string, unknown> = {};
+        
+        if (updates.acquisition_channel_id !== undefined) {
+          updatePayload.acquisition_channel_id = updates.acquisition_channel_id;
+        }
+        if (updates.lead_form !== undefined) {
+          updatePayload.lead_form = updates.lead_form;
+        }
         
         if (tablesWithUpdatedAt.includes(table)) {
           updatePayload.updated_at = new Date().toISOString();

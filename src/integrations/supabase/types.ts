@@ -166,6 +166,7 @@ export type Database = {
           last_campaign_id: number | null
           last_campaign_name: string | null
           last_email_click_at: string | null
+          lead_form: string | null
           phone: string | null
           referrer: string | null
           sectors_of_interest: string | null
@@ -217,6 +218,7 @@ export type Database = {
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
+          lead_form?: string | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -268,6 +270,7 @@ export type Database = {
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
+          lead_form?: string | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -285,6 +288,13 @@ export type Database = {
             columns: ["acquisition_channel_id"]
             isOneToOne: false
             referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acquisition_leads_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
             referencedColumns: ["id"]
           },
         ]
@@ -857,6 +867,7 @@ export type Database = {
           firm_type: string
           id: string
           ip_address: string | null
+          lead_form: string | null
           pdf_url: string | null
           phone: string | null
           phone_e164: string | null
@@ -897,6 +908,7 @@ export type Database = {
           firm_type: string
           id?: string
           ip_address?: string | null
+          lead_form?: string | null
           pdf_url?: string | null
           phone?: string | null
           phone_e164?: string | null
@@ -937,6 +949,7 @@ export type Database = {
           firm_type?: string
           id?: string
           ip_address?: string | null
+          lead_form?: string | null
           pdf_url?: string | null
           phone?: string | null
           phone_e164?: string | null
@@ -956,6 +969,13 @@ export type Database = {
             columns: ["acquisition_channel_id"]
             isOneToOne: false
             referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "advisor_valuations_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
             referencedColumns: ["id"]
           },
         ]
@@ -2396,6 +2416,7 @@ export type Database = {
           last_campaign_id: number | null
           last_campaign_name: string | null
           last_email_click_at: string | null
+          lead_form: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           motivation: string | null
           notes: string | null
@@ -2449,6 +2470,7 @@ export type Database = {
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
+          lead_form?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           notes?: string | null
@@ -2502,6 +2524,7 @@ export type Database = {
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
+          lead_form?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           notes?: string | null
@@ -2533,6 +2556,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "collaborator_applications_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2579,6 +2609,7 @@ export type Database = {
           last_campaign_id: number | null
           last_campaign_name: string | null
           last_email_click_at: string | null
+          lead_form: string | null
           message: string | null
           notes: string | null
           page_origin: string
@@ -2641,6 +2672,7 @@ export type Database = {
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
+          lead_form?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -2703,6 +2735,7 @@ export type Database = {
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
+          lead_form?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -2729,6 +2762,13 @@ export type Database = {
             columns: ["acquisition_channel_id"]
             isOneToOne: false
             referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_acquisition_inquiries_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
             referencedColumns: ["id"]
           },
           {
@@ -2988,6 +3028,7 @@ export type Database = {
           last_email_click_at: string | null
           last_modified_field: string | null
           lead_entry_date: string | null
+          lead_form: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           location: string | null
           net_profit_margin: number | null
@@ -3091,6 +3132,7 @@ export type Database = {
           last_email_click_at?: string | null
           last_modified_field?: string | null
           lead_entry_date?: string | null
+          lead_form?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           location?: string | null
           net_profit_margin?: number | null
@@ -3194,6 +3236,7 @@ export type Database = {
           last_email_click_at?: string | null
           last_modified_field?: string | null
           lead_entry_date?: string | null
+          lead_form?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           location?: string | null
           net_profit_margin?: number | null
@@ -3265,6 +3308,13 @@ export type Database = {
             referencedRelation: "v_empresa_valuations"
             referencedColumns: ["matched_empresa_id"]
           },
+          {
+            foreignKeyName: "company_valuations_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contact_leads: {
@@ -3328,6 +3378,7 @@ export type Database = {
           last_clicked_url: string | null
           last_email_click_at: string | null
           lead_entry_date: string | null
+          lead_form: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           notes: string | null
           phone: string | null
@@ -3399,6 +3450,7 @@ export type Database = {
           last_clicked_url?: string | null
           last_email_click_at?: string | null
           lead_entry_date?: string | null
+          lead_form?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           notes?: string | null
           phone?: string | null
@@ -3470,6 +3522,7 @@ export type Database = {
           last_clicked_url?: string | null
           last_email_click_at?: string | null
           lead_entry_date?: string | null
+          lead_form?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           notes?: string | null
           phone?: string | null
@@ -3537,6 +3590,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_empresa_valuations"
             referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "contact_leads_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -6242,6 +6302,7 @@ export type Database = {
           id: string
           ip_address: unknown
           is_deleted: boolean | null
+          lead_form: string | null
           message: string
           notes: string | null
           page_origin: string
@@ -6291,6 +6352,7 @@ export type Database = {
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          lead_form?: string | null
           message: string
           notes?: string | null
           page_origin: string
@@ -6340,6 +6402,7 @@ export type Database = {
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          lead_form?: string | null
           message?: string
           notes?: string | null
           page_origin?: string
@@ -6382,6 +6445,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_empresa_valuations"
             referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "general_contact_leads_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -7655,6 +7725,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_forms: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       lead_security: {
         Row: {

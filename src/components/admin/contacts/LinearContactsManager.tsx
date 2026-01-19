@@ -9,6 +9,7 @@ import LinearContactsTable from './LinearContactsTable';
 import LinearFilterBar from './LinearFilterBar';
 import ContactDetailSheet from './ContactDetailSheet';
 import { BulkChannelSelect } from './BulkChannelSelect';
+import { BulkLeadFormSelect } from './BulkLeadFormSelect';
 import BulkArchiveDialog from './BulkArchiveDialog';
 import BulkDeleteDialog from './BulkDeleteDialog';
 import { ApolloMatchModal } from './ApolloMatchModal';
@@ -212,6 +213,11 @@ const LinearContactsManager = () => {
             </Button>
 
             <BulkChannelSelect 
+              selectedIds={selectedIds}
+              contacts={contacts}
+              onSuccess={clearSelection}
+            />
+            <BulkLeadFormSelect 
               selectedIds={selectedIds}
               contacts={contacts}
               onSuccess={clearSelection}

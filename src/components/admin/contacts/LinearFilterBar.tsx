@@ -15,6 +15,7 @@ import {
   Euro,
   Megaphone,
   CalendarDays,
+  FileText,
 } from 'lucide-react';
 import {
   startOfDay,
@@ -38,6 +39,7 @@ import SmartSearchInput from './SmartSearchInput';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/shared/utils/format';
 import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
+import { useLeadForms } from '@/hooks/useLeadForms';
 
 interface LinearFilterBarProps {
   filters: ContactFilters;
@@ -136,6 +138,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
   isRefreshing = false,
 }) => {
   const { channels } = useAcquisitionChannels();
+  const { forms } = useLeadForms();
   
   const handleFilterChange = (key: keyof ContactFilters, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -202,6 +205,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
       origin: 'all',
       emailStatus: 'all',
       acquisitionChannelId: undefined,
+      leadFormId: undefined,
       dateFrom: undefined,
       dateTo: undefined,
       dateRangeLabel: undefined,
@@ -249,11 +253,17 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
     filters.employeeMin || filters.employeeMax,
     filters.location,
     filters.acquisitionChannelId,
+    filters.leadFormId,
   ].filter(Boolean).length;
 
   // Get selected channel name for display
   const selectedChannelName = filters.acquisitionChannelId 
     ? channels?.find(c => c.id === filters.acquisitionChannelId)?.name 
+    : null;
+
+  // Get selected form name for display
+  const selectedFormName = filters.leadFormId 
+    ? forms?.find(f => f.id === filters.leadFormId)?.name 
     : null;
 
   // 🔥 Clear revenue filters helper
@@ -429,6 +439,47 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
                 onCheckedChange={() => handleFilterChange('acquisitionChannelId', channel.id)}
               >
                 {channel.name}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* 📝 Lead Form filter dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                filters.leadFormId && "border-teal-500 text-teal-600 bg-teal-500/5"
+              )}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Formulario
+              {selectedFormName && (
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1.5 text-[10px] bg-teal-500/20 text-teal-600 max-w-[100px] truncate">
+                  {selectedFormName}
+                </Badge>
+              )}
+              <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-64 max-h-80 overflow-y-auto bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]">
+            <DropdownMenuCheckboxItem
+              checked={!filters.leadFormId}
+              onCheckedChange={() => handleFilterChange('leadFormId', undefined)}
+            >
+              Todos los formularios
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            {forms?.map((form) => (
+              <DropdownMenuCheckboxItem
+                key={form.id}
+                checked={filters.leadFormId === form.id}
+                onCheckedChange={() => handleFilterChange('leadFormId', form.id)}
+              >
+                {form.name}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
