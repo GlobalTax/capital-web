@@ -41,7 +41,21 @@ export interface EmailOutboxStats {
   failed: number;
   retrying: number;
   successRate: number;
+  falsePositives: number;
 }
+
+// Helper to detect false positives (marked as sent but with provider error)
+const hasFalsePositive = (entry: EmailOutboxEntry): boolean => {
+  if (entry.status !== 'sent') return false;
+  if (entry.provider_message_id) return false; // Has valid message ID
+  
+  const response = entry.provider_response as any;
+  if (!response) return true; // No response = suspicious
+  if (response.error) return true; // Has error
+  if (!response.data?.id) return true; // No data.id
+  
+  return false;
+};
 
 export function useEmailOutbox(filters: EmailOutboxFilters = {}) {
   const queryClient = useQueryClient();
@@ -87,7 +101,9 @@ export function useEmailOutbox(filters: EmailOutboxFilters = {}) {
     staleTime: 30000 // 30 seconds
   });
 
-  // Calculate stats
+  // Calculate stats including false positives
+  const falsePositivesCount = entries?.filter(hasFalsePositive).length || 0;
+  
   const stats: EmailOutboxStats = entries ? {
     total: entries.length,
     pending: entries.filter(e => e.status === 'pending').length,
@@ -96,10 +112,11 @@ export function useEmailOutbox(filters: EmailOutboxFilters = {}) {
     failed: entries.filter(e => e.status === 'failed').length,
     retrying: entries.filter(e => e.status === 'retrying').length,
     successRate: entries.length > 0 
-      ? (entries.filter(e => e.status === 'sent').length / entries.length) * 100 
-      : 0
+      ? (entries.filter(e => e.status === 'sent' && !hasFalsePositive(e)).length / entries.length) * 100 
+      : 0,
+    falsePositives: falsePositivesCount
   } : {
-    total: 0, pending: 0, sending: 0, sent: 0, failed: 0, retrying: 0, successRate: 0
+    total: 0, pending: 0, sending: 0, sent: 0, failed: 0, retrying: 0, successRate: 0, falsePositives: 0
   };
 
   // Retry single email
@@ -187,6 +204,62 @@ export function useEmailOutbox(filters: EmailOutboxFilters = {}) {
     }
   });
 
+  // Fix false positives (entries marked as sent but with provider errors)
+  const fixFalsePositivesMutation = useMutation({
+    mutationFn: async () => {
+      // Get entries that are "sent" but without proper message ID
+      const { data: sentEntries, error: fetchError } = await supabase
+        .from('email_outbox')
+        .select('id, provider_response, provider_message_id')
+        .eq('status', 'sent');
+
+      if (fetchError) throw fetchError;
+
+      // Filter false positives
+      const falsePositives = sentEntries?.filter(e => {
+        if (e.provider_message_id) return false;
+        const response = e.provider_response as any;
+        if (!response) return true;
+        if (response.error) return true;
+        if (!response.data?.id) return true;
+        return false;
+      }) || [];
+
+      if (falsePositives.length === 0) {
+        return { fixed: 0 };
+      }
+
+      // Mark as pending for retry
+      const { error: updateError } = await supabase
+        .from('email_outbox')
+        .update({ 
+          status: 'pending', 
+          attempts: 0,
+          last_error: 'Corregido: falso positivo detectado',
+          next_retry_at: new Date().toISOString()
+        })
+        .in('id', falsePositives.map(e => e.id));
+
+      if (updateError) throw updateError;
+
+      // Trigger retry function
+      await supabase.functions.invoke('retry-failed-emails');
+
+      return { fixed: falsePositives.length };
+    },
+    onSuccess: (data) => {
+      if (data.fixed === 0) {
+        toast.info('No hay falsos positivos que corregir');
+      } else {
+        toast.success(`${data.fixed} email(s) corregido(s) y marcado(s) para reenvío`);
+      }
+      queryClient.invalidateQueries({ queryKey: ['email-outbox'] });
+    },
+    onError: (error: any) => {
+      toast.error(`Error al corregir falsos positivos: ${error.message}`);
+    }
+  });
+
   return {
     entries: entries || [],
     stats,
@@ -196,7 +269,9 @@ export function useEmailOutbox(filters: EmailOutboxFilters = {}) {
     retryEmail: retryEmailMutation.mutate,
     retryAllFailed: retryAllFailedMutation.mutate,
     cleanupOldEntries: cleanupOldEntriesMutation.mutate,
-    isRetrying: retryEmailMutation.isPending || retryAllFailedMutation.isPending
+    fixFalsePositives: fixFalsePositivesMutation.mutate,
+    isRetrying: retryEmailMutation.isPending || retryAllFailedMutation.isPending,
+    isFixingFalsePositives: fixFalsePositivesMutation.isPending
   };
 }
 

@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { RefreshCw, RotateCcw, Mail, AlertCircle, CheckCircle, Clock, Send, ChevronDown, Trash2 } from 'lucide-react';
+import { RefreshCw, RotateCcw, Mail, AlertCircle, CheckCircle, Clock, Send, ChevronDown, Trash2, AlertTriangle, Beaker } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800', icon: <Clock className="h-3 w-3" /> },
@@ -22,13 +23,12 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
 // Helper to detect provider errors in entries marked as "sent"
 const hasProviderError = (entry: EmailOutboxEntry): boolean => {
   if (entry.status !== 'sent') return false;
+  if (entry.provider_message_id) return false;
   
-  // Check if provider_response contains error
   const response = entry.provider_response as any;
-  if (!response) return !entry.provider_message_id; // No response and no message ID = suspicious
-  
+  if (!response) return true;
   if (response.error) return true;
-  if (!response.data?.id && !entry.provider_message_id) return true;
+  if (!response.data?.id) return true;
   
   return false;
 };
@@ -36,6 +36,8 @@ const hasProviderError = (entry: EmailOutboxEntry): boolean => {
 const EmailOutboxPanel: React.FC = () => {
   const [filters, setFilters] = useState<EmailOutboxFilters>({});
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [isTestingEmail, setIsTestingEmail] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const {
     entries,
@@ -45,7 +47,9 @@ const EmailOutboxPanel: React.FC = () => {
     retryEmail,
     retryAllFailed,
     cleanupOldEntries,
-    isRetrying
+    fixFalsePositives,
+    isRetrying,
+    isFixingFalsePositives
   } = useEmailOutbox(filters);
 
   const toggleRow = (id: string) => {
@@ -61,6 +65,40 @@ const EmailOutboxPanel: React.FC = () => {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
     return format(new Date(dateStr), 'dd/MM/yyyy HH:mm', { locale: es });
+  };
+
+  const testEmailConfig = async () => {
+    setIsTestingEmail(true);
+    setTestResult(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('test-email-config', {
+        body: { recipientEmail: 'samuel@capittal.es' }
+      });
+      
+      if (error) throw error;
+      
+      setTestResult({
+        success: data.success,
+        message: data.success 
+          ? `✅ Email enviado (ID: ${data.messageId?.slice(0, 8)}...)`
+          : `❌ ${data.error}`
+      });
+      
+      if (data.success) {
+        toast.success(`Email de prueba enviado a ${data.recipient}`);
+      } else {
+        toast.error(`Error: ${data.error}`);
+      }
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: `❌ ${err.message}`
+      });
+      toast.error(`Error: ${err.message}`);
+    } finally {
+      setIsTestingEmail(false);
+    }
   };
 
   return (
@@ -91,7 +129,7 @@ const EmailOutboxPanel: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -140,12 +178,76 @@ const EmailOutboxPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              <span className="text-sm text-muted-foreground">Falsos +</span>
+            </div>
+            <p className="text-2xl font-bold text-amber-600">{stats.falsePositives}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Tasa éxito</span>
             </div>
             <p className="text-2xl font-bold">{stats.successRate.toFixed(1)}%</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Test Email Config Section */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Beaker className="h-4 w-4" />
+            Test de Configuración
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-4">
+            <Button 
+              onClick={testEmailConfig} 
+              disabled={isTestingEmail}
+              variant="outline"
+            >
+              {isTestingEmail ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Enviar Email de Prueba
+                </>
+              )}
+            </Button>
+            {testResult && (
+              <Badge className={testResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                {testResult.message}
+              </Badge>
+            )}
+            {stats.falsePositives > 0 && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fixFalsePositives()}
+                disabled={isFixingFalsePositives}
+                className="border-amber-300 text-amber-700 hover:bg-amber-50"
+              >
+                {isFixingFalsePositives ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                )}
+                Corregir {stats.falsePositives} falso(s) positivo(s)
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Envía un email de prueba a samuel@capittal.es para verificar la configuración de Resend.
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
