@@ -358,6 +358,20 @@ export const useContactForm = () => {
         console.warn('⚠️ Notification error (non-blocking):', notificationError);
       }
 
+      // 8. Google Ads Enhanced Conversions (non-blocking)
+      try {
+        const { trackLeadEnhanced } = await import('@/utils/analytics/EnhancedConversions');
+        await trackLeadEnhanced({
+          email: validatedData.email,
+          phone: validatedData.phone,
+          name: validatedData.fullName,
+          formType: validatedData.serviceType || 'contact'
+        });
+        console.log('✅ Google Ads Enhanced Conversion sent');
+      } catch (conversionError) {
+        console.warn('⚠️ Enhanced Conversion error (non-blocking):', conversionError);
+      }
+
       // 9. Success
       const duration = Date.now() - startTime;
       console.log(`🎉 ContactForm: Success in ${duration}ms`);
@@ -502,6 +516,20 @@ export const useContactForm = () => {
         console.log('✅ Operation notifications sent');
       } catch (error) {
         console.warn('⚠️ Operation notification error (non-blocking):', error);
+      }
+
+      // 7. Google Ads Enhanced Conversions (non-blocking)
+      try {
+        const { trackLeadEnhanced } = await import('@/utils/analytics/EnhancedConversions');
+        await trackLeadEnhanced({
+          email: validatedData.email,
+          phone: validatedData.phone,
+          name: validatedData.fullName,
+          formType: 'operation_inquiry'
+        });
+        console.log('✅ Operation Enhanced Conversion sent');
+      } catch (conversionError) {
+        console.warn('⚠️ Operation Enhanced Conversion error (non-blocking):', conversionError);
       }
 
       // 8. Success
