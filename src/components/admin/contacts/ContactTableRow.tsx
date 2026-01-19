@@ -208,8 +208,8 @@ export const ContactTableRow = memo<ContactRowProps>(({
         </Badge>
       </div>
       
-      {/* Channel */}
-      <div className="px-1.5 overflow-hidden" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }} onClick={(e) => e.stopPropagation()}>
+      {/* Channel + Lead Form */}
+      <div className="px-1.5 overflow-hidden flex flex-col" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }} onClick={(e) => e.stopPropagation()}>
         <EditableSelect
           value={contact.acquisition_channel_id ?? undefined}
           options={channelOptions}
@@ -218,6 +218,12 @@ export const ContactTableRow = memo<ContactRowProps>(({
           allowClear
           onSave={handleChannelUpdate}
         />
+        {/* 🔥 Lead Form (Subcanal) debajo del canal */}
+        {contact.lead_form_name && (
+          <span className="text-[9px] text-muted-foreground/70 truncate mt-0.5">
+            {contact.lead_form_name}
+          </span>
+        )}
       </div>
       
       {/* Company */}
@@ -371,6 +377,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
     prevProps.isEnriching === nextProps.isEnriching &&
     prevProps.contact.lead_status_crm === nextProps.contact.lead_status_crm &&
     prevProps.contact.acquisition_channel_id === nextProps.contact.acquisition_channel_id &&
+    prevProps.contact.lead_form === nextProps.contact.lead_form &&
     prevProps.contact.company === nextProps.contact.company &&
     prevProps.contact.industry === nextProps.contact.industry &&
     prevProps.contact.location === nextProps.contact.location &&

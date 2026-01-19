@@ -34,6 +34,7 @@ import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { AcquisitionChannelSelect } from './AcquisitionChannelSelect';
+import { LeadFormSelect } from './LeadFormSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useAcquisitionChannels, CATEGORY_LABELS, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
 import ContactEditForm from './ContactEditForm';
@@ -124,7 +125,9 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   const { channels } = useAcquisitionChannels();
   const { updateContact, isUpdating } = useContactUpdate();
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
+  const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
   const [isSavingChannel, setIsSavingChannel] = useState(false);
+  const [isSavingForm, setIsSavingForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ContactUpdateData>({});
 
@@ -133,6 +136,8 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
     if (contact) {
       // Sync channel with contact data
       setSelectedChannelId(contact.acquisition_channel_id || null);
+      // Sync form with contact data
+      setSelectedFormId(contact.lead_form || null);
       
       setFormData({
         name: contact.name,
@@ -237,6 +242,48 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
       toast({ title: 'Error', description: 'No se pudo actualizar el canal', variant: 'destructive' });
     } finally {
       setIsSavingChannel(false);
+    }
+  };
+
+  const handleFormChange = async (formId: string | null) => {
+    if (!contact) return;
+    
+    // Mapeo de origen a tabla
+    const tableMap: Record<string, string> = {
+      'contact': 'contact_leads',
+      'valuation': 'company_valuations',
+      'general': 'general_contact_leads',
+      'collaborator': 'collaborator_applications',
+      'acquisition': 'acquisition_leads',
+      'advisor': 'advisor_valuations',
+      'company_acquisition': 'company_acquisition_inquiries',
+    };
+    
+    const table = tableMap[contact.origin];
+    if (!table) {
+      toast({ title: 'Error', description: 'Tipo de contacto no soportado', variant: 'destructive' });
+      return;
+    }
+    
+    setIsSavingForm(true);
+    try {
+      const { error } = await supabase
+        .from(table as any)
+        .update({ lead_form: formId })
+        .eq('id', contact.id);
+
+      if (error) throw error;
+      
+      setSelectedFormId(formId);
+      
+      // Invalidate cache to refresh table immediately
+      queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
+      
+      toast({ title: 'Formulario actualizado' });
+    } catch (error) {
+      toast({ title: 'Error', description: 'No se pudo actualizar el formulario', variant: 'destructive' });
+    } finally {
+      setIsSavingForm(false);
     }
   };
 
@@ -420,6 +467,16 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
               onChange={handleChannelChange}
               disabled={isSavingChannel}
             />
+            
+            {/* Formulario de origen */}
+            <div className="mt-4">
+              <h4 className="text-xs text-muted-foreground mb-2">Formulario de origen</h4>
+              <LeadFormSelect
+                value={selectedFormId}
+                onChange={handleFormChange}
+                disabled={isSavingForm}
+              />
+            </div>
           </div>
 
           <Separator className="bg-[hsl(var(--linear-border))] my-4" />
