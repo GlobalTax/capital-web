@@ -62,6 +62,7 @@ import {
   LazyAcquisitionChannelsSettings,
   LazyBrevoSyncDashboard,
   LazyBrevoContactsImport,
+  LazyEmailOutboxPanel,
   LazySFRadarPage,
   LazySFDirectoryPage,
   LazySFBackersPage,
@@ -194,6 +195,7 @@ const AdminRouter = () => {
           <Route path="/notifications" element={<LazyNotificationsPage />} />
           <Route path="/brevo-sync" element={<LazyBrevoSyncDashboard />} />
           <Route path="/brevo-import" element={<LazyBrevoContactsImport />} />
+          <Route path="/settings/email-outbox" element={<LazyEmailOutboxPanel />} />
           
           {/* Search Funds Intelligence */}
           <Route path="/sf-apollo-import" element={<LazySFApolloImportPage />} />

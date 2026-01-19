@@ -56,6 +56,12 @@ const AdminSettings: React.FC = () => {
       icon: Workflow,
       href: '/admin/configuracion/workflow-templates',
     },
+    {
+      title: 'Email Outbox',
+      description: 'Monitor de envío de emails con estado, errores y reintentos',
+      icon: Mail,
+      href: '/admin/settings/email-outbox',
+    },
   ];
 
   return (
