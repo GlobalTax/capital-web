@@ -53,9 +53,10 @@ const handler = async (req: Request): Promise<Response> => {
   log('info', 'RETRY_JOB_STARTED');
 
   try {
-    // Find emails that need retry
+    // Find emails that need retry (including false positives)
     const now = new Date().toISOString();
     
+    // First, find pending/retrying emails
     const { data: pendingEmails, error: fetchError } = await supabase
       .from('email_outbox')
       .select('*')
@@ -73,7 +74,27 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    if (!pendingEmails || pendingEmails.length === 0) {
+    // Also find false positives: marked as 'sent' but without provider_message_id
+    const { data: falsePositives, error: fpError } = await supabase
+      .from('email_outbox')
+      .select('*')
+      .eq('status', 'sent')
+      .is('provider_message_id', null)
+      .lt('attempts', 3)
+      .order('created_at', { ascending: true })
+      .limit(5);
+
+    if (fpError) {
+      log('warn', 'FETCH_FALSE_POSITIVES_FAILED', { error: fpError.message });
+    }
+
+    // Combine and dedupe
+    const allEmails = [...(pendingEmails || []), ...(falsePositives || [])];
+    const uniqueEmails = allEmails.filter((email, index, self) => 
+      index === self.findIndex(e => e.id === email.id)
+    );
+
+    if (uniqueEmails.length === 0) {
       log('info', 'NO_PENDING_EMAILS');
       return new Response(
         JSON.stringify({ success: true, processed: 0, message: 'No pending emails to retry' }),
@@ -81,16 +102,23 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    log('info', 'FOUND_PENDING_EMAILS', { count: pendingEmails.length });
+    log('info', 'FOUND_EMAILS_TO_PROCESS', { 
+      pending: pendingEmails?.length || 0, 
+      falsePositives: falsePositives?.length || 0,
+      total: uniqueEmails.length 
+    });
 
-    const results: { id: string; success: boolean; error?: string }[] = [];
+    const results: { id: string; success: boolean; error?: string; wasFalsePositive?: boolean }[] = [];
 
-    for (const email of pendingEmails as EmailOutboxEntry[]) {
+    for (const email of uniqueEmails as EmailOutboxEntry[]) {
+      const wasFalsePositive = email.status === 'sent' && !email.provider_message_id;
+      
       try {
         log('info', 'RETRYING_EMAIL', { 
           outbox_id: email.id, 
           valuation_type: email.valuation_type,
-          attempt: email.attempts + 1 
+          attempt: email.attempts + 1,
+          wasFalsePositive
         });
 
         // Mark as retrying
