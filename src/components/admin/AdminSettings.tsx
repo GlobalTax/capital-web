@@ -1,20 +1,37 @@
-
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
-import { Settings, User, Shield, LogOut, ChevronRight, Megaphone, Mail, FileSignature, Workflow } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Settings, 
+  User,
+  ChevronRight,
+  Shield,
+  LogOut,
+  Megaphone,
+  Mail,
+  FileSignature,
+  Workflow,
+  Shuffle
+} from 'lucide-react';
 
-const AdminSettings = () => {
+const AdminSettings: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     await signOut();
+    navigate('/');
   };
 
   const configLinks = [
+    {
+      title: 'Migración Sectores PE',
+      description: 'Normaliza sectores de empresas y fondos a taxonomía estándar PE/Search Funds',
+      icon: Shuffle,
+      href: '/admin/settings/sector-migration',
+    },
     {
       title: 'Canales de Adquisición',
       description: 'Gestiona los canales para clasificar el origen de contactos (Meta, Google Ads, etc.)',

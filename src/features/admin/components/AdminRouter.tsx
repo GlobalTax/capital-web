@@ -92,6 +92,7 @@ const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
 const LazyEmpresaDetailPage = React.lazy(() => import('@/pages/admin/EmpresaDetailPage'));
 const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisitorsPage'));
 const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPage'));
+const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -183,6 +184,7 @@ const AdminRouter = () => {
           <Route path="/admin-users" element={<LazyAdminUsersManager />} />
           <Route path="/settings" element={<LazyAdminSettings />} />
           <Route path="/settings/canales" element={<LazyAcquisitionChannelsSettings />} />
+          <Route path="/settings/sector-migration" element={<LazySectorMigrationPage />} />
           <Route path="/configuracion/destinatarios-email" element={<LazyEmailRecipientsConfig />} />
           <Route path="/configuracion/firma-pdf" element={<LazyPdfSignatureConfig />} />
           <Route path="/configuracion/workflow-templates" element={<LazyWorkflowTemplatesPage />} />
