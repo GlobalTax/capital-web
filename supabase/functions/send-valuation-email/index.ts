@@ -14,6 +14,120 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// =====================================================
+// STRUCTURED LOGGING HELPER
+// =====================================================
+const log = (level: 'info' | 'warn' | 'error', event: string, data: object = {}) => {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    function: 'send-valuation-email',
+    level,
+    event,
+    ...data
+  };
+  if (level === 'error') {
+    console.error(JSON.stringify(logEntry));
+  } else if (level === 'warn') {
+    console.warn(JSON.stringify(logEntry));
+  } else {
+    console.log(JSON.stringify(logEntry));
+  }
+};
+
+// =====================================================
+// EMAIL OUTBOX HELPERS
+// =====================================================
+interface OutboxEntry {
+  id: string;
+  valuation_id: string | null;
+  valuation_type: 'standard' | 'professional';
+  recipient_email: string;
+  recipient_name?: string;
+  email_type: 'client' | 'internal' | 'both';
+  subject?: string;
+  status: 'pending' | 'sending' | 'sent' | 'failed' | 'retrying';
+  attempts: number;
+  max_attempts: number;
+  provider_message_id?: string;
+  last_error?: string;
+  error_details?: object;
+  metadata?: object;
+}
+
+async function createOutboxEntry(data: Partial<OutboxEntry>): Promise<string | null> {
+  try {
+    const { data: entry, error } = await supabase
+      .from('email_outbox')
+      .insert({
+        valuation_id: data.valuation_id,
+        valuation_type: data.valuation_type || 'standard',
+        recipient_email: data.recipient_email,
+        recipient_name: data.recipient_name,
+        email_type: data.email_type || 'both',
+        subject: data.subject,
+        status: 'pending',
+        attempts: 0,
+        max_attempts: 3,
+        metadata: data.metadata
+      })
+      .select('id')
+      .single();
+    
+    if (error) {
+      log('error', 'OUTBOX_CREATE_FAILED', { error: error.message });
+      return null;
+    }
+    
+    log('info', 'OUTBOX_ENTRY_CREATED', { outbox_id: entry.id });
+    return entry.id;
+  } catch (e: any) {
+    log('error', 'OUTBOX_CREATE_EXCEPTION', { error: e?.message || e });
+    return null;
+  }
+}
+
+async function updateOutboxStatus(
+  outboxId: string, 
+  status: 'sending' | 'sent' | 'failed' | 'retrying',
+  updates: Partial<OutboxEntry> = {}
+): Promise<void> {
+  try {
+    const updateData: Record<string, any> = { 
+      status,
+      last_attempt_at: new Date().toISOString(),
+      ...updates
+    };
+    
+    if (status === 'sending' && !updates.first_attempt_at) {
+      updateData.first_attempt_at = new Date().toISOString();
+    }
+    
+    if (status === 'sent') {
+      updateData.sent_at = new Date().toISOString();
+    }
+    
+    if (status === 'retrying' || status === 'failed') {
+      // Exponential backoff: 1min, 2min, 4min
+      const attempts = updates.attempts || 1;
+      const delayMs = Math.pow(2, attempts - 1) * 60000;
+      updateData.next_retry_at = new Date(Date.now() + delayMs).toISOString();
+    }
+    
+    const { error } = await supabase
+      .from('email_outbox')
+      .update(updateData)
+      .eq('id', outboxId);
+    
+    if (error) {
+      log('warn', 'OUTBOX_UPDATE_FAILED', { outbox_id: outboxId, error: error.message });
+    } else {
+      log('info', 'OUTBOX_STATUS_UPDATED', { outbox_id: outboxId, status });
+    }
+  } catch (e: any) {
+    log('error', 'OUTBOX_UPDATE_EXCEPTION', { outbox_id: outboxId, error: e?.message || e });
+  }
+}
+
 interface CompanyDataEmail {
   contactName?: string;
   companyName?: string;
@@ -40,14 +154,14 @@ interface ValuationResultEmail {
 }
 
 interface SendValuationEmailRequest {
-  recipientEmail?: string; // opcional, por defecto se usa el de pruebas
+  recipientEmail?: string;
   companyData: CompanyDataEmail;
   result: ValuationResultEmail & {
-    revenueValuation?: number; // Para calculadora de asesores
-    revenueRange?: { min?: number; max?: number }; // Para calculadora de asesores
+    revenueValuation?: number;
+    revenueRange?: { min?: number; max?: number };
   };
-  pdfBase64?: string; // PDF generado en frontend (base64 sin prefijo data:)
-  pdfFilename?: string; // nombre sugerido para el adjunto
+  pdfBase64?: string;
+  pdfFilename?: string;
   enlaces?: {
     pdfUrl?: string;
     escenariosUrl?: string;
@@ -59,13 +173,16 @@ interface SendValuationEmailRequest {
     firma?: string;
   };
   subjectOverride?: string;
-  pdfOnly?: boolean; // si true, solo genera/sube PDF y devuelve URL, no envía emails
+  pdfOnly?: boolean;
   lang?: 'es' | 'ca' | 'val' | 'gl';
-  source?: 'advisor' | 'standard'; // Para identificar calculadora de asesores
-  // 🔥 NEW: Manual entry fields
-  sourceProject?: string; // 'manual-admin-entry', 'lp-calculadora-principal', etc.
-  leadSource?: string; // 'meta-ads', 'google-ads', 'referido', etc.
-  leadSourceDetail?: string; // Detalle adicional
+  source?: 'advisor' | 'standard';
+  sourceProject?: string;
+  leadSource?: string;
+  leadSourceDetail?: string;
+  // NEW: For retry system
+  isRetry?: boolean;
+  outboxId?: string;
+  valuationId?: string;
 }
 
 const euros = (n?: number | null, locale: string = "es-ES") =>
@@ -74,16 +191,15 @@ const euros = (n?: number | null, locale: string = "es-ES") =>
 const pct = (n?: number | null) =>
   typeof n === "number" && !isNaN(n) ? `${n.toFixed(2)}%` : "-";
 
-// Helpers: sanitizar nombre de archivo y limpiar base64
 const sanitizeForFilename = (input: string): string => {
   try {
     let s = (input || '')
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, ''); // quitar acentos
+      .replace(/[\u0300-\u036f]/g, '');
     s = s
-      .replace(/[^a-zA-Z0-9._-]+/g, '-') // caracteres seguros
-      .replace(/-+/g, '-') // colapsar guiones
-      .replace(/^[-.]+|[-.]+$/g, ''); // recortar extremos
+      .replace(/[^a-zA-Z0-9._-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^[-.]+|[-.]+$/g, '');
     return s || 'documento';
   } catch (_) {
     return 'documento';
@@ -101,14 +217,13 @@ const cleanPdfBase64 = (b64: string): string => {
   return trimmed.replace(/^data:application\/pdf;base64,/, '');
 };
 
-// Genera un PDF sencillo con el resumen de la valoración y lo devuelve en Base64 (sin data URI)
 const generateValuationPdfBase64 = async (
   companyData: CompanyDataEmail,
   result: ValuationResultEmail,
   locale: string
 ): Promise<string> => {
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([595.28, 841.89]); // A4 en puntos (72 dpi)
+  const page = pdfDoc.addPage([595.28, 841.89]);
   const { width, height } = page.getSize();
   const margin = 40;
 
@@ -117,7 +232,7 @@ const generateValuationPdfBase64 = async (
 
   let y = height - margin;
   const lineHeight = 18;
-  const colorPrimary = rgb(0.106, 0.247, 0.675); // Azul Capittal aprox
+  const colorPrimary = rgb(0.106, 0.247, 0.675);
 
   const drawHeader = () => {
     const title = "Informe de Valoración";
@@ -129,8 +244,6 @@ const generateValuationPdfBase64 = async (
     const dateWidth = font.widthOfTextAtSize(dateText, 10);
     page.drawText(dateText, { x: width - margin - dateWidth, y, size: 10, font });
     y -= lineHeight;
-
-    // Línea separadora
     page.drawLine({ start: { x: margin, y }, end: { x: width - margin, y }, color: rgb(0.85, 0.89, 0.95), thickness: 1 });
     y -= lineHeight;
   };
@@ -147,8 +260,6 @@ const generateValuationPdfBase64 = async (
   };
 
   drawHeader();
-
-  // Datos de contacto y empresa
   drawSectionTitle("Datos de la empresa");
   drawKV("Contacto:", companyData.contactName || "-");
   drawKV("Empresa:", companyData.companyName || "-");
@@ -157,7 +268,6 @@ const generateValuationPdfBase64 = async (
   drawKV("Sector:", companyData.industry || "-");
   y -= 6;
 
-  // Resultados
   drawSectionTitle("Resultado de la valoración");
   drawKV("Valoración final:", euros(result?.finalValuation ?? result?.valuationRange?.min ?? null, locale));
   drawKV("Rango estimado:", `${euros(result?.valuationRange?.min, locale)} - ${euros(result?.valuationRange?.max, locale)}`);
@@ -165,7 +275,6 @@ const generateValuationPdfBase64 = async (
   drawKV("Múltiplo EBITDA usado:", `${result?.multiples?.ebitdaMultipleUsed ?? result?.ebitdaMultiple ?? "-"}x`);
   y -= lineHeight;
 
-  // Nota legal y direcciones
   const disclaimer =
     "Documento informativo y no vinculante. La valoración es orientativa y requiere un análisis más detallado.";
   page.drawText("Nota legal:", { x: margin, y, size: 11, font: fontBold });
@@ -181,13 +290,11 @@ const generateValuationPdfBase64 = async (
   y -= lineHeight;
   page.drawText(`- ${addr2}`, { x: margin, y, size: 10, font });
 
-  // Devolver en Base64 sin data URI
   const base64 = await pdfDoc.saveAsBase64({ dataUri: false });
   return base64;
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  // CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -196,20 +303,24 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
+  let outboxId: string | null = null;
+
   try {
-    console.log("=== INICIO DEBUG send-valuation-email ===");
-    console.log("Request method:", req.method);
-    console.log("RESEND_API_KEY exists:", !!Deno.env.get("RESEND_API_KEY"));
+    log('info', 'REQUEST_RECEIVED', { method: req.method });
     
     const payload = (await req.json()) as SendValuationEmailRequest;
-    console.log("Payload received:", JSON.stringify(payload, null, 2));
-    
-    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, enlaces, sender, subjectOverride, lang, source } = payload as SendValuationEmailRequest & { lang?: 'es' | 'ca' | 'val' | 'gl'; source?: 'advisor' | 'standard' };
+    const { recipientEmail, companyData, result, pdfBase64, pdfFilename, enlaces, sender, subjectOverride, lang, source } = payload;
+
+    log('info', 'PAYLOAD_PARSED', { 
+      email: companyData.email,
+      company: companyData.companyName,
+      isRetry: payload.isRetry || false,
+      existingOutboxId: payload.outboxId
+    });
 
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
     const locale = localeMap[lang || 'es'] || 'es-ES';
 
-    // Destinatarios SOLO internos - el cliente NO debe recibir este email
     const internalRecipients = [
       "samuel@capittal.es",
       "marcc@capittal.es",
@@ -220,39 +331,26 @@ const handler = async (req: Request): Promise<Response> => {
       "albert@capittal.es"
     ];
 
-    // El email del lead se usará SOLO para reply_to, NO como destinatario
     const leadEmail = companyData.email?.trim() || recipientEmail?.trim();
 
-    // GUARDRAIL: Asegurar que el lead NO está en los destinatarios internos
     if (leadEmail) {
       const leadInRecipients = internalRecipients.some(
         email => email.toLowerCase() === leadEmail.toLowerCase()
       );
       if (leadInRecipients) {
-        console.error('GUARDRAIL: Lead email detectado en destinatarios internos, bloqueando:', leadEmail);
+        log('error', 'GUARDRAIL_BLOCKED', { reason: 'Lead email in internal recipients', email: leadEmail });
         throw new Error('Lead email cannot be in internal recipients');
       }
     }
 
-    // Detectar si es calculadora de asesores
     const isAdvisorCalculation = source === 'advisor' || (companyData.industry && (
       companyData.industry.includes('asesor') || 
       companyData.industry.includes('fiscal') ||
       companyData.industry.includes('contable')
     ));
 
-    // 🔥 NEW: Detectar si es valoración manual
     const isManualEntry = payload.sourceProject === 'manual-admin-entry';
     
-    // 📧 Debug obligatorio para verificar recepción de datos manuales
-    console.log('📧 Manual entry detection:', {
-      sourceProject: payload.sourceProject,
-      leadSource: payload.leadSource,
-      leadSourceDetail: payload.leadSourceDetail,
-      isManualEntry
-    });
-    
-    // Mapa de etiquetas legibles para canales de origen
     const LEAD_SOURCE_LABELS: Record<string, string> = {
       'meta-ads': 'Meta Ads (Facebook/Instagram)',
       'google-ads': 'Google Ads',
@@ -268,16 +366,41 @@ const handler = async (req: Request): Promise<Response> => {
       ? LEAD_SOURCE_LABELS[payload.leadSource] || payload.leadSource 
       : 'No especificado';
 
-    // 🔥 Subject actualizado para manuales (BLINDADO)
     const subject = isManualEntry
       ? `[ENTRADA MANUAL] Nueva valoración recibida - ${companyData.companyName || "Capittal"}`
       : isAdvisorCalculation 
         ? `Nueva valoración de asesoría - ${companyData.companyName || "Capittal"}`
         : `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
     
-    // 🔥 From name diferenciado para manuales
     const fromName = isManualEntry ? 'Capittal (Manual)' : 'Capittal';
-    // 🔥 Bloque HTML para valoraciones manuales (tabla email-safe para Gmail/Outlook)
+
+    // =====================================================
+    // CREATE OUTBOX ENTRY BEFORE SENDING
+    // =====================================================
+    if (payload.outboxId) {
+      outboxId = payload.outboxId;
+      log('info', 'USING_EXISTING_OUTBOX', { outbox_id: outboxId });
+    } else {
+      outboxId = await createOutboxEntry({
+        valuation_id: payload.valuationId || null,
+        valuation_type: 'standard',
+        recipient_email: leadEmail || 'internal-only',
+        recipient_name: companyData.contactName,
+        email_type: 'both',
+        subject,
+        metadata: {
+          companyName: companyData.companyName,
+          source: payload.sourceProject || source || 'unknown',
+          leadSource: payload.leadSource,
+          isManualEntry
+        }
+      });
+    }
+
+    if (outboxId) {
+      await updateOutboxStatus(outboxId, 'sending', { attempts: (payload.isRetry ? 2 : 1) });
+    }
+
     const manualEntryBlock = isManualEntry ? `
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; margin-bottom:20px;">
         <tr>
@@ -306,7 +429,6 @@ const handler = async (req: Request): Promise<Response> => {
       </table>
     ` : '';
 
-    // HTML para emails internos (equipo Capittal)
     const htmlInternal = `
       <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
         <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px;">
@@ -355,20 +477,20 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    // Preparar PDF adjunto: usar el generado en frontend o crear uno de respaldo
+    // Prepare PDF
     let pdfToAttach: string | null = (pdfBase64 && pdfBase64.trim().length > 0) ? pdfBase64.trim() : null;
     if (!pdfToAttach) {
       try {
         pdfToAttach = await generateValuationPdfBase64(companyData, result, locale);
       } catch (ePdf: any) {
-        console.error("Error generando PDF de respaldo:", ePdf?.message || ePdf);
+        log('error', 'PDF_GENERATION_FAILED', { error: ePdf?.message || ePdf });
       }
     }
     const filename = pdfFilename || `Capittal-Valoracion-${(companyData.companyName || 'empresa').replaceAll(' ', '-')}.pdf`;
 
-    // Subir PDF a Supabase Storage (bucket: valuations) para re-descarga
+    // Upload PDF to storage
     let pdfPublicUrl: string | null = null;
-if (pdfToAttach) {
+    if (pdfToAttach) {
       try {
         const cleaned = cleanPdfBase64(pdfToAttach);
         const binary = Uint8Array.from(atob(cleaned), (c) => c.charCodeAt(0));
@@ -380,25 +502,31 @@ if (pdfToAttach) {
           .from('valuations')
           .upload(fileName, binary, { contentType: 'application/pdf', upsert: true });
         if (upErr) {
-          console.error('Error subiendo PDF a storage:', upErr);
+          log('error', 'PDF_UPLOAD_FAILED', { error: upErr.message });
         } else {
           const pub = supabase.storage.from('valuations').getPublicUrl(fileName);
           pdfPublicUrl = pub.data.publicUrl;
-          console.log('PDF subido correctamente', { fileName, publicUrl: pdfPublicUrl });
+          log('info', 'PDF_UPLOADED', { fileName, publicUrl: pdfPublicUrl });
         }
       } catch (eUp: any) {
-        console.error('Excepción al subir PDF a storage:', eUp?.message || eUp);
+        log('error', 'PDF_UPLOAD_EXCEPTION', { error: eUp?.message || eUp });
       }
     }
-    // Si solo se solicita el PDF, devolver URL y no enviar emails
+
+    // PDF only mode
     if (payload.pdfOnly) {
+      if (outboxId) {
+        await updateOutboxStatus(outboxId, 'sent', { 
+          provider_message_id: 'pdf-only',
+          metadata: { pdfUrl: pdfPublicUrl }
+        });
+      }
       return new Response(
         JSON.stringify({ success: true, pdfUrl: pdfPublicUrl, filename }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Texto plano para mejorar entregabilidad (sin adjuntos)
     const internalText = `Nueva valoración recibida - ${companyData.companyName || "Capittal"}\n` +
       `Contacto: ${companyData.contactName || "-"}\n` +
       `Email: ${companyData.email || "-"}\n` +
@@ -412,20 +540,14 @@ if (pdfToAttach) {
 
     let emailResponse: any;
     
-    // 📧 DEBUG OBLIGATORIO: verificar datos antes de enviar
-    console.log('📧 INTERNAL EMAIL SENDING:', {
+    log('info', 'SENDING_INTERNAL_EMAIL', {
       isManualEntry,
-      sourceProject: payload.sourceProject || 'NOT SET',
-      leadSource: payload.leadSource || 'NOT SET',
-      leadSourceDetail: payload.leadSourceDetail || 'NOT SET',
-      subject,
-      fromName,
+      sourceProject: payload.sourceProject,
       recipientCount: internalRecipients.length,
       leadEmail
     });
     
     try {
-      console.log(`Trying sender: ${fromName} <samuel@capittal.es>`);
       emailResponse = await resend.emails.send({
         from: `${fromName} <samuel@capittal.es>`,
         to: internalRecipients,
@@ -433,16 +555,14 @@ if (pdfToAttach) {
         html: htmlInternal,
         text: internalText,
         reply_to: leadEmail || "samuel@capittal.es",
-         headers: { 
-           "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
-           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
-         },
+        headers: { 
+          "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+        },
       });
-      console.log("Primary email sent successfully:", emailResponse);
+      log('info', 'INTERNAL_EMAIL_SENT', { messageId: emailResponse?.data?.id });
     } catch (e: any) {
-      console.error("Primary sender failed, retrying with Resend test domain:", e?.message || e);
-      console.error("Error details:", JSON.stringify(e, null, 2));
-      console.log("Trying fallback sender: Capittal (Test) <onboarding@resend.dev>");
+      log('warn', 'PRIMARY_SENDER_FAILED', { error: e?.message });
       emailResponse = await resend.emails.send({
         from: "Capittal (Test) <onboarding@resend.dev>",
         to: internalRecipients,
@@ -450,14 +570,14 @@ if (pdfToAttach) {
         html: `${htmlInternal}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
         reply_to: leadEmail || "samuel@capittal.es",
-         headers: { 
-           "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
-           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
-         },
+        headers: { 
+          "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+        },
       });
     }
 
-    // Enviar confirmación al usuario que completó el formulario (si hay email)
+    // Send client email
     if (companyData.email) {
       const userSubject = subjectOverride || `Valoración · PDF, escenarios y calculadora fiscal`;
       const saludo = companyData.contactName ? `Hola ${companyData.contactName},` : 'Hola,';
@@ -466,7 +586,6 @@ if (pdfToAttach) {
       const cargo = sender?.cargo || 'M&A';
       const firma = sender?.firma || 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid';
 
-      // Enlaces útiles con texto descriptivo (no URLs visibles)
       const pdfUrlFinal = (enlaces && enlaces.pdfUrl) || pdfPublicUrl || '';
       const enlacesUtiles = [
         pdfUrlFinal ? `<p style="margin:0 0 6px;"><strong>📄 Re-descargar el PDF:</strong> <a href="${pdfUrlFinal}" target="_blank" style="color:#1f2937; text-decoration:underline; font-weight:600;">Haga clic aquí</a></p>` : '',
@@ -536,61 +655,94 @@ if (pdfToAttach) {
           html: userHtml,
           text: userText,
           reply_to: "samuel@capittal.es",
-           headers: { 
-             "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
-             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
-           },
+          headers: { 
+            "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+          },
         });
+        log('info', 'CLIENT_EMAIL_SENT', { recipient: companyData.email });
       } catch (e2: any) {
-        console.error("User confirmation failed, retrying with Resend test domain:", e2?.message || e2);
+        log('warn', 'CLIENT_EMAIL_FALLBACK', { error: e2?.message });
         await resend.emails.send({
           from: "Capittal (Test) <onboarding@resend.dev>",
           to: [companyData.email],
-          subject: `${userSubject} (pruebas)` ,
+          subject: `${userSubject} (pruebas)`,
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
           text: userText,
           reply_to: "samuel@capittal.es",
-           headers: { 
-             "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
-             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
-           },
+          headers: { 
+            "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+          },
         });
       }
     }
 
-    // ✅ REGISTRO EN DB: Actualizar email_sent = true después del envío exitoso
-    if (companyData.email) {
+    // =====================================================
+    // UPDATE OUTBOX AND VALUATION STATUS
+    // =====================================================
+    if (outboxId) {
+      await updateOutboxStatus(outboxId, 'sent', {
+        provider_message_id: emailResponse?.data?.id,
+        provider_response: emailResponse
+      });
+    }
+
+    // Update email_sent by valuation ID (more robust than email)
+    if (payload.valuationId) {
       try {
         const { error: updateError } = await supabase
           .from('company_valuations')
           .update({ 
             email_sent: true, 
             email_sent_at: new Date().toISOString(),
-            email_message_id: emailResponse?.data?.id || null
+            email_message_id: emailResponse?.data?.id || null,
+            email_outbox_id: outboxId
+          })
+          .eq('id', payload.valuationId);
+        
+        if (updateError) {
+          log('warn', 'VALUATION_UPDATE_BY_ID_FAILED', { id: payload.valuationId, error: updateError.message });
+        } else {
+          log('info', 'VALUATION_UPDATED_BY_ID', { id: payload.valuationId });
+        }
+      } catch (e: any) {
+        log('warn', 'VALUATION_UPDATE_EXCEPTION', { error: e?.message });
+      }
+    } else if (companyData.email) {
+      // Fallback to email-based update
+      try {
+        const { error: updateError } = await supabase
+          .from('company_valuations')
+          .update({ 
+            email_sent: true, 
+            email_sent_at: new Date().toISOString(),
+            email_message_id: emailResponse?.data?.id || null,
+            email_outbox_id: outboxId
           })
           .eq('email', companyData.email)
           .order('created_at', { ascending: false })
           .limit(1);
         
         if (updateError) {
-          console.warn('⚠️ Could not update email_sent flag:', updateError.message);
+          log('warn', 'VALUATION_UPDATE_BY_EMAIL_FAILED', { email: companyData.email, error: updateError.message });
         } else {
-          console.log('✅ Updated email_sent = true for:', companyData.email);
+          log('info', 'VALUATION_UPDATED_BY_EMAIL', { email: companyData.email });
         }
       } catch (e: any) {
-        console.warn('⚠️ Exception updating email_sent:', e?.message || e);
+        log('warn', 'VALUATION_UPDATE_EXCEPTION', { error: e?.message });
       }
     }
 
-    // Log summary para verificar flujo completo
-    console.log('=== SEND-VALUATION-EMAIL SUMMARY ===');
-    console.log('📧 Internal email sent to:', internalRecipients.length, 'recipients');
-    console.log('📧 Client email sent to:', companyData.email);
-    console.log('📧 Email message ID:', emailResponse?.data?.id);
-    console.log('📧 PDF URL:', pdfPublicUrl);
-    console.log('=====================================');
+    log('info', 'EMAIL_FLOW_COMPLETED', {
+      outboxId,
+      messageId: emailResponse?.data?.id,
+      pdfUrl: pdfPublicUrl,
+      internalRecipients: internalRecipients.length,
+      clientEmail: companyData.email
+    });
 
-    // Replicar metadatos al CRM/segunda DB vía función sync-leads
+    // Sync to CRM
     try {
       const syncPayload = {
         type: 'valuation_pdf',
@@ -602,24 +754,28 @@ if (pdfToAttach) {
           timestamp: new Date().toISOString()
         }
       };
-      const { data: syncData, error: syncErr } = await supabase.functions.invoke('sync-leads', { body: syncPayload });
-      if (syncErr) {
-        console.error('sync-leads error:', syncErr);
-      } else {
-        console.log('sync-leads ok:', syncData);
-      }
+      await supabase.functions.invoke('sync-leads', { body: syncPayload });
     } catch (e) {
-      console.error('Exception calling sync-leads:', e);
+      log('warn', 'SYNC_LEADS_FAILED', { error: (e as any)?.message });
     }
 
     return new Response(
-      JSON.stringify({ success: true, emailId: emailResponse?.data?.id, pdfUrl: pdfPublicUrl, filename }),
+      JSON.stringify({ success: true, emailId: emailResponse?.data?.id, pdfUrl: pdfPublicUrl, filename, outboxId }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
-    console.error("Error in send-valuation-email:", error);
+    log('error', 'EMAIL_FLOW_FAILED', { error: error?.message, stack: error?.stack });
+    
+    // Update outbox with failure
+    if (outboxId) {
+      await updateOutboxStatus(outboxId, 'failed', {
+        last_error: error?.message || 'Unknown error',
+        error_details: { stack: error?.stack }
+      });
+    }
+    
     return new Response(
-      JSON.stringify({ success: false, error: error?.message || "Unknown error" }),
+      JSON.stringify({ success: false, error: error?.message || "Unknown error", outboxId }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
