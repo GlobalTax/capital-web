@@ -230,3 +230,9 @@ verify_jwt = false
 
 [functions.cr-extract-portfolio-from-text]
 verify_jwt = false
+
+[functions.classify-sector-pe]
+verify_jwt = false
+
+[functions.migrate-sectors-to-pe]
+verify_jwt = false
