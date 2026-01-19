@@ -2777,6 +2777,7 @@ export type Database = {
           project_status: string | null
           revenue_amount: number | null
           sector: string
+          sector_pe: string | null
           short_description: string | null
           short_description_ca: string | null
           short_description_en: string | null
@@ -2818,6 +2819,7 @@ export type Database = {
           project_status?: string | null
           revenue_amount?: number | null
           sector: string
+          sector_pe?: string | null
           short_description?: string | null
           short_description_ca?: string | null
           short_description_en?: string | null
@@ -2859,6 +2861,7 @@ export type Database = {
           project_status?: string | null
           revenue_amount?: number | null
           sector?: string
+          sector_pe?: string | null
           short_description?: string | null
           short_description_ca?: string | null
           short_description_en?: string | null
@@ -2899,6 +2902,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_operations_sector_pe_fkey"
+            columns: ["sector_pe"]
+            isOneToOne: false
+            referencedRelation: "pe_sector_taxonomy"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -10583,6 +10593,45 @@ export type Database = {
         }
         Relationships: []
       }
+      pe_sector_taxonomy: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          keywords: string[] | null
+          name_en: string
+          name_es: string
+          parent_sector: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          name_en: string
+          name_es: string
+          parent_sector?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          name_en?: string
+          name_es?: string
+          parent_sector?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       pipeline_stages: {
         Row: {
           color: string
@@ -11745,6 +11794,7 @@ export type Database = {
           phone: string | null
           preferred_locations: string[] | null
           preferred_sectors: string[] | null
+          preferred_sectors_pe: string[] | null
           referrer: string | null
           search_phase: string | null
           status: string
@@ -11785,6 +11835,7 @@ export type Database = {
           phone?: string | null
           preferred_locations?: string[] | null
           preferred_sectors?: string[] | null
+          preferred_sectors_pe?: string[] | null
           referrer?: string | null
           search_phase?: string | null
           status?: string
@@ -11825,6 +11876,7 @@ export type Database = {
           phone?: string | null
           preferred_locations?: string[] | null
           preferred_sectors?: string[] | null
+          preferred_sectors_pe?: string[] | null
           referrer?: string | null
           search_phase?: string | null
           status?: string
@@ -12609,7 +12661,9 @@ export type Database = {
           scrape_source_urls: string[] | null
           searcher_lead_id: string | null
           sector_exclusions: string[] | null
+          sector_exclusions_pe: string[] | null
           sector_focus: string[] | null
+          sector_focus_pe: string[] | null
           size_criteria: Json | null
           source_last_verified_at: string | null
           source_url: string | null
@@ -12644,7 +12698,9 @@ export type Database = {
           scrape_source_urls?: string[] | null
           searcher_lead_id?: string | null
           sector_exclusions?: string[] | null
+          sector_exclusions_pe?: string[] | null
           sector_focus?: string[] | null
+          sector_focus_pe?: string[] | null
           size_criteria?: Json | null
           source_last_verified_at?: string | null
           source_url?: string | null
@@ -12679,7 +12735,9 @@ export type Database = {
           scrape_source_urls?: string[] | null
           searcher_lead_id?: string | null
           sector_exclusions?: string[] | null
+          sector_exclusions_pe?: string[] | null
           sector_focus?: string[] | null
+          sector_focus_pe?: string[] | null
           size_criteria?: Json | null
           source_last_verified_at?: string | null
           source_url?: string | null

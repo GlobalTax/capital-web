@@ -1,5 +1,7 @@
 import { z } from 'zod';
+import { PE_SECTOR_OPTIONS } from '@/constants/peSectors';
 
+// Legacy sector options (for backwards compatibility)
 export const SECTOR_OPTIONS = [
   'Tecnología',
   'Industria',
@@ -17,6 +19,12 @@ export const SECTOR_OPTIONS = [
   'Inmobiliario',
   'Otros'
 ] as const;
+
+// PE/Search Fund standard sectors (recommended for new implementations)
+export const PE_SECTOR_OPTIONS_FORM = PE_SECTOR_OPTIONS;
+
+// Get PE sector IDs for validation
+export const PE_SECTOR_IDS = PE_SECTOR_OPTIONS.map(s => s.value) as [string, ...string[]];
 
 export const LOCATION_OPTIONS = [
   'Nacional (toda España)',
