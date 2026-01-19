@@ -16,6 +16,7 @@ import {
   Megaphone,
   CalendarDays,
   FileText,
+  Sparkles,
 } from 'lucide-react';
 import {
   startOfDay,
@@ -210,6 +211,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
       dateTo: undefined,
       dateRangeLabel: undefined,
       showUniqueContacts: filters.showUniqueContacts,
+      valuationType: 'all',
     });
   };
 
@@ -254,6 +256,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
     filters.location,
     filters.acquisitionChannelId,
     filters.leadFormId,
+    filters.valuationType && filters.valuationType !== 'all',
   ].filter(Boolean).length;
 
   // Get selected channel name for display
@@ -400,6 +403,59 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
                 {option.label}
               </DropdownMenuCheckboxItem>
             ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* ⭐ Valuation Type filter dropdown (Pro vs Standard) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={cn(
+                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                filters.valuationType === 'pro' && "border-emerald-500 text-emerald-600 bg-emerald-500/5",
+                filters.valuationType === 'standard' && "border-slate-500 text-slate-600 bg-slate-500/5"
+              )}
+            >
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              Tipo
+              {filters.valuationType === 'pro' && (
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1.5 text-[10px] bg-emerald-500/20 text-emerald-700 border-emerald-300">
+                  Pro
+                </Badge>
+              )}
+              {filters.valuationType === 'standard' && (
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1.5 text-[10px] bg-slate-200 text-slate-600">
+                  Estándar
+                </Badge>
+              )}
+              <ChevronDown className="h-3 w-3 ml-1 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-40 bg-[hsl(var(--linear-bg-elevated))] border-[hsl(var(--linear-border))]">
+            <DropdownMenuCheckboxItem
+              checked={!filters.valuationType || filters.valuationType === 'all'}
+              onCheckedChange={() => handleFilterChange('valuationType', 'all')}
+            >
+              Todos
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator className="bg-[hsl(var(--linear-border))]" />
+            <DropdownMenuCheckboxItem
+              checked={filters.valuationType === 'pro'}
+              onCheckedChange={() => handleFilterChange('valuationType', 'pro')}
+            >
+              <span className="text-emerald-600 font-medium flex items-center gap-1">
+                <Sparkles className="h-3 w-3" />
+                Pro
+              </span>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={filters.valuationType === 'standard'}
+              onCheckedChange={() => handleFilterChange('valuationType', 'standard')}
+            >
+              Estándar
+            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -663,6 +719,24 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Quick chip: PRO */}
+        <Button
+          variant={filters.valuationType === 'pro' ? 'default' : 'outline'}
+          size="sm"
+          className={cn(
+            "h-7 px-2.5 text-xs font-medium gap-1",
+            filters.valuationType === 'pro' 
+              ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600"
+              : "border-emerald-300 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-400"
+          )}
+          onClick={() => handleFilterChange('valuationType', 
+            filters.valuationType === 'pro' ? 'all' : 'pro'
+          )}
+        >
+          <Sparkles className="h-3 w-3" />
+          PRO
+        </Button>
 
         {/* Unique contacts toggle */}
         <div className="flex items-center gap-2 mr-2">
