@@ -40,6 +40,7 @@ export const LazyLandingPagesPage = lazy(() => import('@/pages/admin/LandingPage
 export const LazyUnifiedLandingPagesPage = lazy(() => import('@/pages/admin/UnifiedLandingPagesPage'));
 export const LazyAdminBanners = lazy(() => import('@/pages/AdminBanners'));
 export const LazyContactsPage = lazy(() => import('@/pages/admin/ContactsPage'));
+export const LazyBuyerContactsManager = lazy(() => import('@/pages/admin/BuyerContactsManager'));
 export const LazyLeadMagnetsPage = lazy(() => import('@/pages/admin/LeadMagnetsPage'));
 export const LazyValuationDetailPage = lazy(() => import('@/pages/admin/ValuationDetailPage'));
 export const LazyLeadDetailPage = lazy(() => import('@/pages/admin/LeadDetailPage'));
