@@ -4,6 +4,7 @@ export * from './types/presentation.types';
 // Hooks
 export * from './hooks/usePresentations';
 export { useAIContentGeneration } from './hooks/useAIContentGeneration';
+export { usePresentationVersioning } from './hooks/usePresentationVersioning';
 
 // Utils
 export * from './utils/slideOutlineGenerator';
