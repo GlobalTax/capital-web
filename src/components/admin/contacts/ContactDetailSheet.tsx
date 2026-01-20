@@ -42,6 +42,7 @@ import { useContactUpdate, ContactUpdateData } from '@/hooks/useContactUpdate';
 import { Fase0DocumentButtons, Fase0DocumentsList } from '@/features/fase0-documents';
 import { useQueryClient } from '@tanstack/react-query';
 import { ActivityDescriptionGenerator } from '@/components/admin/leads/ActivityDescriptionGenerator';
+import { SectorTagsBlock } from '@/components/admin/contacts/SectorTagsBlock';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -131,6 +132,7 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   const [isSavingForm, setIsSavingForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ContactUpdateData>({});
+  const [generatedDescription, setGeneratedDescription] = useState<string | null>(null);
 
   // Initialize form data and channel when contact changes
   useEffect(() => {
@@ -482,12 +484,20 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
 
           <Separator className="bg-[hsl(var(--linear-border))] my-4" />
 
-          {/* Activity Description Generator */}
+          {/* Activity Description Generator + Sector Tags */}
           {contact.company && (
-            <div className="mb-6">
+            <div className="space-y-3 mb-6">
               <ActivityDescriptionGenerator
                 initialCompanyName={contact.company}
                 initialCif={contact.cif}
+                compact
+                onDescriptionGenerated={(desc) => {
+                  setGeneratedDescription(desc);
+                }}
+              />
+              <SectorTagsBlock
+                companyName={contact.company}
+                description={generatedDescription || contact.ai_company_summary}
                 compact
               />
             </div>
