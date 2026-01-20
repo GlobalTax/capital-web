@@ -16047,6 +16047,9 @@ export type Database = {
         | "financials"
         | "closing"
         | "custom"
+        | "disclaimer"
+        | "overview"
+        | "market"
       time_entry_value_type: "core_ma" | "soporte" | "bajo_valor"
       transaction_status: "pendiente" | "completada" | "cancelada"
       transaction_type:
@@ -16286,6 +16289,9 @@ export const Constants = {
         "financials",
         "closing",
         "custom",
+        "disclaimer",
+        "overview",
+        "market",
       ],
       time_entry_value_type: ["core_ma", "soporte", "bajo_valor"],
       transaction_status: ["pendiente", "completada", "cancelada"],

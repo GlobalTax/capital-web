@@ -9,9 +9,13 @@ import type {
   CreatePresentationInput,
   UpdateSlideInput,
   SharingLink,
-  SlideContent
+  SlideContent,
+  SlideLayout
 } from '../types/presentation.types';
-import type { Json } from '@/integrations/supabase/types';
+import type { Json, Database } from '@/integrations/supabase/types';
+
+// Helper type for Supabase slide layout enum
+type DbSlideLayout = Database['public']['Tables']['presentation_slides']['Row']['layout'];
 
 const QUERY_KEYS = {
   presentations: ['presentations'],
@@ -242,7 +246,7 @@ export const useCreatePresentation = () => {
         const slides = slidesConfig.map((slide, index) => ({
           project_id: project.id,
           order_index: index,
-          layout: slide.layout || 'custom',
+          layout: (slide.layout || 'custom') as DbSlideLayout,
           headline: slide.headline || '',
           subline: slide.subline || '',
           content: (slide.content || {}) as Json,
@@ -251,7 +255,7 @@ export const useCreatePresentation = () => {
 
         const { error: slidesError } = await supabase
           .from('presentation_slides')
-          .insert(slides);
+          .insert(slides as Database['public']['Tables']['presentation_slides']['Insert'][]);
 
         if (slidesError) throw slidesError;
       }
@@ -322,11 +326,14 @@ export const useUpdateSlide = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, projectId, content, ...updates }: UpdateSlideInput & { id: string; projectId: string }) => {
-      const updateData = content ? { ...updates, content: content as Json } : updates;
+    mutationFn: async ({ id, projectId, content, layout, ...updates }: UpdateSlideInput & { id: string; projectId: string }) => {
+      const updateData: Record<string, unknown> = { ...updates };
+      if (content) updateData.content = content as Json;
+      if (layout) updateData.layout = layout as DbSlideLayout;
+      
       const { data, error } = await supabase
         .from('presentation_slides')
-        .update(updateData)
+        .update(updateData as Database['public']['Tables']['presentation_slides']['Update'])
         .eq('id', id)
         .select()
         .single();
@@ -365,12 +372,12 @@ export const useCreateSlide = () => {
         .insert({
           project_id: projectId,
           order_index: maxOrder + 1,
-          layout: slide.layout || 'custom',
+          layout: (slide.layout || 'custom') as DbSlideLayout,
           headline: slide.headline,
           subline: slide.subline,
           content: (content || {}) as Json,
           is_hidden: false
-        })
+        } as Database['public']['Tables']['presentation_slides']['Insert'])
         .select()
         .single();
 

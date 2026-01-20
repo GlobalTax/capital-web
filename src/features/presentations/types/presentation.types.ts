@@ -1,7 +1,7 @@
 // Presentation Engine Types
 
 export type PresentationType = 'teaser_sell' | 'firm_deck' | 'client_deck' | 'one_pager' | 'mandate_deck' | 'custom';
-export type SlideLayout = 'title' | 'hero' | 'stats' | 'bullets' | 'comparison' | 'timeline' | 'team' | 'financials' | 'closing' | 'custom';
+export type SlideLayout = 'title' | 'hero' | 'stats' | 'bullets' | 'comparison' | 'timeline' | 'team' | 'financials' | 'closing' | 'disclaimer' | 'overview' | 'market' | 'custom';
 export type SharePermission = 'view' | 'download_pdf' | 'edit';
 export type PresentationStatus = 'draft' | 'review' | 'approved' | 'published' | 'archived';
 export type Theme = 'light' | 'dark';
@@ -175,6 +175,9 @@ export const SLIDE_LAYOUT_LABELS: Record<SlideLayout, string> = {
   team: 'Team',
   financials: 'Financials',
   closing: 'Closing / CTA',
+  disclaimer: 'Confidentiality & Disclaimer',
+  overview: 'Company Overview',
+  market: 'Market & Positioning',
   custom: 'Custom'
 };
 
