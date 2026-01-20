@@ -245,3 +245,6 @@ verify_jwt = true
 
 [functions.refine-presentation-content]
 verify_jwt = true
+
+[functions.validate-presentation-content]
+verify_jwt = true

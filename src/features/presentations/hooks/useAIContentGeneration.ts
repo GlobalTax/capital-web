@@ -30,9 +30,49 @@ interface RefineResult {
   slides: GeneratedSlide[];
 }
 
+interface SlideIssue {
+  slide_index: number;
+  issue_type: 'constraint_violation' | 'risky_claim' | 'terminology' | 'text_density' | 'invented_data';
+  severity: 'low' | 'medium' | 'high';
+  description: string;
+  field: string;
+  current_value?: string;
+}
+
+interface ValidationReport {
+  overall_quality_score: number;
+  issues_per_slide: Record<number, SlideIssue[]>;
+  suggested_fixes: Array<{
+    slide_index: number;
+    field: string;
+    original: string;
+    suggested: string;
+  }>;
+  risk_flags: Array<{
+    slide_index: number;
+    risk_type: string;
+    description: string;
+    recommendation: string;
+  }>;
+  summary: {
+    total_issues: number;
+    high_severity: number;
+    medium_severity: number;
+    low_severity: number;
+  };
+}
+
+interface ValidateResult {
+  success: boolean;
+  report: ValidationReport;
+}
+
+export type { GeneratedSlide, ValidationReport, SlideIssue };
+
 export function useAIContentGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const generateOutline = useCallback((
@@ -147,6 +187,68 @@ export function useAIContentGeneration() {
     }
   }, []);
 
+  /**
+   * Validate slides for M&A compliance:
+   * - Copy constraints (word limits, bullet counts)
+   * - Risky claims (forward-looking statements, guarantees)
+   * - Terminology consistency
+   * - Text density issues
+   * - Invented/implied data not in inputs
+   */
+  const validateContent = useCallback(async (
+    slides: GeneratedSlide[],
+    inputs?: SlideOutlineInputs
+  ): Promise<ValidationReport | null> => {
+    setIsValidating(true);
+    setError(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke(
+        'validate-presentation-content',
+        {
+          body: { slides, inputs }
+        }
+      );
+
+      if (fnError) {
+        throw new Error(fnError.message);
+      }
+
+      const result = data as ValidateResult;
+
+      if (!result.success) {
+        throw new Error((data as { error?: string }).error || 'Validation failed');
+      }
+
+      const report = result.report;
+      const score = report.overall_quality_score;
+
+      if (score >= 8) {
+        toast.success(`Validación completada: ${score}/10 - Excelente calidad`);
+      } else if (score >= 6) {
+        toast.warning(`Validación completada: ${score}/10 - Requiere revisión`);
+      } else {
+        toast.error(`Validación completada: ${score}/10 - Necesita correcciones`);
+      }
+
+      return report;
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error validating content';
+      setError(message);
+      
+      if (message.includes('Rate limit')) {
+        toast.error('Límite de solicitudes alcanzado. Intenta de nuevo en unos minutos.');
+      } else {
+        toast.error('Error validando contenido: ' + message);
+      }
+      
+      return null;
+    } finally {
+      setIsValidating(false);
+    }
+  }, []);
+
   // Convert generated slides to Slide format for saving
   const convertToSlides = useCallback((
     generatedSlides: GeneratedSlide[],
@@ -169,10 +271,12 @@ export function useAIContentGeneration() {
   return {
     isGenerating,
     isRefining,
+    isValidating,
     error,
     generateOutline,
     generateContent,
     refineContent,
+    validateContent,
     convertToSlides,
     clearError: () => setError(null)
   };
