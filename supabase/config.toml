@@ -251,3 +251,6 @@ verify_jwt = true
 
 [functions.translate-presentation-content]
 verify_jwt = true
+
+[functions.generate-company-activity-description]
+verify_jwt = false
