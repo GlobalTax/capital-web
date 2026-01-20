@@ -42,6 +42,7 @@ const HubVentaEmpresa = lazy(() => import('@/pages/HubVentaEmpresa'));
 const LandingCompraEmpresasMeta = lazy(() => import('@/pages/LandingCompraEmpresasMeta'));
 const LandingOpenDeals = lazy(() => import('@/pages/LandingOpenDeals'));
 const LandingOportunidadesMeta = lazy(() => import('@/pages/LandingOportunidadesMeta'));
+const LandingRODLinkedIn = lazy(() => import('@/pages/LandingRODLinkedIn'));
 import SecurityCalculator from '@/pages/SecurityCalculator';
 
 // === SERVICE PAGES ===
@@ -201,6 +202,7 @@ export const AppRoutes = () => {
         <Route path="/lp/compra-empresas-meta" element={<LandingCompraEmpresasMeta />} />
         <Route path="/lp/open-deals" element={<LandingOpenDeals />} />
         <Route path="/lp/oportunidades-meta" element={<LandingOportunidadesMeta />} />
+        <Route path="/lp/rod-linkedin" element={<LandingRODLinkedIn />} />
         <Route path="/accountex" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/accountex-2025" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/seguridad/calculadora" element={<SecurityCalculator />} />
