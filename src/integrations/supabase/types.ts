@@ -1993,6 +1993,111 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_contact_imports: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          duplicate_emails: number | null
+          error_log: Json | null
+          failed_imports: number | null
+          filename: string
+          id: string
+          imported_by: string | null
+          status: string | null
+          successful_imports: number | null
+          total_rows: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          duplicate_emails?: number | null
+          error_log?: Json | null
+          failed_imports?: number | null
+          filename: string
+          id?: string
+          imported_by?: string | null
+          status?: string | null
+          successful_imports?: number | null
+          total_rows?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          duplicate_emails?: number | null
+          error_log?: Json | null
+          failed_imports?: number | null
+          filename?: string
+          id?: string
+          imported_by?: string | null
+          status?: string | null
+          successful_imports?: number | null
+          total_rows?: number | null
+        }
+        Relationships: []
+      }
+      buyer_contacts: {
+        Row: {
+          campaign_name: string | null
+          company: string | null
+          created_at: string | null
+          email: string
+          first_name: string
+          full_name: string | null
+          id: string
+          import_batch_id: string | null
+          import_filename: string | null
+          imported_at: string | null
+          imported_by: string | null
+          internal_notes: string | null
+          last_name: string | null
+          origin: string
+          phone: string | null
+          position: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          campaign_name?: string | null
+          company?: string | null
+          created_at?: string | null
+          email: string
+          first_name: string
+          full_name?: string | null
+          id?: string
+          import_batch_id?: string | null
+          import_filename?: string | null
+          imported_at?: string | null
+          imported_by?: string | null
+          internal_notes?: string | null
+          last_name?: string | null
+          origin?: string
+          phone?: string | null
+          position?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          campaign_name?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          first_name?: string
+          full_name?: string | null
+          id?: string
+          import_batch_id?: string | null
+          import_filename?: string | null
+          imported_at?: string | null
+          imported_by?: string | null
+          internal_notes?: string | null
+          last_name?: string | null
+          origin?: string
+          phone?: string | null
+          position?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       buyer_preferences: {
         Row: {
           alert_frequency: string | null
@@ -11370,6 +11475,7 @@ export type Database = {
           is_hidden: boolean | null
           is_locked: boolean | null
           layout: Database["public"]["Enums"]["slide_layout"]
+          layout_variant: string | null
           notes: string | null
           order_index: number
           project_id: string
@@ -11390,6 +11496,7 @@ export type Database = {
           is_hidden?: boolean | null
           is_locked?: boolean | null
           layout?: Database["public"]["Enums"]["slide_layout"]
+          layout_variant?: string | null
           notes?: string | null
           order_index?: number
           project_id: string
@@ -11410,6 +11517,7 @@ export type Database = {
           is_hidden?: boolean | null
           is_locked?: boolean | null
           layout?: Database["public"]["Enums"]["slide_layout"]
+          layout_variant?: string | null
           notes?: string | null
           order_index?: number
           project_id?: string

@@ -292,6 +292,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Base de contactos"
       },
       { 
+        title: "Contactos Compra",
+        url: "/admin/buyer-contacts", 
+        icon: ShoppingCart,
+        badge: "NEW",
+        description: "Contactos campaña compras"
+      },
+      { 
         title: "Empresas",
         url: "/admin/empresas", 
         icon: Building2,

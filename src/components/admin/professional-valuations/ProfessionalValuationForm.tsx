@@ -71,9 +71,9 @@ const DEFAULT_DATA: ProfessionalValuationData = {
   sector: 'Otro',
   sectorDescription: '',
   financialYears: [
-    { year: currentYear - 2, revenue: 0, ebitda: 0 },
-    { year: currentYear - 1, revenue: 0, ebitda: 0 },
-    { year: currentYear, revenue: 0, ebitda: 0 },
+    { year: 2023, revenue: 0, ebitda: 0 },
+    { year: 2024, revenue: 0, ebitda: 0 },
+    { year: 2025, revenue: 0, ebitda: 0 },
   ],
   normalizationAdjustments: [],
   reportedEbitda: 0,
