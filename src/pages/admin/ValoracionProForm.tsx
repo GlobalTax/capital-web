@@ -74,9 +74,9 @@ export default function ValoracionProForm() {
       setCurrentData({
         status: 'draft',
         financialYears: [
-          { year: new Date().getFullYear() - 2, revenue: 0, ebitda: 0, netProfit: 0 },
-          { year: new Date().getFullYear() - 1, revenue: 0, ebitda: 0, netProfit: 0 },
-          { year: new Date().getFullYear(), revenue: 0, ebitda: 0, netProfit: 0 },
+          { year: 2023, revenue: 0, ebitda: 0, netProfit: 0 },
+          { year: 2024, revenue: 0, ebitda: 0, netProfit: 0 },
+          { year: 2025, revenue: 0, ebitda: 0, netProfit: 0 },
         ],
         normalizationAdjustments: [],
       });
