@@ -3,7 +3,7 @@ import type { PresentationType, SlideLayout } from '../types/presentation.types'
 // Slide type definitions per presentation type
 export const PRESENTATION_SLIDE_TYPES: Record<PresentationType, SlideLayout[]> = {
   teaser_sell: ['disclaimer', 'hero', 'overview', 'bullets', 'market', 'financials', 'timeline', 'closing'],
-  firm_deck: ['title', 'hero', 'stats', 'bullets', 'team', 'closing'],
+  firm_deck: ['hero', 'bullets', 'stats', 'timeline', 'closing'],
   client_deck: ['title', 'hero', 'stats', 'comparison', 'bullets', 'closing'],
   one_pager: ['title', 'stats', 'closing'],
   mandate_deck: ['title', 'hero', 'stats', 'bullets', 'comparison', 'closing'],
@@ -120,41 +120,47 @@ function generateTeaserSellOutline(inputs: SlideOutlineInputs, _allowed: SlideLa
 
 function generateFirmDeckOutline(inputs: SlideOutlineInputs, _allowed: SlideLayout[]): SlideOutlineItem[] {
   return [
+    // Slide 1: Positioning Statement
     {
       slide_index: 0,
-      slide_type: 'title',
+      slide_type: 'hero',
       layout: 'A',
-      purpose: 'Introduce firm with logo, tagline, and service areas'
+      purpose: 'Present firm positioning statement and core identity with understated authority'
     },
+    // Slide 2: What We Do & For Whom
     {
       slide_index: 1,
-      slide_type: 'hero',
-      layout: 'B',
-      purpose: 'Present firm value proposition and differentiators'
-    },
-    {
-      slide_index: 2,
-      slide_type: 'stats',
-      layout: 'A',
-      purpose: 'Display track record metrics: transactions completed, total volume, years of experience'
-    },
-    {
-      slide_index: 3,
-      slide_type: 'team',
-      layout: 'C',
-      purpose: 'Showcase key team members with credentials and expertise'
-    },
-    {
-      slide_index: 4,
       slide_type: 'bullets',
       layout: 'B',
-      purpose: 'Detail service offerings and methodology'
+      purpose: 'Define services offered and target client profiles with clarity'
     },
+    // Slide 3: Our Approach
+    {
+      slide_index: 2,
+      slide_type: 'bullets',
+      layout: 'B',
+      purpose: 'Describe methodology, philosophy, and principles guiding the work'
+    },
+    // Slide 4: Experience & Credibility
+    {
+      slide_index: 3,
+      slide_type: 'stats',
+      layout: 'C',
+      purpose: 'Display track record: transactions closed, aggregate value, years of experience'
+    },
+    // Slide 5: How We Work
+    {
+      slide_index: 4,
+      slide_type: 'timeline',
+      layout: 'B',
+      purpose: 'Outline engagement process from initial contact to transaction close'
+    },
+    // Slide 6: Call to Action
     {
       slide_index: 5,
       slide_type: 'closing',
       layout: 'A',
-      purpose: 'Call to action with contact details and next steps'
+      purpose: 'Provide clear next step and contact information without sales pressure'
     }
   ];
 }
