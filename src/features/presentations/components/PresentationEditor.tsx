@@ -14,6 +14,7 @@ import { SlideRenderer } from './SlideRenderer';
 import { VersionManager } from './VersionManager';
 import { VersionHistory } from './VersionHistory';
 import { SlideApprovalControls } from './SlideApprovalControls';
+import { TranslateButton } from './TranslateButton';
 import { 
   Plus, 
   Trash2, 
@@ -241,6 +242,8 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({
               <FileText className="w-4 h-4" />
             </button>
           </div>
+
+          <TranslateButton projectId={presentation.id} slides={slides} />
 
           <Button variant="outline" size="sm" onClick={() => setVersionManagerOpen(true)}>
             <GitBranch className="w-4 h-4 mr-2" />
