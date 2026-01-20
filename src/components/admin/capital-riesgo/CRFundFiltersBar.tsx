@@ -24,10 +24,8 @@ interface CRFundFiltersBarProps {
   filteredCount: number;
 }
 
-// Quick filter chips configuration
+// Quick filter chips configuration (removed status-based chips)
 const QUICK_CHIPS = [
-  { key: 'status', value: 'active', label: 'Activos', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
-  { key: 'status', value: 'raising', label: 'Raising', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
   { key: 'fundType', value: 'private_equity', label: 'PE', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
   { key: 'fundType', value: 'venture_capital', label: 'VC', color: 'bg-teal-500/10 text-teal-600 border-teal-500/20' },
   { key: 'hasPortfolio', value: true, label: 'Con Portfolio', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
