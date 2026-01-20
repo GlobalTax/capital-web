@@ -41,6 +41,7 @@ import ContactEditForm from './ContactEditForm';
 import { useContactUpdate, ContactUpdateData } from '@/hooks/useContactUpdate';
 import { Fase0DocumentButtons, Fase0DocumentsList } from '@/features/fase0-documents';
 import { useQueryClient } from '@tanstack/react-query';
+import { ActivityDescriptionGenerator } from '@/components/admin/leads/ActivityDescriptionGenerator';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -478,6 +479,19 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
               />
             </div>
           </div>
+
+          <Separator className="bg-[hsl(var(--linear-border))] my-4" />
+
+          {/* Activity Description Generator */}
+          {contact.company && (
+            <div className="mb-6">
+              <ActivityDescriptionGenerator
+                initialCompanyName={contact.company}
+                initialCif={contact.cif}
+                compact
+              />
+            </div>
+          )}
 
           <Separator className="bg-[hsl(var(--linear-border))] my-4" />
 
