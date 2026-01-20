@@ -3,6 +3,10 @@ export * from './types/presentation.types';
 
 // Hooks
 export * from './hooks/usePresentations';
+export { useAIContentGeneration } from './hooks/useAIContentGeneration';
+
+// Utils
+export * from './utils/slideOutlineGenerator';
 
 // Components
 export { SlideRenderer } from './components/SlideRenderer';
