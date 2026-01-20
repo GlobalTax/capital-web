@@ -25,8 +25,14 @@ interface AIGenerationResult {
   generated_at: string;
 }
 
+interface RefineResult {
+  success: boolean;
+  slides: GeneratedSlide[];
+}
+
 export function useAIContentGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const generateOutline = useCallback((
@@ -90,6 +96,57 @@ export function useAIContentGeneration() {
     }
   }, []);
 
+  /**
+   * Refine existing slides with senior IB editor guidelines:
+   * - Remove marketing language
+   * - Increase clarity and precision
+   * - Reduce text density
+   * - Improve terminology consistency
+   * - Maintain calm, confident tone
+   */
+  const refineContent = useCallback(async (
+    slides: GeneratedSlide[]
+  ): Promise<GeneratedSlide[] | null> => {
+    setIsRefining(true);
+    setError(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke(
+        'refine-presentation-content',
+        {
+          body: { slides }
+        }
+      );
+
+      if (fnError) {
+        throw new Error(fnError.message);
+      }
+
+      const result = data as RefineResult;
+
+      if (!result.success) {
+        throw new Error((data as { error?: string }).error || 'Refinement failed');
+      }
+
+      toast.success('Contenido refinado correctamente');
+      return result.slides;
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error refining content';
+      setError(message);
+      
+      if (message.includes('Rate limit')) {
+        toast.error('Límite de solicitudes alcanzado. Intenta de nuevo en unos minutos.');
+      } else {
+        toast.error('Error refinando contenido: ' + message);
+      }
+      
+      return null;
+    } finally {
+      setIsRefining(false);
+    }
+  }, []);
+
   // Convert generated slides to Slide format for saving
   const convertToSlides = useCallback((
     generatedSlides: GeneratedSlide[],
@@ -111,9 +168,11 @@ export function useAIContentGeneration() {
 
   return {
     isGenerating,
+    isRefining,
     error,
     generateOutline,
     generateContent,
+    refineContent,
     convertToSlides,
     clearError: () => setError(null)
   };
