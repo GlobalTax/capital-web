@@ -185,19 +185,19 @@ export const useUnifiedContacts = () => {
     try {
       setIsLoading(true);
       
-      // Fetch contact_leads with linked empresa and acquisition channel (exclude soft deleted)
+      // Fetch contact_leads with linked empresa, acquisition channel, and lead form (exclude soft deleted)
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
-        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, lead_form, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (contactError) throw contactError;
 
-      // Fetch company_valuations (exclude soft deleted) - include Apollo fields
+      // Fetch company_valuations (exclude soft deleted) - include Apollo fields and lead form
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
-        .select('*, lead_status_crm, assigned_to, acquisition_channel:acquisition_channel_id(id, name, category), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
+        .select('*, lead_status_crm, assigned_to, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -206,7 +206,7 @@ export const useUnifiedContacts = () => {
       // Fetch collaborator_applications (exclude soft deleted)
       const { data: collaboratorLeads, error: collaboratorError } = await supabase
         .from('collaborator_applications')
-        .select('*, lead_status_crm, assigned_to, acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_status_crm, assigned_to, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -215,14 +215,14 @@ export const useUnifiedContacts = () => {
       // Fetch general_contact_leads (if exists, exclude soft deleted)
       const { data: generalLeads, error: generalError } = await supabase
         .from('general_contact_leads')
-        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       // Fetch acquisition_leads (exclude soft deleted)
       const { data: acquisitionLeads, error: acquisitionError } = await supabase
         .from('acquisition_leads')
-        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -231,7 +231,7 @@ export const useUnifiedContacts = () => {
       // Fetch company_acquisition_inquiries (exclude soft deleted)
       const { data: companyAcquisitionLeads, error: companyAcquisitionError } = await supabase
         .from('company_acquisition_inquiries')
-        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -240,7 +240,7 @@ export const useUnifiedContacts = () => {
       // Fetch advisor_valuations
       const { data: advisorLeads, error: advisorError } = await supabase
         .from('advisor_valuations')
-        .select('*, acquisition_channel:acquisition_channel_id(id, name, category)')
+        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .order('created_at', { ascending: false });
 
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
@@ -307,6 +307,9 @@ export const useUnifiedContacts = () => {
             acquisition_channel_id: lead.acquisition_channel_id,
             acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
             acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+            // 🔥 NEW: Lead Form (Formulario de origen)
+            lead_form: lead.lead_form,
+            lead_form_name: (lead.lead_form_ref as any)?.name || null,
             // 🔥 NEW: Datos de Valoración Pro vinculada
             final_valuation: proValuation?.valuation_central || undefined,
             ebitda: proValuation?.normalized_ebitda || undefined,
@@ -351,6 +354,9 @@ export const useUnifiedContacts = () => {
           acquisition_channel_id: lead.acquisition_channel_id,
           acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
           acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+          // Lead Form (Formulario de origen)
+          lead_form: (lead as any).lead_form,
+          lead_form_name: (lead.lead_form_ref as any)?.name || null,
           // 🔥 Apollo enrichment fields
           apollo_status: (lead as any).apollo_status || 'none',
           apollo_error: (lead as any).apollo_error,
@@ -390,6 +396,9 @@ export const useUnifiedContacts = () => {
           acquisition_channel_id: (lead as any).acquisition_channel_id,
           acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
           acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+          // Lead Form (Formulario de origen)
+          lead_form: (lead as any).lead_form,
+          lead_form_name: (lead.lead_form_ref as any)?.name || null,
         })),
         
         // General contact leads (if table exists)
@@ -421,6 +430,9 @@ export const useUnifiedContacts = () => {
           acquisition_channel_id: (lead as any).acquisition_channel_id,
           acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
           acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+          // Lead Form (Formulario de origen)
+          lead_form: (lead as any).lead_form,
+          lead_form_name: (lead.lead_form_ref as any)?.name || null,
         })),
         
         // Acquisition leads
@@ -453,6 +465,9 @@ export const useUnifiedContacts = () => {
           acquisition_channel_id: (lead as any).acquisition_channel_id,
           acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
           acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+          // Lead Form (Formulario de origen)
+          lead_form: (lead as any).lead_form,
+          lead_form_name: (lead.lead_form_ref as any)?.name || null,
         })),
         
         // Company acquisition inquiries
@@ -488,6 +503,9 @@ export const useUnifiedContacts = () => {
           acquisition_channel_id: (lead as any).acquisition_channel_id,
           acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
           acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+          // Lead Form (Formulario de origen)
+          lead_form: (lead as any).lead_form,
+          lead_form_name: (lead.lead_form_ref as any)?.name || null,
         })),
         
         // Advisor leads (calculadora de asesores)
@@ -518,6 +536,9 @@ export const useUnifiedContacts = () => {
           acquisition_channel_id: (lead as any).acquisition_channel_id,
           acquisition_channel_name: (lead.acquisition_channel as any)?.name || null,
           acquisition_channel_category: (lead.acquisition_channel as any)?.category || null,
+          // Lead Form (Formulario de origen)
+          lead_form: (lead as any).lead_form,
+          lead_form_name: (lead.lead_form_ref as any)?.name || null,
         })),
       ];
 

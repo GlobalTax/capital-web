@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { AcquisitionChannelSelect } from './AcquisitionChannelSelect';
 import { LeadFormSelect } from './LeadFormSelect';
+import { useLeadForms } from '@/hooks/useLeadForms';
 import { supabase } from '@/integrations/supabase/client';
 import { useAcquisitionChannels, CATEGORY_LABELS, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
 import ContactEditForm from './ContactEditForm';
@@ -125,6 +126,7 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { channels } = useAcquisitionChannels();
+  const { forms } = useLeadForms();
   const { updateContact, isUpdating } = useContactUpdate();
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
@@ -268,7 +270,19 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
       return;
     }
     
+    // Get form name for optimistic update
+    const formName = forms.find(f => f.id === formId)?.name || null;
+    
     setIsSavingForm(true);
+    
+    // Optimistic update - update cache immediately
+    queryClient.setQueryData(['unified-contacts'], (old: UnifiedContact[] | undefined) =>
+      (old || []).map(c => c.id === contact.id 
+        ? { ...c, lead_form: formId, lead_form_name: formName } 
+        : c
+      )
+    );
+    
     try {
       const { error } = await supabase
         .from(table as any)
@@ -279,11 +293,10 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
       
       setSelectedFormId(formId);
       
-      // Invalidate cache to refresh table immediately
-      queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
-      
       toast({ title: 'Formulario actualizado' });
     } catch (error) {
+      // Revert optimistic update on error
+      queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
       toast({ title: 'Error', description: 'No se pudo actualizar el formulario', variant: 'destructive' });
     } finally {
       setIsSavingForm(false);
