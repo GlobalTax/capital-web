@@ -11307,6 +11307,9 @@ export type Database = {
       }
       presentation_slides: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
           background_color: string | null
           background_image_url: string | null
           content: Json | null
@@ -11314,6 +11317,7 @@ export type Database = {
           headline: string | null
           id: string
           is_hidden: boolean | null
+          is_locked: boolean | null
           layout: Database["public"]["Enums"]["slide_layout"]
           notes: string | null
           order_index: number
@@ -11323,6 +11327,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           background_color?: string | null
           background_image_url?: string | null
           content?: Json | null
@@ -11330,6 +11337,7 @@ export type Database = {
           headline?: string | null
           id?: string
           is_hidden?: boolean | null
+          is_locked?: boolean | null
           layout?: Database["public"]["Enums"]["slide_layout"]
           notes?: string | null
           order_index?: number
@@ -11339,6 +11347,9 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           background_color?: string | null
           background_image_url?: string | null
           content?: Json | null
@@ -11346,6 +11357,7 @@ export type Database = {
           headline?: string | null
           id?: string
           is_hidden?: boolean | null
+          is_locked?: boolean | null
           layout?: Database["public"]["Enums"]["slide_layout"]
           notes?: string | null
           order_index?: number

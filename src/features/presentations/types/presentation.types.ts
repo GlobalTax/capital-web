@@ -37,6 +37,8 @@ export interface SlideContent {
   custom_html?: string;
 }
 
+export type SlideApprovalStatus = 'draft' | 'pending_review' | 'approved' | 'locked';
+
 export interface Slide {
   id: string;
   project_id: string;
@@ -50,6 +52,10 @@ export interface Slide {
   text_color?: string;
   is_hidden: boolean;
   notes?: string;
+  approval_status?: SlideApprovalStatus;
+  approved_at?: string;
+  approved_by?: string;
+  is_locked?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -70,9 +76,24 @@ export interface PresentationProject {
   empresa_id?: string;
   client_name?: string;
   project_code?: string;
+  // Versioning
+  version?: number;
+  parent_version_id?: string;
+  version_notes?: string;
   // Relations
   brand_kit?: BrandKit;
   slides?: Slide[];
+}
+
+export interface PresentationVersion {
+  id: string;
+  project_id: string;
+  version_number: number;
+  created_at: string;
+  created_by?: string;
+  version_notes?: string;
+  slides_snapshot: Slide[];
+  is_current: boolean;
 }
 
 export interface SharingLink {
