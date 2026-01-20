@@ -95,6 +95,11 @@ const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisi
 const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPage'));
 const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
 
+// Presentation Engine
+const LazyPresentationsListPage = React.lazy(() => import('@/features/presentations/pages/PresentationsListPage'));
+const LazyPresentationEditorPage = React.lazy(() => import('@/features/presentations/pages/PresentationEditorPage'));
+const LazyPresentationViewerPage = React.lazy(() => import('@/features/presentations/pages/PresentationViewerPage'));
+
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
 
@@ -224,9 +229,13 @@ const AdminRouter = () => {
           
           {/* MNA Boutiques */}
           <Route path="/mna-apollo-import" element={<LazyMNAApolloImportPage />} />
-          
           <Route path="/mna-directory" element={<LazyMNADirectoryPage />} />
           <Route path="/mna-directory/:id" element={<LazyMNABoutiqueDetailPage />} />
+          
+          {/* Presentation Engine */}
+          <Route path="/presentations" element={<LazyPresentationsListPage />} />
+          <Route path="/presentations/:id/edit" element={<LazyPresentationEditorPage />} />
+          <Route path="/presentations/:id/view" element={<LazyPresentationViewerPage />} />
           
           {/* Apollo Website Visitors */}
           <Route path="/apollo-visitors" element={<LazyApolloVisitorsPage />} />
