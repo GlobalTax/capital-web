@@ -4,7 +4,7 @@ import type { PresentationType, SlideLayout } from '../types/presentation.types'
 export const PRESENTATION_SLIDE_TYPES: Record<PresentationType, SlideLayout[]> = {
   teaser_sell: ['disclaimer', 'hero', 'overview', 'bullets', 'market', 'financials', 'timeline', 'closing'],
   firm_deck: ['hero', 'bullets', 'stats', 'timeline', 'closing'],
-  client_deck: ['title', 'hero', 'stats', 'comparison', 'bullets', 'closing'],
+  client_deck: ['hero', 'bullets', 'timeline', 'comparison', 'closing'],
   one_pager: ['title', 'stats', 'closing'],
   mandate_deck: ['title', 'hero', 'stats', 'bullets', 'comparison', 'closing'],
   custom: ['title', 'hero', 'stats', 'bullets', 'comparison', 'timeline', 'team', 'financials', 'closing', 'disclaimer', 'overview', 'market', 'custom']
@@ -166,44 +166,50 @@ function generateFirmDeckOutline(inputs: SlideOutlineInputs, _allowed: SlideLayo
 }
 
 function generateClientDeckOutline(inputs: SlideOutlineInputs, _allowed: SlideLayout[]): SlideOutlineItem[] {
-  const clientRef = inputs.company_name || 'client';
+  const clientRef = inputs.company_name || 'the client';
   
   return [
+    // Slide 1: Context & Objectives
     {
       slide_index: 0,
-      slide_type: 'title',
+      slide_type: 'hero',
       layout: 'A',
-      purpose: `Present strategic options review for ${clientRef}`
+      purpose: `Frame the engagement context and define objectives for ${clientRef}`
     },
+    // Slide 2: The Challenge
     {
       slide_index: 1,
-      slide_type: 'hero',
-      layout: 'B',
-      purpose: 'Executive summary with key findings and recommendation'
-    },
-    {
-      slide_index: 2,
-      slide_type: 'stats',
-      layout: 'A',
-      purpose: 'Current position metrics: revenue, growth rate, market share'
-    },
-    {
-      slide_index: 3,
-      slide_type: 'comparison',
-      layout: 'C',
-      purpose: 'Compare strategic options with pros/cons analysis'
-    },
-    {
-      slide_index: 4,
       slide_type: 'bullets',
       layout: 'B',
-      purpose: 'Detail recommended approach with implementation steps'
+      purpose: 'Articulate the core challenge or opportunity driving the advisory engagement'
     },
+    // Slide 3: Our Methodology
+    {
+      slide_index: 2,
+      slide_type: 'bullets',
+      layout: 'B',
+      purpose: 'Explain the structured approach and frameworks to be applied'
+    },
+    // Slide 4: Execution Phases
+    {
+      slide_index: 3,
+      slide_type: 'timeline',
+      layout: 'C',
+      purpose: 'Present phased timeline with deliverables and milestones'
+    },
+    // Slide 5: Roles & Responsibilities
+    {
+      slide_index: 4,
+      slide_type: 'comparison',
+      layout: 'C',
+      purpose: 'Define client and advisor responsibilities for successful execution'
+    },
+    // Slide 6: Next Steps
     {
       slide_index: 5,
       slide_type: 'closing',
       layout: 'A',
-      purpose: 'Timeline for decision and next action items'
+      purpose: 'Outline immediate actions and decision points required'
     }
   ];
 }
