@@ -118,5 +118,17 @@ export const staticLandingPages: StaticLandingPage[] = [
     features: ['Formulario Simple', 'CIF + Financials', 'UTM Tracking', 'Campaña Email'],
     isActive: true,
     lastUpdated: '2025-01-01'
+  },
+  {
+    id: 'lp-rod-linkedin',
+    title: 'ROD LinkedIn',
+    slug: 'rod-linkedin',
+    url: '/lp/rod-linkedin',
+    type: 'conversion',
+    description: 'Landing directa para descarga de ROD desde LinkedIn (ES/EN)',
+    source_project: 'lp-rod-linkedin',
+    features: ['Formulario Directo', 'Multidioma ES/EN', 'Sin Marketplace', 'LinkedIn Optimizada'],
+    isActive: true,
+    lastUpdated: '2025-01-20'
   }
 ];
