@@ -2,12 +2,12 @@ import type { PresentationType, SlideLayout } from '../types/presentation.types'
 
 // Slide type definitions per presentation type
 export const PRESENTATION_SLIDE_TYPES: Record<PresentationType, SlideLayout[]> = {
-  teaser_sell: ['title', 'hero', 'stats', 'bullets', 'financials', 'timeline', 'closing'],
+  teaser_sell: ['disclaimer', 'hero', 'overview', 'bullets', 'market', 'financials', 'timeline', 'closing'],
   firm_deck: ['title', 'hero', 'stats', 'bullets', 'team', 'closing'],
   client_deck: ['title', 'hero', 'stats', 'comparison', 'bullets', 'closing'],
   one_pager: ['title', 'stats', 'closing'],
   mandate_deck: ['title', 'hero', 'stats', 'bullets', 'comparison', 'closing'],
-  custom: ['title', 'hero', 'stats', 'bullets', 'comparison', 'timeline', 'team', 'financials', 'closing', 'custom']
+  custom: ['title', 'hero', 'stats', 'bullets', 'comparison', 'timeline', 'team', 'financials', 'closing', 'disclaimer', 'overview', 'market', 'custom']
 };
 
 export interface SlideOutlineItem {
@@ -55,56 +55,65 @@ export function generateSlideOutline(
 }
 
 function generateTeaserSellOutline(inputs: SlideOutlineInputs, _allowed: SlideLayout[]): SlideOutlineItem[] {
-  const companyRef = inputs.company_name ? `for ${inputs.company_name}` : '';
+  const companyRef = inputs.company_name || 'Target Company';
+  const sectorRef = inputs.sector || 'sector';
   
   return [
+    // Slide 1: Confidentiality & Disclaimer
     {
       slide_index: 0,
-      slide_type: 'title',
+      slide_type: 'disclaimer',
       layout: 'A',
-      purpose: `Introduce confidential memorandum ${companyRef} with project code`
+      purpose: 'Present confidentiality notice, legal disclaimer, and project code identifier'
     },
+    // Slide 2: Investment Highlights
     {
       slide_index: 1,
       slide_type: 'hero',
       layout: 'B',
-      purpose: 'Present 3-5 key investment highlights that differentiate the opportunity'
+      purpose: `Present 3-5 key investment highlights for ${companyRef} opportunity`
     },
+    // Slide 3: Company Overview
     {
       slide_index: 2,
-      slide_type: 'stats',
-      layout: 'A',
-      purpose: 'Display core metrics: revenue, EBITDA, employees, years in business'
+      slide_type: 'overview',
+      layout: 'B',
+      purpose: `Provide factual overview of ${companyRef}: history, operations, and geographic presence`
     },
+    // Slide 4: Business Model
     {
       slide_index: 3,
       slide_type: 'bullets',
       layout: 'B',
-      purpose: `Describe business model, market position, and competitive advantages in ${inputs.sector || 'sector'}`
+      purpose: `Describe ${companyRef} business model, revenue streams, and operational structure`
     },
+    // Slide 5: Market & Positioning
     {
       slide_index: 4,
-      slide_type: 'financials',
+      slide_type: 'market',
       layout: 'C',
-      purpose: 'Show 3-year financial summary with revenue, EBITDA, and margins'
+      purpose: `Present ${sectorRef} market context and ${companyRef} competitive positioning`
     },
+    // Slide 6: Financial Snapshot
     {
       slide_index: 5,
-      slide_type: 'bullets',
-      layout: 'B',
-      purpose: 'Outline growth opportunities and strategic value for acquirers'
+      slide_type: 'financials',
+      layout: 'C',
+      purpose: 'Display financial summary: revenue, EBITDA, margins, and key ratios'
     },
+    // Slide 7: Growth & Value Creation
     {
       slide_index: 6,
-      slide_type: 'timeline',
-      layout: 'A',
-      purpose: 'Present transaction timeline with key milestones and expected closing'
+      slide_type: 'bullets',
+      layout: 'B',
+      purpose: 'Outline growth levers and strategic value creation opportunities for acquirer'
     },
+    // Slide 8: Transaction & Next Steps
     {
       slide_index: 7,
       slide_type: 'closing',
       layout: 'A',
-      purpose: 'Provide next steps and advisor contact information'
+      purpose: 'Present transaction timeline, process details, and advisor contact information'
     }
   ];
 }
