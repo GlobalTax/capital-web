@@ -9,7 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { SlideRenderer } from './SlideRenderer';
+import { VersionManager } from './VersionManager';
+import { VersionHistory } from './VersionHistory';
+import { SlideApprovalControls } from './SlideApprovalControls';
 import { 
   Plus, 
   Trash2, 
@@ -22,16 +26,21 @@ import {
   Save,
   Share2,
   Settings,
-  Palette
+  Palette,
+  GitBranch,
+  Lock,
+  History
 } from 'lucide-react';
 import type { 
   PresentationProject, 
   Slide, 
   SlideLayout, 
   UpdateSlideInput,
+  PresentationType,
   SLIDE_LAYOUT_LABELS 
 } from '../types/presentation.types';
 import { useUpdateSlide, useCreateSlide, useDeleteSlide, useReorderSlides, useUpdatePresentation } from '../hooks/usePresentations';
+import { usePresentationVersioning } from '../hooks/usePresentationVersioning';
 import { toast } from 'sonner';
 
 interface PresentationEditorProps {
@@ -63,6 +72,7 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({
   );
   const [previewMode, setPreviewMode] = useState<'web' | 'mobile' | 'pdf'>('web');
   const [hasChanges, setHasChanges] = useState(false);
+  const [versionManagerOpen, setVersionManagerOpen] = useState(false);
 
   const slides = presentation.slides || [];
   const selectedSlide = slides.find(s => s.id === selectedSlideId);
@@ -72,6 +82,36 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({
   const deleteSlide = useDeleteSlide();
   const reorderSlides = useReorderSlides();
   const updatePresentation = useUpdatePresentation();
+  
+  const { 
+    approveSlide, 
+    unlockSlide, 
+    createVersionWithRegeneration,
+    useVersionHistory,
+    useCurrentVersion 
+  } = usePresentationVersioning();
+  
+  const { data: versionHistory = [], isLoading: historyLoading } = useVersionHistory(presentation.id);
+  const { data: currentVersion = 1 } = useCurrentVersion(presentation.id);
+
+  const handleCreateVersion = async (options: { versionNotes: string; regenerateDrafts: boolean }) => {
+    const metadata = presentation.metadata as Record<string, unknown> | null;
+    await createVersionWithRegeneration.mutateAsync({
+      projectId: presentation.id,
+      versionNotes: options.versionNotes,
+      regenerateDrafts: options.regenerateDrafts,
+      presentationType: (metadata?.presentation_type as PresentationType) || undefined,
+      inputs: (metadata?.inputs_json as Record<string, unknown>) || undefined
+    });
+  };
+
+  const handleApproveSlide = (slideId: string) => {
+    approveSlide.mutate({ slideId, projectId: presentation.id });
+  };
+
+  const handleUnlockSlide = (slideId: string) => {
+    unlockSlide.mutate({ slideId, projectId: presentation.id });
+  };
 
   const handleSlideUpdate = useCallback((updates: UpdateSlideInput) => {
     if (!selectedSlideId) return;
@@ -202,6 +242,11 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({
             </button>
           </div>
 
+          <Button variant="outline" size="sm" onClick={() => setVersionManagerOpen(true)}>
+            <GitBranch className="w-4 h-4 mr-2" />
+            v{currentVersion}
+          </Button>
+
           <Button variant="outline" size="sm" onClick={onShare}>
             <Share2 className="w-4 h-4 mr-2" />
             Share
@@ -213,6 +258,17 @@ export const PresentationEditor: React.FC<PresentationEditorProps> = ({
           </Button>
         </div>
       </header>
+
+      {/* Version Manager Dialog */}
+      <VersionManager
+        open={versionManagerOpen}
+        onOpenChange={setVersionManagerOpen}
+        projectId={presentation.id}
+        currentVersion={currentVersion}
+        slides={slides}
+        onCreateVersion={handleCreateVersion}
+        isCreating={createVersionWithRegeneration.isPending}
+      />
 
       <div className="flex-1 flex overflow-hidden">
         {/* Slide List */}
