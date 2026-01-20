@@ -67,12 +67,32 @@ interface ValidateResult {
   report: ValidationReport;
 }
 
+interface TranslateResult {
+  success: boolean;
+  slides: GeneratedSlide[];
+  target_language: string;
+  target_language_name: string;
+}
+
+export type SupportedLanguage = 'es' | 'en' | 'ca' | 'fr' | 'de' | 'pt' | 'it';
+
+export const SUPPORTED_LANGUAGES: Record<SupportedLanguage, string> = {
+  es: 'Español',
+  en: 'English',
+  ca: 'Català',
+  fr: 'Français',
+  de: 'Deutsch',
+  pt: 'Português',
+  it: 'Italiano'
+};
+
 export type { GeneratedSlide, ValidationReport, SlideIssue };
 
 export function useAIContentGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const generateOutline = useCallback((
@@ -249,6 +269,56 @@ export function useAIContentGeneration() {
     }
   }, []);
 
+  /**
+   * Translate slides to a target language
+   * Preserves meaning, numbers, and professional tone
+   */
+  const translateContent = useCallback(async (
+    slides: GeneratedSlide[],
+    language: SupportedLanguage
+  ): Promise<GeneratedSlide[] | null> => {
+    setIsTranslating(true);
+    setError(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke(
+        'translate-presentation-content',
+        {
+          body: { slides, language }
+        }
+      );
+
+      if (fnError) {
+        throw new Error(fnError.message);
+      }
+
+      const result = data as TranslateResult;
+
+      if (!result.success) {
+        throw new Error((data as { error?: string }).error || 'Translation failed');
+      }
+
+      toast.success(`Traducido a ${result.target_language_name}`);
+      return result.slides;
+
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error translating content';
+      setError(message);
+      
+      if (message.includes('Rate limit')) {
+        toast.error('Límite de solicitudes alcanzado. Intenta de nuevo en unos minutos.');
+      } else if (message.includes('Unsupported language')) {
+        toast.error('Idioma no soportado');
+      } else {
+        toast.error('Error traduciendo contenido: ' + message);
+      }
+      
+      return null;
+    } finally {
+      setIsTranslating(false);
+    }
+  }, []);
+
   // Convert generated slides to Slide format for saving
   const convertToSlides = useCallback((
     generatedSlides: GeneratedSlide[],
@@ -272,11 +342,13 @@ export function useAIContentGeneration() {
     isGenerating,
     isRefining,
     isValidating,
+    isTranslating,
     error,
     generateOutline,
     generateContent,
     refineContent,
     validateContent,
+    translateContent,
     convertToSlides,
     clearError: () => setError(null)
   };
