@@ -61,14 +61,14 @@ export const usePresentation = (id: string | undefined) => {
       if (error) throw error;
       
       // Sort slides by order_index and cast types
-      const result = {
-        ...data,
-        slides: data.slides
-          ?.sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
-          .map((s: Record<string, unknown>) => ({ ...s, content: s.content as SlideContent }))
-      };
+      const slides = data.slides
+        ?.sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
+        .map((s: Record<string, unknown>) => ({ 
+          ...s, 
+          content: (s.content || {}) as SlideContent 
+        })) as Slide[] | undefined;
       
-      return result as PresentationProject;
+      return { ...data, slides } as unknown as PresentationProject;
     },
     enabled: !!id
   });
@@ -119,15 +119,15 @@ export const usePresentationByToken = (token: string | undefined) => {
 
       if (error) throw error;
       
-      const result = {
-        ...data,
-        slides: data.slides
-          ?.sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
-          .map((s: Record<string, unknown>) => ({ ...s, content: s.content as SlideContent }))
-      };
+      const slides = data.slides
+        ?.sort((a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index)
+        .map((s: Record<string, unknown>) => ({ 
+          ...s, 
+          content: (s.content || {}) as SlideContent 
+        })) as Slide[] | undefined;
       
       return { 
-        project: result as PresentationProject, 
+        project: { ...data, slides } as unknown as PresentationProject, 
         permission: linkData.permission 
       };
     },

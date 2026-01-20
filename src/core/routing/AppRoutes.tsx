@@ -99,6 +99,9 @@ const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => 
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => import('@/pages/VentaEmpresas')));
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => import('@/pages/NotFound')));
 
+// === PRESENTATIONS (Shared) ===
+const SharedPresentationPage = lazy(() => import('@/features/presentations/pages/SharedPresentationPage'));
+
 // === JOB POSTS ===
 const JobsPage = lazy(() => import('@/pages/JobsPage').catch(() => import('@/pages/VentaEmpresas')));
 const JobDetailPage = lazy(() => import('@/pages/JobDetailPage').catch(() => import('@/pages/NotFound')));
@@ -126,6 +129,9 @@ export const AppRoutes = () => {
         <Route path="/admin/login" element={<AdminLoginNew />} />
         <Route path="/admin/login-new" element={<AdminLoginNew />} />
         <Route path="/admin/*" element={<AdminProtectedRoute><Admin /></AdminProtectedRoute>} />
+        
+        {/* === SHARED PRESENTATIONS (Public Access with Token) === */}
+        <Route path="/p/:token" element={<SharedPresentationPage />} />
         
         {/* === BUSINESS ROUTES === */}
         <Route path="/venta-empresas" element={<VentaEmpresas />} />
