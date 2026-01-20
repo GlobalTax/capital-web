@@ -248,3 +248,6 @@ verify_jwt = true
 
 [functions.validate-presentation-content]
 verify_jwt = true
+
+[functions.translate-presentation-content]
+verify_jwt = true
