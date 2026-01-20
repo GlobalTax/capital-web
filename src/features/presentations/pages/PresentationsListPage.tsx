@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { usePresentations, useDeletePresentation } from '../hooks/usePresentations';
+import { useDemoPresentationSeeder } from '../hooks/useDemoPresentationSeeder';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,10 +17,10 @@ import {
   Eye, 
   Trash2, 
   Share2, 
-  FileDown,
   Presentation,
   Clock,
-  Lock
+  Lock,
+  Beaker
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PRESENTATION_TYPE_LABELS, STATUS_LABELS, type PresentationStatus } from '../types/presentation.types';
@@ -36,6 +37,7 @@ export const PresentationsListPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: presentations, isLoading } = usePresentations();
   const deletePresentation = useDeletePresentation();
+  const demoSeeder = useDemoPresentationSeeder();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -61,6 +63,13 @@ export const PresentationsListPage: React.FC = () => {
     setSelectedPresentationId(null);
   };
 
+  const handleCreateDemo = async () => {
+    const project = await demoSeeder.mutateAsync();
+    if (project) {
+      navigate(`/admin/presentations/${project.id}/edit`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
@@ -76,10 +85,20 @@ export const PresentationsListPage: React.FC = () => {
                 Create and manage M&A teasers, decks, and client presentations
               </p>
             </div>
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              New Presentation
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleCreateDemo}
+                disabled={demoSeeder.isPending}
+              >
+                <Beaker className="w-4 h-4 mr-2" />
+                {demoSeeder.isPending ? 'Creating...' : 'Create Demo (Proyecto Acero)'}
+              </Button>
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                New Presentation
+              </Button>
+            </div>
           </div>
 
           {/* Search */}
