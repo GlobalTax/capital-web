@@ -201,13 +201,13 @@ export const useBuyerContactImport = () => {
           successful_imports: successCount,
           failed_imports: failCount,
           duplicate_emails: validationResult?.duplicatesInDB.length || 0,
-          error_log: errors as unknown as Record<string, unknown>[],
+          error_log: JSON.parse(JSON.stringify(errors)),
           status: 'completed',
           completed_at: new Date().toISOString(),
         })
         .eq('id', batchId)
         .select()
-        .single();
+        .maybeSingle();
       
       if (updateError) throw updateError;
       

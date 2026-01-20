@@ -29,6 +29,7 @@ import {
   LazyUnifiedLandingPagesPage,
   LazyAdminBanners,
   LazyContactsPage,
+  LazyBuyerContactsManager,
   LazyLeadMagnetsPage,
   LazyValuationDetailPage,
   LazyLeadDetailPage,
@@ -127,6 +128,7 @@ const AdminRouter = () => {
           <Route path="/documentos-fase0" element={<LazyFase0TemplatesPage />} />
           <Route path="/contacts" element={<LazyContactsPage />} />
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />
+          <Route path="/buyer-contacts" element={<LazyBuyerContactsManager />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
           <Route path="/empresas" element={<LazyEmpresasPage />} />
           <Route path="/empresas/:id" element={<LazyEmpresaDetailPage />} />

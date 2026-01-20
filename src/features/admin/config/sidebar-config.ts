@@ -34,7 +34,8 @@ import {
   Shield,
   Newspaper,
   Search,
-  Globe
+  Globe,
+  ShoppingCart
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
