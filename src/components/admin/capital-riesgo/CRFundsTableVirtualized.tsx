@@ -100,9 +100,9 @@ const TableHeader = React.memo<{
       />
       <div 
         className="flex items-center h-8 px-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
-        style={{ flex: COL_STYLES.typeStatus.flex, minWidth: COL_STYLES.typeStatus.minWidth }}
+        style={{ flex: COL_STYLES.type.flex, minWidth: COL_STYLES.type.minWidth }}
       >
-        Tipo / Estado
+        Tipo
       </div>
       <div 
         className="flex items-center h-8 px-2 text-[10px] font-medium text-muted-foreground uppercase tracking-wider"
@@ -111,7 +111,7 @@ const TableHeader = React.memo<{
         País
       </div>
       <SortableHeader 
-        label="AUM · Ticket" 
+        label="AUM" 
         field="aum" 
         sortBy={sortBy} 
         sortOrder={sortOrder} 

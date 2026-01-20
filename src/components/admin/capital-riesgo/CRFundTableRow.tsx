@@ -50,9 +50,9 @@ export interface CRFundRowProps {
 export const COL_STYLES = {
   favorite: { minWidth: 36, flex: '0 0 36px' },
   name: { minWidth: 200, flex: '2.5 0 200px' },
-  typeStatus: { minWidth: 180, flex: '1.5 0 180px' },
+  type: { minWidth: 100, flex: '1 0 100px' },
   country: { minWidth: 80, flex: '0.8 0 80px' },
-  financials: { minWidth: 200, flex: '2 0 200px' },
+  financials: { minWidth: 140, flex: '1.5 0 140px' },
   portfolio: { minWidth: 70, flex: '0 0 70px' },
   contacts: { minWidth: 70, flex: '0 0 70px' },
   actions: { minWidth: 40, flex: '0 0 40px' },
@@ -140,9 +140,6 @@ export const CRFundTableRow = memo<CRFundRowProps>(({
 }) => {
   // Format financials
   const aum = formatCurrency(fund.aum);
-  const ticketMin = formatCurrency(fund.ticket_min);
-  const ticketMax = formatCurrency(fund.ticket_max);
-  const hasTicket = ticketMin || ticketMax;
   
   // Handlers
   const handleDelete = useCallback(() => {
@@ -210,10 +207,10 @@ export const CRFundTableRow = memo<CRFundRowProps>(({
         )}
       </div>
 
-      {/* Type + Status (inline editable) */}
+      {/* Type (inline editable) */}
       <div 
-        className="flex items-center gap-1 h-full px-1"
-        style={{ flex: COL_STYLES.typeStatus.flex, minWidth: COL_STYLES.typeStatus.minWidth }}
+        className="flex items-center h-full px-1"
+        style={{ flex: COL_STYLES.type.flex, minWidth: COL_STYLES.type.minWidth }}
       >
         <EditableSelect
           value={fund.fund_type}
@@ -221,13 +218,6 @@ export const CRFundTableRow = memo<CRFundRowProps>(({
           onSave={(v) => onUpdateFundType(fund.id, v)}
           placeholder="Tipo..."
           displayClassName="text-[10px] h-6 min-w-[85px]"
-        />
-        <EditableSelect
-          value={fund.status}
-          options={statusOptions}
-          onSave={(v) => onUpdateStatus(fund.id, v)}
-          placeholder="Estado..."
-          displayClassName="text-[10px] h-6 min-w-[80px]"
         />
       </div>
 
@@ -240,7 +230,7 @@ export const CRFundTableRow = memo<CRFundRowProps>(({
         <span className="truncate">{fund.country_base || '—'}</span>
       </div>
 
-      {/* Financials (AUM + Ticket consolidated) */}
+      {/* Financials (AUM only) */}
       <div 
         className="flex items-center gap-2 h-full px-2 text-sm"
         style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}
@@ -256,17 +246,11 @@ export const CRFundTableRow = memo<CRFundRowProps>(({
               ) : (
                 <span className="text-muted-foreground">—</span>
               )}
-              {hasTicket && (
-                <span className="text-muted-foreground text-xs ml-1">
-                  · {ticketMin || '?'} - {ticketMax || '?'}
-                </span>
-              )}
             </div>
           </TooltipTrigger>
           <TooltipContent side="top">
             <div className="text-xs space-y-0.5">
               <div>AUM: {aum || 'No disponible'}</div>
-              <div>Ticket: {ticketMin || '?'} - {ticketMax || '?'}</div>
               {fund.ebitda_min && <div>EBITDA mín: {formatCurrency(fund.ebitda_min)}</div>}
               {fund.revenue_min && <div>Revenue mín: {formatCurrency(fund.revenue_min)}</div>}
             </div>

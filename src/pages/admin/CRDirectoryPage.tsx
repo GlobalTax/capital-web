@@ -78,11 +78,6 @@ export const CRDirectoryPage: React.FC = () => {
         return false;
       }
       
-      // Status filter
-      if (fundFilters.status !== 'all' && fund.status !== fundFilters.status) {
-        return false;
-      }
-      
       // Country filter
       if (fundFilters.country !== 'all' && fund.country_base !== fundFilters.country) {
         return false;
