@@ -492,6 +492,7 @@ export type Database = {
         Row: {
           created_at: string
           credentials_sent_at: string | null
+          daily_capacity_hours: number | null
           email: string | null
           full_name: string | null
           id: string
@@ -501,12 +502,14 @@ export type Database = {
           last_login: string | null
           needs_credentials: boolean | null
           role: Database["public"]["Enums"]["admin_role"]
+          skills: string[] | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           credentials_sent_at?: string | null
+          daily_capacity_hours?: number | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -516,12 +519,14 @@ export type Database = {
           last_login?: string | null
           needs_credentials?: boolean | null
           role?: Database["public"]["Enums"]["admin_role"]
+          skills?: string[] | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           credentials_sent_at?: string | null
+          daily_capacity_hours?: number | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -531,6 +536,7 @@ export type Database = {
           last_login?: string | null
           needs_credentials?: boolean | null
           role?: Database["public"]["Enums"]["admin_role"]
+          skills?: string[] | null
           updated_at?: string | null
           user_id?: string
         }
@@ -2429,6 +2435,36 @@ export type Database = {
         }
         Relationships: []
       }
+      capittal_sync_state: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_enabled: boolean | null
+          last_modified_timestamp: string | null
+          last_sync_at: string | null
+          polling_interval_minutes: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          last_modified_timestamp?: string | null
+          last_sync_at?: string | null
+          polling_interval_minutes?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          last_modified_timestamp?: string | null
+          last_sync_at?: string | null
+          polling_interval_minutes?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       carousel_logos: {
         Row: {
           company_name: string
@@ -4020,16 +4056,19 @@ export type Database = {
           brevo_id: string | null
           brevo_last_modified_at: string | null
           brevo_synced_at: string | null
+          capittal_synced_at: string | null
           cargo: string | null
           created_at: string | null
           email: string
           empresa_principal_id: string | null
+          external_capittal_id: string | null
           id: string
           import_log_id: string | null
           linkedin: string | null
           merged_into_contacto_id: string | null
           nombre: string
           notas: string | null
+          source: string | null
           telefono: string | null
           updated_at: string | null
           valuation_id: string | null
@@ -4040,16 +4079,19 @@ export type Database = {
           brevo_id?: string | null
           brevo_last_modified_at?: string | null
           brevo_synced_at?: string | null
+          capittal_synced_at?: string | null
           cargo?: string | null
           created_at?: string | null
           email: string
           empresa_principal_id?: string | null
+          external_capittal_id?: string | null
           id?: string
           import_log_id?: string | null
           linkedin?: string | null
           merged_into_contacto_id?: string | null
           nombre: string
           notas?: string | null
+          source?: string | null
           telefono?: string | null
           updated_at?: string | null
           valuation_id?: string | null
@@ -4060,16 +4102,19 @@ export type Database = {
           brevo_id?: string | null
           brevo_last_modified_at?: string | null
           brevo_synced_at?: string | null
+          capittal_synced_at?: string | null
           cargo?: string | null
           created_at?: string | null
           email?: string
           empresa_principal_id?: string | null
+          external_capittal_id?: string | null
           id?: string
           import_log_id?: string | null
           linkedin?: string | null
           merged_into_contacto_id?: string | null
           nombre?: string
           notas?: string | null
+          source?: string | null
           telefono?: string | null
           updated_at?: string | null
           valuation_id?: string | null
@@ -8757,6 +8802,7 @@ export type Database = {
       }
       mandato_checklist_tasks: {
         Row: {
+          ai_generated: boolean | null
           created_at: string | null
           dependencias: string[] | null
           descripcion: string | null
@@ -8773,6 +8819,7 @@ export type Database = {
           orden: number
           responsable: string | null
           sistema: string | null
+          source_text: string | null
           tarea: string
           tipo_operacion: string | null
           updated_at: string | null
@@ -8780,6 +8827,7 @@ export type Database = {
           workstream: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Insert: {
+          ai_generated?: boolean | null
           created_at?: string | null
           dependencias?: string[] | null
           descripcion?: string | null
@@ -8796,6 +8844,7 @@ export type Database = {
           orden?: number
           responsable?: string | null
           sistema?: string | null
+          source_text?: string | null
           tarea: string
           tipo_operacion?: string | null
           updated_at?: string | null
@@ -8803,6 +8852,7 @@ export type Database = {
           workstream?: Database["public"]["Enums"]["dd_workstream"] | null
         }
         Update: {
+          ai_generated?: boolean | null
           created_at?: string | null
           dependencias?: string[] | null
           descripcion?: string | null
@@ -8819,6 +8869,7 @@ export type Database = {
           orden?: number
           responsable?: string | null
           sistema?: string | null
+          source_text?: string | null
           tarea?: string
           tipo_operacion?: string | null
           updated_at?: string | null
@@ -9202,13 +9253,14 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          contacto_id: string | null
           created_at: string | null
           description: string
           duration_minutes: number | null
           end_time: string | null
           id: string
           is_billable: boolean | null
-          mandato_id: string
+          mandato_id: string | null
           notes: string | null
           rejection_reason: string | null
           start_time: string
@@ -9225,13 +9277,14 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          contacto_id?: string | null
           created_at?: string | null
           description: string
           duration_minutes?: number | null
           end_time?: string | null
           id?: string
           is_billable?: boolean | null
-          mandato_id: string
+          mandato_id?: string | null
           notes?: string | null
           rejection_reason?: string | null
           start_time: string
@@ -9248,13 +9301,14 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          contacto_id?: string | null
           created_at?: string | null
           description?: string
           duration_minutes?: number | null
           end_time?: string | null
           id?: string
           is_billable?: boolean | null
-          mandato_id?: string
+          mandato_id?: string | null
           notes?: string | null
           rejection_reason?: string | null
           start_time?: string
@@ -9269,6 +9323,13 @@ export type Database = {
           work_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "mandato_time_entries_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mandato_time_entries_mandato_id_fkey"
             columns: ["mandato_id"]
@@ -13965,6 +14026,8 @@ export type Database = {
       }
       tareas: {
         Row: {
+          ai_confidence: number | null
+          ai_generated: boolean | null
           asignado_a: string | null
           created_at: string | null
           descripcion: string | null
@@ -13974,10 +14037,13 @@ export type Database = {
           mandato_id: string | null
           order_index: number | null
           prioridad: string | null
+          source_text: string | null
           titulo: string
           updated_at: string | null
         }
         Insert: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
           asignado_a?: string | null
           created_at?: string | null
           descripcion?: string | null
@@ -13987,10 +14053,13 @@ export type Database = {
           mandato_id?: string | null
           order_index?: number | null
           prioridad?: string | null
+          source_text?: string | null
           titulo: string
           updated_at?: string | null
         }
         Update: {
+          ai_confidence?: number | null
+          ai_generated?: boolean | null
           asignado_a?: string | null
           created_at?: string | null
           descripcion?: string | null
@@ -14000,6 +14069,7 @@ export type Database = {
           mandato_id?: string | null
           order_index?: number | null
           prioridad?: string | null
+          source_text?: string | null
           titulo?: string
           updated_at?: string | null
         }
@@ -14096,6 +14166,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      task_events: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          event_type: string
+          id: string
+          payload: Json | null
+          task_id: string
+          task_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          event_type: string
+          id?: string
+          payload?: Json | null
+          task_id: string
+          task_type: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          task_id?: string
+          task_type?: string
+        }
+        Relationships: []
       }
       team_members: {
         Row: {
