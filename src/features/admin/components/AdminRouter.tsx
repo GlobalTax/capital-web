@@ -56,6 +56,7 @@ import {
   LazyMarketplaceAnalytics,
   LazyNewsletterPage,
   LazyBuySideMandatesPage,
+  LazyBuySideMandateDetailPage,
   LazyLeadsPipelinePage,
   LazyWorkflowTemplatesPage,
   LazyBookingsPage,
@@ -199,6 +200,7 @@ const AdminRouter = () => {
           <Route path="/newsletter" element={<LazyNewsletterPage />} />
           <Route path="/campaign-costs" element={<LazyCampaignCostsPage />} />
           <Route path="/mandatos-compra" element={<LazyBuySideMandatesPage />} />
+          <Route path="/mandatos-compra/:id" element={<LazyBuySideMandateDetailPage />} />
           <Route path="/notifications" element={<LazyNotificationsPage />} />
           <Route path="/brevo-sync" element={<LazyBrevoSyncDashboard />} />
           <Route path="/brevo-import" element={<LazyBrevoContactsImport />} />
