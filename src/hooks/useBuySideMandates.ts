@@ -19,9 +19,16 @@ export interface BuySideMandate {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  // Teaser fields
+  teaser_es_url: string | null;
+  teaser_es_filename: string | null;
+  teaser_es_uploaded_at: string | null;
+  teaser_en_url: string | null;
+  teaser_en_filename: string | null;
+  teaser_en_uploaded_at: string | null;
 }
 
-export type BuySideMandateInput = Omit<BuySideMandate, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
+export type BuySideMandateInput = Omit<BuySideMandate, 'id' | 'created_at' | 'updated_at' | 'created_by' | 'teaser_es_url' | 'teaser_es_filename' | 'teaser_es_uploaded_at' | 'teaser_en_url' | 'teaser_en_filename' | 'teaser_en_uploaded_at'>;
 
 export const useBuySideMandates = () => {
   const queryClient = useQueryClient();
