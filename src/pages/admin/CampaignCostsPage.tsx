@@ -10,6 +10,7 @@ import ChannelCACCards from '@/components/admin/campaigns/ChannelCACCards';
 import CostVsLeadsChart from '@/components/admin/campaigns/CostVsLeadsChart';
 import CostsTable from '@/components/admin/campaigns/CostsTable';
 import ExcelStyleCostsTable from '@/components/admin/campaigns/ExcelStyleCostsTable';
+import { AnalyticsTabs } from '@/components/admin/campaigns/AnalyticsTabs';
 import { ScreenshotUploader, ExtractedCampaignData } from '@/components/admin/campaigns/ScreenshotUploader';
 import { PasteImageProcessor } from '@/components/admin/campaigns/PasteImageProcessor';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -182,7 +183,10 @@ const CampaignCostsPage: React.FC = () => {
         isLoading={isLoadingCosts}
       />
 
-      {/* Collapsible Analytics Section */}
+      {/* Histórico y Análisis Automático - NEW */}
+      <AnalyticsTabs />
+
+      {/* Collapsible Legacy Analytics Section */}
       <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen}>
         <CollapsibleTrigger asChild>
           <Button 
@@ -190,7 +194,7 @@ const CampaignCostsPage: React.FC = () => {
             className="w-full justify-between text-muted-foreground hover:text-foreground"
           >
             <span className="flex items-center gap-2">
-              Ver Gráficas y KPIs
+              Ver KPIs Adicionales y Tabla Detallada
             </span>
             <ChevronDown className={`h-4 w-4 transition-transform ${analyticsOpen ? 'rotate-180' : ''}`} />
           </Button>

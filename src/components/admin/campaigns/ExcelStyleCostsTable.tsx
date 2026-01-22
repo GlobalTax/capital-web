@@ -18,9 +18,9 @@ interface ExcelStyleCostsTableProps {
 const COLUMNS = [
   { key: 'campaign_name', title: 'Campaña', width: 180, editable: false },
   { key: 'delivery_status', title: 'Entrega', width: 90, editable: false },
-  { key: 'results', title: 'Resultados', width: 90, editable: false },
+  { key: 'results', title: 'Resultados', width: 90, editable: true },
   { key: 'cost_per_result', title: 'Coste/Res.', width: 100, editable: false },
-  { key: 'amount', title: 'Gastado', width: 110, editable: false },
+  { key: 'amount', title: 'Gastado', width: 110, editable: true },
   { key: 'daily_budget', title: 'Ppto. Diario', width: 110, editable: true },
   { key: 'monthly_budget', title: 'Ppto. Mensual', width: 120, editable: true },
   { key: 'target_cpl', title: 'CPL Objetivo', width: 100, editable: true },
@@ -156,13 +156,6 @@ const ExcelStyleCostsTable: React.FC<ExcelStyleCostsTableProps> = ({
             </div>
           );
         
-        case 'results':
-          return (
-            <div className="px-2 py-2 text-sm text-right tabular-nums">
-              {row.results?.toLocaleString('es-ES') || '0'}
-            </div>
-          );
-        
         case 'cost_per_result':
           const cpr = row.cost_per_result;
           const targetCpl = row.target_cpl;
@@ -183,17 +176,6 @@ const ExcelStyleCostsTable: React.FC<ExcelStyleCostsTableProps> = ({
             </div>
           );
         
-        case 'amount':
-          return (
-            <div className="px-2 py-2 text-sm text-right tabular-nums font-medium">
-              {new Intl.NumberFormat('es-ES', { 
-                style: 'currency', 
-                currency: 'EUR',
-                minimumFractionDigits: 0
-              }).format(Number(row.amount) || 0)}
-            </div>
-          );
-        
         default:
           return <div className="px-2 py-2 text-sm">{String(row[column.key as keyof typeof row] || '-')}</div>;
       }
@@ -201,6 +183,37 @@ const ExcelStyleCostsTable: React.FC<ExcelStyleCostsTableProps> = ({
 
     // Editable cells
     switch (column.key) {
+      case 'results':
+        return (
+          <SpreadsheetCell
+            key={cellId}
+            value={row.results}
+            type="number"
+            editable
+            isFocused={isFocused}
+            onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
+            onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
+            onSave={(val) => handleCellSave(row.id, column.key, val)}
+            className="text-right"
+            placeholder="0"
+          />
+        );
+      
+      case 'amount':
+        return (
+          <SpreadsheetCell
+            key={cellId}
+            value={Number(row.amount) || null}
+            type="currency"
+            editable
+            isFocused={isFocused}
+            onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
+            onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
+            onSave={(val) => handleCellSave(row.id, column.key, val)}
+            className="text-right"
+          />
+        );
+      
       case 'daily_budget':
       case 'monthly_budget':
       case 'target_cpl':
