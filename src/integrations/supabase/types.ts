@@ -2482,11 +2482,17 @@ export type Database = {
           created_at: string
           created_by: string | null
           ctr: number | null
+          daily_budget: number | null
+          delivery_status: string | null
           id: string
           impressions: number | null
+          internal_status: string | null
+          monthly_budget: number | null
           notes: string | null
           period_end: string
           period_start: string
+          results: number | null
+          target_cpl: number | null
           updated_at: string
         }
         Insert: {
@@ -2498,11 +2504,17 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           ctr?: number | null
+          daily_budget?: number | null
+          delivery_status?: string | null
           id?: string
           impressions?: number | null
+          internal_status?: string | null
+          monthly_budget?: number | null
           notes?: string | null
           period_end: string
           period_start: string
+          results?: number | null
+          target_cpl?: number | null
           updated_at?: string
         }
         Update: {
@@ -2514,11 +2526,17 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           ctr?: number | null
+          daily_budget?: number | null
+          delivery_status?: string | null
           id?: string
           impressions?: number | null
+          internal_status?: string | null
+          monthly_budget?: number | null
           notes?: string | null
           period_end?: string
           period_start?: string
+          results?: number | null
+          target_cpl?: number | null
           updated_at?: string
         }
         Relationships: []

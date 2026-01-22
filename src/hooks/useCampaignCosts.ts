@@ -21,6 +21,13 @@ export interface CampaignCost {
   created_at: string;
   updated_at: string;
   created_by: string | null;
+  // New fields for Excel-style table
+  delivery_status: 'active' | 'paused' | null;
+  results: number | null;
+  daily_budget: number | null;
+  monthly_budget: number | null;
+  target_cpl: number | null;
+  internal_status: 'ok' | 'watch' | 'stop' | null;
 }
 
 export interface CampaignCostInput {
@@ -34,6 +41,13 @@ export interface CampaignCostInput {
   ctr?: number;
   cpc?: number;
   notes?: string;
+  // New fields for Excel-style table
+  delivery_status?: 'active' | 'paused';
+  results?: number;
+  daily_budget?: number;
+  monthly_budget?: number;
+  target_cpl?: number;
+  internal_status?: 'ok' | 'watch' | 'stop';
 }
 
 export interface ChannelAnalytics {
@@ -151,6 +165,50 @@ export const useCampaignCosts = () => {
     onError: (error) => {
       console.error('Error deleting campaign cost:', error);
       toast.error('Error al eliminar el gasto');
+    }
+  });
+
+  // Update single cell (optimistic)
+  const updateCellMutation = useMutation({
+    mutationFn: async ({ id, field, value }: { 
+      id: string; 
+      field: string; 
+      value: string | number | null 
+    }) => {
+      const { data, error } = await supabase
+        .from('campaign_costs')
+        .update({ [field]: value, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onMutate: async ({ id, field, value }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['campaign_costs'] });
+      
+      // Snapshot previous value
+      const previous = queryClient.getQueryData<CampaignCost[]>(['campaign_costs']);
+      
+      // Optimistically update
+      queryClient.setQueryData<CampaignCost[]>(['campaign_costs'], (old) =>
+        old?.map((row) => row.id === id ? { ...row, [field]: value } : row)
+      );
+      
+      return { previous };
+    },
+    onError: (err, vars, context) => {
+      // Rollback on error
+      if (context?.previous) {
+        queryClient.setQueryData(['campaign_costs'], context.previous);
+      }
+      toast.error('Error al guardar');
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['campaign_costs'] });
     }
   });
 
@@ -331,6 +389,7 @@ export const useCampaignCosts = () => {
     addCost: addCostMutation.mutate,
     updateCost: updateCostMutation.mutate,
     deleteCost: deleteCostMutation.mutate,
+    updateCell: updateCellMutation.mutateAsync,
     isAdding: addCostMutation.isPending,
     isUpdating: updateCostMutation.isPending,
     isDeleting: deleteCostMutation.isPending,
