@@ -2,15 +2,17 @@
 // Página de análisis de costes de campañas vs leads
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, RefreshCw, Euro, Image as ImageIcon, Clipboard } from 'lucide-react';
+import { Plus, RefreshCw, Euro, Image as ImageIcon, Clipboard, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCampaignCosts, CampaignCost, CampaignCostInput } from '@/hooks/useCampaignCosts';
 import CostEntryForm from '@/components/admin/campaigns/CostEntryForm';
 import ChannelCACCards from '@/components/admin/campaigns/ChannelCACCards';
 import CostVsLeadsChart from '@/components/admin/campaigns/CostVsLeadsChart';
 import CostsTable from '@/components/admin/campaigns/CostsTable';
+import ExcelStyleCostsTable from '@/components/admin/campaigns/ExcelStyleCostsTable';
 import { ScreenshotUploader, ExtractedCampaignData } from '@/components/admin/campaigns/ScreenshotUploader';
 import { PasteImageProcessor } from '@/components/admin/campaigns/PasteImageProcessor';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 
 const CampaignCostsPage: React.FC = () => {
@@ -24,6 +26,7 @@ const CampaignCostsPage: React.FC = () => {
     isLoadingAnalytics,
     addCost,
     updateCost,
+    updateCell,
     deleteCost,
     isAdding,
     isUpdating
@@ -34,6 +37,7 @@ const CampaignCostsPage: React.FC = () => {
   const [prefillData, setPrefillData] = useState<Partial<CampaignCostInput> | undefined>(undefined);
   const [editingCost, setEditingCost] = useState<CampaignCost | null>(null);
   const [pastedImage, setPastedImage] = useState<File | null>(null);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
 
   // Listen for paste events (Ctrl+V / Cmd+V)
   useEffect(() => {
@@ -111,6 +115,11 @@ const CampaignCostsPage: React.FC = () => {
     deleteCost(id);
   };
 
+  // Handle cell update from Excel table
+  const handleCellUpdate = useCallback(async (id: string, field: string, value: any) => {
+    await updateCell({ id, field, value });
+  }, [updateCell]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -118,10 +127,10 @@ const CampaignCostsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Euro className="h-6 w-6 text-primary" />
-            Análisis de Costes de Campañas
+            Control de Costes
           </h1>
           <p className="text-muted-foreground">
-            Registra gastos publicitarios y analiza el CAC por canal
+            Gestiona presupuestos y analiza el rendimiento de campañas
           </p>
         </div>
         
@@ -146,11 +155,11 @@ const CampaignCostsPage: React.FC = () => {
               onClick={() => setShowScreenshotUploader(true)}
             >
               <ImageIcon className="h-4 w-4 mr-2" />
-              Importar Pantallazo
+              Importar
             </Button>
             <Button onClick={() => { setPrefillData(undefined); setShowForm(true); }}>
               <Plus className="h-4 w-4 mr-2" />
-              Añadir Gasto
+              Añadir
             </Button>
           </div>
         </div>
@@ -166,25 +175,48 @@ const CampaignCostsPage: React.FC = () => {
         />
       )}
 
-      {/* KPI Cards */}
-      <ChannelCACCards 
-        analytics={channelAnalytics} 
-        isLoading={isLoadingAnalytics}
-      />
-
-      {/* Chart */}
-      <CostVsLeadsChart 
-        data={monthlyAnalytics}
+      {/* MAIN: Excel-style Costs Table - AT THE TOP */}
+      <ExcelStyleCostsTable 
+        data={costs}
+        onCellUpdate={handleCellUpdate}
         isLoading={isLoadingCosts}
       />
 
-      {/* Costs Table */}
-      <CostsTable 
-        costs={costs}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        isLoading={isLoadingCosts}
-      />
+      {/* Collapsible Analytics Section */}
+      <Collapsible open={analyticsOpen} onOpenChange={setAnalyticsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button 
+            variant="ghost" 
+            className="w-full justify-between text-muted-foreground hover:text-foreground"
+          >
+            <span className="flex items-center gap-2">
+              Ver Gráficas y KPIs
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${analyticsOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-6 pt-4">
+          {/* KPI Cards */}
+          <ChannelCACCards 
+            analytics={channelAnalytics} 
+            isLoading={isLoadingAnalytics}
+          />
+
+          {/* Chart */}
+          <CostVsLeadsChart 
+            data={monthlyAnalytics}
+            isLoading={isLoadingCosts}
+          />
+
+          {/* Legacy Costs Table (for detailed view) */}
+          <CostsTable 
+            costs={costs}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            isLoading={isLoadingCosts}
+          />
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Add Form Modal */}
       <CostEntryForm
