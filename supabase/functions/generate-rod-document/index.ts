@@ -181,7 +181,7 @@ serve(async (req) => {
 
       if (existingContact) {
         // UPDATE: Contacto existente → actualizar campos + incrementar descargas
-        await supabase
+        const { error: updateError } = await supabase
           .from('buyer_contacts')
           .update({
             phone: requestData.phone || undefined,
@@ -196,20 +196,23 @@ serve(async (req) => {
             updated_at: new Date().toISOString()
           })
           .eq('id', existingContact.id);
-          
-        console.log(`✅ Buyer contact UPDATED: ${existingContact.id}`);
+        
+        if (updateError) {
+          console.error('❌ Error updating buyer contact:', updateError);
+        } else {
+          console.log(`✅ Buyer contact UPDATED: ${existingContact.id}`);
+        }
       } else {
-        // INSERT: Nuevo contacto
-        await supabase
+        // INSERT: Nuevo contacto (sin 'origin' para usar default 'campana_compras')
+        const { error: insertError } = await supabase
           .from('buyer_contacts')
           .insert({
             first_name: firstName,
             last_name: lastName,
-            full_name: requestData.full_name,
+            // full_name es columna generada, no se puede insertar
             email: requestData.email,
             phone: requestData.phone,
             company: requestData.company,
-            origin: 'rod_download',
             campaign_name: 'ROD LinkedIn',
             investor_type: requestData.investor_type,
             investment_range: requestData.investment_range,
@@ -222,8 +225,12 @@ serve(async (req) => {
             rod_downloads_count: 1,
             status: 'nuevo'
           });
-          
-        console.log(`✅ Buyer contact CREATED for: ${requestData.email}`);
+        
+        if (insertError) {
+          console.error('❌ Error creating buyer contact:', insertError);
+        } else {
+          console.log(`✅ Buyer contact CREATED for: ${requestData.email}`);
+        }
       }
     } catch (buyerError) {
       // Non-critical: log but don't fail the request
