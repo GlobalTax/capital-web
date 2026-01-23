@@ -21,9 +21,8 @@ import { EconomicFunnel } from './EconomicFunnel';
 import { QualityVsCostMatrix } from './QualityVsCostMatrix';
 
 // Cost Control components
-import ExcelStyleCostsTable from '@/components/admin/campaigns/ExcelStyleCostsTable';
+import { CampaignRegistryTable } from '@/components/admin/campaigns/CampaignRegistryTable';
 import { AnalyticsTabs } from '@/components/admin/campaigns/AnalyticsTabs';
-import { useCampaignCosts } from '@/hooks/useCampaignCosts';
 
 type PeriodPreset = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
@@ -165,12 +164,8 @@ export const ContactsStatsPanel: React.FC = () => {
 
         {/* Tab: Cost Control */}
         <TabsContent value="costs" className="space-y-6 mt-4">
-          {/* Excel Table - TOP PRIORITY */}
-          <ExcelStyleCostsTable
-            data={costs}
-            onCellUpdate={handleCellUpdate}
-            isLoading={isLoadingCosts}
-          />
+          {/* Campaign Registry Table - PRIMARY INPUT */}
+          <CampaignRegistryTable />
 
           {/* Analytics Tabs (derived from history) */}
           <AnalyticsTabs />
