@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Euro, TrendingUp, Users, Wallet, BarChart3 } from 'lucide-react';
+import { Euro, TrendingUp, Users, BarChart3 } from 'lucide-react';
 import { Empresa } from '@/hooks/useEmpresas';
 import { formatCompactCurrency } from '@/shared/utils/format';
 
@@ -42,20 +42,6 @@ export const EmpresaFinancialsCard: React.FC<EmpresaFinancialsCardProps> = ({ em
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
-    {
-      label: 'Deuda',
-      value: empresa.deuda ? formatCompactCurrency(empresa.deuda) : '-',
-      icon: Wallet,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-    },
-    {
-      label: 'Capital Circ.',
-      value: empresa.capital_circulante ? formatCompactCurrency(empresa.capital_circulante) : '-',
-      icon: Wallet,
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-50',
-    },
   ];
 
   return (
@@ -67,7 +53,7 @@ export const EmpresaFinancialsCard: React.FC<EmpresaFinancialsCardProps> = ({ em
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {financialMetrics.map((metric) => (
             <div key={metric.label} className="text-center">
               <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg ${metric.bgColor} mb-2`}>
