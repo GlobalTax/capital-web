@@ -88,13 +88,6 @@ export const ContactsStatsPanel: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'costs' | 'metrics'>('costs');
 
-  // Campaign costs hook
-  const { 
-    costs, 
-    isLoadingCosts, 
-    updateCell 
-  } = useCampaignCosts();
-
   const handlePresetChange = (preset: PeriodPreset) => {
     setSelectedPreset(preset);
     if (preset !== 'custom') {
@@ -115,10 +108,6 @@ export const ContactsStatsPanel: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 500);
-  };
-
-  const handleCellUpdate = async (id: string, field: string, value: any) => {
-    await updateCell({ id, field, value });
   };
 
   return (
