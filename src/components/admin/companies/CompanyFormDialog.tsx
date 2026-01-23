@@ -25,6 +25,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Building2, Save } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
 
+// Función para normalizar CIF: trim, mayúsculas, sin espacios
+const normalizeCif = (cif: string | undefined | null): string | null => {
+  if (!cif) return null;
+  const normalized = cif.trim().toUpperCase().replace(/\s/g, '');
+  return normalized === '' ? null : normalized;
+};
+
+// Regex básica para validar formato CIF español (letra + 7 dígitos + letra/dígito)
+const cifRegex = /^[A-Z]\d{7}[A-Z0-9]$/;
+
 const empresaSchema = z.object({
   nombre: z.string().min(1, 'El nombre es obligatorio'),
   cif: z.string().optional(),
@@ -34,8 +44,6 @@ const empresaSchema = z.object({
   facturacion: z.coerce.number().optional(),
   ebitda: z.coerce.number().optional(),
   empleados: z.coerce.number().optional(),
-  deuda: z.coerce.number().optional(),
-  capital_circulante: z.coerce.number().optional(),
   sitio_web: z.string().optional(),
   descripcion: z.string().optional(),
   es_target: z.boolean().optional(),
@@ -73,8 +81,6 @@ export const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
       facturacion: empresa?.facturacion || undefined,
       ebitda: empresa?.ebitda || undefined,
       empleados: empresa?.empleados || undefined,
-      deuda: empresa?.deuda || undefined,
-      capital_circulante: empresa?.capital_circulante || undefined,
       sitio_web: empresa?.sitio_web || '',
       descripcion: empresa?.descripcion || '',
       es_target: empresa?.es_target || false,
@@ -94,8 +100,6 @@ export const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
         facturacion: empresa.facturacion || undefined,
         ebitda: empresa.ebitda || undefined,
         empleados: empresa.empleados || undefined,
-        deuda: empresa.deuda || undefined,
-        capital_circulante: empresa.capital_circulante || undefined,
         sitio_web: empresa.sitio_web || '',
         descripcion: empresa.descripcion || '',
         es_target: empresa.es_target || false,
@@ -112,18 +116,38 @@ export const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
 
   const onSubmit = async (values: EmpresaFormValues) => {
     try {
+      // Normalizar CIF antes de guardar
+      const normalizedCif = normalizeCif(values.cif);
+      
+      // Validar formato CIF si se proporcionó
+      if (normalizedCif && !cifRegex.test(normalizedCif)) {
+        form.setError('cif', { message: 'CIF no válido (formato: B12345678)' });
+        return;
+      }
+      
+      const dataToSave = {
+        ...values,
+        cif: normalizedCif, // null si está vacío, normalizado si tiene valor
+      };
+      
       let result: Empresa;
       
       if (isEditing && empresa) {
-        result = await updateEmpresa({ id: empresa.id, ...values });
+        result = await updateEmpresa({ id: empresa.id, ...dataToSave });
       } else {
-        result = await createEmpresa(values as any);
+        result = await createEmpresa(dataToSave as any);
       }
       
       onSuccess(result);
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving empresa:', error);
+      
+      // Detectar error de CIF duplicado
+      const errorMessage = error?.message || '';
+      if (errorMessage.includes('cif') || errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
+        form.setError('cif', { message: 'Este CIF ya está registrado en otra empresa' });
+      }
     }
   };
 
@@ -286,44 +310,6 @@ export const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                           <Input 
                             type="number" 
                             placeholder="45" 
-                            {...field}
-                            value={field.value || ''}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="deuda"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deuda (€)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="150000" 
-                            {...field}
-                            value={field.value || ''}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="capital_circulante"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Capital Circulante (€)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="80000" 
                             {...field}
                             value={field.value || ''}
                           />
