@@ -214,6 +214,13 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
         badge: "NEW",
         description: "Firecrawl, OpenAI y Lovable AI"
       },
+      { 
+        title: "Enriquecimiento Datos", 
+        url: "/admin/data-enrichment", 
+        icon: Sparkles,
+        badge: "AI",
+        description: "Enriquecer empresas y fondos con Firecrawl"
+      },
     ]
   }
 ];

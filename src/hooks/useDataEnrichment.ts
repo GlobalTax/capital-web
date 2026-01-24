@@ -71,3 +71,51 @@ export function useEnrichFunds() {
     },
   });
 }
+
+export function useEnrichLeads() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ lead_ids, limit, force }: { lead_ids?: string[]; limit?: number; force?: boolean }) => {
+      const { data, error } = await supabase.functions.invoke('leads-company-enrich', {
+        body: { lead_ids, limit: limit || 10, force: force || false },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['enrichment-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['acquisition-leads'] });
+      toast.success(data.message || 'Leads enriquecidos correctamente');
+    },
+    onError: (error) => {
+      console.error('Error enriching leads:', error);
+      toast.error('Error al enriquecer leads');
+    },
+  });
+}
+
+export function useEnrichPeople() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ person_ids, limit, force }: { person_ids?: string[]; limit?: number; force?: boolean }) => {
+      const { data, error } = await supabase.functions.invoke('cr-people-enrich', {
+        body: { person_ids, limit: limit || 10, force: force || false },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['enrichment-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['cr-people'] });
+      toast.success(data.message || 'Contactos enriquecidos correctamente');
+    },
+    onError: (error) => {
+      console.error('Error enriching people:', error);
+      toast.error('Error al enriquecer contactos');
+    },
+  });
+}
