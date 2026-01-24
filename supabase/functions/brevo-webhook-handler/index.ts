@@ -56,15 +56,14 @@ interface BrevoWebhookEvent {
 
 // Mapeo de atributos de Brevo a campos de Capittal
 const BREVO_ATTRIBUTE_MAP: Record<string, string> = {
-  'FIRSTNAME': 'contact_name',
-  'LASTNAME': 'contact_lastname',
-  'SMS': 'phone',
-  'PHONE': 'phone',
-  'COMPANY': 'company_name',
-  'NOMBRE': 'contact_name',
-  'APELLIDOS': 'contact_lastname',
-  'EMPRESA': 'company_name',
-  'TELEFONO': 'phone',
+  'FIRSTNAME': 'nombre',
+  'LASTNAME': 'apellidos',
+  'SMS': 'telefono',
+  'PHONE': 'telefono',
+  'JOB_TITLE': 'cargo',
+  'NOMBRE': 'nombre',
+  'APELLIDOS': 'apellidos',
+  'TELEFONO': 'telefono',
 };
 
 serve(async (req) => {
@@ -141,13 +140,14 @@ serve(async (req) => {
           const contactoData: Record<string, any> = {
             email: email,
             updated_at: new Date().toISOString(),
+            brevo_synced_at: new Date().toISOString(),
           };
           
-          // Map Brevo attributes to contactos fields
-          if (attributesReceived.FIRSTNAME) contactoData.contact_name = attributesReceived.FIRSTNAME;
-          if (attributesReceived.LASTNAME) contactoData.contact_lastname = attributesReceived.LASTNAME;
-          if (attributesReceived.SMS || attributesReceived.PHONE) contactoData.phone = attributesReceived.SMS || attributesReceived.PHONE;
-          if (attributesReceived.COMPANY) contactoData.company_name = attributesReceived.COMPANY;
+          // Map Brevo attributes to contactos fields (correct schema)
+          if (attributesReceived.FIRSTNAME) contactoData.nombre = attributesReceived.FIRSTNAME;
+          if (attributesReceived.LASTNAME) contactoData.apellidos = attributesReceived.LASTNAME;
+          if (attributesReceived.SMS || attributesReceived.PHONE) contactoData.telefono = attributesReceived.SMS || attributesReceived.PHONE;
+          if (attributesReceived.JOB_TITLE) contactoData.cargo = attributesReceived.JOB_TITLE;
           
           const { error: contactoError } = await supabase
             .from('contactos')

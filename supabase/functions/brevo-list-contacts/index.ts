@@ -211,13 +211,14 @@ serve(async (req) => {
       // Also prepare contacts for master 'contactos' table (UPSERT on email)
       const contactosToUpsert = contacts.map((contact: any) => ({
         email: contact.email,
-        contact_name: contact.first_name || null,
-        contact_lastname: contact.last_name || null,
-        phone: contact.sms || null,
-        company_name: contact.company || null,
+        nombre: contact.first_name || null,
+        apellidos: contact.last_name || null,
+        telefono: contact.sms || null,
         brevo_id: contact.brevo_id?.toString() || null,
         source: 'brevo_import',
         updated_at: new Date().toISOString(),
+        brevo_synced_at: new Date().toISOString(),
+        brevo_last_modified_at: contact.brevo_modified_at || null,
       }));
 
       // Upsert to brevo_contacts (for backward compatibility)
