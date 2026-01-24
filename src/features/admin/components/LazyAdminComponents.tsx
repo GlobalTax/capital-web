@@ -114,6 +114,7 @@ export const LazySFMatchingInbox = lazy(() => import('@/pages/admin/SFMatchingIn
 export const LazySFApolloImportPage = lazy(() => import('@/pages/admin/SFApolloImportPage'));
 export const LazySFFundDetailPage = lazy(() => import('@/pages/admin/SFFundDetailPage'));
 export const LazySFAcquisitionDetailPage = lazy(() => import('@/pages/admin/SFAcquisitionDetailPage'));
+export const LazySFAcquisitionsPage = lazy(() => import('@/pages/admin/SFAcquisitionsPage'));
 
 // === CAPITAL RIESGO INTELLIGENCE ===
 export const LazyCRDirectoryPage = lazy(() => import('@/pages/admin/CRDirectoryPage'));
