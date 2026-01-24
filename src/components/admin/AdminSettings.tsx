@@ -14,7 +14,8 @@ import {
   FileSignature,
   Workflow,
   Shuffle,
-  LayoutPanelTop
+  LayoutPanelTop,
+  Activity
 } from 'lucide-react';
 
 const AdminSettings: React.FC = () => {
@@ -68,6 +69,12 @@ const AdminSettings: React.FC = () => {
       description: 'Monitor de envío de emails con estado, errores y reintentos',
       icon: Mail,
       href: '/admin/settings/email-outbox',
+    },
+    {
+      title: 'Consumo de APIs',
+      description: 'Dashboard de uso de Firecrawl, OpenAI y Lovable AI con proyecciones',
+      icon: Activity,
+      href: '/admin/settings/api-usage',
     },
   ];
 
