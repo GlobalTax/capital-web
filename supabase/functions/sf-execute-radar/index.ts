@@ -77,7 +77,11 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[sf-execute-radar] Executing query: "${searchQuery.query_text}" (${searchQuery.country_code})`);
+    console.log(`[sf-execute-radar] Executing query: "${searchQuery.query}" (${searchQuery.country_code})`);
+
+    // Map country_code to language
+    const langMap: Record<string, string> = { 'ES': 'es', 'FR': 'fr', 'DE': 'de', 'IT': 'it', 'PT': 'pt', 'NL': 'nl' };
+    const lang = langMap[searchQuery.country_code] || 'en';
 
     // Execute Firecrawl search
     const searchResponse = await fetch('https://api.firecrawl.dev/v1/search', {
@@ -87,9 +91,9 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        query: searchQuery.query_text,
+        query: searchQuery.query,
         limit,
-        lang: searchQuery.language || 'en',
+        lang,
         country: searchQuery.country_code || 'ES',
         scrapeOptions: {
           formats: ['markdown'],
@@ -194,7 +198,7 @@ serve(async (req) => {
       .from('sf_search_queries')
       .update({
         last_executed_at: new Date().toISOString(),
-        last_results_count: results.length,
+        results_count: results.length,
       })
       .eq('id', query_id);
 
@@ -205,7 +209,7 @@ serve(async (req) => {
         success: true,
         data: {
           query_id,
-          query_text: searchQuery.query_text,
+          query_text: searchQuery.query,
           total_results: results.length,
           processed: processedCount,
           relevant: relevantCount,
