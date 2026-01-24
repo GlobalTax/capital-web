@@ -18,19 +18,25 @@ import {
   Target,
   Star,
   X,
-  Filter
+  Filter,
+  Settings2,
+  Zap,
+  Globe,
 } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
 import { useFavoriteEmpresas } from '@/hooks/useEmpresaFavorites';
 import { CompanyFormDialog } from '@/components/admin/companies/CompanyFormDialog';
 import { EmpresasTableVirtualized } from '@/components/admin/empresas/EmpresasTableVirtualized';
 import { EmpresasStatsCards } from '@/components/admin/empresas/EmpresasStatsCards';
+import { EmpresasColumnsEditor } from '@/components/admin/empresas/EmpresasColumnsEditor';
 
-// Quick filter chips
+// Quick filter chips - extended with new filters
 const QUICK_FILTERS = [
-  { id: 'with-revenue', label: 'Con Facturación', filter: (e: Empresa) => !!e.facturacion },
-  { id: 'with-ebitda', label: 'Con EBITDA', filter: (e: Empresa) => !!e.ebitda },
-  { id: 'sf-potential', label: 'Potencial SF', filter: (e: Empresa) => !!e.potencial_search_fund },
+  { id: 'with-revenue', label: 'Con Facturación', icon: null, filter: (e: Empresa) => !!e.facturacion },
+  { id: 'with-ebitda', label: 'Con EBITDA', icon: null, filter: (e: Empresa) => !!e.ebitda },
+  { id: 'sf-potential', label: 'Potencial SF', icon: null, filter: (e: Empresa) => !!e.potencial_search_fund },
+  { id: 'with-apollo', label: 'Con Apollo', icon: Globe, filter: (e: Empresa) => !!(e as any).apollo_org_id },
+  { id: 'high-intent', label: 'Alto Intent', icon: Zap, filter: (e: Empresa) => (e as any).apollo_intent_level === 'High' },
 ] as const;
 
 export default function EmpresasPage() {
@@ -41,6 +47,7 @@ export default function EmpresasPage() {
   const [quickFilters, setQuickFilters] = useState<string[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
+  const [isColumnsEditorOpen, setIsColumnsEditorOpen] = useState(false);
 
   // Hook para todas las empresas (sin filtros de texto para mantener stats correctas)
   const { 
@@ -158,10 +165,20 @@ export default function EmpresasPage() {
             Base de datos de empresas con datos financieros
           </p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nueva Empresa
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setIsColumnsEditorOpen(true)}
+          >
+            <Settings2 className="h-4 w-4 mr-2" />
+            Columnas
+          </Button>
+          <Button onClick={() => setIsFormOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Empresa
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -217,16 +234,20 @@ export default function EmpresasPage() {
             {/* Quick filters */}
             <div className="flex items-center gap-2 flex-wrap">
               <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-              {QUICK_FILTERS.map(filter => (
-                <Badge
-                  key={filter.id}
-                  variant={quickFilters.includes(filter.id) ? 'default' : 'outline'}
-                  className="cursor-pointer text-xs"
-                  onClick={() => toggleQuickFilter(filter.id)}
-                >
-                  {filter.label}
-                </Badge>
-              ))}
+              {QUICK_FILTERS.map(filter => {
+                const Icon = filter.icon;
+                return (
+                  <Badge
+                    key={filter.id}
+                    variant={quickFilters.includes(filter.id) ? 'default' : 'outline'}
+                    className="cursor-pointer text-xs gap-1"
+                    onClick={() => toggleQuickFilter(filter.id)}
+                  >
+                    {Icon && <Icon className="h-3 w-3" />}
+                    {filter.label}
+                  </Badge>
+                );
+              })}
               {hasActiveFilters && (
                 <Button
                   variant="ghost"
@@ -317,6 +338,12 @@ export default function EmpresasPage() {
         onOpenChange={handleFormClose}
         onSuccess={handleFormSuccess}
         empresa={editingEmpresa}
+      />
+
+      {/* Columns Editor */}
+      <EmpresasColumnsEditor
+        open={isColumnsEditorOpen}
+        onOpenChange={setIsColumnsEditorOpen}
       />
     </div>
   );
