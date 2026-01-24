@@ -1,8 +1,9 @@
 // ============= EMPRESAS TABLE VIRTUALIZED =============
 // Tabla de alto rendimiento con react-window (~30ms para 1000+ filas)
 // Soporta columnas dinámicas, ordenación y configuración desde DB
+// v2: Scroll horizontal sincronizado + anchos numéricos
 
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +33,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Empresa } from '@/hooks/useEmpresas';
 import { EmpresaFavoriteButton } from './EmpresaFavoriteButton';
-import { formatCompactCurrency } from '@/shared/utils/format';
 import { cn } from '@/lib/utils';
 import { EmpresaTableColumn, useEmpresasTableColumns } from '@/hooks/useEmpresasTableColumns';
 
@@ -60,35 +60,55 @@ interface RowData {
   onNavigate: (id: string) => void;
   showFavorites: boolean;
   visibleColumns: EmpresaTableColumn[];
+  columnWidths: Record<string, number>;
 }
 
 const ROW_HEIGHT = 52;
 
-// Helper to get cell width based on column key
-const getColumnWidth = (columnKey: string): string => {
-  const widths: Record<string, string> = {
-    favorito: 'w-12',
-    nombre: 'flex-1 min-w-[200px]',
-    sector: 'w-[120px]',
-    ubicacion: 'w-[100px]',
-    empleados: 'w-[80px]',
-    facturacion: 'w-[100px]',
-    ebitda: 'w-[100px]',
-    margen: 'w-[80px]',
-    deuda: 'w-[100px]',
-    valoracion: 'w-[110px]',
-    fecha_valoracion: 'w-[100px]',
-    founded_year: 'w-[80px]',
-    cnae_codigo: 'w-[80px]',
-    apollo_intent: 'w-[80px]',
-    apollo_score: 'w-[70px]',
-    estado: 'w-[100px]',
-    acciones: 'w-[50px]',
-  };
-  return widths[columnKey] || 'w-[100px]';
+// ========== COLUMN WIDTHS (pixels) ==========
+const COLUMN_WIDTHS: Record<string, number> = {
+  favorito: 48,
+  nombre: 220,
+  sector: 120,
+  ubicacion: 110,
+  empleados: 85,
+  facturacion: 100,
+  ebitda: 100,
+  margen: 80,
+  deuda: 100,
+  valoracion: 115,
+  fecha_valoracion: 110,
+  founded_year: 85,
+  cnae_codigo: 90,
+  apollo_intent: 85,
+  apollo_score: 75,
+  estado: 100,
+  acciones: 56,
 };
 
-// Render cell content based on column key
+const getColumnWidth = (columnKey: string): number => {
+  return COLUMN_WIDTHS[columnKey] || 100;
+};
+
+// Calculate total width of visible columns
+const calculateTotalWidth = (visibleColumns: EmpresaTableColumn[]): number => {
+  return visibleColumns.reduce((sum, col) => sum + getColumnWidth(col.column_key), 0);
+};
+
+// ========== FORMATTERS ==========
+const formatTableCurrency = (amount: number | null | undefined): string => {
+  if (!amount || amount <= 0) return '—';
+  
+  if (amount >= 1_000_000) {
+    return `€${(amount / 1_000_000).toFixed(1)}M`;
+  }
+  if (amount >= 1_000) {
+    return `€${Math.round(amount / 1_000)}K`;
+  }
+  return `€${Math.round(amount)}`;
+};
+
+// ========== CELL RENDERERS ==========
 const renderCellContent = (
   empresa: Empresa,
   columnKey: string,
@@ -100,6 +120,9 @@ const renderCellContent = (
     return ((emp.ebitda / emp.facturacion) * 100).toFixed(1);
   };
 
+  // Empty placeholder with subtle styling
+  const EmptyCell = () => <span className="text-muted-foreground/40">—</span>;
+
   switch (columnKey) {
     case 'favorito':
       return (
@@ -110,61 +133,63 @@ const renderCellContent = (
 
     case 'nombre':
       return (
-        <div>
+        <div className="min-w-0">
           <div className="font-medium text-sm truncate">{empresa.nombre}</div>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-muted-foreground truncate">
-              {empresa.sector}
-            </span>
-            {empresa.subsector && (
-              <span className="text-xs text-muted-foreground/60 truncate">
-                / {empresa.subsector}
+          {empresa.sector && (
+            <div className="flex items-center gap-1 mt-0.5 min-w-0">
+              <span className="text-xs text-muted-foreground truncate">
+                {empresa.sector}
               </span>
-            )}
-          </div>
+              {empresa.subsector && (
+                <span className="text-xs text-muted-foreground/60 truncate hidden sm:inline">
+                  / {empresa.subsector}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       );
 
     case 'sector':
-      return (
+      return empresa.sector ? (
         <span className="text-xs text-muted-foreground truncate block">
-          {empresa.sector || '-'}
+          {empresa.sector}
         </span>
-      );
+      ) : <EmptyCell />;
 
     case 'ubicacion':
-      return (
+      return empresa.ubicacion ? (
         <span className="text-xs text-muted-foreground truncate block">
-          {empresa.ubicacion || '-'}
+          {empresa.ubicacion}
         </span>
-      );
+      ) : <EmptyCell />;
 
     case 'empleados':
-      return (
+      return empresa.empleados ? (
         <div className="flex items-center gap-1 text-xs">
-          <Users className="h-3 w-3 text-muted-foreground" />
-          <span>{empresa.empleados || '-'}</span>
+          <Users className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <span>{empresa.empleados}</span>
         </div>
-      );
+      ) : <EmptyCell />;
 
     case 'facturacion':
       return (
-        <div className="text-sm font-medium text-right">
-          {empresa.facturacion ? formatCompactCurrency(empresa.facturacion) : '-'}
+        <div className="text-sm font-medium text-right tabular-nums">
+          {empresa.facturacion ? formatTableCurrency(empresa.facturacion) : <EmptyCell />}
         </div>
       );
 
     case 'ebitda':
       return (
-        <div className="text-sm text-right">
-          {empresa.ebitda ? formatCompactCurrency(empresa.ebitda) : '-'}
+        <div className="text-sm text-right tabular-nums">
+          {empresa.ebitda ? formatTableCurrency(empresa.ebitda) : <EmptyCell />}
         </div>
       );
 
     case 'margen':
       const margin = calculateMargin(empresa);
       return (
-        <div className="text-sm text-right">
+        <div className="text-sm text-right tabular-nums">
           {margin ? (
             <span className={cn(
               parseFloat(margin) >= 15 ? 'text-green-600' : 
@@ -172,37 +197,37 @@ const renderCellContent = (
             )}>
               {margin}%
             </span>
-          ) : '-'}
+          ) : <EmptyCell />}
         </div>
       );
 
     case 'deuda':
-      return (
+      return empresa.deuda ? (
         <div className="flex items-center gap-1 text-xs">
-          <Landmark className="h-3 w-3 text-muted-foreground" />
-          <span>{empresa.deuda ? formatCompactCurrency(empresa.deuda) : '-'}</span>
+          <Landmark className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <span>{formatTableCurrency(empresa.deuda)}</span>
         </div>
-      );
+      ) : <EmptyCell />;
 
     case 'founded_year':
-      return (
+      return (empresa as any).founded_year ? (
         <div className="flex items-center gap-1 text-xs">
-          <Calendar className="h-3 w-3 text-muted-foreground" />
-          <span>{(empresa as any).founded_year || '-'}</span>
+          <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <span>{(empresa as any).founded_year}</span>
         </div>
-      );
+      ) : <EmptyCell />;
 
     case 'cnae_codigo':
-      return (
+      return (empresa as any).cnae_codigo ? (
         <div className="flex items-center gap-1 text-xs">
-          <Hash className="h-3 w-3 text-muted-foreground" />
-          <span className="font-mono">{(empresa as any).cnae_codigo || '-'}</span>
+          <Hash className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <span className="font-mono">{(empresa as any).cnae_codigo}</span>
         </div>
-      );
+      ) : <EmptyCell />;
 
     case 'apollo_intent':
       const intentLevel = (empresa as any).apollo_intent_level;
-      if (!intentLevel) return <span className="text-xs text-muted-foreground">-</span>;
+      if (!intentLevel) return <EmptyCell />;
       return (
         <Badge 
           variant="outline" 
@@ -219,33 +244,34 @@ const renderCellContent = (
 
     case 'apollo_score':
       const score = (empresa as any).apollo_score;
-      return (
+      return score ? (
         <div className="flex items-center gap-1 text-xs">
-          <Target className="h-3 w-3 text-muted-foreground" />
-          <span>{score || '-'}</span>
+          <Target className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+          <span>{score}</span>
         </div>
-      );
+      ) : <EmptyCell />;
 
     case 'valoracion':
-      return (
-        <div className="flex items-center gap-1 text-sm font-medium text-right text-green-600">
-          <Calculator className="h-3 w-3" />
-          <span>{empresa.valoracion ? formatCompactCurrency(empresa.valoracion) : '-'}</span>
+      return empresa.valoracion ? (
+        <div className="flex items-center justify-end gap-1 text-sm font-medium text-green-600 tabular-nums">
+          <Calculator className="h-3 w-3 flex-shrink-0" />
+          <span>{formatTableCurrency(empresa.valoracion)}</span>
         </div>
-      );
+      ) : <EmptyCell />;
 
     case 'fecha_valoracion':
-      if (!empresa.fecha_valoracion) return <span className="text-xs text-muted-foreground">-</span>;
+      if (!empresa.fecha_valoracion) return <EmptyCell />;
       const date = new Date(empresa.fecha_valoracion);
       return (
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
+          <Calendar className="h-3 w-3 flex-shrink-0" />
           <span>{date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
         </div>
       );
 
     case 'estado':
-      return (
+      const hasStatus = empresa.es_target || empresa.potencial_search_fund;
+      return hasStatus ? (
         <div className="flex flex-wrap gap-1">
           {empresa.es_target && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
@@ -257,11 +283,8 @@ const renderCellContent = (
               SF
             </Badge>
           )}
-          {!empresa.es_target && !empresa.potencial_search_fund && (
-            <span className="text-muted-foreground text-xs">-</span>
-          )}
         </div>
-      );
+      ) : <EmptyCell />;
 
     case 'acciones':
       return (
@@ -303,13 +326,13 @@ const renderCellContent = (
       );
 
     default:
-      return <span className="text-xs text-muted-foreground">-</span>;
+      return <EmptyCell />;
   }
 };
 
-// Memoized row component
+// ========== ROW COMPONENT ==========
 const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData>) => {
-  const { empresas, onEdit, onDelete, onNavigate, visibleColumns } = data;
+  const { empresas, onEdit, onDelete, onNavigate, visibleColumns, columnWidths } = data;
   const empresa = empresas[index];
 
   return (
@@ -324,11 +347,11 @@ const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData
       {visibleColumns.map((column) => (
         <div
           key={column.column_key}
+          style={{ width: columnWidths[column.column_key] || 100, minWidth: columnWidths[column.column_key] || 100 }}
           className={cn(
-            "px-2 py-1 flex-shrink-0",
-            getColumnWidth(column.column_key),
+            "px-2 py-1 flex-shrink-0 overflow-hidden",
             column.column_key === 'nombre' && 'px-3',
-            ['facturacion', 'ebitda', 'margen'].includes(column.column_key) && 'text-right'
+            ['facturacion', 'ebitda', 'margen', 'valoracion'].includes(column.column_key) && 'text-right'
           )}
         >
           {renderCellContent(empresa, column.column_key, onEdit, onDelete)}
@@ -340,15 +363,17 @@ const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData
 
 EmpresaRow.displayName = 'EmpresaRow';
 
-// Sortable header component
+// ========== HEADER COMPONENTS ==========
 const SortableHeader = memo(({ 
   column, 
   sortConfig, 
-  onSort 
+  onSort,
+  width
 }: { 
   column: EmpresaTableColumn; 
   sortConfig: SortConfig;
   onSort: (key: string) => void;
+  width: number;
 }) => {
   const isSorted = sortConfig?.key === column.column_key;
   const isAsc = isSorted && sortConfig?.direction === 'asc';
@@ -356,11 +381,11 @@ const SortableHeader = memo(({
   if (!column.is_sortable || column.column_key === 'acciones' || column.column_key === 'favorito') {
     return (
       <div
+        style={{ width, minWidth: width }}
         className={cn(
           "px-2 flex-shrink-0 text-xs font-medium text-muted-foreground",
-          getColumnWidth(column.column_key),
           column.column_key === 'nombre' && 'px-3',
-          ['facturacion', 'ebitda', 'margen'].includes(column.column_key) && 'text-right'
+          ['facturacion', 'ebitda', 'margen', 'valoracion'].includes(column.column_key) && 'text-right'
         )}
       >
         {column.label}
@@ -371,17 +396,17 @@ const SortableHeader = memo(({
   return (
     <button
       onClick={() => onSort(column.column_key)}
+      style={{ width, minWidth: width }}
       className={cn(
         "px-2 flex-shrink-0 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
         "flex items-center gap-1 group",
-        getColumnWidth(column.column_key),
         column.column_key === 'nombre' && 'px-3',
-        ['facturacion', 'ebitda', 'margen'].includes(column.column_key) && 'justify-end',
+        ['facturacion', 'ebitda', 'margen', 'valoracion'].includes(column.column_key) && 'justify-end',
         isSorted && 'text-foreground'
       )}
     >
-      <span>{column.label}</span>
-      <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+      <span className="truncate">{column.label}</span>
+      <span className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
         {isSorted ? (
           isAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
         ) : (
@@ -394,23 +419,30 @@ const SortableHeader = memo(({
 
 SortableHeader.displayName = 'SortableHeader';
 
-// Header component with sorting
 const TableHeader = memo(({ 
   visibleColumns, 
   sortConfig, 
-  onSort 
+  onSort,
+  columnWidths,
+  totalWidth
 }: { 
   visibleColumns: EmpresaTableColumn[];
   sortConfig: SortConfig;
   onSort: (key: string) => void;
+  columnWidths: Record<string, number>;
+  totalWidth: number;
 }) => (
-  <div className="flex items-center bg-muted/50 border-b border-border py-2 sticky top-0 z-10">
+  <div 
+    className="flex items-center bg-muted/50 border-b border-border py-2"
+    style={{ width: totalWidth, minWidth: totalWidth }}
+  >
     {visibleColumns.map((column) => (
       <SortableHeader 
         key={column.column_key} 
         column={column} 
         sortConfig={sortConfig}
         onSort={onSort}
+        width={columnWidths[column.column_key] || 100}
       />
     ))}
   </div>
@@ -418,7 +450,7 @@ const TableHeader = memo(({
 
 TableHeader.displayName = 'TableHeader';
 
-// Empty state component
+// ========== EMPTY & LOADING STATES ==========
 const EmptyState = memo(({ 
   message, 
   action, 
@@ -445,7 +477,6 @@ const EmptyState = memo(({
 
 EmptyState.displayName = 'EmptyState';
 
-// Loading component
 const LoadingState = memo(() => (
   <div className="flex items-center justify-center py-16">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -454,6 +485,7 @@ const LoadingState = memo(() => (
 
 LoadingState.displayName = 'LoadingState';
 
+// ========== MAIN COMPONENT ==========
 export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> = ({
   empresas,
   isLoading: isLoadingData,
@@ -468,26 +500,37 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   const navigate = useNavigate();
   const { visibleColumns, isLoading: isLoadingColumns } = useEmpresasTableColumns();
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<List>(null);
 
   const handleNavigate = useCallback((id: string) => {
     navigate(`/admin/empresas/${id}`);
   }, [navigate]);
 
-  // Handle sort toggle
   const handleSort = useCallback((key: string) => {
     setSortConfig(current => {
       if (current?.key === key) {
-        // Toggle direction or clear if already desc
         if (current.direction === 'asc') {
           return { key, direction: 'desc' };
         }
-        return null; // Clear sort
+        return null;
       }
       return { key, direction: 'asc' };
     });
   }, []);
 
-  // Sort empresas based on sortConfig
+  // Calculate column widths and total width
+  const columnWidths = useMemo(() => {
+    const widths: Record<string, number> = {};
+    visibleColumns.forEach(col => {
+      widths[col.column_key] = getColumnWidth(col.column_key);
+    });
+    return widths;
+  }, [visibleColumns]);
+
+  const totalWidth = useMemo(() => calculateTotalWidth(visibleColumns), [visibleColumns]);
+
+  // Sort empresas
   const sortedEmpresas = useMemo(() => {
     if (!sortConfig) return empresas;
 
@@ -496,17 +539,14 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
       let aVal = a[key];
       let bVal = b[key];
 
-      // Handle null/undefined
       if (aVal == null && bVal == null) return 0;
       if (aVal == null) return 1;
       if (bVal == null) return -1;
 
-      // Numeric comparison
       if (typeof aVal === 'number' && typeof bVal === 'number') {
         return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
       }
 
-      // String comparison
       const aStr = String(aVal).toLowerCase();
       const bStr = String(bVal).toLowerCase();
       if (sortConfig.direction === 'asc') {
@@ -523,7 +563,8 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
     onNavigate: handleNavigate,
     showFavorites,
     visibleColumns,
-  }), [sortedEmpresas, onEdit, onDelete, handleNavigate, showFavorites, visibleColumns]);
+    columnWidths,
+  }), [sortedEmpresas, onEdit, onDelete, handleNavigate, showFavorites, visibleColumns, columnWidths]);
 
   const isLoading = isLoadingData || isLoadingColumns;
 
@@ -541,27 +582,43 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
     );
   }
 
-  // Calculate dynamic height based on content
   const listHeight = Math.min(height, empresas.length * ROW_HEIGHT);
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
-      <TableHeader 
-        visibleColumns={visibleColumns} 
-        sortConfig={sortConfig}
-        onSort={handleSort}
-      />
-      <List
-        height={listHeight}
-        width="100%"
-        itemCount={sortedEmpresas.length}
-        itemSize={ROW_HEIGHT}
-        itemData={itemData}
-        overscanCount={5}
+      {/* Scroll container for synchronized horizontal scroll */}
+      <div 
+        ref={scrollContainerRef}
+        className="overflow-x-auto"
       >
-        {EmpresaRow}
-      </List>
-      {/* Footer with count and sort indicator */}
+        {/* Inner container with fixed width */}
+        <div style={{ minWidth: totalWidth }}>
+          {/* Header */}
+          <TableHeader 
+            visibleColumns={visibleColumns} 
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            columnWidths={columnWidths}
+            totalWidth={totalWidth}
+          />
+          
+          {/* Virtualized List */}
+          <List
+            ref={listRef}
+            height={listHeight}
+            width={totalWidth}
+            itemCount={sortedEmpresas.length}
+            itemSize={ROW_HEIGHT}
+            itemData={itemData}
+            overscanCount={5}
+            style={{ overflow: 'hidden' }}
+          >
+            {EmpresaRow}
+          </List>
+        </div>
+      </div>
+      
+      {/* Footer */}
       <div className="px-4 py-2 bg-muted/30 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
         <span>Mostrando {empresas.length} empresa{empresas.length !== 1 ? 's' : ''}</span>
         {sortConfig && (
