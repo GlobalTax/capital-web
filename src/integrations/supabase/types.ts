@@ -10608,6 +10608,7 @@ export type Database = {
           honorarios_propuestos: number | null
           id: string
           import_log_id: string | null
+          is_favorite: boolean | null
           last_activity_at: string | null
           loss_notes: string | null
           loss_reason: Database["public"]["Enums"]["loss_reason_type"] | null
@@ -10671,6 +10672,7 @@ export type Database = {
           honorarios_propuestos?: number | null
           id?: string
           import_log_id?: string | null
+          is_favorite?: boolean | null
           last_activity_at?: string | null
           loss_notes?: string | null
           loss_reason?: Database["public"]["Enums"]["loss_reason_type"] | null
@@ -10734,6 +10736,7 @@ export type Database = {
           honorarios_propuestos?: number | null
           id?: string
           import_log_id?: string | null
+          is_favorite?: boolean | null
           last_activity_at?: string | null
           loss_notes?: string | null
           loss_reason?: Database["public"]["Enums"]["loss_reason_type"] | null

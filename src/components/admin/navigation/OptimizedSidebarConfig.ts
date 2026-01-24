@@ -16,7 +16,8 @@ import {
   Calculator,
   FileSignature,
   Briefcase,
-  Search
+  Search,
+  Globe
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -197,6 +198,13 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
         url: "/admin/settings", 
         icon: Settings,
         description: "Configuración general"
+      },
+      { 
+        title: "Configuración TopBar", 
+        url: "/admin/settings/topbar", 
+        icon: Globe,
+        badge: "NEW",
+        description: "Teléfono, empresas del grupo y enlaces"
       },
     ]
   }
