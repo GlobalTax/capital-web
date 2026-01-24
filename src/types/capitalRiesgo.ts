@@ -2,6 +2,8 @@
 // CAPITAL RIESGO (PE/VC) - TIPOS TYPESCRIPT
 // =====================================================
 
+import type { Json } from '@/integrations/supabase/types';
+
 // Enums y tipos literales
 export type CRFundType = 
   | 'private_equity' 
@@ -136,6 +138,13 @@ export interface CRFund {
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
+  // Enrichment fields
+  enriched_data?: Json | null;
+  enriched_at?: string | null;
+  investment_thesis?: string | null;
+  team_size_estimate?: number | null;
+  notable_exits?: string[] | null;
+  enrichment_source?: string | null;
 }
 
 export interface CRPerson {
@@ -156,6 +165,13 @@ export interface CRPerson {
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
+  // Enrichment fields
+  enriched_data?: Json | null;
+  enriched_at?: string | null;
+  bio?: string | null;
+  media_mentions?: string[] | null;
+  expertise_areas?: string[] | null;
+  enrichment_source?: string | null;
 }
 
 export interface CRPortfolio {
@@ -179,6 +195,15 @@ export interface CRPortfolio {
   deleted_at: string | null;
   created_at: string;
   updated_at: string;
+  // Enrichment fields
+  enriched_data?: Json | null;
+  enriched_at?: string | null;
+  employee_count_estimate?: number | null;
+  revenue_estimate?: string | null;
+  technologies?: string[] | null;
+  key_people?: Json | null;
+  social_links?: Json | null;
+  enrichment_source?: string | null;
 }
 
 export interface CRLP {
