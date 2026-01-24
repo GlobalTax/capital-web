@@ -1,14 +1,12 @@
-
 import React, { useState } from 'react';
 import { SimpleButton } from '@/components/ui/simple-button';
-import { Menu, X, Phone, Shield } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
 import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
-import LanguageSelector from '@/components/i18n/LanguageSelector';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,7 +14,7 @@ const Header = () => {
   const { user } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-300">
+    <header className="fixed top-0 md:top-10 left-0 right-0 bg-white/95 backdrop-blur-sm z-40 border-b border-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -29,19 +27,24 @@ const Header = () => {
           {/* Desktop Navigation */}
           <AdvancedDesktopNavigation />
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons - Updated styling */}
           <div className="hidden md:flex items-center space-x-3">
-            <LanguageSelector />
+            <Link to={getLocalizedUrl('oficinas', lang)}>
+              <SimpleButton 
+                text="Nuestras Oficinas"
+                variant="secondary"
+                size="sm"
+                className="border-amber-500 text-amber-600 hover:bg-amber-50"
+              />
+            </Link>
             <Link to={getLocalizedUrl('contacto', lang)}>
               <SimpleButton 
                 text={t('nav.contacto')}
-                variant="secondary"
+                variant="primary"
                 size="sm"
+                className="bg-amber-500 text-slate-900 hover:bg-amber-400 border-amber-500"
               />
             </Link>
-            <a href="tel:+34695717490" className="p-2 text-black hover:text-gray-600 transition-colors border border-gray-300 rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 ease-out">
-              <Phone size={18} />
-            </a>
           </div>
 
           {/* Mobile menu button */}

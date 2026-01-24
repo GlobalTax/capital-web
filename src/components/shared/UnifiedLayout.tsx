@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect } from 'react';
 import Header from '@/components/Header';
+import TopBar from '@/components/header/TopBar';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
 import Footer from '@/components/Footer';
 import LandingFooterNoLinks from '@/components/landing/LandingFooterNoLinks';
@@ -44,8 +45,9 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
   return (
     <div className="min-h-screen bg-white">
       <BannerContainer position="top" />
+      {variant === 'home' && <TopBar />}
       <HeaderComponent />
-      <main role="main" className={`pt-24 ${mainClassName}`}>
+      <main role="main" className={`pt-24 md:pt-[104px] ${mainClassName}`}>
         {children}
       </main>
       <BannerContainer position="bottom" />
