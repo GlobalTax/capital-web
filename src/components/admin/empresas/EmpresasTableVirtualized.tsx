@@ -1,7 +1,8 @@
 // ============= EMPRESAS TABLE VIRTUALIZED =============
 // Tabla de alto rendimiento con react-window (~30ms para 1000+ filas)
+// Soporta columnas dinámicas, ordenación y configuración desde DB
 
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +12,16 @@ import {
   Edit,
   Trash2,
   ExternalLink,
-  Plus,
   Star,
   MoreHorizontal,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  Users,
+  Calendar,
+  Hash,
+  Target,
+  Landmark,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -25,6 +33,7 @@ import { Empresa } from '@/hooks/useEmpresas';
 import { EmpresaFavoriteButton } from './EmpresaFavoriteButton';
 import { formatCompactCurrency } from '@/shared/utils/format';
 import { cn } from '@/lib/utils';
+import { EmpresaTableColumn, useEmpresasTableColumns } from '@/hooks/useEmpresasTableColumns';
 
 interface EmpresasTableVirtualizedProps {
   empresas: Empresa[];
@@ -38,90 +47,184 @@ interface EmpresasTableVirtualizedProps {
   height?: number;
 }
 
+export type SortConfig = {
+  key: string;
+  direction: 'asc' | 'desc';
+} | null;
+
 interface RowData {
   empresas: Empresa[];
   onEdit: (empresa: Empresa) => void;
   onDelete: (empresa: Empresa) => void;
   onNavigate: (id: string) => void;
   showFavorites: boolean;
+  visibleColumns: EmpresaTableColumn[];
 }
 
 const ROW_HEIGHT = 52;
 
-// Memoized row component
-const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData>) => {
-  const { empresas, onEdit, onDelete, onNavigate, showFavorites } = data;
-  const empresa = empresas[index];
+// Helper to get cell width based on column key
+const getColumnWidth = (columnKey: string): string => {
+  const widths: Record<string, string> = {
+    favorito: 'w-12',
+    nombre: 'flex-1 min-w-[200px]',
+    sector: 'w-[120px]',
+    ubicacion: 'w-[100px]',
+    empleados: 'w-[80px]',
+    facturacion: 'w-[100px]',
+    ebitda: 'w-[100px]',
+    margen: 'w-[80px]',
+    deuda: 'w-[100px]',
+    founded_year: 'w-[80px]',
+    cnae_codigo: 'w-[80px]',
+    apollo_intent: 'w-[80px]',
+    apollo_score: 'w-[70px]',
+    estado: 'w-[100px]',
+    acciones: 'w-[50px]',
+  };
+  return widths[columnKey] || 'w-[100px]';
+};
 
+// Render cell content based on column key
+const renderCellContent = (
+  empresa: Empresa,
+  columnKey: string,
+  onEdit: (empresa: Empresa) => void,
+  onDelete: (empresa: Empresa) => void
+) => {
   const calculateMargin = (emp: Empresa) => {
     if (!emp.ebitda || !emp.facturacion) return null;
     return ((emp.ebitda / emp.facturacion) * 100).toFixed(1);
   };
 
-  const margin = calculateMargin(empresa);
-  const hasFinancials = empresa.facturacion || empresa.ebitda;
-
-  return (
-    <div
-      style={style}
-      className={cn(
-        "flex items-center border-b border-border/50 hover:bg-muted/50 cursor-pointer transition-colors",
-        index % 2 === 0 ? "bg-background" : "bg-muted/20"
-      )}
-      onClick={() => onNavigate(empresa.id)}
-    >
-      {/* Favorite */}
-      {showFavorites && (
-        <div className="w-12 px-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+  switch (columnKey) {
+    case 'favorito':
+      return (
+        <div onClick={(e) => e.stopPropagation()}>
           <EmpresaFavoriteButton empresaId={empresa.id} size="sm" />
         </div>
-      )}
+      );
 
-      {/* Empresa + Sector */}
-      <div className="flex-1 min-w-[200px] px-3 py-1">
-        <div className="font-medium text-sm truncate">{empresa.nombre}</div>
-        <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-muted-foreground truncate">
-            {empresa.sector}
-          </span>
-          {empresa.subsector && (
-            <span className="text-xs text-muted-foreground/60 truncate">
-              / {empresa.subsector}
+    case 'nombre':
+      return (
+        <div>
+          <div className="font-medium text-sm truncate">{empresa.nombre}</div>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-xs text-muted-foreground truncate">
+              {empresa.sector}
             </span>
-          )}
+            {empresa.subsector && (
+              <span className="text-xs text-muted-foreground/60 truncate">
+                / {empresa.subsector}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      );
 
-      {/* Ubicación */}
-      <div className="w-[100px] px-2 flex-shrink-0 hidden md:block">
+    case 'sector':
+      return (
+        <span className="text-xs text-muted-foreground truncate block">
+          {empresa.sector || '-'}
+        </span>
+      );
+
+    case 'ubicacion':
+      return (
         <span className="text-xs text-muted-foreground truncate block">
           {empresa.ubicacion || '-'}
         </span>
-      </div>
+      );
 
-      {/* Financials (combined) */}
-      <div className="w-[150px] px-2 flex-shrink-0 text-right">
-        {hasFinancials ? (
-          <div>
-            <div className="text-sm font-medium">
-              {empresa.facturacion ? formatCompactCurrency(empresa.facturacion) : '-'}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {empresa.ebitda ? (
-                <>
-                  {formatCompactCurrency(empresa.ebitda)}
-                  {margin && <span className="text-green-600 ml-1">({margin}%)</span>}
-                </>
-              ) : '-'}
-            </div>
-          </div>
-        ) : (
-          <span className="text-xs text-muted-foreground">Sin datos</span>
-        )}
-      </div>
+    case 'empleados':
+      return (
+        <div className="flex items-center gap-1 text-xs">
+          <Users className="h-3 w-3 text-muted-foreground" />
+          <span>{empresa.empleados || '-'}</span>
+        </div>
+      );
 
-      {/* Estado (badges) */}
-      <div className="w-[100px] px-2 flex-shrink-0 hidden lg:block">
+    case 'facturacion':
+      return (
+        <div className="text-sm font-medium text-right">
+          {empresa.facturacion ? formatCompactCurrency(empresa.facturacion) : '-'}
+        </div>
+      );
+
+    case 'ebitda':
+      return (
+        <div className="text-sm text-right">
+          {empresa.ebitda ? formatCompactCurrency(empresa.ebitda) : '-'}
+        </div>
+      );
+
+    case 'margen':
+      const margin = calculateMargin(empresa);
+      return (
+        <div className="text-sm text-right">
+          {margin ? (
+            <span className={cn(
+              parseFloat(margin) >= 15 ? 'text-green-600' : 
+              parseFloat(margin) >= 10 ? 'text-yellow-600' : 'text-muted-foreground'
+            )}>
+              {margin}%
+            </span>
+          ) : '-'}
+        </div>
+      );
+
+    case 'deuda':
+      return (
+        <div className="flex items-center gap-1 text-xs">
+          <Landmark className="h-3 w-3 text-muted-foreground" />
+          <span>{empresa.deuda ? formatCompactCurrency(empresa.deuda) : '-'}</span>
+        </div>
+      );
+
+    case 'founded_year':
+      return (
+        <div className="flex items-center gap-1 text-xs">
+          <Calendar className="h-3 w-3 text-muted-foreground" />
+          <span>{(empresa as any).founded_year || '-'}</span>
+        </div>
+      );
+
+    case 'cnae_codigo':
+      return (
+        <div className="flex items-center gap-1 text-xs">
+          <Hash className="h-3 w-3 text-muted-foreground" />
+          <span className="font-mono">{(empresa as any).cnae_codigo || '-'}</span>
+        </div>
+      );
+
+    case 'apollo_intent':
+      const intentLevel = (empresa as any).apollo_intent_level;
+      if (!intentLevel) return <span className="text-xs text-muted-foreground">-</span>;
+      return (
+        <Badge 
+          variant="outline" 
+          className={cn(
+            "text-[10px] px-1.5 py-0",
+            intentLevel === 'High' && 'bg-red-50 text-red-700 border-red-200',
+            intentLevel === 'Medium' && 'bg-yellow-50 text-yellow-700 border-yellow-200',
+            intentLevel === 'Low' && 'bg-gray-50 text-gray-600 border-gray-200'
+          )}
+        >
+          {intentLevel}
+        </Badge>
+      );
+
+    case 'apollo_score':
+      const score = (empresa as any).apollo_score;
+      return (
+        <div className="flex items-center gap-1 text-xs">
+          <Target className="h-3 w-3 text-muted-foreground" />
+          <span>{score || '-'}</span>
+        </div>
+      );
+
+    case 'estado':
+      return (
         <div className="flex flex-wrap gap-1">
           {empresa.es_target && (
             <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-green-50 text-green-700 border-green-200">
@@ -137,59 +240,158 @@ const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData
             <span className="text-muted-foreground text-xs">-</span>
           )}
         </div>
-      </div>
+      );
 
-      {/* Actions */}
-      <div className="w-[50px] px-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 bg-background">
-            {empresa.sitio_web && (
-              <DropdownMenuItem
-                onClick={() => {
-                  const url = empresa.sitio_web?.startsWith('http')
-                    ? empresa.sitio_web
-                    : `https://${empresa.sitio_web}`;
-                  window.open(url, '_blank');
-                }}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Sitio web
+    case 'acciones':
+      return (
+        <div onClick={(e) => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40 bg-background">
+              {empresa.sitio_web && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    const url = empresa.sitio_web?.startsWith('http')
+                      ? empresa.sitio_web
+                      : `https://${empresa.sitio_web}`;
+                    window.open(url, '_blank');
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Sitio web
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onEdit(empresa)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={() => onEdit(empresa)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(empresa)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Eliminar
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              <DropdownMenuItem
+                onClick={() => onDelete(empresa)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      );
+
+    default:
+      return <span className="text-xs text-muted-foreground">-</span>;
+  }
+};
+
+// Memoized row component
+const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData>) => {
+  const { empresas, onEdit, onDelete, onNavigate, visibleColumns } = data;
+  const empresa = empresas[index];
+
+  return (
+    <div
+      style={style}
+      className={cn(
+        "flex items-center border-b border-border/50 hover:bg-muted/50 cursor-pointer transition-colors",
+        index % 2 === 0 ? "bg-background" : "bg-muted/20"
+      )}
+      onClick={() => onNavigate(empresa.id)}
+    >
+      {visibleColumns.map((column) => (
+        <div
+          key={column.column_key}
+          className={cn(
+            "px-2 py-1 flex-shrink-0",
+            getColumnWidth(column.column_key),
+            column.column_key === 'nombre' && 'px-3',
+            ['facturacion', 'ebitda', 'margen'].includes(column.column_key) && 'text-right'
+          )}
+        >
+          {renderCellContent(empresa, column.column_key, onEdit, onDelete)}
+        </div>
+      ))}
     </div>
   );
 });
 
 EmpresaRow.displayName = 'EmpresaRow';
 
-// Header component
-const TableHeader = memo(({ showFavorites }: { showFavorites: boolean }) => (
-  <div className="flex items-center bg-muted/50 border-b border-border px-0 py-2 text-xs font-medium text-muted-foreground sticky top-0 z-10">
-    {showFavorites && <div className="w-12 px-2 flex-shrink-0"></div>}
-    <div className="flex-1 min-w-[200px] px-3">Empresa</div>
-    <div className="w-[100px] px-2 flex-shrink-0 hidden md:block">Ubicación</div>
-    <div className="w-[150px] px-2 flex-shrink-0 text-right">Fact. / EBITDA</div>
-    <div className="w-[100px] px-2 flex-shrink-0 hidden lg:block">Estado</div>
-    <div className="w-[50px] px-2 flex-shrink-0"></div>
+// Sortable header component
+const SortableHeader = memo(({ 
+  column, 
+  sortConfig, 
+  onSort 
+}: { 
+  column: EmpresaTableColumn; 
+  sortConfig: SortConfig;
+  onSort: (key: string) => void;
+}) => {
+  const isSorted = sortConfig?.key === column.column_key;
+  const isAsc = isSorted && sortConfig?.direction === 'asc';
+
+  if (!column.is_sortable || column.column_key === 'acciones' || column.column_key === 'favorito') {
+    return (
+      <div
+        className={cn(
+          "px-2 flex-shrink-0 text-xs font-medium text-muted-foreground",
+          getColumnWidth(column.column_key),
+          column.column_key === 'nombre' && 'px-3',
+          ['facturacion', 'ebitda', 'margen'].includes(column.column_key) && 'text-right'
+        )}
+      >
+        {column.label}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => onSort(column.column_key)}
+      className={cn(
+        "px-2 flex-shrink-0 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
+        "flex items-center gap-1 group",
+        getColumnWidth(column.column_key),
+        column.column_key === 'nombre' && 'px-3',
+        ['facturacion', 'ebitda', 'margen'].includes(column.column_key) && 'justify-end',
+        isSorted && 'text-foreground'
+      )}
+    >
+      <span>{column.label}</span>
+      <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+        {isSorted ? (
+          isAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+        ) : (
+          <ChevronsUpDown className="h-3 w-3" />
+        )}
+      </span>
+    </button>
+  );
+});
+
+SortableHeader.displayName = 'SortableHeader';
+
+// Header component with sorting
+const TableHeader = memo(({ 
+  visibleColumns, 
+  sortConfig, 
+  onSort 
+}: { 
+  visibleColumns: EmpresaTableColumn[];
+  sortConfig: SortConfig;
+  onSort: (key: string) => void;
+}) => (
+  <div className="flex items-center bg-muted/50 border-b border-border py-2 sticky top-0 z-10">
+    {visibleColumns.map((column) => (
+      <SortableHeader 
+        key={column.column_key} 
+        column={column} 
+        sortConfig={sortConfig}
+        onSort={onSort}
+      />
+    ))}
   </div>
 ));
 
@@ -233,7 +435,7 @@ LoadingState.displayName = 'LoadingState';
 
 export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> = ({
   empresas,
-  isLoading,
+  isLoading: isLoadingData,
   showFavorites = true,
   emptyMessage = 'No se encontraron empresas',
   emptyAction,
@@ -243,18 +445,66 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   height = 500,
 }) => {
   const navigate = useNavigate();
+  const { visibleColumns, isLoading: isLoadingColumns } = useEmpresasTableColumns();
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
 
   const handleNavigate = useCallback((id: string) => {
     navigate(`/admin/empresas/${id}`);
   }, [navigate]);
 
+  // Handle sort toggle
+  const handleSort = useCallback((key: string) => {
+    setSortConfig(current => {
+      if (current?.key === key) {
+        // Toggle direction or clear if already desc
+        if (current.direction === 'asc') {
+          return { key, direction: 'desc' };
+        }
+        return null; // Clear sort
+      }
+      return { key, direction: 'asc' };
+    });
+  }, []);
+
+  // Sort empresas based on sortConfig
+  const sortedEmpresas = useMemo(() => {
+    if (!sortConfig) return empresas;
+
+    return [...empresas].sort((a, b) => {
+      const key = sortConfig.key as keyof Empresa;
+      let aVal = a[key];
+      let bVal = b[key];
+
+      // Handle null/undefined
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+
+      // Numeric comparison
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+      }
+
+      // String comparison
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+      if (sortConfig.direction === 'asc') {
+        return aStr.localeCompare(bStr);
+      }
+      return bStr.localeCompare(aStr);
+    });
+  }, [empresas, sortConfig]);
+
   const itemData = useMemo<RowData>(() => ({
-    empresas,
+    empresas: sortedEmpresas,
     onEdit,
     onDelete,
     onNavigate: handleNavigate,
     showFavorites,
-  }), [empresas, onEdit, onDelete, handleNavigate, showFavorites]);
+    visibleColumns,
+  }), [sortedEmpresas, onEdit, onDelete, handleNavigate, showFavorites, visibleColumns]);
+
+  const isLoading = isLoadingData || isLoadingColumns;
 
   if (isLoading) {
     return <LoadingState />;
@@ -275,20 +525,30 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
-      <TableHeader showFavorites={showFavorites} />
+      <TableHeader 
+        visibleColumns={visibleColumns} 
+        sortConfig={sortConfig}
+        onSort={handleSort}
+      />
       <List
         height={listHeight}
         width="100%"
-        itemCount={empresas.length}
+        itemCount={sortedEmpresas.length}
         itemSize={ROW_HEIGHT}
         itemData={itemData}
         overscanCount={5}
       >
         {EmpresaRow}
       </List>
-      {/* Footer with count */}
-      <div className="px-4 py-2 bg-muted/30 border-t border-border text-xs text-muted-foreground">
-        Mostrando {empresas.length} empresa{empresas.length !== 1 ? 's' : ''}
+      {/* Footer with count and sort indicator */}
+      <div className="px-4 py-2 bg-muted/30 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
+        <span>Mostrando {empresas.length} empresa{empresas.length !== 1 ? 's' : ''}</span>
+        {sortConfig && (
+          <span className="flex items-center gap-1">
+            Ordenado por {visibleColumns.find(c => c.column_key === sortConfig.key)?.label}
+            {sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          </span>
+        )}
       </div>
     </div>
   );
