@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FundIntelligenceStats } from '@/components/admin/fund-intelligence/FundIntelligenceStats';
 import { FundsList } from '@/components/admin/fund-intelligence/FundsList';
 import { FundNewsFeed } from '@/components/admin/fund-intelligence/FundNewsFeed';
+import { FundIntelligenceCharts } from '@/components/admin/fund-intelligence/FundIntelligenceCharts';
 import { PortfolioAlertsPanel } from '@/components/admin/fund-intelligence/PortfolioAlertsPanel';
 import { ExitSignalsPanel } from '@/components/admin/fund-intelligence/ExitSignalsPanel';
 import { CompanyNewsPanel } from '@/components/admin/fund-intelligence/CompanyNewsPanel';
@@ -92,6 +93,9 @@ const FundIntelligencePage = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          {/* Charts Dashboard */}
+          <FundIntelligenceCharts news={news} />
+          
           <div className="grid lg:grid-cols-2 gap-6">
             <FundsList
               title="Search Funds recientes"
