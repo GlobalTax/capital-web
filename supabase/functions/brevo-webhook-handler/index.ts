@@ -137,7 +137,34 @@ serve(async (req) => {
             }
           }
 
-          // Solo actualizar si hay campos mapeados
+          // === CRITICAL: UPSERT to master 'contactos' table ===
+          const contactoData: Record<string, any> = {
+            email: email,
+            updated_at: new Date().toISOString(),
+          };
+          
+          // Map Brevo attributes to contactos fields
+          if (attributesReceived.FIRSTNAME) contactoData.contact_name = attributesReceived.FIRSTNAME;
+          if (attributesReceived.LASTNAME) contactoData.contact_lastname = attributesReceived.LASTNAME;
+          if (attributesReceived.SMS || attributesReceived.PHONE) contactoData.phone = attributesReceived.SMS || attributesReceived.PHONE;
+          if (attributesReceived.COMPANY) contactoData.company_name = attributesReceived.COMPANY;
+          
+          const { error: contactoError } = await supabase
+            .from('contactos')
+            .upsert(contactoData, {
+              onConflict: 'email',
+              ignoreDuplicates: false,
+            });
+          
+          if (!contactoError) {
+            console.log(`✅ Upserted to contactos: ${email}`);
+            updated = true;
+          } else {
+            console.log(`⚠️ Error upserting to contactos: ${contactoError.message}`);
+          }
+          // === END UPSERT to contactos ===
+
+          // Also update leads tables if we have mapped fields
           if (Object.keys(attributesUpdated).length > 0) {
             for (const table of tables) {
               const { data: records } = await supabase
@@ -158,7 +185,6 @@ serve(async (req) => {
 
                   if (!updateError) {
                     console.log(`✅ Updated ${table.name}:${record.id} with Brevo attributes`);
-                    updated = true;
                   }
                 }
               }
@@ -173,7 +199,7 @@ serve(async (req) => {
             sync_status: updated ? 'success' : 'no_match',
             sync_error: updated ? null : 'No matching records or no mappable attributes',
             attributes_sent: attributesReceived,
-            response_data: { attributes_updated: attributesUpdated },
+            response_data: { attributes_updated: attributesUpdated, contacto_synced: !contactoError },
             duration_ms: Date.now() - startTime,
             last_sync_at: new Date().toISOString(),
           });

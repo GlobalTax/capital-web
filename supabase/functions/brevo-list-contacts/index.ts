@@ -189,8 +189,8 @@ serve(async (req) => {
 
       console.log(`📥 Importing ${contacts.length} contacts to database`);
 
-      // Prepare contacts for upsert
-      const contactsToUpsert = contacts.map((contact: any) => ({
+      // Prepare contacts for brevo_contacts table
+      const brevoContactsToUpsert = contacts.map((contact: any) => ({
         brevo_id: contact.brevo_id,
         email: contact.email,
         first_name: contact.first_name || null,
@@ -208,26 +208,55 @@ serve(async (req) => {
         imported_at: new Date().toISOString(),
       }));
 
-      // Upsert contacts (update if email exists)
-      const { data, error } = await supabase
+      // Also prepare contacts for master 'contactos' table (UPSERT on email)
+      const contactosToUpsert = contacts.map((contact: any) => ({
+        email: contact.email,
+        contact_name: contact.first_name || null,
+        contact_lastname: contact.last_name || null,
+        phone: contact.sms || null,
+        company_name: contact.company || null,
+        brevo_id: contact.brevo_id?.toString() || null,
+        source: 'brevo_import',
+        updated_at: new Date().toISOString(),
+      }));
+
+      // Upsert to brevo_contacts (for backward compatibility)
+      const { data: brevoData, error: brevoError } = await supabase
         .from('brevo_contacts')
-        .upsert(contactsToUpsert, {
+        .upsert(brevoContactsToUpsert, {
           onConflict: 'email',
           ignoreDuplicates: false,
         })
         .select('id, email');
 
-      if (error) {
-        console.error('Database error:', error);
-        throw new Error(`Database error: ${error.message}`);
+      if (brevoError) {
+        console.error('brevo_contacts error:', brevoError);
       }
 
-      console.log(`✅ Imported ${data?.length || 0} contacts successfully`);
+      // CRITICAL: Upsert to master 'contactos' table
+      let contactosImported = 0;
+      for (const contacto of contactosToUpsert) {
+        const { error: contactoError } = await supabase
+          .from('contactos')
+          .upsert(contacto, {
+            onConflict: 'email',
+            ignoreDuplicates: false,
+          });
+        
+        if (!contactoError) {
+          contactosImported++;
+        } else {
+          console.log(`⚠️ Error upserting to contactos: ${contactoError.message}`);
+        }
+      }
+
+      console.log(`✅ Imported ${brevoData?.length || 0} to brevo_contacts, ${contactosImported} to contactos`);
 
       return new Response(JSON.stringify({
         success: true,
-        imported: data?.length || 0,
-        contacts: data,
+        imported: brevoData?.length || 0,
+        contactos_synced: contactosImported,
+        contacts: brevoData,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
