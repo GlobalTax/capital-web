@@ -142,7 +142,22 @@ serve(async (req) => {
       // PHASE 1: Link to Contactos
       if (linkContacts && !valuation.crm_contacto_id && valuation.email) {
         const emailKey = valuation.email.toLowerCase().trim();
-        const existingContactId = contactsByEmail.get(emailKey);
+        let existingContactId = contactsByEmail.get(emailKey);
+
+        // If not found in map, try a direct case-insensitive lookup
+        if (!existingContactId) {
+          const { data: directMatch } = await supabase
+            .from('contactos')
+            .select('id')
+            .ilike('email', emailKey)
+            .limit(1)
+            .single();
+          
+          if (directMatch) {
+            existingContactId = directMatch.id;
+            contactsByEmail.set(emailKey, directMatch.id);
+          }
+        }
 
         if (existingContactId) {
           // Contact exists - link it
@@ -172,8 +187,7 @@ serve(async (req) => {
                 apellidos: extractApellidos(valuation.contact_name),
                 telefono: valuation.phone,
                 source: 'capittal_valuation',
-                source_id: valuation.id,
-                empresa_nombre: valuation.company_name,
+                valuation_id: valuation.id,
               })
               .select('id')
               .single();
@@ -201,7 +215,22 @@ serve(async (req) => {
       // PHASE 2: Link to Empresas
       if (linkEmpresas && !valuation.empresa_id && valuation.company_name) {
         const companyKey = valuation.company_name.toLowerCase().trim();
-        const existingEmpresaId = empresasByName.get(companyKey);
+        let existingEmpresaId = empresasByName.get(companyKey);
+
+        // If not found in map, try a direct case-insensitive lookup
+        if (!existingEmpresaId) {
+          const { data: directMatch } = await supabase
+            .from('empresas')
+            .select('id')
+            .ilike('nombre', companyKey)
+            .limit(1)
+            .single();
+          
+          if (directMatch) {
+            existingEmpresaId = directMatch.id;
+            empresasByName.set(companyKey, directMatch.id);
+          }
+        }
 
         if (existingEmpresaId) {
           // Empresa exists - link it
