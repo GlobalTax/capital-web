@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getPreferredLang, setPreferredLang, LangCode } from '@/shared/i18n/locale';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { cn } from '@/lib/utils';
 
 const labels: Record<LangCode, string> = {
   es: 'Castellano',
@@ -95,17 +96,20 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ className }) => {
   };
 
   return (
-    <div className={className}>
+    <div>
       <label htmlFor="lang" className="sr-only">Idioma</label>
       <select
         id="lang"
         value={managed ? ctxLang : localLang}
         onChange={onChange}
-        className="border rounded px-2 py-1 text-sm"
+        className={cn(
+          "bg-transparent border-none rounded px-2 py-1 text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-white/30",
+          className
+        )}
         aria-label="Seleccionar idioma"
       >
         {Object.entries(labels).map(([code, name]) => (
-          <option key={code} value={code}>{name}</option>
+          <option key={code} value={code} className="bg-slate-800 text-white">{name}</option>
         ))}
       </select>
     </div>
