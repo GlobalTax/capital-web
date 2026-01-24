@@ -81,7 +81,8 @@ import {
   LazyCRPortfolioDetailPage,
   LazyCRPortfolioListPage,
   LazyFundIntelligencePage,
-  LazyApiUsageDashboard
+  LazyApiUsageDashboard,
+  LazyDataEnrichmentPanel
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -209,6 +210,7 @@ const AdminRouter = () => {
           <Route path="/settings/email-outbox" element={<LazyEmailOutboxPanel />} />
           <Route path="/settings/topbar" element={<LazyTopBarSettings />} />
           <Route path="/settings/api-usage" element={<LazyApiUsageDashboard />} />
+          <Route path="/data-enrichment" element={<LazyDataEnrichmentPanel />} />
           
           {/* Search Funds Intelligence */}
           <Route path="/sf-apollo-import" element={<LazySFApolloImportPage />} />
