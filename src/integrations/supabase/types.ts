@@ -4897,10 +4897,12 @@ export type Database = {
           investment_stage: string[] | null
           is_deleted: boolean | null
           last_news_scan_at: string | null
+          last_portfolio_diff_at: string | null
           last_portfolio_scraped_at: string | null
           last_scraped_at: string | null
           name: string
           notes_internal: string | null
+          portfolio_diff_enabled: boolean | null
           portfolio_url: string | null
           revenue_max: number | null
           revenue_min: number | null
@@ -4935,10 +4937,12 @@ export type Database = {
           investment_stage?: string[] | null
           is_deleted?: boolean | null
           last_news_scan_at?: string | null
+          last_portfolio_diff_at?: string | null
           last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
           name: string
           notes_internal?: string | null
+          portfolio_diff_enabled?: boolean | null
           portfolio_url?: string | null
           revenue_max?: number | null
           revenue_min?: number | null
@@ -4973,10 +4977,12 @@ export type Database = {
           investment_stage?: string[] | null
           is_deleted?: boolean | null
           last_news_scan_at?: string | null
+          last_portfolio_diff_at?: string | null
           last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
           name?: string
           notes_internal?: string | null
+          portfolio_diff_enabled?: boolean | null
           portfolio_url?: string | null
           revenue_max?: number | null
           revenue_min?: number | null
@@ -5181,6 +5187,9 @@ export type Database = {
           investment_type: string | null
           investment_year: number | null
           is_deleted: boolean | null
+          last_news_scan_at: string | null
+          last_web_check_at: string | null
+          news_alert_count: number | null
           notes: string | null
           ownership_type: string | null
           sector: string | null
@@ -5203,6 +5212,9 @@ export type Database = {
           investment_type?: string | null
           investment_year?: number | null
           is_deleted?: boolean | null
+          last_news_scan_at?: string | null
+          last_web_check_at?: string | null
+          news_alert_count?: number | null
           notes?: string | null
           ownership_type?: string | null
           sector?: string | null
@@ -5225,6 +5237,9 @@ export type Database = {
           investment_type?: string | null
           investment_year?: number | null
           is_deleted?: boolean | null
+          last_news_scan_at?: string | null
+          last_web_check_at?: string | null
+          news_alert_count?: number | null
           notes?: string | null
           ownership_type?: string | null
           sector?: string | null
@@ -6404,6 +6419,8 @@ export type Database = {
           sector: string | null
           sector_id: string | null
           sitio_web: string | null
+          source: string | null
+          source_id: string | null
           source_pro_valuation_id: string | null
           source_valuation_id: string | null
           subsector: string | null
@@ -6457,6 +6474,8 @@ export type Database = {
           sector?: string | null
           sector_id?: string | null
           sitio_web?: string | null
+          source?: string | null
+          source_id?: string | null
           source_pro_valuation_id?: string | null
           source_valuation_id?: string | null
           subsector?: string | null
@@ -6510,6 +6529,8 @@ export type Database = {
           sector?: string | null
           sector_id?: string | null
           sitio_web?: string | null
+          source?: string | null
+          source_id?: string | null
           source_pro_valuation_id?: string | null
           source_valuation_id?: string | null
           subsector?: string | null
@@ -12465,6 +12486,81 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_changes: {
+        Row: {
+          change_type: string
+          company_name: string
+          company_name_normalized: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string | null
+          detected_at: string | null
+          detected_data: Json | null
+          dismiss_reason: string | null
+          dismissed_at: string | null
+          dismissed_by: string | null
+          existing_portfolio_id: string | null
+          fund_id: string
+          id: string
+          is_confirmed: boolean | null
+          is_dismissed: boolean | null
+          metadata: Json | null
+        }
+        Insert: {
+          change_type: string
+          company_name: string
+          company_name_normalized?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string | null
+          detected_at?: string | null
+          detected_data?: Json | null
+          dismiss_reason?: string | null
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          existing_portfolio_id?: string | null
+          fund_id: string
+          id?: string
+          is_confirmed?: boolean | null
+          is_dismissed?: boolean | null
+          metadata?: Json | null
+        }
+        Update: {
+          change_type?: string
+          company_name?: string
+          company_name_normalized?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string | null
+          detected_at?: string | null
+          detected_data?: Json | null
+          dismiss_reason?: string | null
+          dismissed_at?: string | null
+          dismissed_by?: string | null
+          existing_portfolio_id?: string | null
+          fund_id?: string
+          id?: string
+          is_confirmed?: boolean | null
+          is_dismissed?: boolean | null
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_changes_existing_portfolio_id_fkey"
+            columns: ["existing_portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "cr_portfolio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_changes_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "cr_funds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_companies: {
         Row: {
           country: string
@@ -12533,6 +12629,84 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      portfolio_news: {
+        Row: {
+          ai_summary: string | null
+          company_name: string
+          content_preview: string | null
+          created_at: string | null
+          fund_id: string
+          id: string
+          is_acquisition_signal: boolean | null
+          is_exit_signal: boolean | null
+          is_processed: boolean | null
+          metadata: Json | null
+          news_date: string | null
+          news_type: string | null
+          portfolio_id: string | null
+          relevance_score: number | null
+          source_name: string | null
+          title: string
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          company_name: string
+          content_preview?: string | null
+          created_at?: string | null
+          fund_id: string
+          id?: string
+          is_acquisition_signal?: boolean | null
+          is_exit_signal?: boolean | null
+          is_processed?: boolean | null
+          metadata?: Json | null
+          news_date?: string | null
+          news_type?: string | null
+          portfolio_id?: string | null
+          relevance_score?: number | null
+          source_name?: string | null
+          title: string
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          ai_summary?: string | null
+          company_name?: string
+          content_preview?: string | null
+          created_at?: string | null
+          fund_id?: string
+          id?: string
+          is_acquisition_signal?: boolean | null
+          is_exit_signal?: boolean | null
+          is_processed?: boolean | null
+          metadata?: Json | null
+          news_date?: string | null
+          news_type?: string | null
+          portfolio_id?: string | null
+          relevance_score?: number | null
+          source_name?: string | null
+          title?: string
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_news_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "cr_funds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_news_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "cr_portfolio"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       presentation_assets: {
         Row: {
@@ -15330,6 +15504,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_control: {
+        Row: {
+          created_at: string | null
+          created_empresas_last_run: number | null
+          description: string | null
+          errors_last_run: number | null
+          id: string
+          is_enabled: boolean | null
+          last_run: string | null
+          name: string
+          next_run: string | null
+          total_empresas_created: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_empresas_last_run?: number | null
+          description?: string | null
+          errors_last_run?: number | null
+          id: string
+          is_enabled?: boolean | null
+          last_run?: string | null
+          name: string
+          next_run?: string | null
+          total_empresas_created?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_empresas_last_run?: number | null
+          description?: string | null
+          errors_last_run?: number | null
+          id?: string
+          is_enabled?: boolean | null
+          last_run?: string | null
+          name?: string
+          next_run?: string | null
+          total_empresas_created?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       tareas: {
         Row: {
           ai_confidence: number | null
@@ -17294,6 +17510,11 @@ export type Database = {
         }[]
       }
       bootstrap_first_admin: { Args: { user_email: string }; Returns: boolean }
+      check_is_admin: { Args: { check_user_id: string }; Returns: boolean }
+      check_is_super_admin: {
+        Args: { check_user_id: string }
+        Returns: boolean
+      }
       check_login_rate_limit: {
         Args: {
           p_email: string
@@ -17669,6 +17890,7 @@ export type Database = {
         Returns: Json
       }
       monitor_security_violations: { Args: never; Returns: undefined }
+      normalize_company_name: { Args: { name: string }; Returns: string }
       refresh_banner_analytics: { Args: never; Returns: undefined }
       refresh_mandatos_days_in_stage: { Args: never; Returns: undefined }
       reject_user_registration: {
