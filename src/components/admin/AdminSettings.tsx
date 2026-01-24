@@ -13,7 +13,8 @@ import {
   Mail,
   FileSignature,
   Workflow,
-  Shuffle
+  Shuffle,
+  LayoutPanelTop
 } from 'lucide-react';
 
 const AdminSettings: React.FC = () => {
@@ -26,6 +27,12 @@ const AdminSettings: React.FC = () => {
   };
 
   const configLinks = [
+    {
+      title: 'Configuración TopBar',
+      description: 'Personaliza la barra superior: enlaces, empresas del grupo y teléfono',
+      icon: LayoutPanelTop,
+      href: '/admin/settings/topbar',
+    },
     {
       title: 'Migración Sectores PE',
       description: 'Normaliza sectores de empresas y fondos a taxonomía estándar PE/Search Funds',

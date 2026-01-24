@@ -8,6 +8,7 @@ export const LazyAdminDashboard = lazy(() => import('./AdminDashboard').then(m =
 
 // === SETTINGS ===
 export const LazyAdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
+export const LazyTopBarSettings = lazy(() => import('@/pages/admin/TopBarSettings'));
 
 // === BLOG ===
 export const LazyModernBlogManager = lazy(() => import('@/components/admin/ModernBlogManager'));
