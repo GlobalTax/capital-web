@@ -22,6 +22,7 @@ import {
   Settings2,
   Zap,
   Globe,
+  Calculator,
 } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
 import { useFavoriteEmpresas } from '@/hooks/useEmpresaFavorites';
@@ -44,6 +45,7 @@ export default function EmpresasPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState<string>('all');
   const [targetFilter, setTargetFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [quickFilters, setQuickFilters] = useState<string[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
@@ -92,6 +94,11 @@ export default function EmpresasPage() {
       result = result.filter(e => !e.es_target);
     }
 
+    // Source filter
+    if (sourceFilter !== 'all') {
+      result = result.filter(e => e.source === sourceFilter);
+    }
+
     // Quick filters
     quickFilters.forEach(filterId => {
       const quickFilter = QUICK_FILTERS.find(f => f.id === filterId);
@@ -101,7 +108,13 @@ export default function EmpresasPage() {
     });
 
     return result;
-  }, [allEmpresas, searchQuery, sectorFilter, targetFilter, quickFilters]);
+  }, [allEmpresas, searchQuery, sectorFilter, targetFilter, sourceFilter, quickFilters]);
+
+  // Count empresas by source for stats
+  const valuationEmpresas = useMemo(() => 
+    allEmpresas.filter(e => e.source === 'valuation'),
+    [allEmpresas]
+  );
 
   const handleEdit = (empresa: Empresa) => {
     setEditingEmpresa(empresa);
@@ -137,10 +150,11 @@ export default function EmpresasPage() {
     setSearchQuery('');
     setSectorFilter('all');
     setTargetFilter('all');
+    setSourceFilter('all');
     setQuickFilters([]);
   };
 
-  const hasActiveFilters = searchQuery || sectorFilter !== 'all' || targetFilter !== 'all' || quickFilters.length > 0;
+  const hasActiveFilters = searchQuery || sectorFilter !== 'all' || targetFilter !== 'all' || sourceFilter !== 'all' || quickFilters.length > 0;
 
   // Stats (calculated from all empresas, not filtered)
   const totalEmpresas = allEmpresas.length;
@@ -229,6 +243,17 @@ export default function EmpresasPage() {
                   <SelectItem value="no-target">No Targets</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                <SelectTrigger className="w-full md:w-[160px]">
+                  <SelectValue placeholder="Origen" />
+                </SelectTrigger>
+                <SelectContent className="bg-background">
+                  <SelectItem value="all">Todos los orígenes</SelectItem>
+                  <SelectItem value="valuation">Valoraciones</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                  <SelectItem value="apollo">Apollo</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Quick filters */}
@@ -266,7 +291,7 @@ export default function EmpresasPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="favorites" className="flex items-center gap-2">
             <Star className="h-4 w-4" />
             <span className="hidden sm:inline">Favoritos</span>
@@ -279,6 +304,13 @@ export default function EmpresasPage() {
             <span className="hidden sm:inline">Todas</span>
             <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
               {filteredEmpresas.length}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger value="valuations" className="flex items-center gap-2">
+            <Calculator className="h-4 w-4" />
+            <span className="hidden sm:inline">Valoraciones</span>
+            <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
+              {valuationEmpresas.length}
             </span>
           </TabsTrigger>
           <TabsTrigger value="targets" className="flex items-center gap-2">
@@ -315,6 +347,19 @@ export default function EmpresasPage() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             height={500}
+          />
+        </TabsContent>
+
+        {/* Tab: Valoraciones */}
+        <TabsContent value="valuations" className="mt-4">
+          <EmpresasTableVirtualized
+            empresas={valuationEmpresas}
+            isLoading={isLoading}
+            showFavorites={true}
+            emptyMessage="No hay empresas de valoraciones"
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            height={450}
           />
         </TabsContent>
 
