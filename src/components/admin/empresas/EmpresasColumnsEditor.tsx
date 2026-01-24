@@ -2,7 +2,7 @@
  * Panel lateral para configurar columnas de la tabla de empresas
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { 
   Sheet, 
@@ -72,17 +72,12 @@ export const EmpresasColumnsEditor = ({ open, onOpenChange }: EmpresasColumnsEdi
   
   const [localColumns, setLocalColumns] = useState<EmpresaTableColumn[]>([]);
 
-  // Sync local state when columns change
-  useState(() => {
+  // Sync local state when columns change from DB
+  useEffect(() => {
     if (columns.length > 0) {
       setLocalColumns(columns);
     }
-  });
-
-  // Update local columns when DB columns change
-  if (columns.length > 0 && localColumns.length === 0) {
-    setLocalColumns(columns);
-  }
+  }, [columns]);
 
   const handleDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) return;
