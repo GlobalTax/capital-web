@@ -15727,6 +15727,105 @@ export type Database = {
         }
         Relationships: []
       }
+      topbar_config: {
+        Row: {
+          created_at: string
+          id: string
+          phone_link: string
+          phone_number: string
+          show_language_selector: boolean
+          show_search: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone_link?: string
+          phone_number?: string
+          show_language_selector?: boolean
+          show_search?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone_link?: string
+          phone_number?: string
+          show_language_selector?: boolean
+          show_search?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      topbar_group_companies: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          is_current: boolean
+          logo_url: string | null
+          name: string
+          position: number
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_current?: boolean
+          logo_url?: string | null
+          name: string
+          position?: number
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_current?: boolean
+          logo_url?: string | null
+          name?: string
+          position?: number
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      topbar_links: {
+        Row: {
+          created_at: string
+          href: string
+          id: string
+          is_active: boolean
+          is_external: boolean
+          label: string
+          position: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          href: string
+          id?: string
+          is_active?: boolean
+          is_external?: boolean
+          label: string
+          position?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          id?: string
+          is_active?: boolean
+          is_external?: boolean
+          label?: string
+          position?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tracking_events: {
         Row: {
           company_domain: string | null
