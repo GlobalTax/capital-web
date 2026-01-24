@@ -26,6 +26,9 @@ export interface Empresa {
   source_valuation_id?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  // Campos de valoración (desde company_valuations)
+  valoracion?: number | null;
+  fecha_valoracion?: string | null;
 }
 
 export interface EmpresaFilters {
@@ -40,13 +43,19 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all empresas with optional filters
+  // Fetch all empresas with optional filters (includes valuation data via join)
   const { data: empresas, isLoading, refetch } = useQuery({
     queryKey: ['empresas', filters],
     queryFn: async () => {
       let query = supabase
         .from('empresas')
-        .select('*')
+        .select(`
+          *,
+          company_valuations!source_valuation_id (
+            final_valuation,
+            created_at
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (filters?.search) {
@@ -72,7 +81,14 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data as Empresa[];
+      
+      // Map valuation data to empresa fields
+      return (data || []).map((empresa: any) => ({
+        ...empresa,
+        valoracion: empresa.company_valuations?.final_valuation ?? null,
+        fecha_valoracion: empresa.company_valuations?.created_at ?? null,
+        company_valuations: undefined, // Remove nested object
+      })) as Empresa[];
     },
   });
 
