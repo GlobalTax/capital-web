@@ -258,5 +258,8 @@ verify_jwt = false
 [functions.generate-sector-tags]
 verify_jwt = false
 
+[functions.link-valuations-crm]
+verify_jwt = false
+
 [functions.brevo-sync-pending]
 verify_jwt = false
