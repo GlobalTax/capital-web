@@ -22,6 +22,7 @@ import {
   Hash,
   Target,
   Landmark,
+  Calculator,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -75,6 +76,8 @@ const getColumnWidth = (columnKey: string): string => {
     ebitda: 'w-[100px]',
     margen: 'w-[80px]',
     deuda: 'w-[100px]',
+    valoracion: 'w-[110px]',
+    fecha_valoracion: 'w-[100px]',
     founded_year: 'w-[80px]',
     cnae_codigo: 'w-[80px]',
     apollo_intent: 'w-[80px]',
@@ -220,6 +223,24 @@ const renderCellContent = (
         <div className="flex items-center gap-1 text-xs">
           <Target className="h-3 w-3 text-muted-foreground" />
           <span>{score || '-'}</span>
+        </div>
+      );
+
+    case 'valoracion':
+      return (
+        <div className="flex items-center gap-1 text-sm font-medium text-right text-green-600">
+          <Calculator className="h-3 w-3" />
+          <span>{empresa.valoracion ? formatCompactCurrency(empresa.valoracion) : '-'}</span>
+        </div>
+      );
+
+    case 'fecha_valoracion':
+      if (!empresa.fecha_valoracion) return <span className="text-xs text-muted-foreground">-</span>;
+      const date = new Date(empresa.fecha_valoracion);
+      return (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Calendar className="h-3 w-3" />
+          <span>{date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
         </div>
       );
 
