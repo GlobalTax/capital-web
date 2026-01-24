@@ -413,6 +413,13 @@ export const sidebarSections: SidebarSection[] = [
         description: "Directorio de Search Funds"
       },
       { 
+        title: "Operaciones SF", 
+        url: "/admin/sf-acquisitions", 
+        icon: Briefcase,
+        badge: "NEW",
+        description: "Listado de adquisiciones de Search Funds"
+      },
+      { 
         title: "Portfolio SF", 
         url: "/admin/sf-portfolio-list", 
         icon: Building2,
