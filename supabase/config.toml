@@ -263,3 +263,6 @@ verify_jwt = false
 
 [functions.brevo-sync-pending]
 verify_jwt = false
+
+[functions.cr-batch-news-scan]
+verify_jwt = false

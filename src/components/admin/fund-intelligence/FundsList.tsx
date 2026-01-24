@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Globe, Search, Loader2, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Globe, Search, Loader2, ExternalLink, CheckCircle2, Filter } from 'lucide-react';
 import { FundForIntelligence } from '@/hooks/useFundIntelligence';
-import { formatDistanceToNow } from 'date-fns';
+import { BatchNewsScanButton } from './BatchNewsScanButton';
+import { formatDistanceToNow, subDays, isAfter } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface FundsListProps {
@@ -20,6 +22,9 @@ interface FundsListProps {
   showAll?: boolean;
 }
 
+type ScanFilter = 'all' | 'scanned' | 'not-scanned' | 'stale';
+type WebsiteFilter = 'all' | 'with-website' | 'no-website';
+
 export const FundsList = ({
   title,
   funds,
@@ -32,10 +37,42 @@ export const FundsList = ({
 }: FundsListProps) => {
   const [search, setSearch] = useState('');
   const [activeFundId, setActiveFundId] = useState<string | null>(null);
+  const [scanFilter, setScanFilter] = useState<ScanFilter>('all');
+  const [websiteFilter, setWebsiteFilter] = useState<WebsiteFilter>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
-  const filteredFunds = search
-    ? funds.filter(f => f.name.toLowerCase().includes(search.toLowerCase()))
-    : funds;
+  const filteredFunds = useMemo(() => {
+    let result = funds;
+
+    // Text search
+    if (search) {
+      result = result.filter(f => 
+        f.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Scan status filter
+    if (scanFilter === 'scanned') {
+      result = result.filter(f => f.last_scraped_at);
+    } else if (scanFilter === 'not-scanned') {
+      result = result.filter(f => !f.last_scraped_at);
+    } else if (scanFilter === 'stale') {
+      const thirtyDaysAgo = subDays(new Date(), 30);
+      result = result.filter(f => {
+        if (!f.last_scraped_at) return true;
+        return !isAfter(new Date(f.last_scraped_at), thirtyDaysAgo);
+      });
+    }
+
+    // Website filter
+    if (websiteFilter === 'with-website') {
+      result = result.filter(f => f.website);
+    } else if (websiteFilter === 'no-website') {
+      result = result.filter(f => !f.website);
+    }
+
+    return result;
+  }, [funds, search, scanFilter, websiteFilter]);
 
   const handleScrape = (fundId: string) => {
     setActiveFundId(fundId);
@@ -47,20 +84,80 @@ export const FundsList = ({
     onSearchNews(fundId);
   };
 
+  const hasActiveFilters = scanFilter !== 'all' || websiteFilter !== 'all';
+
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-lg">{title}</CardTitle>
-          <Badge variant="outline">{funds.length} fondos</Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">{filteredFunds.length} fondos</Badge>
+            {showAll && (
+              <BatchNewsScanButton funds={filteredFunds} fundType={fundType} />
+            )}
+          </div>
         </div>
+        
         {showAll && (
-          <Input
-            placeholder="Buscar fondo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="mt-2"
-          />
+          <div className="space-y-2 mt-2">
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Buscar fondo..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1"
+              />
+              <Button
+                variant={showFilters ? 'secondary' : 'outline'}
+                size="icon"
+                onClick={() => setShowFilters(!showFilters)}
+                className="shrink-0"
+              >
+                <Filter className={`h-4 w-4 ${hasActiveFilters ? 'text-primary' : ''}`} />
+              </Button>
+            </div>
+
+            {showFilters && (
+              <div className="flex gap-2 flex-wrap">
+                <Select value={scanFilter} onValueChange={(v) => setScanFilter(v as ScanFilter)}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Estado scan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="scanned">Escaneados</SelectItem>
+                    <SelectItem value="not-scanned">Sin escanear</SelectItem>
+                    <SelectItem value="stale">Desactualizado (+30d)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={websiteFilter} onValueChange={(v) => setWebsiteFilter(v as WebsiteFilter)}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Website" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="with-website">Con website</SelectItem>
+                    <SelectItem value="no-website">Sin website</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {hasActiveFilters && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setScanFilter('all');
+                      setWebsiteFilter('all');
+                    }}
+                  >
+                    Limpiar filtros
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
         )}
       </CardHeader>
       <CardContent className="p-0">
