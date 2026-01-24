@@ -11,6 +11,8 @@ interface DiffResult {
   fund_name: string;
   new_companies: number;
   possible_exits: number;
+  skipped?: boolean;
+  skip_reason?: string;
   error?: string;
 }
 
@@ -34,21 +36,23 @@ serve(async (req) => {
 
     let fund_id: string | null = null;
     let limit = 10;
+    let force_scan = false; // PHASE 4: Option to bypass cache check
     
     try {
       const body = await req.json();
       fund_id = body.fund_id || null;
       limit = body.limit || limit;
+      force_scan = body.force_scan || false;
     } catch {
       // No body, use defaults
     }
 
-    console.log(`[cr-portfolio-diff-scan] Starting diff scan. Fund: ${fund_id || 'all'}, Limit: ${limit}`);
+    console.log(`[cr-portfolio-diff-scan] Starting optimized diff scan. Fund: ${fund_id || 'all'}, Limit: ${limit}, Force: ${force_scan}`);
 
     // Get funds with portfolio URL
     let query = supabase
       .from('cr_funds')
-      .select('id, name, website, portfolio_url')
+      .select('id, name, website, portfolio_url, last_web_etag, last_web_modified, last_diff_scan_at')
       .eq('is_deleted', false)
       .eq('portfolio_diff_enabled', true)
       .not('portfolio_url', 'is', null);
@@ -58,7 +62,7 @@ serve(async (req) => {
     }
 
     query = query
-      .order('last_portfolio_diff_at', { ascending: true, nullsFirst: true })
+      .order('last_diff_scan_at', { ascending: true, nullsFirst: true })
       .limit(limit);
 
     const { data: funds, error: fundsError } = await query;
@@ -85,15 +89,57 @@ serve(async (req) => {
     console.log(`[cr-portfolio-diff-scan] Found ${funds.length} funds to compare`);
 
     const results: DiffResult[] = [];
+    let totalCreditsUsed = 0;
+    let skippedCount = 0;
 
     for (const fund of funds) {
       try {
-        const result = await compareFundPortfolio(fund, firecrawlApiKey, supabase);
+        // PHASE 4: Check if website has changed before scraping
+        if (!force_scan && fund.last_web_etag) {
+          const hasChanged = await checkWebsiteChanged(
+            fund.portfolio_url,
+            fund.last_web_etag,
+            fund.last_web_modified
+          );
+
+          if (!hasChanged) {
+            console.log(`[cr-portfolio-diff-scan] Skipping ${fund.name} - no changes detected`);
+            results.push({
+              fund_id: fund.id,
+              fund_name: fund.name,
+              new_companies: 0,
+              possible_exits: 0,
+              skipped: true,
+              skip_reason: 'No website changes detected',
+            });
+            skippedCount++;
+
+            // Update last scan time but keep etag
+            await supabase
+              .from('cr_funds')
+              .update({ last_diff_scan_at: new Date().toISOString() })
+              .eq('id', fund.id);
+
+            continue;
+          }
+        }
+
+        const { result, creditsUsed, webHeaders } = await compareFundPortfolio(
+          fund, 
+          firecrawlApiKey, 
+          supabase
+        );
         
-        // Update last diff timestamp
+        totalCreditsUsed += creditsUsed;
+
+        // Update last diff timestamp and web headers
         await supabase
           .from('cr_funds')
-          .update({ last_portfolio_diff_at: new Date().toISOString() })
+          .update({ 
+            last_diff_scan_at: new Date().toISOString(),
+            last_web_etag: webHeaders.etag || fund.last_web_etag,
+            last_web_modified: webHeaders.lastModified || fund.last_web_modified,
+          })
           .eq('id', fund.id);
 
         results.push(result);
@@ -112,6 +158,13 @@ serve(async (req) => {
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
 
+    // PHASE 5: Log API usage
+    await logApiUsage(supabase, 'firecrawl', 'scrape', totalCreditsUsed, 'cr-portfolio-diff-scan', { 
+      funds_scanned: funds.length - skippedCount,
+      funds_skipped: skippedCount,
+      optimization: 'selective_diff',
+    });
+
     const totalNewCompanies = results.reduce((sum, r) => sum + r.new_companies, 0);
     const totalExits = results.reduce((sum, r) => sum + r.possible_exits, 0);
 
@@ -120,12 +173,15 @@ serve(async (req) => {
       await supabase.from('admin_notifications_news').insert({
         type: 'portfolio_diff',
         title: `🔄 Cambios detectados en portfolios`,
-        message: `${totalNewCompanies} posibles nuevas adquisiciones, ${totalExits} posibles exits detectados en ${funds.length} fondos.`,
+        message: `${totalNewCompanies} posibles nuevas adquisiciones, ${totalExits} posibles exits en ${funds.length - skippedCount} fondos (${skippedCount} sin cambios). Créditos: ${totalCreditsUsed}`,
         metadata: {
           scan_type: 'portfolio_diff',
-          funds_scanned: funds.length,
+          funds_scanned: funds.length - skippedCount,
+          funds_skipped: skippedCount,
           new_companies: totalNewCompanies,
           possible_exits: totalExits,
+          credits_used: totalCreditsUsed,
+          optimization: 'selective_diff',
         },
       });
     }
@@ -135,8 +191,11 @@ serve(async (req) => {
         success: true,
         data: {
           funds_scanned: funds.length,
+          funds_actually_scraped: funds.length - skippedCount,
+          funds_skipped: skippedCount,
           total_new_companies: totalNewCompanies,
           total_possible_exits: totalExits,
+          credits_used: totalCreditsUsed,
           results,
         }
       }),
@@ -152,11 +211,52 @@ serve(async (req) => {
   }
 });
 
+// PHASE 4: Check if website has changed using HEAD request (free!)
+async function checkWebsiteChanged(
+  url: string,
+  lastEtag: string | null,
+  lastModified: string | null
+): Promise<boolean> {
+  try {
+    const response = await fetch(url, { 
+      method: 'HEAD',
+      headers: {
+        'User-Agent': 'Capittal-Portfolio-Monitor/1.0',
+      },
+    });
+
+    if (!response.ok) {
+      // If HEAD fails, assume changed to be safe
+      return true;
+    }
+
+    const currentEtag = response.headers.get('ETag');
+    const currentModified = response.headers.get('Last-Modified');
+
+    // Check if ETag changed
+    if (lastEtag && currentEtag && lastEtag === currentEtag) {
+      return false;
+    }
+
+    // Check if Last-Modified changed
+    if (lastModified && currentModified && lastModified === currentModified) {
+      return false;
+    }
+
+    // If no cache headers available, consider as potentially changed
+    return true;
+  } catch (e) {
+    console.warn('[cr-portfolio-diff-scan] HEAD request failed:', e);
+    // If HEAD fails, proceed with full scrape
+    return true;
+  }
+}
+
 async function compareFundPortfolio(
   fund: { id: string; name: string; portfolio_url: string },
   firecrawlApiKey: string,
   supabase: any
-): Promise<DiffResult> {
+): Promise<{ result: DiffResult; creditsUsed: number; webHeaders: { etag?: string; lastModified?: string } }> {
   console.log(`[cr-portfolio-diff-scan] Scraping portfolio from: ${fund.portfolio_url}`);
 
   // 1. Scrape current portfolio from website
@@ -174,11 +274,18 @@ async function compareFundPortfolio(
 
   const scrapeData = await scrapeResponse.json();
 
+  // 1 scrape = 1 credit
+  const creditsUsed = 1;
+
   if (!scrapeResponse.ok || !scrapeData.success) {
     throw new Error(scrapeData.error || 'Scrape failed');
   }
 
   const markdown = scrapeData.data?.markdown || '';
+  const webHeaders = {
+    etag: scrapeData.data?.metadata?.etag,
+    lastModified: scrapeData.data?.metadata?.lastModified,
+  };
 
   // 2. Get existing portfolio companies from DB
   const { data: existingCompanies, error: dbError } = await supabase
@@ -193,11 +300,6 @@ async function compareFundPortfolio(
 
   const existingNames = new Set(
     (existingCompanies || []).map((c: any) => normalizeCompanyName(c.company_name))
-  );
-  const activeNames = new Set(
-    (existingCompanies || [])
-      .filter((c: any) => c.status === 'ACTIVO')
-      .map((c: any) => normalizeCompanyName(c.company_name))
   );
 
   // 3. Use AI to extract company names from scraped content
@@ -242,6 +344,10 @@ Solo incluye empresas que claramente sean participadas/portfolio companies. Excl
         if (content) {
           try {
             extractedCompanies = JSON.parse(content.replace(/```json\n?|\n?```/g, ''));
+            await logApiUsage(supabase, 'lovable_ai', 'extract', 1, 'cr-portfolio-diff-scan', {
+              model: 'google/gemini-2.5-flash',
+              fund_id: fund.id,
+            });
           } catch {
             console.warn('[cr-portfolio-diff-scan] Failed to parse AI response');
           }
@@ -274,6 +380,10 @@ Solo incluye empresas que claramente sean participadas/portfolio companies. Excl
         if (content) {
           try {
             extractedCompanies = JSON.parse(content.replace(/```json\n?|\n?```/g, ''));
+            await logApiUsage(supabase, 'openai', 'extract', 1, 'cr-portfolio-diff-scan', {
+              model: 'gpt-4o-mini',
+              fund_id: fund.id,
+            });
           } catch {
             console.warn('[cr-portfolio-diff-scan] Failed to parse OpenAI response');
           }
@@ -286,10 +396,14 @@ Solo incluye empresas que claramente sean participadas/portfolio companies. Excl
 
   if (extractedCompanies.length === 0) {
     return {
-      fund_id: fund.id,
-      fund_name: fund.name,
-      new_companies: 0,
-      possible_exits: 0,
+      result: {
+        fund_id: fund.id,
+        fund_name: fund.name,
+        new_companies: 0,
+        possible_exits: 0,
+      },
+      creditsUsed,
+      webHeaders,
     };
   }
 
@@ -348,10 +462,14 @@ Solo incluye empresas que claramente sean participadas/portfolio companies. Excl
   console.log(`[cr-portfolio-diff-scan] ${fund.name}: ${newCompanies.length} new, ${possibleExits.length} possible exits`);
 
   return {
-    fund_id: fund.id,
-    fund_name: fund.name,
-    new_companies: newCompanies.length,
-    possible_exits: possibleExits.length,
+    result: {
+      fund_id: fund.id,
+      fund_name: fund.name,
+      new_companies: newCompanies.length,
+      possible_exits: possibleExits.length,
+    },
+    creditsUsed,
+    webHeaders,
   };
 }
 
@@ -365,4 +483,26 @@ function normalizeCompanyName(name: string): string {
     .replace(/\s+/g, ' ')
     .replace(/\b(s\.?l\.?|s\.?a\.?|s\.?l\.?u\.?|inc\.?|ltd\.?|gmbh|corp\.?)\b/gi, '')
     .trim();
+}
+
+// PHASE 5: Log API usage
+async function logApiUsage(
+  supabase: any,
+  service: string,
+  operation: string,
+  credits: number,
+  functionName: string,
+  metadata: Record<string, any>
+): Promise<void> {
+  try {
+    await supabase.from('api_usage_log').insert({
+      service,
+      operation,
+      credits_used: credits,
+      function_name: functionName,
+      metadata,
+    });
+  } catch (e) {
+    console.warn('[cr-portfolio-diff-scan] Failed to log API usage:', e);
+  }
 }
