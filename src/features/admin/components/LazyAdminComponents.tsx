@@ -128,3 +128,6 @@ export const LazySFPortfolioListPage = lazy(() => import('@/pages/admin/SFPortfo
 
 // === FUND INTELLIGENCE (FIRECRAWL) ===
 export const LazyFundIntelligencePage = lazy(() => import('@/pages/admin/FundIntelligencePage'));
+
+// === API USAGE DASHBOARD ===
+export const LazyApiUsageDashboard = lazy(() => import('@/components/admin/ApiUsageDashboard').then(m => ({ default: m.ApiUsageDashboard })));

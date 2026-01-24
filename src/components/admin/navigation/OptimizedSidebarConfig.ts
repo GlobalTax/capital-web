@@ -17,7 +17,8 @@ import {
   FileSignature,
   Briefcase,
   Search,
-  Globe
+  Globe,
+  Activity
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -205,6 +206,13 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
         icon: Globe,
         badge: "NEW",
         description: "Teléfono, empresas del grupo y enlaces"
+      },
+      { 
+        title: "Consumo APIs", 
+        url: "/admin/settings/api-usage", 
+        icon: Activity,
+        badge: "NEW",
+        description: "Firecrawl, OpenAI y Lovable AI"
       },
     ]
   }
