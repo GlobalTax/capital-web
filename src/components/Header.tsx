@@ -29,14 +29,6 @@ const Header = () => {
 
           {/* CTA Buttons - Updated styling */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link to={getLocalizedUrl('oficinas', lang)}>
-              <SimpleButton 
-                text="Nuestras Oficinas"
-                variant="secondary"
-                size="sm"
-                className="border-amber-500 text-amber-600 hover:bg-amber-50"
-              />
-            </Link>
             <Link to={getLocalizedUrl('contacto', lang)}>
               <SimpleButton 
                 text={t('nav.contacto')}
