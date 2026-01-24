@@ -20,7 +20,7 @@ export const GroupCompaniesDropdown: React.FC<GroupCompaniesDropdownProps> = ({ 
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-foreground hover:text-primary transition-colors focus:outline-none">
+      <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-white/70 hover:text-white transition-colors focus:outline-none">
         <Building2 className="h-3.5 w-3.5" />
         <span>{currentCompany?.name || 'Grupo'}</span>
         <ChevronDown className="h-3.5 w-3.5" />
