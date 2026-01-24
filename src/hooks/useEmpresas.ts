@@ -22,6 +22,8 @@ export interface Empresa {
   estado_target?: string | null;
   nivel_interes?: string | null;
   potencial_search_fund?: boolean | null;
+  source?: string | null;
+  source_valuation_id?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
 }
