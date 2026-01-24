@@ -83,6 +83,25 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "🔥 LEADS",
+    description: "Centro de gestión de leads",
+    items: [
+      { 
+        title: "Gestión de Leads", 
+        url: "/admin/contacts", 
+        icon: Target,
+        badge: "URGENTE",
+        description: "Todos los leads del embudo"
+      },
+      { 
+        title: "Pipeline",
+        url: "/admin/leads-pipeline", 
+        icon: Kanban,
+        description: "Tablero Kanban de leads"
+      },
+    ]
+  },
+  {
     title: "✨ CREAR CONTENIDO",
     description: "Herramientas de creación",
     items: [
@@ -287,10 +306,10 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestión de reservas de llamadas"
       },
       { 
-        title: "Contactos",
+        title: "Leads (Todos)",
         url: "/admin/contacts", 
-        icon: Users,
-        description: "Base de contactos"
+        icon: Target,
+        description: "Vista completa de todos los leads"
       },
       { 
         title: "Contactos Compra",

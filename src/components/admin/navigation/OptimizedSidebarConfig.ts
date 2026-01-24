@@ -60,6 +60,20 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
     ]
   },
   {
+    title: "🔥 LEADS",
+    description: "Centro de gestión de leads",
+    workflow: 'analyze',
+    items: [
+      { 
+        title: "Gestión de Leads", 
+        url: "/admin/contacts", 
+        icon: Target,
+        badge: "HOT",
+        description: "Todos los leads del embudo"
+      },
+    ]
+  },
+  {
     title: "✨ CREAR CONTENIDO",
     description: "Herramientas de creación",
     workflow: 'create',
@@ -137,15 +151,15 @@ export const optimizedSidebarSections: OptimizedSidebarSection[] = [
     ]
   },
   {
-    title: "📈 ANALIZAR LEADS",
-    description: "Gestión de prospectos",
+    title: "📈 ANALIZAR",
+    description: "Análisis de datos",
     workflow: 'analyze',
     items: [
       { 
-        title: "Contactos",
+        title: "Leads (Todos)",
         url: "/admin/contacts", 
-        icon: Users,
-        description: "Base de contactos"
+        icon: Target,
+        description: "Vista completa de leads"
       },
     ]
   },
