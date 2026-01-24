@@ -18,6 +18,8 @@ export interface CRPortfolioListItem {
   fund_name: string | null;
   fund_type: string | null;
   created_at: string;
+  enriched_at: string | null;
+  has_enriched_data: boolean;
 }
 
 export interface CRPortfolioListFilters {
@@ -26,6 +28,7 @@ export interface CRPortfolioListFilters {
   status?: string;
   sector?: string;
   country?: string;
+  enrichmentStatus?: 'enriched' | 'pending' | 'no_website';
 }
 
 export const useCRPortfolioList = (filters?: CRPortfolioListFilters) => {
@@ -46,6 +49,8 @@ export const useCRPortfolioList = (filters?: CRPortfolioListFilters) => {
           description,
           fund_id,
           created_at,
+          enriched_at,
+          enriched_data,
           cr_funds!cr_portfolio_fund_id_fkey (
             name,
             fund_type
@@ -71,6 +76,15 @@ export const useCRPortfolioList = (filters?: CRPortfolioListFilters) => {
         query = query.ilike('country', `%${filters.country}%`);
       }
 
+      // Enrichment status filter
+      if (filters?.enrichmentStatus === 'enriched') {
+        query = query.not('enriched_at', 'is', null);
+      } else if (filters?.enrichmentStatus === 'pending') {
+        query = query.is('enriched_at', null).not('website', 'is', null);
+      } else if (filters?.enrichmentStatus === 'no_website') {
+        query = query.is('website', null);
+      }
+
       const { data, error } = await query;
 
       if (error) throw error;
@@ -88,7 +102,9 @@ export const useCRPortfolioList = (filters?: CRPortfolioListFilters) => {
         fund_id: item.fund_id,
         fund_name: item.cr_funds?.name || null,
         fund_type: item.cr_funds?.fund_type || null,
-        created_at: item.created_at
+        created_at: item.created_at,
+        enriched_at: item.enriched_at,
+        has_enriched_data: !!item.enriched_data
       }));
     }
   });

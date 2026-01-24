@@ -39,11 +39,38 @@ export function useEnrichPortfolio() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['enrichment-stats'] });
       queryClient.invalidateQueries({ queryKey: ['cr-portfolio'] });
+      queryClient.invalidateQueries({ queryKey: ['cr-portfolio-list'] });
       toast.success(data.message || 'Empresas enriquecidas correctamente');
     },
     onError: (error) => {
       console.error('Error enriching portfolio:', error);
       toast.error('Error al enriquecer empresas');
+    },
+  });
+}
+
+// Hook for enriching a single portfolio company
+export function useEnrichSinglePortfolio() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (companyId: string) => {
+      const { data, error } = await supabase.functions.invoke('cr-portfolio-enrich', {
+        body: { company_ids: [companyId] },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['enrichment-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['cr-portfolio'] });
+      queryClient.invalidateQueries({ queryKey: ['cr-portfolio-list'] });
+      toast.success(data.message || 'Empresa enriquecida');
+    },
+    onError: (error) => {
+      console.error('Error enriching company:', error);
+      toast.error('Error al enriquecer empresa');
     },
   });
 }
