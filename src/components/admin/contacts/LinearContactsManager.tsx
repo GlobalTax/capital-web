@@ -171,9 +171,9 @@ const LinearContactsManager = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Contactos</h1>
+            <h1 className="text-xl font-semibold text-foreground">Leads</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Gestión unificada de leads y contactos
+              Gestión unificada de leads
             </p>
           </div>
           <TabsList className="h-8">

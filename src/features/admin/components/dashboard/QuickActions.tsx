@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { FileText, Users, Briefcase, PlusCircle } from 'lucide-react';
+import { FileText, Target, Briefcase, PlusCircle } from 'lucide-react';
 
 export const QuickActions = () => {
   const actions = [
@@ -14,11 +14,11 @@ export const QuickActions = () => {
       color: 'text-green-600 bg-green-50 hover:bg-green-100'
     },
     {
-      title: 'Ver Contactos',
-      description: 'Gestionar valoraciones',
-      icon: Users,
+      title: 'Ver Leads',
+      description: 'Gestionar todos los leads',
+      icon: Target,
       href: '/admin/contacts',
-      color: 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+      color: 'text-red-600 bg-red-50 hover:bg-red-100'
     },
     {
       title: 'Adquisiciones',
