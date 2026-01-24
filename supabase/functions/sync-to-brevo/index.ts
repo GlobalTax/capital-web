@@ -458,14 +458,15 @@ serve(async (req) => {
     // === CRITICAL: UPSERT to master 'contactos' table ===
     const contactoData = {
       email: contact.email,
-      contact_name: contact.attributes.FIRSTNAME || null,
-      contact_lastname: contact.attributes.LASTNAME || null,
-      phone: record.phone || record.phone_e164 || null,
-      company_name: contact.attributes.COMPANY || null,
+      nombre: contact.attributes.FIRSTNAME || null,
+      apellidos: contact.attributes.LASTNAME || null,
+      telefono: record.phone || record.phone_e164 || null,
+      cargo: contact.attributes.JOB_TITLE || null,
       brevo_id: brevoData?.id?.toString() || null,
       source: leadType,
-      empresa_id: record.empresa_id || null,
+      empresa_principal_id: record.empresa_id || null,
       updated_at: new Date().toISOString(),
+      brevo_synced_at: new Date().toISOString(),
     };
 
     const { error: contactoError } = await supabase
