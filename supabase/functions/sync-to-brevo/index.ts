@@ -455,6 +455,33 @@ serve(async (req) => {
       last_sync_at: new Date().toISOString(),
     });
 
+    // === CRITICAL: UPSERT to master 'contactos' table ===
+    const contactoData = {
+      email: contact.email,
+      contact_name: contact.attributes.FIRSTNAME || null,
+      contact_lastname: contact.attributes.LASTNAME || null,
+      phone: record.phone || record.phone_e164 || null,
+      company_name: contact.attributes.COMPANY || null,
+      brevo_id: brevoData?.id?.toString() || null,
+      source: leadType,
+      empresa_id: record.empresa_id || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error: contactoError } = await supabase
+      .from('contactos')
+      .upsert(contactoData, {
+        onConflict: 'email',
+        ignoreDuplicates: false,
+      });
+
+    if (contactoError) {
+      console.log(`⚠️ Error upserting to contactos: ${contactoError.message}`);
+    } else {
+      console.log(`✅ Upserted to contactos: ${contact.email}`);
+    }
+    // === END UPSERT to contactos ===
+
     if (!brevoResponse.ok) {
       console.error('❌ Brevo API error:', brevoData);
       
@@ -485,7 +512,8 @@ serve(async (req) => {
               action: 'updated', 
               brevo: updateData || { status: 'updated' },
               attributesSent: Object.keys(contact.attributes).length,
-              hasEmpresaData: !!contact.attributes.EMPRESA_ID
+              hasEmpresaData: !!contact.attributes.EMPRESA_ID,
+              contactoSynced: !contactoError
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
@@ -506,7 +534,8 @@ serve(async (req) => {
         action: 'created', 
         brevo: brevoData,
         attributesSent: Object.keys(contact.attributes).length,
-        hasEmpresaData: !!contact.attributes.EMPRESA_ID
+        hasEmpresaData: !!contact.attributes.EMPRESA_ID,
+        contactoSynced: !contactoError
       }),
       {
         status: 200,
