@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SidebarItem, SidebarItemFormData } from '@/types/sidebar-config';
+import { SidebarItem, SidebarItemFormData, SidebarSection } from '@/types/sidebar-config';
 import { IconPicker } from './IconPicker';
 
 const itemSchema = z.object({
@@ -31,14 +31,17 @@ const itemSchema = z.object({
   description: z.string().max(200).optional(),
   badge: z.enum(['URGENTE', 'AI', 'NEW', 'HOT']).nullable().optional(),
   is_active: z.boolean(),
+  section_id: z.string().optional(),
 });
 
 interface ItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: SidebarItem | null;
-  onSave: (data: SidebarItemFormData) => void;
+  onSave: (data: SidebarItemFormData & { section_id?: string }) => void;
   isLoading?: boolean;
+  sections?: SidebarSection[];
+  currentSectionId?: string | null;
 }
 
 export const ItemDialog: React.FC<ItemDialogProps> = ({
@@ -47,10 +50,12 @@ export const ItemDialog: React.FC<ItemDialogProps> = ({
   item,
   onSave,
   isLoading = false,
+  sections = [],
+  currentSectionId = null,
 }) => {
   const isEditing = !!item;
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<SidebarItemFormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<SidebarItemFormData & { section_id?: string }>({
     resolver: zodResolver(itemSchema),
     defaultValues: {
       title: '',
@@ -59,6 +64,7 @@ export const ItemDialog: React.FC<ItemDialogProps> = ({
       description: '',
       badge: null,
       is_active: true,
+      section_id: undefined,
     },
   });
 
@@ -71,6 +77,7 @@ export const ItemDialog: React.FC<ItemDialogProps> = ({
         description: item.description || '',
         badge: item.badge,
         is_active: item.is_active,
+        section_id: item.section_id,
       });
     } else {
       reset({
@@ -80,9 +87,10 @@ export const ItemDialog: React.FC<ItemDialogProps> = ({
         description: '',
         badge: null,
         is_active: true,
+        section_id: currentSectionId || undefined,
       });
     }
-  }, [item, reset]);
+  }, [item, reset, currentSectionId]);
 
   const onSubmit = (data: SidebarItemFormData) => {
     onSave(data);
@@ -91,6 +99,7 @@ export const ItemDialog: React.FC<ItemDialogProps> = ({
   const isActive = watch('is_active');
   const currentIcon = watch('icon');
   const currentBadge = watch('badge');
+  const currentSectionIdValue = watch('section_id');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -165,6 +174,30 @@ export const ItemDialog: React.FC<ItemDialogProps> = ({
               </SelectContent>
             </Select>
           </div>
+
+          {sections.length > 0 && isEditing && (
+            <div className="space-y-2">
+              <Label>Sección</Label>
+              <Select
+                value={currentSectionIdValue || currentSectionId || ''}
+                onValueChange={(value) => setValue('section_id', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona sección" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sections.map((section) => (
+                    <SelectItem key={section.id} value={section.id}>
+                      {section.emoji} {section.title.replace(/^[^\s]+\s/, '')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Cambia la sección para mover este item
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div className="space-y-0.5">
