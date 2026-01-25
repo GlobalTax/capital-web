@@ -106,6 +106,9 @@ const LazyPresentationsListPage = React.lazy(() => import('@/features/presentati
 const LazyPresentationEditorPage = React.lazy(() => import('@/features/presentations/pages/PresentationEditorPage'));
 const LazyPresentationViewerPage = React.lazy(() => import('@/features/presentations/pages/PresentationViewerPage'));
 
+// Settings
+const LazySidebarSettings = React.lazy(() => import('@/pages/admin/SidebarSettings'));
+
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
 
@@ -210,6 +213,7 @@ const AdminRouter = () => {
           <Route path="/brevo-import" element={<LazyBrevoContactsImport />} />
           <Route path="/settings/email-outbox" element={<LazyEmailOutboxPanel />} />
           <Route path="/settings/topbar" element={<LazyTopBarSettings />} />
+          <Route path="/settings/sidebar" element={<LazySidebarSettings />} />
           <Route path="/settings/api-usage" element={<LazyApiUsageDashboard />} />
           <Route path="/data-enrichment" element={<LazyDataEnrichmentPanel />} />
           
