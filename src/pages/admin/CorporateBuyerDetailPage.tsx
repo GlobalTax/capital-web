@@ -17,7 +17,10 @@ import {
   ExternalLink,
   MapPin,
   Target,
-  DollarSign
+  DollarSign,
+  Tag,
+  ChevronRight,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,9 +39,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useCorporateBuyer, useDeleteCorporateBuyer, useUpdateCorporateBuyer, useCreateCorporateBuyer } from '@/hooks/useCorporateBuyers';
 import { SectorMultiSelect } from '@/components/admin/corporate-buyers/SectorMultiSelect';
+import { TagInputEditor } from '@/components/admin/corporate-buyers/TagInputEditor';
 import { CorporateBuyerForm } from '@/components/admin/corporate-buyers/CorporateBuyerForm';
 import { useCorporateContacts } from '@/hooks/useCorporateContacts';
 import { useIsCorporateFavorite, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
+import { EditableCurrency } from '@/components/admin/shared/EditableCurrency';
 import { 
   BUYER_TYPE_LABELS, 
   BUYER_TYPE_COLORS,
@@ -67,7 +72,9 @@ const CorporateBuyerDetailPage = () => {
   const deleteBuyer = useDeleteCorporateBuyer();
   const updateBuyer = useUpdateCorporateBuyer();
   const createBuyer = useCreateCorporateBuyer();
+  
   const [isEditingSectors, setIsEditingSectors] = useState(false);
+  const [isEditingGeography, setIsEditingGeography] = useState(false);
 
   const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
     const result = await createBuyer.mutateAsync(data);
@@ -95,6 +102,19 @@ const CorporateBuyerDetailPage = () => {
     await updateBuyer.mutateAsync({ id, data: { sector_focus: sectors } });
     toast.success('Sectores actualizados');
     setIsEditingSectors(false);
+  };
+
+  const handleSaveGeography = async (geos: string[]) => {
+    if (!id) return;
+    await updateBuyer.mutateAsync({ id, data: { geography_focus: geos } });
+    toast.success('Geografía actualizada');
+    setIsEditingGeography(false);
+  };
+
+  const handleSaveFinancial = async (field: string, value: number) => {
+    if (!id) return;
+    await updateBuyer.mutateAsync({ id, data: { [field]: value || null } });
+    toast.success('Valor actualizado');
   };
 
   if (isNew) {
@@ -135,6 +155,9 @@ const CorporateBuyerDetailPage = () => {
       </div>
     );
   }
+
+  const hasKeywordsOrHighlights = (buyer.search_keywords && buyer.search_keywords.length > 0) || 
+                                   (buyer.key_highlights && buyer.key_highlights.length > 0);
 
   return (
     <div className="space-y-6">
@@ -227,7 +250,47 @@ const CorporateBuyerDetailPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">{buyer.description}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{buyer.description}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Keywords y Puntos Clave */}
+          {hasKeywordsOrHighlights && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Keywords y Puntos Clave
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {buyer.search_keywords && buyer.search_keywords.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Keywords de Búsqueda</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {buyer.search_keywords.map((kw) => (
+                        <Badge key={kw} className="text-xs bg-primary/10 text-primary">
+                          {kw}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {buyer.key_highlights && buyer.key_highlights.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Puntos Clave</h4>
+                    <ul className="space-y-1">
+                      {buyer.key_highlights.map((highlight, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <ChevronRight className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                          <span className="text-muted-foreground">{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -281,9 +344,28 @@ const CorporateBuyerDetailPage = () => {
                 )}
               </div>
 
-              {buyer.geography_focus && buyer.geography_focus.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Geografía</h4>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">Geografía</h4>
+                  {!isEditingGeography && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 w-6 p-0"
+                      onClick={() => setIsEditingGeography(true)}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+                {isEditingGeography ? (
+                  <TagInputEditor 
+                    value={buyer.geography_focus || []}
+                    onSave={handleSaveGeography}
+                    onCancel={() => setIsEditingGeography(false)}
+                    placeholder="Añadir país o región..."
+                  />
+                ) : buyer.geography_focus && buyer.geography_focus.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
                     {buyer.geography_focus.map((geo) => (
                       <Badge key={geo} variant="outline" className="text-xs">
@@ -291,12 +373,14 @@ const CorporateBuyerDetailPage = () => {
                       </Badge>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sin geografía definida. Haz clic en editar para añadir.</p>
+                )}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Financial Ranges */}
+          {/* Financial Ranges - Inline Editable */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
@@ -308,21 +392,57 @@ const CorporateBuyerDetailPage = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <h4 className="text-xs text-muted-foreground mb-1">Facturación</h4>
-                  <p className="text-sm font-medium">
-                    {formatCurrency(buyer.revenue_min) || '—'} - {formatCurrency(buyer.revenue_max) || '—'}
-                  </p>
+                  <div className="flex items-center gap-1 text-sm">
+                    <EditableCurrency
+                      value={buyer.revenue_min}
+                      onSave={(v) => handleSaveFinancial('revenue_min', v)}
+                      emptyText="—"
+                      compact
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <EditableCurrency
+                      value={buyer.revenue_max}
+                      onSave={(v) => handleSaveFinancial('revenue_max', v)}
+                      emptyText="—"
+                      compact
+                    />
+                  </div>
                 </div>
                 <div>
                   <h4 className="text-xs text-muted-foreground mb-1">EBITDA</h4>
-                  <p className="text-sm font-medium">
-                    {formatCurrency(buyer.ebitda_min) || '—'} - {formatCurrency(buyer.ebitda_max) || '—'}
-                  </p>
+                  <div className="flex items-center gap-1 text-sm">
+                    <EditableCurrency
+                      value={buyer.ebitda_min}
+                      onSave={(v) => handleSaveFinancial('ebitda_min', v)}
+                      emptyText="—"
+                      compact
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <EditableCurrency
+                      value={buyer.ebitda_max}
+                      onSave={(v) => handleSaveFinancial('ebitda_max', v)}
+                      emptyText="—"
+                      compact
+                    />
+                  </div>
                 </div>
                 <div>
                   <h4 className="text-xs text-muted-foreground mb-1">Ticket</h4>
-                  <p className="text-sm font-medium">
-                    {formatCurrency(buyer.deal_size_min) || '—'} - {formatCurrency(buyer.deal_size_max) || '—'}
-                  </p>
+                  <div className="flex items-center gap-1 text-sm">
+                    <EditableCurrency
+                      value={buyer.deal_size_min}
+                      onSave={(v) => handleSaveFinancial('deal_size_min', v)}
+                      emptyText="—"
+                      compact
+                    />
+                    <span className="text-muted-foreground">-</span>
+                    <EditableCurrency
+                      value={buyer.deal_size_max}
+                      onSave={(v) => handleSaveFinancial('deal_size_max', v)}
+                      emptyText="—"
+                      compact
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>

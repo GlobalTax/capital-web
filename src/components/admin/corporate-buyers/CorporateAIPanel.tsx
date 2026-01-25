@@ -47,6 +47,7 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
   const [isSavingThesis, setIsSavingThesis] = useState(false);
   const [isSavingSectors, setIsSavingSectors] = useState(false);
   const [isSavingKeywords, setIsSavingKeywords] = useState(false);
+  const [isSavingHighlights, setIsSavingHighlights] = useState(false);
   
   // AI results state
   const [targetsResult, setTargetsResult] = useState<SuggestTargetsResult | null>(null);
@@ -144,6 +145,22 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
       toast.error('Error al guardar los keywords');
     } finally {
       setIsSavingKeywords(false);
+    }
+  };
+
+  const handleSaveHighlights = async () => {
+    if (!descriptionResult?.key_highlights?.length) return;
+    setIsSavingHighlights(true);
+    try {
+      await updateBuyer.mutateAsync({
+        id: buyer.id,
+        data: { key_highlights: descriptionResult.key_highlights }
+      });
+      toast.success('Puntos clave guardados correctamente');
+    } catch (error) {
+      toast.error('Error al guardar los puntos clave');
+    } finally {
+      setIsSavingHighlights(false);
     }
   };
 
@@ -351,6 +368,20 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                             </li>
                           ))}
                         </ul>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-2 w-full gap-2"
+                          onClick={handleSaveHighlights}
+                          disabled={isSavingHighlights}
+                        >
+                          {isSavingHighlights ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Save className="h-3.5 w-3.5" />
+                          )}
+                          Guardar Puntos Clave
+                        </Button>
                       </div>
                     </>
                   )}

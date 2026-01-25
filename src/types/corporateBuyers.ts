@@ -42,6 +42,7 @@ export interface CorporateBuyer {
   deal_size_max: number | null;
   source_url: string | null;
   notes_internal: string | null;
+  key_highlights: string[] | null;
   is_active: boolean;
   is_deleted: boolean;
   created_at: string;
@@ -97,6 +98,7 @@ export interface CorporateBuyerFormData {
   deal_size_max?: number;
   source_url?: string;
   notes_internal?: string;
+  key_highlights?: string[];
   is_active?: boolean;
 }
 
