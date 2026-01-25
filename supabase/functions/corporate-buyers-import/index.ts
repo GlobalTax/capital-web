@@ -220,21 +220,22 @@ serve(async (req) => {
 
         // Prepare buyer data
         const buyerData = {
-          name: buyer.name,
-          website: cleanWebsite(buyer.website),
-          country_base: buyer.country_base,
-          buyer_type: inferBuyerType(buyer.description, buyer.name),
+          name: buyer.name.trim(),
+          website: buyer.website || null,
+          country_base: buyer.country_base || null,
+          buyer_type: inferBuyerType(buyer),
           description: buyer.description || null,
           investment_thesis: buyer.investment_thesis || null,
-          search_keywords: parseKeywords(buyer.keywords?.join(', ') || ''),
-          sector_focus: parseSectors(buyer.sectors?.join('\n') || ''),
-          geography_focus: parseGeography(buyer.geography_focus?.join('\n') || ''),
+          search_keywords: buyer.search_keywords || [],
+          sector_focus: buyer.sector_focus || [],
+          geography_focus: buyer.geography_focus || [],
           revenue_min: revenueRange.min,
           revenue_max: revenueRange.max,
           ebitda_min: ebitdaRange.min,
           ebitda_max: ebitdaRange.max,
           source_url: buyer.source_url || null,
           is_active: true,
+          is_deleted: false,
         };
 
         // Insert buyer
