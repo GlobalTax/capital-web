@@ -4819,6 +4819,7 @@ export type Database = {
           investment_thesis: string | null
           is_active: boolean | null
           is_deleted: boolean | null
+          key_highlights: string[] | null
           name: string
           notes_internal: string | null
           revenue_max: number | null
@@ -4845,6 +4846,7 @@ export type Database = {
           investment_thesis?: string | null
           is_active?: boolean | null
           is_deleted?: boolean | null
+          key_highlights?: string[] | null
           name: string
           notes_internal?: string | null
           revenue_max?: number | null
@@ -4871,6 +4873,7 @@ export type Database = {
           investment_thesis?: string | null
           is_active?: boolean | null
           is_deleted?: boolean | null
+          key_highlights?: string[] | null
           name?: string
           notes_internal?: string | null
           revenue_max?: number | null
