@@ -10,6 +10,7 @@ import { RecentCollaborations } from './dashboard/RecentCollaborations';
 import { ActivityTimeline } from './dashboard/ActivityTimeline';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { HighlightsSidebar } from './dashboard/DashboardHighlights';
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -91,76 +92,82 @@ export const AdminDashboard = () => {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-normal">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          Visión general de la plataforma
-        </p>
+    <div className="flex gap-6">
+      {/* Contenido principal */}
+      <div className="flex-1 space-y-8 min-w-0">
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-normal">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            Visión general de la plataforma
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-start">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.title} className="w-full shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-normal">
+                    {stat.title}
+                  </CardTitle>
+                  <div className={`${stat.bgColor} p-2 rounded-lg`}>
+                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-normal">{stat.value}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stat.description}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Sección superior - 2 columnas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentContacts />
+          <RecentBlogPosts />
+        </div>
+
+        {/* Centro de Ayuda - Marketplace */}
+        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Centro de Ayuda - Marketplace
+            </CardTitle>
+            <CardDescription>
+              Aprende a publicar y gestionar operaciones en el marketplace
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              onClick={() => navigate('/admin/operations')}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Ver Guía Completa
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Sección media - 2 columnas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentAcquisitions />
+          <RecentCollaborations />
+        </div>
+
+        {/* Timeline de actividad - ancho completo */}
+        <div className="mt-6">
+          <ActivityTimeline />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-start">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={stat.title} className="w-full shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-normal">
-                  {stat.title}
-                </CardTitle>
-                <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                  <Icon className={`h-4 w-4 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-normal">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Sección superior - 2 columnas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentContacts />
-        <RecentBlogPosts />
-      </div>
-
-      {/* Centro de Ayuda - Marketplace */}
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            Centro de Ayuda - Marketplace
-          </CardTitle>
-          <CardDescription>
-            Aprende a publicar y gestionar operaciones en el marketplace
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button 
-            onClick={() => navigate('/admin/operations')}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Ver Guía Completa
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Sección media - 2 columnas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentAcquisitions />
-        <RecentCollaborations />
-      </div>
-
-      {/* Timeline de actividad - ancho completo */}
-      <div className="mt-6">
-        <ActivityTimeline />
-      </div>
+      {/* Barra lateral de destacados - sticky */}
+      <HighlightsSidebar />
     </div>
   );
 };
