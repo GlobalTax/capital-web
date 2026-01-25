@@ -1,27 +1,11 @@
 import React from 'react';
-import { Sparkles, Flame, Clock } from 'lucide-react';
+import { Sparkles, Flame } from 'lucide-react';
 
 interface SidebarBadgeProps {
-  badge: 'URGENTE' | 'AI' | 'NEW';
-  addedDate?: string; // ISO date string when feature was added
+  badge: 'URGENTE' | 'AI';
 }
 
-// Features added within this many days show NEW badge
-const NEW_BADGE_EXPIRY_DAYS = 30;
-
-export const SidebarBadge: React.FC<SidebarBadgeProps> = ({ badge, addedDate }) => {
-  // Check if NEW badge should still be shown based on addedDate
-  if (badge === 'NEW' && addedDate) {
-    const addedTime = new Date(addedDate).getTime();
-    const now = Date.now();
-    const daysSinceAdded = (now - addedTime) / (1000 * 60 * 60 * 24);
-    
-    // If more than 30 days old, don't show NEW badge
-    if (daysSinceAdded > NEW_BADGE_EXPIRY_DAYS) {
-      return null;
-    }
-  }
-
+export const SidebarBadge: React.FC<SidebarBadgeProps> = ({ badge }) => {
   const getBadgeConfig = () => {
     switch (badge) {
       case 'URGENTE':
@@ -35,12 +19,6 @@ export const SidebarBadge: React.FC<SidebarBadgeProps> = ({ badge, addedDate }) 
           className: 'bg-violet-500/10 text-violet-600 border border-violet-200',
           icon: <Sparkles className="h-2.5 w-2.5" />,
           label: 'AI'
-        };
-      case 'NEW':
-        return {
-          className: 'bg-emerald-500/10 text-emerald-600 border border-emerald-200',
-          icon: null,
-          label: 'NEW'
         };
       default:
         return null;

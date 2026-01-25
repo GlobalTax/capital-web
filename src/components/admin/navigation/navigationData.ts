@@ -25,7 +25,7 @@ export interface NavigationItem {
   icon: React.ComponentType<any>;
   id: string;
   description: string;
-  badge?: 'URGENTE' | 'AI' | 'NEW';
+  badge?: 'URGENTE' | 'AI';
   keywords?: string[];
 }
 
@@ -167,7 +167,6 @@ export const navigationGroups: NavigationGroup[] = [
         icon: Building2,
         id: "sf-directory",
         description: "Directorio de Search Funds",
-        badge: "NEW" as const,
         keywords: ["search", "funds", "directorio", "inversores"]
       },
       {
