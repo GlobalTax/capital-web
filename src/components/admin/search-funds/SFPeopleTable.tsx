@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SFPersonWithFund, SFPersonRole, SFPerson } from '@/types/searchFunds';
+import { SFPersonWithFund, SFPerson, PERSON_ROLE_LABELS } from '@/types/searchFunds';
 import { SFPersonEditModal } from './SFPersonEditModal';
 import { SFBulkEmailDialog } from './SFBulkEmailDialog';
 import { SFFavoriteButton } from './SFFavoriteButton';
@@ -20,13 +20,6 @@ interface SFPeopleTableProps {
   onSelectAll: () => void;
   showFavoriteColumn?: boolean;
 }
-
-const roleLabels: Record<SFPersonRole, string> = {
-  searcher: 'Searcher',
-  partner: 'Partner',
-  principal: 'Principal',
-  advisor: 'Advisor',
-};
 
 const getLocationDisplay = (person: SFPersonWithFund) => {
   if (person.location) return person.location;
@@ -158,7 +151,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
                   </TableCell>
                   <TableCell className="py-2">
                     <span className="text-sm text-muted-foreground">
-                      {roleLabels[person.role] || person.role}
+                      {PERSON_ROLE_LABELS[person.role] || person.role}
                     </span>
                   </TableCell>
                   <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>

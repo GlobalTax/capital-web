@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { SFFundTagEditor } from './SFFundTagEditor';
-import { SFFundFormData, SFFundWithRelations, SFStatus, SFInvestmentStyle } from '@/types/searchFunds';
+import { SFFundFormData, SFFundWithRelations, SFStatus, SFInvestmentStyle, SFEntityType, ENTITY_TYPE_LABELS } from '@/types/searchFunds';
 import { ApolloFundImporter, ApolloFundData } from '@/components/admin/shared/ApolloFundImporter';
 
 const fundSchema = z.object({
@@ -47,6 +47,10 @@ const fundSchema = z.object({
   ebitda_max: z.number().nullable(),
   revenue_min: z.number().nullable(),
   revenue_max: z.number().nullable(),
+  // Nuevos campos para compradores corporativos
+  entity_type: z.enum(['traditional_search_fund', 'self_funded_search', 'operator_led', 'holding_company', 'unknown', 'corporate', 'family_office', 'pe_fund', 'strategic_buyer']).nullable(),
+  investment_thesis: z.string().nullable(),
+  search_keywords: z.array(z.string()).nullable(),
 });
 
 type FormValues = z.infer<typeof fundSchema>;
@@ -94,6 +98,10 @@ export function SFFundForm({ initialData, onSubmit, isSaving }: SFFundFormProps)
       ebitda_max: initialData?.ebitda_max || null,
       revenue_min: initialData?.revenue_min || null,
       revenue_max: initialData?.revenue_max || null,
+      // Nuevos campos
+      entity_type: initialData?.entity_type || null,
+      investment_thesis: initialData?.investment_thesis || '',
+      search_keywords: initialData?.search_keywords || [],
     },
   });
 
@@ -112,7 +120,7 @@ export function SFFundForm({ initialData, onSubmit, isSaving }: SFFundFormProps)
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const data = {
+    const data: SFFundFormData = {
       name: values.name,
       website: values.website || null,
       status: values.status,
@@ -136,7 +144,11 @@ export function SFFundForm({ initialData, onSubmit, isSaving }: SFFundFormProps)
       ebitda_max: values.ebitda_max,
       revenue_min: values.revenue_min,
       revenue_max: values.revenue_max,
-    } satisfies SFFundFormData;
+      // Nuevos campos
+      entity_type: values.entity_type || null,
+      investment_thesis: values.investment_thesis || null,
+      search_keywords: values.search_keywords || null,
+    };
     await onSubmit(data);
   };
 

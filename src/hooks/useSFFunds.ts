@@ -15,7 +15,7 @@ export const useSFFunds = (filters?: SFFundFilters) => {
         .order('created_at', { ascending: false });
 
       if (filters?.search) {
-        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,investment_thesis.ilike.%${filters.search}%`);
       }
       if (filters?.status && filters.status !== 'all') {
         query = query.eq('status', filters.status);
@@ -28,6 +28,10 @@ export const useSFFunds = (filters?: SFFundFilters) => {
       }
       if (filters?.ebitda_max) {
         query = query.lte('ebitda_min', filters.ebitda_max);
+      }
+      // Filtro por tipo de entidad
+      if (filters?.entity_type && filters.entity_type !== 'all') {
+        query = query.eq('entity_type', filters.entity_type);
       }
 
       const { data, error } = await query;

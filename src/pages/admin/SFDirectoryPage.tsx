@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Users, Building2, Star } from 'lucide-react';
+import { Plus, Search, Users, Building2, Star, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,13 +14,14 @@ import { useSFFavoriteFunds, useSFFavoritePeople } from '@/hooks/useSFFavorites'
 import { SFPeopleTable } from '@/components/admin/search-funds/SFPeopleTable';
 import { SFFundsTable } from '@/components/admin/search-funds/SFFundsTable';
 import { SFEnrichmentDashboard } from '@/components/admin/search-funds/SFEnrichmentDashboard';
-import { SFPersonRole } from '@/types/searchFunds';
+import { SFPersonRole, SFEntityType, ENTITY_TYPE_LABELS, SF_ENTITY_CATEGORIES } from '@/types/searchFunds';
 
 export const SFDirectoryPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('fav-funds');
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<SFPersonRole | 'all'>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [entityTypeFilter, setEntityTypeFilter] = useState<SFEntityType | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // People query
@@ -30,10 +31,11 @@ export const SFDirectoryPage: React.FC = () => {
     country: countryFilter !== 'all' ? countryFilter : undefined,
   });
 
-  // Funds query
+  // Funds query with entity_type filter
   const { data: funds, isLoading: loadingFunds } = useSFFunds({
     search: search || undefined,
     country_base: countryFilter !== 'all' ? countryFilter : undefined,
+    entity_type: entityTypeFilter !== 'all' ? entityTypeFilter : undefined,
   });
 
   // Favorites queries
@@ -47,6 +49,18 @@ export const SFDirectoryPage: React.FC = () => {
     const unique = [...new Set([...fromPeople, ...fromFunds])];
     return unique.sort() as string[];
   }, [people, funds]);
+
+  // Count by entity type category
+  const fundCounts = useMemo(() => {
+    if (!funds) return { searchFunds: 0, corporate: 0 };
+    const searchFunds = funds.filter(f => 
+      !f.entity_type || SF_ENTITY_CATEGORIES.search_funds.includes(f.entity_type)
+    ).length;
+    const corporate = funds.filter(f => 
+      f.entity_type && SF_ENTITY_CATEGORIES.corporate.includes(f.entity_type)
+    ).length;
+    return { searchFunds, corporate };
+  }, [funds]);
 
   const handleToggleSelection = (id: string) => {
     setSelectedIds(prev => {
@@ -73,6 +87,7 @@ export const SFDirectoryPage: React.FC = () => {
     setSearch('');
     setRoleFilter('all');
     setCountryFilter('all');
+    setEntityTypeFilter('all');
   };
 
   // Filter favorites by search if needed
@@ -105,8 +120,8 @@ export const SFDirectoryPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-normal tracking-tight">Directorio Search Funds</h1>
-          <p className="text-sm text-muted-foreground">
-            {people?.length || 0} personas · {funds?.length || 0} funds · {favoriteFunds?.length || 0} favoritos
+        <p className="text-sm text-muted-foreground">
+            {people?.length || 0} personas · {fundCounts.searchFunds} SF · {fundCounts.corporate} corporativos · {favoriteFunds?.length || 0} favoritos
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -147,7 +162,14 @@ export const SFDirectoryPage: React.FC = () => {
               className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
               <Building2 className="h-4 w-4 mr-2" />
-              Funds ({funds?.length || 0})
+              Search Funds ({fundCounts.searchFunds})
+            </TabsTrigger>
+            <TabsTrigger 
+              value="corporate"
+              className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Corporativos ({fundCounts.corporate})
             </TabsTrigger>
             <TabsTrigger 
               value="people" 
@@ -198,10 +220,29 @@ export const SFDirectoryPage: React.FC = () => {
             </SelectContent>
           </Select>
 
-          {(search || roleFilter !== 'all' || countryFilter !== 'all') && (
+          {(search || roleFilter !== 'all' || countryFilter !== 'all' || entityTypeFilter !== 'all') && (
             <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
               Limpiar filtros
             </Button>
+          )}
+
+          {/* Entity Type Filter - only show on funds/corporate tabs */}
+          {(activeTab === 'funds' || activeTab === 'corporate') && (
+            <Select value={entityTypeFilter} onValueChange={(v) => setEntityTypeFilter(v as SFEntityType | 'all')}>
+              <SelectTrigger className="w-[160px] h-9">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="traditional_search_fund">SF Tradicional</SelectItem>
+                <SelectItem value="self_funded_search">Self-Funded</SelectItem>
+                <SelectItem value="operator_led">Operator-Led</SelectItem>
+                <SelectItem value="corporate">Corporativo</SelectItem>
+                <SelectItem value="family_office">Family Office</SelectItem>
+                <SelectItem value="pe_fund">Fondo PE</SelectItem>
+                <SelectItem value="strategic_buyer">Estratégico</SelectItem>
+              </SelectContent>
+            </Select>
           )}
         </div>
 
@@ -226,10 +267,19 @@ export const SFDirectoryPage: React.FC = () => {
           />
         </TabsContent>
 
-        {/* All Funds Tab */}
+        {/* All Funds Tab - Search Funds only */}
         <TabsContent value="funds" className="mt-0">
           <SFFundsTable 
-            funds={funds || []}
+            funds={(funds || []).filter(f => !f.entity_type || SF_ENTITY_CATEGORIES.search_funds.includes(f.entity_type))}
+            isLoading={loadingFunds}
+            showFavoriteColumn
+          />
+        </TabsContent>
+
+        {/* Corporate Tab - Corporate buyers only */}
+        <TabsContent value="corporate" className="mt-0">
+          <SFFundsTable 
+            funds={(funds || []).filter(f => f.entity_type && SF_ENTITY_CATEGORIES.corporate.includes(f.entity_type))}
             isLoading={loadingFunds}
             showFavoriteColumn
           />

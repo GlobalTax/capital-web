@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { SFFund, SFStatus } from '@/types/searchFunds';
+import { SFFund, SFStatus, SFEntityType, ENTITY_TYPE_SHORT_LABELS, ENTITY_TYPE_COLORS } from '@/types/searchFunds';
 import { useDeleteSFFund } from '@/hooks/useSFFunds';
 import { SFFavoriteButton } from './SFFavoriteButton';
 
@@ -96,18 +96,26 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, sh
                   </TableCell>
                 )}
                 <TableCell className="py-2">
-                  <div>
-                    <Link 
-                      to={`/admin/sf-directory/${fund.id}`}
-                      className="font-medium text-sm hover:underline"
-                    >
-                      {fund.name}
-                    </Link>
-                    {fund.description && (
-                      <div className="text-xs text-muted-foreground truncate max-w-[250px]">
-                        {fund.description}
-                      </div>
+                  <div className="flex items-center gap-2">
+                    {/* Entity Type Badge */}
+                    {fund.entity_type && (
+                      <Badge className={`text-[9px] h-4 px-1.5 text-white ${ENTITY_TYPE_COLORS[fund.entity_type] || 'bg-slate-400'}`}>
+                        {ENTITY_TYPE_SHORT_LABELS[fund.entity_type] || '?'}
+                      </Badge>
                     )}
+                    <div>
+                      <Link 
+                        to={`/admin/sf-directory/${fund.id}`}
+                        className="font-medium text-sm hover:underline"
+                      >
+                        {fund.name}
+                      </Link>
+                      {fund.description && (
+                        <div className="text-xs text-muted-foreground truncate max-w-[250px]">
+                          {fund.description}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="py-2">
