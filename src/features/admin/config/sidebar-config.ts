@@ -35,7 +35,8 @@ import {
   Newspaper,
   Search,
   Globe,
-  ShoppingCart
+  ShoppingCart,
+  PanelLeft
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -499,6 +500,12 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/settings", 
         icon: Settings,
         description: "Configuración general"
+      },
+      { 
+        title: "Navegación Sidebar", 
+        url: "/admin/settings/sidebar", 
+        icon: PanelLeft,
+        description: "Configurar secciones e items del menú lateral"
       },
     ]
   }
