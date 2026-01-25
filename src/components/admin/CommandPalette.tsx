@@ -170,7 +170,6 @@ export const CommandPalette: React.FC = () => {
                       <span>{item.title}</span>
                       {item.badge && (
                         <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-full ${
-                          item.badge === 'NEW' ? 'bg-green-100 text-green-700' :
                           item.badge === 'AI' ? 'bg-blue-100 text-blue-700' :
                           item.badge === 'URGENTE' ? 'bg-red-100 text-red-700' :
                           'bg-gray-100 text-gray-700'

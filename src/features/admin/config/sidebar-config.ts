@@ -43,8 +43,7 @@ export interface SidebarItem {
   title: string;
   icon: LucideIcon;
   url: string;
-  badge?: 'URGENTE' | 'AI' | 'NEW';
-  badgeAddedDate?: string; // ISO date for NEW badge expiration
+  badge?: 'URGENTE' | 'AI';
   description?: string;
   visible?: boolean;
 }
@@ -70,14 +69,12 @@ export const sidebarSections: SidebarSection[] = [
         title: "Valoraciones & Recovery", 
         url: "/admin/valuation-analytics", 
         icon: Activity,
-        badge: "NEW",
         description: "Analytics de valoraciones"
       },
       { 
         title: "Search Analytics", 
         url: "/admin/search-analytics", 
         icon: Search,
-        badge: "NEW",
         description: "Análisis de búsquedas"
       },
     ]
@@ -124,14 +121,12 @@ export const sidebarSections: SidebarSection[] = [
         title: "Calculadora Asesores",
         url: "/lp/calculadora-asesores", 
         icon: Calculator,
-        badge: "NEW",
         description: "Herramienta de valoración para asesores"
       },
       { 
         title: "Landing Pages", 
         url: "/admin/landing-pages-unified", 
         icon: LayoutDashboard,
-        badge: "NEW",
         description: "Todas las landing pages"
       },
       { 
@@ -156,7 +151,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Sectores", 
         url: "/admin/sectors", 
         icon: Tags,
-        badge: "NEW",
         description: "Gestión de sectores empresariales"
       },
       { 
@@ -170,7 +164,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Market Reports", 
         url: "/admin/market-reports", 
         icon: FileText,
-        badge: "NEW",
         description: "Gestión de informes de mercado",
         visible: false
       },
@@ -190,14 +183,12 @@ export const sidebarSections: SidebarSection[] = [
         title: "Múltiplos Asesores", 
         url: "/admin/advisor-multiples", 
         icon: Calculator,
-        badge: "NEW",
         description: "Múltiplos para calculadora de asesores"
       },
       { 
         title: "Documentos ROD",
         url: "/admin/rod-documents", 
         icon: FileText,
-        badge: "NEW",
         description: "Gestión de ROD"
       },
       { 
@@ -216,21 +207,18 @@ export const sidebarSections: SidebarSection[] = [
         title: "LP Venta Empresas", 
         url: "/admin/venta-empresas-content", 
         icon: Store,
-        badge: "NEW",
         description: "Contenido landing venta empresas"
       },
       { 
         title: "Logos Carousel", 
         url: "/admin/carousel-logos", 
         icon: Image,
-        badge: "NEW",
         description: "Gestión de logos del carrusel"
       },
       { 
         title: "Banners", 
         url: "/admin/banners", 
         icon: Megaphone,
-        badge: "NEW",
         description: "Gestión de banners del sitio"
       },
     ]
@@ -249,7 +237,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Aplicaciones",
         url: "/admin/job-applications", 
         icon: Users,
-        badge: "NEW",
         description: "Revisar candidatos"
       },
       { 
@@ -268,7 +255,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Apollo Visitors", 
         url: "/admin/apollo-visitors", 
         icon: Eye,
-        badge: "NEW",
         description: "Importar visitantes desde Apollo"
       },
     ]
@@ -281,28 +267,24 @@ export const sidebarSections: SidebarSection[] = [
         title: "Entrada Manual Leads",
         url: "/admin/calculadora-manual", 
         icon: UserPlus,
-        badge: "NEW",
         description: "Introducir leads de Meta/externos"
       },
       { 
         title: "Valoraciones Pro", 
         url: "/admin/valoraciones-pro", 
         icon: Calculator,
-        badge: "NEW",
         description: "Sistema de valoración profesional"
       },
       { 
         title: "Pipeline de Leads",
         url: "/admin/leads-pipeline", 
         icon: Kanban,
-        badge: "NEW",
         description: "Tablero Kanban de leads"
       },
       { 
         title: "Reservas Llamadas",
         url: "/admin/bookings", 
         icon: CalendarDays,
-        badge: "NEW",
         description: "Gestión de reservas de llamadas"
       },
       { 
@@ -315,28 +297,24 @@ export const sidebarSections: SidebarSection[] = [
         title: "Contactos Compra",
         url: "/admin/buyer-contacts", 
         icon: ShoppingCart,
-        badge: "NEW",
         description: "Contactos campaña compras"
       },
       { 
         title: "Empresas",
         url: "/admin/empresas", 
         icon: Building2,
-        badge: "NEW",
         description: "Base de datos de empresas"
       },
       { 
         title: "Leads Inversores (ROD)",
         url: "/admin/investor-leads", 
         icon: TrendingUp,
-        badge: "NEW",
         description: "Gestión de leads ROD"
       },
       { 
         title: "Documentos Fase 0",
         url: "/admin/documentos-fase0", 
         icon: Shield,
-        badge: "NEW",
         description: "NDA y Propuestas de Mandato"
       },
     ]
@@ -349,7 +327,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Noticias M&A",
         url: "/admin/noticias", 
         icon: Newspaper,
-        badge: "NEW",
         description: "Moderar y publicar noticias"
       },
     ]
@@ -362,21 +339,18 @@ export const sidebarSections: SidebarSection[] = [
         title: "Apollo Import", 
         url: "/admin/cr-apollo-import", 
         icon: Users,
-        badge: "NEW",
         description: "Importar personas desde Apollo"
       },
       { 
         title: "Directorio CR", 
         url: "/admin/cr-directory", 
         icon: Briefcase,
-        badge: "NEW",
         description: "Fondos y personas PE/VC"
       },
       { 
         title: "Portfolio CR", 
         url: "/admin/cr-portfolio-list", 
         icon: Building2,
-        badge: "NEW",
         description: "Empresas en cartera de fondos PE/VC"
       },
       { 
@@ -396,7 +370,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Apollo Import", 
         url: "/admin/sf-apollo-import", 
         icon: Users,
-        badge: "NEW",
         description: "Importar personas desde Apollo"
       },
       { 
@@ -416,7 +389,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Operaciones SF", 
         url: "/admin/sf-acquisitions", 
         icon: Briefcase,
-        badge: "NEW",
         description: "Listado de adquisiciones de Search Funds"
       },
       { 
@@ -448,14 +420,12 @@ export const sidebarSections: SidebarSection[] = [
         title: "Apollo Import", 
         url: "/admin/mna-apollo-import", 
         icon: Users,
-        badge: "NEW",
         description: "Importar boutiques desde Apollo"
       },
       { 
         title: "Directorio Boutiques", 
         url: "/admin/mna-directory", 
         icon: Building2,
-        badge: "NEW",
         description: "Competidores y asesores M&A"
       },
     ]
@@ -468,7 +438,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Test Exit-Ready",
         url: "/admin/recursos/exit-ready", 
         icon: ClipboardList,
-        badge: "NEW",
         description: "Tests de preparación para venta"
       },
     ]
@@ -481,21 +450,18 @@ export const sidebarSections: SidebarSection[] = [
         title: "Costes Campañas", 
         url: "/admin/campaign-costs", 
         icon: TrendingUp,
-        badge: "NEW",
         description: "Análisis CAC Meta Ads y Google Ads"
       },
       { 
         title: "Newsletter Semanal", 
         url: "/admin/newsletter", 
         icon: Mail,
-        badge: "NEW",
         description: "Envío de newsletters a suscriptores"
       },
       { 
         title: "Importar Brevo", 
         url: "/admin/brevo-import", 
         icon: Users,
-        badge: "NEW",
         description: "Importar contactos desde Brevo"
       },
     ]
@@ -508,7 +474,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Notificaciones", 
         url: "/admin/notifications", 
         icon: Bell,
-        badge: "NEW",
         description: "Centro de notificaciones"
       },
       { 
@@ -521,7 +486,6 @@ export const sidebarSections: SidebarSection[] = [
         title: "Workflow Fase 0", 
         url: "/admin/configuracion/workflow-templates", 
         icon: Settings,
-        badge: "NEW",
         description: "Configurar tareas del workflow de leads"
       },
       { 
