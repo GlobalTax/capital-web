@@ -36,7 +36,8 @@ import {
   Search,
   Globe,
   ShoppingCart,
-  PanelLeft
+  PanelLeft,
+  Landmark
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -385,6 +386,12 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/sf-directory", 
         icon: Building2,
         description: "Directorio de Search Funds"
+      },
+      { 
+        title: "Corporativos", 
+        url: "/admin/sf-directory?entity_type=corporate", 
+        icon: Landmark,
+        description: "Compradores corporativos y estratégicos"
       },
       { 
         title: "Operaciones SF", 

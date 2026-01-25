@@ -16958,6 +16958,7 @@ export type Database = {
           cim_access_revoke_reason: string | null
           cim_access_revoked_at: string | null
           cim_access_revoked_by: string | null
+          cim_first_accessed_at: string | null
           click_count: number | null
           clicked_at: string | null
           contacto_id: string | null
@@ -16969,6 +16970,9 @@ export type Database = {
           error_message: string | null
           failed_at: string | null
           id: string
+          ioi_amount: number | null
+          ioi_notes: string | null
+          ioi_received_at: string | null
           mandato_empresa_id: string | null
           nda_document_id: string | null
           nda_language: string | null
@@ -17003,6 +17007,7 @@ export type Database = {
           cim_access_revoke_reason?: string | null
           cim_access_revoked_at?: string | null
           cim_access_revoked_by?: string | null
+          cim_first_accessed_at?: string | null
           click_count?: number | null
           clicked_at?: string | null
           contacto_id?: string | null
@@ -17014,6 +17019,9 @@ export type Database = {
           error_message?: string | null
           failed_at?: string | null
           id?: string
+          ioi_amount?: number | null
+          ioi_notes?: string | null
+          ioi_received_at?: string | null
           mandato_empresa_id?: string | null
           nda_document_id?: string | null
           nda_language?: string | null
@@ -17048,6 +17056,7 @@ export type Database = {
           cim_access_revoke_reason?: string | null
           cim_access_revoked_at?: string | null
           cim_access_revoked_by?: string | null
+          cim_first_accessed_at?: string | null
           click_count?: number | null
           clicked_at?: string | null
           contacto_id?: string | null
@@ -17059,6 +17068,9 @@ export type Database = {
           error_message?: string | null
           failed_at?: string | null
           id?: string
+          ioi_amount?: number | null
+          ioi_notes?: string | null
+          ioi_received_at?: string | null
           mandato_empresa_id?: string | null
           nda_document_id?: string | null
           nda_language?: string | null
@@ -19039,6 +19051,31 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_mandate_pipeline"
             referencedColumns: ["mandato_id"]
+          },
+        ]
+      }
+      vw_campaign_funnel_stats: {
+        Row: {
+          campaign_id: string | null
+          cim_conversion: number | null
+          cim_opened: number | null
+          ioi_conversion: number | null
+          ioi_received: number | null
+          nda_conversion: number | null
+          nda_sent: number | null
+          nda_signed: number | null
+          open_rate: number | null
+          teaser_opened: number | null
+          teaser_sent: number | null
+          total_recipients: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaser_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "teaser_campaigns"
+            referencedColumns: ["id"]
           },
         ]
       }
