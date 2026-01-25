@@ -388,13 +388,7 @@ export const sidebarSections: SidebarSection[] = [
         description: "Directorio de Search Funds"
       },
       { 
-        title: "Corporativos", 
-        url: "/admin/sf-directory?entity_type=corporate", 
-        icon: Landmark,
-        description: "Compradores corporativos y estratégicos"
-      },
-      { 
-        title: "Operaciones SF", 
+        title: "Operaciones SF",
         url: "/admin/sf-acquisitions", 
         icon: Briefcase,
         description: "Listado de adquisiciones de Search Funds"
@@ -417,6 +411,18 @@ export const sidebarSections: SidebarSection[] = [
         icon: Eye,
         badge: "AI",
         description: "Scraping y noticias de Search Funds"
+      },
+    ]
+  },
+  {
+    title: "🏢 CORPORATIVOS",
+    description: "Compradores estratégicos",
+    items: [
+      { 
+        title: "Directorio Corporativos", 
+        url: "/admin/sf-directory?entity_type=corporate", 
+        icon: Landmark,
+        description: "Compradores corporativos y estratégicos"
       },
     ]
   },
