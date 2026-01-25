@@ -5,7 +5,7 @@
 import { memo, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList as List } from 'react-window';
-import { Star, ExternalLink, Building2 } from 'lucide-react';
+import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorporateBuyer, BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/types/corporateBuyers';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,19 @@ interface CorporateBuyersTableProps {
 
 const ROW_HEIGHT = 52;
 const HEADER_HEIGHT = 44;
+
+// Format financial range (e.g., "€1M - €50M")
+const formatRange = (min?: number | null, max?: number | null): string => {
+  if (!min && !max) return '—';
+  const fmt = (n: number) => {
+    if (n >= 1000000) return `€${(n / 1000000).toFixed(0)}M`;
+    if (n >= 1000) return `€${(n / 1000).toFixed(0)}K`;
+    return `€${n}`;
+  };
+  if (min && max) return `${fmt(min)} - ${fmt(max)}`;
+  if (min) return `>${fmt(min)}`;
+  return `<${fmt(max!)}`;
+};
 
 export const CorporateBuyersTable = memo(({
   buyers,
@@ -67,7 +80,7 @@ export const CorporateBuyersTable = memo(({
           </div>
 
           {/* Name */}
-          <div className="flex-1 min-w-0 px-3">
+          <div className="w-[200px] flex-shrink-0 min-w-0 px-3">
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <span className="font-medium truncate">{buyer.name}</span>
@@ -75,7 +88,7 @@ export const CorporateBuyersTable = memo(({
           </div>
 
           {/* Type */}
-          <div className="w-32 flex-shrink-0 px-3">
+          <div className="w-28 flex-shrink-0 px-2">
             {buyer.buyer_type && (
               <Badge 
                 variant="secondary" 
@@ -87,12 +100,12 @@ export const CorporateBuyersTable = memo(({
           </div>
 
           {/* Country */}
-          <div className="w-28 flex-shrink-0 px-3 text-sm text-muted-foreground truncate">
+          <div className="w-24 flex-shrink-0 px-2 text-sm text-muted-foreground truncate">
             {buyer.country_base || '—'}
           </div>
 
           {/* Sectors */}
-          <div className="w-48 flex-shrink-0 px-3">
+          <div className="w-40 flex-shrink-0 px-2">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -104,6 +117,40 @@ export const CorporateBuyersTable = memo(({
                 {buyer.sector_focus && buyer.sector_focus.length > 0 && (
                   <TooltipContent>
                     <p>{buyer.sector_focus.join(', ')}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
+          {/* Revenue Range */}
+          <div className="w-[120px] flex-shrink-0 px-2 text-sm font-medium text-green-600 dark:text-green-400">
+            {formatRange(buyer.revenue_min, buyer.revenue_max)}
+          </div>
+
+          {/* EBITDA Range */}
+          <div className="w-[100px] flex-shrink-0 px-2 text-sm text-blue-600 dark:text-blue-400">
+            {formatRange(buyer.ebitda_min, buyer.ebitda_max)}
+          </div>
+
+          {/* Deal Size Range */}
+          <div className="w-[100px] flex-shrink-0 px-2 text-sm text-muted-foreground">
+            {formatRange(buyer.deal_size_min, buyer.deal_size_max)}
+          </div>
+
+          {/* Geography */}
+          <div className="w-[130px] flex-shrink-0 px-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-sm text-muted-foreground truncate">
+                    {buyer.geography_focus?.slice(0, 2).join(', ') || '—'}
+                    {(buyer.geography_focus?.length || 0) > 2 && ` +${buyer.geography_focus!.length - 2}`}
+                  </div>
+                </TooltipTrigger>
+                {buyer.geography_focus && buyer.geography_focus.length > 0 && (
+                  <TooltipContent>
+                    <p>{buyer.geography_focus.join(', ')}</p>
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -154,36 +201,56 @@ export const CorporateBuyersTable = memo(({
       {/* Header */}
       <div 
         className="flex bg-muted/50 border-b border-border sticky top-0 z-10"
-        style={{ height: HEADER_HEIGHT }}
+        style={{ height: HEADER_HEIGHT, minWidth: 1100 }}
       >
         <div className="w-12 flex-shrink-0 flex items-center justify-center">
           <Star className="h-4 w-4 text-muted-foreground" />
         </div>
-        <div className="flex-1 min-w-0 px-3 flex items-center font-medium text-sm text-muted-foreground">
+        <div className="w-[200px] flex-shrink-0 px-3 flex items-center font-medium text-sm text-muted-foreground">
           Nombre
         </div>
-        <div className="w-32 flex-shrink-0 px-3 flex items-center font-medium text-sm text-muted-foreground">
+        <div className="w-28 flex-shrink-0 px-2 flex items-center font-medium text-sm text-muted-foreground">
           Tipo
         </div>
-        <div className="w-28 flex-shrink-0 px-3 flex items-center font-medium text-sm text-muted-foreground">
+        <div className="w-24 flex-shrink-0 px-2 flex items-center font-medium text-sm text-muted-foreground">
           País
         </div>
-        <div className="w-48 flex-shrink-0 px-3 flex items-center font-medium text-sm text-muted-foreground">
+        <div className="w-40 flex-shrink-0 px-2 flex items-center font-medium text-sm text-muted-foreground">
           Sectores
+        </div>
+        <div className="w-[120px] flex-shrink-0 px-2 flex items-center gap-1 font-medium text-sm text-muted-foreground">
+          <TrendingUp className="h-3.5 w-3.5" />
+          Facturación
+        </div>
+        <div className="w-[100px] flex-shrink-0 px-2 flex items-center gap-1 font-medium text-sm text-muted-foreground">
+          <BarChart3 className="h-3.5 w-3.5" />
+          EBITDA
+        </div>
+        <div className="w-[100px] flex-shrink-0 px-2 flex items-center gap-1 font-medium text-sm text-muted-foreground">
+          <Target className="h-3.5 w-3.5" />
+          Deal Size
+        </div>
+        <div className="w-[130px] flex-shrink-0 px-2 flex items-center gap-1 font-medium text-sm text-muted-foreground">
+          <Globe className="h-3.5 w-3.5" />
+          Geografía
         </div>
         <div className="w-10 flex-shrink-0" />
       </div>
 
-      {/* Virtual List */}
-      <List
-        height={Math.min(buyers.length * ROW_HEIGHT, 600)}
-        width="100%"
-        itemCount={buyers.length}
-        itemSize={ROW_HEIGHT}
-        overscanCount={5}
-      >
-        {Row}
-      </List>
+      {/* Virtual List with horizontal scroll */}
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: 1100 }}>
+          <List
+            height={Math.min(buyers.length * ROW_HEIGHT, 600)}
+            width="100%"
+            itemCount={buyers.length}
+            itemSize={ROW_HEIGHT}
+            overscanCount={5}
+          >
+            {Row}
+          </List>
+        </div>
+      </div>
     </div>
   );
 });
