@@ -31,6 +31,7 @@ interface BuyerImport {
   geography_focus: string[];
   revenue_range: string | null;
   ebitda_range: string | null;
+  source_url: string | null;
   contact: BuyerContact | null;
 }
 
@@ -52,13 +53,17 @@ function parseRange(rangeStr: string | null): { min: number | null; max: number 
   const parts = cleaned.split('-').map(p => p.trim());
   
   if (parts.length === 2) {
-    const min = parseFloat(parts[0].replace(/[^\d.]/g, '')) || null;
-    const max = parseFloat(parts[1].replace(/[^\d.]/g, '')) || null;
+    // Handle "0" as actual zero, not null
+    const minNum = parseFloat(parts[0].replace(/[^\d.]/g, ''));
+    const maxNum = parseFloat(parts[1].replace(/[^\d.]/g, ''));
     
-    // Convert to full numbers (millions)
+    const min = isNaN(minNum) ? null : minNum;
+    const max = isNaN(maxNum) ? null : maxNum;
+    
+    // Convert to full numbers (millions) - preserve 0 as valid value
     return {
-      min: min ? min * 1000000 : null,
-      max: max ? max * 1000000 : null,
+      min: min !== null ? min * 1000000 : null,
+      max: max !== null ? max * 1000000 : null,
     };
   }
 
@@ -182,7 +187,15 @@ serve(async (req) => {
       );
     }
 
-    const { buyers } = body as { buyers: BuyerImport[] };
+    const { buyers, mode } = body as { buyers: BuyerImport[]; mode?: 'append' | 'replace' };
+
+    // Handle replace mode - delete all existing data first
+    if (mode === 'replace') {
+      console.log('[Corporate Import] Replace mode - clearing existing data...');
+      await supabase.from('corporate_contacts').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('corporate_buyers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      console.log('[Corporate Import] Existing data cleared');
+    }
 
     if (!buyers || !Array.isArray(buyers)) {
       return new Response(
@@ -220,6 +233,7 @@ serve(async (req) => {
           revenue_max: revenueRange.max,
           ebitda_min: ebitdaRange.min,
           ebitda_max: ebitdaRange.max,
+          source_url: buyer.source_url || null,
           is_active: true,
         };
 
