@@ -29,6 +29,8 @@ export interface Empresa {
   // Campos de valoración (desde company_valuations)
   valoracion?: number | null;
   fecha_valoracion?: string | null;
+  // Campo calculado de última actividad
+  ultima_actividad?: string | null;
 }
 
 export interface EmpresaFilters {
@@ -43,15 +45,16 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all empresas with optional filters (includes valuation data via join)
+  // Fetch all empresas with optional filters (includes valuation data and ultima_actividad via view)
   const { data: empresas, isLoading, refetch } = useQuery({
     queryKey: ['empresas', filters],
     queryFn: async () => {
+      // Use view that calculates ultima_actividad
       let query = supabase
-        .from('empresas')
+        .from('v_empresas_con_actividad' as any)
         .select(`
           *,
-          company_valuations!source_valuation_id (
+          company_valuations:source_valuation_id (
             final_valuation,
             created_at
           )
@@ -87,6 +90,7 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
         ...empresa,
         valoracion: empresa.company_valuations?.final_valuation ?? null,
         fecha_valoracion: empresa.company_valuations?.created_at ?? null,
+        ultima_actividad: empresa.ultima_actividad ?? null,
         company_valuations: undefined, // Remove nested object
       })) as Empresa[];
     },
