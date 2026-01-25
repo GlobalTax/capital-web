@@ -17965,6 +17965,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_onboarding_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          skipped: boolean | null
+          step_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          skipped?: boolean | null
+          step_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          skipped?: boolean | null
+          step_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_registration_requests: {
         Row: {
           created_at: string
