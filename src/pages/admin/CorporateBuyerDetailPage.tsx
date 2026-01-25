@@ -4,13 +4,15 @@
 
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { 
   ArrowLeft, 
   Star, 
   Globe, 
   Building2, 
   Users, 
-  Edit2, 
+  Edit2,
+  Pencil,
   Trash2,
   ExternalLink,
   MapPin,
@@ -32,7 +34,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useCorporateBuyer, useDeleteCorporateBuyer } from '@/hooks/useCorporateBuyers';
+import { useCorporateBuyer, useDeleteCorporateBuyer, useUpdateCorporateBuyer } from '@/hooks/useCorporateBuyers';
+import { SectorMultiSelect } from '@/components/admin/corporate-buyers/SectorMultiSelect';
 import { useCorporateContacts } from '@/hooks/useCorporateContacts';
 import { useIsCorporateFavorite, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
 import { 
@@ -60,6 +63,8 @@ const CorporateBuyerDetailPage = () => {
   const { data: isFavorite = false } = useIsCorporateFavorite('buyer', id || '');
   const toggleFavorite = useToggleCorporateFavorite();
   const deleteBuyer = useDeleteCorporateBuyer();
+  const updateBuyer = useUpdateCorporateBuyer();
+  const [isEditingSectors, setIsEditingSectors] = useState(false);
 
   const handleToggleFavorite = () => {
     if (id) {
@@ -73,6 +78,13 @@ const CorporateBuyerDetailPage = () => {
         onSuccess: () => navigate('/admin/corporate-buyers'),
       });
     }
+  };
+
+  const handleSaveSectors = async (sectors: string[]) => {
+    if (!id) return;
+    await updateBuyer.mutateAsync({ id, data: { sector_focus: sectors } });
+    toast.success('Sectores actualizados');
+    setIsEditingSectors(false);
   };
 
   if (isNew) {
@@ -227,9 +239,27 @@ const CorporateBuyerDetailPage = () => {
                 </div>
               )}
 
-              {buyer.sector_focus && buyer.sector_focus.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Sectores Objetivo</h4>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">Sectores Objetivo</h4>
+                  {!isEditingSectors && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 w-6 p-0"
+                      onClick={() => setIsEditingSectors(true)}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+                {isEditingSectors ? (
+                  <SectorMultiSelect 
+                    value={buyer.sector_focus || []}
+                    onSave={handleSaveSectors}
+                    onCancel={() => setIsEditingSectors(false)}
+                  />
+                ) : buyer.sector_focus && buyer.sector_focus.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
                     {buyer.sector_focus.map((sector) => (
                       <Badge key={sector} variant="secondary" className="text-xs">
@@ -237,8 +267,10 @@ const CorporateBuyerDetailPage = () => {
                       </Badge>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sin sectores definidos. Haz clic en editar para añadir.</p>
+                )}
+              </div>
 
               {buyer.geography_focus && buyer.geography_focus.length > 0 && (
                 <div>

@@ -39,6 +39,7 @@ export interface ImproveDescriptionResult {
   improved_description: string;
   key_highlights: string[];
   suggested_keywords: string[];
+  suggested_sectors: string[];
 }
 
 export interface GenerateThesisResult {
