@@ -269,3 +269,6 @@ verify_jwt = false
 
 [functions.sf-batch-enrich-funds]
 verify_jwt = false
+
+[functions.corporate-buyer-ai]
+verify_jwt = false

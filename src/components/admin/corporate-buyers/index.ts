@@ -5,3 +5,4 @@
 export { CorporateBuyersTable } from './CorporateBuyersTable';
 export { CorporateFiltersBar } from './CorporateFiltersBar';
 export { CorporateKPIs } from './CorporateKPIs';
+export { CorporateAIPanel } from './CorporateAIPanel';

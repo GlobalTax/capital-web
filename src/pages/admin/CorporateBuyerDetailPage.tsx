@@ -40,6 +40,7 @@ import {
   BUYER_TYPE_COLORS,
   CONTACT_ROLE_LABELS 
 } from '@/types/corporateBuyers';
+import { CorporateAIPanel } from '@/components/admin/corporate-buyers/CorporateAIPanel';
 import { cn } from '@/lib/utils';
 
 const formatCurrency = (value: number | null) => {
@@ -287,8 +288,12 @@ const CorporateBuyerDetailPage = () => {
           </Card>
         </div>
 
-        {/* Sidebar - Contacts */}
+        {/* Sidebar - Contacts + AI */}
         <div className="space-y-6">
+          {/* AI Panel */}
+          <CorporateAIPanel buyer={buyer} />
+
+          {/* Contacts */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
