@@ -379,9 +379,182 @@ serve(async (req) => {
       });
     }
 
-    // Calculate sector distribution
+    // ============ MIGRATE CR PORTFOLIO ============
+    const { data: crPortfolio, error: crPortfolioError } = await supabase
+      .from('cr_portfolio')
+      .select('id, company_name, sector, sector_pe, description')
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false });
+
+    if (crPortfolioError) {
+      console.error('Failed to fetch CR portfolio:', crPortfolioError.message);
+    }
+
+    let crPortfolioProcessed = 0;
+    let crPortfolioMigrated = 0;
+    let crPortfolioSkipped = 0;
+    let crPortfolioErrors = 0;
+    const crPortfolioDetails: Array<{
+      id: string;
+      name: string;
+      originalSector: string | null;
+      newSectorPe: string | null;
+      method: 'direct' | 'ai' | 'skipped' | 'error';
+      confidence?: number;
+      error?: string;
+    }> = [];
+
+    console.log(`Found ${crPortfolio?.length || 0} CR portfolio companies to process`);
+
+    for (const company of crPortfolio || []) {
+      crPortfolioProcessed++;
+
+      // Skip if already migrated
+      if (company.sector_pe) {
+        crPortfolioSkipped++;
+        crPortfolioDetails.push({
+          id: company.id,
+          name: company.company_name,
+          originalSector: company.sector,
+          newSectorPe: company.sector_pe,
+          method: 'skipped',
+        });
+        continue;
+      }
+
+      // Try direct mapping first
+      const sectorToMap = company.sector || '';
+      let mappedSector = DIRECT_MAPPING[sectorToMap];
+
+      // Try partial matching if no direct match (case insensitive)
+      if (!mappedSector && sectorToMap) {
+        const normalizedSector = sectorToMap.toLowerCase().trim();
+        
+        // Check against lowercase mapping keys
+        for (const [key, value] of Object.entries(FUND_SECTOR_MAPPING)) {
+          if (normalizedSector === key.toLowerCase() ||
+              normalizedSector.includes(key.toLowerCase()) ||
+              key.toLowerCase().includes(normalizedSector)) {
+            mappedSector = value;
+            break;
+          }
+        }
+      }
+
+      if (mappedSector) {
+        // Direct mapping found
+        if (mode === 'execute') {
+          const { error: updateError } = await supabase
+            .from('cr_portfolio')
+            .update({ sector_pe: mappedSector })
+            .eq('id', company.id);
+
+          if (updateError) {
+            crPortfolioErrors++;
+            crPortfolioDetails.push({
+              id: company.id,
+              name: company.company_name,
+              originalSector: company.sector,
+              newSectorPe: null,
+              method: 'error',
+              error: updateError.message,
+            });
+            continue;
+          }
+        }
+
+        crPortfolioMigrated++;
+        crPortfolioDetails.push({
+          id: company.id,
+          name: company.company_name,
+          originalSector: company.sector,
+          newSectorPe: mappedSector,
+          method: 'direct',
+          confidence: 1.0,
+        });
+      } else if (sectorToMap) {
+        // Use AI classification for unknown sectors
+        try {
+          const classifyResponse = await fetch(`${supabaseUrl}/functions/v1/classify-sector-pe`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({
+              company_name: company.company_name,
+              existing_sector: company.sector,
+              additional_info: company.description,
+            }),
+          });
+
+          if (!classifyResponse.ok) {
+            throw new Error(`Classification failed: ${classifyResponse.status}`);
+          }
+
+          const classification = await classifyResponse.json();
+
+          if (mode === 'execute' && classification.sector_pe) {
+            const { error: updateError } = await supabase
+              .from('cr_portfolio')
+              .update({ sector_pe: classification.sector_pe })
+              .eq('id', company.id);
+
+            if (updateError) {
+              crPortfolioErrors++;
+              crPortfolioDetails.push({
+                id: company.id,
+                name: company.company_name,
+                originalSector: company.sector,
+                newSectorPe: null,
+                method: 'error',
+                error: updateError.message,
+              });
+              continue;
+            }
+          }
+
+          crPortfolioMigrated++;
+          crPortfolioDetails.push({
+            id: company.id,
+            name: company.company_name,
+            originalSector: company.sector,
+            newSectorPe: classification.sector_pe,
+            method: 'ai',
+            confidence: classification.confidence,
+          });
+        } catch (aiError) {
+          crPortfolioErrors++;
+          crPortfolioDetails.push({
+            id: company.id,
+            name: company.company_name,
+            originalSector: company.sector,
+            newSectorPe: null,
+            method: 'error',
+            error: aiError instanceof Error ? aiError.message : 'AI classification failed',
+          });
+        }
+      } else {
+        // No sector to map
+        crPortfolioSkipped++;
+        crPortfolioDetails.push({
+          id: company.id,
+          name: company.company_name,
+          originalSector: null,
+          newSectorPe: null,
+          method: 'skipped',
+        });
+      }
+    }
+
+    // Calculate sector distribution (combine companies + CR portfolio)
     const sectorDistribution: Record<string, number> = {};
     for (const company of result.details.companies) {
+      if (company.newSectorPe) {
+        sectorDistribution[company.newSectorPe] = (sectorDistribution[company.newSectorPe] || 0) + 1;
+      }
+    }
+    for (const company of crPortfolioDetails) {
       if (company.newSectorPe) {
         sectorDistribution[company.newSectorPe] = (sectorDistribution[company.newSectorPe] || 0) + 1;
       }
@@ -391,11 +564,22 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         mode,
-        result,
+        result: {
+          ...result,
+          crPortfolioProcessed,
+          crPortfolioMigrated,
+          crPortfolioSkipped,
+          crPortfolioErrors,
+          details: {
+            ...result.details,
+            crPortfolio: crPortfolioDetails,
+          },
+        },
         sectorDistribution,
         summary: {
           companies: `${result.companiesMigrated}/${result.companiesProcessed} migrated (${result.companiesSkipped} skipped, ${result.companiesErrors} errors)`,
           funds: `${result.fundsMigrated}/${result.fundsProcessed} migrated (${result.fundsSkipped} skipped, ${result.fundsErrors} errors)`,
+          crPortfolio: `${crPortfolioMigrated}/${crPortfolioProcessed} migrated (${crPortfolioSkipped} skipped, ${crPortfolioErrors} errors)`,
         },
       }),
       {

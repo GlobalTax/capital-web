@@ -21,6 +21,16 @@ interface FundMigrationDetail {
   error?: string;
 }
 
+interface CRPortfolioMigrationDetail {
+  id: string;
+  name: string;
+  originalSector: string | null;
+  newSectorPe: string | null;
+  method: 'direct' | 'ai' | 'skipped' | 'error';
+  confidence?: number;
+  error?: string;
+}
+
 interface MigrationResult {
   companiesProcessed: number;
   companiesMigrated: number;
@@ -30,9 +40,14 @@ interface MigrationResult {
   fundsMigrated: number;
   fundsSkipped: number;
   fundsErrors: number;
+  crPortfolioProcessed: number;
+  crPortfolioMigrated: number;
+  crPortfolioSkipped: number;
+  crPortfolioErrors: number;
   details: {
     companies: CompanyMigrationDetail[];
     funds: FundMigrationDetail[];
+    crPortfolio: CRPortfolioMigrationDetail[];
   };
 }
 
@@ -44,6 +59,7 @@ interface MigrationResponse {
   summary: {
     companies: string;
     funds: string;
+    crPortfolio: string;
   };
   error?: string;
 }
