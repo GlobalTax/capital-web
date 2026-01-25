@@ -4,7 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Download, Upload, RefreshCw, X } from 'lucide-react';
+import { Plus, Download, Upload, RefreshCw, X, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,8 @@ import {
   CorporateBuyersTable, 
   CorporateFiltersBar, 
   CorporateKPIs,
-  BatchEnrichmentDialog
+  BatchEnrichmentDialog,
+  AutoConfigDialog
 } from '@/components/admin/corporate-buyers';
 import { useCorporateBuyers, useCorporateBuyerCountries } from '@/hooks/useCorporateBuyers';
 import { useFavoriteBuyerIds, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
@@ -26,6 +27,7 @@ const CorporateBuyersPage = () => {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchDialog, setShowBatchDialog] = useState(false);
+  const [showAutoConfigDialog, setShowAutoConfigDialog] = useState(false);
 
   // Data hooks
   const { data: buyers = [], isLoading: loadingBuyers } = useCorporateBuyers(filters);
@@ -55,6 +57,15 @@ const CorporateBuyersPage = () => {
   const selectedBuyers = useMemo(() => {
     return buyers.filter(b => selectedIds.has(b.id));
   }, [buyers, selectedIds]);
+
+  // Calculate auto-config candidates
+  const autoConfigCandidates = useMemo(() => {
+    return buyers.filter(b => 
+      b.description && 
+      b.description.length >= 50 &&
+      (!b.sector_focus || b.sector_focus.length === 0)
+    );
+  }, [buyers]);
 
   const handleToggleFavorite = (id: string, isFavorite: boolean) => {
     toggleFavorite.mutate({ entityType: 'buyer', entityId: id, isFavorite });
@@ -108,6 +119,22 @@ const CorporateBuyersPage = () => {
                 </Badge>
               </Button>
             </>
+          )}
+          
+          {/* Auto-config button */}
+          {autoConfigCandidates.length > 0 && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAutoConfigDialog(true)}
+              className="gap-1"
+            >
+              <Target className="h-4 w-4" />
+              Auto-configurar
+              <Badge variant="secondary" className="ml-1">
+                {autoConfigCandidates.length}
+              </Badge>
+            </Button>
           )}
           
           <Button variant="outline" size="sm" className="gap-1">
@@ -187,6 +214,14 @@ const CorporateBuyersPage = () => {
         onClose={() => setShowBatchDialog(false)}
         buyers={selectedBuyers}
         onComplete={handleBatchComplete}
+      />
+
+      {/* Auto-Config Dialog */}
+      <AutoConfigDialog
+        open={showAutoConfigDialog}
+        onClose={() => setShowAutoConfigDialog(false)}
+        buyers={buyers}
+        onComplete={() => setShowAutoConfigDialog(false)}
       />
     </div>
   );

@@ -97,6 +97,9 @@ serve(async (req) => {
       case "match_operations":
         result = await matchOperations(supabase, buyer as CorporateBuyer, lovableApiKey);
         break;
+      case "auto_configure":
+        result = await autoConfigureCriteria(supabase, buyer as CorporateBuyer, lovableApiKey);
+        break;
       default:
         return new Response(
           JSON.stringify({ error: `Unknown action: ${action}` }),
@@ -813,4 +816,178 @@ function checkRangeOverlap(
   const effectiveMax2 = max2 || Infinity;
 
   return effectiveMin1 <= effectiveMax2 && effectiveMin2 <= effectiveMax1;
+}
+
+// ========================================
+// AUTO-CONFIGURE CRITERIA (Single buyer)
+// ========================================
+const STANDARD_SECTORS = [
+  'Agricultura', 'Alimentación y Bebidas', 'Asesorías Profesionales', 'Automoción',
+  'Construcción', 'Educación', 'Energía y Renovables', 'Farmacéutico',
+  'Industrial y Manufacturero', 'Inmobiliario', 'Logística y Transporte',
+  'Medios y Entretenimiento', 'Químico', 'Retail y Consumo', 'Salud y Biotecnología',
+  'Seguridad', 'Servicios Financieros', 'Tecnología', 'Telecomunicaciones',
+  'Textil y Moda', 'Turismo y Hostelería', 'Otros'
+];
+
+const STANDARD_GEOGRAPHIES = [
+  'España', 'Portugal', 'LATAM', 'Europa', 'Global', 'DACH', 
+  'Francia', 'Italia', 'UK', 'USA', 'Iberia', 'Mediterráneo'
+];
+
+async function autoConfigureCriteria(
+  supabase: ReturnType<typeof createClient>,
+  buyer: CorporateBuyer,
+  apiKey: string
+) {
+  // Validate buyer has description
+  if (!buyer.description || buyer.description.length < 50) {
+    return {
+      success: false,
+      message: 'El comprador necesita una descripción (min 50 caracteres) para auto-configurar'
+    };
+  }
+
+  // Check what needs to be generated
+  const needsSectors = !buyer.sector_focus || buyer.sector_focus.length === 0;
+  const needsGeo = !buyer.geography_focus || buyer.geography_focus.length === 0;
+  const needsKeywords = !buyer.search_keywords || buyer.search_keywords.length === 0;
+
+  if (!needsSectors && !needsGeo && !needsKeywords) {
+    return {
+      success: true,
+      message: 'El comprador ya tiene todos los criterios configurados',
+      already_configured: true
+    };
+  }
+
+  const prompt = `Eres un analista M&A experto. Analiza este comprador corporativo y extrae sus criterios de búsqueda de adquisiciones.
+
+PERFIL DEL COMPRADOR:
+- Nombre: ${buyer.name}
+- Descripción: ${buyer.description}
+- País base: ${(buyer as any).country_base || 'No especificado'}
+- Website: ${buyer.website || 'No disponible'}
+- Tesis actual: ${buyer.investment_thesis || 'No especificada'}
+- Tipo: ${buyer.buyer_type || 'No especificado'}
+
+SECTORES ESTÁNDAR (usa SOLO estos, max 4):
+${STANDARD_SECTORS.join(', ')}
+
+GEOGRAFÍAS ESTÁNDAR (usa SOLO estas, max 4):
+${STANDARD_GEOGRAPHIES.join(', ')}
+
+INSTRUCCIONES:
+1. Analiza la descripción para identificar sectores de interés
+2. Infiere la geografía objetivo
+3. Extrae 3-6 keywords relevantes para búsqueda M&A
+4. Sugiere el tipo de comprador si no está claro
+
+Responde SOLO con JSON válido:
+{
+  "sector_focus": ["Sector1", "Sector2"],
+  "geography_focus": ["España", "Europa"],
+  "search_keywords": ["keyword1", "keyword2", "keyword3"],
+  "buyer_type_suggestion": "corporate|family_office|pe_fund|strategic_buyer|holding"
+}`;
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: "Eres un analista M&A experto. Responde siempre en JSON válido." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.3,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || "";
+
+    // Parse JSON
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { success: false, message: 'No se pudo generar criterios' };
+    }
+
+    const generated = JSON.parse(jsonMatch[0]);
+
+    // Validate sectors
+    if (generated.sector_focus) {
+      generated.sector_focus = generated.sector_focus.filter((s: string) =>
+        STANDARD_SECTORS.some(std => std.toLowerCase() === s.toLowerCase())
+      );
+    }
+
+    // Validate geographies
+    if (generated.geography_focus) {
+      generated.geography_focus = generated.geography_focus.filter((g: string) =>
+        STANDARD_GEOGRAPHIES.some(std => std.toLowerCase() === g.toLowerCase())
+      );
+    }
+
+    // Build update object
+    const updateData: Record<string, unknown> = {};
+    
+    if (needsSectors && generated.sector_focus?.length) {
+      updateData.sector_focus = generated.sector_focus;
+    }
+    
+    if (needsGeo && generated.geography_focus?.length) {
+      updateData.geography_focus = generated.geography_focus;
+    }
+    
+    if (needsKeywords && generated.search_keywords?.length) {
+      updateData.search_keywords = generated.search_keywords;
+    }
+
+    // Update buyer type if not set
+    if (!buyer.buyer_type && generated.buyer_type_suggestion) {
+      const validTypes = ['corporate', 'family_office', 'pe_fund', 'strategic_buyer', 'holding'];
+      if (validTypes.includes(generated.buyer_type_suggestion)) {
+        updateData.buyer_type = generated.buyer_type_suggestion;
+      }
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      const { error: updateError } = await supabase
+        .from("corporate_buyers")
+        .update(updateData)
+        .eq("id", buyer.id);
+
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Criterios generados y guardados',
+      generated: {
+        sector_focus: updateData.sector_focus || null,
+        geography_focus: updateData.geography_focus || null,
+        search_keywords: updateData.search_keywords || null,
+        buyer_type: updateData.buyer_type || null
+      },
+      fields_updated: Object.keys(updateData)
+    };
+
+  } catch (error) {
+    console.error("Error in autoConfigureCriteria:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Error desconocido'
+    };
+  }
 }
