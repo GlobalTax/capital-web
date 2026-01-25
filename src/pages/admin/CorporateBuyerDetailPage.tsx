@@ -20,7 +20,11 @@ import {
   DollarSign,
   Tag,
   ChevronRight,
-  Loader2
+  Loader2,
+  RefreshCw,
+  Sparkles,
+  Check,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +41,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCorporateBuyer, useDeleteCorporateBuyer, useUpdateCorporateBuyer, useCreateCorporateBuyer } from '@/hooks/useCorporateBuyers';
 import { SectorMultiSelect } from '@/components/admin/corporate-buyers/SectorMultiSelect';
 import { TagInputEditor } from '@/components/admin/corporate-buyers/TagInputEditor';
@@ -44,6 +59,7 @@ import { CorporateBuyerForm } from '@/components/admin/corporate-buyers/Corporat
 import { useCorporateContacts } from '@/hooks/useCorporateContacts';
 import { useIsCorporateFavorite, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
 import { EditableCurrency } from '@/components/admin/shared/EditableCurrency';
+import { useEnrichCorporateBuyer, useApplyEnrichment, EnrichResponse } from '@/hooks/useEnrichCorporateBuyer';
 import { 
   BUYER_TYPE_LABELS, 
   BUYER_TYPE_COLORS,
@@ -52,6 +68,8 @@ import {
 } from '@/types/corporateBuyers';
 import { CorporateAIPanel } from '@/components/admin/corporate-buyers/CorporateAIPanel';
 import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const formatCurrency = (value: number | null) => {
   if (!value) return null;
@@ -75,6 +93,34 @@ const CorporateBuyerDetailPage = () => {
   
   const [isEditingSectors, setIsEditingSectors] = useState(false);
   const [isEditingGeography, setIsEditingGeography] = useState(false);
+  const [enrichPreview, setEnrichPreview] = useState<EnrichResponse | null>(null);
+  
+  // Enrichment hooks
+  const enrichBuyer = useEnrichCorporateBuyer();
+  const applyEnrichment = useApplyEnrichment();
+
+  const handleEnrichPreview = async () => {
+    if (!id || !buyer?.website) return;
+    try {
+      const result = await enrichBuyer.mutateAsync({ 
+        buyerId: id, 
+        previewOnly: true 
+      });
+      setEnrichPreview(result);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleApplyEnrichment = async () => {
+    if (!id) return;
+    try {
+      await applyEnrichment.mutateAsync({ buyerId: id, force: true });
+      setEnrichPreview(null);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
 
   const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
     const result = await createBuyer.mutateAsync(data);
@@ -200,6 +246,50 @@ const CorporateBuyerDetailPage = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Enrich with Web Button */}
+          {buyer.website ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEnrichPreview}
+                  disabled={enrichBuyer.isPending}
+                  className="gap-2"
+                >
+                  {enrichBuyer.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Analizando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4" />
+                      Enriquecer con Web
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Extraer información del website con AI</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="cursor-not-allowed">
+                  <Button variant="outline" size="sm" disabled className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Enriquecer con Web
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Añade un website para habilitar esta función</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          
           <Button
             variant="outline"
             size="icon"
@@ -236,6 +326,143 @@ const CorporateBuyerDetailPage = () => {
           </AlertDialog>
         </div>
       </div>
+
+      {/* Enrichment Preview Dialog */}
+      <Dialog open={!!enrichPreview} onOpenChange={() => setEnrichPreview(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Datos Extraídos del Website
+            </DialogTitle>
+            <DialogDescription>
+              Revisa la información antes de aplicarla al perfil
+            </DialogDescription>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <div className="space-y-4">
+              {enrichPreview?.enriched_data?.description && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Nueva Descripción</Label>
+                  <div className="text-sm bg-muted/50 p-3 rounded-lg border">
+                    {enrichPreview.enriched_data.description}
+                  </div>
+                  {enrichPreview.current_data?.description && (
+                    <p className="text-xs text-muted-foreground">
+                      Actual: {enrichPreview.current_data.description.substring(0, 100)}...
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {enrichPreview?.enriched_data?.sector_focus && enrichPreview.enriched_data.sector_focus.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Sectores Detectados</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {enrichPreview.enriched_data.sector_focus.map((s) => (
+                      <Badge key={s} variant="secondary" className="text-xs">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {enrichPreview?.enriched_data?.search_keywords && enrichPreview.enriched_data.search_keywords.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Keywords</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {enrichPreview.enriched_data.search_keywords.map((k) => (
+                      <Badge key={k} className="text-xs bg-primary/10 text-primary">
+                        {k}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {enrichPreview?.enriched_data?.key_highlights && enrichPreview.enriched_data.key_highlights.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Puntos Clave</Label>
+                  <ul className="space-y-1">
+                    {enrichPreview.enriched_data.key_highlights.map((h, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        <span>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {enrichPreview?.enriched_data?.investment_thesis && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Tesis de Inversión Inferida</Label>
+                  <div className="text-sm bg-muted/50 p-3 rounded-lg border">
+                    {enrichPreview.enriched_data.investment_thesis}
+                  </div>
+                </div>
+              )}
+              
+              {enrichPreview?.enriched_data?.geography_inferred && enrichPreview.enriched_data.geography_inferred.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Geografía Inferida</Label>
+                  <div className="flex flex-wrap gap-1">
+                    {enrichPreview.enriched_data.geography_inferred.map((g) => (
+                      <Badge key={g} variant="outline" className="text-xs">
+                        {g}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {enrichPreview?.enriched_data?.acquisition_history && enrichPreview.enriched_data.acquisition_history.length > 0 && (
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium">Adquisiciones Previas</Label>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground">
+                    {enrichPreview.enriched_data.acquisition_history.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {enrichPreview?.source_url && (
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    Fuente: <a href={enrichPreview.source_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{enrichPreview.source_url}</a>
+                  </p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+          
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setEnrichPreview(null)}>
+              <X className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleApplyEnrichment}
+              disabled={applyEnrichment.isPending}
+            >
+              {applyEnrichment.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Aplicando...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Aplicar Cambios
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Info */}
