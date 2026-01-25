@@ -83,7 +83,9 @@ import {
   LazyCRPortfolioListPage,
   LazyFundIntelligencePage,
   LazyApiUsageDashboard,
-  LazyDataEnrichmentPanel
+  LazyDataEnrichmentPanel,
+  LazyCorporateBuyersPage,
+  LazyCorporateBuyerDetailPage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -240,6 +242,11 @@ const AdminRouter = () => {
           
           {/* Fund Intelligence (Firecrawl) */}
           <Route path="/fund-intelligence" element={<LazyFundIntelligencePage />} />
+          
+{/* Corporate Buyers */}
+          <Route path="/corporate-buyers" element={<LazyCorporateBuyersPage />} />
+          <Route path="/corporate-buyers/new" element={<LazyCorporateBuyerDetailPage />} />
+          <Route path="/corporate-buyers/:id" element={<LazyCorporateBuyerDetailPage />} />
           
           {/* MNA Boutiques */}
           <Route path="/mna-apollo-import" element={<LazyMNAApolloImportPage />} />

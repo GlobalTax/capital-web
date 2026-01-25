@@ -420,7 +420,7 @@ export const sidebarSections: SidebarSection[] = [
     items: [
       { 
         title: "Directorio Corporativos", 
-        url: "/admin/sf-directory?entity_type=corporate", 
+        url: "/admin/corporate-buyers", 
         icon: Landmark,
         description: "Compradores corporativos y estratégicos"
       },
