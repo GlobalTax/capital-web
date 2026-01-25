@@ -15,7 +15,8 @@ import {
   Workflow,
   Shuffle,
   LayoutPanelTop,
-  Activity
+  Activity,
+  PanelLeft
 } from 'lucide-react';
 
 const AdminSettings: React.FC = () => {
@@ -33,6 +34,12 @@ const AdminSettings: React.FC = () => {
       description: 'Personaliza la barra superior: enlaces, empresas del grupo y teléfono',
       icon: LayoutPanelTop,
       href: '/admin/settings/topbar',
+    },
+    {
+      title: 'Navegación Sidebar',
+      description: 'Reorganiza secciones e items del menú lateral del admin',
+      icon: PanelLeft,
+      href: '/admin/settings/sidebar',
     },
     {
       title: 'Migración Sectores PE',
