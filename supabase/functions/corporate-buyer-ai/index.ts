@@ -323,6 +323,15 @@ Responde SOLO con el JSON array, sin texto adicional.`;
 // IMPROVE DESCRIPTION
 // ========================================
 async function improveDescription(buyer: CorporateBuyer, apiKey: string) {
+  const STANDARD_SECTORS = [
+    'Agricultura', 'Alimentación y Bebidas', 'Asesorías Profesionales', 'Automoción',
+    'Construcción', 'Educación', 'Energía y Renovables', 'Farmacéutico',
+    'Industrial y Manufacturero', 'Inmobiliario', 'Logística y Transporte',
+    'Medios y Entretenimiento', 'Químico', 'Retail y Consumo', 'Salud y Biotecnología',
+    'Seguridad', 'Servicios Financieros', 'Tecnología', 'Telecomunicaciones',
+    'Textil y Moda', 'Turismo y Hostelería', 'Otros'
+  ];
+
   const prompt = `Eres un consultor M&A senior especializado en el mercado español. Mejora la siguiente descripción de comprador corporativo para que sea más clara, profesional y útil para identificar oportunidades de M&A.
 
 COMPRADOR: ${buyer.name}
@@ -341,11 +350,15 @@ Genera una descripción mejorada en castellano (máximo 400 palabras) estructura
 
 También sugiere 3-5 keywords de búsqueda relevantes.
 
+IMPORTANTE: Basándote en la descripción y tesis, selecciona los sectores más relevantes ÚNICAMENTE de esta lista:
+${STANDARD_SECTORS.join(', ')}
+
 Responde en JSON con este formato:
 {
   "improved_description": "texto de la descripción mejorada",
   "key_highlights": ["punto clave 1", "punto clave 2", "punto clave 3"],
-  "suggested_keywords": ["keyword1", "keyword2", "keyword3"]
+  "suggested_keywords": ["keyword1", "keyword2", "keyword3"],
+  "suggested_sectors": ["Sector1", "Sector2"]
 }`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -384,7 +397,8 @@ Responde en JSON con este formato:
   return {
     improved_description: content,
     key_highlights: [],
-    suggested_keywords: []
+    suggested_keywords: [],
+    suggested_sectors: []
   };
 }
 

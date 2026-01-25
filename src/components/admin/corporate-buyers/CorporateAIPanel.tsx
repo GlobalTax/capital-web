@@ -45,6 +45,7 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
   const [copied, setCopied] = useState(false);
   const [isSavingDescription, setIsSavingDescription] = useState(false);
   const [isSavingThesis, setIsSavingThesis] = useState(false);
+  const [isSavingSectors, setIsSavingSectors] = useState(false);
   
   // AI results state
   const [targetsResult, setTargetsResult] = useState<SuggestTargetsResult | null>(null);
@@ -110,6 +111,22 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
       toast.error('Error al guardar la tesis');
     } finally {
       setIsSavingThesis(false);
+    }
+  };
+
+  const handleSaveSectors = async () => {
+    if (!descriptionResult?.suggested_sectors?.length) return;
+    setIsSavingSectors(true);
+    try {
+      await updateBuyer.mutateAsync({
+        id: buyer.id,
+        data: { sector_focus: descriptionResult.suggested_sectors }
+      });
+      toast.success('Sectores guardados correctamente');
+    } catch (error) {
+      toast.error('Error al guardar los sectores');
+    } finally {
+      setIsSavingSectors(false);
     }
   };
 
@@ -333,6 +350,36 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                             </Badge>
                           ))}
                         </div>
+                      </div>
+                    </>
+                  )}
+
+                  {descriptionResult.suggested_sectors && descriptionResult.suggested_sectors.length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="text-xs font-medium mb-1.5">Sectores Sugeridos</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {descriptionResult.suggested_sectors.map((sector, i) => (
+                            <Badge key={i} className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                              {sector}
+                            </Badge>
+                          ))}
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-2 w-full gap-2"
+                          onClick={handleSaveSectors}
+                          disabled={isSavingSectors}
+                        >
+                          {isSavingSectors ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Save className="h-3.5 w-3.5" />
+                          )}
+                          Guardar Sectores
+                        </Button>
                       </div>
                     </>
                   )}
