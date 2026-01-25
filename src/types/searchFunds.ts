@@ -4,7 +4,17 @@
 
 export type SFStatus = 'searching' | 'acquired' | 'holding' | 'exited' | 'inactive';
 export type SFInvestmentStyle = 'single' | 'buy_and_build' | 'either';
-export type SFPersonRole = 'searcher' | 'partner' | 'principal' | 'advisor';
+
+// Roles extendidos para incluir contactos corporativos
+export type SFPersonRole = 
+  | 'searcher' | 'partner' | 'principal' | 'advisor'  // Search Fund roles
+  | 'm_and_a' | 'cxo' | 'owner' | 'business_dev';     // Corporate roles
+
+// Tipos de entidad: Search Funds y Compradores Corporativos
+export type SFEntityType = 
+  | 'traditional_search_fund' | 'self_funded_search' | 'operator_led' | 'holding_company' | 'unknown'  // SF types
+  | 'corporate' | 'family_office' | 'pe_fund' | 'strategic_buyer';  // Corporate types
+
 export type SFBackerType = 'fund' | 'family_office' | 'angel' | 'bank' | 'accelerator' | 'other';
 export type SFSupportType = 'search_capital' | 'acquisition_coinvest' | 'both' | 'unknown';
 export type SFConfidenceLevel = 'low' | 'medium' | 'high';
@@ -42,6 +52,10 @@ export interface SFFund {
   last_portfolio_scraped_at: string | null;
   created_at: string;
   updated_at: string;
+  // Campos para compradores corporativos
+  entity_type: SFEntityType | null;
+  investment_thesis: string | null;
+  search_keywords: string[] | null;
 }
 
 export interface SFPerson {
@@ -178,7 +192,62 @@ export interface SFFundFilters {
   ebitda_max?: number;
   revenue_min?: number;
   revenue_max?: number;
+  entity_type?: SFEntityType | 'all';
 }
+
+// Helper para labels de entity_type
+export const ENTITY_TYPE_LABELS: Record<SFEntityType, string> = {
+  traditional_search_fund: 'Search Fund Tradicional',
+  self_funded_search: 'Self-Funded Search',
+  operator_led: 'Operator-Led',
+  holding_company: 'Holding Company',
+  unknown: 'Desconocido',
+  corporate: 'Corporativo',
+  family_office: 'Family Office',
+  pe_fund: 'Fondo PE',
+  strategic_buyer: 'Comprador Estratégico',
+};
+
+export const ENTITY_TYPE_COLORS: Record<SFEntityType, string> = {
+  traditional_search_fund: 'bg-blue-500',
+  self_funded_search: 'bg-sky-500',
+  operator_led: 'bg-indigo-500',
+  holding_company: 'bg-violet-500',
+  unknown: 'bg-slate-400',
+  corporate: 'bg-emerald-500',
+  family_office: 'bg-purple-500',
+  pe_fund: 'bg-pink-500',
+  strategic_buyer: 'bg-amber-500',
+};
+
+export const ENTITY_TYPE_SHORT_LABELS: Record<SFEntityType, string> = {
+  traditional_search_fund: 'SF',
+  self_funded_search: 'SFS',
+  operator_led: 'OL',
+  holding_company: 'HC',
+  unknown: '?',
+  corporate: 'Corp',
+  family_office: 'FO',
+  pe_fund: 'PE',
+  strategic_buyer: 'Strat',
+};
+
+// Categorías de entity_type para filtros
+export const SF_ENTITY_CATEGORIES = {
+  search_funds: ['traditional_search_fund', 'self_funded_search', 'operator_led', 'holding_company', 'unknown'] as SFEntityType[],
+  corporate: ['corporate', 'family_office', 'pe_fund', 'strategic_buyer'] as SFEntityType[],
+};
+
+export const PERSON_ROLE_LABELS: Record<SFPersonRole, string> = {
+  searcher: 'Searcher',
+  partner: 'Partner',
+  principal: 'Principal',
+  advisor: 'Advisor',
+  m_and_a: 'M&A',
+  cxo: 'C-Level',
+  owner: 'Owner',
+  business_dev: 'Business Dev',
+};
 
 export interface SFMatchFilters {
   status?: SFMatchStatus | 'all';

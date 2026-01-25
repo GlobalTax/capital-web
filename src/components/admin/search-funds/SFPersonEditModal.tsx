@@ -28,21 +28,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SFPerson, SFPersonRole } from '@/types/searchFunds';
+import { SFPerson, SFPersonRole, PERSON_ROLE_LABELS } from '@/types/searchFunds';
 import { useCreateSFPerson, useUpdateSFPerson } from '@/hooks/useSFPeople';
 import { useSFFunds } from '@/hooks/useSFFunds';
 import { Loader2 } from 'lucide-react';
+
+const ALL_ROLES: SFPersonRole[] = [
+  'searcher', 'partner', 'principal', 'advisor',
+  'm_and_a', 'cxo', 'owner', 'business_dev'
+];
 
 const personSchema = z.object({
   full_name: z.string().min(1, 'Nombre requerido'),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   linkedin_url: z.string().url('URL inválida').optional().or(z.literal('')),
-  role: z.enum(['searcher', 'partner', 'principal', 'advisor'] as const),
+  role: z.enum(['searcher', 'partner', 'principal', 'advisor', 'm_and_a', 'cxo', 'owner', 'business_dev'] as const),
   location: z.string().optional(),
   phone: z.string().optional(),
   notes: z.string().optional(),
   is_primary_contact: z.boolean().default(false),
-  fund_id: z.string().min(1, 'Fund requerido'), // Fund es obligatorio por constraint NOT NULL en DB
+  fund_id: z.string().min(1, 'Fund requerido'),
 });
 
 type PersonFormData = z.infer<typeof personSchema>;
@@ -53,13 +58,6 @@ interface SFPersonEditModalProps {
   person?: SFPerson | null;
   defaultFundId?: string;
 }
-
-const roleOptions: { value: SFPersonRole; label: string }[] = [
-  { value: 'searcher', label: 'Searcher' },
-  { value: 'partner', label: 'Partner' },
-  { value: 'principal', label: 'Principal' },
-  { value: 'advisor', label: 'Advisor' },
-];
 
 export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
   open,
@@ -193,9 +191,9 @@ export const SFPersonEditModal: React.FC<SFPersonEditModalProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {roleOptions.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
+                        {ALL_ROLES.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {PERSON_ROLE_LABELS[role]}
                           </SelectItem>
                         ))}
                       </SelectContent>

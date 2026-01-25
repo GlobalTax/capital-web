@@ -15942,6 +15942,7 @@ export type Database = {
           geography_focus: string[] | null
           id: string
           investment_style: string | null
+          investment_thesis: string | null
           last_news_scan_at: string | null
           last_portfolio_scraped_at: string | null
           last_scraped_at: string | null
@@ -15951,6 +15952,7 @@ export type Database = {
           revenue_max: number | null
           revenue_min: number | null
           scrape_source_urls: string[] | null
+          search_keywords: string[] | null
           searcher_lead_id: string | null
           sector_exclusions: string[] | null
           sector_exclusions_pe: string[] | null
@@ -15979,6 +15981,7 @@ export type Database = {
           geography_focus?: string[] | null
           id?: string
           investment_style?: string | null
+          investment_thesis?: string | null
           last_news_scan_at?: string | null
           last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
@@ -15988,6 +15991,7 @@ export type Database = {
           revenue_max?: number | null
           revenue_min?: number | null
           scrape_source_urls?: string[] | null
+          search_keywords?: string[] | null
           searcher_lead_id?: string | null
           sector_exclusions?: string[] | null
           sector_exclusions_pe?: string[] | null
@@ -16016,6 +16020,7 @@ export type Database = {
           geography_focus?: string[] | null
           id?: string
           investment_style?: string | null
+          investment_thesis?: string | null
           last_news_scan_at?: string | null
           last_portfolio_scraped_at?: string | null
           last_scraped_at?: string | null
@@ -16025,6 +16030,7 @@ export type Database = {
           revenue_max?: number | null
           revenue_min?: number | null
           scrape_source_urls?: string[] | null
+          search_keywords?: string[] | null
           searcher_lead_id?: string | null
           sector_exclusions?: string[] | null
           sector_exclusions_pe?: string[] | null
@@ -16949,6 +16955,9 @@ export type Database = {
           cim_access_granted: boolean | null
           cim_access_granted_at: string | null
           cim_access_granted_by: string | null
+          cim_access_revoke_reason: string | null
+          cim_access_revoked_at: string | null
+          cim_access_revoked_by: string | null
           click_count: number | null
           clicked_at: string | null
           contacto_id: string | null
@@ -16966,6 +16975,7 @@ export type Database = {
           nda_sent_at: string | null
           nda_sent_by: string | null
           nda_signed_at: string | null
+          nda_signed_by: string | null
           nda_status: string | null
           nombre: string | null
           open_count: number | null
@@ -16990,6 +17000,9 @@ export type Database = {
           cim_access_granted?: boolean | null
           cim_access_granted_at?: string | null
           cim_access_granted_by?: string | null
+          cim_access_revoke_reason?: string | null
+          cim_access_revoked_at?: string | null
+          cim_access_revoked_by?: string | null
           click_count?: number | null
           clicked_at?: string | null
           contacto_id?: string | null
@@ -17007,6 +17020,7 @@ export type Database = {
           nda_sent_at?: string | null
           nda_sent_by?: string | null
           nda_signed_at?: string | null
+          nda_signed_by?: string | null
           nda_status?: string | null
           nombre?: string | null
           open_count?: number | null
@@ -17031,6 +17045,9 @@ export type Database = {
           cim_access_granted?: boolean | null
           cim_access_granted_at?: string | null
           cim_access_granted_by?: string | null
+          cim_access_revoke_reason?: string | null
+          cim_access_revoked_at?: string | null
+          cim_access_revoked_by?: string | null
           click_count?: number | null
           clicked_at?: string | null
           contacto_id?: string | null
@@ -17048,6 +17065,7 @@ export type Database = {
           nda_sent_at?: string | null
           nda_sent_by?: string | null
           nda_signed_at?: string | null
+          nda_signed_by?: string | null
           nda_status?: string | null
           nombre?: string | null
           open_count?: number | null
