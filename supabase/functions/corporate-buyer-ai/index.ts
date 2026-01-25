@@ -517,97 +517,194 @@ async function matchOperations(
   buyer: CorporateBuyer,
   apiKey: string
 ) {
-  // Check for active operations/deals - using buy_side_mandates as proxy
-  const { data: mandates, error } = await supabase
+  // 1. Fetch sell-side operations (companies for sale)
+  const { data: sellOperations, error: sellError } = await supabase
+    .from("company_operations")
+    .select("id, company_name, sector, subsector, geographic_location, display_locations, revenue_amount, ebitda_amount, description, short_description, status, project_status")
+    .eq("is_active", true)
+    .eq("is_deleted", false)
+    .limit(50);
+
+  if (sellError) {
+    console.error("Error fetching sell operations:", sellError);
+  }
+
+  // 2. Fetch buy-side mandates
+  const { data: mandates, error: mandatesError } = await supabase
     .from("buy_side_mandates")
     .select("*")
     .eq("is_active", true)
     .limit(20);
 
-  if (error) {
-    console.error("Error fetching mandates:", error);
-    return { matches: [], message: "Error al buscar operaciones" };
+  if (mandatesError) {
+    console.error("Error fetching mandates:", mandatesError);
   }
 
-  if (!mandates || mandates.length === 0) {
-    return { 
-      matches: [], 
-      message: "No hay operaciones activas en el sistema",
-      suggestion: "Considera añadir operaciones de buy-side o sell-side para activar el matching"
-    };
+  const allMatches: any[] = [];
+
+  // 3. Score sell-side operations
+  if (sellOperations && sellOperations.length > 0) {
+    const scoredSellOps = sellOperations.map((op: any) => {
+      let score = 0;
+      const reasons: string[] = [];
+
+      // Sector match
+      if (buyer.sector_focus && buyer.sector_focus.length > 0 && op.sector) {
+        const sectorMatch = buyer.sector_focus.some(s =>
+          op.sector?.toLowerCase().includes(s.toLowerCase()) ||
+          s.toLowerCase().includes(op.sector?.toLowerCase() || '')
+        );
+        if (sectorMatch) {
+          score += 35;
+          reasons.push(`Sector ${op.sector} coincide`);
+        }
+      }
+
+      // Geography match
+      const opLocations = op.display_locations || [];
+      const opGeo = op.geographic_location || '';
+      if (buyer.geography_focus && buyer.geography_focus.length > 0) {
+        const geoMatch = buyer.geography_focus.some(g =>
+          opLocations.some((loc: string) => loc.toLowerCase().includes(g.toLowerCase())) ||
+          opGeo.toLowerCase().includes(g.toLowerCase())
+        );
+        if (geoMatch) {
+          score += 25;
+          reasons.push("Geografía compatible");
+        }
+      }
+
+      // Revenue range match
+      if (op.revenue_amount) {
+        const minOk = !buyer.revenue_min || op.revenue_amount >= buyer.revenue_min;
+        const maxOk = !buyer.revenue_max || op.revenue_amount <= buyer.revenue_max;
+        if (minOk && maxOk) {
+          score += 25;
+          reasons.push(`Facturación €${(op.revenue_amount / 1000000).toFixed(1)}M`);
+        }
+      }
+
+      // EBITDA range match
+      if (op.ebitda_amount) {
+        const minOk = !buyer.ebitda_min || op.ebitda_amount >= buyer.ebitda_min;
+        const maxOk = !buyer.ebitda_max || op.ebitda_amount <= buyer.ebitda_max;
+        if (minOk && maxOk) {
+          score += 15;
+          reasons.push(`EBITDA €${(op.ebitda_amount / 1000000).toFixed(1)}M`);
+        }
+      }
+
+      return {
+        operation_id: op.id,
+        title: op.company_name,
+        type: "sell" as const,
+        sector: op.sector,
+        subsector: op.subsector,
+        geographic_scope: opLocations.length > 0 ? opLocations.join(", ") : opGeo,
+        revenue_amount: op.revenue_amount,
+        revenue_range: op.revenue_amount
+          ? `€${(op.revenue_amount / 1000000).toFixed(1)}M`
+          : 'No especificado',
+        description: op.short_description || op.description?.substring(0, 150),
+        status: op.project_status || op.status,
+        fit_score: Math.min(score, 100),
+        fit_reasons: reasons
+      };
+    });
+
+    allMatches.push(...scoredSellOps);
   }
 
-  // Score each mandate against buyer criteria
-  const scoredMandates = mandates.map((mandate: any) => {
-    let score = 0;
-    const reasons: string[] = [];
-    
-    // Sector match
-    if (buyer.sector_focus && mandate.sector) {
-      const sectorMatch = buyer.sector_focus.some(s => 
-        mandate.sector.toLowerCase().includes(s.toLowerCase()) ||
-        s.toLowerCase().includes(mandate.sector.toLowerCase())
-      );
-      if (sectorMatch) {
-        score += 40;
-        reasons.push(`Sector ${mandate.sector} coincide`);
+  // 4. Score buy-side mandates
+  if (mandates && mandates.length > 0) {
+    const scoredMandates = mandates.map((mandate: any) => {
+      let score = 0;
+      const reasons: string[] = [];
+
+      // Sector match
+      if (buyer.sector_focus && mandate.sector) {
+        const sectorMatch = buyer.sector_focus.some(s =>
+          mandate.sector.toLowerCase().includes(s.toLowerCase()) ||
+          s.toLowerCase().includes(mandate.sector.toLowerCase())
+        );
+        if (sectorMatch) {
+          score += 40;
+          reasons.push(`Sector ${mandate.sector} coincide`);
+        }
       }
-    }
 
-    // Geography match
-    if (buyer.geography_focus && mandate.geographic_scope) {
-      const geoMatch = buyer.geography_focus.some(g => 
-        mandate.geographic_scope.toLowerCase().includes(g.toLowerCase())
-      );
-      if (geoMatch) {
-        score += 30;
-        reasons.push(`Geografía ${mandate.geographic_scope} coincide`);
+      // Geography match
+      if (buyer.geography_focus && mandate.geographic_scope) {
+        const geoMatch = buyer.geography_focus.some(g =>
+          mandate.geographic_scope.toLowerCase().includes(g.toLowerCase())
+        );
+        if (geoMatch) {
+          score += 30;
+          reasons.push(`Geografía ${mandate.geographic_scope} coincide`);
+        }
       }
-    }
 
-    // Revenue range overlap
-    const revenueOverlap = checkRangeOverlap(
-      buyer.revenue_min, buyer.revenue_max,
-      mandate.revenue_min, mandate.revenue_max
-    );
-    if (revenueOverlap) {
-      score += 20;
-      reasons.push("Rango de facturación compatible");
-    }
+      // Revenue range overlap
+      const revenueOverlap = checkRangeOverlap(
+        buyer.revenue_min, buyer.revenue_max,
+        mandate.revenue_min, mandate.revenue_max
+      );
+      if (revenueOverlap) {
+        score += 20;
+        reasons.push("Rango de facturación compatible");
+      }
 
-    // EBITDA range overlap
-    const ebitdaOverlap = checkRangeOverlap(
-      buyer.ebitda_min, buyer.ebitda_max,
-      mandate.ebitda_min, mandate.ebitda_max
-    );
-    if (ebitdaOverlap) {
-      score += 10;
-      reasons.push("Rango de EBITDA compatible");
-    }
+      // EBITDA range overlap
+      const ebitdaOverlap = checkRangeOverlap(
+        buyer.ebitda_min, buyer.ebitda_max,
+        mandate.ebitda_min, mandate.ebitda_max
+      );
+      if (ebitdaOverlap) {
+        score += 10;
+        reasons.push("Rango de EBITDA compatible");
+      }
 
-    return {
-      mandate_id: mandate.id,
-      title: mandate.title,
-      sector: mandate.sector,
-      subsector: mandate.subsector,
-      geographic_scope: mandate.geographic_scope,
-      revenue_range: mandate.revenue_min && mandate.revenue_max 
-        ? `€${(mandate.revenue_min/1000000).toFixed(0)}M - €${(mandate.revenue_max/1000000).toFixed(0)}M`
-        : 'No especificado',
-      description: mandate.description,
-      fit_score: Math.min(score, 100),
-      fit_reasons: reasons
-    };
-  });
+      return {
+        operation_id: mandate.id,
+        mandate_id: mandate.id,
+        title: mandate.title,
+        type: "mandate" as const,
+        sector: mandate.sector,
+        subsector: mandate.subsector,
+        geographic_scope: mandate.geographic_scope,
+        revenue_range: mandate.revenue_min && mandate.revenue_max
+          ? `€${(mandate.revenue_min / 1000000).toFixed(0)}M - €${(mandate.revenue_max / 1000000).toFixed(0)}M`
+          : 'No especificado',
+        description: mandate.description,
+        fit_score: Math.min(score, 100),
+        fit_reasons: reasons
+      };
+    });
 
-  // Filter and sort
-  const qualifiedMatches = scoredMandates
-    .filter(m => m.fit_score >= 30)
+    allMatches.push(...scoredMandates);
+  }
+
+  // 5. Filter and sort all matches
+  const qualifiedMatches = allMatches
+    .filter(m => m.fit_score >= 25)
     .sort((a, b) => b.fit_score - a.fit_score);
+
+  if (qualifiedMatches.length === 0) {
+    return {
+      matches: [],
+      total_operations_analyzed: (sellOperations?.length || 0) + (mandates?.length || 0),
+      sell_opportunities: sellOperations?.length || 0,
+      buy_mandates: mandates?.length || 0,
+      message: "No hay operaciones que coincidan con los criterios del comprador",
+      suggestion: "Revisa los criterios de sector, geografía o rangos financieros"
+    };
+  }
 
   return {
     matches: qualifiedMatches,
-    total_operations_analyzed: mandates.length,
+    total_operations_analyzed: (sellOperations?.length || 0) + (mandates?.length || 0),
+    sell_opportunities: sellOperations?.length || 0,
+    buy_mandates: mandates?.length || 0,
     buyer_criteria: {
       sectors: buyer.sector_focus,
       geography: buyer.geography_focus
@@ -619,13 +716,13 @@ function checkRangeOverlap(
   min1: number | null, max1: number | null,
   min2: number | null, max2: number | null
 ): boolean {
-  if (!min1 && !max1) return true; // No constraints from buyer
-  if (!min2 && !max2) return true; // No constraints from mandate
-  
+  if (!min1 && !max1) return true;
+  if (!min2 && !max2) return true;
+
   const effectiveMin1 = min1 || 0;
   const effectiveMax1 = max1 || Infinity;
   const effectiveMin2 = min2 || 0;
   const effectiveMax2 = max2 || Infinity;
-  
+
   return effectiveMin1 <= effectiveMax2 && effectiveMin2 <= effectiveMax1;
 }
