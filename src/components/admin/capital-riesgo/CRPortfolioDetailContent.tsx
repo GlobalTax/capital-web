@@ -13,9 +13,11 @@ import {
   Globe,
   MapPin,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  MessageSquare
 } from 'lucide-react';
 import type { CRPortfolio } from '@/types/capitalRiesgo';
+import { CRPortfolioInteractionsTab } from './CRPortfolioInteractionsTab';
 
 interface CRPortfolioDetailContentProps {
   company: CRPortfolio & { fund?: { id: string; name: string; fund_type: string; website?: string; status: string } };
@@ -30,6 +32,10 @@ export function CRPortfolioDetailContent({ company, onRefresh }: CRPortfolioDeta
           <TabsTrigger value="overview" className="text-xs gap-1.5">
             <Building2 className="h-3.5 w-3.5" />
             Resumen
+          </TabsTrigger>
+          <TabsTrigger value="interactions" className="text-xs gap-1.5">
+            <MessageSquare className="h-3.5 w-3.5" />
+            Comunicaciones
           </TabsTrigger>
           <TabsTrigger value="deals" className="text-xs gap-1.5">
             <Briefcase className="h-3.5 w-3.5" />
@@ -160,6 +166,14 @@ export function CRPortfolioDetailContent({ company, onRefresh }: CRPortfolioDeta
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Interactions Tab */}
+        <TabsContent value="interactions">
+          <CRPortfolioInteractionsTab 
+            portfolioId={company.id} 
+            companyName={company.company_name} 
+          />
         </TabsContent>
 
         {/* Deals Tab */}
