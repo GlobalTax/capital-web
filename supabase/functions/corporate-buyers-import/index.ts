@@ -208,7 +208,9 @@ serve(async (req) => {
 
     const results = {
       buyersCreated: 0,
+      buyersUpdated: 0,
       contactsCreated: 0,
+      contactsUpdated: 0,
       errors: [] as string[],
     };
 
@@ -221,14 +223,14 @@ serve(async (req) => {
         // Prepare buyer data
         const buyerData = {
           name: buyer.name.trim(),
-          website: buyer.website || null,
+          website: cleanWebsite(buyer.website),
           country_base: buyer.country_base || null,
-          buyer_type: inferBuyerType(buyer),
+          buyer_type: inferBuyerType(buyer.description || '', buyer.name),
           description: buyer.description || null,
           investment_thesis: buyer.investment_thesis || null,
-          search_keywords: buyer.search_keywords || [],
-          sector_focus: buyer.sector_focus || [],
-          geography_focus: buyer.geography_focus || [],
+          search_keywords: parseKeywords(buyer.keywords?.join ? buyer.keywords.join(',') : buyer.keywords as unknown as string),
+          sector_focus: typeof buyer.sectors === 'string' ? parseSectors(buyer.sectors as string) : (buyer.sectors || []),
+          geography_focus: typeof buyer.geography_focus === 'string' ? parseGeography(buyer.geography_focus as string) : (buyer.geography_focus || []),
           revenue_min: revenueRange.min,
           revenue_max: revenueRange.max,
           ebitda_min: ebitdaRange.min,
@@ -236,28 +238,60 @@ serve(async (req) => {
           source_url: buyer.source_url || null,
           is_active: true,
           is_deleted: false,
+          updated_at: new Date().toISOString(),
         };
 
-        // Insert buyer
-        const { data: insertedBuyer, error: buyerError } = await supabase
+        // Check if buyer already exists by name
+        const { data: existingBuyer } = await supabase
           .from('corporate_buyers')
-          .insert(buyerData)
           .select('id')
-          .single();
+          .eq('name', buyer.name.trim())
+          .eq('is_deleted', false)
+          .maybeSingle();
 
-        if (buyerError) {
-          console.error(`[Corporate Import] Error inserting ${buyer.name}:`, buyerError);
-          results.errors.push(`${buyer.name}: ${buyerError.message}`);
-          continue;
+        let buyerId: string;
+        let isUpdate = false;
+
+        if (existingBuyer) {
+          // Update existing buyer
+          const { error: updateError } = await supabase
+            .from('corporate_buyers')
+            .update(buyerData)
+            .eq('id', existingBuyer.id);
+
+          if (updateError) {
+            console.error(`[Corporate Import] Error updating ${buyer.name}:`, updateError);
+            results.errors.push(`${buyer.name}: ${updateError.message}`);
+            continue;
+          }
+
+          buyerId = existingBuyer.id;
+          isUpdate = true;
+          results.buyersUpdated++;
+          console.log(`[Corporate Import] Updated buyer: ${buyer.name}`);
+        } else {
+          // Insert new buyer
+          const { data: insertedBuyer, error: buyerError } = await supabase
+            .from('corporate_buyers')
+            .insert(buyerData)
+            .select('id')
+            .single();
+
+          if (buyerError) {
+            console.error(`[Corporate Import] Error inserting ${buyer.name}:`, buyerError);
+            results.errors.push(`${buyer.name}: ${buyerError.message}`);
+            continue;
+          }
+
+          buyerId = insertedBuyer.id;
+          results.buyersCreated++;
+          console.log(`[Corporate Import] Created buyer: ${buyer.name}`);
         }
 
-        results.buyersCreated++;
-        console.log(`[Corporate Import] Created buyer: ${buyer.name}`);
-
-        // Insert contact if exists
+        // Handle contact if exists
         if (buyer.contact && buyer.contact.name) {
           const contactData = {
-            buyer_id: insertedBuyer.id,
+            buyer_id: buyerId,
             full_name: buyer.contact.name,
             title: buyer.contact.title || null,
             role: inferContactRole(buyer.contact.title),
@@ -265,18 +299,45 @@ serve(async (req) => {
             linkedin_url: buyer.contact.linkedin_url || null,
             phone: cleanPhone(buyer.contact.phone),
             is_primary_contact: true,
+            updated_at: new Date().toISOString(),
           };
 
-          const { error: contactError } = await supabase
+          // Check if contact already exists by email or name for this buyer
+          const { data: existingContact } = await supabase
             .from('corporate_contacts')
-            .insert(contactData);
+            .select('id')
+            .eq('buyer_id', buyerId)
+            .eq('is_deleted', false)
+            .or(`email.eq.${buyer.contact.email},full_name.eq.${buyer.contact.name}`)
+            .maybeSingle();
 
-          if (contactError) {
-            console.error(`[Corporate Import] Error inserting contact for ${buyer.name}:`, contactError);
-            results.errors.push(`Contact for ${buyer.name}: ${contactError.message}`);
+          if (existingContact) {
+            // Update existing contact
+            const { error: updateContactError } = await supabase
+              .from('corporate_contacts')
+              .update(contactData)
+              .eq('id', existingContact.id);
+
+            if (updateContactError) {
+              console.error(`[Corporate Import] Error updating contact for ${buyer.name}:`, updateContactError);
+              results.errors.push(`Contact update for ${buyer.name}: ${updateContactError.message}`);
+            } else {
+              results.contactsUpdated++;
+              console.log(`[Corporate Import] Updated contact: ${buyer.contact.name}`);
+            }
           } else {
-            results.contactsCreated++;
-            console.log(`[Corporate Import] Created contact: ${buyer.contact.name}`);
+            // Insert new contact
+            const { error: contactError } = await supabase
+              .from('corporate_contacts')
+              .insert(contactData);
+
+            if (contactError) {
+              console.error(`[Corporate Import] Error inserting contact for ${buyer.name}:`, contactError);
+              results.errors.push(`Contact for ${buyer.name}: ${contactError.message}`);
+            } else {
+              results.contactsCreated++;
+              console.log(`[Corporate Import] Created contact: ${buyer.contact.name}`);
+            }
           }
         }
       } catch (err) {
