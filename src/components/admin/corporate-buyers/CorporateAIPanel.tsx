@@ -46,6 +46,7 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
   const [isSavingDescription, setIsSavingDescription] = useState(false);
   const [isSavingThesis, setIsSavingThesis] = useState(false);
   const [isSavingSectors, setIsSavingSectors] = useState(false);
+  const [isSavingKeywords, setIsSavingKeywords] = useState(false);
   
   // AI results state
   const [targetsResult, setTargetsResult] = useState<SuggestTargetsResult | null>(null);
@@ -127,6 +128,22 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
       toast.error('Error al guardar los sectores');
     } finally {
       setIsSavingSectors(false);
+    }
+  };
+
+  const handleSaveKeywords = async () => {
+    if (!descriptionResult?.suggested_keywords?.length) return;
+    setIsSavingKeywords(true);
+    try {
+      await updateBuyer.mutateAsync({
+        id: buyer.id,
+        data: { search_keywords: descriptionResult.suggested_keywords }
+      });
+      toast.success('Keywords guardados correctamente');
+    } catch (error) {
+      toast.error('Error al guardar los keywords');
+    } finally {
+      setIsSavingKeywords(false);
     }
   };
 
@@ -350,6 +367,20 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                             </Badge>
                           ))}
                         </div>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-2 w-full gap-2"
+                          onClick={handleSaveKeywords}
+                          disabled={isSavingKeywords}
+                        >
+                          {isSavingKeywords ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Save className="h-3.5 w-3.5" />
+                          )}
+                          Guardar Keywords
+                        </Button>
                       </div>
                     </>
                   )}
