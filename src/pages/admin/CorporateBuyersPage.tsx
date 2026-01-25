@@ -4,13 +4,15 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Download, Upload } from 'lucide-react';
+import { Plus, Download, Upload, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { 
   CorporateBuyersTable, 
   CorporateFiltersBar, 
-  CorporateKPIs 
+  CorporateKPIs,
+  BatchEnrichmentDialog
 } from '@/components/admin/corporate-buyers';
 import { useCorporateBuyers, useCorporateBuyerCountries } from '@/hooks/useCorporateBuyers';
 import { useFavoriteBuyerIds, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
@@ -20,6 +22,10 @@ const CorporateBuyersPage = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<CorporateBuyersFilters>({});
   const [activeTab, setActiveTab] = useState('favorites');
+  
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBatchDialog, setShowBatchDialog] = useState(false);
 
   // Data hooks
   const { data: buyers = [], isLoading: loadingBuyers } = useCorporateBuyers(filters);
@@ -35,8 +41,32 @@ const CorporateBuyersPage = () => {
     return buyers;
   }, [buyers, favoriteIds, activeTab]);
 
+  // Calculate selection stats
+  const selectionStats = useMemo(() => {
+    const selectedBuyers = buyers.filter(b => selectedIds.has(b.id));
+    const withWebsite = selectedBuyers.filter(b => b.website);
+    return {
+      total: selectedIds.size,
+      withWebsite: withWebsite.length,
+    };
+  }, [buyers, selectedIds]);
+
+  // Get selected buyers for dialog
+  const selectedBuyers = useMemo(() => {
+    return buyers.filter(b => selectedIds.has(b.id));
+  }, [buyers, selectedIds]);
+
   const handleToggleFavorite = (id: string, isFavorite: boolean) => {
     toggleFavorite.mutate({ entityType: 'buyer', entityId: id, isFavorite });
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBatchComplete = () => {
+    setSelectedIds(new Set());
+    setShowBatchDialog(false);
   };
 
   const isLoading = loadingBuyers || loadingFavorites;
@@ -52,6 +82,34 @@ const CorporateBuyersPage = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Selection Actions */}
+          {selectedIds.size > 0 && (
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleClearSelection}
+                className="gap-1"
+              >
+                <X className="h-4 w-4" />
+                Deseleccionar ({selectedIds.size})
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowBatchDialog(true)}
+                disabled={selectionStats.withWebsite === 0}
+                className="gap-1"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Enriquecer
+                <Badge variant="secondary" className="ml-1">
+                  {selectionStats.withWebsite}
+                </Badge>
+              </Button>
+            </>
+          )}
+          
           <Button variant="outline" size="sm" className="gap-1">
             <Upload className="h-4 w-4" />
             Importar
@@ -104,6 +162,9 @@ const CorporateBuyersPage = () => {
             favoriteIds={favoriteIds}
             onToggleFavorite={handleToggleFavorite}
             isLoading={isLoading}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            selectionMode={true}
           />
         </TabsContent>
 
@@ -113,9 +174,20 @@ const CorporateBuyersPage = () => {
             favoriteIds={favoriteIds}
             onToggleFavorite={handleToggleFavorite}
             isLoading={isLoading}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
+            selectionMode={true}
           />
         </TabsContent>
       </Tabs>
+
+      {/* Batch Enrichment Dialog */}
+      <BatchEnrichmentDialog
+        open={showBatchDialog}
+        onClose={() => setShowBatchDialog(false)}
+        buyers={selectedBuyers}
+        onComplete={handleBatchComplete}
+      />
     </div>
   );
 };

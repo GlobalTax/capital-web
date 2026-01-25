@@ -2,7 +2,7 @@
 // CORPORATE BUYERS TABLE
 // =============================================
 
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList as List } from 'react-window';
 import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe } from 'lucide-react';
@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { CorporateBuyer, BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/types/corporateBuyers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface CorporateBuyersTableProps {
@@ -17,6 +18,10 @@ interface CorporateBuyersTableProps {
   favoriteIds: Set<string>;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   isLoading?: boolean;
+  // Selection props
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
+  selectionMode?: boolean;
 }
 
 const ROW_HEIGHT = 52;
@@ -40,23 +45,64 @@ export const CorporateBuyersTable = memo(({
   favoriteIds,
   onToggleFavorite,
   isLoading = false,
+  selectedIds = new Set(),
+  onSelectionChange,
+  selectionMode = false,
 }: CorporateBuyersTableProps) => {
   const navigate = useNavigate();
+
+  // Selection handlers
+  const handleSelectAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    if (selectedIds.size === buyers.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(buyers.map(b => b.id)));
+    }
+  }, [buyers, selectedIds.size, onSelectionChange]);
+
+  const handleSelectOne = useCallback((id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onSelectionChange) return;
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    onSelectionChange(newSet);
+  }, [selectedIds, onSelectionChange]);
+
+  const isAllSelected = buyers.length > 0 && selectedIds.size === buyers.length;
+  const isIndeterminate = selectedIds.size > 0 && selectedIds.size < buyers.length;
 
   const Row = useMemo(() => 
     memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
       const buyer = buyers[index];
       const isFavorite = favoriteIds.has(buyer.id);
+      const isSelected = selectedIds.has(buyer.id);
 
       return (
         <div
           style={style}
           className={cn(
             "flex items-center border-b border-border/50 hover:bg-muted/50 cursor-pointer transition-colors",
-            index % 2 === 0 ? "bg-background" : "bg-muted/20"
+            index % 2 === 0 ? "bg-background" : "bg-muted/20",
+            isSelected && "bg-primary/5 hover:bg-primary/10"
           )}
           onClick={() => navigate(`/admin/corporate-buyers/${buyer.id}`)}
         >
+          {/* Checkbox for selection */}
+          {selectionMode && (
+            <div className="w-10 flex-shrink-0 flex justify-center">
+              <Checkbox
+                checked={isSelected}
+                onClick={(e) => handleSelectOne(buyer.id, e)}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
+          )}
+
           {/* Favorite */}
           <div className="w-12 flex-shrink-0 flex justify-center">
             <Button
@@ -176,7 +222,7 @@ export const CorporateBuyersTable = memo(({
         </div>
       );
     }),
-    [buyers, favoriteIds, navigate, onToggleFavorite]
+    [buyers, favoriteIds, selectedIds, navigate, onToggleFavorite, selectionMode, handleSelectOne]
   );
 
   if (isLoading) {
@@ -196,13 +242,30 @@ export const CorporateBuyersTable = memo(({
     );
   }
 
+  const minTableWidth = selectionMode ? 1140 : 1100;
+
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       {/* Header */}
       <div 
         className="flex bg-muted/50 border-b border-border sticky top-0 z-10"
-        style={{ height: HEADER_HEIGHT, minWidth: 1100 }}
+        style={{ height: HEADER_HEIGHT, minWidth: minTableWidth }}
       >
+        {/* Select All Checkbox */}
+        {selectionMode && (
+          <div className="w-10 flex-shrink-0 flex items-center justify-center">
+            <Checkbox
+              checked={isAllSelected}
+              ref={(el) => {
+                if (el) {
+                  (el as HTMLButtonElement).dataset.state = isIndeterminate ? 'indeterminate' : isAllSelected ? 'checked' : 'unchecked';
+                }
+              }}
+              onClick={handleSelectAll}
+              className="data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary"
+            />
+          </div>
+        )}
         <div className="w-12 flex-shrink-0 flex items-center justify-center">
           <Star className="h-4 w-4 text-muted-foreground" />
         </div>
@@ -239,7 +302,7 @@ export const CorporateBuyersTable = memo(({
 
       {/* Virtual List with horizontal scroll */}
       <div className="overflow-x-auto">
-        <div style={{ minWidth: 1100 }}>
+        <div style={{ minWidth: minTableWidth }}>
           <List
             height={Math.min(buyers.length * ROW_HEIGHT, 600)}
             width="100%"
