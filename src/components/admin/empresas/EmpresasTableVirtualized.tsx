@@ -24,6 +24,7 @@ import {
   Target,
   Landmark,
   Calculator,
+  Clock,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -78,6 +79,7 @@ const COLUMN_WIDTHS: Record<string, number> = {
   deuda: 100,
   valoracion: 115,
   fecha_valoracion: 110,
+  ultima_actividad: 110,
   founded_year: 85,
   cnae_codigo: 90,
   apollo_intent: 85,
@@ -266,6 +268,34 @@ const renderCellContent = (
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3 flex-shrink-0" />
           <span>{date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+        </div>
+      );
+
+    case 'ultima_actividad':
+      if (!empresa.ultima_actividad) return <EmptyCell />;
+      const activityDate = new Date(empresa.ultima_actividad);
+      const now = new Date();
+      const diffDays = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Color coding por recencia: verde ≤7 días, amarillo ≤30 días, gris >30 días
+      const colorClass = diffDays <= 7 ? 'text-green-600' : 
+                         diffDays <= 30 ? 'text-yellow-600' : 
+                         'text-muted-foreground';
+      
+      // Formateo relativo
+      const getRelativeTimeText = (days: number) => {
+        if (days === 0) return 'Hoy';
+        if (days === 1) return 'Ayer';
+        if (days < 7) return `Hace ${days}d`;
+        if (days < 30) return `Hace ${Math.floor(days / 7)}sem`;
+        if (days < 365) return `Hace ${Math.floor(days / 30)}m`;
+        return `Hace ${Math.floor(days / 365)}a`;
+      };
+      
+      return (
+        <div className={cn("flex items-center gap-1 text-xs", colorClass)}>
+          <Clock className="h-3 w-3 flex-shrink-0" />
+          <span>{getRelativeTimeText(diffDays)}</span>
         </div>
       );
 
