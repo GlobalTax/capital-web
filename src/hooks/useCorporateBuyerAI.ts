@@ -83,7 +83,20 @@ export interface MatchOperationsResult {
   suggestion?: string;
 }
 
-type AIAction = 'suggest_targets' | 'improve_description' | 'generate_thesis' | 'match_operations';
+type AIAction = 'suggest_targets' | 'improve_description' | 'generate_thesis' | 'match_operations' | 'auto_configure';
+
+interface AutoConfigureResult {
+  success: boolean;
+  message: string;
+  generated?: {
+    sector_focus?: string[] | null;
+    geography_focus?: string[] | null;
+    search_keywords?: string[] | null;
+    buyer_type?: string | null;
+  };
+  fields_updated?: string[];
+  already_configured?: boolean;
+}
 
 async function callCorporateBuyerAI<T>(buyerId: string, action: AIAction): Promise<T> {
   const { data, error } = await supabase.functions.invoke('corporate-buyer-ai', {
@@ -155,15 +168,37 @@ export function useCorporateBuyerAI(buyerId: string | undefined) {
     }
   });
 
+  // Auto-configure criteria
+  const autoConfig = useMutation({
+    mutationFn: async () => {
+      if (!buyerId) throw new Error('No buyer ID');
+      return callCorporateBuyerAI<AutoConfigureResult>(buyerId, 'auto_configure');
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success('Criterios auto-configurados', {
+          description: data.fields_updated?.join(', ')
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast.error('Error al auto-configurar', {
+        description: error.message
+      });
+    }
+  });
+
   return {
     suggestTargets,
     improveDescription,
     generateThesis,
     matchOperations,
+    autoConfig,
     isAnyLoading: 
       suggestTargets.isPending || 
       improveDescription.isPending || 
       generateThesis.isPending || 
-      matchOperations.isPending
+      matchOperations.isPending ||
+      autoConfig.isPending
   };
 }

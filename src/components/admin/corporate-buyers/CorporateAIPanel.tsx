@@ -63,8 +63,13 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
     suggestTargets, 
     improveDescription, 
     generateThesis, 
-    matchOperations 
+    matchOperations,
+    autoConfig
   } = useCorporateBuyerAI(buyer.id);
+
+  const handleAutoConfig = async () => {
+    await autoConfig.mutateAsync();
+  };
 
   const handleSuggestTargets = async () => {
     const result = await suggestTargets.mutateAsync();
@@ -220,8 +225,41 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
 
           {/* Tab: Suggested Targets */}
           <TabsContent value="targets" className="p-4 pt-3 m-0">
-            {/* Diagnostic Warning */}
-            {(!buyer.sector_focus || buyer.sector_focus.length === 0) && (
+            {/* Diagnostic Warning with Auto-config */}
+            {(!buyer.sector_focus || buyer.sector_focus.length === 0) && 
+              buyer.description && buyer.description.length >= 50 && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-3 border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                      <Target className="h-4 w-4 shrink-0" />
+                      <span>Criterios no configurados</span>
+                    </p>
+                    <p className="text-[10px] text-blue-600/70 dark:text-blue-400/70 mt-0.5">
+                      Tienes descripción disponible para generar automáticamente
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs h-7 gap-1"
+                    onClick={handleAutoConfig}
+                    disabled={autoConfig.isPending}
+                  >
+                    {autoConfig.isPending ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3" />
+                    )}
+                    Auto-configurar
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Original warning for buyers without description */}
+            {(!buyer.sector_focus || buyer.sector_focus.length === 0) && 
+              (!buyer.description || buyer.description.length < 50) && (
               <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg mb-3 border border-amber-200 dark:border-amber-800">
                 <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />

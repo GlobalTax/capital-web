@@ -10,3 +10,4 @@ export { CorporateBuyerForm } from './CorporateBuyerForm';
 export { ProfileImporter } from './ProfileImporter';
 export { SectorMultiSelect } from './SectorMultiSelect';
 export { BatchEnrichmentDialog } from './BatchEnrichmentDialog';
+export { AutoConfigDialog } from './AutoConfigDialog';
