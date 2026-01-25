@@ -37,7 +37,8 @@ const SidebarSettings: React.FC = () => {
   const { sections, isLoading, isError } = useSidebarConfig();
   const { 
     createSection, updateSection, deleteSection, reorderSections,
-    createItem, updateItem, deleteItem, reorderItems 
+    createItem, updateItem, deleteItem, reorderItems,
+    moveItemToSection
   } = useSidebarAdmin();
 
   // UI State
@@ -98,18 +99,42 @@ const SidebarSettings: React.FC = () => {
     }
   };
 
-  const handleSaveItem = (data: SidebarItemFormData) => {
+  const handleSaveItem = (data: SidebarItemFormData & { section_id?: string }) => {
     if (editingItem) {
-      updateItem.mutate({ id: editingItem.id, data }, {
-        onSuccess: () => {
-          setItemDialogOpen(false);
-          setEditingItem(null);
-        }
-      });
+      const sectionChanged = data.section_id && data.section_id !== editingItem.section_id;
+      
+      if (sectionChanged) {
+        // Move to new section first, then update other fields
+        moveItemToSection.mutate({
+          itemId: editingItem.id,
+          newSectionId: data.section_id!,
+          newPosition: 0
+        }, {
+          onSuccess: () => {
+            // Update other fields after moving
+            const { section_id, ...updateData } = data;
+            updateItem.mutate({ id: editingItem.id, data: updateData }, {
+              onSuccess: () => {
+                setItemDialogOpen(false);
+                setEditingItem(null);
+              }
+            });
+          }
+        });
+      } else {
+        const { section_id, ...updateData } = data;
+        updateItem.mutate({ id: editingItem.id, data: updateData }, {
+          onSuccess: () => {
+            setItemDialogOpen(false);
+            setEditingItem(null);
+          }
+        });
+      }
     } else if (selectedSectionId) {
+      const { section_id, ...createData } = data;
       createItem.mutate({ 
-        ...data, 
-        section_id: selectedSectionId, 
+        ...createData, 
+        section_id: section_id || selectedSectionId, 
         position: selectedSection?.items.length || 0 
       }, {
         onSuccess: () => {
@@ -404,7 +429,9 @@ const SidebarSettings: React.FC = () => {
         }}
         item={editingItem}
         onSave={handleSaveItem}
-        isLoading={createItem.isPending || updateItem.isPending}
+        isLoading={createItem.isPending || updateItem.isPending || moveItemToSection.isPending}
+        sections={sections}
+        currentSectionId={selectedSectionId}
       />
 
       {/* Delete confirmation */}
