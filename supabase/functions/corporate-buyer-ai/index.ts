@@ -32,7 +32,6 @@ interface Empresa {
   revenue: number | null;
   ebitda: number | null;
   descripcion: string | null;
-  actividad: string | null;
 }
 
 serve(async (req) => {
@@ -124,7 +123,7 @@ async function suggestTargets(
   // Build query to find potential matches
   let query = supabase
     .from("empresas")
-    .select("id, nombre, sector, ubicacion, facturacion, revenue, ebitda, descripcion, actividad")
+    .select("id, nombre, sector, ubicacion, facturacion, revenue, ebitda, descripcion")
     .not("nombre", "is", null)
     .limit(100);
 
@@ -203,7 +202,7 @@ async function suggestTargets(
       ubicacion: empresa.ubicacion,
       revenue: empresaRevenue,
       ebitda: empresa.ebitda,
-      descripcion: empresa.descripcion || empresa.actividad,
+      descripcion: empresa.descripcion,
       fit_score: Math.min(score, 100),
       fit_reasons: reasons,
       risks
@@ -406,37 +405,62 @@ Responde en JSON con este formato:
 // GENERATE THESIS
 // ========================================
 async function generateThesis(buyer: CorporateBuyer, apiKey: string) {
+  // Determinar el nivel de información disponible
+  const hasDescription = buyer.description && buyer.description.length > 50;
+  const hasSectors = buyer.sector_focus && buyer.sector_focus.length > 0;
+  const hasFinancials = buyer.revenue_min || buyer.revenue_max || buyer.ebitda_min || buyer.ebitda_max;
+  const hasGeography = buyer.geography_focus && buyer.geography_focus.length > 0;
+  const hasKeywords = buyer.search_keywords && buyer.search_keywords.length > 0;
+  
+  // Calcular nivel de contexto para ajustar el prompt
+  const contextLevel = [hasDescription, hasSectors, hasFinancials, hasGeography, hasKeywords].filter(Boolean).length;
+  
+  let contextGuidance = '';
+  if (contextLevel < 2) {
+    contextGuidance = `
+NOTA IMPORTANTE: Este comprador tiene poca información disponible. Debes:
+1. Inferir una tesis de inversión lógica basada en el tipo de comprador (${buyer.buyer_type || 'corporativo'})
+2. Proponer sectores y geografías típicas para este tipo de inversor
+3. Sugerir rangos financieros estándar del mercado
+4. Ser creativo pero profesional en las suposiciones`;
+  }
+
   const prompt = `Eres un estratega de M&A con 20 años de experiencia en el mercado ibérico. Genera una tesis de inversión profesional y estructurada para este comprador corporativo.
 
 PERFIL DEL COMPRADOR:
 - Nombre: ${buyer.name}
 - Tipo: ${buyer.buyer_type || 'Corporativo'}
-- Sectores objetivo: ${buyer.sector_focus?.join(', ') || 'Generalista'}
+- Web: ${buyer.website || 'No disponible'}
+- Sectores objetivo: ${buyer.sector_focus?.join(', ') || 'No especificados'}
+- Keywords de búsqueda: ${buyer.search_keywords?.join(', ') || 'No especificados'}
 - Exclusiones: ${buyer.sector_exclusions?.join(', ') || 'Ninguna especificada'}
-- Geografía: ${buyer.geography_focus?.join(', ') || 'España'}
+- Geografía: ${buyer.geography_focus?.join(', ') || 'No especificada'}
 - Rango facturación: €${buyer.revenue_min ? (buyer.revenue_min/1000000).toFixed(0) : '?'}M - €${buyer.revenue_max ? (buyer.revenue_max/1000000).toFixed(0) : '?'}M
 - Rango EBITDA: €${buyer.ebitda_min ? (buyer.ebitda_min/1000000).toFixed(1) : '?'}M - €${buyer.ebitda_max ? (buyer.ebitda_max/1000000).toFixed(1) : '?'}M
-- Descripción actual: ${buyer.description || 'Sin descripción'}
+- Descripción actual: ${buyer.description || 'Sin descripción detallada'}
 - Tesis actual: ${buyer.investment_thesis || 'Sin tesis definida'}
+${contextGuidance}
 
 Genera una tesis de inversión completa en castellano con:
-1. Objetivo estratégico (qué quieren lograr)
-2. Perfil de empresa ideal (características específicas)
-3. Criterios de exclusión (qué no buscan)
-4. Sinergias buscadas (operativas, comerciales, etc.)
-5. Proceso de evaluación (cómo valorarán las oportunidades)
+1. Objetivo estratégico (qué quieren lograr - sé específico basándote en el tipo de comprador)
+2. Perfil de empresa ideal (características específicas del target perfecto)
+3. Criterios de exclusión (qué no buscan - mínimo 3)
+4. Sinergias buscadas (operativas, comerciales, tecnológicas - mínimo 3)
+5. Proceso de evaluación (cómo valorarán las oportunidades paso a paso)
+
+El texto de investment_thesis_text debe ser un párrafo completo y profesional de 150-200 palabras que pueda usarse directamente en documentos de M&A.
 
 Responde en JSON:
 {
   "thesis": {
-    "strategic_objective": "texto del objetivo",
-    "ideal_target_profile": "descripción del perfil ideal",
-    "exclusion_criteria": ["criterio 1", "criterio 2"],
-    "synergies_sought": ["sinergia 1", "sinergia 2"],
-    "evaluation_process": "descripción del proceso"
+    "strategic_objective": "texto del objetivo estratégico",
+    "ideal_target_profile": "descripción detallada del perfil ideal",
+    "exclusion_criteria": ["criterio 1", "criterio 2", "criterio 3"],
+    "synergies_sought": ["sinergia 1", "sinergia 2", "sinergia 3"],
+    "evaluation_process": "descripción del proceso de evaluación"
   },
   "summary": "Resumen ejecutivo de 2-3 frases",
-  "investment_thesis_text": "Texto completo de la tesis para usar directamente"
+  "investment_thesis_text": "Texto completo de la tesis de inversión para usar directamente"
 }`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
