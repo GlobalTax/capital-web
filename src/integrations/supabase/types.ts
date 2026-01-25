@@ -4933,6 +4933,13 @@ export type Database = {
             referencedRelation: "cr_portfolio"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cr_deals_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "v_cr_portfolio_con_actividad"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cr_favorites: {
@@ -5416,6 +5423,7 @@ export type Database = {
           revenue_estimate: string | null
           scan_priority: string | null
           sector: string | null
+          sector_pe: string | null
           skip_news_scan: boolean | null
           social_links: Json | null
           source_url: string | null
@@ -5451,6 +5459,7 @@ export type Database = {
           revenue_estimate?: string | null
           scan_priority?: string | null
           sector?: string | null
+          sector_pe?: string | null
           skip_news_scan?: boolean | null
           social_links?: Json | null
           source_url?: string | null
@@ -5486,6 +5495,7 @@ export type Database = {
           revenue_estimate?: string | null
           scan_priority?: string | null
           sector?: string | null
+          sector_pe?: string | null
           skip_news_scan?: boolean | null
           social_links?: Json | null
           source_url?: string | null
@@ -5500,6 +5510,66 @@ export type Database = {
             columns: ["fund_id"]
             isOneToOne: false
             referencedRelation: "cr_funds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cr_portfolio_interactions: {
+        Row: {
+          body: string | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          interaction_type: string
+          metadata: Json | null
+          portfolio_id: string
+          sent_at: string | null
+          subject: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          body?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          interaction_type: string
+          metadata?: Json | null
+          portfolio_id: string
+          sent_at?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          body?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          portfolio_id?: string
+          sent_at?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cr_portfolio_interactions_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "cr_portfolio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cr_portfolio_interactions_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "v_cr_portfolio_con_actividad"
             referencedColumns: ["id"]
           },
         ]
@@ -5933,6 +6003,8 @@ export type Database = {
       }
       documentos: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           created_at: string | null
           descripcion: string | null
           file_name: string
@@ -5944,6 +6016,8 @@ export type Database = {
           mandato_id: string | null
           mime_type: string
           parent_document_id: string | null
+          published_at: string | null
+          status: string | null
           storage_path: string
           tags: string[] | null
           tipo: string | null
@@ -5952,6 +6026,8 @@ export type Database = {
           version: number | null
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
           descripcion?: string | null
           file_name: string
@@ -5963,6 +6039,8 @@ export type Database = {
           mandato_id?: string | null
           mime_type: string
           parent_document_id?: string | null
+          published_at?: string | null
+          status?: string | null
           storage_path: string
           tags?: string[] | null
           tipo?: string | null
@@ -5971,6 +6049,8 @@ export type Database = {
           version?: number | null
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
           descripcion?: string | null
           file_name?: string
@@ -5982,6 +6062,8 @@ export type Database = {
           mandato_id?: string | null
           mime_type?: string
           parent_document_id?: string | null
+          published_at?: string | null
+          status?: string | null
           storage_path?: string
           tags?: string[] | null
           tipo?: string | null
@@ -13020,6 +13102,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "portfolio_changes_existing_portfolio_id_fkey"
+            columns: ["existing_portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "v_cr_portfolio_con_actividad"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "portfolio_changes_fund_id_fkey"
             columns: ["fund_id"]
             isOneToOne: false
@@ -13171,6 +13260,13 @@ export type Database = {
             columns: ["portfolio_id"]
             isOneToOne: false
             referencedRelation: "cr_portfolio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_news_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "v_cr_portfolio_con_actividad"
             referencedColumns: ["id"]
           },
         ]
@@ -13667,6 +13763,13 @@ export type Database = {
             columns: ["portfolio_company_id"]
             isOneToOne: false
             referencedRelation: "cr_portfolio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "processed_urls_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "v_cr_portfolio_con_actividad"
             referencedColumns: ["id"]
           },
         ]
@@ -17677,6 +17780,56 @@ export type Database = {
           total: number | null
         }
         Relationships: []
+      }
+      v_cr_portfolio_con_actividad: {
+        Row: {
+          company_name: string | null
+          country: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
+          employee_count_estimate: number | null
+          enriched_at: string | null
+          enriched_data: Json | null
+          enrichment_source: string | null
+          exit_type: string | null
+          exit_year: number | null
+          fund_display_name: string | null
+          fund_id: string | null
+          fund_type: string | null
+          id: string | null
+          investment_type: string | null
+          investment_year: number | null
+          is_deleted: boolean | null
+          key_people: Json | null
+          last_news_scan_at: string | null
+          last_web_check_at: string | null
+          news_alert_count: number | null
+          notes: string | null
+          ownership_type: string | null
+          revenue_estimate: string | null
+          scan_priority: string | null
+          sector: string | null
+          sector_pe: string | null
+          skip_news_scan: boolean | null
+          social_links: Json | null
+          source_url: string | null
+          status: string | null
+          technologies: string[] | null
+          total_interacciones: number | null
+          ultima_interaccion: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cr_portfolio_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "cr_funds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       v_documentos_con_versiones: {
         Row: {
