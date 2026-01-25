@@ -15,7 +15,8 @@ import {
   Check,
   ChevronRight,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Save
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ import {
   type MatchOperationsResult
 } from '@/hooks/useCorporateBuyerAI';
 import type { CorporateBuyer } from '@/types/corporateBuyers';
+import { useUpdateCorporateBuyer } from '@/hooks/useCorporateBuyers';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -41,12 +43,16 @@ interface CorporateAIPanelProps {
 export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
   const [activeTab, setActiveTab] = useState('targets');
   const [copied, setCopied] = useState(false);
+  const [isSavingDescription, setIsSavingDescription] = useState(false);
+  const [isSavingThesis, setIsSavingThesis] = useState(false);
   
   // AI results state
   const [targetsResult, setTargetsResult] = useState<SuggestTargetsResult | null>(null);
   const [descriptionResult, setDescriptionResult] = useState<ImproveDescriptionResult | null>(null);
   const [thesisResult, setThesisResult] = useState<GenerateThesisResult | null>(null);
   const [operationsResult, setOperationsResult] = useState<MatchOperationsResult | null>(null);
+
+  const updateBuyer = useUpdateCorporateBuyer();
 
   const { 
     suggestTargets, 
@@ -73,6 +79,38 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
   const handleMatchOperations = async () => {
     const result = await matchOperations.mutateAsync();
     setOperationsResult(result);
+  };
+
+  const handleSaveDescription = async () => {
+    if (!descriptionResult?.improved_description) return;
+    setIsSavingDescription(true);
+    try {
+      await updateBuyer.mutateAsync({
+        id: buyer.id,
+        data: { description: descriptionResult.improved_description }
+      });
+      toast.success('Descripción guardada correctamente');
+    } catch (error) {
+      toast.error('Error al guardar la descripción');
+    } finally {
+      setIsSavingDescription(false);
+    }
+  };
+
+  const handleSaveThesis = async () => {
+    if (!thesisResult?.investment_thesis_text && !thesisResult?.summary) return;
+    setIsSavingThesis(true);
+    try {
+      await updateBuyer.mutateAsync({
+        id: buyer.id,
+        data: { investment_thesis: thesisResult.investment_thesis_text || thesisResult.summary }
+      });
+      toast.success('Tesis de inversión guardada');
+    } catch (error) {
+      toast.error('Error al guardar la tesis');
+    } finally {
+      setIsSavingThesis(false);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -301,18 +339,30 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
 
                   <div className="flex gap-2 pt-2">
                     <Button 
-                      variant="outline" 
                       size="sm" 
                       className="flex-1 gap-2"
-                      onClick={() => copyToClipboard(descriptionResult.improved_description)}
+                      onClick={handleSaveDescription}
+                      disabled={isSavingDescription}
                     >
-                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                      Copiar
+                      {isSavingDescription ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Save className="h-3.5 w-3.5" />
+                      )}
+                      Guardar
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1 gap-2"
+                      className="gap-2"
+                      onClick={() => copyToClipboard(descriptionResult.improved_description)}
+                    >
+                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2"
                       onClick={handleImproveDescription}
                       disabled={improveDescription.isPending}
                     >
@@ -321,7 +371,6 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                       ) : (
                         <Sparkles className="h-3.5 w-3.5" />
                       )}
-                      Regenerar
                     </Button>
                   </div>
                 </div>
@@ -402,18 +451,30 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
 
                   <div className="flex gap-2 pt-2">
                     <Button 
-                      variant="outline" 
                       size="sm" 
                       className="flex-1 gap-2"
-                      onClick={() => copyToClipboard(thesisResult.investment_thesis_text || thesisResult.summary)}
+                      onClick={handleSaveThesis}
+                      disabled={isSavingThesis}
                     >
-                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                      Copiar
+                      {isSavingThesis ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Save className="h-3.5 w-3.5" />
+                      )}
+                      Guardar
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1 gap-2"
+                      className="gap-2"
+                      onClick={() => copyToClipboard(thesisResult.investment_thesis_text || thesisResult.summary)}
+                    >
+                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2"
                       onClick={handleGenerateThesis}
                       disabled={generateThesis.isPending}
                     >
@@ -422,7 +483,6 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                       ) : (
                         <Sparkles className="h-3.5 w-3.5" />
                       )}
-                      Regenerar
                     </Button>
                   </div>
                 </div>
