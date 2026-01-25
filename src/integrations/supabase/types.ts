@@ -6342,6 +6342,117 @@ export type Database = {
         }
         Relationships: []
       }
+      email_queue: {
+        Row: {
+          attachments: Json | null
+          attempts: number | null
+          created_at: string | null
+          created_by: string | null
+          error_details: Json | null
+          failed_at: string | null
+          first_attempt_at: string | null
+          from_email: string | null
+          from_name: string | null
+          html_content: string
+          id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          max_attempts: number | null
+          metadata: Json | null
+          next_retry_at: string | null
+          priority: number | null
+          provider: string | null
+          provider_message_id: string | null
+          provider_response: Json | null
+          provider_status: string | null
+          queue_type: string
+          queued_at: string | null
+          reference_id: string | null
+          reference_type: string | null
+          reply_to: string | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          text_content: string | null
+          to_email: string
+          to_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          attempts?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          error_details?: Json | null
+          failed_at?: string | null
+          first_attempt_at?: string | null
+          from_email?: string | null
+          from_name?: string | null
+          html_content: string
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          max_attempts?: number | null
+          metadata?: Json | null
+          next_retry_at?: string | null
+          priority?: number | null
+          provider?: string | null
+          provider_message_id?: string | null
+          provider_response?: Json | null
+          provider_status?: string | null
+          queue_type: string
+          queued_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          text_content?: string | null
+          to_email: string
+          to_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          attempts?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          error_details?: Json | null
+          failed_at?: string | null
+          first_attempt_at?: string | null
+          from_email?: string | null
+          from_name?: string | null
+          html_content?: string
+          id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          max_attempts?: number | null
+          metadata?: Json | null
+          next_retry_at?: string | null
+          priority?: number | null
+          provider?: string | null
+          provider_message_id?: string | null
+          provider_response?: Json | null
+          provider_status?: string | null
+          queue_type?: string
+          queued_at?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          reply_to?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          text_content?: string | null
+          to_email?: string
+          to_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       email_recipients_config: {
         Row: {
           created_at: string | null
@@ -6458,6 +6569,54 @@ export type Database = {
           trigger_conditions?: Json | null
           trigger_type?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          html_content: string
+          id: string
+          idioma: string
+          is_active: boolean | null
+          is_default: boolean | null
+          nombre: string
+          subject_template: string
+          text_content: string | null
+          tipo: string | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content: string
+          id?: string
+          idioma: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          nombre: string
+          subject_template: string
+          text_content?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content?: string
+          id?: string
+          idioma?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          nombre?: string
+          subject_template?: string
+          text_content?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          variables?: Json | null
         }
         Relationships: []
       }
@@ -11853,6 +12012,41 @@ export type Database = {
         }
         Relationships: []
       }
+      nda_tracking_events: {
+        Row: {
+          created_at: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          performed_by: string | null
+          recipient_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          performed_by?: string | null
+          recipient_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          performed_by?: string | null
+          recipient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nda_tracking_events_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "teaser_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news_articles: {
         Row: {
           ai_metadata: Json | null
@@ -16609,6 +16803,462 @@ export type Database = {
         }
         Relationships: []
       }
+      teaser_campaigns: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          custom_message: string | null
+          enable_watermark: boolean | null
+          from_email: string | null
+          from_name: string | null
+          id: string
+          idioma: string
+          mandato_id: string
+          nombre: string
+          started_at: string | null
+          status: string | null
+          subject: string
+          teaser_document_id: string | null
+          template_id: string | null
+          total_bounced: number | null
+          total_clicked: number | null
+          total_delivered: number | null
+          total_opened: number | null
+          total_recipients: number | null
+          total_sent: number | null
+          updated_at: string | null
+          watermark_template: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_message?: string | null
+          enable_watermark?: boolean | null
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          idioma: string
+          mandato_id: string
+          nombre: string
+          started_at?: string | null
+          status?: string | null
+          subject: string
+          teaser_document_id?: string | null
+          template_id?: string | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_delivered?: number | null
+          total_opened?: number | null
+          total_recipients?: number | null
+          total_sent?: number | null
+          updated_at?: string | null
+          watermark_template?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_message?: string | null
+          enable_watermark?: boolean | null
+          from_email?: string | null
+          from_name?: string | null
+          id?: string
+          idioma?: string
+          mandato_id?: string
+          nombre?: string
+          started_at?: string | null
+          status?: string | null
+          subject?: string
+          teaser_document_id?: string | null
+          template_id?: string | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_delivered?: number | null
+          total_opened?: number | null
+          total_recipients?: number | null
+          total_sent?: number | null
+          updated_at?: string | null
+          watermark_template?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaser_campaigns_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "teaser_campaigns_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_campaigns_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "teaser_campaigns_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_campaigns_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_campaigns_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "vw_mandate_pipeline"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "teaser_campaigns_teaser_document_id_fkey"
+            columns: ["teaser_document_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_campaigns_teaser_document_id_fkey"
+            columns: ["teaser_document_id"]
+            isOneToOne: false
+            referencedRelation: "v_documentos_con_versiones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teaser_recipients: {
+        Row: {
+          bounce_type: string | null
+          bounced_at: string | null
+          campaign_id: string
+          cim_access_granted: boolean | null
+          cim_access_granted_at: string | null
+          cim_access_granted_by: string | null
+          click_count: number | null
+          clicked_at: string | null
+          contacto_id: string | null
+          created_at: string | null
+          delivered_at: string | null
+          email: string
+          empresa_id: string | null
+          empresa_nombre: string | null
+          error_message: string | null
+          failed_at: string | null
+          id: string
+          mandato_empresa_id: string | null
+          nda_document_id: string | null
+          nda_language: string | null
+          nda_sent_at: string | null
+          nda_sent_by: string | null
+          nda_signed_at: string | null
+          nda_status: string | null
+          nombre: string | null
+          open_count: number | null
+          opened_at: string | null
+          provider_message_id: string | null
+          provider_status: string | null
+          queued_at: string | null
+          sent_at: string | null
+          skip_reason: string | null
+          status: string | null
+          tracking_id: string | null
+          updated_at: string | null
+          watermark_text: string | null
+          watermarked_at: string | null
+          watermarked_path: string | null
+          wave_id: string | null
+        }
+        Insert: {
+          bounce_type?: string | null
+          bounced_at?: string | null
+          campaign_id: string
+          cim_access_granted?: boolean | null
+          cim_access_granted_at?: string | null
+          cim_access_granted_by?: string | null
+          click_count?: number | null
+          clicked_at?: string | null
+          contacto_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email: string
+          empresa_id?: string | null
+          empresa_nombre?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          mandato_empresa_id?: string | null
+          nda_document_id?: string | null
+          nda_language?: string | null
+          nda_sent_at?: string | null
+          nda_sent_by?: string | null
+          nda_signed_at?: string | null
+          nda_status?: string | null
+          nombre?: string | null
+          open_count?: number | null
+          opened_at?: string | null
+          provider_message_id?: string | null
+          provider_status?: string | null
+          queued_at?: string | null
+          sent_at?: string | null
+          skip_reason?: string | null
+          status?: string | null
+          tracking_id?: string | null
+          updated_at?: string | null
+          watermark_text?: string | null
+          watermarked_at?: string | null
+          watermarked_path?: string | null
+          wave_id?: string | null
+        }
+        Update: {
+          bounce_type?: string | null
+          bounced_at?: string | null
+          campaign_id?: string
+          cim_access_granted?: boolean | null
+          cim_access_granted_at?: string | null
+          cim_access_granted_by?: string | null
+          click_count?: number | null
+          clicked_at?: string | null
+          contacto_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          email?: string
+          empresa_id?: string | null
+          empresa_nombre?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          mandato_empresa_id?: string | null
+          nda_document_id?: string | null
+          nda_language?: string | null
+          nda_sent_at?: string | null
+          nda_sent_by?: string | null
+          nda_signed_at?: string | null
+          nda_status?: string | null
+          nombre?: string | null
+          open_count?: number | null
+          opened_at?: string | null
+          provider_message_id?: string | null
+          provider_status?: string | null
+          queued_at?: string | null
+          sent_at?: string | null
+          skip_reason?: string | null
+          status?: string | null
+          tracking_id?: string | null
+          updated_at?: string | null
+          watermark_text?: string | null
+          watermarked_at?: string | null
+          watermarked_path?: string | null
+          wave_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaser_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "teaser_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_con_actividad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_mandato_empresa_id_fkey"
+            columns: ["mandato_empresa_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_nda_document_id_fkey"
+            columns: ["nda_document_id"]
+            isOneToOne: false
+            referencedRelation: "documentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_nda_document_id_fkey"
+            columns: ["nda_document_id"]
+            isOneToOne: false
+            referencedRelation: "v_documentos_con_versiones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_recipients_wave_id_fkey"
+            columns: ["wave_id"]
+            isOneToOne: false
+            referencedRelation: "teaser_waves"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teaser_tracking_events: {
+        Row: {
+          bounce_type: string | null
+          campaign_id: string
+          clicked_url: string | null
+          event_type: string
+          id: string
+          ip_address: unknown
+          occurred_at: string | null
+          provider_data: Json | null
+          provider_event_id: string | null
+          recipient_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          bounce_type?: string | null
+          campaign_id: string
+          clicked_url?: string | null
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          occurred_at?: string | null
+          provider_data?: Json | null
+          provider_event_id?: string | null
+          recipient_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          bounce_type?: string | null
+          campaign_id?: string
+          clicked_url?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          occurred_at?: string | null
+          provider_data?: Json | null
+          provider_event_id?: string | null
+          recipient_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaser_tracking_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "teaser_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaser_tracking_events_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "teaser_recipients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teaser_waves: {
+        Row: {
+          batch_size: number | null
+          campaign_id: string
+          clicked_count: number | null
+          completed_at: string | null
+          created_at: string | null
+          delay_between_batches_ms: number | null
+          delivered_count: number | null
+          failed_count: number | null
+          id: string
+          nombre: string | null
+          opened_count: number | null
+          scheduled_at: string | null
+          sent_count: number | null
+          started_at: string | null
+          status: string | null
+          total_recipients: number | null
+          updated_at: string | null
+          wave_number: number
+        }
+        Insert: {
+          batch_size?: number | null
+          campaign_id: string
+          clicked_count?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          delay_between_batches_ms?: number | null
+          delivered_count?: number | null
+          failed_count?: number | null
+          id?: string
+          nombre?: string | null
+          opened_count?: number | null
+          scheduled_at?: string | null
+          sent_count?: number | null
+          started_at?: string | null
+          status?: string | null
+          total_recipients?: number | null
+          updated_at?: string | null
+          wave_number: number
+        }
+        Update: {
+          batch_size?: number | null
+          campaign_id?: string
+          clicked_count?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          delay_between_batches_ms?: number | null
+          delivered_count?: number | null
+          failed_count?: number | null
+          id?: string
+          nombre?: string | null
+          opened_count?: number | null
+          scheduled_at?: string | null
+          sent_count?: number | null
+          started_at?: string | null
+          status?: string | null
+          total_recipients?: number | null
+          updated_at?: string | null
+          wave_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaser_waves_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "teaser_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       testimonials: {
         Row: {
           client_company: string
@@ -17944,6 +18594,17 @@ export type Database = {
           },
         ]
       }
+      v_email_queue_stats: {
+        Row: {
+          avg_attempts: number | null
+          count: number | null
+          newest: string | null
+          oldest: string | null
+          queue_type: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       v_empleados_completo: {
         Row: {
           codigo_empleado: string | null
@@ -18515,6 +19176,8 @@ export type Database = {
         }[]
       }
       bootstrap_first_admin: { Args: { user_email: string }; Returns: boolean }
+      calculate_email_retry_at: { Args: { attempts: number }; Returns: string }
+      can_access_cim: { Args: { p_recipient_id: string }; Returns: boolean }
       check_is_admin: { Args: { check_user_id: string }; Returns: boolean }
       check_is_super_admin: {
         Args: { check_user_id: string }
@@ -18666,6 +19329,25 @@ export type Database = {
         }
         Returns: boolean
       }
+      enqueue_email: {
+        Args: {
+          p_attachments?: Json
+          p_from_email?: string
+          p_from_name?: string
+          p_html_content: string
+          p_metadata?: Json
+          p_priority?: number
+          p_queue_type?: string
+          p_reference_id?: string
+          p_reference_type?: string
+          p_scheduled_at?: string
+          p_subject: string
+          p_text_content?: string
+          p_to_email: string
+          p_to_name?: string
+        }
+        Returns: string
+      }
       generate_fase0_reference_number: {
         Args: { doc_type: string }
         Returns: string
@@ -18733,6 +19415,7 @@ export type Database = {
           vencidas: number
         }[]
       }
+      get_email_metrics: { Args: { p_period?: string }; Returns: Json }
       get_lead_ai_stats: { Args: never; Returns: Json }
       get_marketplace_analytics: { Args: { days_back?: number }; Returns: Json }
       get_news_filter_options: {
@@ -18817,6 +19500,7 @@ export type Database = {
         | { Args: never; Returns: boolean }
         | { Args: { _user_id: string }; Returns: boolean }
       is_full_admin: { Args: { check_user_id: string }; Returns: boolean }
+      is_nda_eligible: { Args: { p_recipient_id: string }; Returns: boolean }
       is_user_admin: { Args: { check_user_id: string }; Returns: boolean }
       is_user_super_admin: { Args: { check_user_id: string }; Returns: boolean }
       link_valuation_to_empresa: {
@@ -18896,6 +19580,20 @@ export type Database = {
       }
       monitor_security_violations: { Args: never; Returns: undefined }
       normalize_company_name: { Args: { name: string }; Returns: string }
+      record_tracking_event: {
+        Args: {
+          p_clicked_url?: string
+          p_event_type: string
+          p_ip_address?: unknown
+          p_tracking_id: string
+          p_user_agent?: string
+        }
+        Returns: {
+          campaign_id: string
+          recipient_id: string
+          success: boolean
+        }[]
+      }
       refresh_banner_analytics: { Args: never; Returns: undefined }
       refresh_mandatos_days_in_stage: { Args: never; Returns: undefined }
       reject_user_registration: {
@@ -19014,7 +19712,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_campaign_metrics: {
+        Args: { p_campaign_id: string }
+        Returns: undefined
+      }
       update_kanban_order: { Args: { updates: Json }; Returns: undefined }
+      update_wave_metrics: { Args: { p_wave_id: string }; Returns: undefined }
       validate_data_access_security: {
         Args: never
         Returns: {

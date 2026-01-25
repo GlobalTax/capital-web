@@ -266,3 +266,6 @@ verify_jwt = false
 
 [functions.cr-batch-news-scan]
 verify_jwt = false
+
+[functions.sf-batch-enrich-funds]
+verify_jwt = false
