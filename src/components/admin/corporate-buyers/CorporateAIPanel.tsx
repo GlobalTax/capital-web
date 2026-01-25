@@ -220,6 +220,24 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
 
           {/* Tab: Suggested Targets */}
           <TabsContent value="targets" className="p-4 pt-3 m-0">
+            {/* Diagnostic Warning */}
+            {(!buyer.sector_focus || buyer.sector_focus.length === 0) && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg mb-3 border border-amber-200 dark:border-amber-800">
+                <p className="text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>Sin sectores configurados. El matching será menos preciso.</span>
+                </p>
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="text-xs p-0 h-auto text-amber-600 dark:text-amber-400 mt-1"
+                  onClick={() => setActiveTab('description')}
+                >
+                  Generar sectores con IA →
+                </Button>
+              </div>
+            )}
+            
             {!targetsResult ? (
               <div className="text-center py-4">
                 <Building2 className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
