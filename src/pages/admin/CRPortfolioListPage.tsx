@@ -248,16 +248,16 @@ const CRPortfolioListPage = () => {
             </Select>
 
             <Select
-              value={filters.sector || 'all'}
-              onValueChange={(v) => setFilters(prev => ({ ...prev, sector: v === 'all' ? undefined : v }))}
+              value={filters.sectorPe || 'all'}
+              onValueChange={(v) => setFilters(prev => ({ ...prev, sectorPe: v === 'all' ? undefined : v, sector: undefined }))}
             >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Sector" />
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sector PE" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {filterOptions?.sectors.map((sector) => (
-                  <SelectItem key={sector} value={sector}>{sector}</SelectItem>
+                <SelectItem value="all">Todos los sectores</SelectItem>
+                {filterOptions?.peSectors.map((sector) => (
+                  <SelectItem key={sector.id} value={sector.id}>{sector.name_es}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -376,7 +376,10 @@ const CRPortfolioListPage = () => {
                         </span>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {company.sector || '-'}
+                        {company.sector_pe_name || company.sector || '-'}
+                        {company.sector_pe && (
+                          <span className="ml-1 text-xs text-green-600">✓</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {company.country || '-'}

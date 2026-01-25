@@ -14,7 +14,8 @@ import {
   Building2, 
   Briefcase,
   BarChart3,
-  RefreshCw
+  RefreshCw,
+  Folder
 } from 'lucide-react';
 import { useSectorMigration } from '@/hooks/useSectorMigration';
 import { PE_SECTORS } from '@/constants/peSectors';
@@ -58,6 +59,8 @@ const SectorMigrationPanel: React.FC = () => {
   const migratedCompanies = result?.result.companiesMigrated || 0;
   const totalFunds = result?.result.fundsProcessed || 0;
   const migratedFunds = result?.result.fundsMigrated || 0;
+  const totalCRPortfolio = result?.result.crPortfolioProcessed || 0;
+  const migratedCRPortfolio = result?.result.crPortfolioMigrated || 0;
 
   return (
     <Card className="w-full">
@@ -128,7 +131,7 @@ const SectorMigrationPanel: React.FC = () => {
             )}
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-3 gap-4 mb-6">
               <Card>
                 <CardContent className="pt-4">
                   <div className="flex items-center justify-between mb-2">
@@ -168,13 +171,34 @@ const SectorMigrationPanel: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Folder className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Portfolio CR</span>
+                    </div>
+                    <span className="text-2xl font-bold">
+                      {migratedCRPortfolio}/{totalCRPortfolio}
+                    </span>
+                  </div>
+                  <Progress value={(migratedCRPortfolio / Math.max(totalCRPortfolio, 1)) * 100} className="h-2" />
+                  <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+                    <span>✓ {result.result.crPortfolioMigrated || 0} migrados</span>
+                    <span>⊘ {result.result.crPortfolioSkipped || 0} omitidos</span>
+                    <span>✗ {result.result.crPortfolioErrors || 0} errores</span>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="overview">Distribución</TabsTrigger>
                 <TabsTrigger value="companies">Empresas</TabsTrigger>
                 <TabsTrigger value="funds">Fondos</TabsTrigger>
+                <TabsTrigger value="cr-portfolio">Portfolio CR</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="mt-4">
@@ -288,6 +312,50 @@ const SectorMigrationPanel: React.FC = () => {
                             </td>
                             <td className="py-2 px-2">
                               {getMethodBadge(fund.method)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="cr-portfolio" className="mt-4">
+                <ScrollArea className="h-[400px] rounded-md border">
+                  <div className="p-4">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2 px-2">Empresa</th>
+                          <th className="text-left py-2 px-2">Sector Original</th>
+                          <th className="text-left py-2 px-2">Sector PE</th>
+                          <th className="text-left py-2 px-2">Método</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(result.result.details.crPortfolio || []).map((company) => (
+                          <tr key={company.id} className="border-b hover:bg-muted/50">
+                            <td className="py-2 px-2 font-medium">{company.name}</td>
+                            <td className="py-2 px-2 text-muted-foreground">
+                              {company.originalSector || '-'}
+                            </td>
+                            <td className="py-2 px-2">
+                              {company.newSectorPe ? (
+                                <Badge variant="outline">
+                                  {getSectorLabel(company.newSectorPe)}
+                                </Badge>
+                              ) : (
+                                '-'
+                              )}
+                            </td>
+                            <td className="py-2 px-2">
+                              {getMethodBadge(company.method)}
+                              {company.confidence && company.method === 'ai' && (
+                                <span className="ml-1 text-xs text-muted-foreground">
+                                  ({Math.round(company.confidence * 100)}%)
+                                </span>
+                              )}
                             </td>
                           </tr>
                         ))}

@@ -10762,40 +10762,64 @@ export type Database = {
       }
       mandato_empresas: {
         Row: {
+          buyer_type: string | null
+          conflicto_descripcion: string | null
           created_at: string | null
           empresa_id: string
           funnel_stage: string | null
+          geografia: string | null
           id: string
           mandato_id: string
           match_score: number | null
+          no_contactar: boolean | null
+          no_contactar_motivo: string | null
           notas: string | null
+          notas_internas: string | null
           pipeline_stage_changed_at: string | null
           pipeline_stage_target: string | null
           rol: string
+          tags: string[] | null
+          tiene_conflicto: boolean | null
         }
         Insert: {
+          buyer_type?: string | null
+          conflicto_descripcion?: string | null
           created_at?: string | null
           empresa_id: string
           funnel_stage?: string | null
+          geografia?: string | null
           id?: string
           mandato_id: string
           match_score?: number | null
+          no_contactar?: boolean | null
+          no_contactar_motivo?: string | null
           notas?: string | null
+          notas_internas?: string | null
           pipeline_stage_changed_at?: string | null
           pipeline_stage_target?: string | null
           rol: string
+          tags?: string[] | null
+          tiene_conflicto?: boolean | null
         }
         Update: {
+          buyer_type?: string | null
+          conflicto_descripcion?: string | null
           created_at?: string | null
           empresa_id?: string
           funnel_stage?: string | null
+          geografia?: string | null
           id?: string
           mandato_id?: string
           match_score?: number | null
+          no_contactar?: boolean | null
+          no_contactar_motivo?: string | null
           notas?: string | null
+          notas_internas?: string | null
           pipeline_stage_changed_at?: string | null
           pipeline_stage_target?: string | null
           rol?: string
+          tags?: string[] | null
+          tiene_conflicto?: boolean | null
         }
         Relationships: [
           {
