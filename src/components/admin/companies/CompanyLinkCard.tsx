@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,8 @@ import {
   Percent,
   CreditCard,
   Wallet,
-  Edit
+  Edit,
+  ArrowRight
 } from 'lucide-react';
 import { CompanySearchDialog } from './CompanySearchDialog';
 import { CompanyFormDialog } from './CompanyFormDialog';
@@ -44,6 +46,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
   const { linkToContact, unlinkFromContact } = useEmpresas();
 
   // Fetch linked empresa
@@ -192,7 +195,17 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
                 variant="ghost" 
                 size="icon" 
                 className="h-8 w-8"
+                onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+                title="Ver ficha completa"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8"
                 onClick={() => setIsEditing(true)}
+                title="Editar empresa"
               >
                 <Edit className="h-4 w-4" />
               </Button>
@@ -201,6 +214,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
                 size="icon" 
                 className="h-8 w-8 text-destructive hover:text-destructive"
                 onClick={handleUnlink}
+                title="Desvincular empresa"
               >
                 <Unlink className="h-4 w-4" />
               </Button>
@@ -210,7 +224,12 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
         <CardContent className="space-y-4">
           {/* Header con nombre y badges */}
           <div>
-            <h3 className="text-lg font-semibold">{empresa.nombre}</h3>
+            <h3 
+              className="text-lg font-semibold cursor-pointer hover:text-primary hover:underline transition-colors"
+              onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+            >
+              {empresa.nombre}
+            </h3>
             {empresa.cif && (
               <p className="text-sm text-muted-foreground">CIF: {empresa.cif}</p>
             )}
@@ -327,6 +346,21 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
               </div>
             </>
           )}
+
+          <Separator />
+          
+          {/* Botón para ver ficha completa */}
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+            >
+              <Building2 className="h-4 w-4 mr-2" />
+              Ver Ficha Completa
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
