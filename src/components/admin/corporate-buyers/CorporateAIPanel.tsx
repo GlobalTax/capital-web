@@ -4,6 +4,7 @@
 // =============================================
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Sparkles, 
   Building2, 
@@ -16,7 +17,8 @@ import {
   ChevronRight,
   AlertCircle,
   TrendingUp,
-  Save
+  Save,
+  ExternalLink
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -637,17 +639,37 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {operationsResult.matches.length} de {operationsResult.total_operations_analyzed} operaciones encajan
-                    </p>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                      <span>{operationsResult.matches.length} de {operationsResult.total_operations_analyzed} encajan</span>
+                      <div className="flex gap-2">
+                        {operationsResult.sell_opportunities !== undefined && operationsResult.sell_opportunities > 0 && (
+                          <Badge variant="default" className="text-[10px]">
+                            {operationsResult.sell_opportunities} en venta
+                          </Badge>
+                        )}
+                        {operationsResult.buy_mandates !== undefined && operationsResult.buy_mandates > 0 && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            {operationsResult.buy_mandates} mandatos
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                     {operationsResult.matches.map((op) => (
                       <div 
-                        key={op.mandate_id}
+                        key={op.operation_id}
                         className="p-2.5 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <span className="font-medium text-sm">{op.title}</span>
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                variant={op.type === 'sell' ? 'default' : 'secondary'} 
+                                className="text-[10px] py-0 shrink-0"
+                              >
+                                {op.type === 'sell' ? 'En Venta' : 'Buy-Side'}
+                              </Badge>
+                              <span className="font-medium text-sm truncate">{op.title}</span>
+                            </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                               {op.sector && <span>{op.sector}</span>}
                               {op.geographic_scope && <span>• {op.geographic_scope}</span>}
@@ -660,7 +682,7 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                             </span>
                           </div>
                         </div>
-                        {op.revenue_range && (
+                        {op.revenue_range && op.revenue_range !== 'No especificado' && (
                           <p className="text-xs text-muted-foreground mt-1">
                             Facturación: {op.revenue_range}
                           </p>
@@ -674,6 +696,15 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
                             ))}
                           </div>
                         )}
+                        <Link
+                          to={op.type === 'sell' 
+                            ? `/admin/operations/${op.operation_id}` 
+                            : `/admin/mandatos-compra/${op.operation_id}`
+                          }
+                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-2"
+                        >
+                          Ver detalles <ExternalLink className="h-3 w-3" />
+                        </Link>
                       </div>
                     ))}
                   </div>

@@ -55,13 +55,17 @@ export interface GenerateThesisResult {
 }
 
 export interface MatchedOperation {
-  mandate_id: string;
+  operation_id: string;
+  mandate_id?: string;
   title: string;
+  type: 'sell' | 'mandate';
   sector: string | null;
   subsector: string | null;
   geographic_scope: string | null;
+  revenue_amount?: number | null;
   revenue_range: string;
   description: string | null;
+  status?: string | null;
   fit_score: number;
   fit_reasons: string[];
 }
@@ -69,6 +73,8 @@ export interface MatchedOperation {
 export interface MatchOperationsResult {
   matches: MatchedOperation[];
   total_operations_analyzed: number;
+  sell_opportunities?: number;
+  buy_mandates?: number;
   buyer_criteria?: {
     sectors: string[] | null;
     geography: string[] | null;
