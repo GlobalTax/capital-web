@@ -64,6 +64,10 @@ export const LazySectorDossierStudio = lazy(() => import('@/pages/admin/SectorDo
 // === INCOMPLETE VALUATIONS ===
 export const LazyIncompleteValuationsManager = lazy(() => import('@/components/admin/IncompleteValuationsManager'));
 
+// === CORPORATE BUYERS ===
+export const LazyCorporateBuyersPage = lazy(() => import('@/pages/admin/CorporateBuyersPage'));
+export const LazyCorporateBuyerDetailPage = lazy(() => import('@/pages/admin/CorporateBuyerDetailPage'));
+
 // === VALUATION ANALYTICS ===
 export const LazyValuationAnalyticsDashboard = lazy(() => import('./valuation-analytics/ValuationAnalyticsDashboard').then(m => ({ default: m.ValuationAnalyticsDashboard })));
 
