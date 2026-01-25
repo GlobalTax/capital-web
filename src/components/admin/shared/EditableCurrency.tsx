@@ -4,6 +4,7 @@ import { Check, Loader2, X, Pencil } from "lucide-react";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { cn } from "@/lib/utils";
 import { formatNumberWithDots } from "@/utils/numberFormatting";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EditableCurrencyProps {
   value: number | null | undefined;
@@ -66,10 +67,11 @@ export const EditableCurrency: React.FC<EditableCurrencyProps> = ({
   }, [isEditing]);
 
   const handleStartEdit = useCallback(() => {
+    console.log('EditableCurrency: handleStartEdit', { disabled, value });
     if (disabled) return;
     setIsEditing(true);
     setSaveStatus('idle');
-  }, [disabled]);
+  }, [disabled, value]);
 
   const handleCancel = useCallback(() => {
     setEditValue(value ?? 0);
@@ -153,42 +155,57 @@ export const EditableCurrency: React.FC<EditableCurrencyProps> = ({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "group relative flex items-center gap-1 cursor-pointer min-h-[28px] px-1 -mx-1 rounded",
-        "hover:bg-muted/50 transition-colors",
-        disabled && "cursor-not-allowed opacity-50",
-        className
-      )}
-      onClick={(e) => {
-        e.stopPropagation();
-        handleStartEdit();
-      }}
-    >
-      <span 
-        className={cn(
-          "text-sm font-medium tabular-nums",
-          isEmpty && "text-muted-foreground",
-          displayClassName
-        )}
-      >
-        {isEmpty ? emptyText : (compact ? formatCompactCurrency(displayValue, suffix) : `${formatNumberWithDots(displayValue)}${suffix}`)}
-      </span>
-      
-      {/* Edit indicator */}
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          ref={containerRef}
+          className={cn(
+            "group relative flex items-center gap-1 cursor-pointer min-h-[28px] px-1 -mx-1 rounded",
+            "hover:bg-muted/50 transition-colors",
+            isEmpty && "border border-dashed border-muted-foreground/40 px-2",
+            disabled && "cursor-not-allowed opacity-50",
+            className
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleStartEdit();
+          }}
+        >
+          <span 
+            className={cn(
+              "text-sm font-medium tabular-nums",
+              isEmpty && "text-muted-foreground",
+              displayClassName
+            )}
+          >
+            {isEmpty ? emptyText : (compact ? formatCompactCurrency(displayValue, suffix) : `${formatNumberWithDots(displayValue)}${suffix}`)}
+          </span>
+          
+          {/* Edit indicator - always visible when empty */}
+          {!disabled && (
+            <Pencil className={cn(
+              "h-3 w-3 text-muted-foreground flex-shrink-0 transition-opacity",
+              isEmpty 
+                ? "opacity-60" 
+                : "opacity-0 group-hover:opacity-100"
+            )} />
+          )}
+          
+          {/* Save status indicators */}
+          {saveStatus === 'success' && (
+            <Check className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+          )}
+          {saveStatus === 'error' && (
+            <X className="h-3.5 w-3.5 text-destructive flex-shrink-0" />
+          )}
+        </div>
+      </TooltipTrigger>
       {!disabled && (
-        <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+        <TooltipContent side="top" className="text-xs">
+          Clic para editar
+        </TooltipContent>
       )}
-      
-      {/* Save status indicators */}
-      {saveStatus === 'success' && (
-        <Check className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
-      )}
-      {saveStatus === 'error' && (
-        <X className="h-3.5 w-3.5 text-destructive flex-shrink-0" />
-      )}
-    </div>
+    </Tooltip>
   );
 };
 
