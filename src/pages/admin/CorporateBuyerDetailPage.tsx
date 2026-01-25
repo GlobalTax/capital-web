@@ -34,14 +34,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useCorporateBuyer, useDeleteCorporateBuyer, useUpdateCorporateBuyer } from '@/hooks/useCorporateBuyers';
+import { useCorporateBuyer, useDeleteCorporateBuyer, useUpdateCorporateBuyer, useCreateCorporateBuyer } from '@/hooks/useCorporateBuyers';
 import { SectorMultiSelect } from '@/components/admin/corporate-buyers/SectorMultiSelect';
+import { CorporateBuyerForm } from '@/components/admin/corporate-buyers/CorporateBuyerForm';
 import { useCorporateContacts } from '@/hooks/useCorporateContacts';
 import { useIsCorporateFavorite, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
 import { 
   BUYER_TYPE_LABELS, 
   BUYER_TYPE_COLORS,
-  CONTACT_ROLE_LABELS 
+  CONTACT_ROLE_LABELS,
+  CorporateBuyerFormData
 } from '@/types/corporateBuyers';
 import { CorporateAIPanel } from '@/components/admin/corporate-buyers/CorporateAIPanel';
 import { cn } from '@/lib/utils';
@@ -64,7 +66,15 @@ const CorporateBuyerDetailPage = () => {
   const toggleFavorite = useToggleCorporateFavorite();
   const deleteBuyer = useDeleteCorporateBuyer();
   const updateBuyer = useUpdateCorporateBuyer();
+  const createBuyer = useCreateCorporateBuyer();
   const [isEditingSectors, setIsEditingSectors] = useState(false);
+
+  const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
+    const result = await createBuyer.mutateAsync(data);
+    if (result?.id) {
+      navigate(`/admin/corporate-buyers/${result.id}`);
+    }
+  };
 
   const handleToggleFavorite = () => {
     if (id) {
@@ -96,11 +106,10 @@ const CorporateBuyerDetailPage = () => {
           </Button>
           <h1 className="text-2xl font-bold">Nuevo Comprador</h1>
         </div>
-        <Card>
-          <CardContent className="p-8 text-center text-muted-foreground">
-            Formulario de creación en desarrollo...
-          </CardContent>
-        </Card>
+        <CorporateBuyerForm 
+          onSubmit={handleCreateBuyer}
+          isSaving={createBuyer.isPending}
+        />
       </div>
     );
   }
