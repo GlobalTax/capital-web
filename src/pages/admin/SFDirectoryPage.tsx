@@ -13,6 +13,7 @@ import { useSFFunds } from '@/hooks/useSFFunds';
 import { useSFFavoriteFunds, useSFFavoritePeople } from '@/hooks/useSFFavorites';
 import { SFPeopleTable } from '@/components/admin/search-funds/SFPeopleTable';
 import { SFFundsTable } from '@/components/admin/search-funds/SFFundsTable';
+import { SFEnrichmentDashboard } from '@/components/admin/search-funds/SFEnrichmentDashboard';
 import { SFPersonRole } from '@/types/searchFunds';
 
 export const SFDirectoryPage: React.FC = () => {
@@ -97,6 +98,9 @@ export const SFDirectoryPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* Enrichment Dashboard */}
+      <SFEnrichmentDashboard />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
