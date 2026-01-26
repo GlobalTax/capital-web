@@ -45,6 +45,7 @@ import { useBrevoEvents } from '@/hooks/useBrevoEvents';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AICompanySummaryBlock } from '@/components/admin/leads/AICompanySummaryBlock';
 import { CompanyLinkCard } from '@/components/admin/companies/CompanyLinkCard';
+import PotentialBuyersCard from '@/components/admin/leads/PotentialBuyersCard';
 
 interface LeadData {
   id: string;
@@ -583,6 +584,12 @@ export default function LeadDetailPage() {
             empresaId={lead.empresa_id}
             companyName={lead.company}
             onCompanyLinked={refetch}
+          />
+
+          {/* Compradores Potenciales */}
+          <PotentialBuyersCard
+            leadId={lead.id}
+            leadOrigin={lead.origin}
           />
 
           {/* Datos específicos según origen */}

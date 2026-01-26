@@ -10046,6 +10046,69 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_potential_buyers: {
+        Row: {
+          added_by: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          lead_id: string
+          lead_origin: string
+          logo_url: string | null
+          name: string
+          notes: string | null
+          priority: number | null
+          revenue_range: string | null
+          sector_focus: string[] | null
+          status: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          added_by?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          lead_id: string
+          lead_origin: string
+          logo_url?: string | null
+          name: string
+          notes?: string | null
+          priority?: number | null
+          revenue_range?: string | null
+          sector_focus?: string[] | null
+          status?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          added_by?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          lead_id?: string
+          lead_origin?: string
+          logo_url?: string | null
+          name?: string
+          notes?: string | null
+          priority?: number | null
+          revenue_range?: string | null
+          sector_focus?: string[] | null
+          status?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       lead_security: {
         Row: {
           cif: string | null
