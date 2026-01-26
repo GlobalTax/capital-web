@@ -32,7 +32,7 @@ import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
-  logo_url: z.string().optional(),
+  logo_url: z.string().min(1, 'El logo es requerido'),
   website: z.string().url('URL inválida').optional().or(z.literal('')),
   description: z.string().optional(),
   sector_focus: z.array(z.string()).optional(),
