@@ -1,241 +1,249 @@
 
 
-## Plan: Sistema de Compradores Potenciales para Leads
+## Plan: Alta de Compradores Potenciales con IA (0 Fricciones)
 
-Se implementará una nueva sección en la ficha de Lead para gestionar compradores potenciales vinculados, con soporte para subir logos/imágenes de cada comprador.
+Se transformará el formulario de compradores potenciales para que con solo introducir el **nombre de empresa** o **URL del website**, el sistema auto-rellene todos los campos posibles (logo, descripción, sector, datos financieros) usando IA y APIs externas.
 
 ---
 
-### Arquitectura Propuesta
+### Flujo de Usuario Propuesto
 
 ```text
-+------------------------+     +-----------------------------+
-|   LeadDetailPage       |     |  lead_potential_buyers      |
-+------------------------+     +-----------------------------+
-|  - PotentialBuyersCard |<--->|  lead_id: UUID              |
-|    (Nueva sección)     |     |  name: TEXT                 |
-|                        |     |  logo_url: TEXT             |
-+------------------------+     |  website: TEXT              |
-          |                    |  description: TEXT          |
-          v                    |  sector_focus: TEXT[]       |
-+------------------------+     |  revenue_range: TEXT        |
-|  PotentialBuyerForm    |     |  contact_info: TEXT         |
-+------------------------+     |  priority: INTEGER          |
-|  - Nombre              |     |  notes: TEXT                |
-|  - ImageUploadField    |     |  status: TEXT               |
-|  - Website, Sector...  |     |  added_by: UUID             |
-+------------------------+     +-----------------------------+
++----------------------------------------------------------+
+| 🔍 Nombre o URL                              [🪄 Buscar] |
+| [empresaejemplo.com                                    ] |
++----------------------------------------------------------+
+          ↓ Busca automáticamente
++----------------------------------------------------------+
+| ✅ Datos encontrados                                     |
+| [LOGO]  Empresa Ejemplo S.L.                            |
+|         Fabricante de componentes industriales...        |
+|         Sector: Industrial · Fact: 5M-10M€              |
+|         [Usar estos datos]        [Editar manualmente]   |
++----------------------------------------------------------+
+```
+
+---
+
+### Arquitectura
+
+```text
++------------------------+     +----------------------------+
+|  PotentialBuyerForm    |     |  potential-buyer-enrich    |
+|  (Renovado)            |     |  (Nueva Edge Function)     |
++------------------------+     +----------------------------+
+|  1. Input nombre/URL   |---->|  1. Detectar tipo input    |
+|  2. Botón "Buscar"     |     |  2. find-company-logo      |
+|  3. Preview resultado  |     |  3. Firecrawl (website)    |
+|  4. Confirmar o editar |     |  4. AI: generar descripción|
++------------------------+     +----------------------------+
 ```
 
 ---
 
 ### Cambios a Implementar
 
-#### 1. Base de Datos - Nueva Tabla `lead_potential_buyers`
+#### 1. Nueva Edge Function - `potential-buyer-enrich`
 
-Se creará una tabla para almacenar los compradores potenciales asociados a cada lead:
+Combina múltiples fuentes para extraer datos completos:
 
-```sql
-CREATE TABLE public.lead_potential_buyers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  lead_id UUID NOT NULL,
-  lead_origin TEXT NOT NULL,
-  
-  -- Datos del comprador
-  name TEXT NOT NULL,
-  logo_url TEXT,
-  website TEXT,
-  description TEXT,
-  sector_focus TEXT[],
-  revenue_range TEXT,
-  contact_name TEXT,
-  contact_email TEXT,
-  contact_phone TEXT,
-  
-  -- Gestión
-  priority INTEGER DEFAULT 0,
-  status TEXT DEFAULT 'identificado' CHECK (status IN ('identificado', 'contactado', 'interesado', 'negociando', 'descartado')),
-  notes TEXT,
-  
-  -- Auditoría
-  added_by UUID REFERENCES auth.users(id),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
+**Entradas:**
+- `query`: nombre de empresa, dominio, o URL completa
 
--- Índices
-CREATE INDEX idx_lead_potential_buyers_lead ON lead_potential_buyers(lead_id, lead_origin);
+**Proceso:**
+1. Detectar si es URL, dominio, o nombre
+2. Llamar a `find-company-logo` para obtener logo vía Clearbit
+3. Si hay website, usar Firecrawl para scrape de contenido
+4. Usar IA (Gemini Flash) para generar:
+   - Descripción profesional (1-2 frases)
+   - Sector inferido del contenido
+   - Rango de facturación estimado (si hay datos)
 
--- RLS
-ALTER TABLE lead_potential_buyers ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Admins can manage potential buyers"
-  ON lead_potential_buyers FOR ALL
-  USING (auth.role() = 'authenticated');
-```
-
-#### 2. Tipos TypeScript - `src/types/leadPotentialBuyers.ts`
-
+**Salida:**
 ```typescript
-export type BuyerStatus = 'identificado' | 'contactado' | 'interesado' | 'negociando' | 'descartado';
-
-export interface LeadPotentialBuyer {
-  id: string;
-  lead_id: string;
-  lead_origin: string;
-  name: string;
-  logo_url: string | null;
-  website: string | null;
-  description: string | null;
-  sector_focus: string[] | null;
-  revenue_range: string | null;
-  contact_name: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
-  priority: number;
-  status: BuyerStatus;
-  notes: string | null;
-  added_by: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface LeadPotentialBuyerFormData {
-  name: string;
-  logo_url?: string;
-  website?: string;
-  description?: string;
-  sector_focus?: string[];
-  revenue_range?: string;
-  contact_name?: string;
-  contact_email?: string;
-  contact_phone?: string;
-  priority?: number;
-  status?: BuyerStatus;
-  notes?: string;
+{
+  success: true,
+  data: {
+    name: "Empresa Ejemplo S.L.",
+    logo_url: "https://logo.clearbit.com/empresaejemplo.es",
+    website: "https://www.empresaejemplo.es",
+    description: "Fabricante especializado en componentes industriales para el sector automoción, con presencia en España y Portugal.",
+    sector_focus: ["Industrial y Manufacturero", "Automoción"],
+    revenue_range: "5M-10M",
+    source: "clearbit+firecrawl+ai"
+  }
 }
 ```
 
-#### 3. Hook - `src/hooks/useLeadPotentialBuyers.ts`
+#### 2. Nuevo Componente - `BuyerQuickSearch.tsx`
 
-```typescript
-// Operaciones CRUD para compradores potenciales
-- usePotentialBuyers(leadId, leadOrigin) - Listar compradores del lead
-- useCreatePotentialBuyer() - Crear nuevo comprador
-- useUpdatePotentialBuyer() - Actualizar comprador
-- useDeletePotentialBuyer() - Eliminar comprador
-```
-
-#### 4. Componente Card - `src/components/admin/leads/PotentialBuyersCard.tsx`
-
-Card principal que se añadirá a la ficha del lead:
+Componente de búsqueda inteligente con preview de resultados:
 
 **Características:**
-- Header con título "Compradores Potenciales" y botón "+ Añadir"
-- Lista de compradores con avatares (logos) usando el componente Avatar
-- Cada item muestra: logo, nombre, sector, estado (badge), acciones
-- Badge de estado con colores según estado (identificado=gris, interesado=verde, etc.)
-- Botón de editar y eliminar en cada item
-- Contador de compradores en el header
+- Input unificado para nombre, dominio o URL
+- Detección automática del tipo de input
+- Spinner durante la búsqueda
+- Preview de datos encontrados con logo visible
+- Botón "Usar datos" para auto-rellenar el formulario
+- Opción de "Editar manualmente" si los datos no son correctos
 
-**Diseño visual:**
+**Diseño:**
 ```text
 +----------------------------------------------------------+
-| 👥 Compradores Potenciales (3)              [+ Añadir]   |
+| 🪄 Búsqueda inteligente                                  |
 +----------------------------------------------------------+
-| [LOGO] Empresa ABC S.L.                                  |
-|        Sector: Tecnología · Fact: 5M-10M€                |
-|        📧 contacto@abc.com · ☎ 123456789                 |
-|        [Interesado ✓]               [✏️] [🗑️]           |
+| [empresaejemplo.es                    ] [🔍 Buscar]      |
+|                                                          |
+| Introduce el nombre de empresa, dominio o URL del sitio  |
 +----------------------------------------------------------+
-| [LOGO] Grupo XYZ                                         |
-|        Sector: Industrial · Fact: 10M-50M€               |
-|        [Identificado]               [✏️] [🗑️]           |
+
+// Después de buscar:
++----------------------------------------------------------+
+| ✅ Empresa encontrada                                    |
++----------------------------------------------------------+
+| [LOGO IMG]  Empresa Ejemplo S.L.                        |
+|             www.empresaejemplo.es                        |
+|             Fabricante de componentes industriales...    |
+|             Sector: Industrial · Fact: 5M-10M€          |
+|                                                          |
+| [Usar estos datos ✓]            [Editar manualmente ✏️] |
 +----------------------------------------------------------+
 ```
 
-#### 5. Formulario - `src/components/admin/leads/PotentialBuyerForm.tsx`
+#### 3. Modificar `PotentialBuyerForm.tsx`
 
-Dialog/Sheet para crear y editar compradores:
+Integrar el nuevo flujo de búsqueda:
 
-**Campos del formulario:**
-- **Nombre** (requerido) - Input text
-- **Logo** - ImageUploadField (usa folder `potential-buyers/logos`)
-- **Sitio Web** - Input URL
-- **Descripción** - Textarea corto
-- **Sector(es)** - Multi-select o input de tags
-- **Rango de Facturación** - Select (0-1M, 1M-5M, 5M-10M, 10M-50M, 50M+)
-- **Datos de Contacto:**
-  - Nombre del contacto
-  - Email
-  - Teléfono
-- **Estado** - Select (identificado, contactado, interesado, negociando, descartado)
-- **Prioridad** - Select (1-5 o Baja/Media/Alta)
-- **Notas** - Textarea
+**Cambios:**
+1. Añadir `BuyerQuickSearch` al inicio del formulario (antes del nombre)
+2. Función `handleEnrichData` para auto-rellenar todos los campos
+3. Estado `isEnriched` para mostrar indicador de datos auto-completados
+4. Mantener edición manual como fallback
+5. Hacer el logo requerido solo si no se usó búsqueda inteligente
 
-#### 6. Integración en LeadDetailPage
-
-Añadir la nueva Card después de "Empresa Vinculada":
-
-```tsx
-{/* Empresa Vinculada */}
-<CompanyLinkCard ... />
-
-{/* NUEVO: Compradores Potenciales */}
-<PotentialBuyersCard
-  leadId={lead.id}
-  leadOrigin={lead.origin}
-/>
-
-{/* Datos específicos según origen */}
+**Flujo del formulario:**
+```text
+1. Usuario abre el modal
+2. Ve BuyerQuickSearch prominente
+3. Escribe nombre/URL → Click "Buscar"
+4. Ve preview con datos → Click "Usar datos"
+5. Formulario se rellena automáticamente
+6. Usuario puede ajustar cualquier campo
+7. Click "Añadir comprador"
 ```
+
+#### 4. Modificar Validación del Schema
+
+Hacer el logo opcional si viene de búsqueda inteligente:
+
+```typescript
+const formSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido'),
+  logo_url: z.string().optional().or(z.string().url()),
+  // ... resto de campos
+}).refine(
+  (data) => data.logo_url || data._fromEnrichment,
+  { message: 'El logo es requerido', path: ['logo_url'] }
+);
+```
+
+O simplemente hacer logo requerido siempre pero auto-completado por la búsqueda.
 
 ---
 
 ### Secuencia de Implementación
 
-1. **Migración DB**: Crear tabla `lead_potential_buyers` con RLS
-2. **Tipos**: Crear `src/types/leadPotentialBuyers.ts`
-3. **Hook**: Crear `src/hooks/useLeadPotentialBuyers.ts` con CRUD
-4. **Formulario**: Crear `PotentialBuyerForm.tsx` con ImageUploadField
-5. **Card**: Crear `PotentialBuyersCard.tsx` con lista y acciones
-6. **Integración**: Añadir card en `LeadDetailPage.tsx`
-7. **Actualizar Types**: Regenerar tipos de Supabase
+1. **Edge Function** `potential-buyer-enrich`:
+   - Detectar tipo de input (URL, dominio, nombre)
+   - Integrar `find-company-logo` para logos
+   - Usar Firecrawl para scrape si hay website
+   - Usar Lovable AI para generar descripción y inferir sector
+
+2. **Componente** `BuyerQuickSearch.tsx`:
+   - Input con botón de búsqueda
+   - Llamada a la edge function
+   - Preview de resultados con imagen
+   - Callbacks para aceptar o rechazar datos
+
+3. **Actualizar** `PotentialBuyerForm.tsx`:
+   - Integrar BuyerQuickSearch
+   - Handler para auto-rellenar campos
+   - Mantener flujo manual como alternativa
+
+4. **Actualizar** validación:
+   - Ajustar schema para nuevo flujo
+   - Logo requerido pero auto-completado
 
 ---
 
 ### Resultado Visual Esperado
 
-**Vista de Lista (Card colapsable):**
-- Muestra avatares con logos de compradores
-- Información compacta pero completa
-- Estados con badges de colores
-- Acciones rápidas (editar, eliminar)
-- Ordenados por prioridad
+**Paso 1 - Búsqueda:**
+```text
++---------------------------------------------+
+| Añadir Comprador Potencial                  |
++---------------------------------------------+
+| 🪄 Búsqueda inteligente                     |
+| [carpas-zaragoza.es       ] [🔍 Buscar]    |
+| Escribe nombre, dominio o URL               |
++---------------------------------------------+
+| ─── O rellena manualmente ───               |
+| Nombre de la empresa *                      |
+| [ _________________________________ ]       |
++---------------------------------------------+
+```
 
-**Formulario de Creación:**
-- Campo de logo con upload directo a Supabase Storage
-- Preview de imagen antes de guardar
-- Validación de campos requeridos
-- Selectores para sectores y rangos de facturación
+**Paso 2 - Resultado encontrado:**
+```text
++---------------------------------------------+
+| ✅ Empresa encontrada                       |
++---------------------------------------------+
+| [🏢]  CARPAS ZARAGOZA SL                   |
+|       www.carpas-zaragoza.es               |
+|       Empresa especializada en              |
+|       fabricación e instalación de          |
+|       carpas y estructuras modulares...     |
+|       📊 Sector: Industrial · 1M-5M€       |
+|                                             |
+| [✓ Usar estos datos]  [✏️ Editar manual]   |
++---------------------------------------------+
+```
+
+**Paso 3 - Formulario auto-completado:**
+```text
++---------------------------------------------+
+| Añadir Comprador Potencial          [✓ AI] |
++---------------------------------------------+
+| Nombre * [CARPAS ZARAGOZA SL_________]     |
+| Logo     [🏢 carpas-zaragoza.es/logo] [X]  |
+| Website  [https://carpas-zaragoza.es_]     |
+| Descripción                                 |
+| [Empresa especializada en fabricación_]    |
+| [e instalación de carpas y estructur_]     |
+|                                             |
+| Facturación [1M-5M €_▼] Estado [Identif▼]  |
++---------------------------------------------+
+```
 
 ---
 
 ### Consideraciones Técnicas
 
-- **Storage**: Se usará el bucket `lovable-uploads` existente con carpeta `potential-buyers/logos`
-- **ImageUploadField**: Se reutiliza el componente existente que ya maneja upload a Supabase
-- **RLS**: Política simple para usuarios autenticados (admins)
-- **Performance**: La lista usa IDs compuestos (lead_id + lead_origin) para filtrar
-- **Optimistic Updates**: React Query manejará la cache para UI instantánea
-- **Validación**: Zod schemas para el formulario
+- **Clearbit Logo API**: Gratuita, solo necesita dominio
+- **Firecrawl**: Para extraer contenido del website
+- **Lovable AI**: Para generar descripción profesional del contenido scrapeado
+- **Fallback**: Si no encuentra datos, el usuario puede rellenar manualmente
+- **Performance**: Búsqueda asíncrona con feedback visual (spinner)
+- **Error Handling**: Mensajes claros si no se encuentra la empresa
 
 ---
 
-### Posible Mejora Futura
+### Archivos a Crear/Modificar
 
-Una vez implementado, se podría añadir:
-- **Importar desde Corporate Buyers**: Botón para vincular compradores del directorio existente
-- **Matching con IA**: Sugerir compradores automáticamente basado en sector y facturación del lead
-- **Historial de interacciones**: Timeline de comunicaciones con cada comprador
+| Archivo | Acción |
+|---------|--------|
+| `supabase/functions/potential-buyer-enrich/index.ts` | CREAR |
+| `src/components/admin/leads/BuyerQuickSearch.tsx` | CREAR |
+| `src/components/admin/leads/PotentialBuyerForm.tsx` | MODIFICAR |
+| `src/types/leadPotentialBuyers.ts` | MODIFICAR (añadir tipos) |
 
