@@ -1,130 +1,128 @@
 
+## Plan: Separar Facturación y EBITDA en Columnas Individuales
 
-## Plan: Sistema de Favoritos para Leads
-
-Se implementara una pestana de "Favoritos" en la tabla de Leads para facilitar el seguimiento de contactos importantes.
+Se reemplazará la columna combinada "Fin." por dos columnas independientes para "Facturación" y "EBITDA", mejorando la visibilidad de estos datos financieros clave.
 
 ---
 
-### Arquitectura Propuesta
+### Cambio Visual
 
-Se reutilizara la infraestructura existente de favoritos (`corporate_favorites`) anadiendo un nuevo tipo de entidad `lead`. Esto sigue el patron ya establecido en el proyecto para CR, SF, y Corporate Buyers.
-
+**Antes:**
 ```text
-+------------------------+     +-------------------------+
-|   LinearContactsManager |     |  corporate_favorites   |
-+------------------------+     +-------------------------+
-|  - Tabs: Favoritos,    |<--->|  entity_type: 'lead'   |
-|    Directorio, Stats   |     |  entity_id: UUID       |
-|  - favoriteIds Set     |     |  added_by: UUID        |
-+------------------------+     +-------------------------+
-           |
-           v
-+------------------------+
-|  LeadFavoriteButton    |
-+------------------------+
-|  - Star icon           |
-|  - Toggle favorite     |
-+------------------------+
+| ... | Sector | Estado | Fin.        | Apollo | Fecha | ... |
+| ... | ...    | ...    | 1.5M€ · 80K€| ...    | ...   | ... |
 ```
 
----
-
-### Cambios a Implementar
-
-#### 1. Base de Datos
-- Modificar el CHECK constraint de `corporate_favorites.entity_type` para incluir `'lead'`
-- La tabla ya soporta cualquier UUID como `entity_id`, por lo que no se requieren cambios adicionales
-
-#### 2. Hook de Favoritos (`useCorporateFavorites.ts`)
-- Anadir `useFavoriteLeadIds()` para obtener IDs de leads favoritos
-- Actualizar el tipo de `useToggleCorporateFavorite` para aceptar `'lead'` como entity type
-
-#### 3. Componente Boton de Favorito (`LeadFavoriteButton.tsx`)
-- Crear boton reutilizable con icono de estrella
-- Misma estetica que `CRFavoriteButton`
-- Props: `leadId`, `size`, `className`
-
-#### 4. Fila de la Tabla (`ContactTableRow.tsx`)
-- Anadir columna de estrella al inicio (antes del checkbox)
-- Nuevo estilo de columna: `star: { minWidth: 32, flex: '0 0 32px' }`
-- Integrar `LeadFavoriteButton`
-
-#### 5. Header de la Tabla (`LinearContactsTable.tsx`)
-- Anadir header para columna de estrella
-- Ajustar scroll sync
-
-#### 6. Manager Principal (`LinearContactsManager.tsx`)
-- Anadir pestana "Favoritos" como default
-- Filtrar contacts por `favoriteIds` cuando tab = 'favorites'
-- Mostrar contador de favoritos en la pestana
-
----
-
-### Resultado Visual
-
+**Después:**
 ```text
-+-----------------------------------------------------------+
-| Leads                                                      |
-|   [★ Favoritos (12)] [Directorio] [Estadisticas]          |
-+-----------------------------------------------------------+
-| ★ | ☐ | Contacto    | Origen    | Canal | Empresa | ...   |
-|---|---|-------------|-----------|-------|---------|-------|
-| ★ | ☐ | Juan Garcia | Valoracion| Web   | Acme    | ...   |
-| ☆ | ☐ | Maria Lopez | Comercial | Ref   | Beta    | ...   |
-+-----------------------------------------------------------+
+| ... | Sector | Estado | Fact.  | EBITDA | Apollo | Fecha | ... |
+| ... | ...    | ...    | 1.5M€  | 80K€   | ...    | ...   | ... |
 ```
 
 ---
 
-### Secuencia de Implementacion
+### Archivos a Modificar
 
-1. Migracion DB: Actualizar CHECK constraint para `entity_type`
-2. Hook: Extender `useCorporateFavorites` con soporte para leads
-3. Componente: Crear `LeadFavoriteButton`
-4. Tabla: Modificar `ContactTableRow` y `LinearContactsTable`
-5. Manager: Actualizar `LinearContactsManager` con tabs y filtro
+#### 1. `src/components/admin/contacts/ContactTableRow.tsx`
+
+**Cambios en COL_STYLES:**
+- Eliminar: `financials: { minWidth: 100, flex: '1 0 100px' }`
+- Añadir: `revenue: { minWidth: 70, flex: '0 0 70px' }`
+- Añadir: `ebitda: { minWidth: 70, flex: '0 0 70px' }`
+
+**Cambios en JSX del Row:**
+- Reemplazar la columna "financials" combinada por dos columnas separadas
+- Columna Facturación: Muestra `revenue` formateado o "—"
+- Columna EBITDA: Muestra `ebitda` formateado o "—"
+- Mantener tooltip con información adicional (valoración, empleados)
+
+#### 2. `src/components/admin/contacts/LinearContactsTable.tsx`
+
+**Cambios en MIN_TABLE_WIDTH:**
+- Actualizar de `1032` a `1072` (40px adicionales para la nueva columna)
+
+**Cambios en TableHeader:**
+- Reemplazar header "Fin." por dos headers: "Fact." y "EBITDA"
 
 ---
 
-### Detalles Tecnicos
+### Detalles Técnicos
 
-**Migracion SQL:**
-```sql
-ALTER TABLE public.corporate_favorites 
-DROP CONSTRAINT IF EXISTS corporate_favorites_entity_type_check;
-
-ALTER TABLE public.corporate_favorites 
-ADD CONSTRAINT corporate_favorites_entity_type_check 
-CHECK (entity_type IN ('buyer', 'contact', 'lead'));
-```
-
-**Nuevo Hook:**
+**Nuevos estilos de columna:**
 ```typescript
-export const useFavoriteLeadIds = () => {
-  return useQuery({
-    queryKey: [QUERY_KEY, 'lead-ids'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('corporate_favorites')
-        .select('entity_id')
-        .eq('entity_type', 'lead');
-      if (error) throw error;
-      return new Set(data.map(f => f.entity_id));
-    },
-  });
+export const COL_STYLES = {
+  // ... otras columnas ...
+  revenue: { minWidth: 70, flex: '0 0 70px' },
+  ebitda: { minWidth: 70, flex: '0 0 70px' },
+  // ... resto de columnas ...
 };
 ```
 
-**Identificador Unico de Lead:**
-Como los leads vienen de multiples tablas (`company_valuations`, `contact_leads`, etc.), el `entity_id` sera el UUID del lead, y se guardara junto con el `origin` en el formato `{origin}_{id}` para identificar unicamente cada lead.
+**Columna Facturación (JSX):**
+```tsx
+<div className="px-1.5" style={{ flex: COL_STYLES.revenue.flex, minWidth: COL_STYLES.revenue.minWidth }}>
+  {revenue ? (
+    <span className="text-[10px] text-foreground">{revenue}</span>
+  ) : (
+    <span className="text-[10px] text-muted-foreground/50">—</span>
+  )}
+</div>
+```
+
+**Columna EBITDA (JSX):**
+```tsx
+<div className="px-1.5" style={{ flex: COL_STYLES.ebitda.flex, minWidth: COL_STYLES.ebitda.minWidth }}>
+  {ebitda ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="text-[10px] text-foreground">{ebitda}</span>
+      </TooltipTrigger>
+      <TooltipContent>
+        {valuation && <div>Valoración: {valuation}</div>}
+        {contact.employee_range && <div>Empleados: {contact.employee_range}</div>}
+      </TooltipContent>
+    </Tooltip>
+  ) : (
+    <span className="text-[10px] text-muted-foreground/50">—</span>
+  )}
+</div>
+```
+
+**Header actualizado:**
+```tsx
+<div className="..." style={{ flex: COL_STYLES.revenue.flex, minWidth: COL_STYLES.revenue.minWidth }}>
+  Fact.
+</div>
+<div className="..." style={{ flex: COL_STYLES.ebitda.flex, minWidth: COL_STYLES.ebitda.minWidth }}>
+  EBITDA
+</div>
+```
+
+---
+
+### Actualización del Memo Comparison
+
+Añadir a la comparación de props memoizadas:
+```typescript
+prevProps.contact.revenue === nextProps.contact.revenue &&
+prevProps.contact.ebitda === nextProps.contact.ebitda &&
+prevProps.contact.empresa_facturacion === nextProps.contact.empresa_facturacion &&
+```
+
+---
+
+### Resultado Esperado
+
+- **Facturación**: Columna dedicada mostrando el revenue formateado (ej: "1.5M€", "500K€")
+- **EBITDA**: Columna dedicada con tooltip para mostrar valoración y empleados como información adicional
+- **Ancho total tabla**: Aumenta 40px para acomodar la columna extra
+- **Performance**: Sin impacto - mismos datos, diferente disposición
 
 ---
 
 ### Consideraciones
 
-- **RLS**: La tabla `corporate_favorites` ya tiene politicas RLS configuradas para usuarios autenticados
-- **Team-Wide**: Los favoritos son visibles para todo el equipo (mismo patron que CR/SF)
-- **Performance**: El Set de IDs se carga una sola vez y se usa para filtrado en memoria
-- **Persistencia**: Los favoritos persisten entre sesiones via base de datos
-
+- Los datos ya existen en el modelo `UnifiedContact` (`revenue`, `ebitda`, `empresa_facturacion`)
+- No se requieren cambios en la base de datos
+- El formateo de moneda existente (`formatCurrency`) se reutiliza
+- La información de valoración y empleados se mantiene accesible via tooltip en la columna EBITDA
