@@ -12,7 +12,7 @@ import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { ContactTableRow, COL_STYLES, STATUS_OPTIONS } from './ContactTableRow';
 
 // Minimum table width to ensure all columns fit
-const MIN_TABLE_WIDTH = 1032;
+const MIN_TABLE_WIDTH = 1072;
 
 interface LinearContactsTableProps {
   contacts: UnifiedContact[];
@@ -87,8 +87,11 @@ const TableHeader = React.memo<{
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }}>
         Estado
       </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
-        Fin.
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.revenue.flex, minWidth: COL_STYLES.revenue.minWidth }}>
+        Fact.
+      </div>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.ebitda.flex, minWidth: COL_STYLES.ebitda.minWidth }}>
+        EBITDA
       </div>
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }}>
         Apollo

@@ -83,7 +83,8 @@ export const COL_STYLES = {
   company: { minWidth: 140, flex: '1.5 0 140px' },
   sector: { minWidth: 100, flex: '1 0 100px' },
   status: { minWidth: 110, flex: '0 0 110px' },
-  financials: { minWidth: 100, flex: '1 0 100px' },
+  revenue: { minWidth: 70, flex: '0 0 70px' },
+  ebitda: { minWidth: 70, flex: '0 0 70px' },
   apollo: { minWidth: 80, flex: '0 0 80px' },
   date: { minWidth: 80, flex: '0 0 80px' },
   actions: { minWidth: 40, flex: '0 0 40px' },
@@ -291,18 +292,23 @@ export const ContactTableRow = memo<ContactRowProps>(({
         />
       </div>
 
-      {/* Financials - single line */}
-      <div className="px-1.5" style={{ flex: COL_STYLES.financials.flex, minWidth: COL_STYLES.financials.minWidth }}>
-        {hasFinancials ? (
+      {/* Facturación */}
+      <div className="px-1.5" style={{ flex: COL_STYLES.revenue.flex, minWidth: COL_STYLES.revenue.minWidth }}>
+        {revenue ? (
+          <span className="text-[10px] text-foreground">{revenue}</span>
+        ) : (
+          <span className="text-[10px] text-muted-foreground/50">—</span>
+        )}
+      </div>
+
+      {/* EBITDA */}
+      <div className="px-1.5" style={{ flex: COL_STYLES.ebitda.flex, minWidth: COL_STYLES.ebitda.minWidth }}>
+        {ebitda ? (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="text-[10px] text-foreground truncate block">
-                {[revenue, ebitda, contact.employee_range].filter(Boolean).join(' · ')}
-              </span>
+              <span className="text-[10px] text-foreground">{ebitda}</span>
             </TooltipTrigger>
             <TooltipContent>
-              {revenue && <div>Facturación: {revenue}</div>}
-              {ebitda && <div>EBITDA: {ebitda}</div>}
               {valuation && <div>Valoración: {valuation}</div>}
               {contact.employee_range && <div>Empleados: {contact.employee_range}</div>}
             </TooltipContent>
@@ -394,6 +400,9 @@ export const ContactTableRow = memo<ContactRowProps>(({
     prevProps.contact.location === nextProps.contact.location &&
     prevProps.contact.phone === nextProps.contact.phone &&
     prevProps.contact.apollo_status === nextProps.contact.apollo_status &&
+    prevProps.contact.revenue === nextProps.contact.revenue &&
+    prevProps.contact.ebitda === nextProps.contact.ebitda &&
+    prevProps.contact.empresa_facturacion === nextProps.contact.empresa_facturacion &&
     prevProps.channelOptions === nextProps.channelOptions
   );
 });
