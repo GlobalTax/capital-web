@@ -36,6 +36,16 @@ export interface LeadPotentialBuyerFormData {
   notes?: string;
 }
 
+export interface EnrichmentData {
+  name: string;
+  logo_url: string | null;
+  website: string | null;
+  description: string | null;
+  sector_focus: string[];
+  revenue_range: string | null;
+  source: string;
+}
+
 export const BUYER_STATUS_OPTIONS: { value: BuyerStatus; label: string; color: string }[] = [
   { value: 'identificado', label: 'Identificado', color: 'bg-muted text-muted-foreground' },
   { value: 'contactado', label: 'Contactado', color: 'bg-blue-100 text-blue-700' },
