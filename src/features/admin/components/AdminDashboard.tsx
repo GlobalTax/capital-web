@@ -92,32 +92,32 @@ export const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col xl:flex-row gap-4 md:gap-6">
       {/* Contenido principal */}
-      <div className="flex-1 space-y-8 min-w-0">
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-normal">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
+      <div className="flex-1 space-y-4 md:space-y-6 lg:space-y-8 min-w-0">
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-normal">Dashboard</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">
             Visión general de la plataforma
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-start">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
               <Card key={stat.title} className="w-full shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-normal">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 md:p-4 pb-1 md:pb-2">
+                  <CardTitle className="text-xs md:text-sm font-normal truncate pr-2">
                     {stat.title}
                   </CardTitle>
-                  <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                    <Icon className={`h-4 w-4 ${stat.color}`} />
+                  <div className={`${stat.bgColor} p-1.5 md:p-2 rounded-lg shrink-0`}>
+                    <Icon className={`h-3 w-3 md:h-4 md:w-4 ${stat.color}`} />
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-normal">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground">
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-normal">{stat.value}</div>
+                  <p className="text-[10px] md:text-xs text-muted-foreground truncate">
                     {stat.description}
                   </p>
                 </CardContent>
@@ -126,48 +126,51 @@ export const AdminDashboard = () => {
           })}
         </div>
 
-        {/* Sección superior - 2 columnas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sección superior - 2 columnas en desktop, 1 en mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <RecentContacts />
           <RecentBlogPosts />
         </div>
 
         {/* Centro de Ayuda - Marketplace */}
         <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <FileText className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               Centro de Ayuda - Marketplace
             </CardTitle>
-            <CardDescription>
-              Aprende a publicar y gestionar operaciones en el marketplace
+            <CardDescription className="text-xs md:text-sm">
+              Aprende a publicar y gestionar operaciones
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 md:p-6 pt-0">
             <Button 
               onClick={() => navigate('/admin/operations')}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-primary hover:bg-primary/90 text-sm"
+              size="sm"
             >
               <FileText className="h-4 w-4 mr-2" />
-              Ver Guía Completa
+              Ver Guía
             </Button>
           </CardContent>
         </Card>
 
         {/* Sección media - 2 columnas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <RecentAcquisitions />
           <RecentCollaborations />
         </div>
 
         {/* Timeline de actividad - ancho completo */}
-        <div className="mt-6">
+        <div className="mt-4 md:mt-6">
           <ActivityTimeline />
         </div>
       </div>
 
-      {/* Barra lateral de destacados - sticky */}
-      <HighlightsSidebar />
+      {/* Barra lateral de destacados - hidden on mobile, sticky on desktop */}
+      <div className="hidden xl:block">
+        <HighlightsSidebar />
+      </div>
     </div>
   );
 };
