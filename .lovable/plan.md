@@ -1,141 +1,55 @@
 
-## Plan: Logo Opcional + Datos Financieros Completos
 
-Se modificará el formulario de Compradores Potenciales para:
-1. Hacer el logo **opcional** (no requerido)
-2. Añadir **todos los campos financieros numéricos** (Facturación, EBITDA, Empleados)
+## Plan: Indicador Visual Prominente para Ctrl+V
+
+Se añadirá un indicador visual más llamativo en la zona de drop de imágenes que muestre claramente "Pega con Ctrl+V".
 
 ---
 
 ### Cambios a Implementar
 
-#### 1. Migración de Base de Datos
+#### Actualizar `src/components/admin/leads/BuyerQuickSearch.tsx`
 
-Añadir columnas financieras numéricas a `lead_potential_buyers`:
+**Cambios en la zona de drop (líneas 239-268):**
 
-```sql
-ALTER TABLE lead_potential_buyers
-ADD COLUMN IF NOT EXISTS revenue NUMERIC,           -- Facturación en €
-ADD COLUMN IF NOT EXISTS ebitda NUMERIC,            -- EBITDA en €
-ADD COLUMN IF NOT EXISTS employees INTEGER;         -- Número de empleados
-```
+1. **Añadir indicador de Ctrl+V con icono de teclado** dentro de la zona de drop
+2. **Diseño visual mejorado** con badge o chip destacado
+3. **Eliminar la mención redundante** del texto inferior (línea 345)
 
-#### 2. Actualizar Tipos TypeScript
-
-**Archivo:** `src/types/leadPotentialBuyers.ts`
-
-```typescript
-export interface LeadPotentialBuyer {
-  // ... campos existentes ...
-  revenue: number | null;      // NUEVO
-  ebitda: number | null;       // NUEVO
-  employees: number | null;    // NUEVO
-}
-
-export interface LeadPotentialBuyerFormData {
-  // ... campos existentes ...
-  revenue?: number;            // NUEVO
-  ebitda?: number;             // NUEVO
-  employees?: number;          // NUEVO
-}
-```
-
-#### 3. Actualizar Formulario
-
-**Archivo:** `src/components/admin/leads/PotentialBuyerForm.tsx`
-
-**Cambios:**
-
-1. **Hacer logo opcional** en el schema:
-```typescript
-logo_url: z.string().optional().or(z.literal('')),
-```
-
-2. **Añadir campos financieros** al schema:
-```typescript
-revenue: z.number().optional(),
-ebitda: z.number().optional(),
-employees: z.number().int().optional(),
-```
-
-3. **Añadir sección de datos financieros** en el UI:
-```text
-+---------------------------------------------+
-| 📊 Datos Financieros                        |
-+---------------------------------------------+
-| Facturación €    | EBITDA €    | Empleados |
-| [__1.500.000__]  | [__250.000__] | [__45__] |
-+---------------------------------------------+
-```
-
-4. **Actualizar label del logo** (quitar asterisco):
-```typescript
-<ImageUploadField label="Logo" ... />  // Sin *
-```
-
-#### 4. Actualizar Edge Function
-
-**Archivo:** `supabase/functions/potential-buyer-enrich/index.ts`
-
-Añadir extracción de datos financieros numéricos en el análisis de imagen y texto.
-
----
-
-### Estructura Visual del Formulario Actualizado
+**Diseño propuesto:**
 
 ```text
-+---------------------------------------------+
-| Añadir Comprador Potencial                  |
-+---------------------------------------------+
-| 🪄 Búsqueda inteligente                     |
-| [📷] [nombre o URL_______] [🔍]             |
-+---------------------------------------------+
-| Nombre de la empresa *                      |
-| [CARPAS ZARAGOZA SL________________]       |
-|                                             |
-| Logo (opcional)                             |
-| [🖼️ Subir imagen o URL______________]      |
-|                                             |
-| Sitio web                                   |
-| [https://carpas-zaragoza.es________]       |
-|                                             |
-| Descripción                                 |
-| [Fabricante de carpas modulares..._]       |
-|                                             |
-| ──────── Datos Financieros ────────         |
-| Facturación €   EBITDA €      Empleados    |
-| [_1.500.000_]   [_250.000_]   [_45_____]   |
-|                                             |
-| Rango Fact.     Estado                      |
-| [1M-5M €___▼]   [Identificado▼]            |
-|                                             |
-| ──────── Datos de Contacto ────────         |
-| Nombre del contacto                         |
-| [Juan García___________________]           |
-| Email              Teléfono                 |
-| [j@carpas.es]      [+34 600...]            |
-|                                             |
-| [Cancelar]          [Añadir comprador]     |
-+---------------------------------------------+
+┌─────────────────────────────────────────────────────┐
+│                    [📷 icono]                       │
+│         Arrastra una imagen aquí                    │
+│   Logo, tarjeta de visita, informe financiero...   │
+│                                                     │
+│  [Seleccionar imagen]   ───o───   [⌨ Ctrl+V]       │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+**Implementación:**
+
+```tsx
+<div className="flex items-center justify-center gap-3 mt-2">
+  <Button variant="outline" size="sm" type="button">
+    <ImagePlus className="h-4 w-4 mr-2" />
+    Seleccionar imagen
+  </Button>
+  <span className="text-xs text-muted-foreground">o</span>
+  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-md border border-primary/20">
+    <Keyboard className="h-3.5 w-3.5" />
+    <span className="text-xs font-medium">Ctrl+V</span>
+  </div>
+</div>
 ```
 
 ---
 
-### Secuencia de Implementación
-
-1. **Migración SQL**: Añadir columnas `revenue`, `ebitda`, `employees`
-2. **Tipos**: Actualizar interfaces en TypeScript
-3. **Formulario**: Modificar schema y añadir campos financieros
-4. **Edge Function**: Actualizar para extraer datos financieros numéricos
-5. **Desplegar**: Edge function actualizada
-
----
-
-### Archivos a Modificar
+### Archivo a Modificar
 
 | Archivo | Cambios |
 |---------|---------|
-| `lead_potential_buyers` (tabla) | Añadir columnas: revenue, ebitda, employees |
-| `src/types/leadPotentialBuyers.ts` | Añadir campos financieros a interfaces |
-| `src/components/admin/leads/PotentialBuyerForm.tsx` | Logo opcional + sección financiera |
-| `supabase/functions/potential-buyer-enrich/index.ts` | Extraer datos financieros numéricos |
+| `src/components/admin/leads/BuyerQuickSearch.tsx` | Añadir indicador visual prominente de Ctrl+V en la zona de drop |
+
