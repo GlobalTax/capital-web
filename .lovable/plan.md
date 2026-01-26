@@ -1,8 +1,7 @@
 
+## Plan: Alta de Compradores por Imagen con IA Vision
 
-## Plan: Alta de Compradores Potenciales con IA (0 Fricciones)
-
-Se transformará el formulario de compradores potenciales para que con solo introducir el **nombre de empresa** o **URL del website**, el sistema auto-rellene todos los campos posibles (logo, descripción, sector, datos financieros) usando IA y APIs externas.
+Se añadirá la capacidad de dar de alta compradores potenciales **subiendo una imagen** (logo, captura de informe financiero, tarjeta de visita, etc.) que será analizada con IA Vision para extraer automáticamente la información de la empresa.
 
 ---
 
@@ -10,16 +9,24 @@ Se transformará el formulario de compradores potenciales para que con solo intr
 
 ```text
 +----------------------------------------------------------+
-| 🔍 Nombre o URL                              [🪄 Buscar] |
-| [empresaejemplo.com                                    ] |
+|  🪄 Búsqueda inteligente                                 |
 +----------------------------------------------------------+
-          ↓ Busca automáticamente
+| [📷 Subir imagen] [nombre o URL___________] [🔍 Buscar]  |
+|                                                          |
+| Sube un logo, captura o informe · O escribe nombre/URL   |
 +----------------------------------------------------------+
-| ✅ Datos encontrados                                     |
-| [LOGO]  Empresa Ejemplo S.L.                            |
-|         Fabricante de componentes industriales...        |
-|         Sector: Industrial · Fact: 5M-10M€              |
-|         [Usar estos datos]        [Editar manualmente]   |
+          ↓ Si sube imagen
++----------------------------------------------------------+
+| 📷 Analizando imagen con IA...                           |
+| [████████████░░░░░] Extrayendo datos...                  |
++----------------------------------------------------------+
+          ↓ Resultado
++----------------------------------------------------------+
+| ✅ Empresa detectada                                     |
+| [LOGO]  CARPAS ZARAGOZA SL                              |
+|         Sector: Industrial · Fact: 1M-5M€               |
+|         Descripción generada por IA...                   |
+| [Usar estos datos ✓]         [Editar manualmente ✏️]    |
 +----------------------------------------------------------+
 ```
 
@@ -28,222 +35,217 @@ Se transformará el formulario de compradores potenciales para que con solo intr
 ### Arquitectura
 
 ```text
-+------------------------+     +----------------------------+
-|  PotentialBuyerForm    |     |  potential-buyer-enrich    |
-|  (Renovado)            |     |  (Nueva Edge Function)     |
-+------------------------+     +----------------------------+
-|  1. Input nombre/URL   |---->|  1. Detectar tipo input    |
-|  2. Botón "Buscar"     |     |  2. find-company-logo      |
-|  3. Preview resultado  |     |  3. Firecrawl (website)    |
-|  4. Confirmar o editar |     |  4. AI: generar descripción|
-+------------------------+     +----------------------------+
++---------------------------+     +-----------------------------+
+|  BuyerQuickSearch         |     |  potential-buyer-enrich     |
+|  (Actualizado)            |     |  (Actualizada)              |
++---------------------------+     +-----------------------------+
+| - Input texto (existente) |     | mode: "text" | "image"      |
+| + Botón subir imagen      |---->| Si mode="image":            |
+| + Drop zone/Paste         |     |   - Recibe base64           |
++---------------------------+     |   - Llama a GPT-4o Vision   |
+          |                       |   - Extrae: nombre, sector, |
+          v                       |     descripción, facturación|
++---------------------------+     |   - Busca logo por dominio  |
+|  ImageAnalysisPreview     |     +-----------------------------+
++---------------------------+
+| - Preview de imagen       |
+| - Datos extraídos         |
+| - Confirmar / Editar      |
++---------------------------+
 ```
 
 ---
 
 ### Cambios a Implementar
 
-#### 1. Nueva Edge Function - `potential-buyer-enrich`
+#### 1. Actualizar Edge Function `potential-buyer-enrich`
 
-Combina múltiples fuentes para extraer datos completos:
+Añadir soporte para análisis de imágenes:
 
-**Entradas:**
-- `query`: nombre de empresa, dominio, o URL completa
-
-**Proceso:**
-1. Detectar si es URL, dominio, o nombre
-2. Llamar a `find-company-logo` para obtener logo vía Clearbit
-3. Si hay website, usar Firecrawl para scrape de contenido
-4. Usar IA (Gemini Flash) para generar:
-   - Descripción profesional (1-2 frases)
-   - Sector inferido del contenido
-   - Rango de facturación estimado (si hay datos)
-
-**Salida:**
+**Nuevo input:**
 ```typescript
 {
-  success: true,
-  data: {
-    name: "Empresa Ejemplo S.L.",
-    logo_url: "https://logo.clearbit.com/empresaejemplo.es",
-    website: "https://www.empresaejemplo.es",
-    description: "Fabricante especializado en componentes industriales para el sector automoción, con presencia en España y Portugal.",
-    sector_focus: ["Industrial y Manufacturero", "Automoción"],
-    revenue_range: "5M-10M",
-    source: "clearbit+firecrawl+ai"
-  }
+  mode: "text" | "image",
+  query?: string,      // Para mode="text"
+  imageBase64?: string // Para mode="image"
 }
 ```
 
-#### 2. Nuevo Componente - `BuyerQuickSearch.tsx`
+**Nuevo flujo para `mode="image"`:**
+1. Recibir imagen en base64
+2. Llamar a GPT-4o Vision con prompt especializado en extraer:
+   - Nombre de empresa
+   - Sector de actividad
+   - Datos financieros (facturación, EBITDA si visible)
+   - Descripción de actividad
+   - Dominio/URL si aparece
+3. Si se detecta un dominio, buscar logo con Clearbit
+4. Devolver datos estructurados igual que el modo texto
 
-Componente de búsqueda inteligente con preview de resultados:
+**Prompt de Vision:**
+```
+Analiza esta imagen y extrae información sobre la empresa mostrada.
+Puede ser un logo, una tarjeta de visita, un informe financiero, 
+una captura de web o cualquier documento empresarial.
 
-**Características:**
-- Input unificado para nombre, dominio o URL
-- Detección automática del tipo de input
-- Spinner durante la búsqueda
-- Preview de datos encontrados con logo visible
-- Botón "Usar datos" para auto-rellenar el formulario
-- Opción de "Editar manualmente" si los datos no son correctos
+Extrae:
+- Nombre de la empresa
+- Dominio web si es visible
+- Sector de actividad
+- Descripción breve de la actividad
+- Rango de facturación si hay datos financieros visibles
 
-**Diseño:**
+Responde en JSON...
+```
+
+#### 2. Actualizar Componente `BuyerQuickSearch.tsx`
+
+Añadir capacidad de subir/pegar imagen:
+
+**Nuevos elementos UI:**
+- Botón "📷 Subir imagen" junto al input de texto
+- Soporte para drag & drop de imágenes
+- Soporte para pegar imagen (Ctrl+V)
+- Preview de la imagen subida
+- Estado de "Analizando..." con spinner
+
+**Nuevos estados:**
+```typescript
+const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+```
+
+**Función de análisis:**
+```typescript
+const handleImageUpload = async (file: File) => {
+  // Convertir a base64
+  const base64 = await fileToBase64(file);
+  setUploadedImage(base64);
+  setIsAnalyzingImage(true);
+  
+  // Llamar a la edge function
+  const { data } = await supabase.functions.invoke('potential-buyer-enrich', {
+    body: { mode: 'image', imageBase64: base64 }
+  });
+  
+  if (data?.success) {
+    setResult(data.data);
+  }
+  setIsAnalyzingImage(false);
+};
+```
+
+**Diseño actualizado:**
 ```text
 +----------------------------------------------------------+
 | 🪄 Búsqueda inteligente                                  |
 +----------------------------------------------------------+
-| [empresaejemplo.es                    ] [🔍 Buscar]      |
+| [📷 Imagen] [nombre, dominio o URL______] [🔍 Buscar]    |
 |                                                          |
-| Introduce el nombre de empresa, dominio o URL del sitio  |
-+----------------------------------------------------------+
-
-// Después de buscar:
-+----------------------------------------------------------+
-| ✅ Empresa encontrada                                    |
-+----------------------------------------------------------+
-| [LOGO IMG]  Empresa Ejemplo S.L.                        |
-|             www.empresaejemplo.es                        |
-|             Fabricante de componentes industriales...    |
-|             Sector: Industrial · Fact: 5M-10M€          |
-|                                                          |
-| [Usar estos datos ✓]            [Editar manualmente ✏️] |
+| Sube un logo o captura, o escribe nombre/URL de empresa  |
 +----------------------------------------------------------+
 ```
 
-#### 3. Modificar `PotentialBuyerForm.tsx`
+O alternativamente con zona de drop:
 
-Integrar el nuevo flujo de búsqueda:
-
-**Cambios:**
-1. Añadir `BuyerQuickSearch` al inicio del formulario (antes del nombre)
-2. Función `handleEnrichData` para auto-rellenar todos los campos
-3. Estado `isEnriched` para mostrar indicador de datos auto-completados
-4. Mantener edición manual como fallback
-5. Hacer el logo requerido solo si no se usó búsqueda inteligente
-
-**Flujo del formulario:**
 ```text
-1. Usuario abre el modal
-2. Ve BuyerQuickSearch prominente
-3. Escribe nombre/URL → Click "Buscar"
-4. Ve preview con datos → Click "Usar datos"
-5. Formulario se rellena automáticamente
-6. Usuario puede ajustar cualquier campo
-7. Click "Añadir comprador"
++----------------------------------------------------------+
+| 🪄 Búsqueda inteligente                                  |
++----------------------------------------------------------+
+| ┌──────────────────────────────────────────────────────┐ |
+| │  📷 Arrastra imagen aquí o haz clic para subir      │ |
+| │     Logo, tarjeta, informe financiero...            │ |
+| └──────────────────────────────────────────────────────┘ |
+|            ─── O ───                                     |
+| [nombre, dominio o URL_________________] [🔍 Buscar]     |
++----------------------------------------------------------+
 ```
 
-#### 4. Modificar Validación del Schema
+#### 3. Actualizar Tipos
 
-Hacer el logo opcional si viene de búsqueda inteligente:
+En `src/types/leadPotentialBuyers.ts`:
 
 ```typescript
-const formSchema = z.object({
-  name: z.string().min(1, 'El nombre es requerido'),
-  logo_url: z.string().optional().or(z.string().url()),
-  // ... resto de campos
-}).refine(
-  (data) => data.logo_url || data._fromEnrichment,
-  { message: 'El logo es requerido', path: ['logo_url'] }
-);
+export interface EnrichmentRequest {
+  mode: 'text' | 'image';
+  query?: string;
+  imageBase64?: string;
+}
 ```
-
-O simplemente hacer logo requerido siempre pero auto-completado por la búsqueda.
 
 ---
 
-### Secuencia de Implementación
+### Secuencia de Implementacion
 
-1. **Edge Function** `potential-buyer-enrich`:
-   - Detectar tipo de input (URL, dominio, nombre)
-   - Integrar `find-company-logo` para logos
-   - Usar Firecrawl para scrape si hay website
-   - Usar Lovable AI para generar descripción y inferir sector
+1. **Edge Function**: Actualizar `potential-buyer-enrich` con modo imagen
+   - Añadir detección de modo (text vs image)
+   - Implementar análisis con GPT-4o Vision
+   - Mantener compatibilidad con flujo texto existente
 
-2. **Componente** `BuyerQuickSearch.tsx`:
-   - Input con botón de búsqueda
-   - Llamada a la edge function
-   - Preview de resultados con imagen
-   - Callbacks para aceptar o rechazar datos
+2. **Componente**: Actualizar `BuyerQuickSearch.tsx`
+   - Añadir input file para imágenes
+   - Implementar conversión a base64
+   - Añadir preview de imagen
+   - Estados de carga específicos para imagen
 
-3. **Actualizar** `PotentialBuyerForm.tsx`:
-   - Integrar BuyerQuickSearch
-   - Handler para auto-rellenar campos
-   - Mantener flujo manual como alternativa
-
-4. **Actualizar** validación:
-   - Ajustar schema para nuevo flujo
-   - Logo requerido pero auto-completado
+3. **Desplegar** edge function actualizada
 
 ---
 
 ### Resultado Visual Esperado
 
-**Paso 1 - Búsqueda:**
+**Estado inicial:**
 ```text
 +---------------------------------------------+
-| Añadir Comprador Potencial                  |
-+---------------------------------------------+
 | 🪄 Búsqueda inteligente                     |
-| [carpas-zaragoza.es       ] [🔍 Buscar]    |
-| Escribe nombre, dominio o URL               |
 +---------------------------------------------+
-| ─── O rellena manualmente ───               |
-| Nombre de la empresa *                      |
-| [ _________________________________ ]       |
+| [📷] [carpas-zaragoza.es       ] [🔍]       |
+|                                             |
+| Sube imagen o escribe nombre/URL            |
 +---------------------------------------------+
 ```
 
-**Paso 2 - Resultado encontrado:**
+**Después de subir imagen:**
 ```text
 +---------------------------------------------+
-| ✅ Empresa encontrada                       |
+| 🪄 Analizando imagen...                     |
 +---------------------------------------------+
-| [🏢]  CARPAS ZARAGOZA SL                   |
-|       www.carpas-zaragoza.es               |
-|       Empresa especializada en              |
-|       fabricación e instalación de          |
-|       carpas y estructuras modulares...     |
-|       📊 Sector: Industrial · 1M-5M€       |
+| [Vista previa de la imagen subida]          |
+| ████████░░░░ Extrayendo datos con IA...     |
++---------------------------------------------+
+```
+
+**Resultado encontrado:**
+```text
++---------------------------------------------+
+| ✅ Empresa detectada en imagen              |
++---------------------------------------------+
+| [LOGO]  CARPAS ZARAGOZA SL                 |
+|         Industrial · 1M-5M€                 |
+|         Fabricación de carpas...            |
 |                                             |
 | [✓ Usar estos datos]  [✏️ Editar manual]   |
 +---------------------------------------------+
 ```
 
-**Paso 3 - Formulario auto-completado:**
-```text
-+---------------------------------------------+
-| Añadir Comprador Potencial          [✓ AI] |
-+---------------------------------------------+
-| Nombre * [CARPAS ZARAGOZA SL_________]     |
-| Logo     [🏢 carpas-zaragoza.es/logo] [X]  |
-| Website  [https://carpas-zaragoza.es_]     |
-| Descripción                                 |
-| [Empresa especializada en fabricación_]    |
-| [e instalación de carpas y estructur_]     |
-|                                             |
-| Facturación [1M-5M €_▼] Estado [Identif▼]  |
-+---------------------------------------------+
-```
+---
+
+### Consideraciones Tecnicas
+
+- **GPT-4o Vision**: Mejor modelo para extracción de texto e interpretación de imágenes
+- **Base64**: Las imágenes se envían como data URL (como en `parse-campaign-screenshot`)
+- **Límite de tamaño**: Limitar a 5MB para evitar timeouts
+- **Formatos**: Aceptar PNG, JPG, WEBP
+- **Fallback**: Si Vision no extrae datos útiles, mostrar mensaje y permitir edición manual
+- **Logo**: Si se detecta dominio en la imagen, buscar logo con Clearbit
 
 ---
 
-### Consideraciones Técnicas
+### Archivos a Modificar
 
-- **Clearbit Logo API**: Gratuita, solo necesita dominio
-- **Firecrawl**: Para extraer contenido del website
-- **Lovable AI**: Para generar descripción profesional del contenido scrapeado
-- **Fallback**: Si no encuentra datos, el usuario puede rellenar manualmente
-- **Performance**: Búsqueda asíncrona con feedback visual (spinner)
-- **Error Handling**: Mensajes claros si no se encuentra la empresa
-
----
-
-### Archivos a Crear/Modificar
-
-| Archivo | Acción |
-|---------|--------|
-| `supabase/functions/potential-buyer-enrich/index.ts` | CREAR |
-| `src/components/admin/leads/BuyerQuickSearch.tsx` | CREAR |
-| `src/components/admin/leads/PotentialBuyerForm.tsx` | MODIFICAR |
-| `src/types/leadPotentialBuyers.ts` | MODIFICAR (añadir tipos) |
+| Archivo | Cambios |
+|---------|---------|
+| `supabase/functions/potential-buyer-enrich/index.ts` | Añadir modo imagen con GPT-4o Vision |
+| `src/components/admin/leads/BuyerQuickSearch.tsx` | Añadir upload de imagen y preview |
+| `src/types/leadPotentialBuyers.ts` | Añadir tipos para request con imagen |
 
