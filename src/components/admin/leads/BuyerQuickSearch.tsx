@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Loader2, Sparkles, Building2, Check, Pencil, AlertCircle, ImagePlus, X, Camera } from 'lucide-react';
+import { Loader2, Sparkles, Building2, Check, Pencil, AlertCircle, ImagePlus, X, Camera, Keyboard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { blobToBase64 } from '@/utils/blobToBase64';
@@ -260,10 +260,17 @@ const BuyerQuickSearch: React.FC<BuyerQuickSearchProps> = ({
                 Logo, tarjeta de visita, informe financiero... (máx 5MB)
               </p>
             </div>
-            <Button variant="outline" size="sm" type="button">
-              <ImagePlus className="h-4 w-4 mr-2" />
-              Seleccionar imagen
-            </Button>
+            <div className="flex items-center justify-center gap-3 mt-1">
+              <Button variant="outline" size="sm" type="button">
+                <ImagePlus className="h-4 w-4 mr-2" />
+                Seleccionar imagen
+              </Button>
+              <span className="text-xs text-muted-foreground">o</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-md border border-primary/20">
+                <Keyboard className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">Ctrl+V</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -342,7 +349,7 @@ const BuyerQuickSearch: React.FC<BuyerQuickSearchProps> = ({
       )}
 
       <p className="text-xs text-muted-foreground">
-        Sube una imagen o escribe nombre/URL · También puedes pegar con Ctrl+V
+        Sube una imagen o escribe nombre/URL para buscar
       </p>
 
       {/* Error State */}
