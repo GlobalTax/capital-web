@@ -26,61 +26,63 @@ export const RecentContacts = () => {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <div>
-          <CardTitle className="text-lg">Últimos Contactos</CardTitle>
-          <CardDescription>Valoraciones recientes</CardDescription>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 md:p-6 pb-2 sm:pb-4">
+        <div className="min-w-0 flex-1">
+          <CardTitle className="text-base md:text-lg truncate">Últimos Contactos</CardTitle>
+          <CardDescription className="text-xs md:text-sm">Valoraciones recientes</CardDescription>
         </div>
-        <Link to="/admin/contacts">
-          <Badge variant="outline" className="cursor-pointer hover:bg-muted">
-            Ver todos <ExternalLink className="ml-1 h-3 w-3" />
+        <Link to="/admin/contacts" className="shrink-0 ml-2">
+          <Badge variant="outline" className="cursor-pointer hover:bg-muted text-xs">
+            <span className="hidden sm:inline">Ver todos</span>
+            <span className="sm:hidden">Ver</span>
+            <ExternalLink className="ml-1 h-3 w-3" />
           </Badge>
         </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 sm:p-4 md:p-6 pt-0">
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+              <div key={i} className="h-14 sm:h-16 bg-muted animate-pulse rounded" />
             ))}
           </div>
         ) : contacts && contacts.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {contacts.map((contact) => (
               <div 
                 key={contact.id} 
-                className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-2 sm:p-3 rounded-lg border hover:bg-muted/50 transition-colors gap-2"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-normal text-sm truncate">{contact.contact_name}</p>
+                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                    <p className="font-normal text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">{contact.contact_name}</p>
                     {contact.email_opened && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Mail className="h-3 w-3 mr-1" />
-                        Leído
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs px-1 py-0">
+                        <Mail className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                        <span className="hidden xs:inline">Leído</span>
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
-                  <p className="text-xs text-muted-foreground">{contact.company_name}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{contact.email}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{contact.company_name}</p>
                 </div>
-                <div className="text-right ml-4">
+                <div className="text-right shrink-0">
                   {contact.final_valuation ? (
-                    <p className="text-sm font-normal text-primary">
+                    <p className="text-xs sm:text-sm font-normal text-primary">
                       {formatCurrency(contact.final_valuation)}
                     </p>
                   ) : (
-                    <p className="text-xs text-muted-foreground">Sin valorar</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Sin valorar</p>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(contact.created_at), 'dd/MM/yyyy', { locale: es })}
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
+                    {format(new Date(contact.created_at), 'dd/MM/yy', { locale: es })}
                   </p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="text-xs sm:text-sm text-muted-foreground text-center py-6 sm:py-8">
             No hay contactos recientes
           </p>
         )}

@@ -112,10 +112,10 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
         />
       )}
       <SidebarProvider defaultOpen={true}>
-        <div className="min-h-screen flex w-full bg-[hsl(var(--linear-bg))]">
+        <div className="min-h-screen min-h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))]">
           <AdminSidebar />
           
-          <SidebarInset className="flex-1 flex flex-col">
+          <SidebarInset className="flex-1 flex flex-col min-w-0">
             {/* Unified Linear Header - 48px */}
             <LinearAdminHeader onLogout={onLogout} />
             
@@ -125,9 +125,9 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
             {/* Keyboard Shortcuts Help Dialog */}
             <KeyboardShortcutsHelp />
 
-            {/* Main content area */}
-            <main className="flex-1 p-4 overflow-auto">
-              <div className="w-full">
+            {/* Main content area - responsive padding */}
+            <main className="flex-1 p-2 sm:p-3 md:p-4 overflow-auto">
+              <div className="w-full max-w-full">
                 {children}
               </div>
             </main>
