@@ -1,243 +1,133 @@
 
-## Plan: Alta de Compradores por Imagen con IA Vision
+## Plan: Logo Opcional + Datos Financieros Completos
 
-Se añadirá la capacidad de dar de alta compradores potenciales **subiendo una imagen** (logo, captura de informe financiero, tarjeta de visita, etc.) que será analizada con IA Vision para extraer automáticamente la información de la empresa.
-
----
-
-### Flujo de Usuario Propuesto
-
-```text
-+----------------------------------------------------------+
-|  🪄 Búsqueda inteligente                                 |
-+----------------------------------------------------------+
-| [📷 Subir imagen] [nombre o URL___________] [🔍 Buscar]  |
-|                                                          |
-| Sube un logo, captura o informe · O escribe nombre/URL   |
-+----------------------------------------------------------+
-          ↓ Si sube imagen
-+----------------------------------------------------------+
-| 📷 Analizando imagen con IA...                           |
-| [████████████░░░░░] Extrayendo datos...                  |
-+----------------------------------------------------------+
-          ↓ Resultado
-+----------------------------------------------------------+
-| ✅ Empresa detectada                                     |
-| [LOGO]  CARPAS ZARAGOZA SL                              |
-|         Sector: Industrial · Fact: 1M-5M€               |
-|         Descripción generada por IA...                   |
-| [Usar estos datos ✓]         [Editar manualmente ✏️]    |
-+----------------------------------------------------------+
-```
-
----
-
-### Arquitectura
-
-```text
-+---------------------------+     +-----------------------------+
-|  BuyerQuickSearch         |     |  potential-buyer-enrich     |
-|  (Actualizado)            |     |  (Actualizada)              |
-+---------------------------+     +-----------------------------+
-| - Input texto (existente) |     | mode: "text" | "image"      |
-| + Botón subir imagen      |---->| Si mode="image":            |
-| + Drop zone/Paste         |     |   - Recibe base64           |
-+---------------------------+     |   - Llama a GPT-4o Vision   |
-          |                       |   - Extrae: nombre, sector, |
-          v                       |     descripción, facturación|
-+---------------------------+     |   - Busca logo por dominio  |
-|  ImageAnalysisPreview     |     +-----------------------------+
-+---------------------------+
-| - Preview de imagen       |
-| - Datos extraídos         |
-| - Confirmar / Editar      |
-+---------------------------+
-```
+Se modificará el formulario de Compradores Potenciales para:
+1. Hacer el logo **opcional** (no requerido)
+2. Añadir **todos los campos financieros numéricos** (Facturación, EBITDA, Empleados)
 
 ---
 
 ### Cambios a Implementar
 
-#### 1. Actualizar Edge Function `potential-buyer-enrich`
+#### 1. Migración de Base de Datos
 
-Añadir soporte para análisis de imágenes:
+Añadir columnas financieras numéricas a `lead_potential_buyers`:
 
-**Nuevo input:**
+```sql
+ALTER TABLE lead_potential_buyers
+ADD COLUMN IF NOT EXISTS revenue NUMERIC,           -- Facturación en €
+ADD COLUMN IF NOT EXISTS ebitda NUMERIC,            -- EBITDA en €
+ADD COLUMN IF NOT EXISTS employees INTEGER;         -- Número de empleados
+```
+
+#### 2. Actualizar Tipos TypeScript
+
+**Archivo:** `src/types/leadPotentialBuyers.ts`
+
 ```typescript
-{
-  mode: "text" | "image",
-  query?: string,      // Para mode="text"
-  imageBase64?: string // Para mode="image"
+export interface LeadPotentialBuyer {
+  // ... campos existentes ...
+  revenue: number | null;      // NUEVO
+  ebitda: number | null;       // NUEVO
+  employees: number | null;    // NUEVO
+}
+
+export interface LeadPotentialBuyerFormData {
+  // ... campos existentes ...
+  revenue?: number;            // NUEVO
+  ebitda?: number;             // NUEVO
+  employees?: number;          // NUEVO
 }
 ```
 
-**Nuevo flujo para `mode="image"`:**
-1. Recibir imagen en base64
-2. Llamar a GPT-4o Vision con prompt especializado en extraer:
-   - Nombre de empresa
-   - Sector de actividad
-   - Datos financieros (facturación, EBITDA si visible)
-   - Descripción de actividad
-   - Dominio/URL si aparece
-3. Si se detecta un dominio, buscar logo con Clearbit
-4. Devolver datos estructurados igual que el modo texto
+#### 3. Actualizar Formulario
 
-**Prompt de Vision:**
-```
-Analiza esta imagen y extrae información sobre la empresa mostrada.
-Puede ser un logo, una tarjeta de visita, un informe financiero, 
-una captura de web o cualquier documento empresarial.
+**Archivo:** `src/components/admin/leads/PotentialBuyerForm.tsx`
 
-Extrae:
-- Nombre de la empresa
-- Dominio web si es visible
-- Sector de actividad
-- Descripción breve de la actividad
-- Rango de facturación si hay datos financieros visibles
+**Cambios:**
 
-Responde en JSON...
-```
-
-#### 2. Actualizar Componente `BuyerQuickSearch.tsx`
-
-Añadir capacidad de subir/pegar imagen:
-
-**Nuevos elementos UI:**
-- Botón "📷 Subir imagen" junto al input de texto
-- Soporte para drag & drop de imágenes
-- Soporte para pegar imagen (Ctrl+V)
-- Preview de la imagen subida
-- Estado de "Analizando..." con spinner
-
-**Nuevos estados:**
+1. **Hacer logo opcional** en el schema:
 ```typescript
-const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
+logo_url: z.string().optional().or(z.literal('')),
 ```
 
-**Función de análisis:**
+2. **Añadir campos financieros** al schema:
 ```typescript
-const handleImageUpload = async (file: File) => {
-  // Convertir a base64
-  const base64 = await fileToBase64(file);
-  setUploadedImage(base64);
-  setIsAnalyzingImage(true);
-  
-  // Llamar a la edge function
-  const { data } = await supabase.functions.invoke('potential-buyer-enrich', {
-    body: { mode: 'image', imageBase64: base64 }
-  });
-  
-  if (data?.success) {
-    setResult(data.data);
-  }
-  setIsAnalyzingImage(false);
-};
+revenue: z.number().optional(),
+ebitda: z.number().optional(),
+employees: z.number().int().optional(),
 ```
 
-**Diseño actualizado:**
+3. **Añadir sección de datos financieros** en el UI:
 ```text
-+----------------------------------------------------------+
-| 🪄 Búsqueda inteligente                                  |
-+----------------------------------------------------------+
-| [📷 Imagen] [nombre, dominio o URL______] [🔍 Buscar]    |
-|                                                          |
-| Sube un logo o captura, o escribe nombre/URL de empresa  |
-+----------------------------------------------------------+
++---------------------------------------------+
+| 📊 Datos Financieros                        |
++---------------------------------------------+
+| Facturación €    | EBITDA €    | Empleados |
+| [__1.500.000__]  | [__250.000__] | [__45__] |
++---------------------------------------------+
 ```
 
-O alternativamente con zona de drop:
-
-```text
-+----------------------------------------------------------+
-| 🪄 Búsqueda inteligente                                  |
-+----------------------------------------------------------+
-| ┌──────────────────────────────────────────────────────┐ |
-| │  📷 Arrastra imagen aquí o haz clic para subir      │ |
-| │     Logo, tarjeta, informe financiero...            │ |
-| └──────────────────────────────────────────────────────┘ |
-|            ─── O ───                                     |
-| [nombre, dominio o URL_________________] [🔍 Buscar]     |
-+----------------------------------------------------------+
-```
-
-#### 3. Actualizar Tipos
-
-En `src/types/leadPotentialBuyers.ts`:
-
+4. **Actualizar label del logo** (quitar asterisco):
 ```typescript
-export interface EnrichmentRequest {
-  mode: 'text' | 'image';
-  query?: string;
-  imageBase64?: string;
-}
+<ImageUploadField label="Logo" ... />  // Sin *
 ```
+
+#### 4. Actualizar Edge Function
+
+**Archivo:** `supabase/functions/potential-buyer-enrich/index.ts`
+
+Añadir extracción de datos financieros numéricos en el análisis de imagen y texto.
 
 ---
 
-### Secuencia de Implementacion
+### Estructura Visual del Formulario Actualizado
 
-1. **Edge Function**: Actualizar `potential-buyer-enrich` con modo imagen
-   - Añadir detección de modo (text vs image)
-   - Implementar análisis con GPT-4o Vision
-   - Mantener compatibilidad con flujo texto existente
-
-2. **Componente**: Actualizar `BuyerQuickSearch.tsx`
-   - Añadir input file para imágenes
-   - Implementar conversión a base64
-   - Añadir preview de imagen
-   - Estados de carga específicos para imagen
-
-3. **Desplegar** edge function actualizada
-
----
-
-### Resultado Visual Esperado
-
-**Estado inicial:**
 ```text
++---------------------------------------------+
+| Añadir Comprador Potencial                  |
 +---------------------------------------------+
 | 🪄 Búsqueda inteligente                     |
+| [📷] [nombre o URL_______] [🔍]             |
 +---------------------------------------------+
-| [📷] [carpas-zaragoza.es       ] [🔍]       |
+| Nombre de la empresa *                      |
+| [CARPAS ZARAGOZA SL________________]       |
 |                                             |
-| Sube imagen o escribe nombre/URL            |
-+---------------------------------------------+
-```
-
-**Después de subir imagen:**
-```text
-+---------------------------------------------+
-| 🪄 Analizando imagen...                     |
-+---------------------------------------------+
-| [Vista previa de la imagen subida]          |
-| ████████░░░░ Extrayendo datos con IA...     |
-+---------------------------------------------+
-```
-
-**Resultado encontrado:**
-```text
-+---------------------------------------------+
-| ✅ Empresa detectada en imagen              |
-+---------------------------------------------+
-| [LOGO]  CARPAS ZARAGOZA SL                 |
-|         Industrial · 1M-5M€                 |
-|         Fabricación de carpas...            |
+| Logo (opcional)                             |
+| [🖼️ Subir imagen o URL______________]      |
 |                                             |
-| [✓ Usar estos datos]  [✏️ Editar manual]   |
+| Sitio web                                   |
+| [https://carpas-zaragoza.es________]       |
+|                                             |
+| Descripción                                 |
+| [Fabricante de carpas modulares..._]       |
+|                                             |
+| ──────── Datos Financieros ────────         |
+| Facturación €   EBITDA €      Empleados    |
+| [_1.500.000_]   [_250.000_]   [_45_____]   |
+|                                             |
+| Rango Fact.     Estado                      |
+| [1M-5M €___▼]   [Identificado▼]            |
+|                                             |
+| ──────── Datos de Contacto ────────         |
+| Nombre del contacto                         |
+| [Juan García___________________]           |
+| Email              Teléfono                 |
+| [j@carpas.es]      [+34 600...]            |
+|                                             |
+| [Cancelar]          [Añadir comprador]     |
 +---------------------------------------------+
 ```
 
 ---
 
-### Consideraciones Tecnicas
+### Secuencia de Implementación
 
-- **GPT-4o Vision**: Mejor modelo para extracción de texto e interpretación de imágenes
-- **Base64**: Las imágenes se envían como data URL (como en `parse-campaign-screenshot`)
-- **Límite de tamaño**: Limitar a 5MB para evitar timeouts
-- **Formatos**: Aceptar PNG, JPG, WEBP
-- **Fallback**: Si Vision no extrae datos útiles, mostrar mensaje y permitir edición manual
-- **Logo**: Si se detecta dominio en la imagen, buscar logo con Clearbit
+1. **Migración SQL**: Añadir columnas `revenue`, `ebitda`, `employees`
+2. **Tipos**: Actualizar interfaces en TypeScript
+3. **Formulario**: Modificar schema y añadir campos financieros
+4. **Edge Function**: Actualizar para extraer datos financieros numéricos
+5. **Desplegar**: Edge function actualizada
 
 ---
 
@@ -245,7 +135,7 @@ export interface EnrichmentRequest {
 
 | Archivo | Cambios |
 |---------|---------|
-| `supabase/functions/potential-buyer-enrich/index.ts` | Añadir modo imagen con GPT-4o Vision |
-| `src/components/admin/leads/BuyerQuickSearch.tsx` | Añadir upload de imagen y preview |
-| `src/types/leadPotentialBuyers.ts` | Añadir tipos para request con imagen |
-
+| `lead_potential_buyers` (tabla) | Añadir columnas: revenue, ebitda, employees |
+| `src/types/leadPotentialBuyers.ts` | Añadir campos financieros a interfaces |
+| `src/components/admin/leads/PotentialBuyerForm.tsx` | Logo opcional + sección financiera |
+| `supabase/functions/potential-buyer-enrich/index.ts` | Extraer datos financieros numéricos |
