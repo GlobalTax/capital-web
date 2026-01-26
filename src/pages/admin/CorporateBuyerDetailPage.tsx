@@ -743,6 +743,15 @@ const CorporateBuyerDetailPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Email Dialog */}
+      {buyer && (
+        <CorporateEmailDialog
+          open={showEmailDialog}
+          onClose={() => setShowEmailDialog(false)}
+          buyer={buyer}
+        />
+      )}
     </div>
   );
 };
