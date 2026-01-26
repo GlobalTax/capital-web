@@ -57,6 +57,22 @@ export const useFavoriteContactIds = () => {
   });
 };
 
+// Get favorite lead IDs
+export const useFavoriteLeadIds = () => {
+  return useQuery({
+    queryKey: [QUERY_KEY, 'lead-ids'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('corporate_favorites')
+        .select('entity_id')
+        .eq('entity_type', 'lead');
+
+      if (error) throw error;
+      return new Set(data.map(f => f.entity_id));
+    },
+  });
+};
+
 // Toggle favorite
 export const useToggleCorporateFavorite = () => {
   const queryClient = useQueryClient();
@@ -67,7 +83,7 @@ export const useToggleCorporateFavorite = () => {
       entityId, 
       isFavorite 
     }: { 
-      entityType: 'buyer' | 'contact'; 
+      entityType: 'buyer' | 'contact' | 'lead'; 
       entityId: string; 
       isFavorite: boolean;
     }) => {

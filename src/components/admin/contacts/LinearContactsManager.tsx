@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnifiedContacts, UnifiedContact } from '@/hooks/useUnifiedContacts';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useBrevoSyncStatusBulk } from '@/hooks/useBrevoSyncStatus';
 import { useContactActions, useContactSelection } from '@/features/contacts';
 import { useApolloEnrichment } from '@/hooks/useApolloEnrichment';
+import { useFavoriteLeadIds } from '@/hooks/useCorporateFavorites';
 import LinearContactsTable from './LinearContactsTable';
 import LinearFilterBar from './LinearFilterBar';
 import ContactDetailSheet from './ContactDetailSheet';
@@ -16,7 +17,7 @@ import { ApolloMatchModal } from './ApolloMatchModal';
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, RefreshCw, CheckCircle2, Archive, Trash2, BarChart3, Users } from 'lucide-react';
+import { Send, RefreshCw, CheckCircle2, Archive, Trash2, BarChart3, Users, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,8 +42,21 @@ const LinearContactsManager = () => {
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [apolloModalContact, setApolloModalContact] = useState<UnifiedContact | null>(null);
+  const [activeTab, setActiveTab] = useState<'favorites' | 'directory' | 'stats'>('favorites');
 
-  const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(contacts);
+  // Favorites data
+  const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
+  const favoriteCount = favoriteIds?.size ?? 0;
+
+  // Filter contacts for favorites tab
+  const displayedContacts = useMemo(() => {
+    if (activeTab === 'favorites' && favoriteIds) {
+      return contacts.filter(c => favoriteIds.has(c.id));
+    }
+    return contacts;
+  }, [contacts, activeTab, favoriteIds]);
+
+  const { selectedIds, selectContact, selectAll, clearSelection } = useContactSelection(displayedContacts);
   const { enrichLead, confirmMatch, isEnriching, isConfirming } = useApolloEnrichment();
   
   // useContactActions ya no necesita onRefetch - usa optimistic updates
@@ -74,7 +88,7 @@ const LinearContactsManager = () => {
     if (selectedIds.length === 0) return;
     setIsArchiving(true);
     try {
-      const result = await bulkSoftDelete(contacts, selectedIds);
+      const result = await bulkSoftDelete(displayedContacts, selectedIds);
       if (result.success || result.successCount > 0) {
         clearSelection();
       }
@@ -87,7 +101,7 @@ const LinearContactsManager = () => {
     if (selectedIds.length === 0) return;
     setIsDeleting(true);
     try {
-      const result = await bulkHardDelete(contacts, selectedIds);
+      const result = await bulkHardDelete(displayedContacts, selectedIds);
       if (result.success || result.successCount > 0) {
         clearSelection();
       }
@@ -118,7 +132,7 @@ const LinearContactsManager = () => {
       });
     }
     
-    await syncBulkContacts(idsToSync, contacts);
+    await syncBulkContacts(idsToSync, displayedContacts);
     clearSelection();
   };
 
@@ -133,7 +147,7 @@ const LinearContactsManager = () => {
     if (result?.status === 'needs_review') {
       // Refresh to get candidates, then open modal
       await refetch();
-      const updatedContact = contacts.find(c => c.id === contact.id);
+      const updatedContact = displayedContacts.find(c => c.id === contact.id);
       if (updatedContact) {
         setApolloModalContact(updatedContact);
       }
@@ -166,7 +180,7 @@ const LinearContactsManager = () => {
   }
 
   return (
-    <Tabs defaultValue="directory" className="space-y-6">
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'stats')} className="space-y-6">
       {/* Header with Tabs */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -177,9 +191,13 @@ const LinearContactsManager = () => {
             </p>
           </div>
           <TabsList className="h-8">
+            <TabsTrigger value="favorites" className="text-xs px-3 h-6 gap-1.5">
+              <Star className="h-3 w-3" />
+              Favoritos {favoriteCount > 0 && <span className="text-[10px] ml-0.5 text-amber-500">({favoriteCount})</span>}
+            </TabsTrigger>
             <TabsTrigger value="directory" className="text-xs px-3 h-6 gap-1.5">
               <Users className="h-3 w-3" />
-              Directorio
+              Todos
             </TabsTrigger>
             <TabsTrigger value="stats" className="text-xs px-3 h-6 gap-1.5">
               <BarChart3 className="h-3 w-3" />
@@ -214,12 +232,12 @@ const LinearContactsManager = () => {
 
             <BulkChannelSelect 
               selectedIds={selectedIds}
-              contacts={contacts}
+              contacts={displayedContacts}
               onSuccess={clearSelection}
             />
             <BulkLeadFormSelect 
               selectedIds={selectedIds}
-              contacts={contacts}
+              contacts={displayedContacts}
               onSuccess={clearSelection}
             />
             <Button 
@@ -247,6 +265,47 @@ const LinearContactsManager = () => {
           </div>
         )}
       </div>
+
+      {/* Favorites Tab */}
+      <TabsContent value="favorites" className="space-y-6 mt-0">
+        {favoriteCount === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg">
+            <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
+              <Star className="h-6 w-6 text-amber-500" />
+            </div>
+            <p className="text-sm text-muted-foreground">No tienes leads favoritos</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Marca leads con ★ en el directorio para seguirlos aquí</p>
+          </div>
+        ) : (
+          <>
+            {/* Filter Bar for favorites */}
+            <LinearFilterBar
+              filters={filters}
+              onFiltersChange={applyFilters}
+              totalCount={favoriteCount}
+              filteredCount={displayedContacts.length}
+              selectedCount={selectedIds.length}
+              onRefresh={handleRefresh}
+              onExport={() => exportContacts('excel')}
+              isRefreshing={isRefreshing}
+            />
+
+            {/* Table */}
+            <LinearContactsTable
+              contacts={displayedContacts}
+              selectedContacts={selectedIds}
+              onSelectContact={selectContact}
+              onSelectAll={selectAll}
+              onViewDetails={handleViewDetails}
+              onSoftDelete={handleSoftDelete}
+              isLoading={isLoading || isFavoritesLoading}
+              onApolloEnrich={handleApolloEnrich}
+              onApolloSelectCandidate={handleApolloSelectCandidate}
+              isEnriching={isEnriching}
+            />
+          </>
+        )}
+      </TabsContent>
 
       {/* Directory Tab */}
       <TabsContent value="directory" className="space-y-6 mt-0">
