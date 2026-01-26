@@ -24,8 +24,11 @@ import {
   Clock,
   FileText,
   Send,
-  Archive
+  Archive,
+  Plus
 } from 'lucide-react';
+import { EditableCurrency } from '@/components/admin/shared/EditableCurrency';
+import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { LeadTasksQuickView } from '@/features/admin/components/leads/LeadTasksQuickView';
@@ -69,6 +72,7 @@ export default function LeadDetailPage() {
   const { toast } = useToast();
   const { syncSingleContact, isSyncing } = useBrevoSync();
   const { trackLeadStatusChange, trackNoteAdded, trackCompanyLinked } = useBrevoEvents();
+  const { update: updateLeadField } = useContactInlineUpdate();
   const [notes, setNotes] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [acquisitionChannelId, setAcquisitionChannelId] = useState<string | null>(null);
@@ -369,6 +373,13 @@ export default function LeadDetailPage() {
     });
   };
 
+  // Handler para actualizar campos financieros inline
+  const handleFinancialUpdate = async (field: string, value: number) => {
+    if (!lead) return;
+    await updateLeadField(lead.id, lead.origin, field, value || null);
+    refetch();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -430,6 +441,15 @@ export default function LeadDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Botón "Nuevo Lead" */}
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/admin/contacts', { state: { openNewLead: true } })}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Lead
+          </Button>
+
           {/* Botón "Convertir en Operación" */}
           <LeadToOperationConverter lead={lead} />
 
@@ -585,22 +605,37 @@ export default function LeadDetailPage() {
                       <p className="text-sm text-muted-foreground">{lead.employee_range}</p>
                     </div>
                   )}
-                  {lead.revenue && (
-                    <div>
-                      <p className="text-sm font-medium mb-1">Facturación</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.revenue)}
-                      </p>
-                    </div>
-                  )}
-                  {lead.final_valuation && (
-                    <div>
-                      <p className="text-sm font-medium mb-1">Valoración Final</p>
-                      <p className="text-sm font-semibold text-primary">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.final_valuation)}
-                      </p>
-                    </div>
-                  )}
+                  {/* Facturación - EDITABLE */}
+                  <div>
+                    <p className="text-sm font-medium mb-1">Facturación</p>
+                    <EditableCurrency
+                      value={lead.revenue}
+                      onSave={(v) => handleFinancialUpdate('revenue', v)}
+                      emptyText="Clic para añadir"
+                      compact
+                    />
+                  </div>
+                  {/* EBITDA - EDITABLE */}
+                  <div>
+                    <p className="text-sm font-medium mb-1">EBITDA</p>
+                    <EditableCurrency
+                      value={lead.ebitda}
+                      onSave={(v) => handleFinancialUpdate('ebitda', v)}
+                      emptyText="Clic para añadir"
+                      compact
+                    />
+                  </div>
+                  {/* Valoración Final - EDITABLE */}
+                  <div className="col-span-2">
+                    <p className="text-sm font-medium mb-1">Valoración Final</p>
+                    <EditableCurrency
+                      value={lead.final_valuation}
+                      onSave={(v) => handleFinancialUpdate('final_valuation', v)}
+                      emptyText="Clic para añadir"
+                      compact
+                      displayClassName="text-primary font-semibold"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -699,30 +734,37 @@ export default function LeadDetailPage() {
                       <p className="text-sm text-muted-foreground">{lead.employee_range}</p>
                     </div>
                   )}
-                  {lead.revenue && (
-                    <div>
-                      <p className="text-sm font-medium mb-1">Facturación</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.revenue)}
-                      </p>
-                    </div>
-                  )}
-                  {lead.ebitda && (
-                    <div>
-                      <p className="text-sm font-medium mb-1">EBITDA</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.ebitda)}
-                      </p>
-                    </div>
-                  )}
-                  {lead.final_valuation && (
-                    <div className="col-span-2">
-                      <p className="text-sm font-medium mb-1">Valoración Final</p>
-                      <p className="text-sm font-semibold text-primary">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(lead.final_valuation)}
-                      </p>
-                    </div>
-                  )}
+                  {/* Facturación - EDITABLE */}
+                  <div>
+                    <p className="text-sm font-medium mb-1">Facturación</p>
+                    <EditableCurrency
+                      value={lead.revenue}
+                      onSave={(v) => handleFinancialUpdate('revenue', v)}
+                      emptyText="Clic para añadir"
+                      compact
+                    />
+                  </div>
+                  {/* EBITDA - EDITABLE */}
+                  <div>
+                    <p className="text-sm font-medium mb-1">EBITDA</p>
+                    <EditableCurrency
+                      value={lead.ebitda}
+                      onSave={(v) => handleFinancialUpdate('ebitda', v)}
+                      emptyText="Clic para añadir"
+                      compact
+                    />
+                  </div>
+                  {/* Valoración Final - EDITABLE */}
+                  <div className="col-span-2">
+                    <p className="text-sm font-medium mb-1">Valoración Final</p>
+                    <EditableCurrency
+                      value={lead.final_valuation}
+                      onSave={(v) => handleFinancialUpdate('final_valuation', v)}
+                      emptyText="Clic para añadir"
+                      compact
+                      displayClassName="text-primary font-semibold"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
