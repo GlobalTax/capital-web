@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -172,23 +171,143 @@ Responde SOLO con un JSON válido con este formato:
   return { description: '', sector_focus: [], revenue_range: null };
 }
 
+// Analyze image with GPT-4o Vision via OpenAI
+async function analyzeImageWithVision(
+  imageBase64: string,
+  openaiKey: string
+): Promise<{
+  name: string | null;
+  website: string | null;
+  description: string | null;
+  sector_focus: string[];
+  revenue_range: string | null;
+}> {
+  const systemPrompt = `Eres un analista de M&A experto. Analiza esta imagen que puede ser:
+- Un logo de empresa
+- Una tarjeta de visita
+- Un informe financiero o documento contable
+- Una captura de web corporativa
+- Cualquier documento empresarial
+
+EXTRAE la siguiente información de la imagen:
+1. Nombre de la empresa (OBLIGATORIO)
+2. Dominio web si es visible (ejemplo: empresa.es)
+3. Sector de actividad (usa terminología M&A estándar, máximo 3 sectores)
+4. Descripción breve de la actividad si se puede inferir (2-3 frases)
+5. Rango de facturación si hay datos financieros visibles
+
+Responde SOLO con un JSON válido:
+{
+  "name": "Nombre de la empresa",
+  "website": "https://www.ejemplo.es" o null,
+  "description": "Descripción de la actividad..." o null,
+  "sector_focus": ["Sector 1", "Sector 2"],
+  "revenue_range": "1M-5M" o null
+}
+
+IMPORTANTE: 
+- Si ves cifras de facturación/ventas/ingresos, convierte a rango: 0-1M, 1M-5M, 5M-10M, 10M-50M, 50M+
+- Si ves EBITDA o beneficio pero no facturación, intenta inferir el rango
+- El nombre de la empresa es OBLIGATORIO, si no lo ves claramente, intenta inferirlo del logo o documento`;
+
+  try {
+    // Determine the image format
+    let imageUrl = imageBase64;
+    if (!imageBase64.startsWith('data:')) {
+      // Assume it's raw base64, add data URL prefix
+      imageUrl = `data:image/jpeg;base64,${imageBase64}`;
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Analiza esta imagen y extrae la información de la empresa:' },
+              { type: 'image_url', image_url: { url: imageUrl, detail: 'high' } },
+            ],
+          },
+        ],
+        max_tokens: 1000,
+        temperature: 0.2,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[potential-buyer-enrich] Vision API error:', response.status, errorText);
+      return { name: null, website: null, description: null, sector_focus: [], revenue_range: null };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    console.log('[potential-buyer-enrich] Vision response:', content);
+    
+    // Extract JSON from response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        name: parsed.name || null,
+        website: parsed.website || null,
+        description: parsed.description || null,
+        sector_focus: Array.isArray(parsed.sector_focus) ? parsed.sector_focus : [],
+        revenue_range: parsed.revenue_range || null,
+      };
+    }
+  } catch (e) {
+    console.error('[potential-buyer-enrich] Vision parsing error:', e);
+  }
+  
+  return { name: null, website: null, description: null, sector_focus: [], revenue_range: null };
+}
+
+// Extract domain from URL or website string
+function extractDomain(website: string | null): string | null {
+  if (!website) return null;
+  try {
+    let url = website;
+    if (!url.match(/^https?:\/\//)) {
+      url = 'https://' + url;
+    }
+    const parsed = new URL(url);
+    return parsed.hostname.replace(/^www\./, '');
+  } catch {
+    // Try to extract domain pattern
+    const match = website.match(/(?:www\.)?([a-z0-9\-]+\.[a-z]{2,})/i);
+    return match ? match[1] : null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { query } = await req.json();
-
-    if (!query || typeof query !== 'string' || query.trim().length < 2) {
+    let body;
+    try {
+      body = await req.json();
+    } catch {
       return new Response(
-        JSON.stringify({ success: false, error: 'Se requiere un nombre de empresa, dominio o URL' }),
+        JSON.stringify({ success: false, error: 'Cuerpo de solicitud inválido' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    const { mode = 'text', query, imageBase64 } = body;
+
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
     const lovableKey = Deno.env.get('LOVABLE_API_KEY');
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
 
     if (!lovableKey) {
       return new Response(
@@ -197,7 +316,103 @@ serve(async (req) => {
       );
     }
 
-    console.log('[potential-buyer-enrich] Processing query:', query);
+    // ============ IMAGE MODE ============
+    if (mode === 'image') {
+      if (!imageBase64) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Se requiere una imagen en base64' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (!openaiKey) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'OPENAI_API_KEY no configurada para análisis de imágenes' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('[potential-buyer-enrich] Processing image mode, size:', imageBase64.length);
+
+      // Step 1: Analyze image with GPT-4o Vision
+      const visionResult = await analyzeImageWithVision(imageBase64, openaiKey);
+      
+      if (!visionResult.name) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'No se pudo detectar una empresa en la imagen' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('[potential-buyer-enrich] Vision extracted:', visionResult);
+
+      // Step 2: Try to get logo if we have a website
+      let logoUrl: string | null = null;
+      let domain = extractDomain(visionResult.website);
+      
+      if (domain) {
+        logoUrl = await getLogoUrl(domain);
+      } else {
+        // Try to find domain from company name
+        domain = await findDomainFromName(visionResult.name);
+        if (domain) {
+          logoUrl = await getLogoUrl(domain);
+        }
+      }
+
+      // Step 3: If no description from image, use AI to generate one
+      let description = visionResult.description;
+      let sectorFocus = visionResult.sector_focus;
+      let revenueRange = visionResult.revenue_range;
+
+      if (!description && domain && firecrawlKey) {
+        // Try to scrape website for better description
+        const websiteUrl = `https://www.${domain}`;
+        console.log('[potential-buyer-enrich] Scraping for description:', websiteUrl);
+        const websiteContent = await scrapeWebsite(websiteUrl, firecrawlKey);
+        if (websiteContent) {
+          const aiResult = await analyzeWithAI(visionResult.name, websiteContent, lovableKey);
+          description = aiResult.description || description;
+          sectorFocus = aiResult.sector_focus.length > 0 ? aiResult.sector_focus : sectorFocus;
+          revenueRange = aiResult.revenue_range || revenueRange;
+        }
+      }
+
+      // Build source string
+      const sources: string[] = ['vision'];
+      if (logoUrl) sources.push('clearbit');
+      if (description && description !== visionResult.description) sources.push('firecrawl+ai');
+
+      const result: EnrichmentResult = {
+        success: true,
+        data: {
+          name: visionResult.name,
+          logo_url: logoUrl,
+          website: visionResult.website || (domain ? `https://www.${domain}` : null),
+          description: description,
+          sector_focus: sectorFocus,
+          revenue_range: revenueRange,
+          source: sources.join('+'),
+        },
+      };
+
+      console.log('[potential-buyer-enrich] Image mode result:', result);
+
+      return new Response(
+        JSON.stringify(result),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============ TEXT MODE (existing logic) ============
+    if (!query || typeof query !== 'string' || query.trim().length < 2) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Se requiere un nombre de empresa, dominio o URL' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('[potential-buyer-enrich] Processing text mode, query:', query);
 
     // Step 1: Detect input type
     const { type, value } = detectInputType(query);

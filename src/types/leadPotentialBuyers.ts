@@ -46,6 +46,12 @@ export interface EnrichmentData {
   source: string;
 }
 
+export interface EnrichmentRequest {
+  mode: 'text' | 'image';
+  query?: string;
+  imageBase64?: string;
+}
+
 export const BUYER_STATUS_OPTIONS: { value: BuyerStatus; label: string; color: string }[] = [
   { value: 'identificado', label: 'Identificado', color: 'bg-muted text-muted-foreground' },
   { value: 'contactado', label: 'Contactado', color: 'bg-blue-100 text-blue-700' },
