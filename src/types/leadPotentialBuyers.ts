@@ -10,6 +10,9 @@ export interface LeadPotentialBuyer {
   description: string | null;
   sector_focus: string[] | null;
   revenue_range: string | null;
+  revenue: number | null;
+  ebitda: number | null;
+  employees: number | null;
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
@@ -28,6 +31,9 @@ export interface LeadPotentialBuyerFormData {
   description?: string;
   sector_focus?: string[];
   revenue_range?: string;
+  revenue?: number;
+  ebitda?: number;
+  employees?: number;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
@@ -43,6 +49,9 @@ export interface EnrichmentData {
   description: string | null;
   sector_focus: string[];
   revenue_range: string | null;
+  revenue: number | null;
+  ebitda: number | null;
+  employees: number | null;
   source: string;
 }
 

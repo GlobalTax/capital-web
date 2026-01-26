@@ -35,11 +35,14 @@ import { Loader2, Sparkles } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
-  logo_url: z.string().min(1, 'El logo es requerido'),
+  logo_url: z.string().optional().or(z.literal('')),
   website: z.string().url('URL inválida').optional().or(z.literal('')),
   description: z.string().optional(),
   sector_focus: z.array(z.string()).optional(),
   revenue_range: z.string().optional(),
+  revenue: z.number().optional(),
+  ebitda: z.number().optional(),
+  employees: z.number().int().optional(),
   contact_name: z.string().optional(),
   contact_email: z.string().email('Email inválido').optional().or(z.literal('')),
   contact_phone: z.string().optional(),
@@ -75,6 +78,9 @@ const PotentialBuyerForm: React.FC<PotentialBuyerFormProps> = ({
       description: buyer?.description || '',
       sector_focus: buyer?.sector_focus || [],
       revenue_range: buyer?.revenue_range || '',
+      revenue: buyer?.revenue || undefined,
+      ebitda: buyer?.ebitda || undefined,
+      employees: buyer?.employees || undefined,
       contact_name: buyer?.contact_name || '',
       contact_email: buyer?.contact_email || '',
       contact_phone: buyer?.contact_phone || '',
@@ -96,6 +102,9 @@ const PotentialBuyerForm: React.FC<PotentialBuyerFormProps> = ({
         description: buyer?.description || '',
         sector_focus: buyer?.sector_focus || [],
         revenue_range: buyer?.revenue_range || '',
+        revenue: buyer?.revenue || undefined,
+        ebitda: buyer?.ebitda || undefined,
+        employees: buyer?.employees || undefined,
         contact_name: buyer?.contact_name || '',
         contact_email: buyer?.contact_email || '',
         contact_phone: buyer?.contact_phone || '',
@@ -113,6 +122,9 @@ const PotentialBuyerForm: React.FC<PotentialBuyerFormProps> = ({
     if (data.description) form.setValue('description', data.description);
     if (data.sector_focus.length > 0) form.setValue('sector_focus', data.sector_focus);
     if (data.revenue_range) form.setValue('revenue_range', data.revenue_range);
+    if (data.revenue) form.setValue('revenue', data.revenue);
+    if (data.ebitda) form.setValue('ebitda', data.ebitda);
+    if (data.employees) form.setValue('employees', data.employees);
     
     setIsEnriched(true);
     setShowManualForm(true);
@@ -188,11 +200,11 @@ const PotentialBuyerForm: React.FC<PotentialBuyerFormProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <ImageUploadField
-                      label="Logo *"
+                      label="Logo"
                       value={field.value}
                       onChange={field.onChange}
                       folder="potential-buyers/logos"
-                      placeholder="URL del logo o sube una imagen"
+                      placeholder="URL del logo o sube una imagen (opcional)"
                     />
                     <FormMessage />
                   </FormItem>
@@ -234,58 +246,125 @@ const PotentialBuyerForm: React.FC<PotentialBuyerFormProps> = ({
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                {/* Rango de Facturación */}
-                <FormField
-                  control={form.control}
-                  name="revenue_range"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Facturación</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ''}>
+              {/* Datos Financieros */}
+              <div className="space-y-3 pt-2 border-t">
+                <p className="text-sm font-medium text-muted-foreground">Datos Financieros</p>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="revenue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Facturación €</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar" />
-                          </SelectTrigger>
+                          <Input 
+                            type="number"
+                            placeholder="1500000"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {REVENUE_RANGE_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Estado */}
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Estado</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || 'identificado'}>
+                  <FormField
+                    control={form.control}
+                    name="ebitda"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>EBITDA €</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
+                          <Input 
+                            type="number"
+                            placeholder="250000"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {BUYER_STATUS_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="employees"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Empleados</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number"
+                            placeholder="45"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Rango de Facturación */}
+                  <FormField
+                    control={form.control}
+                    name="revenue_range"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rango Facturación</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ''}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {REVENUE_RANGE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Estado */}
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Estado</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || 'identificado'}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {BUYER_STATUS_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               {/* Datos de Contacto */}

@@ -16,6 +16,9 @@ export interface EnrichmentData {
   description: string | null;
   sector_focus: string[];
   revenue_range: string | null;
+  revenue: number | null;
+  ebitda: number | null;
+  employees: number | null;
   source: string;
 }
 

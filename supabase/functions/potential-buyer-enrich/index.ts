@@ -15,6 +15,9 @@ interface EnrichmentResult {
     description: string | null;
     sector_focus: string[];
     revenue_range: string | null;
+    revenue: number | null;
+    ebitda: number | null;
+    employees: number | null;
     source: string;
   };
   error?: string;
@@ -112,17 +115,28 @@ async function analyzeWithAI(
   companyName: string,
   websiteContent: string | null,
   lovableKey: string
-): Promise<{ description: string; sector_focus: string[]; revenue_range: string | null }> {
+): Promise<{ 
+  description: string; 
+  sector_focus: string[]; 
+  revenue_range: string | null;
+  revenue: number | null;
+  ebitda: number | null;
+  employees: number | null;
+}> {
   const systemPrompt = `Eres un analista de M&A especializado en el mercado español. Analiza la información proporcionada sobre una empresa y genera:
 1. Una descripción profesional y concisa (2-3 frases máximo) destacando su actividad principal, productos/servicios y mercados.
 2. Los sectores de actividad de la empresa (máximo 3 sectores, usar terminología estándar M&A).
 3. Si es posible inferir el rango de facturación basado en el contenido (empleados, oficinas, etc.), indícalo.
+4. Si hay cifras numéricas de facturación, EBITDA o empleados, inclúyelas.
 
 Responde SOLO con un JSON válido con este formato:
 {
   "description": "Descripción profesional de la empresa...",
   "sector_focus": ["Sector 1", "Sector 2"],
-  "revenue_range": "1M-5M" // o null si no se puede inferir. Opciones: 0-1M, 1M-5M, 5M-10M, 10M-50M, 50M+
+  "revenue_range": "1M-5M", // o null si no se puede inferir. Opciones: 0-1M, 1M-5M, 5M-10M, 10M-50M, 50M+
+  "revenue": 1500000, // facturación en euros como número, o null
+  "ebitda": 250000, // EBITDA en euros como número, o null
+  "employees": 45 // número de empleados, o null
 }`;
 
   const userContent = websiteContent 
@@ -148,7 +162,7 @@ Responde SOLO con un JSON válido con este formato:
 
     if (!response.ok) {
       console.error('[potential-buyer-enrich] AI error:', response.status);
-      return { description: '', sector_focus: [], revenue_range: null };
+      return { description: '', sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
     }
 
     const data = await response.json();
@@ -162,13 +176,16 @@ Responde SOLO con un JSON válido con este formato:
         description: parsed.description || '',
         sector_focus: Array.isArray(parsed.sector_focus) ? parsed.sector_focus : [],
         revenue_range: parsed.revenue_range || null,
+        revenue: typeof parsed.revenue === 'number' ? parsed.revenue : null,
+        ebitda: typeof parsed.ebitda === 'number' ? parsed.ebitda : null,
+        employees: typeof parsed.employees === 'number' ? parsed.employees : null,
       };
     }
   } catch (e) {
     console.error('[potential-buyer-enrich] AI parsing error:', e);
   }
   
-  return { description: '', sector_focus: [], revenue_range: null };
+  return { description: '', sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
 }
 
 // Analyze image with GPT-4o Vision via OpenAI
@@ -181,6 +198,9 @@ async function analyzeImageWithVision(
   description: string | null;
   sector_focus: string[];
   revenue_range: string | null;
+  revenue: number | null;
+  ebitda: number | null;
+  employees: number | null;
 }> {
   const systemPrompt = `Eres un analista de M&A experto. Analiza esta imagen que puede ser:
 - Un logo de empresa
@@ -195,6 +215,7 @@ EXTRAE la siguiente información de la imagen:
 3. Sector de actividad (usa terminología M&A estándar, máximo 3 sectores)
 4. Descripción breve de la actividad si se puede inferir (2-3 frases)
 5. Rango de facturación si hay datos financieros visibles
+6. CIFRAS NUMÉRICAS EXACTAS de facturación, EBITDA y empleados si son visibles
 
 Responde SOLO con un JSON válido:
 {
@@ -202,13 +223,17 @@ Responde SOLO con un JSON válido:
   "website": "https://www.ejemplo.es" o null,
   "description": "Descripción de la actividad..." o null,
   "sector_focus": ["Sector 1", "Sector 2"],
-  "revenue_range": "1M-5M" o null
+  "revenue_range": "1M-5M" o null,
+  "revenue": 1500000, // facturación en euros como número, o null
+  "ebitda": 250000, // EBITDA en euros como número, o null  
+  "employees": 45 // número de empleados, o null
 }
 
 IMPORTANTE: 
-- Si ves cifras de facturación/ventas/ingresos, convierte a rango: 0-1M, 1M-5M, 5M-10M, 10M-50M, 50M+
-- Si ves EBITDA o beneficio pero no facturación, intenta inferir el rango
-- El nombre de la empresa es OBLIGATORIO, si no lo ves claramente, intenta inferirlo del logo o documento`;
+- Si ves cifras de facturación/ventas/ingresos, extrae el número exacto en revenue Y calcula el rango
+- Si ves EBITDA o beneficio, extrae el número en ebitda
+- Si ves número de empleados o plantilla, extrae en employees
+- El nombre de la empresa es OBLIGATORIO`;
 
   try {
     // Determine the image format
@@ -244,7 +269,7 @@ IMPORTANTE:
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[potential-buyer-enrich] Vision API error:', response.status, errorText);
-      return { name: null, website: null, description: null, sector_focus: [], revenue_range: null };
+      return { name: null, website: null, description: null, sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
     }
 
     const data = await response.json();
@@ -261,13 +286,16 @@ IMPORTANTE:
         description: parsed.description || null,
         sector_focus: Array.isArray(parsed.sector_focus) ? parsed.sector_focus : [],
         revenue_range: parsed.revenue_range || null,
+        revenue: typeof parsed.revenue === 'number' ? parsed.revenue : null,
+        ebitda: typeof parsed.ebitda === 'number' ? parsed.ebitda : null,
+        employees: typeof parsed.employees === 'number' ? parsed.employees : null,
       };
     }
   } catch (e) {
     console.error('[potential-buyer-enrich] Vision parsing error:', e);
   }
   
-  return { name: null, website: null, description: null, sector_focus: [], revenue_range: null };
+  return { name: null, website: null, description: null, sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
 }
 
 // Extract domain from URL or website string
@@ -364,6 +392,9 @@ serve(async (req) => {
       let description = visionResult.description;
       let sectorFocus = visionResult.sector_focus;
       let revenueRange = visionResult.revenue_range;
+      let revenue = visionResult.revenue;
+      let ebitda = visionResult.ebitda;
+      let employees = visionResult.employees;
 
       if (!description && domain && firecrawlKey) {
         // Try to scrape website for better description
@@ -375,6 +406,9 @@ serve(async (req) => {
           description = aiResult.description || description;
           sectorFocus = aiResult.sector_focus.length > 0 ? aiResult.sector_focus : sectorFocus;
           revenueRange = aiResult.revenue_range || revenueRange;
+          revenue = aiResult.revenue ?? revenue;
+          ebitda = aiResult.ebitda ?? ebitda;
+          employees = aiResult.employees ?? employees;
         }
       }
 
@@ -392,6 +426,9 @@ serve(async (req) => {
           description: description,
           sector_focus: sectorFocus,
           revenue_range: revenueRange,
+          revenue: revenue,
+          ebitda: ebitda,
+          employees: employees,
           source: sources.join('+'),
         },
       };
@@ -475,6 +512,9 @@ serve(async (req) => {
         description: aiResult.description,
         sector_focus: aiResult.sector_focus,
         revenue_range: aiResult.revenue_range,
+        revenue: aiResult.revenue,
+        ebitda: aiResult.ebitda,
+        employees: aiResult.employees,
         source: sources.join('+'),
       },
     };
