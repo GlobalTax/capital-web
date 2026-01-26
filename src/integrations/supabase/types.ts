@@ -10054,6 +10054,8 @@ export type Database = {
           contact_phone: string | null
           created_at: string | null
           description: string | null
+          ebitda: number | null
+          employees: number | null
           id: string
           lead_id: string
           lead_origin: string
@@ -10061,6 +10063,7 @@ export type Database = {
           name: string
           notes: string | null
           priority: number | null
+          revenue: number | null
           revenue_range: string | null
           sector_focus: string[] | null
           status: string | null
@@ -10074,6 +10077,8 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           description?: string | null
+          ebitda?: number | null
+          employees?: number | null
           id?: string
           lead_id: string
           lead_origin: string
@@ -10081,6 +10086,7 @@ export type Database = {
           name: string
           notes?: string | null
           priority?: number | null
+          revenue?: number | null
           revenue_range?: string | null
           sector_focus?: string[] | null
           status?: string | null
@@ -10094,6 +10100,8 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string | null
           description?: string | null
+          ebitda?: number | null
+          employees?: number | null
           id?: string
           lead_id?: string
           lead_origin?: string
@@ -10101,6 +10109,7 @@ export type Database = {
           name?: string
           notes?: string | null
           priority?: number | null
+          revenue?: number | null
           revenue_range?: string | null
           sector_focus?: string[] | null
           status?: string | null
