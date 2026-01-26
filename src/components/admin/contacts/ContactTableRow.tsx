@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, MoreHorizontal, Mail, Phone, Building2, MapPin, Users, Flame, Bot, MailOpen } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { ApolloEnrichButton } from './ApolloEnrichButton';
+import { LeadFavoriteButton } from './LeadFavoriteButton';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -74,6 +75,7 @@ export interface ContactRowProps {
 
 // Column styles with flex for proper expansion
 export const COL_STYLES = {
+  star: { minWidth: 32, flex: '0 0 32px' },
   checkbox: { minWidth: 40, flex: '0 0 40px' },
   contact: { minWidth: 180, flex: '2 0 180px' },
   origin: { minWidth: 90, flex: '0 0 90px' },
@@ -158,6 +160,15 @@ export const ContactTableRow = memo<ContactRowProps>(({
       )}
       onClick={() => onViewDetails(contact)}
     >
+      {/* Star/Favorite */}
+      <div 
+        className="flex items-center justify-center px-0.5" 
+        style={{ flex: COL_STYLES.star.flex, minWidth: COL_STYLES.star.minWidth }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <LeadFavoriteButton leadId={contact.id} />
+      </div>
+
       {/* Checkbox */}
       <div 
         className="flex items-center justify-center px-1.5" 

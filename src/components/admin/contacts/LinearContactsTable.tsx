@@ -12,7 +12,7 @@ import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { ContactTableRow, COL_STYLES, STATUS_OPTIONS } from './ContactTableRow';
 
 // Minimum table width to ensure all columns fit
-const MIN_TABLE_WIDTH = 1000;
+const MIN_TABLE_WIDTH = 1032;
 
 interface LinearContactsTableProps {
   contacts: UnifiedContact[];
@@ -55,6 +55,10 @@ const TableHeader = React.memo<{
         transform: `translateX(-${scrollLeft}px)` 
       }}
     >
+      {/* Star column header */}
+      <div className="flex items-center justify-center h-8 px-0.5" style={{ flex: COL_STYLES.star.flex, minWidth: COL_STYLES.star.minWidth }}>
+        {/* Empty header for star column */}
+      </div>
       <div className="flex items-center justify-center h-8 px-1.5" style={{ flex: COL_STYLES.checkbox.flex, minWidth: COL_STYLES.checkbox.minWidth }}>
         <Checkbox
           checked={allSelected}
