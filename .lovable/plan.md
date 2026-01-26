@@ -1,212 +1,241 @@
 
-## Plan: Edicion Inline de Financials y Creacion Rapida de Leads
 
-Se implementaran dos mejoras en la ficha de leads:
-1. **Edicion inline de campos financieros** (Facturacion, EBITDA, Valoracion) directamente en la ficha
-2. **Acceso rapido para crear leads** desde la ficha actual
+## Plan: Sistema de Compradores Potenciales para Leads
+
+Se implementará una nueva sección en la ficha de Lead para gestionar compradores potenciales vinculados, con soporte para subir logos/imágenes de cada comprador.
 
 ---
 
 ### Arquitectura Propuesta
 
 ```text
-+-------------------------+     +---------------------------+
-|   LeadDetailPage        |     |  company_valuations       |
-+-------------------------+     +---------------------------+
-|  - EditableCurrency     |---->|  revenue, ebitda,         |
-|    (Facturacion, EBITDA)|     |  final_valuation          |
-|  - QuickLeadActions     |     +---------------------------+
-|    (+Nuevo Lead btn)    |
-+-------------------------+
-           |
-           v
-+-------------------------+
-|  useContactInlineUpdate |
-+-------------------------+
-|  - update(id, origin,   |
-|    field, value)        |
-+-------------------------+
++------------------------+     +-----------------------------+
+|   LeadDetailPage       |     |  lead_potential_buyers      |
++------------------------+     +-----------------------------+
+|  - PotentialBuyersCard |<--->|  lead_id: UUID              |
+|    (Nueva sección)     |     |  name: TEXT                 |
+|                        |     |  logo_url: TEXT             |
++------------------------+     |  website: TEXT              |
+          |                    |  description: TEXT          |
+          v                    |  sector_focus: TEXT[]       |
++------------------------+     |  revenue_range: TEXT        |
+|  PotentialBuyerForm    |     |  contact_info: TEXT         |
++------------------------+     |  priority: INTEGER          |
+|  - Nombre              |     |  notes: TEXT                |
+|  - ImageUploadField    |     |  status: TEXT               |
+|  - Website, Sector...  |     |  added_by: UUID             |
++------------------------+     +-----------------------------+
 ```
 
 ---
 
 ### Cambios a Implementar
 
-#### 1. Seccion de Datos de Valoracion con Edicion Inline
+#### 1. Base de Datos - Nueva Tabla `lead_potential_buyers`
 
-Reemplazar la visualizacion estatica de `revenue`, `ebitda` y `final_valuation` por componentes `EditableCurrency` que permitan edicion click-to-edit.
+Se creará una tabla para almacenar los compradores potenciales asociados a cada lead:
 
-**Archivo**: `src/pages/admin/LeadDetailPage.tsx`
+```sql
+CREATE TABLE public.lead_potential_buyers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id UUID NOT NULL,
+  lead_origin TEXT NOT NULL,
+  
+  -- Datos del comprador
+  name TEXT NOT NULL,
+  logo_url TEXT,
+  website TEXT,
+  description TEXT,
+  sector_focus TEXT[],
+  revenue_range TEXT,
+  contact_name TEXT,
+  contact_email TEXT,
+  contact_phone TEXT,
+  
+  -- Gestión
+  priority INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'identificado' CHECK (status IN ('identificado', 'contactado', 'interesado', 'negociando', 'descartado')),
+  notes TEXT,
+  
+  -- Auditoría
+  added_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 
-**Cambios en imports:**
-- Importar `EditableCurrency` desde `@/components/admin/shared/EditableCurrency`
-- Importar `useContactInlineUpdate` desde `@/hooks/useInlineUpdate`
+-- Índices
+CREATE INDEX idx_lead_potential_buyers_lead ON lead_potential_buyers(lead_id, lead_origin);
 
-**Cambios en el componente (lineas 568-606):**
+-- RLS
+ALTER TABLE lead_potential_buyers ENABLE ROW LEVEL SECURITY;
 
-Antes:
-```tsx
-{lead.revenue && (
-  <div>
-    <p className="text-sm font-medium mb-1">Facturacion</p>
-    <p className="text-sm text-muted-foreground">
-      {new Intl.NumberFormat('es-ES', {...}).format(lead.revenue)}
-    </p>
-  </div>
-)}
+CREATE POLICY "Admins can manage potential buyers"
+  ON lead_potential_buyers FOR ALL
+  USING (auth.role() = 'authenticated');
 ```
 
-Despues:
-```tsx
-<div>
-  <p className="text-sm font-medium mb-1">Facturacion</p>
-  <EditableCurrency
-    value={lead.revenue}
-    onSave={(v) => handleFinancialUpdate('revenue', v)}
-    emptyText="Sin datos"
-    compact
-  />
-</div>
+#### 2. Tipos TypeScript - `src/types/leadPotentialBuyers.ts`
+
+```typescript
+export type BuyerStatus = 'identificado' | 'contactado' | 'interesado' | 'negociando' | 'descartado';
+
+export interface LeadPotentialBuyer {
+  id: string;
+  lead_id: string;
+  lead_origin: string;
+  name: string;
+  logo_url: string | null;
+  website: string | null;
+  description: string | null;
+  sector_focus: string[] | null;
+  revenue_range: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  priority: number;
+  status: BuyerStatus;
+  notes: string | null;
+  added_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeadPotentialBuyerFormData {
+  name: string;
+  logo_url?: string;
+  website?: string;
+  description?: string;
+  sector_focus?: string[];
+  revenue_range?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  priority?: number;
+  status?: BuyerStatus;
+  notes?: string;
+}
 ```
 
-**Nueva funcion handler:**
-```tsx
-const { update: updateLead } = useContactInlineUpdate();
+#### 3. Hook - `src/hooks/useLeadPotentialBuyers.ts`
 
-const handleFinancialUpdate = async (field: string, value: number) => {
-  await updateLead(lead.id, lead.origin, field, value || null);
-  refetch();
-};
+```typescript
+// Operaciones CRUD para compradores potenciales
+- usePotentialBuyers(leadId, leadOrigin) - Listar compradores del lead
+- useCreatePotentialBuyer() - Crear nuevo comprador
+- useUpdatePotentialBuyer() - Actualizar comprador
+- useDeletePotentialBuyer() - Eliminar comprador
 ```
 
-#### 2. Boton de Creacion Rapida de Leads
+#### 4. Componente Card - `src/components/admin/leads/PotentialBuyersCard.tsx`
 
-Anadir un boton en el header de la ficha para crear un nuevo lead, lo que facilitara el flujo de trabajo sin tener que volver a la tabla principal.
+Card principal que se añadirá a la ficha del lead:
 
-**Ubicacion**: Header de la pagina (junto a "Archivar" y "Enviar a Brevo")
+**Características:**
+- Header con título "Compradores Potenciales" y botón "+ Añadir"
+- Lista de compradores con avatares (logos) usando el componente Avatar
+- Cada item muestra: logo, nombre, sector, estado (badge), acciones
+- Badge de estado con colores según estado (identificado=gris, interesado=verde, etc.)
+- Botón de editar y eliminar en cada item
+- Contador de compradores en el header
 
-**Componente propuesto:**
-```tsx
-<Button 
-  variant="outline"
-  onClick={() => navigate('/admin/contacts', { state: { openNewLead: true } })}
->
-  <Plus className="mr-2 h-4 w-4" />
-  Nuevo Lead
-</Button>
+**Diseño visual:**
+```text
++----------------------------------------------------------+
+| 👥 Compradores Potenciales (3)              [+ Añadir]   |
++----------------------------------------------------------+
+| [LOGO] Empresa ABC S.L.                                  |
+|        Sector: Tecnología · Fact: 5M-10M€                |
+|        📧 contacto@abc.com · ☎ 123456789                 |
+|        [Interesado ✓]               [✏️] [🗑️]           |
++----------------------------------------------------------+
+| [LOGO] Grupo XYZ                                         |
+|        Sector: Industrial · Fact: 10M-50M€               |
+|        [Identificado]               [✏️] [🗑️]           |
++----------------------------------------------------------+
 ```
 
-Alternativamente, se puede usar un `Dialog` inline para crear el lead sin salir de la pagina actual:
-- Reutilizar el formulario de `ContactEditForm` o similar
-- Abrir modal con campos basicos: Nombre, Email, Telefono, Empresa
+#### 5. Formulario - `src/components/admin/leads/PotentialBuyerForm.tsx`
 
-#### 3. Estructura Final de la Card de Valoracion
+Dialog/Sheet para crear y editar compradores:
+
+**Campos del formulario:**
+- **Nombre** (requerido) - Input text
+- **Logo** - ImageUploadField (usa folder `potential-buyers/logos`)
+- **Sitio Web** - Input URL
+- **Descripción** - Textarea corto
+- **Sector(es)** - Multi-select o input de tags
+- **Rango de Facturación** - Select (0-1M, 1M-5M, 5M-10M, 10M-50M, 50M+)
+- **Datos de Contacto:**
+  - Nombre del contacto
+  - Email
+  - Teléfono
+- **Estado** - Select (identificado, contactado, interesado, negociando, descartado)
+- **Prioridad** - Select (1-5 o Baja/Media/Alta)
+- **Notas** - Textarea
+
+#### 6. Integración en LeadDetailPage
+
+Añadir la nueva Card después de "Empresa Vinculada":
 
 ```tsx
-<Card>
-  <CardHeader>
-    <CardTitle>Datos de Valoracion</CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-3">
-    <div className="grid grid-cols-2 gap-4">
-      {/* Industria - solo lectura */}
-      {lead.industry && (
-        <div>
-          <p className="text-sm font-medium mb-1">Industria</p>
-          <p className="text-sm text-muted-foreground">{lead.industry}</p>
-        </div>
-      )}
-      
-      {/* Empleados - solo lectura */}
-      {lead.employee_range && (
-        <div>
-          <p className="text-sm font-medium mb-1">Empleados</p>
-          <p className="text-sm text-muted-foreground">{lead.employee_range}</p>
-        </div>
-      )}
-      
-      {/* Facturacion - EDITABLE */}
-      <div>
-        <p className="text-sm font-medium mb-1">Facturacion</p>
-        <EditableCurrency
-          value={lead.revenue}
-          onSave={(v) => handleFinancialUpdate('revenue', v)}
-          emptyText="Clic para anadir"
-          compact
-        />
-      </div>
-      
-      {/* EBITDA - EDITABLE */}
-      <div>
-        <p className="text-sm font-medium mb-1">EBITDA</p>
-        <EditableCurrency
-          value={lead.ebitda}
-          onSave={(v) => handleFinancialUpdate('ebitda', v)}
-          emptyText="Clic para anadir"
-          compact
-        />
-      </div>
-      
-      {/* Valoracion Final - EDITABLE */}
-      <div className="col-span-2">
-        <p className="text-sm font-medium mb-1">Valoracion Final</p>
-        <EditableCurrency
-          value={lead.final_valuation}
-          onSave={(v) => handleFinancialUpdate('final_valuation', v)}
-          emptyText="Clic para anadir"
-          compact
-          displayClassName="text-primary font-semibold"
-        />
-      </div>
-    </div>
-  </CardContent>
-</Card>
+{/* Empresa Vinculada */}
+<CompanyLinkCard ... />
+
+{/* NUEVO: Compradores Potenciales */}
+<PotentialBuyersCard
+  leadId={lead.id}
+  leadOrigin={lead.origin}
+/>
+
+{/* Datos específicos según origen */}
 ```
 
 ---
 
-### Secuencia de Implementacion
+### Secuencia de Implementación
 
-1. Importar componentes y hooks necesarios en `LeadDetailPage.tsx`
-2. Crear funcion `handleFinancialUpdate` usando `useContactInlineUpdate`
-3. Reemplazar campos estaticos por `EditableCurrency` en seccion Valoracion
-4. Replicar el mismo patron para leads de tipo `advisor` (mismos campos)
-5. Anadir boton "Nuevo Lead" en el header
-6. Opcional: Crear dialog de creacion rapida de lead
+1. **Migración DB**: Crear tabla `lead_potential_buyers` con RLS
+2. **Tipos**: Crear `src/types/leadPotentialBuyers.ts`
+3. **Hook**: Crear `src/hooks/useLeadPotentialBuyers.ts` con CRUD
+4. **Formulario**: Crear `PotentialBuyerForm.tsx` con ImageUploadField
+5. **Card**: Crear `PotentialBuyersCard.tsx` con lista y acciones
+6. **Integración**: Añadir card en `LeadDetailPage.tsx`
+7. **Actualizar Types**: Regenerar tipos de Supabase
 
 ---
 
 ### Resultado Visual Esperado
 
-- Los valores financieros mostraran un borde punteado cuando esten vacios
-- Al hacer hover, aparecera un icono de lapiz indicando que es editable
-- Al hacer clic, se convertira en un input de moneda
-- Al pulsar Enter o al perder el foco, se guardara automaticamente
-- Feedback visual: indicador de guardado y confirmacion
+**Vista de Lista (Card colapsable):**
+- Muestra avatares con logos de compradores
+- Información compacta pero completa
+- Estados con badges de colores
+- Acciones rápidas (editar, eliminar)
+- Ordenados por prioridad
+
+**Formulario de Creación:**
+- Campo de logo con upload directo a Supabase Storage
+- Preview de imagen antes de guardar
+- Validación de campos requeridos
+- Selectores para sectores y rangos de facturación
 
 ---
 
-### Consideraciones Tecnicas
+### Consideraciones Técnicas
 
-- **Hook existente**: Se reutiliza `useContactInlineUpdate` que ya mapea correctamente los campos segun el origen del lead
-- **Tipos soportados**: Funciona para leads de origen `valuation` y `advisor` que tienen campos financieros
-- **Cache**: El hook usa optimistic updates con React Query para UI instantanea
-- **Validacion**: `EditableCurrency` normaliza automaticamente el input europeo (1.500.000,50)
-- **Rollback**: Si falla la actualizacion, se revierte al valor anterior
+- **Storage**: Se usará el bucket `lovable-uploads` existente con carpeta `potential-buyers/logos`
+- **ImageUploadField**: Se reutiliza el componente existente que ya maneja upload a Supabase
+- **RLS**: Política simple para usuarios autenticados (admins)
+- **Performance**: La lista usa IDs compuestos (lead_id + lead_origin) para filtrar
+- **Optimistic Updates**: React Query manejará la cache para UI instantánea
+- **Validación**: Zod schemas para el formulario
 
 ---
 
-### Alternativa Avanzada: Panel de Financials Colapsable
+### Posible Mejora Futura
 
-Para una mejor UX, se podria crear un componente `LeadFinancialsPanel` que agrupe todos los campos editables con un diseno mas compacto:
+Una vez implementado, se podría añadir:
+- **Importar desde Corporate Buyers**: Botón para vincular compradores del directorio existente
+- **Matching con IA**: Sugerir compradores automáticamente basado en sector y facturación del lead
+- **Historial de interacciones**: Timeline de comunicaciones con cada comprador
 
-```text
-+--------------------------------------------+
-| Datos Financieros                      [v] |
-+--------------------------------------------+
-| Facturacion     EBITDA      Valoracion     |
-| [1.5M€]         [80K€]      [2.1M€]        |
-+--------------------------------------------+
-```
-
-Esto seguiria el patron de `CorporateBuyerDetailPage` con su seccion de criterios financieros.
