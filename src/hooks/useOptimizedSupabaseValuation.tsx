@@ -339,7 +339,11 @@ export const useOptimizedSupabaseValuation = () => {
             valuation_range_min: result.valuationRange.min || null,
             valuation_range_max: result.valuationRange.max || null,
             valuation_status: 'completed',
-            completion_percentage: 100
+            completion_percentage: 100,
+            // Source and lead tracking (for manual entries)
+            source_project: options?.sourceProject || null,
+            lead_source: options?.leadSource || null,
+            lead_source_detail: options?.leadSourceDetail || null
           };
 
           console.log('🚀 Invoking update-valuation with:', { uniqueToken: finalUniqueToken, finalData });

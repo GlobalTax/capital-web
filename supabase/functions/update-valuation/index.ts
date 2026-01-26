@@ -62,6 +62,10 @@ const ALLOWED_FIELDS = new Set([
   "user_agent",
   // User association
   "user_id",
+  // Source and lead tracking (for manual entries)
+  "source_project",
+  "lead_source",
+  "lead_source_detail",
 ]);
 
 function toSnakeCase(key: string): string {

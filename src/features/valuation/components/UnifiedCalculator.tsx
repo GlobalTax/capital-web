@@ -296,6 +296,9 @@ export const UnifiedCalculator: React.FC<UnifiedCalculatorProps> = ({
             getFieldState={getCompatibleFieldState}
             handleFieldBlur={trackedHandleFieldBlur}
             errors={getCompatibleErrors()}
+            uniqueToken={calculator.uniqueToken}
+            sourceProject={config.sourceProject}
+            extraMetadata={extraMetadata}
           />
 
           {calculator.currentStep < config.steps + 1 && (
