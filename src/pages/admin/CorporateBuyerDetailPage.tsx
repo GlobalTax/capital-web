@@ -24,7 +24,8 @@ import {
   RefreshCw,
   Sparkles,
   Check,
-  X
+  X,
+  Mail
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -67,6 +68,7 @@ import {
   CorporateBuyerFormData
 } from '@/types/corporateBuyers';
 import { CorporateAIPanel } from '@/components/admin/corporate-buyers/CorporateAIPanel';
+import { CorporateEmailDialog } from '@/components/admin/corporate-buyers/CorporateEmailDialog';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -94,6 +96,7 @@ const CorporateBuyerDetailPage = () => {
   const [isEditingSectors, setIsEditingSectors] = useState(false);
   const [isEditingGeography, setIsEditingGeography] = useState(false);
   const [enrichPreview, setEnrichPreview] = useState<EnrichResponse | null>(null);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   
   // Enrichment hooks
   const enrichBuyer = useEnrichCorporateBuyer();
@@ -246,6 +249,16 @@ const CorporateBuyerDetailPage = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Email Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowEmailDialog(true)}
+            className="gap-2"
+          >
+            <Mail className="h-4 w-4" />
+            Enviar Email
+          </Button>
           {/* Enrich with Web Button */}
           {buyer.website ? (
             <Tooltip>

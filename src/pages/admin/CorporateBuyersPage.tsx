@@ -4,7 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Download, Upload, RefreshCw, X, Target } from 'lucide-react';
+import { Plus, Download, Upload, RefreshCw, X, Target, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,8 @@ import {
   CorporateFiltersBar, 
   CorporateKPIs,
   BatchEnrichmentDialog,
-  AutoConfigDialog
+  AutoConfigDialog,
+  CorporateEmailDialog
 } from '@/components/admin/corporate-buyers';
 import { useCorporateBuyers, useCorporateBuyerCountries } from '@/hooks/useCorporateBuyers';
 import { useFavoriteBuyerIds, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
@@ -28,6 +29,7 @@ const CorporateBuyersPage = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchDialog, setShowBatchDialog] = useState(false);
   const [showAutoConfigDialog, setShowAutoConfigDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
 
   // Data hooks
   const { data: buyers = [], isLoading: loadingBuyers } = useCorporateBuyers(filters);
@@ -117,6 +119,15 @@ const CorporateBuyersPage = () => {
                 <Badge variant="secondary" className="ml-1">
                   {selectionStats.withWebsite}
                 </Badge>
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => setShowEmailDialog(true)}
+                className="gap-1"
+              >
+                <Mail className="h-4 w-4" />
+                Email
               </Button>
             </>
           )}
@@ -222,6 +233,16 @@ const CorporateBuyersPage = () => {
         onClose={() => setShowAutoConfigDialog(false)}
         buyers={buyers}
         onComplete={() => setShowAutoConfigDialog(false)}
+      />
+
+      {/* Email Dialog */}
+      <CorporateEmailDialog
+        open={showEmailDialog}
+        onClose={() => {
+          setShowEmailDialog(false);
+          setSelectedIds(new Set());
+        }}
+        buyers={selectedBuyers}
       />
     </div>
   );

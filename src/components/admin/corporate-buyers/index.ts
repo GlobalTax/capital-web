@@ -11,3 +11,4 @@ export { ProfileImporter } from './ProfileImporter';
 export { SectorMultiSelect } from './SectorMultiSelect';
 export { BatchEnrichmentDialog } from './BatchEnrichmentDialog';
 export { AutoConfigDialog } from './AutoConfigDialog';
+export { CorporateEmailDialog } from './CorporateEmailDialog';
