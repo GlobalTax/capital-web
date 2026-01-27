@@ -300,7 +300,7 @@ export const useUnifiedContacts = () => {
             // 🔥 NEW: Empresa vinculada
             empresa_id: lead.empresa_id,
             empresa_nombre: (lead.empresas as any)?.nombre || null,
-            empresa_facturacion: (lead.empresas as any)?.facturacion || undefined,
+            empresa_facturacion: (lead.empresas as any)?.facturacion != null ? Number((lead.empresas as any).facturacion) : undefined,
             // 🔥 NEW: Indicador de origen Valoración Pro
             is_from_pro_valuation: lead.referral === 'Valoración Pro',
             // 🔥 NEW: Canal de adquisición
@@ -311,8 +311,8 @@ export const useUnifiedContacts = () => {
             lead_form: lead.lead_form,
             lead_form_name: (lead.lead_form_ref as any)?.name || null,
             // 🔥 NEW: Datos de Valoración Pro vinculada
-            final_valuation: proValuation?.valuation_central || undefined,
-            ebitda: proValuation?.normalized_ebitda || undefined,
+            final_valuation: proValuation?.valuation_central != null ? Number(proValuation.valuation_central) : undefined,
+            ebitda: proValuation?.normalized_ebitda != null ? Number(proValuation.normalized_ebitda) : undefined,
             industry: proValuation?.sector || undefined,
           };
         }),
@@ -331,10 +331,10 @@ export const useUnifiedContacts = () => {
           cif: lead.cif,
           industry: lead.industry,
           employee_range: lead.employee_range,
-          final_valuation: lead.final_valuation,
-          ebitda: lead.ebitda,
-          revenue: lead.revenue,
-          valuation_amount: lead.final_valuation,
+          final_valuation: lead.final_valuation != null ? Number(lead.final_valuation) : undefined,
+          ebitda: lead.ebitda != null ? Number(lead.ebitda) : undefined,
+          revenue: lead.revenue != null ? Number(lead.revenue) : undefined,
+          valuation_amount: lead.final_valuation != null ? Number(lead.final_valuation) : undefined,
           location: lead.location,
           email_sent: lead.email_sent,
           email_sent_at: lead.email_sent_at,
