@@ -50,12 +50,20 @@ export const STATUS_OPTIONS: SelectOption[] = [
   { value: 'descartado', label: 'Descartado', color: '#94a3b8' },
 ];
 
-// Format currency helper
-const formatCurrency = (value?: number) => {
-  if (!value) return null;
-  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`;
-  if (value >= 1000) return `${(value / 1000).toFixed(0)}K€`;
-  return `${value}€`;
+// Format currency helper - handles NUMERIC types serialized as strings by PostgreSQL/PostgREST
+const formatCurrency = (value?: number | string | null) => {
+  // Handle null, undefined, empty string
+  if (value === null || value === undefined || value === '') return null;
+  
+  // Convert to number (handles both number and string "1500000.00")
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  // Check for valid number
+  if (isNaN(numValue) || numValue === 0) return null;
+  
+  if (numValue >= 1000000) return `${(numValue / 1000000).toFixed(1)}M€`;
+  if (numValue >= 1000) return `${(numValue / 1000).toFixed(0)}K€`;
+  return `${numValue}€`;
 };
 
 export interface ContactRowProps {
