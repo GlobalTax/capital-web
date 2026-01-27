@@ -81,7 +81,7 @@ const ExitReadinessResults: React.FC<ExitReadinessResultsProps> = ({
             Solicitar consulta gratuita
           </Button>
         </Link>
-        <Link to="/lp/calculadora" onClick={onClose}>
+        <Link to="/lp/calculadora-web" onClick={onClose}>
           <Button variant="outline" className="w-full">
             Obtener valoración de mi empresa
           </Button>

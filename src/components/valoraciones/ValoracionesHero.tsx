@@ -72,7 +72,7 @@ const ValoracionesHero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/lp/calculadora">
+              <Link to="/lp/calculadora-web">
                 <InteractiveHoverButton 
                   text="Valorar Empresa" 
                   variant="primary" 

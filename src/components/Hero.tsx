@@ -67,7 +67,7 @@ const Hero = () => {
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/lp/calculadora">
+                <Link to="/lp/calculadora-web">
                   <SimpleButton 
                     text={t('hero.cta.valuate')}
                     variant="primary" 

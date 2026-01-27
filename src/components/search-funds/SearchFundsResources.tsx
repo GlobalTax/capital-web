@@ -35,7 +35,7 @@ const resources: Resource[] = [
     title: 'Calculadora de Valoración',
     description: 'Obtén una estimación gratuita del valor de tu empresa en menos de 2 minutos. Basada en múltiplos de mercado actualizados.',
     icon: Calculator,
-    link: '/lp/calculadora',
+    link: '/lp/calculadora-web',
     tag: 'Herramienta',
   },
   {

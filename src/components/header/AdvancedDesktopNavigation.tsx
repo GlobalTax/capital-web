@@ -102,7 +102,7 @@ const RecursosMenu = () => (
   <div className="grid gap-8 lg:grid-cols-3">
     <div className="lg:col-span-1">
       <Link
-        to="/lp/calculadora"
+        to="/lp/calculadora-web"
         className="group relative flex h-full flex-col overflow-hidden rounded-lg bg-primary text-primary-foreground p-6 hover:bg-primary/90 transition-all duration-300"
       >
         <div className="relative z-10 flex flex-col text-left h-full">

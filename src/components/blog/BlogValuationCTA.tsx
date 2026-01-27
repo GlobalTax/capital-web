@@ -33,7 +33,7 @@ const BlogValuationCTA = () => {
         </li>
       </ul>
       
-      <Link to="/lp/calculadora">
+      <Link to="/lp/calculadora-web">
         <Button 
           className="w-full bg-white text-slate-900 hover:bg-gray-100 font-semibold h-11"
         >

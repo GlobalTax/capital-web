@@ -86,7 +86,7 @@ export const SearchFundsHubHero: React.FC = () => {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="gap-2">
-              <Link to="/lp/calculadora">
+              <Link to="/lp/calculadora-web">
                 <Calculator className="w-4 h-4" />
                 Calculadora de Valoración
               </Link>

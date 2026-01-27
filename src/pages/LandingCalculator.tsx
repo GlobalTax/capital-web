@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { UnifiedCalculator } from '@/features/valuation/components/UnifiedCalculator';
 import { V2_CONFIG } from '@/features/valuation/configs/calculator.configs';
@@ -17,6 +17,26 @@ import { blobToBase64 } from '@/utils/blobToBase64';
 const LandingCalculatorInner = () => {
   const location = useLocation();
   const { t } = useI18n();
+
+  // Capture source=web from query string
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const sourceParam = searchParams.get('source');
+
+  // Persist source in sessionStorage to maintain during multi-step flow
+  useEffect(() => {
+    if (sourceParam === 'web') {
+      sessionStorage.setItem('valuation_source', 'web');
+    }
+  }, [sourceParam]);
+
+  // Build extraMetadata if source=web (from URL or sessionStorage)
+  const extraMetadata = useMemo(() => {
+    const persistedSource = sessionStorage.getItem('valuation_source');
+    if (sourceParam === 'web' || persistedSource === 'web') {
+      return { leadSource: 'web' };
+    }
+    return undefined;
+  }, [sourceParam]);
 
   // Hreflang management for multilanguage support
   useEffect(() => {
@@ -165,7 +185,7 @@ const LandingCalculatorInner = () => {
           <LanguageSelector />
         </div>
         <h1 className="sr-only">{t('landing.h1')}</h1>
-        <UnifiedCalculator config={V2_CONFIG} />
+        <UnifiedCalculator config={V2_CONFIG} extraMetadata={extraMetadata} />
         <ConfidentialityBlock />
         <CapittalBrief />
       </UnifiedLayout>
