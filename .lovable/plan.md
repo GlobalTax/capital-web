@@ -1,124 +1,71 @@
 
-# Plan: Vincular Valoración de s.navarro@obn.es al CRM
+# Plan: Añadir Búsqueda por Descripción en Corporate Buyers
 
-## Datos de la Valoración Encontrada
+## Resumen
 
-| Campo | Valor |
-|-------|-------|
-| ID | `90e847da-5756-41c2-93c6-70c31c779991` |
-| Nombre | prueba |
-| Email | s.navarro@obn.es |
-| Teléfono | 620273552 |
-| Empresa | Prueba |
-| Sector | comercio |
-| Empleados | 6-10 |
-| Facturación | 2.222€ |
-| EBITDA | 22€ |
-| Valoración | 127€ |
-| Fecha | 27/01/2026 17:25 |
-| Email enviado | ✅ Sí |
-| Empresa CRM | ❌ No vinculada |
-| Contacto CRM | ❌ No vinculado |
+Actualmente la búsqueda en `/admin/corporate-buyers` solo filtra por el nombre del comprador. El cambio extiende esta funcionalidad para buscar también en el campo `description`.
 
 ---
 
-## Operaciones SQL a Ejecutar
+## Cambio Único
 
-### 1. Crear registro en `empresas`
+### Archivo: `src/hooks/useCorporateBuyers.ts`
 
-```sql
-INSERT INTO empresas (
-  nombre,
-  sector,
-  facturacion,
-  revenue,
-  ebitda,
-  empleados,
-  source_valuation_id,
-  origen,
-  source,
-  source_id
-) VALUES (
-  'Prueba',
-  'comercio',
-  2222,
-  2222,
-  22,
-  8,  -- Punto medio de rango 6-10
-  '90e847da-5756-41c2-93c6-70c31c779991',
-  'calculadora',
-  'valuation',
-  '90e847da-5756-41c2-93c6-70c31c779991'
-)
-RETURNING id;
+**Ubicación**: Líneas 27-29
+
+**Antes**:
+```typescript
+if (filters?.search) {
+  query = query.ilike('name', `%${filters.search}%`);
+}
 ```
 
-### 2. Crear registro en `contactos`
-
-```sql
-INSERT INTO contactos (
-  nombre,
-  email,
-  telefono,
-  empresa_principal_id,
-  valuation_id,
-  source
-) VALUES (
-  'prueba',
-  's.navarro@obn.es',
-  '620273552',
-  '<empresa_id_del_paso_1>',
-  '90e847da-5756-41c2-93c6-70c31c779991',
-  'valuation'
-)
-RETURNING id;
-```
-
-### 3. Actualizar `company_valuations` con los enlaces
-
-```sql
-UPDATE company_valuations
-SET 
-  empresa_id = '<empresa_id>',
-  crm_contacto_id = '<contacto_id>',
-  crm_synced_at = NOW()
-WHERE id = '90e847da-5756-41c2-93c6-70c31c779991';
+**Después**:
+```typescript
+if (filters?.search) {
+  query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+}
 ```
 
 ---
 
-## Resultado Esperado
+## Comportamiento Resultante
 
-| Tabla | Acción | Estado |
-|-------|--------|--------|
-| `empresas` | Nuevo registro creado | ✅ |
-| `contactos` | Nuevo registro creado | ✅ |
-| `company_valuations` | Actualizado con FK | ✅ |
+| Campo | Búsqueda Actual | Búsqueda Nueva |
+|-------|-----------------|----------------|
+| `name` | ✅ | ✅ |
+| `description` | ❌ | ✅ |
+
+Ahora al escribir "software" en el buscador, aparecerán:
+- Compradores cuyo **nombre** contenga "software"
+- Compradores cuya **descripción** mencione "software"
 
 ---
 
-## Verificación Post-Ejecución
+## Impacto
 
-1. La valoración aparecerá en `/admin/empresas` con sus datos financieros
-2. El contacto aparecerá en `/admin/contacts` vinculado a la empresa
-3. El registro tendrá trazabilidad completa desde la calculadora hasta el CRM
+- **Archivos modificados**: 1
+- **Líneas cambiadas**: 1
+- **Riesgo**: Muy bajo (usa sintaxis estándar de Supabase)
+- **Testing**: Buscar términos que aparezcan en descripciones pero no en nombres
 
 ---
 
 ## Sección Técnica
 
-### Migración de Datos
+### Sintaxis Supabase `.or()`
 
-Se usará el **insert tool** (no migration) ya que esto es manipulación de datos, no cambio de schema.
+La función `.or()` de Supabase permite combinar múltiples condiciones con operador OR. La sintaxis es:
 
-### Mapeo de Empleados
+```typescript
+.or('campo1.operador.valor,campo2.operador.valor')
+```
 
-El rango `6-10` se convierte a `8` (punto medio) siguiendo el estándar documentado en `memory/admin/empresas-financial-data-mapping-standard`.
+Esto genera una cláusula SQL equivalente a:
+```sql
+WHERE (name ILIKE '%search%' OR description ILIKE '%search%')
+```
 
-### Integridad Referencial
+### Consideraciones de Performance
 
-- `empresas.source_valuation_id` → `company_valuations.id`
-- `contactos.empresa_principal_id` → `empresas.id`
-- `contactos.valuation_id` → `company_valuations.id`
-- `company_valuations.empresa_id` → `empresas.id`
-- `company_valuations.crm_contacto_id` → `contactos.id`
+La tabla `corporate_buyers` tiene ~355 registros según la documentación. La búsqueda ILIKE en dos campos de texto es eficiente para este volumen. Si el dataset crece significativamente, se podría considerar un índice GIN/GIST o Full Text Search de PostgreSQL.
