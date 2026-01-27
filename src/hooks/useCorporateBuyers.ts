@@ -25,7 +25,7 @@ export const useCorporateBuyers = (filters?: CorporateBuyersFilters) => {
         .order('name', { ascending: true });
 
       if (filters?.search) {
-        query = query.ilike('name', `%${filters.search}%`);
+        query = query.or(`name.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
       }
 
       if (filters?.buyer_type) {
