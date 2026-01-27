@@ -1,106 +1,106 @@
 
-# Plan: Arreglar Facturación y Provincia en Tabla de Leads
+# Plan: Corregir Error de validateDOMNesting en BulkDeleteDialog
 
 ## Diagnóstico
 
-### Problema 1: Facturación no aparece para leads de valoración
-La query de `company_valuations` en `useUnifiedContacts.tsx` **no incluye** el JOIN con la tabla `empresas`, por lo que no se obtiene la facturación de la empresa vinculada.
+El componente `AlertDialogDescription` de Radix UI renderiza como un elemento `<p>` (párrafo). Dentro de él hay elementos de bloque (`<p>` y `<div>`) que no pueden estar anidados dentro de un `<p>`.
 
-**Situación actual:**
-```typescript
-// Línea 199-200 - SIN JOIN con empresas
-.select('*, lead_status_crm, assigned_to, lead_form, acquisition_channel:..., lead_form_ref:..., apollo_status, ...')
+```
+HTML inválido:
+<p>                               <!-- AlertDialogDescription -->
+  <p>Texto...</p>                 <!-- ❌ p dentro de p -->
+  <div>                           <!-- ❌ div dentro de p -->
+    <Label>...</Label>
+    <Input />
+  </div>
+</p>
 ```
 
-**Contraste con contact_leads (que SÍ funciona):**
-```typescript
-// Línea 191 - CON JOIN con empresas
-.select('*, ..., empresas:empresa_id(id, nombre, facturacion), ...')
-```
+## Solución
 
-### Problema 2: Provincia (location)
-El campo `location` ya existe en la tabla, en el hook, y en la UI. El problema es que **los datos no están poblados** en la mayoría de registros (la query devuelve `location: <nil>` para 10 de 10 registros).
+Mover el `<div>` con el formulario de confirmación **fuera** del `AlertDialogDescription`, y cambiar el `<p>` interno por un `<span>`.
 
-Esto es un problema de **datos**, no de código. La columna ya se muestra correctamente si tiene valor.
+## Cambio en `BulkDeleteDialog.tsx`
 
----
-
-## Solución Propuesta
-
-### Cambio Único: Modificar `useUnifiedContacts.tsx`
-
-#### 1. Agregar JOIN con empresas en la query de company_valuations
-
-**Antes (línea 199-200):**
-```typescript
-const { data: valuationLeads, error: valuationError } = await supabase
-  .from('company_valuations')
-  .select('*, lead_status_crm, assigned_to, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
+**Antes (líneas 57-76):**
+```tsx
+<AlertDialogDescription className="space-y-3">
+  <p>
+    Esta acción <strong>NO se puede deshacer</strong>. Los contactos serán
+    eliminados de forma definitiva del sistema.
+  </p>
+  <div className="pt-2">
+    <Label htmlFor="confirm-delete" className="text-foreground">
+      Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
+    </Label>
+    <Input
+      id="confirm-delete"
+      value={confirmationInput}
+      onChange={(e) => setConfirmationInput(e.target.value)}
+      placeholder={CONFIRMATION_TEXT}
+      className="mt-2"
+      autoComplete="off"
+      disabled={isLoading}
+    />
+  </div>
+</AlertDialogDescription>
 ```
 
 **Después:**
-```typescript
-const { data: valuationLeads, error: valuationError } = await supabase
-  .from('company_valuations')
-  .select('*, lead_status_crm, assigned_to, lead_form, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
+```tsx
+<AlertDialogDescription>
+  Esta acción <strong>NO se puede deshacer</strong>. Los contactos serán
+  eliminados de forma definitiva del sistema.
+</AlertDialogDescription>
+<div className="pt-2">
+  <Label htmlFor="confirm-delete" className="text-foreground">
+    Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
+  </Label>
+  <Input
+    id="confirm-delete"
+    value={confirmationInput}
+    onChange={(e) => setConfirmationInput(e.target.value)}
+    placeholder={CONFIRMATION_TEXT}
+    className="mt-2"
+    autoComplete="off"
+    disabled={isLoading}
+  />
+</div>
 ```
 
-#### 2. Agregar mapeo de empresa en la transformación de valuation leads
+## Resultado
 
-**Después (agregar después de línea 366):**
-```typescript
-// 🔥 Empresa vinculada
-empresa_id: lead.empresa_id,
-empresa_nombre: (lead.empresas as any)?.nombre || null,
-empresa_facturacion: (lead.empresas as any)?.facturacion != null ? Number((lead.empresas as any).facturacion) : undefined,
-```
+| Problema | Estado |
+|----------|--------|
+| `<p>` dentro de `<p>` | Resuelto (eliminado `<p>` interno) |
+| `<div>` dentro de `<p>` | Resuelto (movido fuera del Description) |
+| Warning aria-describedby | Se mantiene la estructura accesible |
 
----
-
-## Resultado Esperado
-
-| Campo | Antes | Después |
-|-------|-------|---------|
-| Facturación (leads valoración) | — | ✅ Muestra `revenue` o `empresa_facturacion` |
-| Provincia | ✅ Ya funciona | ✅ Ya funciona (si tiene datos) |
-
----
-
-## Flujo de Datos Corregido
+## Estructura HTML Corregida
 
 ```
-company_valuations
-    ├── revenue (datos propios del lead)
-    ├── ebitda (datos propios del lead)
-    ├── location (provincia del lead)
-    └── empresa_id → empresas
-                        ├── nombre → empresa_nombre
-                        └── facturacion → empresa_facturacion
+<div>                             <!-- AlertDialogHeader -->
+  <h2>Título...</h2>             <!-- AlertDialogTitle -->
+  <p>Descripción...</p>          <!-- AlertDialogDescription - solo texto inline -->
+</div>
+<div class="pt-2">               <!-- Formulario de confirmación - ahora FUERA -->
+  <label>...</label>
+  <input />
+</div>
 ```
-
-La columna "Fact." en la tabla usa la lógica:
-```typescript
-const revenue = formatCurrency(contact.empresa_facturacion || contact.revenue);
-```
-
-Esto significa que si existe `empresa_facturacion` (de la empresa vinculada), la usa; si no, usa `revenue` (del lead original).
 
 ---
 
 ## Sección Técnica
 
 ### Archivo a modificar
-`src/hooks/useUnifiedContacts.tsx`
+`src/components/admin/contacts/BulkDeleteDialog.tsx`
 
 ### Cambios específicos
-1. **Línea ~200**: Agregar `empresas:empresa_id(id, nombre, facturacion)` al SELECT de company_valuations
-2. **Línea ~366**: Agregar mapeo de `empresa_id`, `empresa_nombre`, `empresa_facturacion` en la transformación
+- Líneas 57-76: Reestructurar contenido del diálogo
 
 ### Impacto
 - Archivos modificados: 1
-- Líneas cambiadas: ~5
-- Riesgo: Bajo (agrega datos sin cambiar lógica existente)
-- Performance: Mínimo (1 JOIN adicional, ya optimizado por índice FK)
-
-### Nota sobre Provincia
-La columna de provincia ya está funcionando. Si los datos no aparecen, es porque el campo `location` no está poblado en la base de datos. Esto puede requerir una migración de datos o ajuste en el formulario de valoración para capturar la provincia.
+- Líneas cambiadas: ~10
+- Riesgo: Muy bajo (cambio de estructura HTML, sin cambios de lógica)
+- Visual: Sin cambios perceptibles (misma apariencia)
