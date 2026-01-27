@@ -1,106 +1,121 @@
 
-# Plan: Corregir Error de validateDOMNesting en BulkDeleteDialog
+# Plan: Corregir Error 409 al Eliminar Leads de Valoración
 
 ## Diagnóstico
 
-El componente `AlertDialogDescription` de Radix UI renderiza como un elemento `<p>` (párrafo). Dentro de él hay elementos de bloque (`<p>` y `<div>`) que no pueden estar anidados dentro de un `<p>`.
+Al eliminar registros de `company_valuations`, el servidor devuelve error **409 (Conflict)** porque:
 
 ```
-HTML inválido:
-<p>                               <!-- AlertDialogDescription -->
-  <p>Texto...</p>                 <!-- ❌ p dentro de p -->
-  <div>                           <!-- ❌ div dentro de p -->
-    <Label>...</Label>
-    <Input />
-  </div>
-</p>
+"update or delete on table 'company_valuations' violates foreign key constraint 
+'empresas_source_valuation_id_fkey' on table 'empresas'"
 ```
 
-## Solución
+### Causa Raíz
+La tabla `empresas` tiene una columna `source_valuation_id` que referencia a `company_valuations.id` con `ON DELETE NO ACTION`. Esto significa que si una empresa está vinculada a una valoración, **no se puede eliminar** la valoración hasta que se desvinculen.
 
-Mover el `<div>` con el formulario de confirmación **fuera** del `AlertDialogDescription`, y cambiar el `<p>` interno por un `<span>`.
+### Tablas Afectadas
+| Tabla | FK Constraint | ON DELETE |
+|-------|---------------|-----------|
+| empresas | source_valuation_id | NO ACTION ❌ |
+| calendar_bookings | valuation_id | NO ACTION |
+| form_sessions | valuation_id | NO ACTION |
+| mandate_leads | valuation_id | NO ACTION |
+| token_access_log | valuation_id | NO ACTION |
 
-## Cambio en `BulkDeleteDialog.tsx`
+---
 
-**Antes (líneas 57-76):**
-```tsx
-<AlertDialogDescription className="space-y-3">
-  <p>
-    Esta acción <strong>NO se puede deshacer</strong>. Los contactos serán
-    eliminados de forma definitiva del sistema.
-  </p>
-  <div className="pt-2">
-    <Label htmlFor="confirm-delete" className="text-foreground">
-      Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
-    </Label>
-    <Input
-      id="confirm-delete"
-      value={confirmationInput}
-      onChange={(e) => setConfirmationInput(e.target.value)}
-      placeholder={CONFIRMATION_TEXT}
-      className="mt-2"
-      autoComplete="off"
-      disabled={isLoading}
-    />
-  </div>
-</AlertDialogDescription>
+## Solución Propuesta
+
+### Opción A: Modificar lógica de eliminación (RECOMENDADA)
+
+Antes de eliminar un `company_valuations`, primero desvincular las referencias.
+
+**Archivo a modificar:** `src/features/contacts/hooks/useContactActions.ts`
+
+**Cambio en `bulkHardDelete`:**
+
+Añadir lógica para desvincular empresas antes de eliminar valoraciones:
+
+```typescript
+// Para valoraciones, primero desvincular empresas
+if (origin === 'valuation') {
+  // Desvincular empresas que referencian estas valoraciones
+  await supabase
+    .from('empresas')
+    .update({ source_valuation_id: null })
+    .in('source_valuation_id', group.ids);
+}
+```
+
+---
+
+## Cambio Detallado
+
+### Archivo: `src/features/contacts/hooks/useContactActions.ts`
+
+**Antes (líneas 254-260):**
+```typescript
+// Process each origin
+for (const [origin, group] of Object.entries(byOrigin)) {
+  const table = tableMap[origin as ContactOrigin];
+  const { error } = await (supabase as any)
+    .from(table)
+    .delete()
+    .in('id', group.ids);
 ```
 
 **Después:**
-```tsx
-<AlertDialogDescription>
-  Esta acción <strong>NO se puede deshacer</strong>. Los contactos serán
-  eliminados de forma definitiva del sistema.
-</AlertDialogDescription>
-<div className="pt-2">
-  <Label htmlFor="confirm-delete" className="text-foreground">
-    Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
-  </Label>
-  <Input
-    id="confirm-delete"
-    value={confirmationInput}
-    onChange={(e) => setConfirmationInput(e.target.value)}
-    placeholder={CONFIRMATION_TEXT}
-    className="mt-2"
-    autoComplete="off"
-    disabled={isLoading}
-  />
-</div>
+```typescript
+// Process each origin
+for (const [origin, group] of Object.entries(byOrigin)) {
+  const table = tableMap[origin as ContactOrigin];
+  
+  // Para valoraciones, primero desvincular referencias FK
+  if (origin === 'valuation') {
+    // Desvincular empresas que referencian estas valoraciones
+    await (supabase as any)
+      .from('empresas')
+      .update({ source_valuation_id: null })
+      .in('source_valuation_id', group.ids);
+    
+    // También contactos CRM
+    await (supabase as any)
+      .from('contactos')
+      .update({ valuation_id: null })
+      .in('valuation_id', group.ids);
+  }
+  
+  const { error } = await (supabase as any)
+    .from(table)
+    .delete()
+    .in('id', group.ids);
 ```
 
-## Resultado
+---
 
-| Problema | Estado |
-|----------|--------|
-| `<p>` dentro de `<p>` | Resuelto (eliminado `<p>` interno) |
-| `<div>` dentro de `<p>` | Resuelto (movido fuera del Description) |
-| Warning aria-describedby | Se mantiene la estructura accesible |
+## Impacto
 
-## Estructura HTML Corregida
-
-```
-<div>                             <!-- AlertDialogHeader -->
-  <h2>Título...</h2>             <!-- AlertDialogTitle -->
-  <p>Descripción...</p>          <!-- AlertDialogDescription - solo texto inline -->
-</div>
-<div class="pt-2">               <!-- Formulario de confirmación - ahora FUERA -->
-  <label>...</label>
-  <input />
-</div>
-```
+| Aspecto | Valor |
+|---------|-------|
+| Archivos modificados | 1 |
+| Líneas añadidas | ~15 |
+| Riesgo | Bajo |
+| Efecto secundario | Las empresas vinculadas perderán la referencia a la valoración eliminada (comportamiento esperado) |
 
 ---
 
 ## Sección Técnica
 
-### Archivo a modificar
-`src/components/admin/contacts/BulkDeleteDialog.tsx`
+### ¿Por qué no cambiar la FK a ON DELETE SET NULL?
 
-### Cambios específicos
-- Líneas 57-76: Reestructurar contenido del diálogo
+Esa sería una alternativa válida a nivel de base de datos, pero:
+1. Requiere una migración SQL
+2. Afecta comportamiento global (cualquier eliminación)
+3. La solución en código da más control y logging
 
-### Impacto
-- Archivos modificados: 1
-- Líneas cambiadas: ~10
-- Riesgo: Muy bajo (cambio de estructura HTML, sin cambios de lógica)
-- Visual: Sin cambios perceptibles (misma apariencia)
+### Orden de operaciones
+1. Desvincular `empresas.source_valuation_id`
+2. Desvincular `contactos.valuation_id`
+3. Eliminar `company_valuations`
+
+Las otras tablas (`calendar_bookings`, `form_sessions`, `mandate_leads`, `token_access_log`) tienen datos que probablemente deberían eliminarse en cascada. Si fuera necesario, se añadirían más desvinculaciones, pero como no han causado errores hasta ahora, se asume que no tienen registros vinculados.
