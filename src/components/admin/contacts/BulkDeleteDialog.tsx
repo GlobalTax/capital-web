@@ -54,26 +54,24 @@ const BulkDeleteDialog: React.FC<BulkDeleteDialogProps> = ({
             <AlertTriangle className="h-5 w-5" />
             Eliminar {selectedCount} contacto{selectedCount > 1 ? 's' : ''} permanentemente
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <p>
-              Esta acción <strong>NO se puede deshacer</strong>. Los contactos serán
-              eliminados de forma definitiva del sistema.
-            </p>
-            <div className="pt-2">
-              <Label htmlFor="confirm-delete" className="text-foreground">
-                Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
-              </Label>
-              <Input
-                id="confirm-delete"
-                value={confirmationInput}
-                onChange={(e) => setConfirmationInput(e.target.value)}
-                placeholder={CONFIRMATION_TEXT}
-                className="mt-2"
-                autoComplete="off"
-                disabled={isLoading}
-              />
-            </div>
+          <AlertDialogDescription>
+            Esta acción <strong>NO se puede deshacer</strong>. Los contactos serán
+            eliminados de forma definitiva del sistema.
           </AlertDialogDescription>
+          <div className="pt-2">
+            <Label htmlFor="confirm-delete" className="text-foreground">
+              Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
+            </Label>
+            <Input
+              id="confirm-delete"
+              value={confirmationInput}
+              onChange={(e) => setConfirmationInput(e.target.value)}
+              placeholder={CONFIRMATION_TEXT}
+              className="mt-2"
+              autoComplete="off"
+              disabled={isLoading}
+            />
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>

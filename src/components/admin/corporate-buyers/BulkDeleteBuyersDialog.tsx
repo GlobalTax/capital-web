@@ -54,26 +54,24 @@ const BulkDeleteBuyersDialog: React.FC<BulkDeleteBuyersDialogProps> = ({
             <AlertTriangle className="h-5 w-5" />
             Eliminar {selectedCount} comprador{selectedCount > 1 ? 'es' : ''} corporativo{selectedCount > 1 ? 's' : ''}
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <p>
-              Esta acción marcará los compradores como eliminados. Los registros
-              no serán visibles en el directorio.
-            </p>
-            <div className="pt-2">
-              <Label htmlFor="confirm-delete" className="text-foreground">
-                Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
-              </Label>
-              <Input
-                id="confirm-delete"
-                value={confirmationInput}
-                onChange={(e) => setConfirmationInput(e.target.value)}
-                placeholder={CONFIRMATION_TEXT}
-                className="mt-2"
-                autoComplete="off"
-                disabled={isLoading}
-              />
-            </div>
+          <AlertDialogDescription>
+            Esta acción marcará los compradores como eliminados. Los registros
+            no serán visibles en el directorio.
           </AlertDialogDescription>
+          <div className="pt-2">
+            <Label htmlFor="confirm-delete" className="text-foreground">
+              Escribe <strong>{CONFIRMATION_TEXT}</strong> para confirmar:
+            </Label>
+            <Input
+              id="confirm-delete"
+              value={confirmationInput}
+              onChange={(e) => setConfirmationInput(e.target.value)}
+              placeholder={CONFIRMATION_TEXT}
+              className="mt-2"
+              autoComplete="off"
+              disabled={isLoading}
+            />
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
