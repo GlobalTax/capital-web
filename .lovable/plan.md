@@ -1,54 +1,70 @@
 
-
-# Plan: Corregir Trigger CRM - Nombre de Columna Incorrecto
+# Plan: Corregir Trigger CRM - Columnas en Tabla Contactos
 
 ## Diagnóstico Confirmado
 
-El trigger `auto_link_valuation_to_crm` falla porque intenta actualizar una columna que no existe:
+El trigger `auto_link_valuation_to_crm` sigue fallando porque intenta usar columnas que **no existen** en la tabla `contactos`:
 
-| Columna en Trigger | Columna Real en DB |
-|--------------------|-------------------|
-| `contacto_id` | `crm_contacto_id` |
+| Columna en Trigger | Columna Real en DB | Tabla |
+|--------------------|-------------------|-------|
+| `empresa_id` | `empresa_principal_id` | contactos |
+| `is_primary` | *(no existe)* | contactos |
 
-**Error exacto**: `column "empresa_id" does not exist` (PostgreSQL reporta error en la primera columna del UPDATE cuando la sintaxis falla)
+**Error exacto**: `column "empresa_id" does not exist`
 
-**Logs confirmados**:
-```
-timestamp: 2026-01-27T17:13:38Z
-error: column "empresa_id" does not exist
-```
-
-Esto ocurre porque al fallar la consulta por `contacto_id` inexistente, PostgreSQL aborta toda la operación.
+**Causa raíz**: El error se produce al intentar:
+1. `INSERT INTO contactos (..., empresa_id, ..., is_primary)` - Ambas columnas incorrectas
+2. `UPDATE contactos SET empresa_id = ...` - Columna incorrecta
 
 ---
 
 ## Solución
 
-Modificar el trigger para usar el nombre correcto de la columna:
+Modificar el trigger para usar los nombres correctos de columnas:
 
-### Cambio Específico
-
-En el UPDATE final del trigger:
+### Cambios Específicos
 
 ```sql
 -- INCORRECTO (actual)
-UPDATE company_valuations
-SET 
-  empresa_id = v_empresa_id,
-  contacto_id = v_contacto_id  -- ❌ NO EXISTE
-WHERE id = NEW.id;
+INSERT INTO contactos (
+  nombre, email, telefono, empresa_id, cargo, is_primary
+)
+VALUES (
+  NEW.contact_name,
+  NEW.email,
+  NEW.phone,
+  v_empresa_id,
+  'Contacto Principal',
+  true
+)
 
 -- CORRECTO (nuevo)
-UPDATE company_valuations
-SET 
-  empresa_id = v_empresa_id,
-  crm_contacto_id = v_contacto_id  -- ✅ COLUMNA CORRECTA
-WHERE id = NEW.id;
+INSERT INTO contactos (
+  nombre, email, telefono, empresa_principal_id, cargo
+)
+VALUES (
+  NEW.contact_name,
+  NEW.email,
+  NEW.phone,
+  v_empresa_id,
+  'Contacto Principal'
+)
+```
+
+Y también:
+```sql
+-- INCORRECTO (actual)
+UPDATE contactos
+SET empresa_id = COALESCE(empresa_id, v_empresa_id)
+
+-- CORRECTO (nuevo)
+UPDATE contactos
+SET empresa_principal_id = COALESCE(empresa_principal_id, v_empresa_id)
 ```
 
 ---
 
-## Migración SQL
+## Migración SQL Completa
 
 ```sql
 CREATE OR REPLACE FUNCTION public.auto_link_valuation_to_crm()
@@ -122,25 +138,26 @@ BEGIN
   LIMIT 1;
 
   IF v_contacto_id IS NULL THEN
+    -- ✅ FIX: Usar empresa_principal_id (no empresa_id) y eliminar is_primary
     INSERT INTO contactos (
-      nombre, email, telefono, empresa_id, cargo, is_primary
+      nombre, email, telefono, empresa_principal_id, cargo
     )
     VALUES (
       NEW.contact_name,
       NEW.email,
       NEW.phone,
       v_empresa_id,
-      'Contacto Principal',
-      true
+      'Contacto Principal'
     )
     RETURNING id INTO v_contacto_id;
   ELSE
+    -- ✅ FIX: Usar empresa_principal_id (no empresa_id)
     UPDATE contactos
-    SET empresa_id = COALESCE(empresa_id, v_empresa_id)
+    SET empresa_principal_id = COALESCE(empresa_principal_id, v_empresa_id)
     WHERE id = v_contacto_id;
   END IF;
 
-  -- ✅ FIX: Usar nombre correcto de columna (crm_contacto_id en vez de contacto_id)
+  -- Vincular valoración con empresa y contacto
   UPDATE company_valuations
   SET 
     empresa_id = v_empresa_id,
@@ -154,12 +171,22 @@ $function$;
 
 ---
 
+## Resumen de Cambios
+
+| Línea | Antes | Después |
+|-------|-------|---------|
+| INSERT contactos | `empresa_id, ..., is_primary` | `empresa_principal_id` |
+| INSERT VALUES | `..., true` | *(eliminado)* |
+| UPDATE contactos | `SET empresa_id = ...` | `SET empresa_principal_id = ...` |
+
+---
+
 ## Impacto
 
 | Aspecto | Detalle |
 |---------|---------|
-| Cambio | Renombrar columna en UPDATE |
-| Riesgo | Bajo - solo corrige nombre |
+| Cambio | Corregir nombres de columnas en contactos |
+| Riesgo | Bajo - solo corrige nombres |
 | Tiempo | Inmediato |
 | Testing | Enviar nueva valoración desde calculadora |
 
@@ -170,5 +197,5 @@ $function$;
 1. Enviar valoración desde `/lp/calculadora`
 2. Verificar que no hay error 500
 3. Confirmar que el email llega
-4. Verificar en `/admin/empresas` que la empresa se vinculó correctamente
-
+4. Verificar en `/admin/empresas` que la empresa se vinculó
+5. Verificar en `/admin/contacts` que el contacto tiene empresa asignada
