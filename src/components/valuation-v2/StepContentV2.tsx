@@ -1,6 +1,7 @@
 import React from 'react';
 import BasicInfoFinancialFormV2 from './BasicInfoFinancialFormV2';
 import Step4Results from '@/components/valuation/Step4Results';
+import { ManualResultsStep } from '@/components/admin/valuation/ManualResultsStep';
 
 interface StepContentProps {
   currentStep: number;
@@ -41,6 +42,9 @@ const StepContentV2: React.FC<StepContentProps> = ({
   sourceProject,
   extraMetadata
 }) => {
+  // Check if this is manual admin entry mode
+  const isManualMode = sourceProject === 'manual-admin-entry';
+
   switch (currentStep) {
     case 1:
       return (
@@ -54,6 +58,19 @@ const StepContentV2: React.FC<StepContentProps> = ({
         />
       );
     case 2:
+      // Use ManualResultsStep for admin manual entry (separate Save/Send actions)
+      if (isManualMode) {
+        return (
+          <ManualResultsStep
+            result={result}
+            companyData={companyData}
+            sourceProject={sourceProject}
+            extraMetadata={extraMetadata}
+            onReset={resetCalculator}
+          />
+        );
+      }
+      // Use standard Step4Results for regular calculator (auto email)
       return (
         <Step4Results 
           result={result}
