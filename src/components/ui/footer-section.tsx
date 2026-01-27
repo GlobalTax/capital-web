@@ -169,7 +169,7 @@ export function Footerdemo() {
                 </Link>
               </li>
               <li>
-                <Link to="/lp/calculadora" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/lp/calculadora-web" className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.calculadora')}
                 </Link>
               </li>

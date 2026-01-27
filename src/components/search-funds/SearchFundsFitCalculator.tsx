@@ -247,7 +247,7 @@ export const SearchFundsFitCalculator = () => {
                     </Button>
                   ) : (
                     <Button asChild size="lg">
-                      <Link to="/lp/calculadora">
+                      <Link to="/lp/calculadora-web">
                         Obtener valoración gratuita
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Link>

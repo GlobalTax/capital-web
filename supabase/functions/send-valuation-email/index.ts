@@ -473,6 +473,11 @@ const handler = async (req: Request): Promise<Response> => {
           </table>
 
           <p style="margin:16px 0 0; color:#6b7280; font-size:12px;">Este correo se generó automáticamente desde la calculadora${isManualEntry ? ' (entrada manual)' : isAdvisorCalculation ? ' de asesores' : ''} de Capittal.</p>
+          ${payload.leadSource === 'web' ? `
+          <p style="margin:16px 0 0; padding:8px 12px; background:#e0f2fe; border-left:3px solid #0284c7; font-size:13px; color:#0c4a6e;">
+            <strong>Origen:</strong> Web
+          </p>
+          ` : ''}
         </div>
       </div>
     `;

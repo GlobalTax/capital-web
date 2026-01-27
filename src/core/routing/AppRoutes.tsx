@@ -1,6 +1,22 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
+
+// Redirect component for /lp/calculadora-web → /lp/calculadora?source=web
+const CalculadoraWebRedirect = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  
+  // Only add source=web if it doesn't already exist
+  if (!searchParams.has('source')) {
+    searchParams.set('source', 'web');
+  }
+  
+  const newSearch = searchParams.toString();
+  const targetUrl = `/lp/calculadora${newSearch ? `?${newSearch}` : ''}`;
+  
+  return <Navigate to={targetUrl} replace />;
+};
 
 // === CORE PAGES ===
 const Index = lazy(() => import('@/pages/Index'));
@@ -180,6 +196,8 @@ export const AppRoutes = () => {
         
         {/* === LANDING CALCULATOR ROUTES === */}
         <Route path="/lp" element={<Navigate to="/lp/calculadora" replace />} />
+        <Route path="/lp/calculadora-web" element={<CalculadoraWebRedirect />} />
+        <Route path="/lp/calculadora-web/*" element={<CalculadoraWebRedirect />} />
         <Route path="/lp/calculadora" element={<LandingCalculator />} />
         <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
         <Route path="/lp/calculadora-b" element={<LandingCalculatorB />} />
