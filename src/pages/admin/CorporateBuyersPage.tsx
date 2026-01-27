@@ -4,7 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Download, Upload, RefreshCw, X, Target, Mail } from 'lucide-react';
+import { Plus, Download, Upload, RefreshCw, X, Target, Mail, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -14,9 +14,10 @@ import {
   CorporateKPIs,
   BatchEnrichmentDialog,
   AutoConfigDialog,
-  CorporateEmailDialog
+  CorporateEmailDialog,
+  BulkDeleteBuyersDialog
 } from '@/components/admin/corporate-buyers';
-import { useCorporateBuyers, useCorporateBuyerCountries } from '@/hooks/useCorporateBuyers';
+import { useCorporateBuyers, useCorporateBuyerCountries, useBulkDeleteCorporateBuyers } from '@/hooks/useCorporateBuyers';
 import { useFavoriteBuyerIds, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
 import { CorporateBuyersFilters } from '@/types/corporateBuyers';
 
@@ -30,6 +31,9 @@ const CorporateBuyersPage = () => {
   const [showBatchDialog, setShowBatchDialog] = useState(false);
   const [showAutoConfigDialog, setShowAutoConfigDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const bulkDelete = useBulkDeleteCorporateBuyers();
 
   // Data hooks
   const { data: buyers = [], isLoading: loadingBuyers } = useCorporateBuyers(filters);
@@ -82,6 +86,19 @@ const CorporateBuyersPage = () => {
     setShowBatchDialog(false);
   };
 
+  const handleBulkDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await bulkDelete.mutateAsync(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      setShowDeleteDialog(false);
+    } catch (error) {
+      // Error handled in hook
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const isLoading = loadingBuyers || loadingFavorites;
 
   return (
@@ -128,6 +145,15 @@ const CorporateBuyersPage = () => {
               >
                 <Mail className="h-4 w-4" />
                 Email
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => setShowDeleteDialog(true)}
+                className="gap-1"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar
               </Button>
             </>
           )}
@@ -243,6 +269,15 @@ const CorporateBuyersPage = () => {
           setSelectedIds(new Set());
         }}
         buyers={selectedBuyers}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <BulkDeleteBuyersDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        selectedCount={selectedIds.size}
+        onConfirm={handleBulkDelete}
+        isLoading={isDeleting}
       />
     </div>
   );
