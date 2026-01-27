@@ -160,3 +160,28 @@ export const useCorporateBuyerCountries = () => {
     },
   });
 };
+
+// Bulk soft delete multiple buyers
+export const useBulkDeleteCorporateBuyers = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from('corporate_buyers')
+        .update({ is_deleted: true })
+        .in('id', ids);
+
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success(`${count} comprador${count > 1 ? 'es' : ''} eliminado${count > 1 ? 's' : ''}`);
+    },
+    onError: (error) => {
+      console.error('Error bulk deleting buyers:', error);
+      toast.error('Error al eliminar los compradores');
+    },
+  });
+};
