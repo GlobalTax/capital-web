@@ -1,229 +1,129 @@
 
-## Diagnóstico del Problema: Formulario Manual de Leads
+## Plan: Fix para datos de facturación vacíos en /admin/contacts
 
-### Causa Raíz Identificada (con evidencia)
+### Diagnóstico Confirmado
 
-He analizado el flujo completo desde `ManualLeadEntryPage.tsx` hasta la base de datos y encontré **3 problemas principales**:
+Tras una investigación exhaustiva del flujo de datos, he confirmado lo siguiente:
 
----
+**Estado de los datos en la base de datos:**
+- **956 valoraciones activas** (sin soft delete)
+- **940 (98.3%)** tienen campo `revenue` con valor
+- **931 (97.4%)** tienen campo `ebitda` con valor
+- Todos los registros recientes tienen datos financieros completos
 
-### PROBLEMA 1: `extraMetadata` NO SE PROPAGA a Step4Results (V2)
-
-**Archivo afectado:** `src/features/valuation/components/UnifiedCalculator.tsx` y `src/components/valuation-v2/StepContentV2.tsx`
-
-**Evidencia:**
-- En `UnifiedCalculator.tsx` líneas 288-299, cuando renderiza `StepContentV2` para la versión V2, **NO pasa** las props `sourceProject` ni `extraMetadata`:
-
+**El código de mapeo es correcto:**
 ```typescript
-// UnifiedCalculator.tsx - V2 Renderer (líneas 288-299)
-<StepContentV2
-  currentStep={calculator.currentStep}
-  companyData={calculator.companyData}
-  updateField={trackedUpdateField}
-  result={calculator.result}
-  isCalculating={calculator.isCalculating}
-  resetCalculator={calculator.resetCalculator}
-  showValidation={calculator.showValidation}
-  getFieldState={getCompatibleFieldState}
-  handleFieldBlur={trackedHandleFieldBlur}
-  errors={getCompatibleErrors()}
-  // ❌ FALTAN: sourceProject, extraMetadata
-/>
+// useUnifiedContacts.tsx líneas 335-336
+ebitda: lead.ebitda,
+revenue: lead.revenue,
 ```
 
-- Comparando con V1 (líneas 232-246), SÍ pasa `extraMetadata`:
-
+**El código de renderizado es correcto:**
 ```typescript
-// V1 - SÍ pasa extraMetadata
-extraMetadata={extraMetadata}
+// ContactTableRow.tsx línea 110
+const revenue = formatCurrency(contact.empresa_facturacion || contact.revenue);
 ```
 
-- `StepContentV2.tsx` NO declara `sourceProject` ni `extraMetadata` en su interface.
+### Causa Raíz Identificada
 
-**Resultado:** Los datos `leadSource` y `leadSourceDetail` del formulario manual **NUNCA llegan a Step4Results**.
+El problema está en la **serialización de tipos NUMERIC por PostgreSQL/PostgREST**. Los campos `revenue`, `ebitda` y `final_valuation` son de tipo `NUMERIC(15,2)`, que pueden ser serializados como **strings** en lugar de números JavaScript cuando vienen de la API.
 
----
-
-### PROBLEMA 2: `saveValuation` NO envía `sourceProject` ni metadatos de lead
-
-**Archivo afectado:** `src/hooks/useOptimizedSupabaseValuation.tsx` (líneas 327-343)
-
-**Evidencia:**
-El `finalData` enviado al edge function `update-valuation` **no incluye**:
-- `source_project`
-- `lead_source` 
-- `lead_source_detail`
+El helper `formatCurrency` actual no maneja esta conversión:
 
 ```typescript
-const finalData = {
-  // Core data
-  contact_name: companyData.contactName || '',
-  company_name: companyData.companyName || '',
-  // ... más campos
-  valuation_status: 'completed',
-  completion_percentage: 100
-  // ❌ FALTA: source_project, lead_source, lead_source_detail
+const formatCurrency = (value?: number) => {
+  if (!value) return null;  // Si value es "1500000.00" (string), no entra aquí
+  // Pero las operaciones matemáticas fallarán o darán resultados incorrectos
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`;
+  ...
 };
 ```
 
 ---
 
-### PROBLEMA 3: Faltan columnas en la base de datos
+### Cambios a Implementar
 
-**Evidencia:** Query a `information_schema.columns` muestra:
-- ✅ `source_project` existe
-- ❌ `lead_source` NO existe
-- ❌ `lead_source_detail` NO existe
+#### 1. Actualizar `ContactTableRow.tsx` - Robustecer `formatCurrency`
 
-La edge function `update-valuation` tiene un whitelist de campos permitidos que **NO incluye** estos campos nuevos.
+**Líneas 54-59:**
 
----
-
-### PROBLEMA 4: Edge Function `update-valuation` no permite los nuevos campos
-
-**Archivo afectado:** `supabase/functions/update-valuation/index.ts` (líneas 23-65)
-
-**Evidencia:** El `ALLOWED_FIELDS` Set no incluye:
-- `source_project`
-- `lead_source`
-- `lead_source_detail`
-
----
-
-## Plan de Fix (Mínimo y Robusto)
-
-### Paso 1: Migración SQL - Añadir columnas faltantes
-
-```sql
-ALTER TABLE company_valuations
-ADD COLUMN IF NOT EXISTS lead_source TEXT,
-ADD COLUMN IF NOT EXISTS lead_source_detail TEXT;
-
-COMMENT ON COLUMN company_valuations.lead_source IS 'Canal de origen del lead (meta-ads, google-ads, etc.)';
-COMMENT ON COLUMN company_valuations.lead_source_detail IS 'Detalle adicional del origen (campaña, referido, etc.)';
-```
-
-### Paso 2: Actualizar Edge Function `update-valuation`
-
-Añadir los nuevos campos al `ALLOWED_FIELDS`:
+Convertir explícitamente a número para manejar tanto strings como números:
 
 ```typescript
-const ALLOWED_FIELDS = new Set([
-  // ... campos existentes ...
-  "source_project",      // AÑADIR
-  "lead_source",         // AÑADIR
-  "lead_source_detail",  // AÑADIR
-]);
-```
-
-### Paso 3: Actualizar `StepContentV2.tsx`
-
-Añadir props `sourceProject` y `extraMetadata` a la interface y pasarlas a `Step4Results`:
-
-```typescript
-interface StepContentProps {
-  // ... props existentes ...
-  sourceProject?: string;
-  extraMetadata?: {
-    leadSource?: string;
-    leadSourceDetail?: string;
-  };
-}
-
-// En case 2:
-<Step4Results 
-  result={result}
-  companyData={companyData}
-  isCalculating={isCalculating}
-  resetCalculator={resetCalculator}
-  uniqueToken={uniqueToken}
-  sourceProject={sourceProject}      // AÑADIR
-  extraMetadata={extraMetadata}      // AÑADIR
-/>
-```
-
-### Paso 4: Actualizar `UnifiedCalculator.tsx` (renderV2)
-
-Pasar las props faltantes a `StepContentV2`:
-
-```typescript
-<StepContentV2
-  // ... props existentes ...
-  sourceProject={config.sourceProject}  // AÑADIR
-  extraMetadata={extraMetadata}         // AÑADIR
-/>
-```
-
-### Paso 5: Actualizar `useOptimizedSupabaseValuation.tsx`
-
-Incluir los nuevos campos en el `finalData`:
-
-```typescript
-const finalData = {
-  // ... campos existentes ...
-  source_project: options?.sourceProject || 'capittal-main',
-  lead_source: options?.leadSource || null,
-  lead_source_detail: options?.leadSourceDetail || null,
+const formatCurrency = (value?: number | string | null) => {
+  // Handle null, undefined, empty string
+  if (value === null || value === undefined || value === '') return null;
+  
+  // Convert to number (handles both number and string "1500000.00")
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  // Check for valid number
+  if (isNaN(numValue) || numValue === 0) return null;
+  
+  if (numValue >= 1000000) return `${(numValue / 1000000).toFixed(1)}M€`;
+  if (numValue >= 1000) return `${Math.round(numValue / 1000)}K€`;
+  return `${Math.round(numValue)}€`;
 };
 ```
 
----
+#### 2. Actualizar `useUnifiedContacts.tsx` - Normalizar datos al mapear
 
-## Flujo Corregido
+**Líneas 334-337:**
 
-```text
-ManualLeadEntryPage
-    │
-    ├── leadSource: "meta-ads"
-    └── leadSourceDetail: "Campaña Valoración 2025"
-         │
-         ▼
-    UnifiedCalculator (extraMetadata)
-         │
-         ▼
-    StepContentV2 (sourceProject + extraMetadata) ← FIX 3 & 4
-         │
-         ▼
-    Step4Results (extraMetadata)
-         │
-         ▼
-    saveValuation(options: {sourceProject, leadSource, leadSourceDetail}) ← FIX 5
-         │
-         ▼
-    Edge Function: update-valuation (ALLOWED_FIELDS incluye nuevos campos) ← FIX 2
-         │
-         ▼
-    DB: company_valuations (lead_source, lead_source_detail) ← FIX 1
+Asegurar conversión numérica durante el mapeo:
+
+```typescript
+// Normalizar a número durante el mapeo
+final_valuation: lead.final_valuation != null ? Number(lead.final_valuation) : undefined,
+ebitda: lead.ebitda != null ? Number(lead.ebitda) : undefined,
+revenue: lead.revenue != null ? Number(lead.revenue) : undefined,
+```
+
+Aplicar el mismo patrón para `contact_leads` con `empresa_facturacion`:
+
+```typescript
+// Línea 303 aproximadamente
+empresa_facturacion: (lead.empresas as any)?.facturacion != null 
+  ? Number((lead.empresas as any).facturacion) 
+  : undefined,
 ```
 
 ---
 
-## Archivos a Modificar
+### Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `company_valuations` (tabla) | Añadir columnas: `lead_source`, `lead_source_detail` |
-| `supabase/functions/update-valuation/index.ts` | Añadir campos al ALLOWED_FIELDS |
-| `src/components/valuation-v2/StepContentV2.tsx` | Añadir props y pasarlas a Step4Results |
-| `src/features/valuation/components/UnifiedCalculator.tsx` | Pasar props a StepContentV2 en renderV2() |
-| `src/hooks/useOptimizedSupabaseValuation.tsx` | Incluir source_project, lead_source, lead_source_detail en finalData |
+| `src/components/admin/contacts/ContactTableRow.tsx` | Actualizar `formatCurrency` para manejar strings |
+| `src/hooks/useUnifiedContacts.tsx` | Normalizar campos numéricos con `Number()` en el mapeo |
 
 ---
 
-## Pruebas Obligatorias Post-Fix
+### Pruebas Obligatorias Post-Fix
 
-1. **Test con datos válidos:**
-   - Ir a `/admin/calculadora-manual`
-   - Seleccionar origen "Meta Ads", detalle "Campaña Test"
-   - Rellenar formulario y enviar
-   - Verificar en DB: `SELECT source_project, lead_source, lead_source_detail FROM company_valuations ORDER BY created_at DESC LIMIT 1`
-   - Esperado: `manual-admin-entry`, `meta-ads`, `Campaña Test`
+1. **Verificar tabla de Leads:**
+   - Ir a `/admin/contacts` → pestaña "Todos"
+   - Confirmar que los leads de tipo "Valoración" (badge verde) muestran facturación y EBITDA
 
-2. **Test sin metadatos:**
-   - Usar calculadora normal en `/lp/calculadora`
-   - Verificar que `lead_source` y `lead_source_detail` quedan NULL
-   - Verificar que `source_project` es `lp-calculadora-principal`
+2. **Verificar formato correcto:**
+   - Valores ≥ 1M → `1.5M€`
+   - Valores ≥ 1K → `500K€`
+   - Valores < 1K → `500€`
 
-3. **Verificar UI:**
-   - Toast de confirmación "Datos guardados"
-   - Sin errores en consola
+3. **Verificar valores especiales:**
+   - Valor 0 → `—`
+   - Valor null/undefined → `—`
+
+---
+
+### Detalles Técnicos
+
+**Por qué sucede esto:**
+
+PostgreSQL `NUMERIC(15,2)` es un tipo de precisión arbitraria. PostgREST (el API de Supabase) puede serializar estos valores como strings `"1500000.00"` para evitar pérdida de precisión cuando se convierten a IEEE 754 floats de JavaScript.
+
+**Por qué el fix funciona:**
+
+- `Number("1500000.00")` → `1500000` (conversión explícita)
+- `parseFloat("1500000.00")` → `1500000` (alternativa)
+- El mapeo normalizado garantiza que los datos siempre sean números antes de llegar al componente de UI
