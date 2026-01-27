@@ -89,6 +89,7 @@ export const COL_STYLES = {
   origin: { minWidth: 90, flex: '0 0 90px' },
   channel: { minWidth: 120, flex: '1 0 120px' },
   company: { minWidth: 140, flex: '1.5 0 140px' },
+  province: { minWidth: 80, flex: '0 0 80px' },
   sector: { minWidth: 100, flex: '1 0 100px' },
   status: { minWidth: 110, flex: '0 0 110px' },
   revenue: { minWidth: 70, flex: '0 0 70px' },
@@ -265,11 +266,22 @@ export const ContactTableRow = memo<ContactRowProps>(({
             onSave={handleCompanyUpdate}
           />
         )}
-        {contact.location && (
-          <span className="text-[10px] text-muted-foreground truncate max-w-[130px]">
-            {contact.location}
-          </span>
-        )}
+      </div>
+      
+      {/* Provincia */}
+      <div 
+        className="flex items-center px-1.5 overflow-hidden" 
+        style={{ flex: COL_STYLES.province.flex, minWidth: COL_STYLES.province.minWidth }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EditableCell
+          value={contact.location}
+          type="text"
+          placeholder="Prov..."
+          emptyText="—"
+          displayClassName="text-[10px] truncate max-w-[70px]"
+          onSave={handleLocationUpdate}
+        />
       </div>
       
       {/* Sector - editable */}

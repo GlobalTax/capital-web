@@ -11,8 +11,8 @@ import { useAcquisitionChannels, CATEGORY_COLORS } from '@/hooks/useAcquisitionC
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { ContactTableRow, COL_STYLES, STATUS_OPTIONS } from './ContactTableRow';
 
-// Minimum table width to ensure all columns fit
-const MIN_TABLE_WIDTH = 1072;
+// Minimum table width to ensure all columns fit (increased for province column)
+const MIN_TABLE_WIDTH = 1152;
 
 interface LinearContactsTableProps {
   contacts: UnifiedContact[];
@@ -80,6 +80,9 @@ const TableHeader = React.memo<{
       </div>
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }}>
         Empresa
+      </div>
+      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.province.flex, minWidth: COL_STYLES.province.minWidth }}>
+        Prov.
       </div>
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.sector.flex, minWidth: COL_STYLES.sector.minWidth }}>
         Sector
