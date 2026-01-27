@@ -1,37 +1,54 @@
 
-# Plan: Corregir Trigger de Vinculación CRM para Manejar Duplicados por Nombre
 
-## Problema Identificado
+# Plan: Corregir Trigger CRM - Nombre de Columna Incorrecto
 
-El trigger `auto_link_valuation_to_crm` falla cuando:
-- Se envía una valoración con un nombre de empresa que ya existe (ej: "prueba")
-- Pero el CIF es NULL o diferente al de la empresa existente
+## Diagnóstico Confirmado
 
-**Error actual:**
+El trigger `auto_link_valuation_to_crm` falla porque intenta actualizar una columna que no existe:
+
+| Columna en Trigger | Columna Real en DB |
+|--------------------|-------------------|
+| `contacto_id` | `crm_contacto_id` |
+
+**Error exacto**: `column "empresa_id" does not exist` (PostgreSQL reporta error en la primera columna del UPDATE cuando la sintaxis falla)
+
+**Logs confirmados**:
 ```
-duplicate key value violates unique constraint "idx_empresas_nombre_normalized"
-Key (normalize_company_name(nombre))=(prueba) already exists.
+timestamp: 2026-01-27T17:13:38Z
+error: column "empresa_id" does not exist
 ```
 
-**Causa raíz:** El trigger solo busca duplicados por CIF, ignorando el constraint de nombre único.
+Esto ocurre porque al fallar la consulta por `contacto_id` inexistente, PostgreSQL aborta toda la operación.
 
 ---
 
-## Solución Propuesta
+## Solución
 
-Modificar el trigger para buscar empresas existentes en este orden:
+Modificar el trigger para usar el nombre correcto de la columna:
 
-1. Primero buscar por CIF (si existe)
-2. Si no encuentra, buscar por nombre normalizado
-3. Solo crear nueva empresa si no encuentra por ninguno de los dos
+### Cambio Específico
+
+En el UPDATE final del trigger:
+
+```sql
+-- INCORRECTO (actual)
+UPDATE company_valuations
+SET 
+  empresa_id = v_empresa_id,
+  contacto_id = v_contacto_id  -- ❌ NO EXISTE
+WHERE id = NEW.id;
+
+-- CORRECTO (nuevo)
+UPDATE company_valuations
+SET 
+  empresa_id = v_empresa_id,
+  crm_contacto_id = v_contacto_id  -- ✅ COLUMNA CORRECTA
+WHERE id = NEW.id;
+```
 
 ---
 
-## Cambios a Implementar
-
-### Migración SQL
-
-Actualizar la función `auto_link_valuation_to_crm`:
+## Migración SQL
 
 ```sql
 CREATE OR REPLACE FUNCTION public.auto_link_valuation_to_crm()
@@ -44,7 +61,7 @@ DECLARE
   v_contacto_id UUID;
   v_existing_empresa_id UUID;
 BEGIN
-  -- 1. Buscar empresa por CIF (si tiene CIF)
+  -- 1. Buscar empresa por CIF (si tiene CIF válido)
   IF NEW.cif IS NOT NULL AND NEW.cif != '' THEN
     SELECT id INTO v_existing_empresa_id
     FROM empresas
@@ -61,36 +78,25 @@ BEGIN
   END IF;
 
   IF v_existing_empresa_id IS NOT NULL THEN
-    -- Vincular a empresa existente
     v_empresa_id := v_existing_empresa_id;
     
-    -- Actualizar empresa con datos de valoración (campos vacíos)
     UPDATE empresas
     SET 
       facturacion = COALESCE(facturacion, NEW.revenue),
       revenue = COALESCE(revenue, NEW.revenue),
       ebitda = COALESCE(ebitda, NEW.ebitda),
       sector = COALESCE(sector, NEW.industry),
-      cif = COALESCE(cif, NEW.cif), -- Actualizar CIF si no tenía
+      cif = COALESCE(cif, NEW.cif),
       source_valuation_id = COALESCE(source_valuation_id, NEW.id),
       updated_at = NOW()
     WHERE id = v_empresa_id;
   ELSE
-    -- Crear nueva empresa
     INSERT INTO empresas (
-      nombre, 
-      cif, 
-      sector, 
-      facturacion,
-      revenue, 
-      ebitda, 
-      empleados,
-      source, 
-      source_valuation_id
+      nombre, cif, sector, facturacion, revenue, ebitda, empleados, source, source_valuation_id
     )
     VALUES (
       NEW.company_name,
-      NEW.cif,
+      NULLIF(TRIM(NEW.cif), ''),
       NEW.industry,
       NEW.revenue,
       NEW.revenue,
@@ -109,7 +115,7 @@ BEGIN
     RETURNING id INTO v_empresa_id;
   END IF;
 
-  -- Resto del código para contactos (sin cambios)
+  -- Buscar o crear contacto
   SELECT id INTO v_contacto_id
   FROM contactos
   WHERE email = NEW.email
@@ -117,12 +123,7 @@ BEGIN
 
   IF v_contacto_id IS NULL THEN
     INSERT INTO contactos (
-      nombre,
-      email,
-      telefono,
-      empresa_id,
-      cargo,
-      is_primary
+      nombre, email, telefono, empresa_id, cargo, is_primary
     )
     VALUES (
       NEW.contact_name,
@@ -139,10 +140,11 @@ BEGIN
     WHERE id = v_contacto_id;
   END IF;
 
+  -- ✅ FIX: Usar nombre correcto de columna (crm_contacto_id en vez de contacto_id)
   UPDATE company_valuations
   SET 
     empresa_id = v_empresa_id,
-    contacto_id = v_contacto_id
+    crm_contacto_id = v_contacto_id
   WHERE id = NEW.id;
 
   RETURN NEW;
@@ -152,65 +154,21 @@ $function$;
 
 ---
 
-## Lógica de Prioridad
+## Impacto
 
-```text
-+------------------------+
-| Nueva valoración llega |
-+------------------------+
-         |
-         v
-+------------------------+
-| ¿Tiene CIF válido?     |
-+------------------------+
-    |             |
-   Sí            No
-    |             |
-    v             v
-+------------+  +-------------------+
-| Buscar por |  | Buscar por nombre |
-| CIF        |  | normalizado       |
-+------------+  +-------------------+
-    |                    |
-    v                    v
-+--------------------------+
-| ¿Encontró empresa?       |
-+--------------------------+
-    |             |
-   Sí            No
-    |             |
-    v             v
-+------------+  +-------------------+
-| VINCULAR   |  | CREAR nueva       |
-| existente  |  | empresa           |
-+------------+  +-------------------+
-```
+| Aspecto | Detalle |
+|---------|---------|
+| Cambio | Renombrar columna en UPDATE |
+| Riesgo | Bajo - solo corrige nombre |
+| Tiempo | Inmediato |
+| Testing | Enviar nueva valoración desde calculadora |
 
 ---
 
-## Beneficios
+## Pruebas Post-Fix
 
-1. **Elimina errores de duplicado** - Ya no fallará por nombres existentes
-2. **Mejor vinculación** - Relaciona valoraciones con empresas existentes correctamente
-3. **Actualiza datos** - Si la empresa existe pero le falta CIF, lo actualiza
-4. **Retrocompatible** - Mantiene la lógica de CIF como prioridad
+1. Enviar valoración desde `/lp/calculadora`
+2. Verificar que no hay error 500
+3. Confirmar que el email llega
+4. Verificar en `/admin/empresas` que la empresa se vinculó correctamente
 
----
-
-## Pruebas
-
-Después de aplicar la migración, probar:
-
-1. Enviar valoración con nombre "prueba" → Debe vincular a empresa existente
-2. Enviar valoración con nombre nuevo → Debe crear empresa nueva
-3. Enviar valoración con CIF existente → Debe vincular por CIF
-
----
-
-## Archivos a Modificar
-
-| Componente | Acción | Descripción |
-|------------|--------|-------------|
-| Migración SQL | CREAR | Actualizar función `auto_link_valuation_to_crm` |
-
-No se requieren cambios en código frontend - el fix es puramente en la base de datos.
