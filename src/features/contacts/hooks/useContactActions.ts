@@ -251,13 +251,29 @@ export const useContactActions = () => {
         }
       });
 
-      // Process each origin
-      for (const [origin, group] of Object.entries(byOrigin)) {
-        const table = tableMap[origin as ContactOrigin];
-        const { error } = await (supabase as any)
-          .from(table)
-          .delete()
-          .in('id', group.ids);
+    // Process each origin
+    for (const [origin, group] of Object.entries(byOrigin)) {
+      const table = tableMap[origin as ContactOrigin];
+      
+      // Para valoraciones, primero desvincular referencias FK para evitar error 409
+      if (origin === 'valuation') {
+        // Desvincular empresas que referencian estas valoraciones
+        await (supabase as any)
+          .from('empresas')
+          .update({ source_valuation_id: null })
+          .in('source_valuation_id', group.ids);
+        
+        // También contactos CRM que referencian estas valoraciones
+        await (supabase as any)
+          .from('contactos')
+          .update({ valuation_id: null })
+          .in('valuation_id', group.ids);
+      }
+      
+      const { error } = await (supabase as any)
+        .from(table)
+        .delete()
+        .in('id', group.ids);
 
         if (error) {
           // Mark all in this origin as failed
