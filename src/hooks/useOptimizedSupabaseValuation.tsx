@@ -604,6 +604,223 @@ export const useOptimizedSupabaseValuation = () => {
     }
   }, [isProcessing, createInitialValuation, withRetry, handleError, handleAsyncError]);
 
+  // ============= SAVE VALUATION ONLY (NO EMAIL) =============
+  // Used by manual calculator to save without automatic email sending
+  const saveValuationOnly = useCallback(async (
+    companyData: CompanyData, 
+    resultData: ValuationResult, 
+    uniqueToken?: string,
+    options?: {
+      sourceProject?: string;
+      leadSource?: string;
+      leadSourceDetail?: string;
+    }
+  ): Promise<{ success: boolean; valuationId?: string; error?: string }> => {
+    console.log('🎯 saveValuationOnly called (no email):', { 
+      hasCompanyData: !!companyData, 
+      hasResult: !!resultData, 
+      uniqueToken 
+    });
+
+    if (isProcessing) {
+      console.log('❌ Save already in progress, ignoring duplicate call');
+      return { success: false, error: 'Ya hay una operación en progreso' };
+    }
+
+    setIsProcessing(true);
+    setCurrentOperation('saving_valuation_only');
+
+    try {
+      // If no uniqueToken provided, create initial valuation first
+      let finalUniqueToken = uniqueToken;
+      if (!finalUniqueToken) {
+        console.log('⚠️ No uniqueToken provided, creating initial valuation...');
+        const initialResult = await createInitialValuation({
+          contactName: companyData.contactName,
+          companyName: companyData.companyName,
+          email: companyData.email,
+          cif: companyData.cif,
+          phone: companyData.phone,
+          phone_e164: companyData.phone_e164,
+          whatsapp_opt_in: companyData.whatsapp_opt_in,
+          industry: companyData.industry,
+          employeeRange: companyData.employeeRange,
+          activityDescription: companyData.activityDescription
+        });
+        
+        if (initialResult.success && initialResult.uniqueToken) {
+          finalUniqueToken = initialResult.uniqueToken;
+          console.log('✅ Created initial valuation with token:', finalUniqueToken);
+        } else {
+          throw new Error('Failed to create initial valuation record');
+        }
+      }
+
+      // Save core valuation data
+      const coreUpdateResult = await withRetry(async () => {
+        const finalData = {
+          contact_name: companyData.contactName || '',
+          company_name: companyData.companyName || '',
+          email: companyData.email || '',
+          phone: companyData.phone || '',
+          phone_e164: companyData.phone_e164 || '',
+          cif: companyData.cif || '',
+          industry: companyData.industry || '',
+          activity_description: companyData.activityDescription || '',
+          employee_range: companyData.employeeRange || '',
+          revenue: companyData.revenue || null,
+          ebitda: companyData.ebitda || null,
+          has_adjustments: companyData.hasAdjustments || false,
+          adjustment_amount: companyData.adjustmentAmount || null,
+          final_valuation: resultData.finalValuation || null,
+          ebitda_multiple_used: resultData.multiples.ebitdaMultipleUsed || null,
+          valuation_range_min: resultData.valuationRange.min || null,
+          valuation_range_max: resultData.valuationRange.max || null,
+          valuation_status: 'completed',
+          completion_percentage: 100,
+          // Source and lead tracking
+          source_project: options?.sourceProject || 'manual-admin-entry',
+          lead_source: options?.leadSource || null,
+          lead_source_detail: options?.leadSourceDetail || null
+        };
+
+        console.log('🚀 Invoking update-valuation (saveOnly):', { uniqueToken: finalUniqueToken });
+        
+        const response = await supabase.functions.invoke('update-valuation', {
+          body: { uniqueToken: finalUniqueToken, data: finalData }
+        });
+
+        if (response.error) {
+          console.error('❌ Update valuation error:', response.error);
+          throw new Error(`Failed to save valuation: ${response.error.message}`);
+        }
+
+        return response.data;
+      }, 'Core valuation save (no email)');
+
+      if (!coreUpdateResult) {
+        throw new Error('Failed to save valuation data');
+      }
+
+      const savedValuationId = coreUpdateResult?.valuationId || coreUpdateResult?.id;
+      console.log('✅ Valuation saved successfully (no email):', savedValuationId);
+
+      return { success: true, valuationId: savedValuationId };
+      
+    } catch (error: any) {
+      console.error('💥 saveValuationOnly failed:', error);
+      return { success: false, error: error.message || 'Error desconocido' };
+    } finally {
+      setIsProcessing(false);
+      setCurrentOperation(null);
+    }
+  }, [isProcessing, createInitialValuation, withRetry]);
+
+  // ============= SEND VALUATION EMAIL ONLY =============
+  // Used to explicitly send email for an already saved valuation
+  const sendValuationEmail = useCallback(async (
+    companyData: CompanyData,
+    resultData: ValuationResult,
+    valuationId: string,
+    options?: {
+      sourceProject?: string;
+      leadSource?: string;
+      leadSourceDetail?: string;
+    }
+  ): Promise<{ success: boolean; messageId?: string; outboxId?: string; error?: string }> => {
+    console.log('📧 sendValuationEmail called:', { 
+      email: companyData.email, 
+      valuationId,
+      sourceProject: options?.sourceProject 
+    });
+
+    if (!companyData.email) {
+      return { success: false, error: 'El contacto no tiene email' };
+    }
+
+    try {
+      const lang = getPreferredLang();
+      
+      // Try to generate PDF client-side
+      let pdfBase64: string | null = null;
+      const pdfFilename = `Capittal-Valoracion-${(companyData.companyName || 'empresa').replace(/\s+/g, '-')}.pdf`;
+      
+      try {
+        // Prepare data with required fields for PDF generator
+        const pdfCompanyData = {
+          contactName: companyData.contactName || '',
+          companyName: companyData.companyName || '',
+          cif: companyData.cif || '',
+          email: companyData.email || '',
+          phone: companyData.phone || '',
+          industry: companyData.industry || '',
+          yearsOfOperation: 5,
+          employeeRange: companyData.employeeRange || '',
+          revenue: companyData.revenue || 0,
+          ebitda: companyData.ebitda || 0,
+          netProfitMargin: 10,
+          growthRate: 5,
+          location: companyData.location || '',
+          ownershipParticipation: companyData.ownershipParticipation || '',
+          competitiveAdvantage: companyData.competitiveAdvantage || ''
+        };
+        const blob = await generateValuationPDFWithReactPDF(pdfCompanyData, resultData, lang);
+        pdfBase64 = await blobToBase64(blob);
+        console.log('✅ PDF generated for email');
+      } catch (pdfError) {
+        console.warn('⚠️ PDF generation failed, edge function will generate fallback');
+      }
+
+      // Send email via edge function
+      const response = await supabase.functions.invoke('send-valuation-email', {
+        body: {
+          recipientEmail: companyData.email,
+          companyData: companyData,
+          result: resultData,
+          pdfBase64: pdfBase64 || undefined,
+          pdfFilename: pdfBase64 ? pdfFilename : undefined,
+          generatePdfFallback: !pdfBase64,
+          enlaces: {
+            escenariosUrl: `${window.location.origin}/lp/calculadora`,
+            calculadoraFiscalUrl: `${window.location.origin}/lp/calculadora-fiscal`
+          },
+          sender: {
+            nombre: 'Equipo Capittal',
+            cargo: 'M&A',
+            firma: 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid'
+          },
+          subjectOverride: 'Valoración · PDF, escenarios y calculadora fiscal',
+          lang,
+          valuationId,
+          sourceProject: options?.sourceProject || 'manual-admin-entry',
+          leadSource: options?.leadSource,
+          leadSourceDetail: options?.leadSourceDetail
+        }
+      });
+
+      console.log('📥 Email response:', response);
+
+      if (response.error) {
+        console.error('❌ Email sending failed:', response.error);
+        return { 
+          success: false, 
+          error: response.error.message || 'Error al enviar email' 
+        };
+      }
+
+      console.log('✅ Email sent successfully:', response.data);
+      return { 
+        success: true, 
+        messageId: response.data?.emailId || response.data?.messageId,
+        outboxId: response.data?.outboxId 
+      };
+      
+    } catch (error: any) {
+      console.error('💥 sendValuationEmail failed:', error);
+      return { success: false, error: error.message || 'Error desconocido' };
+    }
+  }, []);
+
   // Utility to save a rating
   const saveToolRating = useCallback(async (ratingData: any) => {
     console.log('💯 Saving tool rating:', ratingData);
@@ -641,6 +858,8 @@ export const useOptimizedSupabaseValuation = () => {
     createInitialValuation,
     updateValuation,
     saveValuation,
+    saveValuationOnly,
+    sendValuationEmail,
     saveToolRating,
     isProcessing: isProcessing || isCreatingInitial,
     currentOperation,
