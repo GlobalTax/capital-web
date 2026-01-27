@@ -194,10 +194,10 @@ export const useUnifiedContacts = () => {
 
       if (contactError) throw contactError;
 
-      // Fetch company_valuations (exclude soft deleted) - include Apollo fields and lead form
+      // Fetch company_valuations (exclude soft deleted) - include Apollo fields, lead form, and empresa data
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
-        .select('*, lead_status_crm, assigned_to, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
+        .select('*, lead_status_crm, assigned_to, lead_form, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -364,6 +364,10 @@ export const useUnifiedContacts = () => {
           apollo_last_enriched_at: (lead as any).apollo_last_enriched_at,
           apollo_org_data: (lead as any).apollo_org_data,
           apollo_candidates: (lead as any).apollo_candidates,
+          // 🔥 Empresa vinculada
+          empresa_id: (lead as any).empresa_id,
+          empresa_nombre: (lead.empresas as any)?.nombre || null,
+          empresa_facturacion: (lead.empresas as any)?.facturacion != null ? Number((lead.empresas as any).facturacion) : undefined,
         })),
         
         // Collaborator applications
