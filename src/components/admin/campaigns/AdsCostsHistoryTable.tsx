@@ -1,5 +1,6 @@
 // ============= ADS COSTS HISTORY TABLE =============
 // Tabla de visualización del histórico de costes importados
+// Incluye resúmenes calculados dinámicamente (Media/Total)
 
 import React, { useState, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
@@ -11,6 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,6 +22,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import {
   Upload,
   Download,
@@ -32,9 +35,14 @@ import {
   TrendingUp,
   Zap,
   ChevronDown,
+  Target,
+  MousePointerClick,
+  Eye,
+  Users,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAdsCostsHistory, useExportAdsCosts, AdsPlatform, AdsCostRecord } from '@/hooks/useAdsCostsHistory';
+import { useAdsCostsHistory, useExportAdsCosts, AdsPlatform, AdsCostRecord, calculateStats } from '@/hooks/useAdsCostsHistory';
 import { AdsCostsImportModal } from './AdsCostsImportModal';
 import { DateRange } from 'react-day-picker';
 
@@ -53,10 +61,18 @@ const formatCurrency = (value: number) => {
 
 const formatNumber = (value?: number) => {
   if (value === undefined || value === null) return '—';
-  return new Intl.NumberFormat('es-ES').format(value);
+  return new Intl.NumberFormat('es-ES').format(Math.round(value));
 };
 
-type SortKey = 'date' | 'campaign_name' | 'spend';
+const formatDecimal = (value?: number, decimals = 2) => {
+  if (value === undefined || value === null) return '—';
+  return new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(value);
+};
+
+type SortKey = 'date' | 'campaign_name' | 'spend' | 'results' | 'impressions';
 type SortOrder = 'asc' | 'desc';
 
 export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ platform }) => {
@@ -71,7 +87,6 @@ export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ plat
   const [selectedCampaign, setSelectedCampaign] = useState<string>('all');
 
   const platformName = platform === 'meta_ads' ? 'Meta Ads' : 'Google Ads';
-  const platformColor = platform === 'meta_ads' ? 'blue' : 'amber';
 
   // Get unique campaigns for filter
   const uniqueCampaigns = useMemo(() => {
@@ -123,6 +138,12 @@ export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ plat
         case 'spend':
           comparison = a.spend - b.spend;
           break;
+        case 'results':
+          comparison = (a.results || a.conversions || 0) - (b.results || b.conversions || 0);
+          break;
+        case 'impressions':
+          comparison = (a.impressions || 0) - (b.impressions || 0);
+          break;
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
@@ -130,20 +151,8 @@ export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ plat
     return filtered;
   }, [records, searchTerm, selectedCampaign, dateRange, sortKey, sortOrder]);
 
-  // Statistics
-  const stats = useMemo(() => {
-    if (!filteredRecords.length) return { totalSpend: 0, avgSpend: 0, recordCount: 0, campaignCount: 0 };
-    
-    const totalSpend = filteredRecords.reduce((sum, r) => sum + r.spend, 0);
-    const uniqueCampaigns = new Set(filteredRecords.map(r => r.campaign_name));
-    
-    return {
-      totalSpend,
-      avgSpend: totalSpend / filteredRecords.length,
-      recordCount: filteredRecords.length,
-      campaignCount: uniqueCampaigns.size,
-    };
-  }, [filteredRecords]);
+  // Calculate dynamic statistics
+  const stats = useMemo(() => calculateStats(filteredRecords), [filteredRecords]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -207,45 +216,121 @@ export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ plat
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Euro className="h-4 w-4" />
-              <span className="text-xs uppercase tracking-wider">Gasto Total</span>
-            </div>
-            <p className="text-xl font-semibold">{formatCurrency(stats.totalSpend)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <TrendingUp className="h-4 w-4" />
-              <span className="text-xs uppercase tracking-wider">Media/Día</span>
-            </div>
-            <p className="text-xl font-semibold">{formatCurrency(stats.avgSpend)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <FileSpreadsheet className="h-4 w-4" />
-              <span className="text-xs uppercase tracking-wider">Registros</span>
-            </div>
-            <p className="text-xl font-semibold">{formatNumber(stats.recordCount)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <Zap className="h-4 w-4" />
-              <span className="text-xs uppercase tracking-wider">Campañas</span>
-            </div>
-            <p className="text-xl font-semibold">{formatNumber(stats.campaignCount)}</p>
-          </CardContent>
-        </Card>
+      {/* Stats Cards - TOTALS (Calculados dinámicamente) */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Totales (calculados)
+          </span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <Card className="bg-muted/30">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Euro className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Gasto Total</span>
+              </div>
+              <p className="text-lg font-semibold">{formatCurrency(stats.totalSpend)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/30">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Target className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Resultados</span>
+              </div>
+              <p className="text-lg font-semibold">{formatNumber(stats.totalResults)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/30">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Eye className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Impresiones</span>
+              </div>
+              <p className="text-lg font-semibold">{formatNumber(stats.totalImpressions)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/30">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Users className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Alcance</span>
+              </div>
+              <p className="text-lg font-semibold">{formatNumber(stats.totalReach)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/30">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <MousePointerClick className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Clics</span>
+              </div>
+              <p className="text-lg font-semibold">{formatNumber(stats.totalLinkClicks || stats.totalClicks)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/30">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Días</span>
+              </div>
+              <p className="text-lg font-semibold">{stats.uniqueDays}</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Stats Cards - AVERAGES (Calculados dinámicamente) */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Medias (calculadas)
+          </span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-primary/70 mb-1">
+                <Euro className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Coste/Resultado</span>
+              </div>
+              <p className="text-lg font-semibold text-primary">{formatCurrency(stats.avgCostPerResult)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-primary/70 mb-1">
+                <TrendingUp className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">CPM</span>
+              </div>
+              <p className="text-lg font-semibold text-primary">{formatCurrency(stats.avgCpm)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-primary/70 mb-1">
+                <Zap className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Frecuencia</span>
+              </div>
+              <p className="text-lg font-semibold text-primary">{formatDecimal(stats.avgFrequency)}</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2 text-primary/70 mb-1">
+                <Euro className="h-3.5 w-3.5" />
+                <span className="text-[10px] uppercase tracking-wider">Gasto/Día</span>
+              </div>
+              <p className="text-lg font-semibold text-primary">{formatCurrency(stats.avgSpendPerDay)}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
@@ -364,7 +449,6 @@ export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ plat
                       <ArrowUpDown className="h-3 w-3" />
                     </div>
                   </TableHead>
-                  <TableHead>ID Campaña</TableHead>
                   <TableHead 
                     className="text-right cursor-pointer hover:bg-muted/50"
                     onClick={() => handleSort('spend')}
@@ -374,9 +458,27 @@ export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ plat
                       <ArrowUpDown className="h-3 w-3" />
                     </div>
                   </TableHead>
-                  <TableHead className="text-right">Impresiones</TableHead>
-                  <TableHead className="text-right">Clics</TableHead>
-                  <TableHead className="text-right">Conversiones</TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('results')}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Resultados
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right">Coste/Res.</TableHead>
+                  <TableHead 
+                    className="text-right cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleSort('impressions')}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Impresiones
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right">CPM</TableHead>
+                  <TableHead className="text-right">Frecuencia</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -385,31 +487,63 @@ export const AdsCostsHistoryTable: React.FC<AdsCostsHistoryTableProps> = ({ plat
                     <TableCell className="font-mono text-xs">
                       {format(parseISO(record.date), 'dd MMM yyyy', { locale: es })}
                     </TableCell>
-                    <TableCell className="max-w-[250px] truncate" title={record.campaign_name}>
+                    <TableCell className="max-w-[200px] truncate" title={record.campaign_name}>
                       {record.campaign_name}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs font-mono">
-                      {record.campaign_id || '—'}
                     </TableCell>
                     <TableCell className="text-right font-mono font-medium">
                       {formatCurrency(record.spend)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatNumber(record.results || record.conversions)}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground">
+                      {record.cost_per_result ? formatCurrency(record.cost_per_result) : '—'}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
                       {formatNumber(record.impressions)}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
-                      {formatNumber(record.clicks)}
+                      {record.cpm ? formatCurrency(record.cpm) : '—'}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
-                      {formatNumber(record.conversions)}
+                      {formatDecimal(record.frequency)}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
+              {/* Footer with calculated totals */}
+              <TableFooter className="bg-muted/50">
+                <TableRow className="font-medium">
+                  <TableCell colSpan={2} className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Total
+                  </TableCell>
+                  <TableCell className="text-right font-mono">
+                    {formatCurrency(stats.totalSpend)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatNumber(stats.totalResults)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(stats.avgCostPerResult)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatNumber(stats.totalImpressions)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(stats.avgCpm)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatDecimal(stats.avgFrequency)}
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
             </Table>
           </ScrollArea>
-          <div className="px-4 py-2 border-t text-xs text-muted-foreground">
-            Mostrando {filteredRecords.length} registros
+          <div className="px-4 py-2 border-t text-xs text-muted-foreground flex justify-between">
+            <span>Mostrando {filteredRecords.length} registros diarios</span>
+            <span className="text-primary font-medium">
+              Totales y medias calculados automáticamente
+            </span>
           </div>
         </Card>
       )}

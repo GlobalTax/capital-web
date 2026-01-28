@@ -826,15 +826,22 @@ export type Database = {
           campaign_name: string
           clicks: number | null
           conversions: number | null
+          cost_per_result: number | null
+          cpm: number | null
           created_at: string
           currency: string
           date: string
+          frequency: number | null
           id: string
           imported_at: string
           imported_by: string | null
           impressions: number | null
+          link_clicks: number | null
           platform: Database["public"]["Enums"]["ads_platform"]
           raw_row: Json
+          reach: number | null
+          result_type: string | null
+          results: number | null
           spend: number
         }
         Insert: {
@@ -842,15 +849,22 @@ export type Database = {
           campaign_name: string
           clicks?: number | null
           conversions?: number | null
+          cost_per_result?: number | null
+          cpm?: number | null
           created_at?: string
           currency?: string
           date: string
+          frequency?: number | null
           id?: string
           imported_at?: string
           imported_by?: string | null
           impressions?: number | null
+          link_clicks?: number | null
           platform: Database["public"]["Enums"]["ads_platform"]
           raw_row: Json
+          reach?: number | null
+          result_type?: string | null
+          results?: number | null
           spend: number
         }
         Update: {
@@ -858,15 +872,22 @@ export type Database = {
           campaign_name?: string
           clicks?: number | null
           conversions?: number | null
+          cost_per_result?: number | null
+          cpm?: number | null
           created_at?: string
           currency?: string
           date?: string
+          frequency?: number | null
           id?: string
           imported_at?: string
           imported_by?: string | null
           impressions?: number | null
+          link_clicks?: number | null
           platform?: Database["public"]["Enums"]["ads_platform"]
           raw_row?: Json
+          reach?: number | null
+          result_type?: string | null
+          results?: number | null
           spend?: number
         }
         Relationships: []
@@ -3696,6 +3717,105 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      company_meeting_documents: {
+        Row: {
+          file_name: string
+          file_size_bytes: number | null
+          id: string
+          meeting_id: string
+          mime_type: string | null
+          storage_path: string
+          uploaded_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          file_name: string
+          file_size_bytes?: number | null
+          id?: string
+          meeting_id: string
+          mime_type?: string | null
+          storage_path: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          file_name?: string
+          file_size_bytes?: number | null
+          id?: string
+          meeting_id?: string
+          mime_type?: string | null
+          storage_path?: string
+          uploaded_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_meeting_documents_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "company_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_meetings: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          meeting_date: string
+          meeting_notes: string | null
+          preparation_notes: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          meeting_date: string
+          meeting_notes?: string | null
+          preparation_notes?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          meeting_date?: string
+          meeting_notes?: string | null
+          preparation_notes?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_meetings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_meetings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "company_meetings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_con_actividad"
+            referencedColumns: ["id"]
           },
         ]
       }
