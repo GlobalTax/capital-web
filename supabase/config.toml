@@ -275,3 +275,6 @@ verify_jwt = false
 
 [functions.corporate-buyer-ai]
 verify_jwt = false
+
+[functions.translate-operations]
+verify_jwt = false
