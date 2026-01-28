@@ -1,5 +1,6 @@
 // ============= ADS COSTS IMPORT MODAL =============
 // Modal para importar histórico de costes desde Excel
+// Soporta detección automática de cabecera y filtra filas de resumen
 
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -24,7 +25,9 @@ import {
   XCircle, 
   Loader2,
   AlertCircle,
-  Info
+  Info,
+  SkipForward,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAdsCostsImport, AdsPlatform, ParsedExcelRow } from '@/hooks/useAdsCostsHistory';
@@ -54,6 +57,7 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
   const {
     parsedRows,
     duplicates,
+    parseStats,
     isParsing,
     parseError,
     isImporting,
@@ -62,6 +66,7 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
     clearParsedData,
     validCount,
     invalidCount,
+    skippedCount,
   } = useAdsCostsImport(platform);
 
   const [step, setStep] = useState<'upload' | 'preview' | 'confirm'>('upload');
@@ -101,6 +106,10 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
 
   const platformName = platform === 'meta_ads' ? 'Meta Ads' : 'Google Ads';
 
+  // Separate valid, skipped, and error rows for display
+  const validRows = parsedRows.filter(r => r.isValid);
+  const skippedRows = parsedRows.filter(r => r.isSkipped);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
@@ -110,7 +119,7 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
             Importar histórico - {platformName}
           </DialogTitle>
           <DialogDescription>
-            Carga un archivo Excel con el histórico de gastos. Los datos se guardarán exactamente como vienen.
+            Carga un archivo Excel con el histórico de gastos. Las filas de resumen (Media/Total) se ignorarán automáticamente.
           </DialogDescription>
         </DialogHeader>
 
@@ -149,16 +158,19 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
             {/* Expected format info */}
             <Alert className="mt-4" variant="default">
               <Info className="h-4 w-4" />
-              <AlertTitle>Formato esperado del Excel</AlertTitle>
+              <AlertTitle>Formato esperado del Excel de {platformName}</AlertTitle>
               <AlertDescription className="mt-2 text-sm">
-                <p className="mb-2">Columnas requeridas:</p>
+                <p className="mb-2">Columnas detectadas automáticamente:</p>
                 <ul className="list-disc list-inside space-y-1 text-xs">
-                  <li><strong>Campaña</strong> (Campaign Name) - Nombre de la campaña</li>
-                  <li><strong>Fecha</strong> (Date) - Fecha del registro</li>
-                  <li><strong>Gasto</strong> (Spend, Amount Spent) - Importe gastado</li>
+                  <li><strong>Nombre de la campaña</strong> - Nombre exacto de la campaña</li>
+                  <li><strong>Día</strong> - Fecha del registro</li>
+                  <li><strong>Importe gastado (EUR)</strong> - Gasto del día</li>
                 </ul>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Columnas opcionales: ID Campaña, Impresiones, Clics, Conversiones, Moneda
+                  Columnas opcionales: Tipo de resultado, Resultados, Coste por resultado, Impresiones, Alcance, Frecuencia, CPM, Clics en el enlace
+                </p>
+                <p className="mt-2 text-xs font-medium text-amber-600">
+                  ⚠️ Las filas "Media" y "Total" se ignorarán automáticamente
                 </p>
               </AlertDescription>
             </Alert>
@@ -166,19 +178,25 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
         )}
 
         {/* Step 2: Preview */}
-        {step === 'preview' && parsedRows.length > 0 && (
+        {step === 'preview' && (
           <div className="space-y-4">
             {/* Stats */}
-            <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+            <div className="flex flex-wrap items-center gap-3 p-3 bg-muted/50 rounded-lg">
               <div className="flex items-center gap-2">
                 <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{selectedFile?.name}</span>
               </div>
-              <div className="flex items-center gap-3 ml-auto">
+              <div className="flex items-center gap-2 ml-auto flex-wrap">
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                   <CheckCircle2 className="h-3 w-3 mr-1" />
                   {validCount} válidos
                 </Badge>
+                {skippedCount > 0 && (
+                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                    <SkipForward className="h-3 w-3 mr-1" />
+                    {skippedCount} ignorados
+                  </Badge>
+                )}
                 {invalidCount > 0 && (
                   <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
                     <XCircle className="h-3 w-3 mr-1" />
@@ -188,14 +206,29 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
               </div>
             </div>
 
-            {/* Duplicates warning */}
+            {/* Duplicates info (UPSERT) */}
             {duplicates.length > 0 && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Posibles duplicados detectados</AlertTitle>
+              <Alert>
+                <RefreshCw className="h-4 w-4" />
+                <AlertTitle>Registros existentes detectados</AlertTitle>
                 <AlertDescription>
-                  Se encontraron {duplicates.length} registros que ya podrían existir en la base de datos.
-                  Puedes continuar si deseas importarlos de todas formas.
+                  Se encontraron {duplicates.length} registros que ya existen (misma campaña + fecha).
+                  <strong className="block mt-1">Se actualizarán con los nuevos valores del Excel (UPSERT).</strong>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Skipped rows info */}
+            {skippedRows.length > 0 && (
+              <Alert className="border-amber-200 bg-amber-50/50">
+                <SkipForward className="h-4 w-4 text-amber-600" />
+                <AlertTitle className="text-amber-800">Filas de resumen ignoradas</AlertTitle>
+                <AlertDescription className="text-amber-700 text-sm">
+                  {skippedRows.map((row, idx) => (
+                    <span key={idx} className="inline-block mr-2">
+                      • {row.skipReason}
+                    </span>
+                  ))}
                 </AlertDescription>
               </Alert>
             )}
@@ -209,7 +242,7 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
               </Alert>
             )}
 
-            {/* Preview table */}
+            {/* Preview table - only valid rows */}
             <ScrollArea className="h-[300px] border rounded-lg">
               <Table>
                 <TableHeader>
@@ -218,45 +251,38 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
                     <TableHead>Fecha</TableHead>
                     <TableHead>Campaña</TableHead>
                     <TableHead className="text-right">Gasto</TableHead>
-                    <TableHead>Moneda</TableHead>
-                    <TableHead>Errores</TableHead>
+                    <TableHead className="text-right">Resultados</TableHead>
+                    <TableHead className="text-right">Impresiones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {parsedRows.slice(0, 100).map((row, idx) => (
-                    <TableRow 
-                      key={idx}
-                      className={cn(!row.isValid && "bg-red-50/50")}
-                    >
+                  {validRows.slice(0, 100).map((row, idx) => (
+                    <TableRow key={idx}>
                       <TableCell>
-                        {row.isValid ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-600" />
-                        )}
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
                       </TableCell>
                       <TableCell className="font-mono text-xs">
-                        {row.date || '—'}
+                        {row.date}
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate" title={row.campaign_name}>
-                        {row.campaign_name || '—'}
+                        {row.campaign_name}
                       </TableCell>
                       <TableCell className="text-right font-mono">
                         {formatCurrency(row.spend)}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {row.currency}
+                      <TableCell className="text-right text-muted-foreground">
+                        {row.results ?? '—'}
                       </TableCell>
-                      <TableCell className="text-xs text-red-600">
-                        {row.errors.join(', ')}
+                      <TableCell className="text-right text-muted-foreground">
+                        {row.impressions?.toLocaleString('es-ES') ?? '—'}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-              {parsedRows.length > 100 && (
+              {validRows.length > 100 && (
                 <div className="p-3 text-center text-sm text-muted-foreground border-t">
-                  Mostrando 100 de {parsedRows.length} filas
+                  Mostrando 100 de {validRows.length} filas válidas
                 </div>
               )}
             </ScrollArea>
@@ -264,11 +290,11 @@ export const AdsCostsImportModal: React.FC<AdsCostsImportModalProps> = ({
             {/* Summary */}
             <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg text-sm">
               <span className="text-muted-foreground">
-                Total a importar: <strong className="text-foreground">{validCount} registros</strong>
+                Total a importar: <strong className="text-foreground">{validCount} registros diarios</strong>
               </span>
               <span className="text-muted-foreground">
                 Gasto total: <strong className="text-foreground">
-                  {formatCurrency(parsedRows.filter(r => r.isValid).reduce((sum, r) => sum + r.spend, 0))}
+                  {formatCurrency(validRows.reduce((sum, r) => sum + r.spend, 0))}
                 </strong>
               </span>
             </div>
