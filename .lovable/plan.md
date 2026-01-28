@@ -1,30 +1,10 @@
 
 
-# Plan: Dashboard de Errores de Calculadora
+# Plan: Alertas Automáticas de Errores Críticos de Calculadora
 
 ## Objetivo
 
-Crear un dashboard en `/admin/calculator-errors` para monitorear errores de la calculadora de valoración desde la tabla `calculator_errors`, con filtros por tipo y fecha.
-
----
-
-## Estructura de la Tabla (Existente)
-
-| Columna | Tipo | Descripción |
-|---------|------|-------------|
-| `id` | UUID | ID único |
-| `error_type` | TEXT | `calculation`, `submission`, `validation`, `network`, `unknown` |
-| `error_message` | TEXT | Mensaje de error |
-| `error_stack` | TEXT | Stack trace (opcional) |
-| `component` | TEXT | Componente origen |
-| `action` | TEXT | Acción que falló |
-| `company_data` | JSONB | Datos del lead (email, nombre, empresa) |
-| `current_step` | INTEGER | Paso donde ocurrió |
-| `unique_token` | TEXT | Token de sesión |
-| `source_project` | TEXT | Proyecto origen |
-| `user_agent` | TEXT | Navegador/dispositivo |
-| `ip_address` | INET | IP del usuario |
-| `created_at` | TIMESTAMPTZ | Fecha del error |
+Implementar un sistema de detección y notificación automática por email al equipo cuando se detecten más de 3 errores de calculadora en un periodo de 5 minutos.
 
 ---
 
@@ -32,164 +12,201 @@ Crear un dashboard en `/admin/calculator-errors` para monitorear errores de la c
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│                   /admin/calculator-errors                       │
+│                    FLUJO DE DETECCIÓN                            │
 ├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │                    HEADER + FILTROS                         ││
-│  │  [Fecha: Últimos 7d ▼]  [Tipo: Todos ▼]  [🔄 Refrescar]    ││
-│  └─────────────────────────────────────────────────────────────┘│
 │                                                                  │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐               │
-│  │  Total  │ │ Cálculo │ │  Red    │ │ Último  │               │
-│  │ Errores │ │ Errors  │ │ Errors  │ │  Error  │               │
-│  │   24    │ │   12    │ │    8    │ │  2h ago │               │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘               │
+│  [Calculator Error]                                              │
+│         │                                                        │
+│         ▼                                                        │
+│  ┌─────────────────┐                                            │
+│  │ calculator_errors│ (tabla existente)                         │
+│  └─────────────────┘                                            │
+│         │                                                        │
+│         ▼                                                        │
+│  ┌─────────────────────────────────────────┐                    │
+│  │ CRON Job: */5 * * * * (cada 5 minutos)  │                    │
+│  │ check-calculator-errors                  │                    │
+│  └─────────────────────────────────────────┘                    │
+│         │                                                        │
+│         ▼                                                        │
+│  ┌─────────────────────────────────────────┐                    │
+│  │ Query: COUNT errores últimos 5 minutos  │                    │
+│  │ IF count > 3 THEN enviar alerta         │                    │
+│  └─────────────────────────────────────────┘                    │
+│         │                                                        │
+│    count > 3?                                                    │
+│    ┌───┴───┐                                                    │
+│   YES     NO                                                     │
+│    │       └─────► [No action]                                  │
+│    ▼                                                             │
+│  ┌─────────────────────────────────────────┐                    │
+│  │ Verificar cooldown (última alerta)      │                    │
+│  │ Si pasaron >30 min: enviar email        │                    │
+│  └─────────────────────────────────────────┘                    │
+│    │                                                             │
+│    ▼                                                             │
+│  ┌─────────────────────────────────────────┐                    │
+│  │ Email a equipo vía Resend               │                    │
+│  │ samuel, oriol, marc, lluis, marcc       │                    │
+│  └─────────────────────────────────────────┘                    │
+│    │                                                             │
+│    ▼                                                             │
+│  ┌─────────────────────────────────────────┐                    │
+│  │ Registrar alerta en                     │                    │
+│  │ calculator_error_alerts                 │                    │
+│  └─────────────────────────────────────────┘                    │
 │                                                                  │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │                   TABLA DE ERRORES                          ││
-│  │ Tipo | Mensaje | Componente | Lead | Fecha | Acciones       ││
-│  │ ─────────────────────────────────────────────────────────── ││
-│  │ 🔴 calculation | Failed to compute... | UnifiedCalc | ...   ││
-│  │ 🟠 network     | Timeout connecting... | SaveHook | ...     ││
-│  │ ...                                                         ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                  │
-│  [Modal: Detalle del Error]                                     │
-│    - Stack trace completo                                       │
-│    - Datos del lead (recuperables)                              │
-│    - User agent / dispositivo                                   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Archivos a Crear
+## Componentes a Implementar
 
-### 1. Hook: `useCalculatorErrors.ts`
+### 1. Tabla de Control de Alertas (Nueva)
 
-**Ubicación:** `src/features/valuation/hooks/useCalculatorErrors.ts`
+**Tabla:** `calculator_error_alerts`
+
+| Columna | Tipo | Descripción |
+|---------|------|-------------|
+| `id` | UUID | ID único |
+| `error_count` | INTEGER | Número de errores detectados |
+| `time_window_start` | TIMESTAMPTZ | Inicio de la ventana de tiempo |
+| `time_window_end` | TIMESTAMPTZ | Fin de la ventana de tiempo |
+| `error_types` | JSONB | Tipos de errores detectados |
+| `sample_errors` | JSONB | Muestra de errores (para el email) |
+| `alert_sent_at` | TIMESTAMPTZ | Cuándo se envió la alerta |
+| `recipients` | TEXT[] | Emails notificados |
+| `created_at` | TIMESTAMPTZ | Fecha de creación |
+
+Esta tabla sirve para:
+- Evitar alertas duplicadas (cooldown de 30 minutos)
+- Auditoría de alertas enviadas
+- Debugging histórico
+
+---
+
+### 2. Edge Function: `check-calculator-errors`
+
+**Ubicación:** `supabase/functions/check-calculator-errors/index.ts`
+
+**Lógica:**
 
 ```typescript
-// Hook para obtener errores de calculadora con filtros
-export interface CalculatorErrorFilters {
-  dateRange: '7d' | '30d' | '90d' | 'all';
-  errorType: 'all' | 'calculation' | 'submission' | 'validation' | 'network' | 'unknown';
-}
+// 1. Contar errores en los últimos 5 minutos
+const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
-export interface CalculatorErrorStats {
-  total: number;
-  byType: Record<string, number>;
-  lastError: string | null;
-}
+const { count } = await supabase
+  .from('calculator_errors')
+  .select('*', { count: 'exact' })
+  .gte('created_at', fiveMinutesAgo.toISOString());
 
-export const useCalculatorErrors = (filters: CalculatorErrorFilters) => {
-  // Query errores desde calculator_errors
-  // Calcular estadísticas agregadas
-  // Retornar { data, stats, isLoading, refetch }
+// 2. Si hay más de 3 errores, verificar cooldown
+if (count >= 3) {
+  const { data: lastAlert } = await supabase
+    .from('calculator_error_alerts')
+    .select('alert_sent_at')
+    .order('alert_sent_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  const cooldownMinutes = 30;
+  const canSendAlert = !lastAlert || 
+    (Date.now() - new Date(lastAlert.alert_sent_at).getTime()) > cooldownMinutes * 60 * 1000;
+
+  if (canSendAlert) {
+    // 3. Obtener detalles de los errores
+    // 4. Enviar email de alerta
+    // 5. Registrar en calculator_error_alerts
+  }
 }
 ```
 
-### 2. Página: `CalculatorErrorsPage.tsx`
+**Template del email:**
 
-**Ubicación:** `src/pages/admin/CalculatorErrorsPage.tsx`
-
-Componentes:
-- **Header**: Título + descripción + botón refrescar
-- **Filtros**: Select de rango de fechas + Select de tipo de error
-- **KPIs**: 4 tarjetas con métricas (total, por tipo, último error)
-- **Tabla**: Lista de errores con columnas:
-  - Tipo (badge coloreado)
-  - Mensaje (truncado)
-  - Componente
-  - Lead (nombre/email si disponible)
-  - Fecha
-  - Acciones (ver detalle)
-- **Modal de detalle**: Stack trace completo + datos del lead
-
-### 3. Componentes Auxiliares
-
-**`CalculatorErrorsKPIs.tsx`**
-- 4 tarjetas con estadísticas
-- Total errores, errores de cálculo, errores de red, tiempo desde último error
-
-**`CalculatorErrorsTable.tsx`**
-- Tabla con errores
-- Badges coloreados por tipo
-- Botón para ver detalle
-- Datos del lead (si existen)
-
-**`CalculatorErrorDetailModal.tsx`**
-- Modal con detalle completo
-- Stack trace en bloque de código
-- Datos del lead con opción de "recuperar"
-- Metadatos (user agent, IP, etc.)
-
----
-
-## Cambios en Archivos Existentes
-
-### 1. `AdminRouter.tsx`
-
-Añadir ruta:
-```typescript
-const LazyCalculatorErrorsPage = lazy(() => import('@/pages/admin/CalculatorErrorsPage'));
-
-// En Routes:
-<Route path="/calculator-errors" element={<LazyCalculatorErrorsPage />} />
+```html
+<div style="...">
+  <h1 style="color: #dc2626;">⚠️ Alerta: Errores Críticos en Calculadora</h1>
+  
+  <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 16px;">
+    <p><strong>Se han detectado ${count} errores en los últimos 5 minutos.</strong></p>
+    <p>Esto puede indicar un problema sistémico que requiere atención inmediata.</p>
+  </div>
+  
+  <h2>Resumen de Errores</h2>
+  <table>
+    <tr><td>Total errores:</td><td>${count}</td></tr>
+    <tr><td>Tipos:</td><td>${errorTypes.join(', ')}</td></tr>
+    <tr><td>Período:</td><td>Últimos 5 minutos</td></tr>
+  </table>
+  
+  <h2>Leads Afectados</h2>
+  <ul>
+    ${affectedLeads.map(lead => `
+      <li>${lead.email || 'Sin email'} - ${lead.companyName || 'Sin empresa'}</li>
+    `).join('')}
+  </ul>
+  
+  <a href="https://webcapittal.lovable.app/admin/calculator-errors">
+    Ver Dashboard de Errores
+  </a>
+</div>
 ```
 
-### 2. `LazyAdminComponents.tsx`
+---
 
-Añadir export:
-```typescript
-export const LazyCalculatorErrorsPage = lazy(() => import('@/pages/admin/CalculatorErrorsPage'));
+### 3. Cron Job para Ejecutar la Edge Function
+
+**Frecuencia:** Cada 5 minutos (`*/5 * * * *`)
+
+```sql
+SELECT cron.schedule(
+  'check-calculator-errors-job',
+  '*/5 * * * *',
+  $$
+  SELECT
+    net.http_post(
+        url:='https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/check-calculator-errors',
+        headers:='{"Content-Type": "application/json", "Authorization": "Bearer ANON_KEY"}'::jsonb,
+        body:='{"scheduled": true}'::jsonb
+    ) as request_id;
+  $$
+);
 ```
 
-### 3. Base de datos (Sidebar)
+---
 
-Añadir entrada en la tabla `sidebar_items` para que aparezca en el menú lateral bajo "Dashboard" o "Analytics".
+### 4. Destinatarios de Alertas
+
+Se utilizará la tabla `email_recipients_config` existente, filtrando por `is_active = true` y `is_default_copy = true`:
+
+| Email | Nombre | Rol |
+|-------|--------|-----|
+| samuel@capittal.es | Samuel | dirección |
+| marcc@capittal.es | Marc C. | asesor |
+| marc@capittal.es | Marc | asesor |
+| oriol@capittal.es | Oriol | asesor |
+| lluis@capittal.es | Lluís | asesor |
 
 ---
 
-## Diseño Visual
+## Flujo Completo
 
-### Badges por Tipo de Error
-
-| Tipo | Color | Icono |
-|------|-------|-------|
-| `calculation` | Rojo | AlertTriangle |
-| `submission` | Naranja | Send |
-| `validation` | Amarillo | AlertCircle |
-| `network` | Azul | Wifi |
-| `unknown` | Gris | HelpCircle |
-
-### KPIs
-
-| Métrica | Icono | Color |
-|---------|-------|-------|
-| Total Errores | Bug | Rojo |
-| Errores Cálculo | Calculator | Naranja |
-| Errores Red | Wifi | Azul |
-| Último Error | Clock | Gris |
+1. **Error en calculadora** → Se guarda en `calculator_errors`
+2. **Cada 5 minutos** → Cron ejecuta `check-calculator-errors`
+3. **Edge Function consulta** → ¿Hay +3 errores en últimos 5 min?
+4. **Verificar cooldown** → ¿Pasaron +30 min desde última alerta?
+5. **Enviar email** → Notificar al equipo vía Resend
+6. **Registrar alerta** → Guardar en `calculator_error_alerts`
 
 ---
 
-## Flujo de Datos
+## Características de Seguridad
 
-1. **Usuario accede** a `/admin/calculator-errors`
-2. **Hook `useCalculatorErrors`** consulta Supabase con filtros
-3. **Página** renderiza KPIs + tabla
-4. **Filtros** actualizan query params → refetch automático
-5. **Click en error** → Modal con detalle completo
-6. **Datos del lead** disponibles para recuperación manual
-
----
-
-## Funcionalidades Extra (Opcional)
-
-- **Exportar CSV**: Botón para descargar errores
-- **Marcar como resuelto**: Columna `resolved_at` para tracking
-- **Notificaciones**: Alerta cuando hay nuevos errores críticos
+- **Cooldown de 30 minutos**: Evita spam de alertas durante incidentes prolongados
+- **Umbral configurable**: 3 errores en 5 minutos (ajustable)
+- **Datos de recuperación**: El email incluye información del lead para recuperación manual
+- **Auditoría completa**: Todas las alertas quedan registradas
 
 ---
 
@@ -199,23 +216,20 @@ Añadir entrada en la tabla `sidebar_items` para que aparezca en el menú latera
 
 | Archivo | Tipo |
 |---------|------|
-| `src/features/valuation/hooks/useCalculatorErrors.ts` | Hook |
-| `src/pages/admin/CalculatorErrorsPage.tsx` | Página |
-| `src/pages/admin/components/CalculatorErrorsKPIs.tsx` | Componente |
-| `src/pages/admin/components/CalculatorErrorsTable.tsx` | Componente |
-| `src/pages/admin/components/CalculatorErrorDetailModal.tsx` | Componente |
+| `supabase/functions/check-calculator-errors/index.ts` | Edge Function |
+| Migración para tabla `calculator_error_alerts` | SQL |
+| Migración para cron job | SQL |
 
 ### Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/features/admin/components/AdminRouter.tsx` | Añadir ruta |
-| `src/features/admin/components/LazyAdminComponents.tsx` | Añadir lazy export |
+| `supabase/config.toml` | Añadir configuración de la nueva Edge Function |
 
 ### Impacto
 
-- **Archivos nuevos:** 5
-- **Archivos modificados:** 2
-- **Líneas estimadas:** ~400
-- **Riesgo:** Bajo (solo lectura de datos existentes)
+- **Archivos nuevos:** 1 Edge Function + 2 migraciones
+- **Líneas estimadas:** ~200
+- **Riesgo:** Bajo (sistema independiente, no modifica lógica existente)
+- **Dependencias:** Resend (ya configurado), pg_cron (ya habilitado)
 
