@@ -51,6 +51,10 @@ interface Operation {
   interested_parties_count?: number;
   project_status?: string;
   expected_market_text?: string;
+  // Resolved i18n fields
+  resolved_description?: string;
+  resolved_short_description?: string;
+  resolved_sector?: string;
 }
 
 interface OperationCardProps {
@@ -239,20 +243,24 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             </div>
           </div>
           
-          {/* Sector Badge */}
+          {/* Sector Badge - use translated sector */}
           <Badge variant="outline" className="text-xs w-fit">
-            {operation.sector}
+            {operation.resolved_sector || operation.sector}
           </Badge>
           
-          {/* Description */}
+          {/* Description - use translated description with fallback */}
           <p className="text-sm text-muted-foreground line-clamp-3">
-            {searchTerm ? (
-              <span dangerouslySetInnerHTML={{ 
-                __html: highlightText(operation.short_description || operation.description, searchTerm) 
-              }} />
-            ) : (
-              operation.short_description || operation.description
-            )}
+            {(() => {
+              const displayDescription = operation.resolved_short_description 
+                || operation.resolved_description 
+                || operation.short_description 
+                || operation.description;
+              return searchTerm ? (
+                <span dangerouslySetInnerHTML={{ 
+                  __html: highlightText(displayDescription, searchTerm) 
+                }} />
+              ) : displayDescription;
+            })()}
           </p>
           
           {/* Highlights */}
