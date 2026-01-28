@@ -15,6 +15,7 @@ import BulkArchiveDialog from './BulkArchiveDialog';
 import BulkDeleteDialog from './BulkDeleteDialog';
 import { ApolloMatchModal } from './ApolloMatchModal';
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
+import { StatusesEditor } from './StatusesEditor';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Send, RefreshCw, CheckCircle2, Archive, Trash2, BarChart3, Users, Star } from 'lucide-react';
@@ -204,6 +205,8 @@ const LinearContactsManager = () => {
               Estadísticas
             </TabsTrigger>
           </TabsList>
+          {/* Status Management Button */}
+          <StatusesEditor />
         </div>
         
         {selectedIds.length > 0 && (

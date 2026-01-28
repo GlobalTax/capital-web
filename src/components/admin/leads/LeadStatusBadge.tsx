@@ -1,86 +1,46 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CircleDot, 
-  Phone, 
-  CheckCircle, 
-  FileText, 
-  Handshake, 
-  Clock, 
-  Trophy, 
-  XCircle, 
-  Archive 
-} from 'lucide-react';
+import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
 
 interface LeadStatusBadgeProps {
   status: string;
   showIcon?: boolean;
 }
 
-const STATUS_CONFIG = {
-  nuevo: {
-    label: 'Nuevo',
-    variant: 'default' as const,
-    icon: CircleDot,
-    className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
-  },
-  contactando: {
-    label: 'Contactando',
-    variant: 'secondary' as const,
-    icon: Phone,
-    className: 'bg-purple-100 text-purple-700 hover:bg-purple-100',
-  },
-  calificado: {
-    label: 'Calificado',
-    variant: 'default' as const,
-    icon: CheckCircle,
-    className: 'bg-cyan-100 text-cyan-700 hover:bg-cyan-100',
-  },
-  propuesta_enviada: {
-    label: 'Propuesta Enviada',
-    variant: 'secondary' as const,
-    icon: FileText,
-    className: 'bg-indigo-100 text-indigo-700 hover:bg-indigo-100',
-  },
-  negociacion: {
-    label: 'Negociación',
-    variant: 'default' as const,
-    icon: Handshake,
-    className: 'bg-orange-100 text-orange-700 hover:bg-orange-100',
-  },
-  en_espera: {
-    label: 'En Espera',
-    variant: 'outline' as const,
-    icon: Clock,
-    className: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-50',
-  },
-  ganado: {
-    label: 'Ganado',
-    variant: 'default' as const,
-    icon: Trophy,
-    className: 'bg-green-100 text-green-700 hover:bg-green-100',
-  },
-  perdido: {
-    label: 'Perdido',
-    variant: 'destructive' as const,
-    icon: XCircle,
-    className: 'bg-red-100 text-red-700 hover:bg-red-100',
-  },
-  archivado: {
-    label: 'Archivado',
-    variant: 'outline' as const,
-    icon: Archive,
-    className: 'bg-gray-100 text-gray-600 hover:bg-gray-100',
-  },
+// Fallback config for when statuses haven't loaded yet
+const FALLBACK_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
+  nuevo: { label: 'Nuevo', icon: '📥', color: 'blue' },
+  contactando: { label: 'Contactando', icon: '📞', color: 'purple' },
+  calificado: { label: 'Calificado', icon: '✅', color: 'cyan' },
+  propuesta_enviada: { label: 'Propuesta Enviada', icon: '📄', color: 'indigo' },
+  negociacion: { label: 'Negociación', icon: '🤝', color: 'orange' },
+  en_espera: { label: 'En Espera', icon: '⏸️', color: 'yellow' },
+  ganado: { label: 'Ganado', icon: '🏆', color: 'green' },
+  perdido: { label: 'Perdido', icon: '❌', color: 'red' },
+  archivado: { label: 'Archivado', icon: '📦', color: 'gray' },
+  fase0_activo: { label: 'Fase 0 Activo', icon: '🚀', color: 'emerald' },
+  fase0_bloqueado: { label: 'Fase 0 Bloqueado', icon: '🔒', color: 'slate' },
+  mandato_propuesto: { label: 'Mandato Propuesto', icon: '📋', color: 'amber' },
+  mandato_firmado: { label: 'Mandato Firmado', icon: '✍️', color: 'teal' },
 };
 
 export function LeadStatusBadge({ status, showIcon = true }: LeadStatusBadgeProps) {
-  const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.nuevo;
-  const Icon = config.icon;
+  const { getStatusByKey, isLoading } = useContactStatuses();
+  
+  // Try to get dynamic config, fallback to static
+  const dynamicStatus = getStatusByKey(status);
+  const config = dynamicStatus 
+    ? { label: dynamicStatus.label, icon: dynamicStatus.icon, color: dynamicStatus.color }
+    : FALLBACK_CONFIG[status] || { label: status, icon: '📋', color: 'gray' };
+  
+  const colorClasses = STATUS_COLOR_MAP[config.color] || STATUS_COLOR_MAP.gray;
 
   return (
-    <Badge variant={config.variant} className={config.className}>
-      {showIcon && <Icon className="mr-1 h-3 w-3" />}
+    <Badge 
+      variant="secondary" 
+      className={`${colorClasses.bg} ${colorClasses.text} hover:${colorClasses.bg}`}
+    >
+      {showIcon && <span className="mr-1">{config.icon}</span>}
       {config.label}
     </Badge>
   );
