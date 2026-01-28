@@ -2,6 +2,8 @@
 // CORPORATE BUYERS MODULE - Type Definitions
 // =============================================
 
+import type { Json } from '@/integrations/supabase/types';
+
 // Buyer types
 export type CorporateBuyerType = 
   | 'corporate' 
@@ -100,6 +102,7 @@ export interface CorporateBuyerFormData {
   notes_internal?: string;
   key_highlights?: string[];
   is_active?: boolean;
+  enriched_data?: Json;
 }
 
 export interface CorporateContactFormData {
