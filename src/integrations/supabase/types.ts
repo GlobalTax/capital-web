@@ -19274,12 +19274,14 @@ export type Database = {
         Row: {
           context: string | null
           created_at: string | null
+          default_billable: boolean
           default_value_type:
             | Database["public"]["Enums"]["time_entry_value_type"]
             | null
           description: string | null
           id: string
           is_active: boolean | null
+          min_description_length: number
           name: string
           require_description: boolean
           require_lead: boolean
@@ -19290,12 +19292,14 @@ export type Database = {
         Insert: {
           context?: string | null
           created_at?: string | null
+          default_billable?: boolean
           default_value_type?:
             | Database["public"]["Enums"]["time_entry_value_type"]
             | null
           description?: string | null
           id?: string
           is_active?: boolean | null
+          min_description_length?: number
           name: string
           require_description?: boolean
           require_lead?: boolean
@@ -19306,12 +19310,14 @@ export type Database = {
         Update: {
           context?: string | null
           created_at?: string | null
+          default_billable?: boolean
           default_value_type?:
             | Database["public"]["Enums"]["time_entry_value_type"]
             | null
           description?: string | null
           id?: string
           is_active?: boolean | null
+          min_description_length?: number
           name?: string
           require_description?: boolean
           require_lead?: boolean

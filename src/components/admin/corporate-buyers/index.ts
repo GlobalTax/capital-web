@@ -12,4 +12,5 @@ export { SectorMultiSelect } from './SectorMultiSelect';
 export { BatchEnrichmentDialog } from './BatchEnrichmentDialog';
 export { AutoConfigDialog } from './AutoConfigDialog';
 export { CorporateEmailDialog } from './CorporateEmailDialog';
+export { CorporateBuyersImportModal } from './CorporateBuyersImportModal';
 export { default as BulkDeleteBuyersDialog } from './BulkDeleteBuyersDialog';

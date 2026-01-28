@@ -15,6 +15,7 @@ import {
   BatchEnrichmentDialog,
   AutoConfigDialog,
   CorporateEmailDialog,
+  CorporateBuyersImportModal,
   BulkDeleteBuyersDialog
 } from '@/components/admin/corporate-buyers';
 import { useCorporateBuyers, useCorporateBuyerCountries, useBulkDeleteCorporateBuyers } from '@/hooks/useCorporateBuyers';
@@ -32,6 +33,7 @@ const CorporateBuyersPage = () => {
   const [showAutoConfigDialog, setShowAutoConfigDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const bulkDelete = useBulkDeleteCorporateBuyers();
 
@@ -174,7 +176,12 @@ const CorporateBuyersPage = () => {
             </Button>
           )}
           
-          <Button variant="outline" size="sm" className="gap-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1"
+            onClick={() => setShowImportModal(true)}
+          >
             <Upload className="h-4 w-4" />
             Importar
           </Button>
@@ -278,6 +285,12 @@ const CorporateBuyersPage = () => {
         selectedCount={selectedIds.size}
         onConfirm={handleBulkDelete}
         isLoading={isDeleting}
+      />
+
+      {/* Import Modal */}
+      <CorporateBuyersImportModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
       />
     </div>
   );
