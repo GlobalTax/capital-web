@@ -1,9 +1,30 @@
 
-# Plan: Distinguir Leads de Web vs Google Ads
 
-## Resumen Ejecutivo
+# Plan: Dashboard de Errores de Calculadora
 
-Implementación de un sistema mínimo y reversible para identificar leads que provienen de la web propia, sin modificar la URL usada por Google Ads (`/lp/calculadora`).
+## Objetivo
+
+Crear un dashboard en `/admin/calculator-errors` para monitorear errores de la calculadora de valoración desde la tabla `calculator_errors`, con filtros por tipo y fecha.
+
+---
+
+## Estructura de la Tabla (Existente)
+
+| Columna | Tipo | Descripción |
+|---------|------|-------------|
+| `id` | UUID | ID único |
+| `error_type` | TEXT | `calculation`, `submission`, `validation`, `network`, `unknown` |
+| `error_message` | TEXT | Mensaje de error |
+| `error_stack` | TEXT | Stack trace (opcional) |
+| `component` | TEXT | Componente origen |
+| `action` | TEXT | Acción que falló |
+| `company_data` | JSONB | Datos del lead (email, nombre, empresa) |
+| `current_step` | INTEGER | Paso donde ocurrió |
+| `unique_token` | TEXT | Token de sesión |
+| `source_project` | TEXT | Proyecto origen |
+| `user_agent` | TEXT | Navegador/dispositivo |
+| `ip_address` | INET | IP del usuario |
+| `created_at` | TIMESTAMPTZ | Fecha del error |
 
 ---
 
@@ -11,233 +32,190 @@ Implementación de un sistema mínimo y reversible para identificar leads que pr
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│                        FLUJO ACTUAL                              │
+│                   /admin/calculator-errors                       │
 ├─────────────────────────────────────────────────────────────────┤
-│  Web interna ───► /lp/calculadora ◄─── Google Ads               │
-│                          │                                       │
-│                    [Sin distinción]                              │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                     FLUJO PROPUESTO                              │
-├─────────────────────────────────────────────────────────────────┤
-│  Web interna ───► /lp/calculadora-web                           │
-│                          │                                       │
-│                    [302 redirect]                                │
-│                          ▼                                       │
-│              /lp/calculadora?source=web                          │
-│                          │                                       │
-│              [Captura source en frontend]                        │
-│                          │                                       │
-│              [Guarda lead_source="web" en DB]                    │
-│                          │                                       │
-│              [Email interno: "Origen: Web"]                      │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                    HEADER + FILTROS                         ││
+│  │  [Fecha: Últimos 7d ▼]  [Tipo: Todos ▼]  [🔄 Refrescar]    ││
+│  └─────────────────────────────────────────────────────────────┘│
 │                                                                  │
-│  Google Ads ───► /lp/calculadora (sin cambios)                  │
-│                          │                                       │
-│              [lead_source = NULL]                                │
-│              [Email sin etiqueta de origen]                      │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐               │
+│  │  Total  │ │ Cálculo │ │  Red    │ │ Último  │               │
+│  │ Errores │ │ Errors  │ │ Errors  │ │  Error  │               │
+│  │   24    │ │   12    │ │    8    │ │  2h ago │               │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘               │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                   TABLA DE ERRORES                          ││
+│  │ Tipo | Mensaje | Componente | Lead | Fecha | Acciones       ││
+│  │ ─────────────────────────────────────────────────────────── ││
+│  │ 🔴 calculation | Failed to compute... | UnifiedCalc | ...   ││
+│  │ 🟠 network     | Timeout connecting... | SaveHook | ...     ││
+│  │ ...                                                         ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  [Modal: Detalle del Error]                                     │
+│    - Stack trace completo                                       │
+│    - Datos del lead (recuperables)                              │
+│    - User agent / dispositivo                                   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Cambios a Implementar
+## Archivos a Crear
 
-### 1. Nueva Ruta Alias `/lp/calculadora-web` (REDIRECCIÓN)
+### 1. Hook: `useCalculatorErrors.ts`
 
-**Archivo:** `src/core/routing/AppRoutes.tsx`
-
-Añadir componente de redirección que:
-- Capture cualquier query param existente
-- Añada `source=web` sin duplicar si ya existe
-- Use Navigate con redirect 302 (replace)
+**Ubicación:** `src/features/valuation/hooks/useCalculatorErrors.ts`
 
 ```typescript
-// Nuevo componente de redirección
-const CalculadoraWebRedirect = () => {
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  
-  // Solo añadir source=web si no existe
-  if (!searchParams.has('source')) {
-    searchParams.set('source', 'web');
-  }
-  
-  const newSearch = searchParams.toString();
-  const targetUrl = `/lp/calculadora${newSearch ? `?${newSearch}` : ''}`;
-  
-  return <Navigate to={targetUrl} replace />;
-};
+// Hook para obtener errores de calculadora con filtros
+export interface CalculatorErrorFilters {
+  dateRange: '7d' | '30d' | '90d' | 'all';
+  errorType: 'all' | 'calculation' | 'submission' | 'validation' | 'network' | 'unknown';
+}
 
-// Nueva ruta
-<Route path="/lp/calculadora-web" element={<CalculadoraWebRedirect />} />
-<Route path="/lp/calculadora-web/*" element={<CalculadoraWebRedirect />} />
+export interface CalculatorErrorStats {
+  total: number;
+  byType: Record<string, number>;
+  lastError: string | null;
+}
+
+export const useCalculatorErrors = (filters: CalculatorErrorFilters) => {
+  // Query errores desde calculator_errors
+  // Calcular estadísticas agregadas
+  // Retornar { data, stats, isLoading, refetch }
+}
 ```
+
+### 2. Página: `CalculatorErrorsPage.tsx`
+
+**Ubicación:** `src/pages/admin/CalculatorErrorsPage.tsx`
+
+Componentes:
+- **Header**: Título + descripción + botón refrescar
+- **Filtros**: Select de rango de fechas + Select de tipo de error
+- **KPIs**: 4 tarjetas con métricas (total, por tipo, último error)
+- **Tabla**: Lista de errores con columnas:
+  - Tipo (badge coloreado)
+  - Mensaje (truncado)
+  - Componente
+  - Lead (nombre/email si disponible)
+  - Fecha
+  - Acciones (ver detalle)
+- **Modal de detalle**: Stack trace completo + datos del lead
+
+### 3. Componentes Auxiliares
+
+**`CalculatorErrorsKPIs.tsx`**
+- 4 tarjetas con estadísticas
+- Total errores, errores de cálculo, errores de red, tiempo desde último error
+
+**`CalculatorErrorsTable.tsx`**
+- Tabla con errores
+- Badges coloreados por tipo
+- Botón para ver detalle
+- Datos del lead (si existen)
+
+**`CalculatorErrorDetailModal.tsx`**
+- Modal con detalle completo
+- Stack trace en bloque de código
+- Datos del lead con opción de "recuperar"
+- Metadatos (user agent, IP, etc.)
 
 ---
 
-### 2. Captura de `source=web` en LandingCalculator
+## Cambios en Archivos Existentes
 
-**Archivo:** `src/pages/LandingCalculator.tsx`
+### 1. `AdminRouter.tsx`
 
-Modificar el componente para:
-- Leer el query param `source`
-- Si `source=web`, pasarlo como `extraMetadata` al UnifiedCalculator
-- Persistir en sessionStorage para mantenerlo durante el flujo
-
+Añadir ruta:
 ```typescript
-const LandingCalculatorInner = () => {
-  const location = useLocation();
-  // ... existing code
-  
-  // Capturar source=web del query string
-  const searchParams = new URLSearchParams(location.search);
-  const sourceParam = searchParams.get('source');
-  
-  // Crear extraMetadata si viene de web
-  const extraMetadata = sourceParam === 'web' 
-    ? { leadSource: 'web' } 
-    : undefined;
-  
-  // Persistir en sessionStorage para mantener durante el flujo
-  useEffect(() => {
-    if (sourceParam === 'web') {
-      sessionStorage.setItem('valuation_source', 'web');
-    }
-  }, [sourceParam]);
-  
-  // Recuperar de sessionStorage si no está en URL (navegación interna)
-  const persistedSource = sessionStorage.getItem('valuation_source');
-  const finalExtraMetadata = extraMetadata || 
-    (persistedSource === 'web' ? { leadSource: 'web' } : undefined);
-  
-  return (
-    <>
-      {/* ... */}
-      <UnifiedCalculator 
-        config={V2_CONFIG} 
-        extraMetadata={finalExtraMetadata}
-      />
-    </>
-  );
-};
+const LazyCalculatorErrorsPage = lazy(() => import('@/pages/admin/CalculatorErrorsPage'));
+
+// En Routes:
+<Route path="/calculator-errors" element={<LazyCalculatorErrorsPage />} />
 ```
 
----
+### 2. `LazyAdminComponents.tsx`
 
-### 3. Email Interno con "Origen: Web"
-
-**Archivo:** `supabase/functions/send-valuation-email/index.ts`
-
-Añadir lógica para mostrar etiqueta de origen en el email interno:
-
+Añadir export:
 ```typescript
-// Después del bloque manualEntryBlock (línea ~430)
-const webOriginBlock = payload.leadSource === 'web' ? `
-  <p style="margin:16px 0 0; padding:8px 12px; background:#e0f2fe; border-left:3px solid #0284c7; font-size:13px; color:#0c4a6e;">
-    <strong>Origen:</strong> Web
-  </p>
-` : '';
-
-// Insertar en htmlInternal, después del footer
-const htmlInternal = `
-  <div style="...">
-    ${manualEntryBlock}
-    <!-- ... resto del contenido ... -->
-    
-    <p style="margin:16px 0 0; color:#6b7280; font-size:12px;">
-      Este correo se generó automáticamente...
-    </p>
-    ${webOriginBlock}
-  </div>
-`;
+export const LazyCalculatorErrorsPage = lazy(() => import('@/pages/admin/CalculatorErrorsPage'));
 ```
 
----
+### 3. Base de datos (Sidebar)
 
-### 4. Actualizar Enlaces Internos de la Web
-
-Los siguientes archivos contienen enlaces a `/lp/calculadora` que deben actualizarse a `/lp/calculadora-web`:
-
-| Archivo | Línea | Uso |
-|---------|-------|-----|
-| `src/components/Hero.tsx` | 70 | CTA principal del hero |
-| `src/components/ui/footer-section.tsx` | 172 | Link del footer |
-| `src/hooks/useTopBarConfig.ts` | 42 | Menú de navegación top |
-| `src/components/valoraciones/ValoracionesCTA.tsx` | 46 | CTA de valoraciones |
-| `src/components/valoraciones/ValoracionesCTANew.tsx` | 53 | CTA nuevo |
-| `src/components/valoraciones/ValoracionesHero.tsx` | 75 | Hero de valoraciones |
-| `src/components/valoraciones/ValoracionesBenefits.tsx` | 90 | Beneficios |
-| `src/components/header/AdvancedDesktopNavigation.tsx` | 105 | Navegación desktop |
-| `src/components/blog/BlogValuationCTA.tsx` | 36 | CTA en blog |
-| `src/components/search-funds/SearchFundsFitCalculator.tsx` | 250 | Calculator fit |
-| `src/components/search-funds/SearchFundsResources.tsx` | 38 | Recursos |
-| `src/components/search-funds-hub/SearchFundsHubHero.tsx` | 89 | Hub hero |
-| `src/components/exit-readiness/ExitReadinessResults.tsx` | 84 | Exit readiness |
-
-**Cambio:** `to="/lp/calculadora"` → `to="/lp/calculadora-web"`
+Añadir entrada en la tabla `sidebar_items` para que aparezca en el menú lateral bajo "Dashboard" o "Analytics".
 
 ---
 
-## Base de Datos
+## Diseño Visual
 
-**Campo existente:** `lead_source` (TEXT, nullable) en `company_valuations`
+### Badges por Tipo de Error
 
-- No requiere migración
-- Campo ya está en whitelist de `update-valuation` Edge Function
-- Valores: `"web"` para leads de web, `NULL` para otros orígenes
+| Tipo | Color | Icono |
+|------|-------|-------|
+| `calculation` | Rojo | AlertTriangle |
+| `submission` | Naranja | Send |
+| `validation` | Amarillo | AlertCircle |
+| `network` | Azul | Wifi |
+| `unknown` | Gris | HelpCircle |
+
+### KPIs
+
+| Métrica | Icono | Color |
+|---------|-------|-------|
+| Total Errores | Bug | Rojo |
+| Errores Cálculo | Calculator | Naranja |
+| Errores Red | Wifi | Azul |
+| Último Error | Clock | Gris |
 
 ---
 
-## Flujo de Datos Completo
+## Flujo de Datos
 
-1. **Usuario entra por web interna** → `/lp/calculadora-web`
-2. **Redirección automática** → `/lp/calculadora?source=web`
-3. **LandingCalculator** → Lee `source=web`, crea `extraMetadata`
-4. **UnifiedCalculator** → Pasa `extraMetadata` a `StepContent`
-5. **Step4Results** → Invoca `saveValuation` con `leadSource: 'web'`
-6. **useOptimizedSupabaseValuation** → Guarda `lead_source: 'web'` en DB
-7. **send-valuation-email** → Renderiza `Origen: Web` en email interno
+1. **Usuario accede** a `/admin/calculator-errors`
+2. **Hook `useCalculatorErrors`** consulta Supabase con filtros
+3. **Página** renderiza KPIs + tabla
+4. **Filtros** actualizan query params → refetch automático
+5. **Click en error** → Modal con detalle completo
+6. **Datos del lead** disponibles para recuperación manual
 
 ---
 
-## Verificación y Pruebas
+## Funcionalidades Extra (Opcional)
 
-### Test A: Lead desde Web
-1. Navegar a `https://capittal.es/lp/calculadora-web`
-2. Verificar redirect a `/lp/calculadora?source=web`
-3. Completar formulario
-4. Verificar en `/admin/contacts`: `lead_source = "web"`
-5. Verificar email interno: contiene "Origen: Web"
-
-### Test B: Lead desde Google Ads (no romper nada)
-1. Navegar directamente a `/lp/calculadora`
-2. Completar formulario
-3. Verificar: `lead_source = NULL`
-4. Verificar email interno: NO contiene "Origen: Web"
+- **Exportar CSV**: Botón para descargar errores
+- **Marcar como resuelto**: Columna `resolved_at` para tracking
+- **Notificaciones**: Alerta cuando hay nuevos errores críticos
 
 ---
 
 ## Sección Técnica
 
+### Archivos a Crear
+
+| Archivo | Tipo |
+|---------|------|
+| `src/features/valuation/hooks/useCalculatorErrors.ts` | Hook |
+| `src/pages/admin/CalculatorErrorsPage.tsx` | Página |
+| `src/pages/admin/components/CalculatorErrorsKPIs.tsx` | Componente |
+| `src/pages/admin/components/CalculatorErrorsTable.tsx` | Componente |
+| `src/pages/admin/components/CalculatorErrorDetailModal.tsx` | Componente |
+
 ### Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/core/routing/AppRoutes.tsx` | Añadir ruta redirect `/lp/calculadora-web` |
-| `src/pages/LandingCalculator.tsx` | Capturar `source=web` y pasar a calculadora |
-| `supabase/functions/send-valuation-email/index.ts` | Añadir bloque "Origen: Web" |
-| 13 archivos de componentes | Actualizar enlaces a `/lp/calculadora-web` |
+| `src/features/admin/components/AdminRouter.tsx` | Añadir ruta |
+| `src/features/admin/components/LazyAdminComponents.tsx` | Añadir lazy export |
 
 ### Impacto
-- **Archivos modificados:** ~16
-- **Líneas cambiadas:** ~60
-- **Riesgo:** Bajo (cambios aditivos, sin modificar lógica existente)
-- **Reversibilidad:** Alta (302 redirect permite rollback inmediato)
 
-### Notas Importantes
-- La ruta `/lp/calculadora` para Google Ads permanece **intacta**
-- El 302 redirect es reversible; cuando esté confirmado, se puede cambiar a 301
-- El campo `lead_source` ya existe en la DB, no requiere migración
-- SessionStorage mantiene el source durante navegación multi-paso
+- **Archivos nuevos:** 5
+- **Archivos modificados:** 2
+- **Líneas estimadas:** ~400
+- **Riesgo:** Bajo (solo lectura de datos existentes)
+
