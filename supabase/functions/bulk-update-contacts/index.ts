@@ -11,6 +11,7 @@ interface BulkUpdateRequest {
   updates: {
     acquisition_channel_id?: string;
     lead_form?: string;
+    lead_received_at?: string; // ISO date string for bulk date updates
   };
 }
 
@@ -90,6 +91,24 @@ serve(async (req) => {
         );
       }
       console.log(`[bulk-update-contacts] Valid lead form: ${form.name}`);
+    }
+
+    // Validate lead_received_at if provided (must not be in the future)
+    if (updates.lead_received_at) {
+      const receivedDate = new Date(updates.lead_received_at);
+      if (isNaN(receivedDate.getTime())) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid lead_received_at date format' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (receivedDate > new Date()) {
+        return new Response(
+          JSON.stringify({ error: 'lead_received_at cannot be in the future' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log(`[bulk-update-contacts] Valid lead_received_at: ${updates.lead_received_at}`);
     }
 
     // Group contacts by origin table
@@ -194,6 +213,9 @@ serve(async (req) => {
         }
         if (updates.lead_form !== undefined) {
           updatePayload.lead_form = updates.lead_form;
+        }
+        if (updates.lead_received_at !== undefined) {
+          updatePayload.lead_received_at = updates.lead_received_at;
         }
         
         if (tablesWithUpdatedAt.includes(table)) {
