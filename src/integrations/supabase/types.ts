@@ -6012,6 +6012,7 @@ export type Database = {
           description: string | null
           estimated_minutes: number
           id: string
+          linked_task_id: string | null
           mandato_id: string | null
           order_index: number | null
           plan_id: string
@@ -6028,6 +6029,7 @@ export type Database = {
           description?: string | null
           estimated_minutes?: number
           id?: string
+          linked_task_id?: string | null
           mandato_id?: string | null
           order_index?: number | null
           plan_id: string
@@ -6044,6 +6046,7 @@ export type Database = {
           description?: string | null
           estimated_minutes?: number
           id?: string
+          linked_task_id?: string | null
           mandato_id?: string | null
           order_index?: number | null
           plan_id?: string
@@ -6057,6 +6060,13 @@ export type Database = {
             columns: ["actual_time_entry_id"]
             isOneToOne: false
             referencedRelation: "mandato_time_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_plan_items_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tareas"
             referencedColumns: ["id"]
           },
           {
@@ -6124,6 +6134,7 @@ export type Database = {
           approved_by: string | null
           created_at: string | null
           id: string
+          modified_after_submit: boolean | null
           planned_for_date: string
           status: string
           submitted_at: string | null
@@ -6138,6 +6149,7 @@ export type Database = {
           approved_by?: string | null
           created_at?: string | null
           id?: string
+          modified_after_submit?: boolean | null
           planned_for_date: string
           status?: string
           submitted_at?: string | null
@@ -6152,6 +6164,7 @@ export type Database = {
           approved_by?: string | null
           created_at?: string | null
           id?: string
+          modified_after_submit?: boolean | null
           planned_for_date?: string
           status?: string
           submitted_at?: string | null

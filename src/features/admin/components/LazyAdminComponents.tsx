@@ -137,3 +137,6 @@ export const LazyApiUsageDashboard = lazy(() => import('@/components/admin/ApiUs
 
 // === DATA ENRICHMENT ===
 export const LazyDataEnrichmentPanel = lazy(() => import('@/components/admin/DataEnrichmentPanel').then(m => ({ default: m.DataEnrichmentPanel })));
+
+// === CALCULATOR ERRORS ===
+export const LazyCalculatorErrorsPage = lazy(() => import('@/pages/admin/CalculatorErrorsPage'));
