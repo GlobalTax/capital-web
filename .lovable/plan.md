@@ -1,148 +1,358 @@
 
-# Plan: Internacionalizar Completamente la Pagina /oportunidades
+# Plan: Sistema de Estados Configurables para Contactos
 
-## Problema Identificado
+## Resumen Ejecutivo
 
-La pagina `/oportunidades` tiene traducciones en ingles definidas en `dictionaries.ts`, pero **multiples componentes tienen textos hardcodeados en castellano** que no usan el sistema de traduccion `t()`.
+Implementar un sistema de estados configurable para `/admin/contacts` que permita:
+- Crear, editar y desactivar estados sin perder datos historicos
+- Reordenar estados visualmente
+- Cambiar estados de contactos con garantia de persistencia
 
-## Componentes Afectados y Strings a Traducir
+## Analisis del Estado Actual
 
-### 1. `Oportunidades.tsx` (Pagina Principal)
+### Situacion Actual
 
-| Linea | Texto Actual (ES) | Clave Propuesta | Traduccion EN |
-|-------|------------------|-----------------|---------------|
-| 79 | `Configurar Alertas` | `opportunities.hero.configureAlerts` | `Configure Alerts` |
-| 86 | `Capittal actúa con mandato directo de venta o compra en la totalidad de las oportunidades mostradas.` | `opportunities.hero.mandateDisclaimer` | `Capittal acts with direct mandate for sale or purchase on all displayed opportunities.` |
+| Elemento | Estado |
+|----------|--------|
+| Campo en BD | `lead_status_crm` (ENUM) en `contact_leads`, `company_valuations`, `collaborator_applications` |
+| Valores ENUM | `nuevo, contactando, calificado, propuesta_enviada, negociacion, en_espera, ganado, perdido, archivado, fase0_activo, fase0_bloqueado, mandato_propuesto, mandato_firmado` |
+| Contactos existentes | ~1,196 registros distribuidos en 3 tablas |
+| UI actual | Hardcodeado en `LeadStatusBadge.tsx` y `LeadStatusSelect.tsx` |
 
----
+### Sistema Existente de Referencia
 
-### 2. `BuyerTestimonials.tsx` (Testimonios de Compradores)
+El proyecto ya tiene un sistema similar en **Leads Pipeline** con la tabla `lead_pipeline_columns`:
+- Columnas dinamicas con `stage_key`, `label`, `color`, `icon`, `position`
+- Hook `useLeadPipelineColumns.ts` para CRUD
+- Componente `PipelineColumnsEditor.tsx` con drag-and-drop
 
-Las traducciones YA EXISTEN en `dictionaries.ts` pero el componente no usa `useI18n()`.
+## Arquitectura de la Solucion
 
-| Linea | Texto Actual | Clave Existente |
-|-------|-------------|-----------------|
-| 32 | `Compradores Satisfechos` | `buyerTestimonials.badge` |
-| 35 | `Lo Que Dicen Nuestros Compradores` | `buyerTestimonials.title` |
-| 38 | `Inversores y empresarios...` | `buyerTestimonials.subtitle` |
-| 74 | `Tipo:` | `buyerTestimonials.operationType` |
-| 80 | `Inversión:` | `buyerTestimonials.investment` |
-| 86 | `Cierre:` | `buyerTestimonials.timeToClose` |
-| 92 | `Satisfacción:` | `buyerTestimonials.satisfactionScore` |
-| 107 | `Satisfacción promedio:` | `buyerTestimonials.satisfaction` |
-| 107 | `basada en operaciones completadas` | `buyerTestimonials.basedOn` |
+### Fase 1: Nueva Tabla `contact_statuses`
 
-**Cambio**: Anadir `const { t } = useI18n()` y reemplazar strings hardcodeados.
-
----
-
-### 3. `OperationsList.tsx` (Lista de Operaciones)
-
-Muchos filtros y textos de UI hardcodeados:
-
-| Linea | Texto Actual | Clave Nueva | Traduccion EN |
-|-------|-------------|-------------|---------------|
-| 274 | `Filtros y Búsqueda` | `operations.filters.title` | `Filters & Search` |
-| 411 | `Valoración mín (€k)` | `operations.filters.valuationMin` | `Min valuation (€k)` |
-| 425 | `Valoración máx (€k)` | `operations.filters.valuationMax` | `Max valuation (€k)` |
-| 439 | `Fecha de publicación` | `operations.filters.datePublished` | `Publication date` |
-| 445-451 | Fechas (semana/mes/3 meses) | `operations.filters.anyDate`, `operations.filters.lastWeek`, `operations.filters.lastMonth`, `operations.filters.last3Months` | `Any date`, `Last week`, `Last month`, `Last 3 months` |
-| 458 | `Estado` | `operations.filters.status` | `Status` |
-| 461-468 | Estados del proyecto | `operations.filters.allStatuses`, `operations.status.active`, `operations.status.upcoming`, `operations.status.exclusive` | `All statuses`, `Active`, `Upcoming`, `Exclusive` |
-| 481 | `Limpiar filtros` | `operations.filters.clearFilters` | `Clear filters` |
-| 489 | `Filtros activos:` | `operations.filters.activeFilters` | `Active filters:` |
-| 510 | `Limpiar todos` | `operations.filters.clearAll` | `Clear all` |
-| 521 | `Mostrando X de Y operaciones` | `operations.results.showing` | `Showing {count} of {total} operations` |
-| 527 | `Cargando...` | `common.loading` | `Loading...` |
-| 598 | `Anterior` | `common.previous` | `Previous` |
-| 611 | `Siguiente` | `common.next` | `Next` |
-| 633 | `Ver todas` | `operations.pagination.viewAll` | `View all` |
-| 660 | `Volver a paginación` | `operations.pagination.backToPagination` | `Back to pagination` |
-| 581-582 | Texto de alerta limite | `operations.alert.limitReached` | `Showing first {max} of {total} operations. Use filters to refine your search.` |
-
----
-
-### 4. `OperationCard.tsx` (Tarjeta de Operacion)
-
-| Linea | Texto Actual | Clave Nueva | Traduccion EN |
-|-------|-------------|-------------|---------------|
-| 77, 83, 89 | Estados (Activo/Proximamente/Exclusividad) | `operations.status.*` | `Active`/`Upcoming`/`In exclusivity` |
-| 136, 146 | Tooltips comparacion | `operations.tooltip.removeCompare`, `operations.tooltip.addCompare`, `operations.tooltip.maxCompare` | `Remove from comparison`, `Add to comparison`, `Maximum 4 operations` |
-| 160, 170 | Tooltips wishlist | `operations.tooltip.removeWishlist`, `operations.tooltip.addWishlist` | `Remove from cart`, `Add to cart` |
-| 214 | `Destacado` | `operations.badges.featured` | `Featured` |
-| 219 | `Nuevo` | `operations.badges.new` | `New` |
-| 279 | `Facturación:` | `operations.card.revenue` | `Revenue:` |
-| 283, 293 | `Consultar` | `operations.card.inquire` | `Inquire` |
-| 288 | `EBITDA:` | `operations.card.ebitda` | `EBITDA:` |
-| 302 | `Año:` | `operations.card.year` | `Year:` |
-| 311 | `Venta` / `Adquisición` | `operations.dealType.sale`, `operations.dealType.acquisition` | `Sale` / `Acquisition` |
-| 317 | `Empleados:` | `operations.card.employees` | `Employees:` |
-
----
-
-## Implementacion
-
-### Paso 1: Actualizar `dictionaries.ts`
-
-Anadir las nuevas claves de traduccion en las secciones `es`, `ca` y `en`:
-
-```typescript
-// ES (existente, solo anadir nuevas)
-'opportunities.hero.configureAlerts': 'Configurar Alertas',
-'opportunities.hero.mandateDisclaimer': 'Capittal actúa con mandato directo de venta o compra en la totalidad de las oportunidades mostradas.',
-'operations.filters.title': 'Filtros y Búsqueda',
-'operations.filters.valuationMin': 'Valoración mín (€k)',
-'operations.filters.valuationMax': 'Valoración máx (€k)',
-// ... etc
-
-// EN
-'opportunities.hero.configureAlerts': 'Configure Alerts',
-'opportunities.hero.mandateDisclaimer': 'Capittal acts with direct mandate for sale or purchase on all displayed opportunities.',
-'operations.filters.title': 'Filters & Search',
-// ... etc
+```sql
+CREATE TABLE public.contact_statuses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  status_key TEXT NOT NULL UNIQUE,      -- Clave estable (nunca cambia)
+  label TEXT NOT NULL,                   -- Nombre visible (editable)
+  color TEXT NOT NULL DEFAULT 'gray',    -- Color del badge
+  icon TEXT DEFAULT '📋',                -- Emoji/icono
+  position INTEGER NOT NULL DEFAULT 0,   -- Orden de visualizacion
+  is_active BOOLEAN NOT NULL DEFAULT true,  -- Desactivar sin borrar
+  is_system BOOLEAN NOT NULL DEFAULT false, -- Estados protegidos
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 ```
 
-### Paso 2: Actualizar `BuyerTestimonials.tsx`
+### Datos Iniciales (Migracion)
 
-- Importar `useI18n`
-- Reemplazar todos los strings hardcodeados con llamadas a `t()`
+```sql
+INSERT INTO contact_statuses (status_key, label, color, icon, position, is_system) VALUES
+('nuevo', 'Nuevo', 'blue', '📥', 1, true),
+('contactando', 'Contactando', 'purple', '📞', 2, false),
+('calificado', 'Calificado', 'cyan', '✅', 3, false),
+('propuesta_enviada', 'Propuesta Enviada', 'indigo', '📄', 4, false),
+('negociacion', 'Negociacion', 'orange', '🤝', 5, false),
+('en_espera', 'En Espera', 'yellow', '⏸️', 6, false),
+('ganado', 'Ganado', 'green', '🏆', 7, true),
+('perdido', 'Perdido', 'red', '❌', 8, true),
+('archivado', 'Archivado', 'gray', '📦', 9, false),
+('fase0_activo', 'Fase 0 Activo', 'emerald', '🚀', 10, false),
+('fase0_bloqueado', 'Fase 0 Bloqueado', 'slate', '🔒', 11, false),
+('mandato_propuesto', 'Mandato Propuesto', 'amber', '📋', 12, false),
+('mandato_firmado', 'Mandato Firmado', 'teal', '✍️', 13, false);
+```
 
-### Paso 3: Actualizar `OperationsList.tsx`
+### RLS Policies
 
-- Reemplazar todos los strings de filtros, paginacion y UI con llamadas a `t()`
+```sql
+-- Lectura publica (autenticados)
+CREATE POLICY "Authenticated can read statuses"
+ON contact_statuses FOR SELECT
+TO authenticated USING (true);
 
-### Paso 4: Actualizar `OperationCard.tsx`
+-- Escritura solo admins
+CREATE POLICY "Admins can manage statuses"
+ON contact_statuses FOR ALL
+TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+```
 
-- Reemplazar labels, tooltips y badges con llamadas a `t()`
+## Componentes a Crear/Modificar
 
-### Paso 5: Actualizar `Oportunidades.tsx`
+### 1. Hook `useContactStatuses.ts` (Nuevo)
 
-- Anadir las 2 nuevas traducciones para alertas y disclaimer
+Siguiendo el patron de `useLeadPipelineColumns.ts`:
 
----
+```typescript
+export interface ContactStatus {
+  id: string;
+  status_key: string;
+  label: string;
+  color: string;
+  icon: string;
+  position: number;
+  is_active: boolean;
+  is_system: boolean;
+}
 
-## Seccion Tecnica
+export const useContactStatuses = () => {
+  // Query: fetch all statuses ordered by position
+  // Mutations: updateStatus, addStatus, toggleActive, reorder
+  // Computed: activeStatuses (is_active=true)
+  return { statuses, activeStatuses, isLoading, ... };
+};
+```
 
-### Archivos a Modificar
+### 2. Componente `StatusesEditor.tsx` (Nuevo)
+
+Panel lateral accesible desde `/admin/contacts`:
+
+```text
+┌─────────────────────────────────────────────┐
+│  ⚙️ Configurar Estados                      │
+│ ─────────────────────────────────────────── │
+│  [+ Anadir estado]                          │
+│                                             │
+│  ☰ 📥 Nuevo           🔵  👁️ ✏️            │
+│  ☰ 📞 Contactando     🟣  👁️ ✏️ 🗑️         │
+│  ☰ ✅ Calificado      🔵  👁️ ✏️ 🗑️         │
+│  ☰ 📄 Propuesta       🟣  👁️ ✏️ 🗑️         │
+│  ☰ 🤝 Negociacion     🟠  👁️ ✏️ 🗑️         │
+│  ☰ 🏆 Ganado          🟢  👁️ ✏️            │
+│  ☰ ❌ Perdido         🔴  👁️ ✏️            │
+│                                             │
+│  💡 Estados del sistema no se pueden borrar │
+│  💡 Desactivar oculta del selector          │
+└─────────────────────────────────────────────┘
+```
+
+Funcionalidades:
+- Drag-and-drop con `@hello-pangea/dnd` (ya instalado)
+- Crear/editar estados via modal
+- Toggle visibilidad (is_active)
+- Proteccion de estados del sistema
+
+### 3. Modal `StatusEditModal.tsx` (Nuevo)
+
+Similar a `ColumnEditModal.tsx`:
+
+```text
+┌─────────────────────────────────────────────┐
+│  Editar Estado                              │
+│ ─────────────────────────────────────────── │
+│  Nombre: [Contactando________]              │
+│                                             │
+│  Clave: contactando (no editable)           │
+│                                             │
+│  Icono: [📞] [📥] [✅] [📄] [🤝] [⏸️] ...   │
+│                                             │
+│  Color: 🔵 🟣 🟢 🟠 🔴 ⬜ 🟡 ...            │
+│                                             │
+│  Vista previa: [📞 Contactando]             │
+│                                             │
+│         [Cancelar]  [Guardar cambios]       │
+└─────────────────────────────────────────────┘
+```
+
+### 4. Modificaciones a Componentes Existentes
+
+| Archivo | Cambio |
+|---------|--------|
+| `ContactTableRow.tsx` | Reemplazar `STATUS_OPTIONS` hardcodeado por datos de `useContactStatuses()` |
+| `LeadStatusSelect.tsx` | Cargar opciones desde `useContactStatuses()` |
+| `LeadStatusBadge.tsx` | Buscar config en statuses dinamicos, fallback a default |
+| `LinearContactsManager.tsx` | Anadir boton "⚙️ Gestionar Estados" en header |
+
+### 5. Selector de Estado Actualizado
+
+```typescript
+// LeadStatusSelect.tsx actualizado
+export function LeadStatusSelect({ leadId, leadType, currentStatus }) {
+  const { activeStatuses, isLoading } = useContactStatuses();
+  
+  // Si el status actual esta inactivo, incluirlo con badge "(Inactivo)"
+  const options = useMemo(() => {
+    const active = activeStatuses.map(s => ({
+      value: s.status_key,
+      label: s.label,
+      icon: s.icon,
+      color: s.color,
+    }));
+    
+    // Si el status actual no esta en activos, agregarlo
+    if (currentStatus && !active.find(o => o.value === currentStatus)) {
+      const inactiveStatus = statuses.find(s => s.status_key === currentStatus);
+      if (inactiveStatus) {
+        active.unshift({
+          value: inactiveStatus.status_key,
+          label: `${inactiveStatus.label} (Inactivo)`,
+          icon: inactiveStatus.icon,
+          color: 'gray',
+        });
+      }
+    }
+    
+    return active;
+  }, [activeStatuses, currentStatus, statuses]);
+  
+  // ... resto del componente
+}
+```
+
+## Flujo de Cambio de Estado
+
+```text
+1. Usuario abre selector de estado
+2. Carga opciones desde contact_statuses (is_active=true)
+3. Usuario selecciona nuevo estado
+4. Mutation: UPDATE contact_leads SET lead_status_crm = 'nuevo_estado' WHERE id = ?
+5. Invalidar queries ['unified-contacts']
+6. Toast de exito
+```
+
+**Nota importante**: El campo `lead_status_crm` seguira siendo un ENUM en la BD. Solo agregamos el ENUM value cuando se crea un nuevo estado (via migracion manual o automatica).
+
+## Estrategia de Compatibilidad
+
+### Opcion A: Mantener ENUM + Tabla de Metadatos (Recomendada)
+
+- `lead_status_crm` sigue siendo ENUM (integridad garantizada)
+- `contact_statuses` es tabla de **metadatos** (label, color, icon, order)
+- Nuevos estados requieren `ALTER TYPE lead_status ADD VALUE 'nuevo_estado'`
+
+**Ventajas**: Seguridad de tipos, no rompe nada existente
+**Desventajas**: Crear nuevos estados requiere migracion SQL
+
+### Opcion B: Migrar a TEXT + Foreign Key
+
+- Cambiar `lead_status_crm` de ENUM a TEXT
+- Agregar FK constraint a `contact_statuses.status_key`
+
+**Ventajas**: Crear estados desde UI sin migraciones
+**Desventajas**: Requiere migracion de columna existente
+
+**Decision**: Implementamos **Opcion A** para minimo impacto. Se puede evolucionar a Opcion B en el futuro.
+
+## Archivos a Crear
+
+| Archivo | Descripcion |
+|---------|-------------|
+| `src/hooks/useContactStatuses.ts` | Hook para CRUD de estados |
+| `src/components/admin/contacts/StatusesEditor.tsx` | Panel de configuracion |
+| `src/components/admin/contacts/StatusEditModal.tsx` | Modal crear/editar estado |
+| `src/components/admin/contacts/StatusDeleteDialog.tsx` | Confirmacion de desactivacion |
+
+## Archivos a Modificar
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/shared/i18n/dictionaries.ts` | ~50 nuevas claves de traduccion (ES, CA, EN) |
-| `src/components/operations/BuyerTestimonials.tsx` | Importar useI18n, reemplazar ~10 strings |
-| `src/components/operations/OperationsList.tsx` | Reemplazar ~25 strings hardcodeados |
-| `src/components/operations/OperationCard.tsx` | Reemplazar ~15 strings hardcodeados |
-| `src/pages/Oportunidades.tsx` | Reemplazar 2 strings hardcodeados |
+| `src/components/admin/leads/LeadStatusSelect.tsx` | Cargar opciones desde hook |
+| `src/components/admin/leads/LeadStatusBadge.tsx` | Config dinamica con fallback |
+| `src/components/admin/contacts/ContactTableRow.tsx` | Eliminar `STATUS_OPTIONS` hardcodeado |
+| `src/components/admin/contacts/LinearContactsManager.tsx` | Boton "Gestionar Estados" |
+| `src/integrations/supabase/types.ts` | Se actualiza automaticamente |
 
-### Estimacion
+## Migracion SQL
 
-- **Lineas nuevas en dictionaries**: ~150 (50 claves x 3 idiomas)
-- **Lineas modificadas en componentes**: ~60
-- **Riesgo**: Bajo (cambios de texto, no de logica)
-- **Tiempo estimado**: ~20-30 minutos
+```sql
+-- 1. Crear tabla contact_statuses
+CREATE TABLE IF NOT EXISTS public.contact_statuses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  status_key TEXT NOT NULL UNIQUE,
+  label TEXT NOT NULL,
+  color TEXT NOT NULL DEFAULT 'gray',
+  icon TEXT DEFAULT '📋',
+  position INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  is_system BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 
-### Impacto
+-- 2. Habilitar RLS
+ALTER TABLE public.contact_statuses ENABLE ROW LEVEL SECURITY;
 
-- La pagina `/oportunidades` se mostrara completamente en el idioma seleccionado por el usuario
-- Soporte completo para ES, CA y EN
-- Consistencia con el resto del sitio
+-- 3. Policies
+CREATE POLICY "Authenticated can read statuses"
+ON public.contact_statuses FOR SELECT TO authenticated USING (true);
 
+CREATE POLICY "Admins can manage statuses"
+ON public.contact_statuses FOR ALL TO authenticated
+USING (public.has_role(auth.uid(), 'admin'));
+
+-- 4. Insertar estados iniciales basados en ENUM actual
+INSERT INTO public.contact_statuses (status_key, label, color, icon, position, is_system) VALUES
+('nuevo', 'Nuevo', 'blue', '📥', 1, true),
+('contactando', 'Contactando', 'purple', '📞', 2, false),
+('calificado', 'Calificado', 'cyan', '✅', 3, false),
+('propuesta_enviada', 'Propuesta Enviada', 'indigo', '📄', 4, false),
+('negociacion', 'Negociación', 'orange', '🤝', 5, false),
+('en_espera', 'En Espera', 'yellow', '⏸️', 6, false),
+('ganado', 'Ganado', 'green', '🏆', 7, true),
+('perdido', 'Perdido', 'red', '❌', 8, true),
+('archivado', 'Archivado', 'gray', '📦', 9, false),
+('fase0_activo', 'Fase 0 Activo', 'emerald', '🚀', 10, false),
+('fase0_bloqueado', 'Fase 0 Bloqueado', 'slate', '🔒', 11, false),
+('mandato_propuesto', 'Mandato Propuesto', 'amber', '📋', 12, false),
+('mandato_firmado', 'Mandato Firmado', 'teal', '✍️', 13, false)
+ON CONFLICT (status_key) DO NOTHING;
+
+-- 5. Indice para ordenacion
+CREATE INDEX idx_contact_statuses_position ON public.contact_statuses(position);
+```
+
+## Plan de Implementacion
+
+### Paso 1: Base de Datos
+- Ejecutar migracion SQL para crear `contact_statuses`
+- Verificar datos iniciales
+
+### Paso 2: Hook y Logica
+- Crear `useContactStatuses.ts`
+- Tests basicos de CRUD
+
+### Paso 3: UI de Gestion
+- Crear `StatusesEditor.tsx`
+- Crear `StatusEditModal.tsx`
+- Integrar en `LinearContactsManager.tsx`
+
+### Paso 4: Actualizar Selectores
+- Modificar `LeadStatusSelect.tsx`
+- Modificar `LeadStatusBadge.tsx`
+- Modificar `ContactTableRow.tsx`
+
+### Paso 5: Testing
+- Crear estado nuevo y asignar a contacto
+- Editar label/color y verificar reflejo en UI
+- Desactivar estado y verificar que contactos lo mantienen
+- Cambiar estado en contacto y refrescar
+
+## Estimacion
+
+| Componente | Tiempo Estimado |
+|------------|-----------------|
+| Migracion SQL | 5 min |
+| `useContactStatuses.ts` | 15 min |
+| `StatusesEditor.tsx` | 25 min |
+| `StatusEditModal.tsx` | 15 min |
+| Modificar selectores | 20 min |
+| Testing | 10 min |
+| **Total** | **~90 min** |
+
+## Riesgos y Mitigaciones
+
+| Riesgo | Mitigacion |
+|--------|------------|
+| Estados huerfanos | Fallback a config por defecto en LeadStatusBadge |
+| ENUM no soporta nuevos valores | Documentar que nuevos estados requieren migracion |
+| Performance | Cache con staleTime 5min en hook |
+| Borrado accidental | Solo desactivar, nunca eliminar |
+
+## Resultado Final
+
+- Panel de gestion de estados accesible desde `/admin/contacts`
+- Estados con nombre, color, icono y orden personalizables
+- Cambio de estado en contactos persistente y consistente
+- Compatibilidad total con datos existentes
+- Estructura preparada para futura migracion a TEXT si se desea
