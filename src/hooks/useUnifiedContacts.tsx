@@ -92,9 +92,16 @@ export interface UnifiedContact {
   acquisition_channel_name?: string;
   acquisition_channel_category?: string;
   
-  // 🔥 AI Company Summary
+  // 🔥 AI Company Summary & Classification
   ai_company_summary?: string;
   ai_company_summary_at?: string;
+  ai_sector_pe?: string;
+  ai_sector_name?: string;
+  ai_tags?: string[];
+  ai_business_model_tags?: string[];
+  ai_negative_tags?: string[];
+  ai_classification_confidence?: number;
+  ai_classification_at?: string;
 
   // 🔥 NEW: Lead Form (Subcanal/Formulario de origen)
   lead_form?: string;
@@ -186,19 +193,19 @@ export const useUnifiedContacts = () => {
     try {
       setIsLoading(true);
       
-      // Fetch contact_leads with linked empresa, acquisition channel, and lead form (exclude soft deleted)
+      // Fetch contact_leads with linked empresa, acquisition channel, lead form, and AI classification fields (exclude soft deleted)
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
-        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, lead_form, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (contactError) throw contactError;
 
-      // Fetch company_valuations (exclude soft deleted) - include Apollo fields, lead form, and empresa data
+      // Fetch company_valuations (exclude soft deleted) - include Apollo fields, lead form, AI classification, and empresa data
       const { data: valuationLeads, error: valuationError } = await supabase
         .from('company_valuations')
-        .select('*, lead_status_crm, assigned_to, lead_form, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
+        .select('*, lead_status_crm, assigned_to, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -317,6 +324,16 @@ export const useUnifiedContacts = () => {
             industry: proValuation?.sector || undefined,
             // 🔥 NEW: Business registration date
             lead_received_at: (lead as any).lead_received_at || lead.created_at,
+            // 🔥 AI Classification fields
+            ai_company_summary: (lead as any).ai_company_summary,
+            ai_company_summary_at: (lead as any).ai_company_summary_at,
+            ai_sector_pe: (lead as any).ai_sector_pe,
+            ai_sector_name: (lead as any).ai_sector_name,
+            ai_tags: (lead as any).ai_tags,
+            ai_business_model_tags: (lead as any).ai_business_model_tags,
+            ai_negative_tags: (lead as any).ai_negative_tags,
+            ai_classification_confidence: (lead as any).ai_classification_confidence,
+            ai_classification_at: (lead as any).ai_classification_at,
           };
         }),
         
@@ -373,6 +390,16 @@ export const useUnifiedContacts = () => {
           empresa_facturacion: (lead.empresas as any)?.facturacion != null ? Number((lead.empresas as any).facturacion) : undefined,
           // 🔥 NEW: Business registration date
           lead_received_at: (lead as any).lead_received_at || lead.created_at,
+          // 🔥 AI Classification fields
+          ai_company_summary: (lead as any).ai_company_summary,
+          ai_company_summary_at: (lead as any).ai_company_summary_at,
+          ai_sector_pe: (lead as any).ai_sector_pe,
+          ai_sector_name: (lead as any).ai_sector_name,
+          ai_tags: (lead as any).ai_tags,
+          ai_business_model_tags: (lead as any).ai_business_model_tags,
+          ai_negative_tags: (lead as any).ai_negative_tags,
+          ai_classification_confidence: (lead as any).ai_classification_confidence,
+          ai_classification_at: (lead as any).ai_classification_at,
         })),
         
         // Collaborator applications

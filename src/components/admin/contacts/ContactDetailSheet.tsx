@@ -42,8 +42,7 @@ import ContactEditForm from './ContactEditForm';
 import { useContactUpdate, ContactUpdateData } from '@/hooks/useContactUpdate';
 import { Fase0DocumentButtons, Fase0DocumentsList } from '@/features/fase0-documents';
 import { useQueryClient } from '@tanstack/react-query';
-import { ActivityDescriptionGenerator } from '@/components/admin/leads/ActivityDescriptionGenerator';
-import { SectorTagsBlock } from '@/components/admin/contacts/SectorTagsBlock';
+import { ActivityClassificationBlock } from '@/components/admin/contacts/ActivityClassificationBlock';
 import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
 
 interface ContactDetailSheetProps {
@@ -135,7 +134,6 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
   const [isSavingForm, setIsSavingForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ContactUpdateData>({});
-  const [generatedDescription, setGeneratedDescription] = useState<string | null>(null);
 
   // Initialize form data and channel when contact changes
   useEffect(() => {
@@ -498,21 +496,23 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
 
           <Separator className="bg-[hsl(var(--linear-border))] my-4" />
 
-          {/* Activity Description Generator + Sector Tags */}
+          {/* Activity Description & Sector Tags - Combined Block with Save */}
           {contact.company && (
             <div className="space-y-3 mb-6">
-              <ActivityDescriptionGenerator
-                initialCompanyName={contact.company}
-                initialCif={contact.cif}
-                compact
-                onDescriptionGenerated={(desc) => {
-                  setGeneratedDescription(desc);
-                }}
-              />
-              <SectorTagsBlock
+              <ActivityClassificationBlock
+                contactId={contact.id}
+                origin={contact.origin}
                 companyName={contact.company}
-                description={generatedDescription || contact.ai_company_summary}
-                compact
+                cif={contact.cif}
+                initialDescription={contact.ai_company_summary}
+                initialSectorTags={{
+                  ai_sector_pe: (contact as any).ai_sector_pe,
+                  ai_sector_name: (contact as any).ai_sector_name,
+                  ai_tags: (contact as any).ai_tags,
+                  ai_business_model_tags: (contact as any).ai_business_model_tags,
+                  ai_negative_tags: (contact as any).ai_negative_tags,
+                  ai_classification_confidence: (contact as any).ai_classification_confidence,
+                }}
               />
             </div>
           )}
