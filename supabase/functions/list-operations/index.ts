@@ -270,7 +270,13 @@ serve(async (req) => {
           ? op.short_description_en 
           : locale === 'ca' && op.short_description_ca
             ? op.short_description_ca
-            : op.short_description
+            : op.short_description,
+        // Resolve highlights by locale
+        resolved_highlights: locale === 'en' && op.highlights_en && op.highlights_en.length > 0
+          ? op.highlights_en 
+          : locale === 'ca' && op.highlights_ca && op.highlights_ca.length > 0
+            ? op.highlights_ca
+            : op.highlights
       };
     });
 

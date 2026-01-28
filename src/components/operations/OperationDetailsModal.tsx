@@ -31,6 +31,7 @@ interface Operation {
   resolved_description?: string;
   resolved_short_description?: string;
   resolved_sector?: string;
+  resolved_highlights?: string[];
 }
 
 interface OperationDetailsModalProps {
@@ -195,12 +196,13 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
               </p>
             </div>
 
-            {/* Highlights */}
-            {operation.highlights && operation.highlights.length > 0 && (
+            {/* Highlights - use translated highlights with fallback */}
+            {((operation.resolved_highlights || operation.highlights) && 
+             (operation.resolved_highlights || operation.highlights)!.length > 0) && (
               <div className="py-4 border-t">
                 <h3 className="text-lg font-semibold mb-3">Aspectos Destacados</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {operation.highlights.map((highlight, index) => (
+                  {(operation.resolved_highlights || operation.highlights)!.map((highlight, index) => (
                     <div 
                       key={index}
                       className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-800 border border-green-200"

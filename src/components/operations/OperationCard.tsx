@@ -55,6 +55,7 @@ interface Operation {
   resolved_description?: string;
   resolved_short_description?: string;
   resolved_sector?: string;
+  resolved_highlights?: string[];
 }
 
 interface OperationCardProps {
@@ -263,10 +264,11 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             })()}
           </p>
           
-          {/* Highlights */}
-          {operation.highlights && operation.highlights.length > 0 && (
+          {/* Highlights - use translated highlights with fallback */}
+          {((operation.resolved_highlights || operation.highlights) && 
+           (operation.resolved_highlights || operation.highlights)!.length > 0) && (
             <div className="flex flex-wrap gap-1">
-              {operation.highlights.slice(0, 2).map((highlight, index) => (
+              {(operation.resolved_highlights || operation.highlights)!.slice(0, 2).map((highlight, index) => (
                 <span 
                   key={index}
                   className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800"
