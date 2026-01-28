@@ -27,6 +27,10 @@ interface Operation {
   highlights?: string[];
   deal_type?: string;
   created_at?: string;
+  // Resolved i18n fields
+  resolved_description?: string;
+  resolved_short_description?: string;
+  resolved_sector?: string;
 }
 
 interface OperationDetailsModalProps {
@@ -99,7 +103,7 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                 {isRecentOperation(operation.created_at) && (
                   <Badge className="bg-green-500 hover:bg-green-600">Nuevo</Badge>
                 )}
-                <Badge variant="outline">{operation.sector}</Badge>
+                <Badge variant="outline">{operation.resolved_sector || operation.sector}</Badge>
               </div>
             </div>
           </div>
@@ -151,7 +155,7 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                 <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-xs text-muted-foreground">Sector</p>
-                  <p className="text-sm font-medium">{operation.sector}</p>
+                  <p className="text-sm font-medium">{operation.resolved_sector || operation.sector}</p>
                 </div>
               </div>
               <div className="flex items-start space-x-2">
@@ -183,11 +187,11 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
               )}
             </div>
 
-            {/* Full Description */}
+            {/* Full Description - use translated description */}
             <div className="py-4 border-t">
               <h3 className="text-lg font-semibold mb-3">Sobre la Empresa</h3>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                {operation.description}
+                {operation.resolved_description || operation.description}
               </p>
             </div>
 

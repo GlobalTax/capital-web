@@ -248,21 +248,31 @@ serve(async (req) => {
 
     console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
 
-    // Resolve operation descriptions by locale with fallback to ES
-    const resolvedData = (data || []).map(op => ({
-      ...op,
-      // Resolve description by locale
-      resolved_description: locale === 'en' && op.description_en 
-        ? op.description_en 
-        : locale === 'ca' && op.description_ca
-          ? op.description_ca
-          : op.description,
-      resolved_short_description: locale === 'en' && op.short_description_en 
-        ? op.short_description_en 
-        : locale === 'ca' && op.short_description_ca
-          ? op.short_description_ca
-          : op.short_description
-    }));
+    // Resolve operation descriptions and sector by locale with fallback to ES
+    const resolvedData = (data || []).map(op => {
+      // Find sector translation from sectors table
+      const sectorMatch = sectorsData?.find(s => s.name_es === op.sector);
+      const resolvedSector = (locale === 'en' && sectorMatch?.name_en)
+        ? sectorMatch.name_en
+        : op.sector;
+
+      return {
+        ...op,
+        // Resolve sector by locale
+        resolved_sector: resolvedSector,
+        // Resolve description by locale
+        resolved_description: locale === 'en' && op.description_en 
+          ? op.description_en 
+          : locale === 'ca' && op.description_ca
+            ? op.description_ca
+            : op.description,
+        resolved_short_description: locale === 'en' && op.short_description_en 
+          ? op.short_description_en 
+          : locale === 'ca' && op.short_description_ca
+            ? op.short_description_ca
+            : op.short_description
+      };
+    });
 
     return new Response(
       JSON.stringify({
