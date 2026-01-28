@@ -1,89 +1,64 @@
 
-# Plan: Corregir Internacionalización de las Cards en /oportunidades
+
+# Plan: Corregir Interface Operation en OperationsList.tsx
 
 ## Problema Identificado
 
-Las cards de operaciones en `/oportunidades` muestran contenido en español aunque el usuario tenga el idioma configurado en inglés. Hay dos causas:
+La internacionalizacion de las cards en `/oportunidades` **no funciona** porque la interface `Operation` en `OperationsList.tsx` NO incluye los campos traducidos que devuelve la Edge Function.
 
-### Causa 1: OperationCard no usa los campos traducidos
+### Flujo actual (roto):
 
-El componente `OperationCard.tsx` usa los campos originales en lugar de los campos resueltos por idioma:
-
-```typescript
-// ACTUAL (incorrecto)
-operation.short_description || operation.description
-
-// DEBERÍA SER
-operation.resolved_short_description || operation.resolved_description
+```text
+1. Edge Function devuelve: { resolved_sector: "Construction", resolved_description: "...", ... }
+2. OperationsList.tsx tipea los datos como `Operation` (sin campos resolved_*)
+3. TypeScript/React ignora campos no definidos en la interface
+4. OperationCard recibe operation SIN los campos resolved_*
+5. Cards muestran contenido en espanol (fallback)
 ```
 
-### Causa 2: Datos de BD sin traducciones
+### Evidencia:
 
-Los campos `description_en`, `description_ca`, `short_description_en`, `short_description_ca` están vacíos (`null`) para todas las operaciones:
+**Interface actual en OperationsList.tsx (lineas 18-38):**
+```typescript
+interface Operation {
+  id: string;
+  company_name: string;
+  sector: string;
+  // ... otros campos ...
+  // ❌ FALTAN: resolved_sector, resolved_description, resolved_short_description
+}
+```
 
-| Proyecto | description_en | short_description_en |
-|----------|---------------|---------------------|
-| Proyecto Box | null | null |
-| Proyecto King | null | null |
-| Proyecto Demox | null | null |
-
-### Causa 3: Sector no traducido en la card
-
-El campo `sector` en cada operación está guardado como texto en español (ej: "Construcción"), aunque la tabla `sectors` tiene traducciones (ej: "Construction" en `name_en`).
+**Interface en OperationCard.tsx (correcta, lineas 28-58):**
+```typescript
+interface Operation {
+  // ... campos existentes ...
+  // ✅ TIENE:
+  resolved_description?: string;
+  resolved_short_description?: string;
+  resolved_sector?: string;
+}
+```
 
 ---
 
-## Solución Propuesta
+## Solucion
 
-### Paso 1: Actualizar OperationCard para usar campos traducidos
+Actualizar la interface `Operation` en `OperationsList.tsx` para incluir los campos traducidos:
 
-Modificar `OperationCard.tsx` para priorizar los campos `resolved_*`:
-
-```typescript
-// Description - usar campo traducido con fallback
-const displayDescription = operation.resolved_short_description 
-  || operation.resolved_description 
-  || operation.short_description 
-  || operation.description;
-```
-
-### Paso 2: Resolver sector traducido en Edge Function
-
-Actualizar `list-operations/index.ts` para incluir el sector traducido:
+### Cambio Requerido
 
 ```typescript
-// En el mapeo de resultados, añadir:
-const resolvedData = (data || []).map(op => {
-  // Buscar traducción del sector
-  const sectorMatch = sectorsData?.find(s => s.name_es === op.sector);
-  
-  return {
-    ...op,
-    resolved_sector: locale === 'en' && sectorMatch?.name_en 
-      ? sectorMatch.name_en 
-      : op.sector,
-    resolved_description: ...,
-    resolved_short_description: ...
-  };
-});
+// OperationsList.tsx - linea 38 (antes de cerrar la interface)
+// Anadir estos campos:
+  project_status?: string;
+  expected_market_text?: string;
+  // Campos i18n resueltos
+  resolved_description?: string;
+  resolved_short_description?: string;
+  resolved_sector?: string;
+}
 ```
-
-### Paso 3: Usar sector traducido en OperationCard
-
-```typescript
-// En el Badge de sector:
-<Badge variant="outline" className="text-xs w-fit">
-  {operation.resolved_sector || operation.sector}
-</Badge>
-```
-
-### Paso 4: (Recomendado) Poblar traducciones de descripciones
-
-Para que las descripciones aparezcan en inglés, es necesario completar los campos de traducción en la tabla `company_operations`. Esto se puede hacer:
-
-A) **Manualmente** desde el panel admin
-B) **Con IA** usando una Edge Function que traduzca automáticamente
-C) **Script de migración** para traducir en lote
 
 ---
 
@@ -91,30 +66,66 @@ C) **Script de migración** para traducir en lote
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/operations/OperationCard.tsx` | Usar `resolved_short_description`, `resolved_description`, `resolved_sector` |
-| `supabase/functions/list-operations/index.ts` | Añadir `resolved_sector` al mapeo de resultados |
-| `src/components/operations/OperationDetailsModal.tsx` | Verificar y actualizar para usar campos traducidos |
+| `src/components/operations/OperationsList.tsx` | Anadir 3 campos `resolved_*` a la interface Operation |
 
 ---
 
-## Sección Técnica
+## Seccion Tecnica
 
-### Campos Afectados en OperationCard
+### Cambio Especifico
 
-| Campo Actual | Campo Traducido | Fallback |
-|--------------|-----------------|----------|
-| `description` | `resolved_description` | `description` |
-| `short_description` | `resolved_short_description` | `short_description` |
-| `sector` | `resolved_sector` (nuevo) | `sector` |
-| `highlights` | (sin traducción) | Mantener español |
+En `OperationsList.tsx`, modificar la interface `Operation` (lineas 18-38):
 
-### Tipado TypeScript
-
-Actualizar interface `Operation` en `OperationCard.tsx`:
-
+**Antes:**
 ```typescript
 interface Operation {
-  // ... campos existentes ...
+  id: string;
+  company_name: string;
+  sector: string;
+  valuation_amount: number;
+  valuation_currency: string;
+  revenue_amount?: number;
+  ebitda_amount?: number;
+  year: number;
+  description: string;
+  short_description?: string;
+  is_featured: boolean;
+  is_active: boolean;
+  logo_url?: string;
+  company_size?: string;
+  company_size_employees?: string;
+  highlights?: string[];
+  deal_type?: string;
+  display_locations: string[];
+  created_at?: string;
+}
+```
+
+**Despues:**
+```typescript
+interface Operation {
+  id: string;
+  company_name: string;
+  sector: string;
+  valuation_amount: number;
+  valuation_currency: string;
+  revenue_amount?: number;
+  ebitda_amount?: number;
+  year: number;
+  description: string;
+  short_description?: string;
+  is_featured: boolean;
+  is_active: boolean;
+  logo_url?: string;
+  company_size?: string;
+  company_size_employees?: string;
+  highlights?: string[];
+  deal_type?: string;
+  display_locations: string[];
+  created_at?: string;
+  project_status?: string;
+  expected_market_text?: string;
+  // i18n resolved fields
   resolved_description?: string;
   resolved_short_description?: string;
   resolved_sector?: string;
@@ -123,15 +134,24 @@ interface Operation {
 
 ### Impacto
 
-- **Archivos modificados**: 2-3
-- **Líneas modificadas**: ~20
-- **Riesgo**: Bajo (cambios aditivos con fallback)
-- **Compatibilidad**: Total (fallback a español si no hay traducción)
+| Metrica | Valor |
+|---------|-------|
+| Archivos modificados | 1 |
+| Lineas anadidas | 5 |
+| Riesgo | Muy bajo (solo tipado) |
+| Tiempo estimado | 2 minutos |
+
+### Resultado Esperado
+
+Una vez aplicado este cambio:
+1. Los campos `resolved_*` se preservaran al setear el estado
+2. `OperationCard` recibira los campos traducidos
+3. Las cards mostraran el sector en ingles ("Construction" en vez de "Construccion")
+4. Las descripciones mostraran traducciones cuando existan en la BD
 
 ---
 
-## Limitación Importante
+## Nota sobre Descripciones
 
-**Las descripciones seguirán en español** hasta que se poblen los campos `description_en` y `short_description_en` en la base de datos. Esta implementación solo arregla que el frontend USE los campos traducidos cuando existan.
+Las descripciones seguiran en espanol hasta que se pueblen los campos `description_en` en la base de datos. El sector SI se traducira inmediatamente porque la Edge Function ya resuelve la traduccion desde la tabla `sectors`.
 
-Para una solución completa, se necesita también poblar las traducciones en la BD (tarea separada).
