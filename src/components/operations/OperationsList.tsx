@@ -35,6 +35,12 @@ interface Operation {
   deal_type?: string;
   display_locations: string[];
   created_at?: string;
+  project_status?: string;
+  expected_market_text?: string;
+  // i18n resolved fields
+  resolved_description?: string;
+  resolved_short_description?: string;
+  resolved_sector?: string;
 }
 
 interface SectorOption {
