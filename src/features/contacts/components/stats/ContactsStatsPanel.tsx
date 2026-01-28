@@ -23,6 +23,7 @@ import { QualityVsCostMatrix } from './QualityVsCostMatrix';
 // Cost Control components
 import { CampaignRegistryTable } from '@/components/admin/campaigns/CampaignRegistryTable';
 import { AnalyticsTabs } from '@/components/admin/campaigns/AnalyticsTabs';
+import { AdsCostsHistoryTable } from '@/components/admin/campaigns/AdsCostsHistoryTable';
 
 type PeriodPreset = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
@@ -86,7 +87,7 @@ export const ContactsStatsPanel: React.FC = () => {
 
   const [selectedPreset, setSelectedPreset] = useState<PeriodPreset>('month');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'costs' | 'metrics'>('costs');
+  const [activeTab, setActiveTab] = useState<'costs' | 'meta_ads' | 'google_ads' | 'metrics'>('costs');
 
   const handlePresetChange = (preset: PeriodPreset) => {
     setSelectedPreset(preset);
@@ -140,14 +141,26 @@ export const ContactsStatsPanel: React.FC = () => {
 
       {/* Main Tabs: Cost Control vs Contact Metrics */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'costs' | 'metrics')}>
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="costs" className="flex items-center gap-2">
             <Table2 className="h-4 w-4" />
             Control de Costes
           </TabsTrigger>
+          <TabsTrigger value="meta_ads" className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded bg-blue-500 flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">M</span>
+            </div>
+            Meta Ads
+          </TabsTrigger>
+          <TabsTrigger value="google_ads" className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded bg-amber-500 flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">G</span>
+            </div>
+            Google Ads
+          </TabsTrigger>
           <TabsTrigger value="metrics" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Métricas de Contactos
+            Métricas
           </TabsTrigger>
         </TabsList>
 
@@ -158,6 +171,16 @@ export const ContactsStatsPanel: React.FC = () => {
 
           {/* Analytics Tabs (derived from history) */}
           <AnalyticsTabs />
+        </TabsContent>
+
+        {/* Tab: Meta Ads */}
+        <TabsContent value="meta_ads" className="space-y-6 mt-4">
+          <AdsCostsHistoryTable platform="meta_ads" />
+        </TabsContent>
+
+        {/* Tab: Google Ads */}
+        <TabsContent value="google_ads" className="space-y-6 mt-4">
+          <AdsCostsHistoryTable platform="google_ads" />
         </TabsContent>
 
         {/* Tab: Contact Metrics (existing content) */}
