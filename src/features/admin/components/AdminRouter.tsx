@@ -85,7 +85,8 @@ import {
   LazyApiUsageDashboard,
   LazyDataEnrichmentPanel,
   LazyCorporateBuyersPage,
-  LazyCorporateBuyerDetailPage
+  LazyCorporateBuyerDetailPage,
+  LazyCalculatorErrorsPage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -127,6 +128,7 @@ const AdminRouter = () => {
           {/* Dashboard - Redirect to Empresas by default */}
           <Route index element={<Navigate to="/admin/empresas" replace />} />
           <Route path="/dashboard" element={<LazyAdminDashboard />} />
+          <Route path="/calculator-errors" element={<LazyCalculatorErrorsPage />} />
           <Route path="/valuation-analytics" element={<LazyValuationAnalyticsDashboard />} />
           <Route path="/search-analytics" element={<LazySearchAnalyticsPage />} />
           <Route path="/marketplace-analytics" element={<LazyMarketplaceAnalytics />} />
