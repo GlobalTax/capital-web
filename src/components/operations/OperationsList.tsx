@@ -41,6 +41,7 @@ interface Operation {
   resolved_description?: string;
   resolved_short_description?: string;
   resolved_sector?: string;
+  resolved_highlights?: string[];
 }
 
 interface SectorOption {
