@@ -10,8 +10,8 @@ const corsHeaders = {
 
 // Configuration
 const ERROR_THRESHOLD = 3; // Minimum errors to trigger alert
-const TIME_WINDOW_MINUTES = 5; // Time window to check for errors
-const COOLDOWN_MINUTES = 30; // Minimum time between alerts
+const TIME_WINDOW_MINUTES = 720; // 12 hours - runs twice daily at 9:00 and 18:00
+const COOLDOWN_MINUTES = 30; // Minimum time between alerts (for manual triggers)
 
 interface CalculatorError {
   id: string;
