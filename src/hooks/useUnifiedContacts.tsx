@@ -16,6 +16,7 @@ export interface UnifiedContact {
   phone?: string;
   company?: string;
   created_at: string;
+  lead_received_at?: string; // Business registration date for analytics (editable)
   status: string;
   
   // Source tracking
@@ -314,6 +315,8 @@ export const useUnifiedContacts = () => {
             final_valuation: proValuation?.valuation_central != null ? Number(proValuation.valuation_central) : undefined,
             ebitda: proValuation?.normalized_ebitda != null ? Number(proValuation.normalized_ebitda) : undefined,
             industry: proValuation?.sector || undefined,
+            // 🔥 NEW: Business registration date
+            lead_received_at: (lead as any).lead_received_at || lead.created_at,
           };
         }),
         
@@ -368,6 +371,8 @@ export const useUnifiedContacts = () => {
           empresa_id: (lead as any).empresa_id,
           empresa_nombre: (lead.empresas as any)?.nombre || null,
           empresa_facturacion: (lead.empresas as any)?.facturacion != null ? Number((lead.empresas as any).facturacion) : undefined,
+          // 🔥 NEW: Business registration date
+          lead_received_at: (lead as any).lead_received_at || lead.created_at,
         })),
         
         // Collaborator applications
@@ -403,6 +408,8 @@ export const useUnifiedContacts = () => {
           // Lead Form (Formulario de origen)
           lead_form: (lead as any).lead_form,
           lead_form_name: (lead.lead_form_ref as any)?.name || null,
+          // 🔥 NEW: Business registration date
+          lead_received_at: (lead as any).lead_received_at || lead.created_at,
         })),
         
         // General contact leads (if table exists)
@@ -437,6 +444,8 @@ export const useUnifiedContacts = () => {
           // Lead Form (Formulario de origen)
           lead_form: (lead as any).lead_form,
           lead_form_name: (lead.lead_form_ref as any)?.name || null,
+          // 🔥 NEW: Business registration date
+          lead_received_at: (lead as any).lead_received_at || lead.created_at,
         })),
         
         // Acquisition leads
@@ -472,6 +481,8 @@ export const useUnifiedContacts = () => {
           // Lead Form (Formulario de origen)
           lead_form: (lead as any).lead_form,
           lead_form_name: (lead.lead_form_ref as any)?.name || null,
+          // 🔥 NEW: Business registration date
+          lead_received_at: (lead as any).lead_received_at || lead.created_at,
         })),
         
         // Company acquisition inquiries
@@ -510,6 +521,8 @@ export const useUnifiedContacts = () => {
           // Lead Form (Formulario de origen)
           lead_form: (lead as any).lead_form,
           lead_form_name: (lead.lead_form_ref as any)?.name || null,
+          // 🔥 NEW: Business registration date
+          lead_received_at: (lead as any).lead_received_at || lead.created_at,
         })),
         
         // Advisor leads (calculadora de asesores)
@@ -543,6 +556,8 @@ export const useUnifiedContacts = () => {
           // Lead Form (Formulario de origen)
           lead_form: (lead as any).lead_form,
           lead_form_name: (lead.lead_form_ref as any)?.name || null,
+          // 🔥 NEW: Business registration date
+          lead_received_at: (lead as any).lead_received_at || lead.created_at,
         })),
       ];
 

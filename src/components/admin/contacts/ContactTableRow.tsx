@@ -77,7 +77,7 @@ export const COL_STYLES = {
   star: { minWidth: 32, flex: '0 0 32px' },
   checkbox: { minWidth: 40, flex: '0 0 40px' },
   contact: { minWidth: 180, flex: '2 0 180px' },
-  origin: { minWidth: 90, flex: '0 0 90px' },
+  origin: { minWidth: 85, flex: '0 0 85px' },  // Renamed from "Origen" to "F. Registro"
   channel: { minWidth: 120, flex: '1 0 120px' },
   company: { minWidth: 140, flex: '1.5 0 140px' },
   province: { minWidth: 80, flex: '0 0 80px' },
@@ -215,11 +215,11 @@ export const ContactTableRow = memo<ContactRowProps>(({
         </div>
       </div>
       
-      {/* Origin */}
+      {/* Fecha de Registro (lead_received_at or created_at fallback) */}
       <div className="px-1.5 flex items-center" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
-        <Badge variant="outline" className={cn("h-4 text-[9px] font-medium border px-1.5", originConfig.color)}>
-          {originConfig.label}
-        </Badge>
+        <span className="text-[10px] text-muted-foreground">
+          {format(new Date((contact as any).lead_received_at || contact.created_at), 'dd MMM yy', { locale: es })}
+        </span>
       </div>
       
       {/* Channel + Lead Form */}

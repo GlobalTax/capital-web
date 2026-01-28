@@ -4263,6 +4263,7 @@ export type Database = {
           last_email_click_at: string | null
           lead_entry_date: string | null
           lead_form: string | null
+          lead_received_at: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           notes: string | null
           phone: string | null
@@ -4335,6 +4336,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_entry_date?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           notes?: string | null
           phone?: string | null
@@ -4407,6 +4409,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_entry_date?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           notes?: string | null
           phone?: string | null
