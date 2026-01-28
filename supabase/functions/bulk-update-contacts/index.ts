@@ -120,6 +120,7 @@ serve(async (req) => {
       acquisition_leads: [],
       company_acquisition_inquiries: [],
       advisor_valuations: [],
+      buyer_contacts: [],
     };
 
     // Map origin prefixes to table names
@@ -131,6 +132,7 @@ serve(async (req) => {
       'acquisition': 'acquisition_leads',
       'company_acquisition': 'company_acquisition_inquiries',
       'advisor': 'advisor_valuations',
+      'buyer': 'buyer_contacts',
     };
 
     // Parse contact IDs and group by table
@@ -174,6 +176,7 @@ serve(async (req) => {
       'acquisition_leads',
       'company_acquisition_inquiries',
       'advisor_valuations',
+      // buyer_contacts does NOT have acquisition_channel_id
     ];
 
     // Tables that have updated_at column
@@ -184,6 +187,7 @@ serve(async (req) => {
       'acquisition_leads',
       'company_acquisition_inquiries',
       'advisor_valuations',
+      'buyer_contacts',
       // 'company_valuations' does NOT have updated_at
     ];
 

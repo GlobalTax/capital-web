@@ -12,6 +12,52 @@ import {
 } from '@/types/buyer-contacts';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { parse, isValid, parseISO } from 'date-fns';
+
+// Parse date from various Excel formats
+const parseExcelDate = (value: unknown): string | null => {
+  if (!value) return null;
+  
+  // Excel serial date number
+  if (typeof value === 'number') {
+    try {
+      // Convert Excel serial date to JS Date
+      const excelEpoch = new Date(1899, 11, 30);
+      const jsDate = new Date(excelEpoch.getTime() + value * 24 * 60 * 60 * 1000);
+      if (isValid(jsDate)) {
+        return jsDate.toISOString();
+      }
+    } catch {
+      return null;
+    }
+  }
+  
+  // String date formats
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    
+    // Try ISO format first
+    const isoDate = parseISO(trimmed);
+    if (isValid(isoDate)) {
+      return isoDate.toISOString();
+    }
+    
+    // Try DD/MM/YYYY format
+    const ddmmyyyy = parse(trimmed, 'dd/MM/yyyy', new Date());
+    if (isValid(ddmmyyyy)) {
+      return ddmmyyyy.toISOString();
+    }
+    
+    // Try YYYY-MM-DD format
+    const yyyymmdd = parse(trimmed, 'yyyy-MM-dd', new Date());
+    if (isValid(yyyymmdd)) {
+      return yyyymmdd.toISOString();
+    }
+  }
+  
+  return null;
+};
 
 export const useBuyerContactImport = () => {
   const queryClient = useQueryClient();
@@ -153,17 +199,29 @@ export const useBuyerContactImport = () => {
       for (let i = 0; i < rows.length; i += batchSize) {
         const batch = rows.slice(i, i + batchSize);
         
-        const contacts = batch.map(row => ({
-          first_name: row.first_name?.trim() || '',
-          last_name: row.last_name?.trim() || null,
-          email: row.email?.toLowerCase().trim() || '',
-          phone: row.phone?.trim() || null,
-          company: row.company?.trim() || null,
-          position: row.position?.trim() || null,
-          import_batch_id: batchId,
-          import_filename: filename,
-          imported_at: new Date().toISOString(),
-        }));
+        const contacts = batch.map(row => {
+          // Try to extract date from multiple possible column names
+          const dateValue = row.lead_received_at || 
+                           row['Fecha de registro'] || 
+                           row['Fecha entrada'] ||
+                           row['fecha_registro'] ||
+                           row['Fecha'] ||
+                           null;
+          const parsedDate = parseExcelDate(dateValue);
+          
+          return {
+            first_name: row.first_name?.trim() || '',
+            last_name: row.last_name?.trim() || null,
+            email: row.email?.toLowerCase().trim() || '',
+            phone: row.phone?.trim() || null,
+            company: row.company?.trim() || null,
+            position: row.position?.trim() || null,
+            import_batch_id: batchId,
+            import_filename: filename,
+            imported_at: new Date().toISOString(),
+            lead_received_at: parsedDate || new Date().toISOString(),
+          };
+        });
         
         const { data, error } = await supabase
           .from('buyer_contacts')

@@ -7,6 +7,7 @@ import { BuyerContact, BuyerContactStatus } from '@/types/buyer-contacts';
 import { BuyerContactsTable } from '@/components/admin/buyer-contacts/BuyerContactsTable';
 import { BuyerContactDetailSheet } from '@/components/admin/buyer-contacts/BuyerContactDetailSheet';
 import { ExcelImporter } from '@/components/admin/buyer-contacts/ExcelImporter';
+import { BuyerBulkDateSelect } from '@/components/admin/buyer-contacts/BuyerBulkDateSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Search, RefreshCw, Users, UserCheck, UserX, ShoppingCart, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, Users, UserCheck, UserX, ShoppingCart, Loader2, X } from 'lucide-react';
 
 const BuyerContactsManager: React.FC = () => {
   const {
@@ -41,6 +42,7 @@ const BuyerContactsManager: React.FC = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [contactToDelete, setContactToDelete] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Filtrar contactos
   const filteredContacts = useMemo(() => {
@@ -89,6 +91,10 @@ const BuyerContactsManager: React.FC = () => {
 
   const handleUpdateStatus = (id: string, status: BuyerContactStatus) => {
     updateStatus(id, status);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
   };
 
   if (isLoading) {
@@ -199,8 +205,29 @@ const BuyerContactsManager: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Bulk Actions Bar */}
+          {selectedIds.length > 0 && (
+            <div className="mb-4 p-3 bg-muted/50 rounded-lg flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">
+                  {selectedIds.length} contacto{selectedIds.length !== 1 ? 's' : ''} seleccionado{selectedIds.length !== 1 ? 's' : ''}
+                </span>
+                <BuyerBulkDateSelect 
+                  selectedIds={selectedIds} 
+                  onSuccess={handleClearSelection} 
+                />
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleClearSelection}>
+                <X className="h-4 w-4 mr-1" />
+                Limpiar
+              </Button>
+            </div>
+          )}
+
           <BuyerContactsTable
             contacts={filteredContacts}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
             onViewContact={handleViewContact}
             onDeleteContact={handleDeleteClick}
             onUpdateStatus={handleUpdateStatus}
