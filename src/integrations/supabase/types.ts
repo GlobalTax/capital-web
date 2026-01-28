@@ -2532,6 +2532,54 @@ export type Database = {
         }
         Relationships: []
       }
+      calculator_errors: {
+        Row: {
+          action: string
+          company_data: Json | null
+          component: string
+          created_at: string
+          current_step: number | null
+          error_message: string
+          error_stack: string | null
+          error_type: string
+          id: string
+          ip_address: unknown
+          source_project: string | null
+          unique_token: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          company_data?: Json | null
+          component: string
+          created_at?: string
+          current_step?: number | null
+          error_message: string
+          error_stack?: string | null
+          error_type: string
+          id?: string
+          ip_address?: unknown
+          source_project?: string | null
+          unique_token?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          company_data?: Json | null
+          component?: string
+          created_at?: string
+          current_step?: number | null
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string
+          id?: string
+          ip_address?: unknown
+          source_project?: string | null
+          unique_token?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       calendar_bookings: {
         Row: {
           assigned_at: string | null
@@ -5960,6 +6008,7 @@ export type Database = {
           assigned_by_admin: boolean | null
           completed: boolean | null
           created_at: string | null
+          created_by: string | null
           description: string | null
           estimated_minutes: number
           id: string
@@ -5975,6 +6024,7 @@ export type Database = {
           assigned_by_admin?: boolean | null
           completed?: boolean | null
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           estimated_minutes?: number
           id?: string
@@ -5990,6 +6040,7 @@ export type Database = {
           assigned_by_admin?: boolean | null
           completed?: boolean | null
           created_at?: string | null
+          created_by?: string | null
           description?: string | null
           estimated_minutes?: number
           id?: string
@@ -6076,6 +6127,7 @@ export type Database = {
           planned_for_date: string
           status: string
           submitted_at: string | null
+          total_estimated_minutes: number | null
           updated_at: string | null
           user_id: string
           user_notes: string | null
@@ -6089,6 +6141,7 @@ export type Database = {
           planned_for_date: string
           status?: string
           submitted_at?: string | null
+          total_estimated_minutes?: number | null
           updated_at?: string | null
           user_id: string
           user_notes?: string | null
@@ -6102,6 +6155,7 @@ export type Database = {
           planned_for_date?: string
           status?: string
           submitted_at?: string | null
+          total_estimated_minutes?: number | null
           updated_at?: string | null
           user_id?: string
           user_notes?: string | null
