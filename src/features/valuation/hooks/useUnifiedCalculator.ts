@@ -1,10 +1,13 @@
 // ============= UNIFIED CALCULATOR HOOK =============
 // Single hook to rule all calculator versions
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { dataAccessService } from '../services/data-access.service';
+import { useLocalStorageBackup } from './useLocalStorageBackup';
+import { usePreventiveSave } from './usePreventiveSave';
+import { calculatorErrorHandler } from '../services/error-logging.service';
 import { 
   ExtendedCompanyData, 
   CalculatorState, 
@@ -72,6 +75,14 @@ export const useUnifiedCalculator = (
   });
   
   const [uniqueToken, setUniqueToken] = useState<string | null>(null);
+  const previousStepRef = useRef(1);
+
+  // ============= ANTI-LOSS PROTECTION =============
+  const { saveBackup, getLatestBackup } = useLocalStorageBackup(config.sourceProject);
+  const preventiveSave = usePreventiveSave({
+    sourceProject: config.sourceProject,
+    leadSource: extraMetadata?.leadSource
+  });
 
   // ============= DATA FETCHING =============
   const { data: sectorMultiples = [] } = useQuery({
@@ -144,17 +155,41 @@ export const useUnifiedCalculator = (
   }, []);
 
   // ============= NAVIGATION =============
-  const nextStep = useCallback(() => {
+  const nextStep = useCallback(async () => {
     if (state.currentStep < config.steps && isCurrentStepValid) {
+      const newStep = state.currentStep + 1;
+      
+      // 🛡️ PREVENTIVE SAVE: Save lead early when transitioning from Step 1 to Step 2
+      // This ensures we capture contact data even if calculation fails later
+      if (state.currentStep === 1 && newStep === 2) {
+        console.log('[ANTI_LOSS] Triggering preventive save on Step 1 → 2 transition');
+        
+        // Save to localStorage immediately (guaranteed)
+        saveBackup(state.companyData, newStep);
+        
+        // Attempt database save (async, non-blocking)
+        preventiveSave.saveEarlyLead(state.companyData, newStep).then(result => {
+          if (result.success && result.token) {
+            console.log('[ANTI_LOSS] Early lead saved with token:', result.token);
+            setUniqueToken(result.token);
+          } else {
+            console.warn('[ANTI_LOSS] Early save failed, localStorage backup active');
+          }
+        });
+      } else if (preventiveSave.savedToken) {
+        // Update existing early lead with new data
+        preventiveSave.updateEarlyLead(preventiveSave.savedToken, state.companyData, newStep);
+      }
+      
       setState(prev => ({
         ...prev,
-        currentStep: prev.currentStep + 1,
+        currentStep: newStep,
         showValidation: false
       }));
     } else {
       setState(prev => ({ ...prev, showValidation: true }));
     }
-  }, [state.currentStep, config.steps, isCurrentStepValid]);
+  }, [state.currentStep, state.companyData, config.steps, isCurrentStepValid, saveBackup, preventiveSave]);
 
   const prevStep = useCallback(() => {
     if (state.currentStep > 1) {
@@ -194,7 +229,10 @@ export const useUnifiedCalculator = (
     console.log('🚀 Starting calculation process...');
     setState(prev => ({ ...prev, isCalculating: true }));
 
-    return await handleAsyncError(async () => {
+    // 🛡️ BACKUP: Save current state before calculation
+    saveBackup(state.companyData, state.currentStep);
+
+    try {
       console.log('🚀 Calling calculateUnifiedValuation with data:', {
         companyData: state.companyData,
         sectorMultiples: sectorMultiples.length,
@@ -228,17 +266,35 @@ export const useUnifiedCalculator = (
         currentStep: nextStep
       }));
 
+      // 🛡️ FINALIZE: Complete the early lead if we have a preventive token
+      const tokenToFinalize = preventiveSave.savedToken || uniqueToken;
+      if (tokenToFinalize) {
+        console.log('[ANTI_LOSS] Finalizing lead with token:', tokenToFinalize);
+        await preventiveSave.finalizeLead(tokenToFinalize, result);
+      }
+
       // Finalize valuation if autosave enabled
       if (config.features.autosave && uniqueToken) {
         await dataAccessService.finalizeValuation(uniqueToken, result);
       }
 
       return result;
-    }, { 
-      component: 'UnifiedCalculator', 
-      action: 'calculateValuation' 
-    }) || null;
-  }, [isFormValid, state.companyData, state.taxData, sectorMultiples, config, uniqueToken, handleAsyncError]);
+    } catch (error) {
+      const err = error as Error;
+      console.error('🚀 Calculation failed:', err);
+      
+      // 🛡️ LOG ERROR: Capture the failure for recovery
+      await calculatorErrorHandler.logCalculationError(
+        err,
+        state.companyData,
+        state.currentStep,
+        preventiveSave.savedToken || uniqueToken || undefined
+      );
+
+      setState(prev => ({ ...prev, isCalculating: false }));
+      throw error;
+    }
+  }, [isFormValid, state.companyData, state.taxData, state.currentStep, sectorMultiples, config, uniqueToken, preventiveSave, saveBackup]);
 
   // ============= AUTOSAVE =============
   const initializeAutosave = useCallback(async () => {
@@ -336,11 +392,15 @@ export const useUnifiedCalculator = (
   return {
     // State
     ...state,
-    uniqueToken,
+    uniqueToken: preventiveSave.savedToken || uniqueToken, // Prefer preventive token
     sectorMultiples,
     isCurrentStepValid,
     isFormValid,
     extraMetadata, // 🔥 NEW: Expose metadata for manual entries
+    
+    // 🛡️ Anti-loss protection status
+    hasSavedLead: preventiveSave.hasSaved,
+    isSavingLead: preventiveSave.isSaving,
     
     // Actions
     updateField,
