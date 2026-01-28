@@ -44,6 +44,7 @@ import { Fase0DocumentButtons, Fase0DocumentsList } from '@/features/fase0-docum
 import { useQueryClient } from '@tanstack/react-query';
 import { ActivityDescriptionGenerator } from '@/components/admin/leads/ActivityDescriptionGenerator';
 import { SectorTagsBlock } from '@/components/admin/contacts/SectorTagsBlock';
+import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -568,6 +569,23 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
               <Separator className="bg-[hsl(var(--linear-border))] my-4" />
             </>
           )}
+
+          {/* Lead Status - Dynamic from contact_statuses */}
+          <div className="space-y-1 mb-6">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+              Estado del lead
+            </h3>
+            <LeadStatusSelect
+              leadId={contact.id}
+              leadType={contact.origin}
+              currentStatus={(contact as any).lead_status_crm || 'nuevo'}
+              onStatusChange={() => {
+                queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
+              }}
+            />
+          </div>
+
+          <Separator className="bg-[hsl(var(--linear-border))] my-4" />
 
           {/* Email tracking */}
           <div className="space-y-1 mb-6">

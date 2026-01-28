@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils';
 import { SelectOption } from '@/components/admin/shared/EditableSelect';
 import { useAcquisitionChannels, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
-import { ContactTableRow, COL_STYLES, STATUS_OPTIONS } from './ContactTableRow';
+import { ContactTableRow, COL_STYLES } from './ContactTableRow';
+import { useContactStatuses, STATUS_COLOR_MAP, ContactStatus } from '@/hooks/useContactStatuses';
 
 // Minimum table width to ensure all columns fit (increased for province column)
 const MIN_TABLE_WIDTH = 1152;
@@ -114,6 +115,8 @@ interface ItemData {
   contacts: UnifiedContact[];
   selectedContacts: Set<string>;
   channelOptions: SelectOption[];
+  statusOptions: SelectOption[];
+  allStatuses: ContactStatus[];
   onSelect: (id: string) => void;
   onViewDetails: (contact: UnifiedContact) => void;
   onUpdateField: (id: string, origin: ContactOrigin, field: string, value: string | null) => Promise<void>;
@@ -139,6 +142,8 @@ const VirtualizedRow = React.memo<{
       contact={contact}
       isSelected={isSelected}
       channelOptions={data.channelOptions}
+      statusOptions={data.statusOptions}
+      allStatuses={data.allStatuses}
       onSelect={data.onSelect}
       onViewDetails={data.onViewDetails}
       onUpdateField={data.onUpdateField}
@@ -176,6 +181,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   // Hooks for inline editing
   const { channels } = useAcquisitionChannels();
   const { update: updateContact } = useContactInlineUpdate();
+  const { activeStatuses, statuses: allStatuses } = useContactStatuses();
   
   // Calculate dynamic height based on container
   useEffect(() => {
@@ -205,6 +211,16 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     })), [channels]
   );
 
+  // Memoize dynamic status options from database
+  const statusOptions = useMemo<SelectOption[]>(() => 
+    activeStatuses.map(s => ({
+      value: s.status_key,
+      label: s.label,
+      color: STATUS_COLOR_MAP[s.color]?.text?.replace('text-', '#') || '#6b7280',
+      icon: s.icon ? <span className="text-xs">{s.icon}</span> : undefined,
+    })), [activeStatuses]
+  );
+
   // Memoize update handler
   const handleUpdateField = useCallback(
     async (contactId: string, origin: ContactOrigin, field: string, value: string | null) => {
@@ -231,6 +247,8 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     contacts,
     selectedContacts: selectedSet,
     channelOptions,
+    statusOptions,
+    allStatuses,
     onSelect: onSelectContact,
     onViewDetails,
     onUpdateField: handleUpdateField,
@@ -242,6 +260,8 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     contacts,
     selectedSet,
     channelOptions,
+    statusOptions,
+    allStatuses,
     onSelectContact,
     onViewDetails,
     handleUpdateField,
