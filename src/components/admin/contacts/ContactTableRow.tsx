@@ -37,18 +37,7 @@ const ORIGIN_CONFIGS: Record<ContactOrigin, { label: string; color: string }> = 
   advisor: { label: 'Asesor', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' },
 };
 
-// Status options - static
-export const STATUS_OPTIONS: SelectOption[] = [
-  { value: 'nuevo', label: 'Nuevo', color: '#6b7280' },
-  { value: 'contactado', label: 'Contactado', color: '#3b82f6' },
-  { value: 'calificado', label: 'Calificado', color: '#10b981' },
-  { value: 'contactando', label: 'Contactando', color: '#f59e0b' },
-  { value: 'propuesta_enviada', label: 'Propuesta', color: '#8b5cf6' },
-  { value: 'negociacion', label: 'Negociación', color: '#ec4899' },
-  { value: 'ganado', label: 'Ganado', color: '#22c55e' },
-  { value: 'perdido', label: 'Perdido', color: '#ef4444' },
-  { value: 'descartado', label: 'Descartado', color: '#94a3b8' },
-];
+import { ContactStatus, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
 
 // Format currency helper - handles NUMERIC types serialized as strings by PostgreSQL/PostgREST
 const formatCurrency = (value?: number | string | null) => {
@@ -70,6 +59,8 @@ export interface ContactRowProps {
   contact: UnifiedContact;
   isSelected: boolean;
   channelOptions: SelectOption[];
+  statusOptions: SelectOption[];
+  allStatuses: ContactStatus[];
   onSelect: (id: string) => void;
   onViewDetails: (contact: UnifiedContact) => void;
   onUpdateField: (id: string, origin: ContactOrigin, field: string, value: string | null) => Promise<void>;
@@ -103,6 +94,8 @@ export const ContactTableRow = memo<ContactRowProps>(({
   contact,
   isSelected,
   channelOptions,
+  statusOptions,
+  allStatuses,
   onSelect,
   onViewDetails,
   onUpdateField,
@@ -300,16 +293,29 @@ export const ContactTableRow = memo<ContactRowProps>(({
         />
       </div>
       
-      {/* Status */}
+      {/* Status - Dynamic from contact_statuses table */}
       <div className="px-1.5" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }} onClick={(e) => e.stopPropagation()}>
-        <EditableSelect
-          value={(contact as any).lead_status_crm ?? undefined}
-          options={STATUS_OPTIONS}
-          placeholder="—"
-          emptyText="—"
-          allowClear
-          onSave={handleStatusUpdate}
-        />
+        {(() => {
+          const currentStatus = (contact as any).lead_status_crm;
+          const isInactiveStatus = currentStatus && !statusOptions.find(o => o.value === currentStatus);
+          const inactiveStatusData = isInactiveStatus ? allStatuses.find(s => s.status_key === currentStatus) : null;
+          
+          // Build options including inactive status if needed
+          const effectiveOptions = isInactiveStatus && inactiveStatusData
+            ? [{ value: currentStatus, label: `${inactiveStatusData.label} (Inactivo)`, color: '#94a3b8' }, ...statusOptions]
+            : statusOptions;
+          
+          return (
+            <EditableSelect
+              value={currentStatus ?? undefined}
+              options={effectiveOptions}
+              placeholder="—"
+              emptyText="—"
+              allowClear
+              onSave={handleStatusUpdate}
+            />
+          );
+        })()}
       </div>
 
       {/* Facturación */}
@@ -423,7 +429,8 @@ export const ContactTableRow = memo<ContactRowProps>(({
     prevProps.contact.revenue === nextProps.contact.revenue &&
     prevProps.contact.ebitda === nextProps.contact.ebitda &&
     prevProps.contact.empresa_facturacion === nextProps.contact.empresa_facturacion &&
-    prevProps.channelOptions === nextProps.channelOptions
+    prevProps.channelOptions === nextProps.channelOptions &&
+    prevProps.statusOptions === nextProps.statusOptions
   );
 });
 

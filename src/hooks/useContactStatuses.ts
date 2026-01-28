@@ -154,6 +154,23 @@ export const useContactStatuses = () => {
         throw new Error('No se puede eliminar un estado del sistema');
       }
 
+      // Check if any contacts are using this status
+      const { count: contactLeadsCount } = await supabase
+        .from('contact_leads')
+        .select('id', { count: 'exact', head: true })
+        .eq('lead_status_crm', status?.status_key as any);
+
+      const { count: valuationsCount } = await supabase
+        .from('company_valuations')
+        .select('id', { count: 'exact', head: true })
+        .eq('lead_status_crm', status?.status_key as any);
+
+      const totalUsage = (contactLeadsCount || 0) + (valuationsCount || 0);
+      
+      if (totalUsage > 0) {
+        throw new Error(`No se puede eliminar: ${totalUsage} contactos usan este estado. Desactívalo en su lugar.`);
+      }
+
       const { error } = await supabase
         .from('contact_statuses')
         .delete()
