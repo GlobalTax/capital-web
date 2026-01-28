@@ -820,6 +820,57 @@ export type Database = {
           },
         ]
       }
+      ads_costs_history: {
+        Row: {
+          campaign_id: string | null
+          campaign_name: string
+          clicks: number | null
+          conversions: number | null
+          created_at: string
+          currency: string
+          date: string
+          id: string
+          imported_at: string
+          imported_by: string | null
+          impressions: number | null
+          platform: Database["public"]["Enums"]["ads_platform"]
+          raw_row: Json
+          spend: number
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_name: string
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string
+          currency?: string
+          date: string
+          id?: string
+          imported_at?: string
+          imported_by?: string | null
+          impressions?: number | null
+          platform: Database["public"]["Enums"]["ads_platform"]
+          raw_row: Json
+          spend: number
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_name?: string
+          clicks?: number | null
+          conversions?: number | null
+          created_at?: string
+          currency?: string
+          date?: string
+          id?: string
+          imported_at?: string
+          imported_by?: string | null
+          impressions?: number | null
+          platform?: Database["public"]["Enums"]["ads_platform"]
+          raw_row?: Json
+          spend?: number
+        }
+        Relationships: []
+      }
       advisor_ebitda_multiples_by_range: {
         Row: {
           created_at: string | null
@@ -20720,6 +20771,7 @@ export type Database = {
       absence_type: "vacation" | "sick_leave" | "personal" | "other"
       access_level: "internal" | "client" | "public"
       admin_role: "super_admin" | "admin" | "editor" | "viewer"
+      ads_platform: "meta_ads" | "google_ads"
       dd_workstream:
         | "legal"
         | "financial"
@@ -20954,6 +21006,7 @@ export const Constants = {
       absence_type: ["vacation", "sick_leave", "personal", "other"],
       access_level: ["internal", "client", "public"],
       admin_role: ["super_admin", "admin", "editor", "viewer"],
+      ads_platform: ["meta_ads", "google_ads"],
       dd_workstream: [
         "legal",
         "financial",
