@@ -1,288 +1,259 @@
 
-# Plan: Completar Sistema de Estados Configurables para Contactos
+# Plan: Fecha de Registro Editable para Campaña API + Navegador
 
-## Resumen del Análisis
+## Resumen Ejecutivo
 
-Tras revisar el código en profundidad, he encontrado que ya existe una implementación parcial del sistema de estados configurables:
-
-| Componente | Estado | Ubicación |
-|------------|--------|-----------|
-| Tabla `contact_statuses` | ✅ Completa | BD Supabase |
-| Hook `useContactStatuses` | ✅ Completo | `src/hooks/useContactStatuses.ts` |
-| UI de gestión `StatusesEditor` | ✅ Completo | `src/components/admin/contacts/StatusesEditor.tsx` |
-| Modal crear/editar `StatusEditModal` | ✅ Completo | `src/components/admin/contacts/StatusEditModal.tsx` |
-| Selector en tabla `ContactTableRow` | ❌ **HARDCODEADO** | Usa `STATUS_OPTIONS` estático |
-| Selector en ficha `ContactDetailSheet` | ❌ **NO EXISTE** | Falta integrar |
+Implementar la funcionalidad de "Fecha de registro" (`lead_received_at`) editable en masa para los leads de la campaña "API + Navegador", replicando la funcionalidad existente en `/admin/contacts` pero aplicada a la tabla `buyer_contacts`.
 
 ---
 
-## Problema Principal Detectado
+## Contexto Técnico Identificado
 
-En `ContactTableRow.tsx` (líneas 41-51), los estados están **hardcodeados**:
+### Estado Actual
+- La tabla `buyer_contacts` gestiona los contactos de campañas tipo "Compras"
+- **NO existe** el campo `lead_received_at` en `buyer_contacts`
+- El sistema de `/admin/contacts` ya tiene:
+  - Campo `lead_received_at` en `contact_leads`
+  - Componente `BulkDateSelect` para edición masiva
+  - Edge function `bulk-update-contacts` que soporta múltiples tablas
+  - Hook `useBulkUpdateReceivedDate` con optimistic updates
 
-```typescript
-// PROBLEMA: Opciones estáticas, NO usa contact_statuses
-export const STATUS_OPTIONS: SelectOption[] = [
-  { value: 'nuevo', label: 'Nuevo', color: '#6b7280' },
-  { value: 'contactado', label: 'Contactado', color: '#3b82f6' },
-  // ... etc
-];
+### Arquitectura Objetivo
+Extender la infraestructura existente para soportar `buyer_contacts` con la misma UX.
+
+---
+
+## Cambios Planificados
+
+### 1. Base de Datos - Migración
+
+Añadir el campo `lead_received_at` a la tabla `buyer_contacts`:
+
+```sql
+-- Añadir campo lead_received_at
+ALTER TABLE buyer_contacts 
+ADD COLUMN lead_received_at TIMESTAMPTZ DEFAULT NOW();
+
+-- Migrar datos existentes: lead_received_at = created_at
+UPDATE buyer_contacts 
+SET lead_received_at = created_at 
+WHERE lead_received_at IS NULL;
+
+-- Crear trigger para nuevos registros
+CREATE OR REPLACE FUNCTION set_lead_received_at_buyer()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.lead_received_at IS NULL THEN
+    NEW.lead_received_at := NEW.created_at;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_set_lead_received_at_buyer
+BEFORE INSERT ON buyer_contacts
+FOR EACH ROW
+EXECUTE FUNCTION set_lead_received_at_buyer();
 ```
 
-Esto significa que:
-- Si añades un estado nuevo desde el panel, NO aparece en la tabla
-- Si cambias el label o color de un estado, NO se refleja en la tabla
-- Los cambios de estado persisten correctamente (usa `lead_status_crm`), pero el UI no es dinámico
-
 ---
 
-## Solución Propuesta
+### 2. Backend - Actualizar Edge Function
 
-### Fase 1: Hacer dinámico el selector de estado en la tabla
+Modificar `supabase/functions/bulk-update-contacts/index.ts` para soportar `buyer_contacts`:
 
-**Archivo**: `src/components/admin/contacts/LinearContactsTable.tsx`
-
-Cambiar de pasar `STATUS_OPTIONS` estático a pasar los estados dinámicos de `useContactStatuses`:
+**Cambios:**
+- Añadir `buyer_contacts` al mapa `contactsByTable`
+- Añadir `buyer` al mapa `originToTable`
+- Incluir `buyer_contacts` en `tablesWithUpdatedAt`
 
 ```typescript
-import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
+// Añadir al mapa de tablas
+const contactsByTable: Record<string, string[]> = {
+  // ... tablas existentes
+  buyer_contacts: [],
+};
 
-const LinearContactsTable = ({ ... }) => {
-  const { activeStatuses } = useContactStatuses();
-  
-  // Convertir a formato SelectOption
-  const statusOptions = useMemo(() => 
-    activeStatuses.map(s => ({
-      value: s.status_key,
-      label: s.label,
-      color: STATUS_COLOR_MAP[s.color]?.text || '#6b7280',
-      icon: s.icon,
-    })),
-    [activeStatuses]
-  );
-  
-  // Pasar statusOptions a cada row
+const originToTable: Record<string, string> = {
+  // ... orígenes existentes
+  'buyer': 'buyer_contacts',
 };
 ```
 
-**Archivo**: `src/components/admin/contacts/ContactTableRow.tsx`
-
-- Eliminar el export de `STATUS_OPTIONS` hardcodeado
-- Recibir `statusOptions` como prop
-- Añadir lógica para mostrar "(Inactivo)" si el estado actual está desactivado
-
 ---
 
-### Fase 2: Añadir selector de estado a ContactDetailSheet
+### 3. Frontend - Componentes UI
 
-**Archivo**: `src/components/admin/contacts/ContactDetailSheet.tsx`
+#### 3.1 Actualizar Tabla de Buyer Contacts
 
-Añadir el componente `LeadStatusSelect` (ya existe y funciona correctamente):
+**Archivo:** `src/components/admin/buyer-contacts/BuyerContactsTable.tsx`
+
+Cambios:
+- Añadir columna "Fecha de registro" mostrando `lead_received_at`
+- Añadir checkboxes para selección múltiple
+- Implementar lógica de selección (selectContact, selectAll)
+- Reemplazar columna menos útil por "Fecha Alta" → "F. Registro"
 
 ```typescript
-import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
+// Nueva columna en TableHeader
+<TableHead>F. Registro</TableHead>
 
-// En la sección de "Estado del seguimiento"
-<LeadStatusSelect
-  leadId={contact.id}
-  leadType={contact.origin}
-  currentStatus={contact.lead_status_crm || 'nuevo'}
-  onStatusChange={() => queryClient.invalidateQueries(['unified-contacts'])}
-/>
+// En cada fila
+<TableCell className="text-sm text-muted-foreground">
+  {format(new Date(contact.lead_received_at || contact.created_at), 'dd/MM/yyyy', { locale: es })}
+</TableCell>
 ```
+
+#### 3.2 Crear Componente de Selección Masiva
+
+**Nuevo archivo:** `src/components/admin/buyer-contacts/BuyerBulkDateSelect.tsx`
+
+Reutilizar la estructura de `BulkDateSelect.tsx` adaptada para buyer_contacts:
+- Date picker con calendario
+- Validación: no permitir fechas futuras
+- Diálogo de confirmación antes de aplicar
+- Toast de éxito/error
+
+#### 3.3 Crear Manager con Acciones Masivas
+
+**Archivo a modificar:** Crear o actualizar el manager principal de buyer-contacts para incluir:
+- Barra de acciones masivas cuando hay selección
+- Botón "Cambiar fecha de registro"
+- Integración con el hook de bulk update
 
 ---
 
-### Fase 3: Validaciones de integridad
+### 4. Hooks
 
-1. **No permitir eliminar estados en uso**: Añadir validación en `useContactStatuses.deleteStatus`
-2. **Mostrar "(Inactivo)" en contactos con estado desactivado**: Ya implementado en `LeadStatusSelect`, falta en tabla
-3. **Fallback a "Nuevo"**: Si un contacto no tiene estado, mostrar "Nuevo" por defecto
+#### 4.1 Hook de Selección
 
----
-
-## Archivos a Modificar
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/admin/contacts/LinearContactsTable.tsx` | Usar `useContactStatuses` para generar opciones dinámicas |
-| `src/components/admin/contacts/ContactTableRow.tsx` | Eliminar `STATUS_OPTIONS` hardcodeado, recibir como prop |
-| `src/components/admin/contacts/ContactDetailSheet.tsx` | Añadir `LeadStatusSelect` para cambiar estado desde ficha |
-| `src/hooks/useContactStatuses.ts` | Añadir validación antes de eliminar |
-
----
-
-## Diagrama de Flujo Actual vs Propuesto
-
-**Actual (problemático)**:
-```
-StatusesEditor → contact_statuses (BD)
-                       ↓
-                   (desconectado)
-                       ↓
-ContactTableRow → STATUS_OPTIONS (hardcodeado) → UI estático
-```
-
-**Propuesto (correcto)**:
-```
-StatusesEditor → contact_statuses (BD) ← useContactStatuses
-                                              ↓
-                                       activeStatuses
-                                              ↓
-ContactTableRow → statusOptions (dinámico) → UI reactivo
-```
-
----
-
-## Sección Técnica
-
-### 1. Cambios en LinearContactsTable.tsx
+**Nuevo archivo:** `src/hooks/useBuyerContactSelection.ts`
 
 ```typescript
-// Añadir import
-import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
-
-// Dentro del componente
-const { activeStatuses, statuses } = useContactStatuses();
-
-// Generar opciones dinámicas
-const statusOptions = useMemo(() => 
-  activeStatuses.map(s => ({
-    value: s.status_key,
-    label: s.label,
-    color: STATUS_COLOR_MAP[s.color]?.text?.replace('text-', '') || '#6b7280',
-    icon: s.icon,
-  })),
-  [activeStatuses]
-);
-
-// Pasar a ContactTableRow
-<ContactTableRow
-  {...props}
-  statusOptions={statusOptions}
-  allStatuses={statuses} // Para detectar estados inactivos
-/>
+export function useBuyerContactSelection(contacts: BuyerContact[]) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  
+  const selectContact = (id: string) => {...};
+  const selectAll = () => {...};
+  const clearSelection = () => {...};
+  
+  return { selectedIds, selectContact, selectAll, clearSelection };
+}
 ```
 
-### 2. Cambios en ContactTableRow.tsx
+#### 4.2 Hook de Bulk Update
+
+**Nuevo archivo:** `src/hooks/useBulkUpdateBuyerDate.ts`
+
+Similar a `useBulkUpdateReceivedDate` pero para buyer_contacts:
+- Optimistic update en cache de React Query
+- Llamada a `bulk-update-contacts` con prefix `buyer_`
+- Rollback en caso de error
+- Toast de feedback
+
+---
+
+### 5. Importación Excel - Soporte de Fecha
+
+**Archivo:** `src/hooks/useBuyerContactImport.ts`
+
+Modificaciones:
+- Detectar columna "Fecha de registro" / "lead_received_at" / "Fecha entrada"
+- Parsear fecha con formatos múltiples:
+  - Excel serial date
+  - DD/MM/YYYY
+  - YYYY-MM-DD
+- Si la columna existe y es válida → usar esa fecha
+- Si no existe → usar `created_at` (momento de importación)
 
 ```typescript
-// Eliminar estas líneas (41-51)
-// export const STATUS_OPTIONS: SelectOption[] = [...]
+// Añadir al parseExcelFile
+const parseDate = (value: any): string | null => {
+  if (!value) return null;
+  // Formato serial de Excel
+  if (typeof value === 'number') {
+    const date = XLSX.SSF.parse_date_code(value);
+    return new Date(date.y, date.m - 1, date.d).toISOString();
+  }
+  // Formatos string
+  const parsed = parseISO(value) || parse(value, 'dd/MM/yyyy', new Date());
+  return isValid(parsed) ? parsed.toISOString() : null;
+};
 
-// Añadir props
-interface ContactRowProps {
-  // ... existentes
-  statusOptions: SelectOption[];
-  allStatuses?: ContactStatus[]; // Para detectar inactivos
+// En executeImport
+const contacts = batch.map(row => ({
+  // ... otros campos
+  lead_received_at: parseDate(row.lead_received_at || row['Fecha de registro']) || new Date().toISOString(),
+}));
+```
+
+---
+
+### 6. Tipos TypeScript
+
+**Archivo:** `src/types/buyer-contacts.ts`
+
+```typescript
+export interface BuyerContact {
+  // ... campos existentes
+  lead_received_at: string | null; // NUEVO
 }
 
-// En el render del selector
-<EditableSelect
-  value={contact.lead_status_crm ?? undefined}
-  options={statusOptions}
-  placeholder="—"
-  emptyText="—"
-  allowClear
-  onSave={handleStatusUpdate}
-  // Mostrar "(Inactivo)" si el estado actual no está en activeStatuses
-  renderValue={(val) => {
-    const inActive = statusOptions.find(o => o.value === val);
-    if (!inActive && val) {
-      const inactive = allStatuses?.find(s => s.status_key === val);
-      return inactive ? `${inactive.label} (Inactivo)` : val;
-    }
-    return inActive?.label || val;
-  }}
-/>
+export interface ExcelRow {
+  // ... campos existentes
+  lead_received_at?: string; // NUEVO
+  'Fecha de registro'?: string; // Alias alternativo
+}
 ```
 
-### 3. Añadir LeadStatusSelect a ContactDetailSheet.tsx
+---
 
-```typescript
-// Añadir import
-import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
+## Flujo de Usuario Final
 
-// En la sección "Estado del seguimiento" (línea ~573)
-<div className="space-y-1 mb-6">
-  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-    Estado del lead
-  </h3>
-  <LeadStatusSelect
-    leadId={contact.id}
-    leadType={contact.origin}
-    currentStatus={contact.lead_status_crm || 'nuevo'}
-    onStatusChange={() => {
-      queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
-    }}
-  />
-</div>
+```text
+1. Usuario va a la vista de gestión de "API + Navegador"
+2. Ve la tabla con columna "F. Registro" visible
+3. Puede:
+   a) Importar Excel con columna opcional de fecha
+   b) Seleccionar múltiples leads con checkboxes
+   c) Click en "Cambiar fecha de registro"
+   d) Seleccionar fecha en el date picker
+   e) Confirmar en el modal
+4. Se actualiza la fecha de todos los seleccionados
+5. Toast confirma el éxito
 ```
 
-### 4. Validación antes de eliminar en useContactStatuses.ts
+---
 
-```typescript
-// En deleteStatusMutation.mutationFn
-const deleteStatusMutation = useMutation({
-  mutationFn: async (id: string) => {
-    const status = statuses.find(s => s.id === id);
-    if (status?.is_system) {
-      throw new Error('No se puede eliminar un estado del sistema');
-    }
-    
-    // NUEVO: Verificar si hay contactos usando este estado
-    const { count, error: countError } = await supabase
-      .from('contact_leads')
-      .select('id', { count: 'exact', head: true })
-      .eq('lead_status_crm', status?.status_key);
-    
-    if (countError) throw countError;
-    if (count && count > 0) {
-      throw new Error(`No se puede eliminar: ${count} contactos usan este estado`);
-    }
-    
-    // Proceder con la eliminación
-    const { error } = await supabase
-      .from('contact_statuses')
-      .delete()
-      .eq('id', id);
+## Archivos a Crear/Modificar
 
-    if (error) throw error;
-  },
-  // ...
-});
-```
+| Archivo | Acción |
+|---------|--------|
+| `supabase/migrations/xxx.sql` | CREAR - Migración para añadir campo |
+| `supabase/functions/bulk-update-contacts/index.ts` | MODIFICAR - Añadir soporte buyer_contacts |
+| `src/types/buyer-contacts.ts` | MODIFICAR - Añadir lead_received_at |
+| `src/hooks/useBuyerContactImport.ts` | MODIFICAR - Parsear columna fecha |
+| `src/hooks/useBuyerContactSelection.ts` | CREAR - Hook de selección |
+| `src/hooks/useBulkUpdateBuyerDate.ts` | CREAR - Hook de bulk update |
+| `src/components/admin/buyer-contacts/BuyerContactsTable.tsx` | MODIFICAR - Columna + checkboxes |
+| `src/components/admin/buyer-contacts/BuyerBulkDateSelect.tsx` | CREAR - Componente date picker masivo |
+| `src/components/admin/buyer-contacts/BuyerContactsManager.tsx` | CREAR/MODIFICAR - Manager con acciones masivas |
 
 ---
 
 ## Pruebas Requeridas
 
-1. Crear un estado nuevo desde StatusesEditor y verificar que aparece en la tabla
-2. Editar label/color/orden de un estado y verificar que se refleja en la tabla
-3. Desactivar un estado usado por un contacto y verificar que se muestra como "(Inactivo)"
-4. Cambiar el estado de un contacto desde la tabla (inline) y desde la ficha de detalle
-5. Verificar que los filtros por estado siguen funcionando
-6. Intentar eliminar un estado en uso y verificar que se muestra error
+1. **Importar Excel sin columna fecha** → `lead_received_at` = `created_at`
+2. **Importar Excel con columna fecha** → `lead_received_at` = fecha del Excel
+3. **Seleccionar múltiples leads → cambiar fecha** → persiste correctamente
+4. **Ordenar/filtrar por fecha** → usa `lead_received_at`
+5. **No permitir fechas futuras** → validación activa
+6. **Otras campañas sin afectar** → `/admin/contacts` sigue funcionando
 
 ---
 
-## Impacto
+## Notas de Seguridad
 
-| Métrica | Valor |
-|---------|-------|
-| Archivos modificados | 4 |
-| Líneas añadidas | ~50 |
-| Líneas eliminadas | ~15 (STATUS_OPTIONS hardcodeado) |
-| Riesgo | Bajo (cambios compatibles con fallback) |
-| Tiempo estimado | 30 minutos |
-
----
-
-## Compatibilidad y Migración
-
-No se requiere migración de datos porque:
-- El campo `lead_status_crm` ya almacena el `status_key` (no el label)
-- La tabla `contact_statuses` ya contiene todos los estados existentes
-- Los contactos existentes ya tienen valores válidos en `lead_status_crm`
-
-El sistema es 100% retrocompatible.
+- Mantener RLS policies existentes en `buyer_contacts`
+- Validar que solo admins puedan editar fechas masivamente
+- Edge function ya valida que la fecha no sea futura
