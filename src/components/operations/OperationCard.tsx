@@ -74,19 +74,19 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
       case 'active':
         return { 
           className: 'border-emerald-500/50 text-emerald-700 bg-emerald-50', 
-          text: 'Activo',
+          text: t('operations.status.active'),
           icon: '✓'
         };
       case 'upcoming':
         return { 
           className: 'border-amber-500/50 text-amber-700 bg-amber-50', 
-          text: releaseText ? `Próximamente · ${releaseText}` : 'Próximamente',
+          text: releaseText ? `${t('operations.status.upcoming')} · ${releaseText}` : t('operations.status.upcoming'),
           icon: '⏳'
         };
       case 'exclusive':
         return { 
           className: 'border-purple-500/50 text-purple-700 bg-purple-50', 
-          text: 'En exclusividad',
+          text: t('operations.status.exclusive'),
           icon: '⭐'
         };
       default:
@@ -115,8 +115,6 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
     }
   };
 
-  // Share dropdown handles its own click events and tracking
-
   return (
     <>
     <Card className={`relative hover:shadow-lg transition-shadow ${className} ${operation.is_featured ? 'ring-2 ring-primary' : ''}`}>
@@ -133,7 +131,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                   className={`p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 disabled:opacity-50 ${
                     inCompare ? 'ring-2 ring-primary' : ''
                   }`}
-                  aria-label={inCompare ? 'Quitar de comparación' : 'Añadir a comparación'}
+                  aria-label={inCompare ? t('operations.tooltip.removeCompare') : t('operations.tooltip.addCompare')}
                 >
                   <Scale 
                     className={`h-4 w-4 transition-colors ${
@@ -143,7 +141,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                {inCompare ? 'Quitar de comparación' : canAddMore ? 'Añadir a comparación' : 'Máximo 4 operaciones'}
+                {inCompare ? t('operations.tooltip.removeCompare') : canAddMore ? t('operations.tooltip.addCompare') : t('operations.tooltip.maxCompare')}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -157,7 +155,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                   className={`p-2 rounded-full bg-white/90 hover:bg-white shadow-sm transition-all hover:scale-110 ${
                     isInWishlistNow ? 'ring-2 ring-red-400' : ''
                   }`}
-                  aria-label={isInWishlistNow ? 'Quitar de la cesta' : 'Añadir a la cesta'}
+                  aria-label={isInWishlistNow ? t('operations.tooltip.removeWishlist') : t('operations.tooltip.addWishlist')}
                 >
                   <Heart 
                     className={`h-5 w-5 transition-colors ${
@@ -167,7 +165,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                {isInWishlistNow ? 'Quitar de la cesta' : 'Añadir a la cesta'}
+                {isInWishlistNow ? t('operations.tooltip.removeWishlist') : t('operations.tooltip.addWishlist')}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -211,12 +209,12 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
               <div className="flex items-center gap-1 mt-1 flex-wrap">
                 {operation.is_featured && (
                   <Badge variant="secondary" className="text-xs">
-                    Destacado
+                    {t('operations.badges.featured')}
                   </Badge>
                 )}
                 {isRecentOperation(operation.created_at, operation.updated_at, operation.is_new_override) && (
                   <Badge className="text-xs bg-green-500 hover:bg-green-600">
-                    Nuevo
+                    {t('operations.badges.new')}
                   </Badge>
                 )}
                 {operation.urgency_level === 'high' && (
@@ -276,20 +274,20 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             {/* Financial Information */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Facturación:</span>
+                <span className="text-muted-foreground">{t('operations.card.revenue')}:</span>
                 <span className="font-bold text-green-600">
                   {operation.revenue_amount 
                     ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
-                    : 'Consultar'
+                    : t('operations.card.inquire')
                   }
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">EBITDA:</span>
+                <span className="text-muted-foreground">{t('operations.card.ebitda')}:</span>
                 <span className="font-medium text-blue-600">
                   {operation.ebitda_amount 
                     ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
-                    : 'Consultar'
+                    : t('operations.card.inquire')
                   }
                 </span>
               </div>
@@ -299,7 +297,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-4">
                 <div>
-                  <span className="text-muted-foreground">Año: </span>
+                  <span className="text-muted-foreground">{t('operations.card.year')}: </span>
                   <span className="font-medium">{operation.year}</span>
                 </div>
                 {operation.deal_type && (
@@ -308,13 +306,13 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                       ? 'bg-blue-100 text-blue-800' 
                       : 'bg-orange-100 text-orange-800'
                   }`}>
-                    {operation.deal_type === 'sale' ? 'Venta' : 'Adquisición'}
+                    {operation.deal_type === 'sale' ? t('operations.dealType.sale') : t('operations.dealType.acquisition')}
                   </div>
                 )}
               </div>
               {(operation.company_size_employees || operation.company_size) && (
                 <div>
-                  <span className="text-muted-foreground">Empleados: </span>
+                  <span className="text-muted-foreground">{t('operations.card.employees')}: </span>
                   <span className="font-medium">{operation.company_size_employees || operation.company_size}</span>
                 </div>
               )}

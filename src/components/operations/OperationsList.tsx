@@ -408,7 +408,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               {/* Valuation Min */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Valoración mín (€k)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.valuationMin')}</label>
                 <Input
                   type="number"
                   placeholder="Ej: 500"
@@ -422,7 +422,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
               
               {/* Valuation Max */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Valoración máx (€k)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.valuationMax')}</label>
                 <Input
                   type="number"
                   placeholder="Ej: 5000"
@@ -436,35 +436,35 @@ const OperationsList: React.FC<OperationsListProps> = ({
 
               {/* Date Filter */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Fecha de publicación</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.datePublished')}</label>
                 <Select value={dateFilter || 'all'} onValueChange={(value) => {
                   setDateFilter(value === 'all' ? '' : value);
                   setOffset(0);
                 }}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Cualquier fecha" />
+                    <SelectValue placeholder={t('operations.filters.anyDate')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Cualquier fecha</SelectItem>
-                    <SelectItem value="week">Última semana</SelectItem>
-                    <SelectItem value="month">Último mes</SelectItem>
-                    <SelectItem value="3months">Últimos 3 meses</SelectItem>
+                    <SelectItem value="all">{t('operations.filters.anyDate')}</SelectItem>
+                    <SelectItem value="week">{t('operations.filters.lastWeek')}</SelectItem>
+                    <SelectItem value="month">{t('operations.filters.lastMonth')}</SelectItem>
+                    <SelectItem value="3months">{t('operations.filters.last3Months')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Project Status Filter */}
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Estado</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t('operations.filters.status')}</label>
                 <Select value={selectedProjectStatus || 'all'} onValueChange={handleProjectStatusChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos los estados" />
+                    <SelectValue placeholder={t('operations.filters.allStatuses')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="active">✓ Activo</SelectItem>
-                    <SelectItem value="upcoming">⏳ Próximamente</SelectItem>
-                    <SelectItem value="exclusive">⭐ En exclusividad</SelectItem>
+                    <SelectItem value="all">{t('operations.filters.allStatuses')}</SelectItem>
+                    <SelectItem value="active">✓ {t('operations.status.active')}</SelectItem>
+                    <SelectItem value="upcoming">⏳ {t('operations.status.upcoming')}</SelectItem>
+                    <SelectItem value="exclusive">⭐ {t('operations.status.exclusive')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -478,7 +478,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   className="w-full"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Limpiar filtros
+                  {t('operations.filters.clearFilters')}
                 </Button>
               </div>
             </div>
@@ -486,7 +486,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
             {/* Active Filters Indicator */}
             {hasActiveFilters && (
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
-                <span className="text-sm text-muted-foreground">Filtros activos:</span>
+                <span className="text-sm text-muted-foreground">{t('operations.filters.activeFilters')}</span>
                 {searchTerm && <Badge variant="secondary">{searchTerm}</Badge>}
                 {selectedSector && <Badge variant="secondary">{selectedSector}</Badge>}
                 {selectedLocation && <Badge variant="secondary">{selectedLocation}</Badge>}
@@ -494,20 +494,20 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 {selectedDealType && <Badge variant="secondary">{selectedDealType}</Badge>}
                 {selectedProjectStatus && (
                   <Badge variant="secondary">
-                    {selectedProjectStatus === 'active' ? '✓ Activo' : 
-                     selectedProjectStatus === 'upcoming' ? '⏳ Próximamente' : 
-                     '⭐ En exclusividad'}
+                    {selectedProjectStatus === 'active' ? `✓ ${t('operations.status.active')}` : 
+                     selectedProjectStatus === 'upcoming' ? `⏳ ${t('operations.status.upcoming')}` : 
+                     `⭐ ${t('operations.status.exclusive')}`}
                   </Badge>
                 )}
                 {valuationMin && <Badge variant="secondary">Min: €{valuationMin}k</Badge>}
                 {valuationMax && <Badge variant="secondary">Max: €{valuationMax}k</Badge>}
                 {dateFilter && (
                   <Badge variant="secondary">
-                    {dateFilter === 'week' ? 'Última semana' : dateFilter === 'month' ? 'Último mes' : 'Últimos 3 meses'}
+                    {dateFilter === 'week' ? t('operations.filters.lastWeek') : dateFilter === 'month' ? t('operations.filters.lastMonth') : t('operations.filters.last3Months')}
                   </Badge>
                 )}
                 <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-7 text-xs">
-                  Limpiar todos
+                  {t('operations.filters.clearAll')}
                 </Button>
               </div>
             )}
@@ -518,13 +518,13 @@ const OperationsList: React.FC<OperationsListProps> = ({
       {/* Results count + View Toggle */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Mostrando {operations.length} de {totalCount} operaciones
+          {t('operations.results.showing').replace('{count}', String(operations.length)).replace('{total}', String(totalCount))}
         </p>
         <div className="flex items-center gap-2">
           {isLoading && (
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-sm text-muted-foreground">Cargando...</span>
+              <span className="text-sm text-muted-foreground">{t('operations.pagination.loading')}</span>
             </div>
           )}
           {/* Grid/List Toggle */}
@@ -578,8 +578,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
         <Alert className="border-amber-200 bg-amber-50">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-700">
-            Se muestran las primeras {MAX_ITEMS_ALL} operaciones de {totalCount} totales.
-            Usa los filtros para refinar tu búsqueda.
+            {t('operations.alert.limitReached').replace('{max}', String(MAX_ITEMS_ALL)).replace('{total}', String(totalCount))}
           </AlertDescription>
         </Alert>
       )}
@@ -595,11 +594,11 @@ const OperationsList: React.FC<OperationsListProps> = ({
               onClick={() => setOffset(Math.max(0, offset - limit))}
               disabled={offset === 0 || isLoading}
             >
-              Anterior
+              {t('operations.pagination.previous')}
             </Button>
             
             <span className="text-sm text-muted-foreground px-2">
-              Página {Math.floor(offset / limit) + 1} de {Math.max(1, Math.ceil(totalCount / limit))}
+              {t('operations.pagination.page').replace('{current}', String(Math.floor(offset / limit) + 1)).replace('{total}', String(Math.max(1, Math.ceil(totalCount / limit))))}
             </span>
             
             <Button
@@ -608,7 +607,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
               onClick={() => setOffset(offset + limit)}
               disabled={offset + limit >= totalCount || isLoading}
             >
-              Siguiente
+              {t('operations.pagination.next')}
             </Button>
             
             {/* Separador y botón Ver todas */}
@@ -625,12 +624,12 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   {isLoadingAll ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Cargando...
+                      {t('operations.pagination.loading')}
                     </>
                   ) : (
                     <>
                       <Eye className="h-4 w-4 mr-1" />
-                      Ver todas ({totalCount > MAX_ITEMS_ALL ? `${MAX_ITEMS_ALL}+` : totalCount})
+                      {t('operations.pagination.viewAll')} ({totalCount > MAX_ITEMS_ALL ? `${MAX_ITEMS_ALL}+` : totalCount})
                     </>
                   )}
                 </Button>
@@ -641,12 +640,12 @@ const OperationsList: React.FC<OperationsListProps> = ({
           <>
             {/* Modo "Ver todas" */}
             <Badge variant="secondary" className="px-3 py-1">
-              Mostrando {operations.length} de {totalCount} operaciones
+              {t('operations.results.showing').replace('{count}', String(operations.length)).replace('{total}', String(totalCount))}
             </Badge>
             
             {totalCount > MAX_ITEMS_ALL && (
               <Badge variant="outline" className="text-amber-600 border-amber-300">
-                ⚠️ Limitado a {MAX_ITEMS_ALL}
+                ⚠️ {t('operations.alert.limitReached').split('.')[0]}
               </Badge>
             )}
             
@@ -657,7 +656,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
               className="ml-2"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Volver a paginación
+              {t('operations.pagination.backToPagination')}
             </Button>
           </>
         )}

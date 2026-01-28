@@ -76,14 +76,14 @@ const Oportunidades = () => {
                 className="gap-2"
               >
                 <Bell className="h-5 w-5" />
-                Configurar Alertas
+                {t('opportunities.hero.configureAlerts')}
               </Button>
             </div>
 
             {/* Disclaimer de mandato */}
             <p className="mt-6 text-sm text-muted-foreground/80 text-center flex items-center justify-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-500/70" />
-              <span>Capittal actúa con mandato directo de venta o compra en la totalidad de las oportunidades mostradas.</span>
+              <span>{t('opportunities.hero.mandateDisclaimer')}</span>
             </p>
           </div>
         </section>
