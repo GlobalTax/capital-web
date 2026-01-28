@@ -3,7 +3,7 @@
 // AI-powered insights for corporate buyers
 // =============================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Sparkles, 
@@ -111,17 +111,57 @@ export function CorporateAIPanel({ buyer }: CorporateAIPanelProps) {
     if (!thesisResult?.investment_thesis_text && !thesisResult?.summary) return;
     setIsSavingThesis(true);
     try {
+      // Preparar datos estructurados para guardar
+      const thesisStructured = {
+        summary: thesisResult.summary,
+        strategic_objective: thesisResult.thesis.strategic_objective,
+        ideal_target_profile: thesisResult.thesis.ideal_target_profile,
+        exclusion_criteria: thesisResult.thesis.exclusion_criteria || [],
+        synergies_sought: thesisResult.thesis.synergies_sought || [],
+        evaluation_process: thesisResult.thesis.evaluation_process || '',
+        generated_at: new Date().toISOString()
+      };
+
+      // Combinar con enriched_data existente
+      const currentEnrichedData = (buyer as any).enriched_data || {};
+      const updatedEnrichedData = {
+        ...currentEnrichedData,
+        investment_thesis_structured: thesisStructured
+      };
+
       await updateBuyer.mutateAsync({
         id: buyer.id,
-        data: { investment_thesis: thesisResult.investment_thesis_text || thesisResult.summary }
+        data: { 
+          investment_thesis: thesisResult.investment_thesis_text || thesisResult.summary,
+          enriched_data: updatedEnrichedData
+        }
       });
-      toast.success('Tesis de inversión guardada');
+      toast.success('Tesis de inversión guardada completamente');
     } catch (error) {
       toast.error('Error al guardar la tesis');
     } finally {
       setIsSavingThesis(false);
     }
   };
+
+  // Cargar tesis estructurada guardada al montar
+  useEffect(() => {
+    const enrichedData = (buyer as any).enriched_data;
+    if (enrichedData?.investment_thesis_structured && !thesisResult) {
+      const saved = enrichedData.investment_thesis_structured;
+      setThesisResult({
+        thesis: {
+          strategic_objective: saved.strategic_objective || '',
+          ideal_target_profile: saved.ideal_target_profile || '',
+          exclusion_criteria: saved.exclusion_criteria || [],
+          synergies_sought: saved.synergies_sought || [],
+          evaluation_process: saved.evaluation_process || ''
+        },
+        summary: saved.summary || '',
+        investment_thesis_text: buyer.investment_thesis || ''
+      });
+    }
+  }, [buyer.id]);
 
   const handleSaveSectors = async () => {
     if (!descriptionResult?.suggested_sectors?.length) return;
