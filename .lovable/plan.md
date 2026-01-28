@@ -1,169 +1,148 @@
 
-
-# Plan: Guardar Todo el Contenido Estructurado de la Tesis
+# Plan: Internacionalizar Completamente la Pagina /oportunidades
 
 ## Problema Identificado
 
-Cuando generas una Tesis de Inversión con IA, se muestra contenido estructurado completo:
-- Resumen
-- Objetivo Estratégico
-- Perfil de Empresa Ideal
-- Criterios de Exclusión
-- Sinergias Buscadas
-- Proceso de Evaluación
+La pagina `/oportunidades` tiene traducciones en ingles definidas en `dictionaries.ts`, pero **multiples componentes tienen textos hardcodeados en castellano** que no usan el sistema de traduccion `t()`.
 
-Pero al pulsar "Guardar", **solo se guarda el texto plano** (`investment_thesis_text`), perdiendo toda la estructura.
+## Componentes Afectados y Strings a Traducir
 
----
+### 1. `Oportunidades.tsx` (Pagina Principal)
 
-## Solución Propuesta
-
-Guardar todo el contenido estructurado en el campo JSONB existente (`enriched_data`) o crear un nuevo campo específico para la tesis estructurada.
-
-### Opción A: Usar `enriched_data` existente (Recomendada)
-
-El campo `enriched_data` (JSONB) ya existe y se usa para datos enriquecidos. Podemos añadir la tesis estructurada ahí:
-
-```json
-{
-  "investment_thesis_structured": {
-    "summary": "Resumen de la tesis...",
-    "strategic_objective": "Objetivo estratégico...",
-    "ideal_target_profile": "Perfil ideal...",
-    "exclusion_criteria": ["Criterio 1", "Criterio 2"],
-    "synergies_sought": ["Sinergia 1", "Sinergia 2"],
-    "evaluation_process": "Proceso de evaluación...",
-    "generated_at": "2026-01-28T..."
-  }
-}
-```
-
-### Opción B: Nuevo campo JSONB dedicado
-
-Crear un campo `investment_thesis_data` (JSONB) específico para la tesis.
+| Linea | Texto Actual (ES) | Clave Propuesta | Traduccion EN |
+|-------|------------------|-----------------|---------------|
+| 79 | `Configurar Alertas` | `opportunities.hero.configureAlerts` | `Configure Alerts` |
+| 86 | `Capittal actúa con mandato directo de venta o compra en la totalidad de las oportunidades mostradas.` | `opportunities.hero.mandateDisclaimer` | `Capittal acts with direct mandate for sale or purchase on all displayed opportunities.` |
 
 ---
 
-## Implementación (Opción A - Recomendada)
+### 2. `BuyerTestimonials.tsx` (Testimonios de Compradores)
 
-### 1. Modificar `CorporateAIPanel.tsx`
+Las traducciones YA EXISTEN en `dictionaries.ts` pero el componente no usa `useI18n()`.
 
-Actualizar la función `handleSaveThesis` para guardar tanto el texto plano como la estructura completa:
+| Linea | Texto Actual | Clave Existente |
+|-------|-------------|-----------------|
+| 32 | `Compradores Satisfechos` | `buyerTestimonials.badge` |
+| 35 | `Lo Que Dicen Nuestros Compradores` | `buyerTestimonials.title` |
+| 38 | `Inversores y empresarios...` | `buyerTestimonials.subtitle` |
+| 74 | `Tipo:` | `buyerTestimonials.operationType` |
+| 80 | `Inversión:` | `buyerTestimonials.investment` |
+| 86 | `Cierre:` | `buyerTestimonials.timeToClose` |
+| 92 | `Satisfacción:` | `buyerTestimonials.satisfactionScore` |
+| 107 | `Satisfacción promedio:` | `buyerTestimonials.satisfaction` |
+| 107 | `basada en operaciones completadas` | `buyerTestimonials.basedOn` |
+
+**Cambio**: Anadir `const { t } = useI18n()` y reemplazar strings hardcodeados.
+
+---
+
+### 3. `OperationsList.tsx` (Lista de Operaciones)
+
+Muchos filtros y textos de UI hardcodeados:
+
+| Linea | Texto Actual | Clave Nueva | Traduccion EN |
+|-------|-------------|-------------|---------------|
+| 274 | `Filtros y Búsqueda` | `operations.filters.title` | `Filters & Search` |
+| 411 | `Valoración mín (€k)` | `operations.filters.valuationMin` | `Min valuation (€k)` |
+| 425 | `Valoración máx (€k)` | `operations.filters.valuationMax` | `Max valuation (€k)` |
+| 439 | `Fecha de publicación` | `operations.filters.datePublished` | `Publication date` |
+| 445-451 | Fechas (semana/mes/3 meses) | `operations.filters.anyDate`, `operations.filters.lastWeek`, `operations.filters.lastMonth`, `operations.filters.last3Months` | `Any date`, `Last week`, `Last month`, `Last 3 months` |
+| 458 | `Estado` | `operations.filters.status` | `Status` |
+| 461-468 | Estados del proyecto | `operations.filters.allStatuses`, `operations.status.active`, `operations.status.upcoming`, `operations.status.exclusive` | `All statuses`, `Active`, `Upcoming`, `Exclusive` |
+| 481 | `Limpiar filtros` | `operations.filters.clearFilters` | `Clear filters` |
+| 489 | `Filtros activos:` | `operations.filters.activeFilters` | `Active filters:` |
+| 510 | `Limpiar todos` | `operations.filters.clearAll` | `Clear all` |
+| 521 | `Mostrando X de Y operaciones` | `operations.results.showing` | `Showing {count} of {total} operations` |
+| 527 | `Cargando...` | `common.loading` | `Loading...` |
+| 598 | `Anterior` | `common.previous` | `Previous` |
+| 611 | `Siguiente` | `common.next` | `Next` |
+| 633 | `Ver todas` | `operations.pagination.viewAll` | `View all` |
+| 660 | `Volver a paginación` | `operations.pagination.backToPagination` | `Back to pagination` |
+| 581-582 | Texto de alerta limite | `operations.alert.limitReached` | `Showing first {max} of {total} operations. Use filters to refine your search.` |
+
+---
+
+### 4. `OperationCard.tsx` (Tarjeta de Operacion)
+
+| Linea | Texto Actual | Clave Nueva | Traduccion EN |
+|-------|-------------|-------------|---------------|
+| 77, 83, 89 | Estados (Activo/Proximamente/Exclusividad) | `operations.status.*` | `Active`/`Upcoming`/`In exclusivity` |
+| 136, 146 | Tooltips comparacion | `operations.tooltip.removeCompare`, `operations.tooltip.addCompare`, `operations.tooltip.maxCompare` | `Remove from comparison`, `Add to comparison`, `Maximum 4 operations` |
+| 160, 170 | Tooltips wishlist | `operations.tooltip.removeWishlist`, `operations.tooltip.addWishlist` | `Remove from cart`, `Add to cart` |
+| 214 | `Destacado` | `operations.badges.featured` | `Featured` |
+| 219 | `Nuevo` | `operations.badges.new` | `New` |
+| 279 | `Facturación:` | `operations.card.revenue` | `Revenue:` |
+| 283, 293 | `Consultar` | `operations.card.inquire` | `Inquire` |
+| 288 | `EBITDA:` | `operations.card.ebitda` | `EBITDA:` |
+| 302 | `Año:` | `operations.card.year` | `Year:` |
+| 311 | `Venta` / `Adquisición` | `operations.dealType.sale`, `operations.dealType.acquisition` | `Sale` / `Acquisition` |
+| 317 | `Empleados:` | `operations.card.employees` | `Employees:` |
+
+---
+
+## Implementacion
+
+### Paso 1: Actualizar `dictionaries.ts`
+
+Anadir las nuevas claves de traduccion en las secciones `es`, `ca` y `en`:
 
 ```typescript
-const handleSaveThesis = async () => {
-  if (!thesisResult) return;
-  setIsSavingThesis(true);
-  try {
-    // Preparar datos estructurados
-    const thesisStructured = {
-      summary: thesisResult.summary,
-      strategic_objective: thesisResult.thesis.strategic_objective,
-      ideal_target_profile: thesisResult.thesis.ideal_target_profile,
-      exclusion_criteria: thesisResult.thesis.exclusion_criteria,
-      synergies_sought: thesisResult.thesis.synergies_sought,
-      evaluation_process: thesisResult.thesis.evaluation_process,
-      generated_at: new Date().toISOString()
-    };
+// ES (existente, solo anadir nuevas)
+'opportunities.hero.configureAlerts': 'Configurar Alertas',
+'opportunities.hero.mandateDisclaimer': 'Capittal actúa con mandato directo de venta o compra en la totalidad de las oportunidades mostradas.',
+'operations.filters.title': 'Filtros y Búsqueda',
+'operations.filters.valuationMin': 'Valoración mín (€k)',
+'operations.filters.valuationMax': 'Valoración máx (€k)',
+// ... etc
 
-    // Combinar con enriched_data existente
-    const currentEnrichedData = buyer.enriched_data || {};
-    const updatedEnrichedData = {
-      ...currentEnrichedData,
-      investment_thesis_structured: thesisStructured
-    };
-
-    await updateBuyer.mutateAsync({
-      id: buyer.id,
-      data: { 
-        investment_thesis: thesisResult.investment_thesis_text || thesisResult.summary,
-        enriched_data: updatedEnrichedData
-      }
-    });
-    toast.success('Tesis de inversión guardada completamente');
-  } catch (error) {
-    toast.error('Error al guardar la tesis');
-  } finally {
-    setIsSavingThesis(false);
-  }
-};
+// EN
+'opportunities.hero.configureAlerts': 'Configure Alerts',
+'opportunities.hero.mandateDisclaimer': 'Capittal acts with direct mandate for sale or purchase on all displayed opportunities.',
+'operations.filters.title': 'Filters & Search',
+// ... etc
 ```
 
-### 2. Mostrar datos guardados al cargar
+### Paso 2: Actualizar `BuyerTestimonials.tsx`
 
-Cuando el buyer ya tiene tesis guardada, pre-cargar `thesisResult` desde `enriched_data`:
+- Importar `useI18n`
+- Reemplazar todos los strings hardcodeados con llamadas a `t()`
 
-```typescript
-// En el componente, inicializar desde datos guardados
-useEffect(() => {
-  if (buyer.enriched_data?.investment_thesis_structured && !thesisResult) {
-    const saved = buyer.enriched_data.investment_thesis_structured;
-    setThesisResult({
-      thesis: {
-        strategic_objective: saved.strategic_objective,
-        ideal_target_profile: saved.ideal_target_profile,
-        exclusion_criteria: saved.exclusion_criteria || [],
-        synergies_sought: saved.synergies_sought || [],
-        evaluation_process: saved.evaluation_process || ''
-      },
-      summary: saved.summary,
-      investment_thesis_text: buyer.investment_thesis || ''
-    });
-  }
-}, [buyer]);
-```
+### Paso 3: Actualizar `OperationsList.tsx`
+
+- Reemplazar todos los strings de filtros, paginacion y UI con llamadas a `t()`
+
+### Paso 4: Actualizar `OperationCard.tsx`
+
+- Reemplazar labels, tooltips y badges con llamadas a `t()`
+
+### Paso 5: Actualizar `Oportunidades.tsx`
+
+- Anadir las 2 nuevas traducciones para alertas y disclaimer
 
 ---
 
-## Cambios Visuales
-
-### Indicador de Tesis Guardada
-
-Cuando hay tesis estructurada guardada, mostrar badge:
-
-```text
-┌─────────────────────────────────────────┐
-│  Tesis  ✓ Guardada                      │
-│ ─────────────────────────────────────── │
-│  [Objetivo Estratégico]                 │
-│  Expandir presencia en sector...        │
-│                                         │
-│  [Perfil de Empresa Ideal]              │
-│  Empresa familiar con EBITDA...         │
-│                                         │
-│  [Criterios de Exclusión]               │
-│  × Real estate                          │
-│  × Startups pre-revenue                 │
-│                                         │
-│  [Sinergias Buscadas]                   │
-│  ✓ Economías de escala                  │
-│  ✓ Expansión geográfica                 │
-│                                         │
-│  [Regenerar] [Guardar ✓]                │
-└─────────────────────────────────────────┘
-```
-
----
-
-## Sección Técnica
+## Seccion Tecnica
 
 ### Archivos a Modificar
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/admin/corporate-buyers/CorporateAIPanel.tsx` | Actualizar `handleSaveThesis` y añadir carga inicial de tesis guardada |
+| Archivo | Cambios |
+|---------|---------|
+| `src/shared/i18n/dictionaries.ts` | ~50 nuevas claves de traduccion (ES, CA, EN) |
+| `src/components/operations/BuyerTestimonials.tsx` | Importar useI18n, reemplazar ~10 strings |
+| `src/components/operations/OperationsList.tsx` | Reemplazar ~25 strings hardcodeados |
+| `src/components/operations/OperationCard.tsx` | Reemplazar ~15 strings hardcodeados |
+| `src/pages/Oportunidades.tsx` | Reemplazar 2 strings hardcodeados |
 
-### Datos Guardados
+### Estimacion
 
-| Campo | Antes | Después |
-|-------|-------|---------|
-| `investment_thesis` | Solo texto plano | Texto plano (sin cambio) |
-| `enriched_data.investment_thesis_structured` | No existía | Objeto completo con toda la estructura |
+- **Lineas nuevas en dictionaries**: ~150 (50 claves x 3 idiomas)
+- **Lineas modificadas en componentes**: ~60
+- **Riesgo**: Bajo (cambios de texto, no de logica)
+- **Tiempo estimado**: ~20-30 minutos
 
 ### Impacto
 
-- **Archivos modificados:** 1
-- **Líneas estimadas:** ~40
-- **Riesgo:** Muy bajo (aditivo, no rompe nada existente)
-- **Compatibilidad:** Total con datos anteriores
+- La pagina `/oportunidades` se mostrara completamente en el idioma seleccionado por el usuario
+- Soporte completo para ES, CA y EN
+- Consistencia con el resto del sitio
 
