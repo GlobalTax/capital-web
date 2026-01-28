@@ -22,6 +22,7 @@ export interface BuyerContact {
   status: BuyerContactStatus;
   created_at: string;
   updated_at: string;
+  lead_received_at: string | null; // Editable registration date
 }
 
 export interface BuyerContactImport {
@@ -51,6 +52,9 @@ export interface ExcelRow {
   phone?: string;
   company?: string;
   position?: string;
+  lead_received_at?: string;
+  'Fecha de registro'?: string;
+  'Fecha entrada'?: string;
   [key: string]: string | undefined;
 }
 
