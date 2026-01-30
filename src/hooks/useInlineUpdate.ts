@@ -342,6 +342,28 @@ export const useContactInlineUpdate = () => {
     );
 
     try {
+      // VALIDATION: For status updates, verify the status_key exists and is active
+      if (field === 'lead_status_crm' && value) {
+        const { data: statusData, error: statusError } = await supabase
+          .from('contact_statuses')
+          .select('status_key, is_active')
+          .eq('status_key', value)
+          .maybeSingle();
+        
+        if (statusError) {
+          throw new Error('Error al validar el estado');
+        }
+        
+        if (!statusData) {
+          throw new Error('El estado seleccionado no existe o ha sido eliminado');
+        }
+        
+        // Allow updating to inactive status (for legacy contacts) but warn
+        if (!statusData.is_active) {
+          console.warn(`[InlineUpdate] Assigning inactive status: ${value}`);
+        }
+      }
+
       // Build payload dynamically based on table capabilities
       const payload: Record<string, any> = { [mappedField]: value };
       
