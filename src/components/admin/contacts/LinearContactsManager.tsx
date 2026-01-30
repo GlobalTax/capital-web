@@ -20,9 +20,10 @@ import { ContactsStatsPanel } from '@/features/contacts/components/stats/Contact
 import { StatusesEditor } from './StatusesEditor';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, RefreshCw, CheckCircle2, Archive, Trash2, BarChart3, Users, Star } from 'lucide-react';
+import { Send, RefreshCw, CheckCircle2, Archive, Trash2, BarChart3, Users, Star, Kanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { ContactsPipelineView } from './pipeline';
 
 const LinearContactsManager = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const LinearContactsManager = () => {
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [apolloModalContact, setApolloModalContact] = useState<UnifiedContact | null>(null);
-  const [activeTab, setActiveTab] = useState<'favorites' | 'directory' | 'stats'>('favorites');
+  const [activeTab, setActiveTab] = useState<'favorites' | 'directory' | 'pipeline' | 'stats'>('favorites');
 
   // Favorites data
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
@@ -183,7 +184,7 @@ const LinearContactsManager = () => {
   }
 
   return (
-    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'stats')} className="space-y-6">
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'pipeline' | 'stats')} className="space-y-6">
       {/* Header with Tabs */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -201,6 +202,10 @@ const LinearContactsManager = () => {
             <TabsTrigger value="directory" className="text-xs px-3 h-6 gap-1.5">
               <Users className="h-3 w-3" />
               Todos
+            </TabsTrigger>
+            <TabsTrigger value="pipeline" className="text-xs px-3 h-6 gap-1.5">
+              <Kanban className="h-3 w-3" />
+              Pipeline
             </TabsTrigger>
             <TabsTrigger value="stats" className="text-xs px-3 h-6 gap-1.5">
               <BarChart3 className="h-3 w-3" />
@@ -368,6 +373,15 @@ const LinearContactsManager = () => {
           onApolloEnrich={handleApolloEnrich}
           onApolloSelectCandidate={handleApolloSelectCandidate}
           isEnriching={isEnriching}
+        />
+      </TabsContent>
+
+      {/* Pipeline Tab */}
+      <TabsContent value="pipeline" className="mt-0 h-[calc(100vh-180px)]">
+        <ContactsPipelineView
+          contacts={displayedContacts}
+          onViewDetails={handleViewDetails}
+          isLoading={isLoading}
         />
       </TabsContent>
 
