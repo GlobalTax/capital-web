@@ -134,6 +134,7 @@ export const ContactsPipelineView: React.FC<ContactsPipelineViewProps> = ({
                   position: 999,
                   is_active: true,
                   is_system: false,
+                  is_prospect_stage: false,
                   created_at: '',
                   updated_at: '',
                 }}

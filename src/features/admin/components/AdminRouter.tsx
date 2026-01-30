@@ -100,6 +100,7 @@ const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApollo
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
 const LazyEmpresaDetailPage = React.lazy(() => import('@/pages/admin/EmpresaDetailPage'));
+const LazyProspectsPage = React.lazy(() => import('@/pages/admin/ProspectsPage'));
 const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisitorsPage'));
 const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPage'));
 const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
@@ -144,6 +145,7 @@ const AdminRouter = () => {
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
           <Route path="/empresas" element={<LazyEmpresasPage />} />
           <Route path="/empresas/:id" element={<LazyEmpresaDetailPage />} />
+          <Route path="/prospectos" element={<LazyProspectsPage />} />
           <Route path="/investor-leads" element={<LazyInvestorLeadsManager />} />
           <Route path="/calculadora-manual" element={<LazyManualLeadEntryPage />} />
           
