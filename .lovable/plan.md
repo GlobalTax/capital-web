@@ -1,152 +1,106 @@
 
-# Plan: Migración de ENUM a TEXT para Estados Dinámicos
+# Plan: Tabla de Contactos 100% Editable - Estabilización Final
 
-## Diagnóstico Confirmado
+## Resumen Ejecutivo
 
-### Problema Raíz Identificado
-El error `"invalid input value for enum lead_status: 'compras'"` ocurre porque:
+El sistema de edición inline ya tiene una arquitectura robusta tras las mejoras recientes. La **migración ENUM → TEXT** completada exitosamente significa que los estados dinámicos como "Compras" ahora funcionarán sin errores.
 
-1. **3 tablas principales** usan un ENUM `lead_status` para la columna `lead_status_crm`:
-   - `company_valuations` (ENUM)
-   - `contact_leads` (ENUM)  
-   - `collaborator_applications` (ENUM)
-
-2. **El ENUM solo tiene 15 valores fijos** predefinidos:
-   - nuevo, contactando, calificado, propuesta_enviada, negociacion, en_espera, ganado, perdido, archivado, fase0_activo, fase0_bloqueado, mandato_propuesto, mandato_firmado, lead_perdido_curiosidad, ya_advisor
-
-3. **El estado "Compras"** (`status_key: 'compras'`) fue creado dinámicamente en `contact_statuses` pero NO existe en el ENUM.
-
-4. **4 tablas nuevas** ya usan TEXT correctamente (migración reciente del 30-01-2026):
-   - `acquisition_leads` (TEXT)
-   - `advisor_valuations` (TEXT)
-   - `general_contact_leads` (TEXT)
-   - `company_acquisition_inquiries` (TEXT)
-
-### Datos Existentes
-- `company_valuations`: ~1,087 registros con lead_status_crm (1077 "nuevo", 6 "calificado", 4 "contactando")
-- Los valores actuales ya existen en `contact_statuses`, por lo que la migración es segura
+Este plan cubre las **mejoras incrementales finales** para garantizar cero errores en todos los campos editables tanto en "Todos" como en "Favoritos".
 
 ---
 
-## Solución: Migrar ENUM a TEXT
+## Estado Actual del Sistema
 
-### Estrategia de Migración Segura
+| Componente | Estado | Detalle |
+|------------|--------|---------|
+| Migración ENUM → TEXT | ✅ Completada | `company_valuations`, `contact_leads`, `collaborator_applications` ahora usan TEXT |
+| Estados dinámicos | ✅ Funcionando | "Compras" y cualquier nuevo estado funcionan sin errores |
+| IDs en Favoritos | ✅ Correctos | Usa `contact.id` real, no IDs de join |
+| Hook centralizado | ✅ Robusto | `useContactInlineUpdate` con validación de capacidades |
+| Debounce anti-race | ✅ Implementado | 500ms en `EditableSelect` |
+| Cache de estados | ✅ Optimizado | 30s staleTime + refetchOnWindowFocus |
+| Validación de campos | ⚠️ Incompleta | Falta validar `location` y `lead_form` |
 
-La migración se hará en **3 fases** para garantizar compatibilidad y cero pérdida de datos:
+---
 
-```text
-FASE 1: Añadir columna temporal TEXT
-         ↓
-FASE 2: Migrar datos de ENUM → TEXT
-         ↓
-FASE 3: Reemplazar columna ENUM con TEXT
+## Campos Editables Confirmados
+
+| Campo | Columna DB | Componente | Tablas que lo Soportan |
+|-------|-----------|------------|----------------------|
+| Estado | `lead_status_crm` | EditableSelect | Todas excepto `buyer_contacts`, `accountex_leads` |
+| Canal | `acquisition_channel_id` | EditableSelect | Todas excepto `buyer_contacts`, `accountex_leads` |
+| Formulario | `lead_form` | EditableSelect | 7 tablas (todas las principales) |
+| Fecha Registro | `lead_received_at` | EditableDateCell | Todas excepto `accountex_leads` |
+| Empresa | `company`/`company_name` | EditableCell | Varias |
+| Sector | `industry`/`sector` | EditableCell | Varias |
+| Provincia | `location` | EditableCell | Solo `company_valuations`, `contact_leads` |
+
+---
+
+## Mejoras Propuestas
+
+### 1. Añadir Validación para Campos Faltantes
+
+Ampliar `tableCapabilities` para incluir `hasLocation` y `hasLeadForm`:
+
+```typescript
+const tableCapabilities: Record<string, {
+  hasUpdatedAt: boolean;
+  hasLeadReceivedAt: boolean;
+  hasLeadStatusCrm: boolean;
+  hasAcquisitionChannel: boolean;
+  hasLocation: boolean;      // NUEVO
+  hasLeadForm: boolean;      // NUEVO
+}> = {
+  'company_valuations': {
+    // ... existing
+    hasLocation: true,
+    hasLeadForm: true,
+  },
+  'contact_leads': {
+    // ... existing
+    hasLocation: true,   // Verificar si contact_leads tiene location
+    hasLeadForm: true,
+  },
+  // ... resto de tablas
+};
 ```
 
-### Fase 1: Migración SQL
+### 2. Añadir Validación en el Hook
 
-```sql
--- ==============================================================
--- MIGRACIÓN: ENUM lead_status → TEXT para estados dinámicos
--- ==============================================================
+Añadir checks de validación para `location` y `lead_form`:
 
--- 1. COMPANY_VALUATIONS: Migrar de ENUM a TEXT
--- 1.1 Añadir columna temporal
-ALTER TABLE public.company_valuations 
-ADD COLUMN IF NOT EXISTS lead_status_text TEXT;
+```typescript
+// Validar location
+if (field === 'location' && !capabilities.hasLocation) {
+  console.warn(`[InlineUpdate] Table ${table} does not support location`);
+  toast.error('Este tipo de lead no soporta cambio de ubicación');
+  return { success: false, error: new Error(`${table} does not support location`) };
+}
 
--- 1.2 Copiar datos del ENUM a TEXT
-UPDATE public.company_valuations 
-SET lead_status_text = lead_status_crm::TEXT
-WHERE lead_status_crm IS NOT NULL;
-
--- 1.3 Eliminar la columna ENUM
-ALTER TABLE public.company_valuations 
-DROP COLUMN IF EXISTS lead_status_crm;
-
--- 1.4 Renombrar TEXT a lead_status_crm
-ALTER TABLE public.company_valuations 
-RENAME COLUMN lead_status_text TO lead_status_crm;
-
--- 1.5 Añadir default
-ALTER TABLE public.company_valuations 
-ALTER COLUMN lead_status_crm SET DEFAULT 'nuevo';
-
--- 2. CONTACT_LEADS: Mismo proceso
-ALTER TABLE public.contact_leads 
-ADD COLUMN IF NOT EXISTS lead_status_text TEXT;
-
-UPDATE public.contact_leads 
-SET lead_status_text = lead_status_crm::TEXT
-WHERE lead_status_crm IS NOT NULL;
-
-ALTER TABLE public.contact_leads 
-DROP COLUMN IF EXISTS lead_status_crm;
-
-ALTER TABLE public.contact_leads 
-RENAME COLUMN lead_status_text TO lead_status_crm;
-
-ALTER TABLE public.contact_leads 
-ALTER COLUMN lead_status_crm SET DEFAULT 'nuevo';
-
--- 3. COLLABORATOR_APPLICATIONS: Mismo proceso
-ALTER TABLE public.collaborator_applications 
-ADD COLUMN IF NOT EXISTS lead_status_text TEXT;
-
-UPDATE public.collaborator_applications 
-SET lead_status_text = lead_status_crm::TEXT
-WHERE lead_status_crm IS NOT NULL;
-
-ALTER TABLE public.collaborator_applications 
-DROP COLUMN IF EXISTS lead_status_crm;
-
-ALTER TABLE public.collaborator_applications 
-RENAME COLUMN lead_status_text TO lead_status_crm;
-
-ALTER TABLE public.collaborator_applications 
-ALTER COLUMN lead_status_crm SET DEFAULT 'nuevo';
-
--- 4. Crear índices para rendimiento
-CREATE INDEX IF NOT EXISTS idx_company_valuations_status 
-ON public.company_valuations(lead_status_crm);
-
-CREATE INDEX IF NOT EXISTS idx_contact_leads_status 
-ON public.contact_leads(lead_status_crm);
-
-CREATE INDEX IF NOT EXISTS idx_collaborator_applications_status 
-ON public.collaborator_applications(lead_status_crm);
-
--- 5. (Opcional) Eliminar el ENUM si ya no se usa
--- NOTA: Solo ejecutar si confirmamos que ninguna otra tabla lo usa
--- DROP TYPE IF EXISTS lead_status;
+// Validar lead_form
+if (field === 'lead_form' && !capabilities.hasLeadForm) {
+  console.warn(`[InlineUpdate] Table ${table} does not support lead_form`);
+  toast.error('Este tipo de lead no soporta cambio de formulario');
+  return { success: false, error: new Error(`${table} does not support lead_form`) };
+}
 ```
 
-### Fase 2: No Se Requieren Cambios en Frontend
+### 3. Añadir Dev Logging Detallado
 
-El código actual ya está preparado para TEXT:
-- `useContactInlineUpdate` ya guarda `status_key` como string
-- La validación existente verifica que el `status_key` existe en `contact_statuses`
-- El hook `useContactStatuses` ya proporciona estados dinámicos
+Mejorar el logging en desarrollo para diagnóstico:
 
-### Fase 3: Validación de Integridad (Opcional)
-
-Añadir una restricción CHECK para validar que los valores existan en `contact_statuses`:
-
-```sql
--- Función de validación (opcional)
-CREATE OR REPLACE FUNCTION validate_status_key(p_status_key TEXT)
-RETURNS BOOLEAN AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM contact_statuses 
-    WHERE status_key = p_status_key
-  );
-END;
-$$ LANGUAGE plpgsql STABLE;
-
--- Nota: NO añadimos CHECK constraint porque:
--- 1. Ralentizaría los inserts/updates
--- 2. La validación ya se hace en el frontend (useContactInlineUpdate)
--- 3. Permitiría mantener registros antiguos con estados legacy
+```typescript
+if (process.env.NODE_ENV === 'development') {
+  console.log(`[InlineUpdate] Updating:`, {
+    table,
+    field: mappedField,
+    id,
+    origin,
+    value,
+    capabilities,
+  });
+}
 ```
 
 ---
@@ -155,54 +109,68 @@ $$ LANGUAGE plpgsql STABLE;
 
 | Archivo | Tipo | Cambios |
 |---------|------|---------|
-| Nueva migración SQL | Crear | Migrar 3 tablas de ENUM a TEXT |
-
-**NO se requieren cambios en frontend** porque:
-1. El hook `useContactInlineUpdate` ya guarda `status_key` como string TEXT
-2. La validación de estados ya existe y consulta `contact_statuses`
-3. El sistema ya funciona con TEXT en las 4 tablas nuevas
+| `src/hooks/useInlineUpdate.ts` | Modificar | Ampliar `tableCapabilities` con `hasLocation` y `hasLeadForm`, añadir validaciones |
 
 ---
 
-## Pruebas de Validación Post-Migración
+## Flujo de Edición Post-Implementación
 
-| Test | Resultado Esperado |
-|------|-------------------|
-| Crear estado "Test123" en StatusesEditor | ✅ Aparece en dropdowns |
-| Asignar "Test123" a un lead de `company_valuations` | ✅ **Guarda sin error** |
-| Asignar "compras" a un lead de `contact_leads` | ✅ **Guarda sin error** |
-| Refrescar página | ✅ Estados persisten |
-| Cambios masivos con nuevo estado | ✅ Funcionan |
-| Estadísticas y filtros | ✅ Siguen funcionando |
-
----
-
-## Ventajas de Esta Solución
-
-1. **100% Dinámica**: Cualquier estado nuevo en `contact_statuses` funcionará automáticamente
-2. **Sin pérdida de datos**: La migración copia todos los valores existentes
-3. **Sin cambios en frontend**: El código actual ya soporta TEXT
-4. **Reversible**: Si algo falla, se puede restaurar desde backup
-5. **Consistente**: Las 7 tablas de leads usarán TEXT uniformemente
-
----
-
-## Alternativa Considerada (Descartada)
-
-**Añadir valor al ENUM**: 
-```sql
-ALTER TYPE lead_status ADD VALUE 'compras';
+```
+Usuario hace click en celda editable
+         ↓
+Componente (EditableSelect/Cell/Date) → handleSave
+         ↓
+ContactTableRow.handleXXXUpdate() → onUpdateField(contact.id, origin, field, value)
+         ↓
+LinearContactsTable.handleUpdateField → useContactInlineUpdate.update()
+         ↓
+┌─────────────────────────────────────────────────┐
+│ 1. Mapear origin → table name                   │
+│ 2. Obtener tableCapabilities[table]             │
+│ 3. [NUEVO] Validar campo soportado (all fields) │
+│ 4. [Si status] Verificar status_key existe      │
+│ 5. Construir payload dinámico                   │
+│ 6. Optimistic update en cache                   │
+│ 7. PATCH a tabla correcta (TEXT, no ENUM)       │
+│ 8. Toast success/error + rollback si falla      │
+└─────────────────────────────────────────────────┘
 ```
 
-**Por qué NO**:
-- Requiere hacerlo para cada nuevo estado
-- No escala para estados dinámicos
-- El usuario quiere crear estados sin tocar código
+---
+
+## Pruebas de Validación
+
+### Tab "Todos" - Campos Editables
+| Campo | Test | Resultado Esperado |
+|-------|------|-------------------|
+| Estado | Cambiar a "Compras" | ✅ Guarda (TEXT, no ENUM) |
+| Estado | Cambiar a "Nuevo" | ✅ Guarda |
+| Canal | Cambiar canal | ✅ Guarda |
+| Formulario | Cambiar formulario | ✅ Guarda |
+| Fecha Registro | Cambiar fecha | ✅ Guarda en ISO |
+| Empresa | Editar nombre | ✅ Guarda |
+| Sector | Editar sector | ✅ Guarda |
+| Provincia | Editar provincia | ✅ Guarda (solo tablas con `location`) |
+
+### Tab "Favoritos" - Mismas Pruebas
+| Campo | Test | Resultado Esperado |
+|-------|------|-------------------|
+| Todos los anteriores | Mismas acciones | ✅ Usa `contact.id` correcto, funciona igual |
+
+### Robustez
+| Test | Resultado Esperado |
+|------|-------------------|
+| Doble-click rápido | ✅ Debounce 500ms previene duplicados |
+| Error de red | ✅ Rollback + toast con error real |
+| Campo no soportado por tabla | ✅ Mensaje claro, no intenta guardar |
+| Estado inactivo | ✅ Muestra "(Inactivo)", permite cambiar a activo |
 
 ---
 
-## Consideraciones de Seguridad
+## Beneficios
 
-- RLS existente sigue funcionando (las políticas se basan en `id`, no en el tipo de columna)
-- La validación en frontend previene valores inválidos
-- Los valores existentes se preservan exactamente
+1. **Cero errores ENUM**: La migración a TEXT elimina el bug de "invalid input value"
+2. **Estados dinámicos**: Cualquier estado nuevo funciona automáticamente
+3. **Consistencia 100%**: Mismos componentes y lógica en "Todos" y "Favoritos"
+4. **Validación preventiva**: Errores claros antes de intentar guardar
+5. **Future-proof**: Sistema preparado para nuevas tablas y campos
