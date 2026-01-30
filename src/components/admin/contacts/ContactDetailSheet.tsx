@@ -44,6 +44,7 @@ import { Fase0DocumentButtons, Fase0DocumentsList } from '@/features/fase0-docum
 import { useQueryClient } from '@tanstack/react-query';
 import { ActivityClassificationBlock } from '@/components/admin/contacts/ActivityClassificationBlock';
 import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
+import { StatusHistoryTimeline } from './StatusHistoryTimeline';
 
 interface ContactDetailSheetProps {
   contact: UnifiedContact | null;
@@ -581,8 +582,19 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
               currentStatus={(contact as any).lead_status_crm || 'nuevo'}
               onStatusChange={() => {
                 queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
+                queryClient.invalidateQueries({ queryKey: ['status-history', contact.id] });
               }}
             />
+          </div>
+
+          <Separator className="bg-[hsl(var(--linear-border))] my-4" />
+
+          {/* Status History Timeline */}
+          <div className="space-y-1 mb-6">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+              Histórico de estados
+            </h3>
+            <StatusHistoryTimeline leadId={contact.id} maxItems={5} />
           </div>
 
           <Separator className="bg-[hsl(var(--linear-border))] my-4" />

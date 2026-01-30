@@ -78,10 +78,20 @@ export function useBulkUpdateStatus() {
 
     // 3. REVALIDACIÓN silenciosa en éxito
     onSuccess: (data, variables) => {
-      // Solo invalida queries en background, no refetch inmediato
+      // Invalidate contacts and all status histories
       queryClient.invalidateQueries({
         queryKey: ['unified-contacts'],
         refetchType: 'none',
+      });
+      
+      // Invalidate status history for all affected contacts
+      variables.contactIds.forEach(contactId => {
+        // Extract the UUID from the prefixed ID (e.g., "valuation_uuid" -> "uuid")
+        const parts = contactId.split('_');
+        const uuid = parts.slice(1).join('_'); // Handle cases like "company_acquisition_uuid"
+        queryClient.invalidateQueries({
+          queryKey: ['status-history', uuid],
+        });
       });
 
       if (data.failed_count === 0) {

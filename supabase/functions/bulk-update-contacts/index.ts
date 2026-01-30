@@ -287,6 +287,19 @@ serve(async (req) => {
           continue;
         }
 
+        // Determine lead_type for activity logging
+        const leadTypeMap: Record<string, string> = {
+          'contact_leads': 'contact',
+          'company_valuations': 'valuation',
+          'general_contact_leads': 'general',
+          'collaborator_applications': 'collaborator',
+          'acquisition_leads': 'acquisition',
+          'company_acquisition_inquiries': 'company_acquisition',
+          'advisor_valuations': 'advisor',
+          'buyer_contacts': 'buyer',
+        };
+        const leadType = leadTypeMap[table] || 'unknown';
+
         const { data, error } = await supabase
           .from(table)
           .update(updatePayload)
@@ -304,6 +317,34 @@ serve(async (req) => {
         } else {
           console.log(`[bulk-update-contacts] Updated ${data?.length || 0} records in ${table}`);
           result.updated_count += data?.length || 0;
+
+          // Log status change activities for bulk updates (since triggers don't fire with service_role)
+          if (updates.lead_status_crm && data && data.length > 0 && tablesWithStatusCrm.includes(table)) {
+            const activityInserts = data.map((record: { id: string }) => ({
+              lead_id: record.id,
+              lead_type: leadType,
+              activity_type: 'status_changed',
+              description: `Estado cambiado a ${updates.lead_status_crm} (masivo)`,
+              metadata: {
+                to_status: updates.lead_status_crm,
+                change_source: 'bulk',
+                bulk_count: contact_ids.length,
+                table_name: table
+              },
+              created_by: null // service_role doesn't have auth.uid()
+            }));
+
+            const { error: activityError } = await supabase
+              .from('lead_activities')
+              .insert(activityInserts);
+
+            if (activityError) {
+              console.error(`[bulk-update-contacts] Error logging activities for ${table}:`, activityError);
+              // Don't fail the whole operation, just log the error
+            } else {
+              console.log(`[bulk-update-contacts] Logged ${activityInserts.length} status change activities for ${table}`);
+            }
+          }
         }
       } catch (err) {
         console.error(`[bulk-update-contacts] Exception updating ${table}:`, err);
