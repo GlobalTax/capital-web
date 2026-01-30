@@ -8,6 +8,7 @@ import { Search, Filter, ChevronDown, ChevronUp, X, Users } from 'lucide-react';
 import { ContactFilters as ContactFiltersType } from '@/hooks/useUnifiedContacts';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import DateRangeQuickSelector from './DateRangeQuickSelector';
+import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
 
 interface ContactFiltersProps {
   filters: ContactFiltersType;
@@ -22,7 +23,9 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
 }) => {
   const [localFilters, setLocalFilters] = useState<ContactFiltersType>(filters);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-
+  
+  // ✅ Cargar estados dinámicos desde la base de datos
+  const { activeStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
   useEffect(() => {
     // Load filters from localStorage
     const savedFilters = localStorage.getItem('contactFilters');
@@ -104,22 +107,31 @@ const ContactFilters: React.FC<ContactFiltersProps> = ({
               />
             </div>
 
-            {/* Status Filter */}
+            {/* Status Filter - ✅ Dinámico desde DB */}
             <Select
               value={localFilters.status || 'all'}
               onValueChange={(value) => handleFilterChange('status', value === 'all' ? undefined : value)}
+              disabled={isLoadingStatuses}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Estado" />
+                <SelectValue placeholder={isLoadingStatuses ? "Cargando..." : "Estado"} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="new">Nuevo</SelectItem>
-                <SelectItem value="contacted">Contactado</SelectItem>
-                <SelectItem value="qualified">Cualificado</SelectItem>
-                <SelectItem value="opportunity">Oportunidad</SelectItem>
-                <SelectItem value="customer">Cliente</SelectItem>
-                <SelectItem value="lost">Perdido</SelectItem>
+                {activeStatuses.map((status) => {
+                  const colorClasses = STATUS_COLOR_MAP[status.color] || STATUS_COLOR_MAP.gray;
+                  return (
+                    <SelectItem key={status.id} value={status.status_key}>
+                      <div className="flex items-center gap-2">
+                        <span 
+                          className={`w-2 h-2 rounded-full ${colorClasses.bg.replace('bg-', 'bg-').replace('-100', '-500')}`}
+                          style={{ backgroundColor: `var(--${status.color}-500, currentColor)` }}
+                        />
+                        {status.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
 

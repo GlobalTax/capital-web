@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
 
 interface BulkActionsToolbarProps {
   selectedCount: number;
@@ -37,6 +38,9 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState<string>('');
+  
+  // ✅ Cargar estados dinámicos desde la base de datos
+  const { activeStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
 
   const handleStatusUpdate = () => {
     if (selectedStatus) {
@@ -54,19 +58,35 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
               {selectedCount} contacto{selectedCount !== 1 ? 's' : ''} seleccionado{selectedCount !== 1 ? 's' : ''}
             </span>
             
-            {/* Change Status */}
+            {/* Change Status - ✅ Dinámico desde DB */}
             <div className="flex items-center gap-2">
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <Select 
+                value={selectedStatus} 
+                onValueChange={setSelectedStatus}
+                disabled={isLoadingStatuses}
+              >
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Cambiar estado" />
+                  <SelectValue placeholder={isLoadingStatuses ? "Cargando..." : "Cambiar estado"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="new">Nuevo</SelectItem>
-                  <SelectItem value="contacted">Contactado</SelectItem>
-                  <SelectItem value="qualified">Cualificado</SelectItem>
-                  <SelectItem value="opportunity">Oportunidad</SelectItem>
-                  <SelectItem value="customer">Cliente</SelectItem>
-                  <SelectItem value="lost">Perdido</SelectItem>
+                  {activeStatuses.map((status) => {
+                    const colorClasses = STATUS_COLOR_MAP[status.color] || STATUS_COLOR_MAP.gray;
+                    return (
+                      <SelectItem key={status.id} value={status.status_key}>
+                        <div className="flex items-center gap-2">
+                          <span 
+                            className={`w-2 h-2 rounded-full`}
+                            style={{ 
+                              backgroundColor: status.color.startsWith('#') 
+                                ? status.color 
+                                : `rgb(var(--${status.color}-500, 107, 114, 128))` 
+                            }}
+                          />
+                          {status.label}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               <Button
