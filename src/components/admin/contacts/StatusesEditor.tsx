@@ -3,8 +3,9 @@
  * Permite crear, editar, reordenar y desactivar estados
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Sheet,
   SheetContent,
@@ -28,6 +29,7 @@ import { useContactStatuses, STATUS_COLOR_MAP, type ContactStatus } from '@/hook
 import { StatusEditModal } from './StatusEditModal';
 
 export const StatusesEditor: React.FC = () => {
+  const queryClient = useQueryClient();
   const {
     statuses,
     isLoading,
@@ -38,6 +40,15 @@ export const StatusesEditor: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [editingStatus, setEditingStatus] = useState<ContactStatus | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Invalidate cache when panel closes to sync dropdowns immediately
+  const handleOpenChange = useCallback((open: boolean) => {
+    setIsOpen(open);
+    if (!open) {
+      // Force refetch when closing to ensure all dropdowns are synced
+      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+    }
+  }, [queryClient]);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -61,7 +72,7 @@ export const StatusesEditor: React.FC = () => {
 
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <Sheet open={isOpen} onOpenChange={handleOpenChange}>
         <SheetTrigger asChild>
           <Button variant="outline" size="sm" className="h-8">
             <Settings2 className="h-3.5 w-3.5 mr-1.5" />

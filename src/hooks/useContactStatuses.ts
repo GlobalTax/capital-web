@@ -60,7 +60,8 @@ export const useContactStatuses = () => {
       if (error) throw error;
       return data as ContactStatus[];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds - faster sync for status changes
+    refetchOnWindowFocus: true, // Auto-sync when user returns to tab
   });
 
   // Get only active statuses (for selectors)

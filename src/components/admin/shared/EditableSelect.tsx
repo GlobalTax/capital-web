@@ -1,6 +1,6 @@
 import * as React from "react";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Check, Loader2, X, ChevronDown } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Check, Loader2, X } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export interface SelectOption {
   value: string;
@@ -72,6 +73,11 @@ export const EditableSelect = React.memo<EditableSelectProps>(({
     } catch (error) {
       console.error('Error saving select:', error);
       setSaveStatus('error');
+      
+      // Show real error message to user
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      toast.error('Error al guardar', { description: errorMessage });
+      
       setTimeout(() => setSaveStatus('idle'), 2000);
     }
   }, [value, onSave]);
