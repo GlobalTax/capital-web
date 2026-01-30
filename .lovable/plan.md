@@ -1,176 +1,263 @@
 
-# Plan: Tabla de Contactos 100% Editable - Estabilización Final
+# Plan: Pipeline Kanban Estilo Brevo - Sincronización Total con Tabla de Contactos
 
 ## Resumen Ejecutivo
 
-El sistema de edición inline ya tiene una arquitectura robusta tras las mejoras recientes. La **migración ENUM → TEXT** completada exitosamente significa que los estados dinámicos como "Compras" ahora funcionarán sin errores.
+Actualmente existen **DOS sistemas paralelos desincronizados**:
 
-Este plan cubre las **mejoras incrementales finales** para garantizar cero errores en todos los campos editables tanto en "Todos" como en "Favoritos".
+| Sistema | Tabla de Estados | Hook | Ubicación |
+|---------|-----------------|------|-----------|
+| Tabla de Contactos | `contact_statuses` | `useContactStatuses` | `/admin/contacts` |
+| Pipeline de Leads | `lead_pipeline_columns` | `useLeadPipelineColumns` | `/admin/leads-pipeline` |
 
----
+**Problema crítico**: Ambos escriben sobre `lead_status_crm`, pero con configuraciones independientes. Esto causa inconsistencias y duplicación.
 
-## Estado Actual del Sistema
-
-| Componente | Estado | Detalle |
-|------------|--------|---------|
-| Migración ENUM → TEXT | ✅ Completada | `company_valuations`, `contact_leads`, `collaborator_applications` ahora usan TEXT |
-| Estados dinámicos | ✅ Funcionando | "Compras" y cualquier nuevo estado funcionan sin errores |
-| IDs en Favoritos | ✅ Correctos | Usa `contact.id` real, no IDs de join |
-| Hook centralizado | ✅ Robusto | `useContactInlineUpdate` con validación de capacidades |
-| Debounce anti-race | ✅ Implementado | 500ms en `EditableSelect` |
-| Cache de estados | ✅ Optimizado | 30s staleTime + refetchOnWindowFocus |
-| Validación de campos | ⚠️ Incompleta | Falta validar `location` y `lead_form` |
+**Solución**: Unificar todo bajo `contact_statuses` como fuente única de verdad, eliminando la dependencia de `lead_pipeline_columns` para el Pipeline.
 
 ---
 
-## Campos Editables Confirmados
+## Arquitectura Propuesta
 
-| Campo | Columna DB | Componente | Tablas que lo Soportan |
-|-------|-----------|------------|----------------------|
-| Estado | `lead_status_crm` | EditableSelect | Todas excepto `buyer_contacts`, `accountex_leads` |
-| Canal | `acquisition_channel_id` | EditableSelect | Todas excepto `buyer_contacts`, `accountex_leads` |
-| Formulario | `lead_form` | EditableSelect | 7 tablas (todas las principales) |
-| Fecha Registro | `lead_received_at` | EditableDateCell | Todas excepto `accountex_leads` |
-| Empresa | `company`/`company_name` | EditableCell | Varias |
-| Sector | `industry`/`sector` | EditableCell | Varias |
-| Provincia | `location` | EditableCell | Solo `company_valuations`, `contact_leads` |
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    FUENTE ÚNICA DE VERDAD                   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │            Tabla: contact_statuses                   │   │
+│  │  id | status_key | label | color | icon | position  │   │
+│  │  is_active | is_system                               │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                            │                                │
+│                   useContactStatuses()                      │
+│                            │                                │
+│        ┌───────────────────┼───────────────────┐           │
+│        ▼                   ▼                   ▼           │
+│  ┌──────────┐       ┌──────────┐       ┌──────────┐        │
+│  │  Filtro  │       │  Tabla   │       │ Kanban   │        │
+│  │  Estado  │       │  Inline  │       │ Pipeline │        │
+│  └──────────┘       └──────────┘       └──────────┘        │
+│                            │                                │
+│                   useContactInlineUpdate()                  │
+│                 (función única de update)                   │
+│                            │                                │
+│                            ▼                                │
+│             contacts.lead_status_crm = status_key           │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Mejoras Propuestas
+## Cambios Propuestos
 
-### 1. Añadir Validación para Campos Faltantes
+### 1. Crear Nuevo Pipeline Kanban en `/admin/contacts`
 
-Ampliar `tableCapabilities` para incluir `hasLocation` y `hasLeadForm`:
+**Ubicación**: Nueva pestaña "Pipeline" junto a "Favoritos", "Todos", "Estadísticas"
+
+**No crear ruta separada**: El Pipeline vivirá dentro de `LinearContactsManager` como una pestaña más, aprovechando la misma infraestructura de filtros y datos.
+
+### 2. Componentes a Crear
+
+| Componente | Descripción |
+|------------|-------------|
+| `src/components/admin/contacts/pipeline/ContactsPipelineView.tsx` | Vista principal del Kanban |
+| `src/components/admin/contacts/pipeline/PipelineColumn.tsx` | Columna individual (drag target) |
+| `src/components/admin/contacts/pipeline/PipelineCard.tsx` | Tarjeta de lead (draggable) |
+| `src/components/admin/contacts/pipeline/index.ts` | Barrel exports |
+
+### 3. Flujo de Datos Unificado
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ Arrastrar tarjeta en Kanban                                 │
+│            │                                                │
+│            ▼                                                │
+│ handleDragEnd(result)                                       │
+│            │                                                │
+│            ▼                                                │
+│ useContactInlineUpdate().update(                            │
+│   contactId,                                                │
+│   origin,                                                   │
+│   'lead_status_crm',                                        │
+│   newStatusKey                                              │
+│ )                                                           │
+│            │                                                │
+│            ▼                                                │
+│ ┌─────────────────────────────────────────────────────────┐│
+│ │ 1. Validar status_key existe en contact_statuses       ││
+│ │ 2. Optimistic update en cache ['unified-contacts']     ││
+│ │ 3. PATCH a tabla correcta (company_valuations, etc)    ││
+│ │ 4. Invalidar queries                                   ││
+│ │ 5. Toast success/error                                 ││
+│ └─────────────────────────────────────────────────────────┘│
+│            │                                                │
+│            ▼                                                │
+│ Tabla y Kanban se actualizan automáticamente (mismo cache) │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Especificaciones Técnicas
+
+### 3.1 ContactsPipelineView.tsx
 
 ```typescript
-const tableCapabilities: Record<string, {
-  hasUpdatedAt: boolean;
-  hasLeadReceivedAt: boolean;
-  hasLeadStatusCrm: boolean;
-  hasAcquisitionChannel: boolean;
-  hasLocation: boolean;      // NUEVO
-  hasLeadForm: boolean;      // NUEVO
-}> = {
-  'company_valuations': {
-    // ... existing
-    hasLocation: true,
-    hasLeadForm: true,
-  },
-  'contact_leads': {
-    // ... existing
-    hasLocation: true,   // Verificar si contact_leads tiene location
-    hasLeadForm: true,
-  },
-  // ... resto de tablas
-};
+interface ContactsPipelineViewProps {
+  contacts: UnifiedContact[];
+  filters: ContactFilters;
+  onFiltersChange: (filters: ContactFilters) => void;
+  onViewDetails: (contact: UnifiedContact) => void;
+}
+
+// Características:
+// - Usa useContactStatuses() para columnas (activeStatuses)
+// - Usa useContactInlineUpdate() para drag & drop
+// - Agrupa contacts por lead_status_crm
+// - Soporta todos los filtros existentes
+// - Click en tarjeta abre ContactDetailSheet existente
 ```
 
-### 2. Añadir Validación en el Hook
-
-Añadir checks de validación para `location` y `lead_form`:
+### 3.2 PipelineColumn.tsx
 
 ```typescript
-// Validar location
-if (field === 'location' && !capabilities.hasLocation) {
-  console.warn(`[InlineUpdate] Table ${table} does not support location`);
-  toast.error('Este tipo de lead no soporta cambio de ubicación');
-  return { success: false, error: new Error(`${table} does not support location`) };
+interface PipelineColumnProps {
+  status: ContactStatus; // De contact_statuses
+  contacts: UnifiedContact[];
+  onViewDetails: (contact: UnifiedContact) => void;
 }
 
-// Validar lead_form
-if (field === 'lead_form' && !capabilities.hasLeadForm) {
-  console.warn(`[InlineUpdate] Table ${table} does not support lead_form`);
-  toast.error('Este tipo de lead no soporta cambio de formulario');
-  return { success: false, error: new Error(`${table} does not support lead_form`) };
-}
+// Características:
+// - Droppable zone de @hello-pangea/dnd
+// - Badge con contador
+// - Color/icono desde contact_statuses
+// - Scroll interno para muchas tarjetas
 ```
 
-### 3. Añadir Dev Logging Detallado
-
-Mejorar el logging en desarrollo para diagnóstico:
+### 3.3 PipelineCard.tsx
 
 ```typescript
-if (process.env.NODE_ENV === 'development') {
-  console.log(`[InlineUpdate] Updating:`, {
-    table,
-    field: mappedField,
-    id,
-    origin,
-    value,
-    capabilities,
-  });
+interface PipelineCardProps {
+  contact: UnifiedContact;
+  onViewDetails: (contact: UnifiedContact) => void;
 }
+
+// Campos visibles:
+// - Empresa (company)
+// - Nombre contacto (name)
+// - Email
+// - Canal (acquisition_channel_name)
+// - Fecha registro (lead_received_at o created_at)
+// - Facturación (revenue) - badge si > 1M
+// - EBITDA - badge si > 100k
 ```
+
+### 4. Modificar LinearContactsManager
+
+Añadir nueva pestaña "Pipeline":
+
+```typescript
+// Nuevo estado
+const [activeTab, setActiveTab] = useState<'favorites' | 'directory' | 'pipeline' | 'stats'>('favorites');
+
+// Nueva TabsTrigger
+<TabsTrigger value="pipeline" className="text-xs px-3 h-6 gap-1.5">
+  <Kanban className="h-3 w-3" />
+  Pipeline
+</TabsTrigger>
+
+// Nuevo TabsContent
+<TabsContent value="pipeline" className="mt-0">
+  <ContactsPipelineView
+    contacts={displayedContacts}
+    filters={filters}
+    onFiltersChange={applyFilters}
+    onViewDetails={handleViewDetails}
+  />
+</TabsContent>
+```
+
+### 5. Sincronización Bidireccional
+
+**Ya implementado**: `useContactInlineUpdate()` maneja:
+- Validación de `status_key` en `contact_statuses`
+- Optimistic update en cache `['unified-contacts']`
+- Rollback en caso de error
+- Toast de confirmación
+
+**El Kanban usará exactamente el mismo hook**, garantizando sincronización perfecta.
+
+### 6. Filtros Compartidos
+
+El Pipeline hereda automáticamente los filtros de `LinearContactsManager`:
+- `applyFilters()` filtra `contacts`
+- `displayedContacts` ya está filtrado
+- El Pipeline recibe `displayedContacts` filtrados
+
+### 7. Histórico de Cambios de Estado (Opcional - Fase 2)
+
+Crear tabla `contact_status_history` para tracking:
+
+```sql
+CREATE TABLE contact_status_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  contact_id UUID NOT NULL,
+  contact_origin TEXT NOT NULL,
+  from_status_key TEXT,
+  to_status_key TEXT NOT NULL,
+  changed_at TIMESTAMPTZ DEFAULT NOW(),
+  changed_by UUID REFERENCES auth.users(id),
+  source TEXT CHECK (source IN ('table', 'kanban', 'bulk', 'api'))
+);
+```
+
+**Nota**: Esta tabla es opcional para la primera iteración. Se puede añadir después sin romper nada.
 
 ---
 
-## Archivos a Modificar
+## Archivos a Crear/Modificar
 
-| Archivo | Tipo | Cambios |
-|---------|------|---------|
-| `src/hooks/useInlineUpdate.ts` | Modificar | Ampliar `tableCapabilities` con `hasLocation` y `hasLeadForm`, añadir validaciones |
-
----
-
-## Flujo de Edición Post-Implementación
-
-```
-Usuario hace click en celda editable
-         ↓
-Componente (EditableSelect/Cell/Date) → handleSave
-         ↓
-ContactTableRow.handleXXXUpdate() → onUpdateField(contact.id, origin, field, value)
-         ↓
-LinearContactsTable.handleUpdateField → useContactInlineUpdate.update()
-         ↓
-┌─────────────────────────────────────────────────┐
-│ 1. Mapear origin → table name                   │
-│ 2. Obtener tableCapabilities[table]             │
-│ 3. [NUEVO] Validar campo soportado (all fields) │
-│ 4. [Si status] Verificar status_key existe      │
-│ 5. Construir payload dinámico                   │
-│ 6. Optimistic update en cache                   │
-│ 7. PATCH a tabla correcta (TEXT, no ENUM)       │
-│ 8. Toast success/error + rollback si falla      │
-└─────────────────────────────────────────────────┘
-```
+| Archivo | Acción | Descripción |
+|---------|--------|-------------|
+| `src/components/admin/contacts/pipeline/ContactsPipelineView.tsx` | Crear | Vista principal Kanban |
+| `src/components/admin/contacts/pipeline/PipelineColumn.tsx` | Crear | Columna con drop zone |
+| `src/components/admin/contacts/pipeline/PipelineCard.tsx` | Crear | Tarjeta arrastrable |
+| `src/components/admin/contacts/pipeline/index.ts` | Crear | Barrel exports |
+| `src/components/admin/contacts/LinearContactsManager.tsx` | Modificar | Añadir pestaña Pipeline |
 
 ---
 
-## Pruebas de Validación
+## Validaciones de Calidad
 
-### Tab "Todos" - Campos Editables
-| Campo | Test | Resultado Esperado |
-|-------|------|-------------------|
-| Estado | Cambiar a "Compras" | ✅ Guarda (TEXT, no ENUM) |
-| Estado | Cambiar a "Nuevo" | ✅ Guarda |
-| Canal | Cambiar canal | ✅ Guarda |
-| Formulario | Cambiar formulario | ✅ Guarda |
-| Fecha Registro | Cambiar fecha | ✅ Guarda en ISO |
-| Empresa | Editar nombre | ✅ Guarda |
-| Sector | Editar sector | ✅ Guarda |
-| Provincia | Editar provincia | ✅ Guarda (solo tablas con `location`) |
+### Antes de aprobar:
 
-### Tab "Favoritos" - Mismas Pruebas
-| Campo | Test | Resultado Esperado |
-|-------|------|-------------------|
-| Todos los anteriores | Mismas acciones | ✅ Usa `contact.id` correcto, funciona igual |
-
-### Robustez
 | Test | Resultado Esperado |
 |------|-------------------|
-| Doble-click rápido | ✅ Debounce 500ms previene duplicados |
-| Error de red | ✅ Rollback + toast con error real |
-| Campo no soportado por tabla | ✅ Mensaje claro, no intenta guardar |
-| Estado inactivo | ✅ Muestra "(Inactivo)", permite cambiar a activo |
+| Arrastrar lead en Kanban → tabla actualizada | ✅ Mismo estado inmediatamente |
+| Cambiar estado en tabla inline → Kanban actualizado | ✅ Lead se mueve de columna |
+| Crear estado nuevo en configurador → aparece en Kanban | ✅ Nueva columna visible |
+| Desactivar estado → columna desaparece del Kanban | ✅ Leads con ese estado quedan en "Sin estado" o se muestran aparte |
+| Reordenar estados → orden de columnas cambia | ✅ Automático |
+| Filtrar por canal → Kanban solo muestra leads filtrados | ✅ Hereda filtros |
+| Click en tarjeta → abre panel lateral | ✅ Usa ContactDetailSheet existente |
+| Error de red → rollback en ambos sitios | ✅ Toast + UI consistente |
+
+---
+
+## No Se Modifica
+
+- ❌ `useInlineUpdate.ts` - Ya funciona perfectamente
+- ❌ `useContactStatuses.ts` - Ya es la fuente única
+- ❌ `ContactDetailSheet.tsx` - Se reutiliza tal cual
+- ❌ Filtros existentes - Se heredan
+- ❌ `lead_pipeline_columns` - Se ignora (legacy, puede eliminarse después)
 
 ---
 
 ## Beneficios
 
-1. **Cero errores ENUM**: La migración a TEXT elimina el bug de "invalid input value"
-2. **Estados dinámicos**: Cualquier estado nuevo funciona automáticamente
-3. **Consistencia 100%**: Mismos componentes y lógica en "Todos" y "Favoritos"
-4. **Validación preventiva**: Errores claros antes de intentar guardar
-5. **Future-proof**: Sistema preparado para nuevas tablas y campos
+1. **Cero duplicación**: Una sola fuente de verdad (`contact_statuses`)
+2. **Sincronización perfecta**: Tabla y Kanban usan el mismo cache
+3. **Filtros compartidos**: Sin reimplementar lógica
+4. **Panel lateral reutilizado**: Sin nuevo código
+5. **Performance**: Mismos datos ya cargados por `useUnifiedContacts`
+6. **Mantenibilidad**: Menos código, menos bugs
