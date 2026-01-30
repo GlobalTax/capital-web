@@ -25,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { EditableSelect, SelectOption } from '@/components/admin/shared/EditableSelect';
+import { EditableDateCell } from '@/components/admin/shared/EditableDateCell';
 
 // Origin badge config - static
 const ORIGIN_CONFIGS: Record<ContactOrigin, { label: string; color: string }> = {
@@ -151,6 +152,14 @@ export const ContactTableRow = memo<ContactRowProps>(({
     [contact.id, contact.origin, onUpdateField]
   );
 
+  // Handler for inline date editing
+  const handleDateUpdate = useCallback(
+    async (value: string) => {
+      await onUpdateField(contact.id, contact.origin, 'lead_received_at', value);
+    },
+    [contact.id, contact.origin, onUpdateField]
+  );
+
   return (
     <div 
       style={style}
@@ -215,11 +224,18 @@ export const ContactTableRow = memo<ContactRowProps>(({
         </div>
       </div>
       
-      {/* Fecha de Registro (lead_received_at or created_at fallback) */}
-      <div className="px-1.5 flex items-center" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
-        <span className="text-[10px] text-muted-foreground">
-          {format(new Date((contact as any).lead_received_at || contact.created_at), 'dd MMM yy', { locale: es })}
-        </span>
+      {/* Fecha de Registro (lead_received_at or created_at fallback) - Editable */}
+      <div 
+        className="px-1.5 flex items-center" 
+        style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <EditableDateCell
+          value={(contact as any).lead_received_at || contact.created_at}
+          onSave={handleDateUpdate}
+          displayFormat="dd MMM yy"
+          emptyText="—"
+        />
       </div>
       
       {/* Channel + Lead Form */}
@@ -414,6 +430,8 @@ export const ContactTableRow = memo<ContactRowProps>(({
   );
 }, (prevProps, nextProps) => {
   // Custom comparison for optimal memoization
+  const prevContact = prevProps.contact as any;
+  const nextContact = nextProps.contact as any;
   return (
     prevProps.contact.id === nextProps.contact.id &&
     prevProps.isSelected === nextProps.isSelected &&
@@ -429,6 +447,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
     prevProps.contact.revenue === nextProps.contact.revenue &&
     prevProps.contact.ebitda === nextProps.contact.ebitda &&
     prevProps.contact.empresa_facturacion === nextProps.contact.empresa_facturacion &&
+    prevContact.lead_received_at === nextContact.lead_received_at &&
     prevProps.channelOptions === nextProps.channelOptions &&
     prevProps.statusOptions === nextProps.statusOptions
   );
