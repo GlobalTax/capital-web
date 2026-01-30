@@ -38,6 +38,7 @@ import { useExitReadinessQuestions } from '@/hooks/useExitReadinessQuestions';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import { sanitizeRichText } from '@/shared/utils/sanitize';
 
 const ExitReadyAdmin: React.FC = () => {
   const { tests, stats, isLoading, regenerateReport, markAsContacted, updateTest } = useExitReadinessAdmin();
@@ -347,11 +348,13 @@ const ExitReadyAdmin: React.FC = () => {
                 {selectedTest.ai_report_content ? (
                   <div className="bg-muted/50 rounded-lg p-4 prose prose-sm max-w-none">
                     <div dangerouslySetInnerHTML={{ 
-                      __html: selectedTest.ai_report_content
-                        .replace(/## /g, '<h3>')
-                        .replace(/### /g, '<h4>')
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\n/g, '<br/>') 
+                      __html: sanitizeRichText(
+                        selectedTest.ai_report_content
+                          .replace(/## /g, '<h3>')
+                          .replace(/### /g, '<h4>')
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\n/g, '<br/>')
+                      )
                     }} />
                   </div>
                 ) : selectedTest.ai_report_error ? (

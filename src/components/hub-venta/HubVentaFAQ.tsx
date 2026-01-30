@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useHubVentaTracking } from '@/hooks/useHubVentaTracking';
+import { safeJsonLd } from '@/shared/utils/sanitize';
 
 const faqs = [
   {
@@ -87,10 +88,10 @@ const HubVentaFAQ: React.FC = () => {
 
   return (
     <section className="py-20 md:py-28 bg-slate-50">
-      {/* FAQ Schema */}
+      {/* FAQ Schema - escaped to prevent </script> injection */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }}
       />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">

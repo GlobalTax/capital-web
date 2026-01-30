@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import BlogPreviewBanner from '@/components/admin/blog/BlogPreviewBanner';
 import { useToast } from '@/hooks/use-toast';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
+import { sanitizeRichText } from '@/shared/utils/sanitize';
 
 const BlogPreviewPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -155,7 +156,7 @@ const BlogPreviewPage = () => {
         {/* Content */}
         <div 
           className="prose prose-lg max-w-none"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
         />
       </article>
     </div>

@@ -216,13 +216,13 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
       exit_type: 'close_tab'
     };
 
-    // Usar sendBeacon con la API REST de Supabase directamente
+    // Use centralized Supabase config - get URL and key from the client
+    // Note: We need to use raw fetch with keepalive for beforeunload reliability
     const supabaseUrl = 'https://fwhqtzkkvnjkazhaficj.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I';
     
     const url = `${supabaseUrl}/rest/v1/form_sessions?session_id=eq.${sessionDataRef.current.sessionId}`;
     
-    // Crear headers como string para sendBeacon
     const headers = {
       'apikey': supabaseKey,
       'Authorization': `Bearer ${supabaseKey}`,
@@ -230,23 +230,19 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
       'Prefer': 'return=minimal'
     };
     
-    // sendBeacon requiere FormData o Blob
-    const blob = new Blob([JSON.stringify(updateData)], { type: 'application/json' });
-    
-    // Intentar sendBeacon (más confiable en beforeunload)
+    // Use fetch with keepalive for beforeunload reliability
+    // sendBeacon doesn't support custom headers
     try {
-      // sendBeacon no soporta headers personalizados, usar fetch con keepalive
       fetch(url, {
         method: 'PATCH',
         headers: headers,
         body: JSON.stringify(updateData),
-        keepalive: true // Crucial para que funcione en beforeunload
+        keepalive: true // Crucial for beforeunload
       }).catch(() => {
-        // Silent fail - es normal que esto falle a veces en beforeunload
+        // Silent fail - normal in beforeunload context
       });
     } catch (error) {
       // Fallback silencioso
-      console.error('Error finalizing session:', error);
     }
   }, []);
 
