@@ -1,290 +1,145 @@
 
-# Plan: Gestión de Prospectos — Puente entre Admin y CRM
 
-## Resumen Ejecutivo
+# Plan: Reestructurar Tabla de Contactos — Alineación y Espaciado Corregidos
 
-Crear un nuevo apartado **"Gestión de Prospectos"** en el CRM que liste automáticamente los leads avanzados (estados de etapa prospecto) y permita acceder **directamente** a los perfiles de empresa **ya existentes** en `/admin/empresas/:id`.
+## Problema Identificado
 
-**Requisito crítico**: NO crear nuevos perfiles de empresa bajo ningún concepto. El sistema solo sirve como "puente" para navegar al perfil de empresa existente vinculado al lead.
+La tabla actual en `/admin/contacts` usa **flexbox con fracciones variables** (`flex: '2 0 180px'`, etc.) que causa:
+- Columnas desalineadas entre header y filas
+- Datos truncados incorrectamente
+- Espaciado inconsistente en diferentes anchos de pantalla
 
----
+## Solución
 
-## Arquitectura Propuesta
-
-```text
-┌───────────────────────────────────────────────────────────────────┐
-│                        FUENTE DE DATOS                            │
-│                                                                   │
-│  ┌─────────────────┐      ┌──────────────────────┐               │
-│  │ contact_statuses│      │ contacts (leads)     │               │
-│  │ + is_prospect_  │──────│ + empresa_id (FK)    │               │
-│  │   stage: BOOL   │      │ + lead_status_crm    │               │
-│  └─────────────────┘      └──────────────────────┘               │
-│                                    │                              │
-│                                    ▼                              │
-│                    ┌───────────────────────────────┐             │
-│                    │      empresas (YA EXISTEN)    │             │
-│                    │  id, nombre, sector, ...      │             │
-│                    └───────────────────────────────┘             │
-│                                    │                              │
-│                                    ▼                              │
-│             ┌──────────────────────────────────────────┐         │
-│             │        GESTIÓN DE PROSPECTOS             │         │
-│             │  Lista leads con is_prospect_stage=true  │         │
-│             │  + empresa_id NOT NULL                   │         │
-│             │                                          │         │
-│             │  ┌──────────────────────────────────┐   │         │
-│             │  │  Botón "Abrir perfil"            │   │         │
-│             │  │  → /admin/empresas/:empresa_id    │   │         │
-│             │  └──────────────────────────────────┘   │         │
-│             └──────────────────────────────────────────┘         │
-└───────────────────────────────────────────────────────────────────┘
-```
+Aplicar el mismo patrón ya probado en `/admin/empresas`:
+1. **Anchos de columna en píxeles fijos** (no flex)
+2. **Contenedor de scroll único** que sincroniza header + lista
+3. **Width total calculado** para alineación perfecta
+4. **Lista virtualizada** con `overflow: hidden`
 
 ---
 
 ## Cambios Técnicos
 
-### 1. Migración SQL: Añadir `is_prospect_stage` a `contact_statuses`
-
-```sql
--- Añadir campo para marcar estados de etapa prospecto
-ALTER TABLE public.contact_statuses 
-ADD COLUMN IF NOT EXISTS is_prospect_stage BOOLEAN NOT NULL DEFAULT false;
-
--- Marcar los estados que corresponden a etapa prospecto
-UPDATE public.contact_statuses 
-SET is_prospect_stage = true 
-WHERE status_key IN ('reunion_programada', 'psh_enviada', 'video');
-
--- Los admins podrán marcar/desmarcar desde el configurador de estados
-```
-
-**Nota**: Los estados exactos se configurarán desde el editor de estados existente. Esta migración solo marca los defaults.
-
----
-
-### 2. Actualizar Hook `useContactStatuses.ts`
-
-Añadir el campo `is_prospect_stage` al interface y exponer helper:
+### 1. Definir Anchos en Píxeles
 
 ```typescript
-export interface ContactStatus {
-  // ... campos existentes
-  is_prospect_stage: boolean; // NUEVO
-}
-
-// Exponer getter para filtrar estados prospecto
-const prospectStatuses = statuses.filter(s => s.is_prospect_stage && s.is_active);
-```
-
----
-
-### 3. Crear Hook `useProspects.ts`
-
-Query centralizada para obtener prospectos:
-
-```typescript
-// src/hooks/useProspects.ts
-export const useProspects = () => {
-  const { prospectStatusKeys } = useContactStatuses();
-  
-  const query = useQuery({
-    queryKey: ['prospects'],
-    queryFn: async () => {
-      // 1. Obtener status_keys de etapa prospecto
-      const { data: prospectStatuses } = await supabase
-        .from('contact_statuses')
-        .select('status_key')
-        .eq('is_prospect_stage', true)
-        .eq('is_active', true);
-      
-      const statusKeys = prospectStatuses?.map(s => s.status_key) || [];
-      
-      // 2. Obtener leads con esos estados Y empresa_id
-      const { data: valuationLeads } = await supabase
-        .from('company_valuations')
-        .select(`
-          id, contact_name, email, lead_status_crm, created_at, updated_at,
-          empresa_id,
-          empresas:empresa_id(id, nombre, sector, ubicacion, facturacion)
-        `)
-        .in('lead_status_crm', statusKeys)
-        .not('empresa_id', 'is', null)
-        .eq('is_deleted', false);
-      
-      const { data: contactLeads } = await supabase
-        .from('contact_leads')
-        .select(`
-          id, full_name, email, lead_status_crm, created_at, updated_at,
-          empresa_id, company,
-          empresas:empresa_id(id, nombre, sector, ubicacion, facturacion)
-        `)
-        .in('lead_status_crm', statusKeys)
-        .not('empresa_id', 'is', null)
-        .eq('is_deleted', false);
-      
-      // 3. Unificar y agrupar por empresa
-      return unifyAndGroupByEmpresa([...valuationLeads, ...contactLeads]);
-    }
-  });
-  
-  return { prospects: query.data, isLoading: query.isLoading };
+// ANTES (problemático)
+export const COL_STYLES = {
+  star: { minWidth: 32, flex: '0 0 32px' },
+  contact: { minWidth: 180, flex: '2 0 180px' },
+  // ...
 };
+
+// DESPUÉS (consistente)
+const COLUMN_WIDTHS: Record<string, number> = {
+  star: 36,
+  checkbox: 36,
+  contact: 180,
+  origin: 90,      // F. Registro
+  channel: 130,
+  company: 150,
+  province: 75,
+  sector: 100,
+  status: 120,
+  revenue: 75,
+  ebitda: 75,
+  apollo: 75,
+  date: 85,
+  actions: 44,
+};
+// Total: ~1271px
 ```
 
----
-
-### 4. Crear Página `ProspectsPage.tsx`
-
-Nueva página para listar prospectos:
-
-| Archivo | Ubicación |
-|---------|-----------|
-| `src/pages/admin/ProspectsPage.tsx` | Página principal |
-| `src/components/admin/prospects/ProspectsTable.tsx` | Tabla de prospectos |
-| `src/components/admin/prospects/ProspectFilters.tsx` | Filtros |
-
-**Estructura de la tabla**:
-
-| Columna | Descripción |
-|---------|-------------|
-| Empresa | Nombre de la empresa vinculada |
-| Contacto(s) | Nombres de contactos del lead |
-| Estado | Badge con color del estado |
-| Canal | Origen del lead |
-| Fecha registro | Fecha de creación |
-| Última actualización | Fecha de última modificación |
-| **Acción** | Botón "Abrir perfil" → `/admin/empresas/:empresa_id` |
-
-**Filtros**:
-- Búsqueda por empresa/contacto/email
-- Filtro por estado (solo estados prospecto)
-- Filtro por canal
-- Rango de fechas
-
----
-
-### 5. Actualizar Router y Sidebar
-
-**AdminRouter.tsx**:
-```typescript
-<Route path="/prospectos" element={<LazyProspectsPage />} />
-```
-
-**sidebar-config.ts** — Nueva sección CRM:
-```typescript
-{
-  title: "💼 CRM",
-  description: "Gestión de prospectos y oportunidades",
-  items: [
-    { 
-      title: "Gestión de Prospectos", 
-      url: "/admin/prospectos", 
-      icon: Target,
-      description: "Leads avanzados con perfil de empresa"
-    },
-  ]
-}
-```
-
----
-
-### 6. Actualizar Editor de Estados
-
-En el configurador de estados existente (`StatusEditorPanel` o similar), añadir toggle:
+### 2. Sincronizar Scroll
 
 ```typescript
-<div className="flex items-center justify-between">
-  <Label htmlFor="is-prospect">Etapa Prospecto</Label>
-  <Switch
-    id="is-prospect"
-    checked={status.is_prospect_stage}
-    onCheckedChange={(checked) => updateStatus(status.id, { is_prospect_stage: checked })}
-  />
+// Contenedor único de scroll
+<div className="overflow-x-auto" ref={scrollContainerRef}>
+  <div style={{ minWidth: totalWidth }}>
+    {/* Header con mismo ancho */}
+    <TableHeader ... totalWidth={totalWidth} columnWidths={columnWidths} />
+    
+    {/* Lista con overflow: hidden */}
+    <List
+      width={totalWidth}
+      style={{ overflow: 'hidden' }}
+      ...
+    >
+      {VirtualizedRow}
+    </List>
+  </div>
 </div>
-<p className="text-xs text-muted-foreground">
-  Los leads en este estado aparecerán en "Gestión de Prospectos"
-</p>
+```
+
+### 3. Actualizar TableHeader
+
+Eliminar la lógica actual de `translateX(-${scrollLeft}px)` y usar anchos fijos:
+
+```typescript
+const TableHeader = memo(({ allSelected, someSelected, onSelectAll, sortColumn, sortDirection, onSort, columnWidths, totalWidth }) => (
+  <div 
+    className="flex bg-[hsl(var(--linear-bg-elevated))] border-b"
+    style={{ width: totalWidth, minWidth: totalWidth }}
+  >
+    {/* Cada columna con width fijo */}
+    <div style={{ width: columnWidths.star, minWidth: columnWidths.star }} ... />
+    <div style={{ width: columnWidths.checkbox, minWidth: columnWidths.checkbox }} ... />
+    ...
+  </div>
+));
+```
+
+### 4. Actualizar ContactTableRow
+
+```typescript
+// ANTES
+<div style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
+
+// DESPUÉS
+<div style={{ width: columnWidths.contact, minWidth: columnWidths.contact }}>
 ```
 
 ---
 
-### 7. (Futuro) Preparar Modelo para Estado del Prospecto
+## Archivos a Modificar
 
-Para la siguiente fase, se creará una tabla opcional:
-
-```sql
--- FASE 2: Solo si se implementa gestión de outcomes
-CREATE TABLE prospect_outcomes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  empresa_id UUID NOT NULL REFERENCES empresas(id),
-  outcome_state TEXT CHECK (outcome_state IN ('activo', 'pausado', 'perdido', 'convertido')),
-  lost_reason TEXT,
-  paused_reason TEXT,
-  converted_mandate_id UUID,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
-
-**Nota**: Esta tabla es **opcional para fase 1**. El estado actual se deriva del `lead_status_crm` del lead.
-
----
-
-## Archivos a Crear/Modificar
-
-| Archivo | Acción | Descripción |
-|---------|--------|-------------|
-| `supabase/migrations/[new].sql` | Crear | Añadir `is_prospect_stage` a `contact_statuses` |
-| `src/hooks/useContactStatuses.ts` | Modificar | Añadir `is_prospect_stage` al interface |
-| `src/hooks/useProspects.ts` | Crear | Hook para obtener prospectos |
-| `src/pages/admin/ProspectsPage.tsx` | Crear | Página principal |
-| `src/components/admin/prospects/ProspectsTable.tsx` | Crear | Tabla de prospectos |
-| `src/components/admin/prospects/ProspectFilters.tsx` | Crear | Filtros |
-| `src/components/admin/prospects/index.ts` | Crear | Barrel exports |
-| `src/features/admin/components/AdminRouter.tsx` | Modificar | Añadir ruta `/prospectos` |
-| `src/features/admin/config/sidebar-config.ts` | Modificar | Añadir sección CRM |
-| `src/components/admin/contacts/StatusEditorPanel.tsx` | Modificar | Añadir toggle `is_prospect_stage` |
-| `src/integrations/supabase/types.ts` | Regenerar | Incluir nuevo campo |
-
----
-
-## Validaciones de Calidad
-
-| Test | Resultado Esperado |
-|------|-------------------|
-| Lead en estado NO-prospecto → no aparece | ✅ Filtrado correctamente |
-| Cambiar estado a "Reunión programada" → aparece | ✅ Query incluye el lead |
-| Click "Abrir perfil" → abre empresa existente | ✅ Navega a `/admin/empresas/:id` |
-| Lead SIN `empresa_id` → no aparece | ✅ Query filtra `empresa_id NOT NULL` |
-| Renombrar estado → sigue funcionando | ✅ Usa `is_prospect_stage`, no texto |
-| Empresa con 2 contactos → no se duplica | ✅ Agrupación por `empresa_id` |
-| Lead sin empresa vinculada → mostrar CTA para vincular | ✅ UX clara |
-
----
-
-## Permisos (RLS)
-
-- Solo usuarios con rol `admin` o `super_admin` pueden acceder a `/admin/prospectos`
-- La navegación a `/admin/empresas/:id` respeta los permisos existentes de empresas
-
----
-
-## NO SE MODIFICA
-
-- ❌ Creación de empresas — nunca se crean desde este módulo
-- ❌ Tabla `empresas` — solo lectura
-- ❌ Lógica de leads existente — se reutiliza
-- ❌ Panel lateral de lead — se reutiliza
-- ❌ Filtros del CRM principal — se heredan
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/admin/contacts/LinearContactsTable.tsx` | Anchos fijos, scroll unificado, eliminar translateX |
+| `src/components/admin/contacts/ContactTableRow.tsx` | Recibir `columnWidths`, usar width en lugar de flex |
 
 ---
 
 ## Beneficios
 
-1. **Puente eficiente**: Acceso directo al perfil de empresa desde leads avanzados
-2. **Configuración flexible**: Los admins deciden qué estados son "prospecto"
-3. **Cero duplicación**: Usa empresas existentes, no crea nada
-4. **Trazabilidad**: Histórico del lead se mantiene en Admin
-5. **Escalable**: Preparado para añadir outcomes (convertido/perdido/pausado)
+1. **Alineación perfecta**: Header y filas siempre sincronizadas
+2. **Espaciado consistente**: Sin expansión/contracción según viewport
+3. **Scroll sincronizado**: Un solo contenedor de scroll horizontal
+4. **Datos legibles**: Truncado predecible en cada columna
+5. **Performance**: Sin recálculos de flex en cada render
+
+---
+
+## Vista Previa de Resultados
+
+| Columna | Ancho (px) |
+|---------|-----------|
+| ⭐ Favorito | 36 |
+| ☑️ Checkbox | 36 |
+| Contacto | 180 |
+| F. Registro | 90 |
+| Canal | 130 |
+| Empresa | 150 |
+| Provincia | 75 |
+| Sector | 100 |
+| Estado | 120 |
+| Facturación | 75 |
+| EBITDA | 75 |
+| Apollo | 75 |
+| Fecha | 85 |
+| Acciones | 44 |
+| **Total** | **~1271px** |
+
+Este ancho total permite scroll horizontal en pantallas menores y alineación perfecta en pantallas anchas.
+
