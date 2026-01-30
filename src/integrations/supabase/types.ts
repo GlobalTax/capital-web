@@ -229,6 +229,8 @@ export type Database = {
           last_campaign_name: string | null
           last_email_click_at: string | null
           lead_form: string | null
+          lead_received_at: string | null
+          lead_status_crm: string | null
           phone: string | null
           referrer: string | null
           sectors_of_interest: string | null
@@ -295,6 +297,8 @@ export type Database = {
           last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
+          lead_status_crm?: string | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -361,6 +365,8 @@ export type Database = {
           last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
+          lead_status_crm?: string | null
           phone?: string | null
           referrer?: string | null
           sectors_of_interest?: string | null
@@ -1158,6 +1164,7 @@ export type Database = {
           ip_address: string | null
           lead_form: string | null
           lead_received_at: string | null
+          lead_status_crm: string | null
           pdf_url: string | null
           phone: string | null
           phone_e164: string | null
@@ -1202,6 +1209,7 @@ export type Database = {
           ip_address?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           pdf_url?: string | null
           phone?: string | null
           phone_e164?: string | null
@@ -1246,6 +1254,7 @@ export type Database = {
           ip_address?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           pdf_url?: string | null
           phone?: string | null
           phone_e164?: string | null
@@ -3553,6 +3562,7 @@ export type Database = {
           last_email_click_at: string | null
           lead_form: string | null
           lead_received_at: string | null
+          lead_status_crm: string | null
           message: string | null
           notes: string | null
           page_origin: string
@@ -3617,6 +3627,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -3681,6 +3692,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -4110,6 +4122,7 @@ export type Database = {
           token_hash: string | null
           token_used_at: string | null
           unique_token: string | null
+          updated_at: string | null
           user_agent: string | null
           user_id: string | null
           utm_campaign: string | null
@@ -4232,6 +4245,7 @@ export type Database = {
           token_hash?: string | null
           token_used_at?: string | null
           unique_token?: string | null
+          updated_at?: string | null
           user_agent?: string | null
           user_id?: string | null
           utm_campaign?: string | null
@@ -4354,6 +4368,7 @@ export type Database = {
           token_hash?: string | null
           token_used_at?: string | null
           unique_token?: string | null
+          updated_at?: string | null
           user_agent?: string | null
           user_id?: string | null
           utm_campaign?: string | null
@@ -8536,6 +8551,7 @@ export type Database = {
           is_deleted: boolean | null
           lead_form: string | null
           lead_received_at: string | null
+          lead_status_crm: string | null
           message: string
           notes: string | null
           page_origin: string
@@ -8594,6 +8610,7 @@ export type Database = {
           is_deleted?: boolean | null
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           message: string
           notes?: string | null
           page_origin: string
@@ -8652,6 +8669,7 @@ export type Database = {
           is_deleted?: boolean | null
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           message?: string
           notes?: string | null
           page_origin?: string
