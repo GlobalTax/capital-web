@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 export interface SelectOption {
   value: string;
@@ -35,6 +34,9 @@ type SaveStatus = 'idle' | 'saving' | 'success' | 'error';
 // Special value for "clear" option since Radix UI doesn't allow empty string values
 const CLEAR_VALUE = "__clear__";
 
+// Debounce threshold in milliseconds to prevent double-click race conditions
+const DEBOUNCE_THRESHOLD_MS = 500;
+
 export const EditableSelect = React.memo<EditableSelectProps>(({
   value,
   options,
@@ -49,12 +51,22 @@ export const EditableSelect = React.memo<EditableSelectProps>(({
   const [isOpen, setIsOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastSaveTimeRef = useRef<number>(0);
 
   const currentOption = options.find(opt => opt.value === value);
   const displayValue = currentOption?.label ?? '';
   const isEmpty = !value || value === '';
 
   const handleValueChange = useCallback(async (newValue: string) => {
+    // Debounce: prevent saves that happen too quickly (double-click protection)
+    const now = Date.now();
+    if (now - lastSaveTimeRef.current < DEBOUNCE_THRESHOLD_MS) {
+      console.log('[EditableSelect] Debounce: save ignored (too fast)');
+      setIsOpen(false);
+      return;
+    }
+    lastSaveTimeRef.current = now;
+    
     // Convert special clear value back to empty string
     const actualValue = newValue === CLEAR_VALUE ? '' : newValue;
     
@@ -73,11 +85,7 @@ export const EditableSelect = React.memo<EditableSelectProps>(({
     } catch (error) {
       console.error('Error saving select:', error);
       setSaveStatus('error');
-      
-      // Show real error message to user
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      toast.error('Error al guardar', { description: errorMessage });
-      
+      // Toast is already shown by useContactInlineUpdate - no duplicate needed
       setTimeout(() => setSaveStatus('idle'), 2000);
     }
   }, [value, onSave]);

@@ -62,6 +62,7 @@ export interface ContactRowProps {
   channelOptions: SelectOption[];
   statusOptions: SelectOption[];
   allStatuses: ContactStatus[];
+  leadFormOptions: SelectOption[];
   onSelect: (id: string) => void;
   onViewDetails: (contact: UnifiedContact) => void;
   onUpdateField: (id: string, origin: ContactOrigin, field: string, value: string | null) => Promise<void>;
@@ -97,6 +98,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
   channelOptions,
   statusOptions,
   allStatuses,
+  leadFormOptions,
   onSelect,
   onViewDetails,
   onUpdateField,
@@ -129,6 +131,11 @@ export const ContactTableRow = memo<ContactRowProps>(({
   
   const handleChannelUpdate = useCallback(
     (value: string | null) => onUpdateField(contact.id, contact.origin, 'acquisition_channel_id', value),
+    [contact.id, contact.origin, onUpdateField]
+  );
+  
+  const handleLeadFormUpdate = useCallback(
+    (value: string | null) => onUpdateField(contact.id, contact.origin, 'lead_form', value),
     [contact.id, contact.origin, onUpdateField]
   );
   
@@ -239,7 +246,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
       </div>
       
       {/* Channel + Lead Form */}
-      <div className="px-1.5 overflow-hidden flex flex-col" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }} onClick={(e) => e.stopPropagation()}>
+      <div className="px-1.5 overflow-hidden flex flex-col gap-0.5" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }} onClick={(e) => e.stopPropagation()}>
         <EditableSelect
           value={contact.acquisition_channel_id ?? undefined}
           options={channelOptions}
@@ -248,12 +255,16 @@ export const ContactTableRow = memo<ContactRowProps>(({
           allowClear
           onSave={handleChannelUpdate}
         />
-        {/* 🔥 Lead Form (Subcanal) debajo del canal */}
-        {contact.lead_form_name && (
-          <span className="text-[9px] text-muted-foreground/70 truncate mt-0.5">
-            {contact.lead_form_name}
-          </span>
-        )}
+        {/* Lead Form editable debajo del canal */}
+        <EditableSelect
+          value={contact.lead_form ?? undefined}
+          options={leadFormOptions}
+          placeholder="Formulario..."
+          emptyText="—"
+          allowClear
+          onSave={handleLeadFormUpdate}
+          displayClassName="text-[9px] text-muted-foreground/70"
+        />
       </div>
       
       {/* Company */}

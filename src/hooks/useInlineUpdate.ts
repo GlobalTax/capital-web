@@ -278,17 +278,20 @@ export const useContactInlineUpdate = () => {
         'location': 'location',
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
+        'lead_form': 'lead_form',
       },
       'collaborator_applications': {
         'name': 'full_name',
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
+        'lead_form': 'lead_form',
       },
       'acquisition_leads': {
         'name': 'full_name',
         'industry': 'sectors_of_interest',
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
+        'lead_form': 'lead_form',
       },
       'contact_leads': {
         'name': 'full_name',
@@ -296,6 +299,7 @@ export const useContactInlineUpdate = () => {
         'location': 'location',
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
+        'lead_form': 'lead_form',
       },
       'accountex_leads': {
         'name': 'full_name',
@@ -306,16 +310,19 @@ export const useContactInlineUpdate = () => {
         'name': 'contact_name',
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
+        'lead_form': 'lead_form',
       },
       'general_contact_leads': {
         'name': 'full_name',
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
+        'lead_form': 'lead_form',
       },
       'company_acquisition_inquiries': {
         'name': 'full_name',
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
+        'lead_form': 'lead_form',
       },
       'buyer_contacts': {
         'name': 'full_name',

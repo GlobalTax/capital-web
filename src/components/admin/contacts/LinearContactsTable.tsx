@@ -11,7 +11,7 @@ import { useAcquisitionChannels, CATEGORY_COLORS } from '@/hooks/useAcquisitionC
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { ContactTableRow, COL_STYLES } from './ContactTableRow';
 import { useContactStatuses, STATUS_COLOR_MAP, ContactStatus } from '@/hooks/useContactStatuses';
-
+import { useLeadForms } from '@/hooks/useLeadForms';
 // Minimum table width to ensure all columns fit (increased for province column)
 const MIN_TABLE_WIDTH = 1152;
 
@@ -117,6 +117,7 @@ interface ItemData {
   channelOptions: SelectOption[];
   statusOptions: SelectOption[];
   allStatuses: ContactStatus[];
+  leadFormOptions: SelectOption[];
   onSelect: (id: string) => void;
   onViewDetails: (contact: UnifiedContact) => void;
   onUpdateField: (id: string, origin: ContactOrigin, field: string, value: string | null) => Promise<void>;
@@ -144,6 +145,7 @@ const VirtualizedRow = React.memo<{
       channelOptions={data.channelOptions}
       statusOptions={data.statusOptions}
       allStatuses={data.allStatuses}
+      leadFormOptions={data.leadFormOptions}
       onSelect={data.onSelect}
       onViewDetails={data.onViewDetails}
       onUpdateField={data.onUpdateField}
@@ -182,6 +184,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   const { channels } = useAcquisitionChannels();
   const { update: updateContact } = useContactInlineUpdate();
   const { activeStatuses, statuses: allStatuses } = useContactStatuses();
+  const { forms: leadForms } = useLeadForms();
   
   // Calculate dynamic height based on container
   useEffect(() => {
@@ -221,6 +224,15 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     })), [activeStatuses]
   );
 
+  // Memoize lead form options from database
+  const leadFormOptions = useMemo<SelectOption[]>(() => 
+    leadForms.map(lf => ({
+      value: lf.id,
+      label: lf.name,
+      color: '#6b7280',
+    })), [leadForms]
+  );
+
   // Memoize update handler
   const handleUpdateField = useCallback(
     async (contactId: string, origin: ContactOrigin, field: string, value: string | null) => {
@@ -249,6 +261,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     channelOptions,
     statusOptions,
     allStatuses,
+    leadFormOptions,
     onSelect: onSelectContact,
     onViewDetails,
     onUpdateField: handleUpdateField,
@@ -262,6 +275,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     channelOptions,
     statusOptions,
     allStatuses,
+    leadFormOptions,
     onSelectContact,
     onViewDetails,
     handleUpdateField,
