@@ -66,9 +66,13 @@ export const EditableDateCell = React.memo<EditableDateCellProps>(({
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 1500);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar fecha';
       console.error('Error saving date:', error);
       setSaveStatus('error');
-      setTimeout(() => setSaveStatus('idle'), 2000);
+      // Re-open to let user retry
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 2000);
     }
   }, [dateValue, onSave]);
 

@@ -146,8 +146,74 @@ export const useInlineUpdate = <T extends Record<string, any>>({
 };
 
 /**
+ * Table capabilities map - defines which columns each table supports
+ * This prevents SQL errors from trying to update non-existent columns
+ */
+const tableCapabilities: Record<string, {
+  hasUpdatedAt: boolean;
+  hasLeadReceivedAt: boolean;
+  hasLeadStatusCrm: boolean;
+  hasAcquisitionChannel: boolean;
+}> = {
+  'company_valuations': {
+    hasUpdatedAt: true, // Added in migration 20260130
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true,
+    hasAcquisitionChannel: true,
+  },
+  'contact_leads': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true,
+    hasAcquisitionChannel: true,
+  },
+  'collaborator_applications': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true,
+    hasAcquisitionChannel: true,
+  },
+  'acquisition_leads': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true, // Added in migration 20260130
+    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasAcquisitionChannel: true,
+  },
+  'advisor_valuations': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasAcquisitionChannel: true,
+  },
+  'general_contact_leads': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasAcquisitionChannel: true,
+  },
+  'company_acquisition_inquiries': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasAcquisitionChannel: true,
+  },
+  'buyer_contacts': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: false, // Buyers don't have CRM status
+    hasAcquisitionChannel: false, // Buyers don't have acquisition channel
+  },
+  'accountex_leads': {
+    hasUpdatedAt: true,
+    hasLeadReceivedAt: false,
+    hasLeadStatusCrm: false,
+    hasAcquisitionChannel: false,
+  },
+};
+
+/**
  * Specialized hook for updating unified contacts
- * Handles the complexity of different origin tables
+ * Handles the complexity of different origin tables with capability validation
  */
 export const useContactInlineUpdate = () => {
   const queryClient = useQueryClient();
@@ -173,12 +239,37 @@ export const useContactInlineUpdate = () => {
 
     const table = tableMap[origin];
     if (!table) {
-      console.error(`Unknown origin: ${origin}`);
+      console.error(`[InlineUpdate] Unknown origin: ${origin}`);
+      toast.error('Error: origen de lead desconocido');
       return { success: false, error: new Error(`Unknown origin: ${origin}`) };
     }
 
+    // Get table capabilities
+    const capabilities = tableCapabilities[table];
+    if (!capabilities) {
+      console.error(`[InlineUpdate] No capabilities defined for table: ${table}`);
+      toast.error('Error: configuración de tabla no encontrada');
+      return { success: false, error: new Error(`No capabilities for table: ${table}`) };
+    }
+
+    // Validate field is supported by this table
+    if (field === 'lead_status_crm' && !capabilities.hasLeadStatusCrm) {
+      console.warn(`[InlineUpdate] Table ${table} does not support lead_status_crm`);
+      toast.error('Este tipo de lead no soporta cambio de estado');
+      return { success: false, error: new Error(`${table} does not support lead_status_crm`) };
+    }
+    if (field === 'lead_received_at' && !capabilities.hasLeadReceivedAt) {
+      console.warn(`[InlineUpdate] Table ${table} does not support lead_received_at`);
+      toast.error('Este tipo de lead no soporta cambio de fecha de registro');
+      return { success: false, error: new Error(`${table} does not support lead_received_at`) };
+    }
+    if (field === 'acquisition_channel_id' && !capabilities.hasAcquisitionChannel) {
+      console.warn(`[InlineUpdate] Table ${table} does not support acquisition_channel_id`);
+      toast.error('Este tipo de lead no soporta cambio de canal');
+      return { success: false, error: new Error(`${table} does not support acquisition_channel_id`) };
+    }
+
     // Map field names for specific tables
-    // lead_received_at is the same across all tables (no mapping needed)
     const fieldMap: Record<string, Record<string, string>> = {
       'company_valuations': {
         'company': 'company_name',
@@ -186,21 +277,25 @@ export const useContactInlineUpdate = () => {
         'industry': 'industry',
         'location': 'location',
         'lead_received_at': 'lead_received_at',
+        'lead_status_crm': 'lead_status_crm',
       },
       'collaborator_applications': {
         'name': 'full_name',
         'lead_received_at': 'lead_received_at',
+        'lead_status_crm': 'lead_status_crm',
       },
       'acquisition_leads': {
         'name': 'full_name',
         'industry': 'sectors_of_interest',
         'lead_received_at': 'lead_received_at',
+        'lead_status_crm': 'lead_status_crm',
       },
       'contact_leads': {
         'name': 'full_name',
         'industry': 'sector',
         'location': 'location',
         'lead_received_at': 'lead_received_at',
+        'lead_status_crm': 'lead_status_crm',
       },
       'accountex_leads': {
         'name': 'full_name',
@@ -210,14 +305,17 @@ export const useContactInlineUpdate = () => {
         'company': 'company_name',
         'name': 'contact_name',
         'lead_received_at': 'lead_received_at',
+        'lead_status_crm': 'lead_status_crm',
       },
       'general_contact_leads': {
         'name': 'full_name',
         'lead_received_at': 'lead_received_at',
+        'lead_status_crm': 'lead_status_crm',
       },
       'company_acquisition_inquiries': {
         'name': 'full_name',
         'lead_received_at': 'lead_received_at',
+        'lead_status_crm': 'lead_status_crm',
       },
       'buyer_contacts': {
         'name': 'full_name',
@@ -227,24 +325,43 @@ export const useContactInlineUpdate = () => {
 
     const mappedField = fieldMap[table]?.[field] ?? field;
 
+    // Dev logging for debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[InlineUpdate] Updating ${table}.${mappedField}`, { id, origin, field, value });
+    }
+
     const previousData = queryClient.getQueryData(['unified-contacts']);
     
     await queryClient.cancelQueries({ queryKey: ['unified-contacts'] });
 
-    // Optimistic update
+    // Optimistic update - also update mappedField to ensure UI consistency
     queryClient.setQueryData(['unified-contacts'], (old: any[] = []) =>
       old.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
+        item.id === id ? { ...item, [field]: value, [mappedField]: value } : item
       )
     );
 
     try {
-      const { error } = await supabase
-        .from(table as TableName)
-        .update({ [mappedField]: value, updated_at: new Date().toISOString() } as any)
+      // Build payload dynamically based on table capabilities
+      const payload: Record<string, any> = { [mappedField]: value };
+      
+      // Only add updated_at if the table supports it
+      if (capabilities.hasUpdatedAt) {
+        payload.updated_at = new Date().toISOString();
+      }
+
+      // Use any type to avoid complex TypeScript inference issues with dynamic table names
+      const { error } = await (supabase as any)
+        .from(table)
+        .update(payload)
         .eq('id', id);
 
       if (error) throw error;
+
+      // Dev logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[InlineUpdate] Success:`, { table, id, field: mappedField, value });
+      }
 
       queryClient.invalidateQueries({
         queryKey: ['unified-contacts'],
@@ -254,13 +371,14 @@ export const useContactInlineUpdate = () => {
       toast.success('Guardado', { duration: 1500 });
       return { success: true };
     } catch (error) {
-      console.error(`Error updating ${table}.${mappedField}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      console.error(`[InlineUpdate] Error updating ${table}.${mappedField}:`, error);
       
       if (previousData) {
         queryClient.setQueryData(['unified-contacts'], previousData);
       }
 
-      toast.error('Error al guardar');
+      toast.error('Error al guardar', { description: errorMessage });
       return { success: false, error: error as Error };
     }
   }, [queryClient]);

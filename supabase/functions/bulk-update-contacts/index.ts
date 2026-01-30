@@ -208,7 +208,7 @@ serve(async (req) => {
       // buyer_contacts does NOT have acquisition_channel_id
     ];
 
-    // Tables that have updated_at column
+    // Tables that have updated_at column (now includes company_valuations after migration)
     const tablesWithUpdatedAt = [
       'contact_leads',
       'general_contact_leads',
@@ -217,7 +217,7 @@ serve(async (req) => {
       'company_acquisition_inquiries',
       'advisor_valuations',
       'buyer_contacts',
-      // 'company_valuations' does NOT have updated_at
+      'company_valuations', // Added after migration 20260130
     ];
 
     // Tables that support lead_received_at (all major lead tables now have this column)

@@ -84,9 +84,12 @@ export const EditableCell = React.memo<EditableCellProps>(({
       // Reset status after a brief moment
       setTimeout(() => setSaveStatus('idle'), 1500);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar';
       console.error('Error saving cell:', error);
       setSaveStatus('error');
-      // Keep editing mode open on error
+      // Revert to original value on error
+      setEditValue(originalValue);
+      // Keep editing mode open on error so user can retry
       setTimeout(() => setSaveStatus('idle'), 2000);
     }
   }, [editValue, value, onSave]);
