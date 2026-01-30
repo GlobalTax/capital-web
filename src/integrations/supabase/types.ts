@@ -3366,7 +3366,7 @@ export type Database = {
           last_email_click_at: string | null
           lead_form: string | null
           lead_received_at: string | null
-          lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm: string | null
           motivation: string | null
           notes: string | null
           phone: string
@@ -3421,7 +3421,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
-          lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm?: string | null
           motivation?: string | null
           notes?: string | null
           phone: string
@@ -3476,7 +3476,7 @@ export type Database = {
           last_email_click_at?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
-          lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm?: string | null
           motivation?: string | null
           notes?: string | null
           phone?: string
@@ -4104,7 +4104,7 @@ export type Database = {
           lead_received_at: string | null
           lead_source: string | null
           lead_source_detail: string | null
-          lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm: string | null
           location: string | null
           net_profit_margin: number | null
           notes: string | null
@@ -4227,7 +4227,7 @@ export type Database = {
           lead_received_at?: string | null
           lead_source?: string | null
           lead_source_detail?: string | null
-          lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm?: string | null
           location?: string | null
           net_profit_margin?: number | null
           notes?: string | null
@@ -4350,7 +4350,7 @@ export type Database = {
           lead_received_at?: string | null
           lead_source?: string | null
           lead_source_detail?: string | null
-          lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm?: string | null
           location?: string | null
           net_profit_margin?: number | null
           notes?: string | null
@@ -4520,7 +4520,7 @@ export type Database = {
           lead_entry_date: string | null
           lead_form: string | null
           lead_received_at: string | null
-          lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm: string | null
           notes: string | null
           phone: string | null
           referral: string | null
@@ -4600,7 +4600,7 @@ export type Database = {
           lead_entry_date?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
-          lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm?: string | null
           notes?: string | null
           phone?: string | null
           referral?: string | null
@@ -4680,7 +4680,7 @@ export type Database = {
           lead_entry_date?: string | null
           lead_form?: string | null
           lead_received_at?: string | null
-          lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
+          lead_status_crm?: string | null
           notes?: string | null
           phone?: string | null
           referral?: string | null
