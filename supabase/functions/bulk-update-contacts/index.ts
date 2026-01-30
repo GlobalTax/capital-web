@@ -12,6 +12,7 @@ interface BulkUpdateRequest {
     acquisition_channel_id?: string;
     lead_form?: string;
     lead_received_at?: string; // ISO date string for bulk date updates
+    lead_status_crm?: string; // Status key from contact_statuses
   };
 }
 
@@ -34,7 +35,16 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body: BulkUpdateRequest = await req.json();
+    let body: BulkUpdateRequest;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { contact_ids, updates } = body;
 
     console.log(`[bulk-update-contacts] Processing ${contact_ids.length} contacts`);
@@ -111,6 +121,25 @@ serve(async (req) => {
       console.log(`[bulk-update-contacts] Valid lead_received_at: ${updates.lead_received_at}`);
     }
 
+    // Validate lead_status_crm if provided
+    if (updates.lead_status_crm) {
+      const { data: status, error: statusError } = await supabase
+        .from('contact_statuses')
+        .select('id, status_key, label')
+        .eq('status_key', updates.lead_status_crm)
+        .eq('is_active', true)
+        .single();
+
+      if (statusError || !status) {
+        console.error('[bulk-update-contacts] Invalid lead_status_crm:', statusError);
+        return new Response(
+          JSON.stringify({ error: `Invalid lead_status_crm: ${updates.lead_status_crm}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      console.log(`[bulk-update-contacts] Valid status: ${status.label} (${status.status_key})`);
+    }
+
     // Group contacts by origin table
     const contactsByTable: Record<string, string[]> = {
       contact_leads: [],
@@ -167,7 +196,7 @@ serve(async (req) => {
       errors: [],
     };
 
-    // Tables that support acquisition_channel_id (now all tables)
+    // Tables that support acquisition_channel_id
     const tablesWithChannel = [
       'contact_leads',
       'general_contact_leads',
@@ -191,6 +220,17 @@ serve(async (req) => {
       // 'company_valuations' does NOT have updated_at
     ];
 
+    // Tables that support lead_status_crm
+    const tablesWithStatusCrm = [
+      'contact_leads',
+      'company_valuations',
+      'general_contact_leads',
+      'collaborator_applications',
+      'acquisition_leads',
+      'company_acquisition_inquiries',
+      'advisor_valuations',
+    ];
+
     // Process each table
     for (const [table, ids] of Object.entries(contactsByTable)) {
       if (ids.length === 0) continue;
@@ -208,11 +248,23 @@ serve(async (req) => {
         continue;
       }
 
+      // Only update lead_status_crm on supported tables
+      if (updates.lead_status_crm && !tablesWithStatusCrm.includes(table)) {
+        console.log(`[bulk-update-contacts] Skipping ${table} - doesn't support lead_status_crm`);
+        for (const id of ids) {
+          const origin = Object.entries(originToTable).find(([_, t]) => t === table)?.[0];
+          result.failed_ids.push(`${origin}_${id}`);
+        }
+        result.failed_count += ids.length;
+        result.errors.push(`La tabla ${table} no soporta estado CRM`);
+        continue;
+      }
+
       try {
-        // Build update payload - only include updated_at if the table supports it
+        // Build update payload - only include fields the table supports
         const updatePayload: Record<string, unknown> = {};
         
-        if (updates.acquisition_channel_id !== undefined) {
+        if (updates.acquisition_channel_id !== undefined && tablesWithChannel.includes(table)) {
           updatePayload.acquisition_channel_id = updates.acquisition_channel_id;
         }
         if (updates.lead_form !== undefined) {
@@ -221,9 +273,18 @@ serve(async (req) => {
         if (updates.lead_received_at !== undefined) {
           updatePayload.lead_received_at = updates.lead_received_at;
         }
+        if (updates.lead_status_crm !== undefined && tablesWithStatusCrm.includes(table)) {
+          updatePayload.lead_status_crm = updates.lead_status_crm;
+        }
         
         if (tablesWithUpdatedAt.includes(table)) {
           updatePayload.updated_at = new Date().toISOString();
+        }
+
+        // Skip if no applicable updates
+        if (Object.keys(updatePayload).filter(k => k !== 'updated_at').length === 0) {
+          console.log(`[bulk-update-contacts] No applicable updates for ${table}, skipping`);
+          continue;
         }
 
         const { data, error } = await supabase
