@@ -1,8 +1,8 @@
-// ============= VIRTUALIZED CONTACTS TABLE =============
+// ============= VIRTUALIZED CONTACTS TABLE WITH SORTING =============
 import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Building2 } from 'lucide-react';
+import { Building2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { UnifiedContact, ContactOrigin } from '@/hooks/useUnifiedContacts';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -12,8 +12,13 @@ import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { ContactTableRow, COL_STYLES } from './ContactTableRow';
 import { useContactStatuses, STATUS_COLOR_MAP, ContactStatus } from '@/hooks/useContactStatuses';
 import { useLeadForms } from '@/hooks/useLeadForms';
-// Minimum table width to ensure all columns fit (increased for province column)
+
+// Minimum table width to ensure all columns fit
 const MIN_TABLE_WIDTH = 1152;
+
+// Sortable column keys
+type SortColumn = 'lead_received_at' | 'created_at' | 'revenue' | 'ebitda' | 'name' | 'company' | null;
+type SortDirection = 'asc' | 'desc';
 
 interface LinearContactsTableProps {
   contacts: UnifiedContact[];
@@ -41,13 +46,52 @@ const getChannelColor = (category?: string) => {
   return '#6b7280';
 };
 
-// Table Header Component - memoized with scroll sync
+// Sortable Header Cell Component
+const SortableHeaderCell: React.FC<{
+  label: string;
+  column: SortColumn;
+  currentSort: SortColumn;
+  currentDirection: SortDirection;
+  onSort: (column: SortColumn) => void;
+  style: React.CSSProperties;
+}> = ({ label, column, currentSort, currentDirection, onSort, style }) => {
+  const isActive = currentSort === column;
+  
+  return (
+    <div 
+      className={cn(
+        "flex items-center h-8 px-1.5 text-[10px] font-medium uppercase tracking-wider cursor-pointer select-none transition-colors",
+        isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground/70"
+      )}
+      style={style}
+      onClick={() => onSort(column)}
+    >
+      <span>{label}</span>
+      <span className="ml-1 flex items-center">
+        {isActive ? (
+          currentDirection === 'asc' ? (
+            <ArrowUp className="h-3 w-3" />
+          ) : (
+            <ArrowDown className="h-3 w-3" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-40" />
+        )}
+      </span>
+    </div>
+  );
+};
+
+// Table Header Component - memoized with scroll sync and sorting
 const TableHeader = React.memo<{
   allSelected: boolean;
   someSelected: boolean;
   onSelectAll: () => void;
   scrollLeft: number;
-}>(({ allSelected, someSelected, onSelectAll, scrollLeft }) => (
+  sortColumn: SortColumn;
+  sortDirection: SortDirection;
+  onSort: (column: SortColumn) => void;
+}>(({ allSelected, someSelected, onSelectAll, scrollLeft, sortColumn, sortDirection, onSort }) => (
   <div className="overflow-hidden border-b border-[hsl(var(--linear-border))]">
     <div 
       className="flex bg-[hsl(var(--linear-bg-elevated))]"
@@ -73,9 +117,14 @@ const TableHeader = React.memo<{
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
         Contacto
       </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}>
-        F. Registro
-      </div>
+      <SortableHeaderCell 
+        label="F. Registro" 
+        column="lead_received_at" 
+        currentSort={sortColumn} 
+        currentDirection={sortDirection} 
+        onSort={onSort}
+        style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}
+      />
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }}>
         Canal
       </div>
@@ -91,18 +140,33 @@ const TableHeader = React.memo<{
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }}>
         Estado
       </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.revenue.flex, minWidth: COL_STYLES.revenue.minWidth }}>
-        Fact.
-      </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.ebitda.flex, minWidth: COL_STYLES.ebitda.minWidth }}>
-        EBITDA
-      </div>
+      <SortableHeaderCell 
+        label="Fact." 
+        column="revenue" 
+        currentSort={sortColumn} 
+        currentDirection={sortDirection} 
+        onSort={onSort}
+        style={{ flex: COL_STYLES.revenue.flex, minWidth: COL_STYLES.revenue.minWidth }}
+      />
+      <SortableHeaderCell 
+        label="EBITDA" 
+        column="ebitda" 
+        currentSort={sortColumn} 
+        currentDirection={sortDirection} 
+        onSort={onSort}
+        style={{ flex: COL_STYLES.ebitda.flex, minWidth: COL_STYLES.ebitda.minWidth }}
+      />
       <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }}>
         Apollo
       </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}>
-        Fecha
-      </div>
+      <SortableHeaderCell 
+        label="Fecha" 
+        column="created_at" 
+        currentSort={sortColumn} 
+        currentDirection={sortDirection} 
+        onSort={onSort}
+        style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}
+      />
       <div style={{ flex: COL_STYLES.actions.flex, minWidth: COL_STYLES.actions.minWidth }} />
     </div>
   </div>
@@ -177,6 +241,10 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   const [listHeight, setListHeight] = useState(500);
   const [scrollLeft, setScrollLeft] = useState(0);
   
+  // Sorting state
+  const [sortColumn, setSortColumn] = useState<SortColumn>('lead_received_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  
   const allSelected = contacts.length > 0 && selectedContacts.length === contacts.length;
   const someSelected = selectedContacts.length > 0 && selectedContacts.length < contacts.length;
   
@@ -185,6 +253,66 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   const { update: updateContact } = useContactInlineUpdate();
   const { activeStatuses, statuses: allStatuses } = useContactStatuses();
   const { forms: leadForms } = useLeadForms();
+  
+  // Handle column sort toggle
+  const handleSort = useCallback((column: SortColumn) => {
+    if (sortColumn === column) {
+      // Toggle direction if same column
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // New column, default to descending for dates/numbers
+      setSortColumn(column);
+      setSortDirection('desc');
+    }
+  }, [sortColumn]);
+  
+  // Sort contacts based on current sort state
+  const sortedContacts = useMemo(() => {
+    if (!sortColumn) return contacts;
+    
+    return [...contacts].sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+      
+      switch (sortColumn) {
+        case 'lead_received_at':
+          aVal = a.lead_received_at ? new Date(a.lead_received_at).getTime() : (a.created_at ? new Date(a.created_at).getTime() : 0);
+          bVal = b.lead_received_at ? new Date(b.lead_received_at).getTime() : (b.created_at ? new Date(b.created_at).getTime() : 0);
+          break;
+        case 'created_at':
+          aVal = a.created_at ? new Date(a.created_at).getTime() : 0;
+          bVal = b.created_at ? new Date(b.created_at).getTime() : 0;
+          break;
+        case 'revenue':
+          aVal = typeof a.revenue === 'number' ? a.revenue : 0;
+          bVal = typeof b.revenue === 'number' ? b.revenue : 0;
+          break;
+        case 'ebitda':
+          aVal = typeof a.ebitda === 'number' ? a.ebitda : 0;
+          bVal = typeof b.ebitda === 'number' ? b.ebitda : 0;
+          break;
+        case 'name':
+          aVal = (a.name || '').toLowerCase();
+          bVal = (b.name || '').toLowerCase();
+          break;
+        case 'company':
+          aVal = (a.company || '').toLowerCase();
+          bVal = (b.company || '').toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+      
+      // Handle null/undefined values - push them to the end
+      if (aVal === 0 && bVal !== 0) return sortDirection === 'desc' ? 1 : -1;
+      if (bVal === 0 && aVal !== 0) return sortDirection === 'desc' ? -1 : 1;
+      
+      // Compare values
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [contacts, sortColumn, sortDirection]);
   
   // Calculate dynamic height based on container
   useEffect(() => {
@@ -254,9 +382,9 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     return () => scrollContainer.removeEventListener('scroll', handleHorizontalScroll);
   }, []);
 
-  // Item data for virtualized list - memoized
+  // Item data for virtualized list - memoized (use sortedContacts)
   const itemData = useMemo<ItemData>(() => ({
-    contacts,
+    contacts: sortedContacts,
     selectedContacts: selectedSet,
     channelOptions,
     statusOptions,
@@ -270,7 +398,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     onApolloSelectCandidate,
     isEnriching,
   }), [
-    contacts,
+    sortedContacts,
     selectedSet,
     channelOptions,
     statusOptions,
@@ -303,12 +431,15 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
         ref={containerRef}
         className="border border-[hsl(var(--linear-border))] rounded-lg overflow-hidden bg-[hsl(var(--linear-bg))]"
       >
-        {/* Header with scroll sync */}
+        {/* Header with scroll sync and sorting */}
         <TableHeader 
           allSelected={allSelected}
           someSelected={someSelected}
           onSelectAll={onSelectAll}
           scrollLeft={scrollLeft}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
         
         {/* Virtualized List with horizontal scroll */}
@@ -317,7 +448,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
             <List
               height={listHeight}
               width="100%"
-              itemCount={contacts.length}
+              itemCount={sortedContacts.length}
               itemSize={ROW_HEIGHT}
               itemData={itemData}
               overscanCount={5}
