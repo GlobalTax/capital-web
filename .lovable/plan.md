@@ -1,177 +1,153 @@
 
-# Plan: Tabla de Contactos 100% Editable Inline Sin Errores
+# Plan: Sistema de Estados 100% Estable y Future-Proof
 
 ## Diagnóstico Completado
 
-### Problemas Identificados
+### Estado Actual del Sistema
 
-#### 1. Bug Crítico: `updated_at` en `company_valuations`
-**Archivo**: `src/hooks/useInlineUpdate.ts` (línea 244)  
-**Problema**: El hook siempre añade `updated_at` al payload de actualización, pero la tabla `company_valuations` NO tiene esta columna.  
-**Impacto**: Cualquier edición inline en leads de tipo "valuation" falla con error SQL.
+El sistema de estados en `/admin/contacts` tiene una buena arquitectura base pero presenta **varios puntos de fricción** que causan errores y ralentizan el flujo de trabajo:
 
-#### 2. Columna `lead_received_at` faltante en `acquisition_leads`
-**Problema**: La tabla `acquisition_leads` no tiene la columna `lead_received_at`.  
-**Impacto**: Cambios de "Fecha de registro" fallan para leads de adquisición.
+| Componente | Estado | Problemas Detectados |
+|------------|--------|---------------------|
+| Tabla `contact_statuses` | ✅ Correcta | Ninguno - es la fuente de verdad |
+| Hook `useContactStatuses` | ⚠️ Parcial | `staleTime: 5min` muy largo - cambios tardan en reflejarse |
+| Edge Function bulk | ✅ Funcional | Valida estado activo antes de aplicar |
+| `useContactInlineUpdate` | ⚠️ Parcial | No valida si el estado existe/está activo antes de enviar |
+| `EditableSelect` | ⚠️ Parcial | No muestra error real cuando falla, solo icono rojo |
+| Invalidación de cache | ❌ Incompleta | Cambios de estados no se reflejan inmediatamente en dropdowns |
+| Guardado por `status_key` | ⚠️ Mixto | El sistema usa `status_key` (TEXT) en lugar de UUID FK |
 
-#### 3. Columna `lead_status_crm` faltante en múltiples tablas
-**Situación actual**:
-- ✅ `company_valuations`, `contact_leads`, `collaborator_applications` - tienen `lead_status_crm`
-- ❌ `acquisition_leads`, `advisor_valuations`, `buyer_contacts`, `company_acquisition_inquiries`, `general_contact_leads` - NO tienen
+### Problemas Raíz Identificados
 
-**Impacto**: Cambios de "Estado" fallan para ~5 tipos de leads.
+1. **Cache de estados muy largo (5 min)**: Cuando creas/editas un estado, tarda hasta 5 minutos en aparecer en los dropdowns.
 
-#### 4. Inconsistencia en Edge Function `bulk-update-contacts`
-El array `tablesWithStatusCrm` lista tablas que en realidad NO tienen la columna, causando errores silenciosos en actualizaciones masivas.
+2. **Sin validación previa en inline update**: El hook `useContactInlineUpdate` envía el `status_key` sin verificar primero si existe o está activo en la tabla `contact_statuses`.
 
-#### 5. Error handling insuficiente
-Los componentes editables (`EditableSelect`, `EditableCell`, `EditableDateCell`) no muestran el error real al usuario, solo un mensaje genérico.
+3. **Errores silenciosos**: El componente `EditableSelect` captura el error pero solo muestra un icono rojo (❌) sin descripción del problema.
+
+4. **No hay sincronización automática**: Cuando se cierra el panel de "Estados", no se invalida el cache para que los dropdowns reflejen los cambios.
+
+5. **Guardado por `status_key` en vez de `status_id`**: El sistema actual guarda el string `status_key` en el campo `lead_status_crm` en vez de usar un UUID con FK, lo que puede causar inconsistencias si se renombra la clave.
 
 ---
 
-## Solución: Arquitectura Robusta de Edición Inline
+## Solución: Sistema de Estados Robusto
 
-### Fase 1: Migración de Base de Datos
+### Fase 1: Reducir Staleness del Cache de Estados
 
-```sql
--- 1. Añadir updated_at a company_valuations
-ALTER TABLE public.company_valuations 
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
-
--- 2. Añadir lead_received_at a acquisition_leads
-ALTER TABLE public.acquisition_leads 
-ADD COLUMN IF NOT EXISTS lead_received_at TIMESTAMPTZ DEFAULT now();
-
-UPDATE public.acquisition_leads 
-SET lead_received_at = created_at 
-WHERE lead_received_at IS NULL;
-
--- 3. Añadir lead_status_crm a tablas faltantes (con tipo TEXT para evitar problemas de enum)
--- NOTA: Usar TEXT en vez de enum permite mayor flexibilidad
-ALTER TABLE public.acquisition_leads 
-ADD COLUMN IF NOT EXISTS lead_status_crm TEXT DEFAULT 'nuevo';
-
-ALTER TABLE public.advisor_valuations 
-ADD COLUMN IF NOT EXISTS lead_status_crm TEXT DEFAULT 'nuevo';
-
-ALTER TABLE public.general_contact_leads 
-ADD COLUMN IF NOT EXISTS lead_status_crm TEXT DEFAULT 'nuevo';
-
-ALTER TABLE public.company_acquisition_inquiries 
-ADD COLUMN IF NOT EXISTS lead_status_crm TEXT DEFAULT 'nuevo';
-
--- buyer_contacts es especial (compradores no leads) - no añadir lead_status_crm
-```
-
-### Fase 2: Actualizar `useContactInlineUpdate` (Arquitectura Centralizada)
-
-**Archivo**: `src/hooks/useInlineUpdate.ts`
-
-Cambios necesarios:
-
-1. **Crear mapa de columnas por tabla** para saber qué columnas soporta cada tabla
-2. **Condicionar `updated_at`** según la tabla
-3. **Validar campo antes de enviar** - si la tabla no soporta el campo, retornar error claro
-4. **Mejorar error handling** con mensaje real del backend
-5. **Añadir logging en dev** para debugging
+Modificar `useContactStatuses.ts` para reducir el `staleTime` y añadir una función de refetch manual que se llame al cerrar el editor.
 
 ```typescript
-// Ejemplo de estructura mejorada
-const tableCapabilities: Record<string, {
-  hasUpdatedAt: boolean;
-  hasLeadReceivedAt: boolean;
-  hasLeadStatusCrm: boolean;
-  hasAcquisitionChannel: boolean;
-}> = {
-  'company_valuations': {
-    hasUpdatedAt: true, // Después de la migración
-    hasLeadReceivedAt: true,
-    hasLeadStatusCrm: true,
-    hasAcquisitionChannel: true,
-  },
-  'acquisition_leads': {
-    hasUpdatedAt: true,
-    hasLeadReceivedAt: true, // Después de la migración
-    hasLeadStatusCrm: true, // Después de la migración
-    hasAcquisitionChannel: true,
-  },
-  // ... resto de tablas
-};
+// Cambiar de 5 minutos a 30 segundos
+staleTime: 1000 * 30, // 30 segundos
 
-const update = async (id, origin, field, value) => {
-  const table = tableMap[origin];
-  const capabilities = tableCapabilities[table];
-  
-  // Validar que el campo existe en la tabla
-  if (field === 'lead_status_crm' && !capabilities.hasLeadStatusCrm) {
-    toast.error(`Este tipo de lead no soporta cambio de estado`);
-    return { success: false };
+// Añadir refetchOnWindowFocus para sincronizar al volver a la pestaña
+refetchOnWindowFocus: true,
+```
+
+### Fase 2: Invalidar Cache al Cerrar StatusesEditor
+
+Modificar `StatusesEditor.tsx` para que al cerrar el panel invalide manualmente el cache de estados:
+
+```typescript
+const queryClient = useQueryClient();
+
+// En onOpenChange:
+<Sheet 
+  open={isOpen} 
+  onOpenChange={(open) => {
+    setIsOpen(open);
+    if (!open) {
+      // Forzar refetch al cerrar para sincronizar dropdowns
+      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+    }
+  }}
+>
+```
+
+### Fase 3: Validación Previa en Inline Update
+
+Modificar `useContactInlineUpdate` para validar que el estado existe antes de intentar guardarlo:
+
+```typescript
+// Al actualizar lead_status_crm, verificar que el status_key existe
+if (field === 'lead_status_crm' && value) {
+  const { data: statusExists } = await supabase
+    .from('contact_statuses')
+    .select('status_key')
+    .eq('status_key', value)
+    .single();
+    
+  if (!statusExists) {
+    toast.error('Estado no válido', { 
+      description: 'El estado seleccionado no existe o ha sido eliminado' 
+    });
+    return { success: false, error: new Error('Estado no válido') };
   }
-  
-  // Construir payload dinámicamente
-  const payload: Record<string, any> = { [mappedField]: value };
-  if (capabilities.hasUpdatedAt) {
-    payload.updated_at = new Date().toISOString();
-  }
-  
-  // ... resto de la lógica
-};
+}
 ```
 
-### Fase 3: Actualizar Edge Function `bulk-update-contacts`
+### Fase 4: Mejorar Error Handling en EditableSelect
 
-**Archivo**: `supabase/functions/bulk-update-contacts/index.ts`
-
-Sincronizar los arrays de tablas con la realidad del schema (después de la migración):
+Modificar `EditableSelect.tsx` para propagar el mensaje de error real y mostrarlo en toast:
 
 ```typescript
-// Después de la migración, actualizar a:
-const tablesWithStatusCrm = [
-  'contact_leads',
-  'company_valuations',
-  'collaborator_applications',
-  'acquisition_leads',
-  'advisor_valuations',
-  'general_contact_leads',
-  'company_acquisition_inquiries',
-  // buyer_contacts excluido intencionalmente
-];
-```
-
-### Fase 4: Mejorar Error Handling en Componentes UI
-
-**Archivos**:
-- `src/components/admin/shared/EditableSelect.tsx`
-- `src/components/admin/shared/EditableCell.tsx`
-- `src/components/admin/shared/EditableDateCell.tsx`
-
-Cambios:
-1. Propagar el mensaje de error real desde `onSave` 
-2. Mostrar toast con descripción del error
-3. Asegurar rollback visual correcto
-
-```typescript
-// En handleValueChange de EditableSelect:
+// Cambiar onSave para que devuelva error detallado
 try {
   await onSave(actualValue);
   setSaveStatus('success');
 } catch (error) {
   console.error('Error saving select:', error);
   setSaveStatus('error');
-  // Mostrar error real en lugar de genérico
+  // Mostrar error real al usuario
   toast.error('Error al guardar', {
-    description: error instanceof Error ? error.message : 'Error desconocido'
+    description: error instanceof Error ? error.message : 'Error desconocido',
   });
 }
 ```
 
-### Fase 5: Actualizar `useUnifiedContacts` para leer nuevas columnas
+### Fase 5: Invalidación Inmediata Tras Cada Cambio de Estado (Ideal)
 
-**Archivo**: `src/hooks/useUnifiedContacts.tsx`
+Modificar las mutaciones en `useContactStatuses` para invalidar el cache inmediatamente:
 
-Asegurar que las queries de cada tabla incluyen:
-- `lead_received_at` (para `acquisition_leads`)
-- `lead_status_crm` (para las nuevas tablas)
+```typescript
+// En todas las mutaciones (updateStatus, addStatus, toggleActive, deleteStatus, reorderStatuses)
+onSuccess: () => {
+  // Invalidar inmediatamente para reflejar en dropdowns
+  queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+  queryClient.invalidateQueries({ queryKey: ['unified-contacts'] }); // También refrescar tabla
+  // ...
+},
+```
+
+### Fase 6: Manejo Robusto de Estados Inactivos/Eliminados
+
+El sistema actual ya maneja esto en `ContactTableRow.tsx`:
+
+```typescript
+// Ya existe - línea 316-322
+const isInactiveStatus = currentStatus && !statusOptions.find(o => o.value === currentStatus);
+const inactiveStatusData = isInactiveStatus ? allStatuses.find(s => s.status_key === currentStatus) : null;
+
+// Build options including inactive status if needed
+const effectiveOptions = isInactiveStatus && inactiveStatusData
+  ? [{ value: currentStatus, label: `${inactiveStatusData.label} (Inactivo)`, color: '#94a3b8' }, ...statusOptions]
+  : statusOptions;
+```
+
+Pero hay que mejorar el mensaje visual:
+
+```typescript
+// Añadir badge visual más claro para estados inactivos
+const effectiveOptions = isInactiveStatus && inactiveStatusData
+  ? [{ 
+      value: currentStatus, 
+      label: `⚠️ ${inactiveStatusData.label} (Inactivo)`, 
+      color: '#94a3b8',
+      disabled: false // Permitir cambiar a otro estado
+    }, ...statusOptions]
+  : statusOptions;
+```
 
 ---
 
@@ -179,100 +155,96 @@ Asegurar que las queries de cada tabla incluyen:
 
 | Archivo | Tipo | Cambios |
 |---------|------|---------|
-| `supabase/migrations/XXX_fix_inline_edit_columns.sql` | Nuevo | Añadir columnas faltantes |
-| `src/hooks/useInlineUpdate.ts` | Modificar | Validación de campos + updated_at condicional |
-| `supabase/functions/bulk-update-contacts/index.ts` | Modificar | Actualizar arrays de tablas |
-| `src/components/admin/shared/EditableSelect.tsx` | Modificar | Error handling mejorado |
-| `src/components/admin/shared/EditableCell.tsx` | Modificar | Error handling mejorado |
-| `src/components/admin/shared/EditableDateCell.tsx` | Modificar | Error handling mejorado |
-| `src/hooks/useUnifiedContacts.tsx` | Modificar | Incluir nuevas columnas en queries |
+| `src/hooks/useContactStatuses.ts` | Modificar | Reducir staleTime, añadir refetchOnWindowFocus |
+| `src/components/admin/contacts/StatusesEditor.tsx` | Modificar | Invalidar cache al cerrar panel |
+| `src/hooks/useInlineUpdate.ts` | Modificar | Validar estado existe antes de guardar |
+| `src/components/admin/shared/EditableSelect.tsx` | Modificar | Mostrar mensaje de error real en toast |
 
 ---
 
-## Flujo de Edición Inline (Post-Fix)
+## Flujo Post-Implementación
 
+### Cambio de Estado por Fila
 ```text
-Usuario hace click en celda editable
-           ↓
-   Componente abre editor
-           ↓
-   Usuario selecciona/escribe nuevo valor
-           ↓
-   handleSave() llamado
-           ↓
-   useContactInlineUpdate.update()
-           ↓
-   ┌─────────────────────────────────────┐
-   │ 1. Validar campo existe en tabla   │
-   │ 2. Mapear nombre de campo          │
-   │ 3. Construir payload (con/sin      │
-   │    updated_at según tabla)         │
-   │ 4. Optimistic update en cache      │
-   │ 5. Ejecutar UPDATE via SDK         │
-   └──────────────┬──────────────────────┘
-                  ↓
-        ┌────────┴────────┐
-        ↓ ÉXITO           ↓ ERROR
-   Toast "Guardado"    Rollback cache
-   Invalidar query     Toast con error real
+Usuario abre dropdown → Lista de estados activos (desde cache 30s)
+        ↓
+Selecciona nuevo estado
+        ↓
+EditableSelect.handleValueChange()
+        ↓
+useContactInlineUpdate.update()
+        ↓
+[NUEVO] Valida que status_key existe en contact_statuses
+        ↓
+Si válido → UPDATE lead_status_crm = 'nuevo_estado'
+        ↓
+✅ Toast "Guardado" + UI actualizada
+        ↓
+Si error → ❌ Rollback + Toast con error REAL
+```
+
+### Creación de Nuevo Estado
+```text
+Usuario abre StatusesEditor → Click "Añadir estado"
+        ↓
+Rellena nombre, icono, color → Submit
+        ↓
+addStatusMutation.onSuccess()
+        ↓
+[NUEVO] queryClient.invalidateQueries(['contact-statuses'])
+        ↓
+Dropdown de estados se actualiza INMEDIATAMENTE
+```
+
+### Desactivación de Estado
+```text
+Usuario click en ojo para desactivar estado
+        ↓
+toggleActiveMutation()
+        ↓
+onSuccess → invalidateQueries(['contact-statuses'])
+        ↓
+Estado desaparece de dropdowns (pero contactos con ese estado muestran "Inactivo")
 ```
 
 ---
 
-## Suite de Pruebas
+## Pruebas de Validación
 
-### Tab "Todos"
-| Test | Campo | Resultado Esperado |
-|------|-------|-------------------|
-| 1 | Estado (valuation) | ✅ Guarda, persiste |
-| 2 | Estado (contact) | ✅ Guarda, persiste |
-| 3 | Estado (acquisition) | ✅ Guarda, persiste (nueva columna) |
-| 4 | Canal | ✅ Guarda, persiste |
-| 5 | Fecha registro | ✅ Guarda, persiste |
-| 6 | Empresa (texto) | ✅ Guarda, persiste |
-| 7 | Sector | ✅ Guarda, persiste |
-| 8 | Provincia | ✅ Guarda, persiste |
-
-### Tab "Favoritos"
-| Test | Campo | Resultado Esperado |
-|------|-------|-------------------|
-| 1 | Estado | ✅ Guarda usando contact.id correcto |
-| 2 | Canal | ✅ Funciona igual que en "Todos" |
-| 3 | Fecha registro | ✅ Funciona igual que en "Todos" |
-
-### Pruebas de Estrés
+### Funcionalidad Básica
 | Test | Resultado Esperado |
 |------|-------------------|
-| Editar 5 filas seguidas | No crash, todas guardan |
-| Doble click | No duplica, no corrompe |
-| Error forzado (offline) | UI revierte, muestra error claro |
+| Cambiar estado por fila (Todos) | ✅ Guarda, persiste, sin errores |
+| Cambiar estado por fila (Favoritos) | ✅ Usa contact.id correcto, funciona igual |
+| Cambiar estado masivo (5+ leads) | ✅ Actualiza todos, toast con count |
+| Crear nuevo estado | ✅ Aparece en dropdowns inmediatamente |
+| Editar nombre/color de estado | ✅ Se refleja sin refresh |
+| Desactivar estado | ✅ Desaparece de dropdowns, contactos muestran "(Inactivo)" |
+| Reordenar estados | ✅ Nuevo orden en dropdowns sin refresh |
+
+### Robustez
+| Test | Resultado Esperado |
+|------|-------------------|
+| Doble click en estado | ✅ No duplica, no corrompe |
+| Error de red simulado | ✅ Rollback + toast con error real |
+| Estado eliminado mientras editaba | ✅ Error claro, no crash |
+| 5 cambios rápidos seguidos | ✅ Todos procesan correctamente |
 
 ---
 
 ## Consideraciones Técnicas
 
 ### Performance
-- Optimistic UI mantiene la sensación de velocidad
-- Invalidación selectiva (no refetch global)
-- Memoización existente es correcta
+- Cache de estados reducido a 30s (balance entre frescura y rendimiento)
+- Invalidación selectiva (solo `contact-statuses`, no toda la app)
+- Memoización existente en LinearContactsTable es correcta
 
-### Compatibilidad "Todos" vs "Favoritos"
-- **Confirmado**: Ambos tabs usan el mismo `contact.id` real
-- **Confirmado**: No hay confusión con `favorites.id`
-- La lista de favoritos es solo un filtro cliente-side
+### Consistencia
+- El sistema usa `status_key` (TEXT) en vez de UUID FK por compatibilidad con el enum histórico
+- Esto es aceptable siempre que `status_key` sea único e inmutable una vez creado
+- La validación previa en inline update previene inconsistencias
 
 ### Seguridad (RLS)
-- **Confirmado**: Políticas de UPDATE para admins existen en todas las tablas
+- Políticas de UPDATE ya existen en todas las tablas de leads
 - La función `current_user_is_admin()` verifica el rol correctamente
-- No se requieren cambios en RLS
-
----
-
-## Orden de Implementación
-
-1. **Primero**: Migración SQL (añadir columnas)
-2. **Segundo**: Actualizar `useInlineUpdate.ts` (validación + updated_at condicional)
-3. **Tercero**: Actualizar Edge Function (arrays correctos)
-4. **Cuarto**: Mejorar error handling en componentes UI
-5. **Quinto**: Actualizar queries en `useUnifiedContacts.tsx`
-6. **Último**: Pruebas en ambos tabs
+- La Edge Function `bulk-update-contacts` valida permisos del usuario autenticado
