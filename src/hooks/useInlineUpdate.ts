@@ -154,60 +154,80 @@ const tableCapabilities: Record<string, {
   hasLeadReceivedAt: boolean;
   hasLeadStatusCrm: boolean;
   hasAcquisitionChannel: boolean;
+  hasLocation: boolean;
+  hasLeadForm: boolean;
 }> = {
   'company_valuations': {
-    hasUpdatedAt: true, // Added in migration 20260130
+    hasUpdatedAt: true,
     hasLeadReceivedAt: true,
     hasLeadStatusCrm: true,
     hasAcquisitionChannel: true,
+    hasLocation: true,
+    hasLeadForm: true,
   },
   'contact_leads': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: true,
     hasLeadStatusCrm: true,
     hasAcquisitionChannel: true,
+    hasLocation: true,
+    hasLeadForm: true,
   },
   'collaborator_applications': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: true,
     hasLeadStatusCrm: true,
     hasAcquisitionChannel: true,
+    hasLocation: false,
+    hasLeadForm: true,
   },
   'acquisition_leads': {
     hasUpdatedAt: true,
-    hasLeadReceivedAt: true, // Added in migration 20260130
-    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasLeadReceivedAt: true,
+    hasLeadStatusCrm: true,
     hasAcquisitionChannel: true,
+    hasLocation: false,
+    hasLeadForm: true,
   },
   'advisor_valuations': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: true,
-    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasLeadStatusCrm: true,
     hasAcquisitionChannel: true,
+    hasLocation: false,
+    hasLeadForm: true,
   },
   'general_contact_leads': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: true,
-    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasLeadStatusCrm: true,
     hasAcquisitionChannel: true,
+    hasLocation: false,
+    hasLeadForm: true,
   },
   'company_acquisition_inquiries': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: true,
-    hasLeadStatusCrm: true, // Added in migration 20260130
+    hasLeadStatusCrm: true,
     hasAcquisitionChannel: true,
+    hasLocation: false,
+    hasLeadForm: true,
   },
   'buyer_contacts': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: true,
-    hasLeadStatusCrm: false, // Buyers don't have CRM status
-    hasAcquisitionChannel: false, // Buyers don't have acquisition channel
+    hasLeadStatusCrm: false,
+    hasAcquisitionChannel: false,
+    hasLocation: false,
+    hasLeadForm: false,
   },
   'accountex_leads': {
     hasUpdatedAt: true,
     hasLeadReceivedAt: false,
     hasLeadStatusCrm: false,
     hasAcquisitionChannel: false,
+    hasLocation: false,
+    hasLeadForm: false,
   },
 };
 
@@ -267,6 +287,16 @@ export const useContactInlineUpdate = () => {
       console.warn(`[InlineUpdate] Table ${table} does not support acquisition_channel_id`);
       toast.error('Este tipo de lead no soporta cambio de canal');
       return { success: false, error: new Error(`${table} does not support acquisition_channel_id`) };
+    }
+    if (field === 'location' && !capabilities.hasLocation) {
+      console.warn(`[InlineUpdate] Table ${table} does not support location`);
+      toast.error('Este tipo de lead no soporta cambio de ubicación');
+      return { success: false, error: new Error(`${table} does not support location`) };
+    }
+    if (field === 'lead_form' && !capabilities.hasLeadForm) {
+      console.warn(`[InlineUpdate] Table ${table} does not support lead_form`);
+      toast.error('Este tipo de lead no soporta cambio de formulario');
+      return { success: false, error: new Error(`${table} does not support lead_form`) };
     }
 
     // Map field names for specific tables
