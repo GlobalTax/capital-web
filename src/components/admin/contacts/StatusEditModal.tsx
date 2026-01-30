@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useContactStatuses, STATUS_COLOR_MAP, type ContactStatus } from '@/hooks/useContactStatuses';
 
 // Available icons
@@ -58,6 +59,7 @@ export const StatusEditModal: React.FC<StatusEditModalProps> = ({
   const [statusKey, setStatusKey] = useState('');
   const [icon, setIcon] = useState('📋');
   const [color, setColor] = useState('gray');
+  const [isProspectStage, setIsProspectStage] = useState(false);
 
   const isEditing = !!status;
   const isLoading = isUpdating || isAdding;
@@ -70,11 +72,13 @@ export const StatusEditModal: React.FC<StatusEditModalProps> = ({
         setStatusKey(status.status_key);
         setIcon(status.icon);
         setColor(status.color);
+        setIsProspectStage(status.is_prospect_stage || false);
       } else {
         setLabel('');
         setStatusKey('');
         setIcon('📋');
         setColor('gray');
+        setIsProspectStage(false);
       }
     }
   }, [isOpen, status]);
@@ -103,7 +107,7 @@ export const StatusEditModal: React.FC<StatusEditModalProps> = ({
       updateStatus(
         {
           id: status.id,
-          updates: { label, icon, color },
+          updates: { label, icon, color, is_prospect_stage: isProspectStage },
         },
         {
           onSuccess: () => onClose(),
@@ -116,6 +120,7 @@ export const StatusEditModal: React.FC<StatusEditModalProps> = ({
           label,
           icon,
           color,
+          is_prospect_stage: isProspectStage,
         },
         {
           onSuccess: () => onClose(),
@@ -222,6 +227,23 @@ export const StatusEditModal: React.FC<StatusEditModalProps> = ({
                   );
                 })}
               </div>
+            </div>
+
+            {/* Prospect Stage Toggle */}
+            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/30">
+              <div className="space-y-0.5">
+                <Label htmlFor="is-prospect" className="cursor-pointer">
+                  Etapa Prospecto
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Los leads en este estado aparecerán en "Gestión de Prospectos"
+                </p>
+              </div>
+              <Switch
+                id="is-prospect"
+                checked={isProspectStage}
+                onCheckedChange={setIsProspectStage}
+              />
             </div>
 
             {/* Preview */}

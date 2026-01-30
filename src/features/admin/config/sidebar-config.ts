@@ -101,6 +101,18 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "💼 CRM",
+    description: "Gestión de prospectos y oportunidades",
+    items: [
+      { 
+        title: "Gestión de Prospectos", 
+        url: "/admin/prospectos", 
+        icon: Target,
+        description: "Leads avanzados con perfil de empresa"
+      },
+    ]
+  },
+  {
     title: "✨ CREAR CONTENIDO",
     description: "Herramientas de creación",
     items: [

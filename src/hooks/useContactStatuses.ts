@@ -16,6 +16,7 @@ export interface ContactStatus {
   position: number;
   is_active: boolean;
   is_system: boolean;
+  is_prospect_stage: boolean; // NEW: marks if leads in this status appear in Prospects
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,7 @@ export type StatusFormData = {
   label: string;
   color: string;
   icon: string;
+  is_prospect_stage?: boolean;
 };
 
 // Color mapping for badges (status_key -> Tailwind classes)
@@ -66,6 +68,9 @@ export const useContactStatuses = () => {
 
   // Get only active statuses (for selectors)
   const activeStatuses = statuses.filter(s => s.is_active);
+
+  // Get statuses marked as prospect stage (for Prospects module)
+  const prospectStatuses = statuses.filter(s => s.is_prospect_stage && s.is_active);
 
   // Get status by key
   const getStatusByKey = (key: string): ContactStatus | undefined => {
@@ -216,6 +221,7 @@ export const useContactStatuses = () => {
   return {
     statuses,
     activeStatuses,
+    prospectStatuses,
     isLoading,
     refetch,
     getStatusByKey,
