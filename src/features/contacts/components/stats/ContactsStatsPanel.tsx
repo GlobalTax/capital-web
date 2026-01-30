@@ -24,6 +24,7 @@ import { QualityVsCostMatrix } from './QualityVsCostMatrix';
 import { CampaignRegistryTable } from '@/components/admin/campaigns/CampaignRegistryTable';
 import { AnalyticsTabs } from '@/components/admin/campaigns/AnalyticsTabs';
 import { AdsCostsHistoryTable } from '@/components/admin/campaigns/AdsCostsHistoryTable';
+import { MetaAdsAnalyticsDashboard } from '@/components/admin/campaigns/MetaAdsAnalytics';
 
 type PeriodPreset = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
@@ -173,9 +174,9 @@ export const ContactsStatsPanel: React.FC = () => {
           <AnalyticsTabs />
         </TabsContent>
 
-        {/* Tab: Meta Ads */}
+        {/* Tab: Meta Ads - NEW ANALYTICS DASHBOARD */}
         <TabsContent value="meta_ads" className="space-y-6 mt-4">
-          <AdsCostsHistoryTable platform="meta_ads" />
+          <MetaAdsAnalyticsDashboard />
         </TabsContent>
 
         {/* Tab: Google Ads */}
