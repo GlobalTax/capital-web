@@ -9,12 +9,30 @@ import { cn } from '@/lib/utils';
 import { SelectOption } from '@/components/admin/shared/EditableSelect';
 import { useAcquisitionChannels, CATEGORY_COLORS } from '@/hooks/useAcquisitionChannels';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
-import { ContactTableRow, COL_STYLES } from './ContactTableRow';
+import { ContactTableRow } from './ContactTableRow';
 import { useContactStatuses, STATUS_COLOR_MAP, ContactStatus } from '@/hooks/useContactStatuses';
 import { useLeadForms } from '@/hooks/useLeadForms';
 
-// Minimum table width to ensure all columns fit
-const MIN_TABLE_WIDTH = 1152;
+// ===== COLUMN WIDTHS IN FIXED PIXELS (like empresas pattern) =====
+export const COLUMN_WIDTHS: Record<string, number> = {
+  star: 36,
+  checkbox: 40,
+  contact: 180,
+  origin: 90,      // F. Registro
+  channel: 130,
+  company: 150,
+  province: 80,
+  sector: 100,
+  status: 120,
+  revenue: 75,
+  ebitda: 75,
+  apollo: 80,
+  date: 85,
+  actions: 44,
+};
+
+// Calculate total width from column widths
+const TOTAL_TABLE_WIDTH = Object.values(COLUMN_WIDTHS).reduce((sum, w) => sum + w, 0);
 
 // Sortable column keys
 type SortColumn = 'lead_received_at' | 'created_at' | 'revenue' | 'ebitda' | 'name' | 'company' | null;
@@ -82,93 +100,112 @@ const SortableHeaderCell: React.FC<{
   );
 };
 
-// Table Header Component - memoized with scroll sync and sorting
+// Table Header Component - memoized with fixed widths (no translateX)
 const TableHeader = React.memo<{
   allSelected: boolean;
   someSelected: boolean;
   onSelectAll: () => void;
-  scrollLeft: number;
   sortColumn: SortColumn;
   sortDirection: SortDirection;
   onSort: (column: SortColumn) => void;
-}>(({ allSelected, someSelected, onSelectAll, scrollLeft, sortColumn, sortDirection, onSort }) => (
-  <div className="overflow-hidden border-b border-[hsl(var(--linear-border))]">
+}>(({ allSelected, someSelected, onSelectAll, sortColumn, sortDirection, onSort }) => (
+  <div 
+    className="flex bg-[hsl(var(--linear-bg-elevated))] border-b border-[hsl(var(--linear-border))]"
+    style={{ width: TOTAL_TABLE_WIDTH, minWidth: TOTAL_TABLE_WIDTH }}
+  >
+    {/* Star column header */}
     <div 
-      className="flex bg-[hsl(var(--linear-bg-elevated))]"
-      style={{ 
-        minWidth: MIN_TABLE_WIDTH, 
-        transform: `translateX(-${scrollLeft}px)` 
-      }}
+      className="flex items-center justify-center h-8 px-0.5" 
+      style={{ width: COLUMN_WIDTHS.star, minWidth: COLUMN_WIDTHS.star }}
+    />
+    <div 
+      className="flex items-center justify-center h-8 px-1.5" 
+      style={{ width: COLUMN_WIDTHS.checkbox, minWidth: COLUMN_WIDTHS.checkbox }}
     >
-      {/* Star column header */}
-      <div className="flex items-center justify-center h-8 px-0.5" style={{ flex: COL_STYLES.star.flex, minWidth: COL_STYLES.star.minWidth }}>
-        {/* Empty header for star column */}
-      </div>
-      <div className="flex items-center justify-center h-8 px-1.5" style={{ flex: COL_STYLES.checkbox.flex, minWidth: COL_STYLES.checkbox.minWidth }}>
-        <Checkbox
-          checked={allSelected}
-          ref={(el) => {
-            if (el) (el as any).indeterminate = someSelected;
-          }}
-          onCheckedChange={onSelectAll}
-          className="border-muted-foreground/30"
-        />
-      </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
-        Contacto
-      </div>
-      <SortableHeaderCell 
-        label="F. Registro" 
-        column="lead_received_at" 
-        currentSort={sortColumn} 
-        currentDirection={sortDirection} 
-        onSort={onSort}
-        style={{ flex: COL_STYLES.origin.flex, minWidth: COL_STYLES.origin.minWidth }}
+      <Checkbox
+        checked={allSelected}
+        ref={(el) => {
+          if (el) (el as any).indeterminate = someSelected;
+        }}
+        onCheckedChange={onSelectAll}
+        className="border-muted-foreground/30"
       />
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.channel.flex, minWidth: COL_STYLES.channel.minWidth }}>
-        Canal
-      </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.company.flex, minWidth: COL_STYLES.company.minWidth }}>
-        Empresa
-      </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.province.flex, minWidth: COL_STYLES.province.minWidth }}>
-        Prov.
-      </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.sector.flex, minWidth: COL_STYLES.sector.minWidth }}>
-        Sector
-      </div>
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.status.flex, minWidth: COL_STYLES.status.minWidth }}>
-        Estado
-      </div>
-      <SortableHeaderCell 
-        label="Fact." 
-        column="revenue" 
-        currentSort={sortColumn} 
-        currentDirection={sortDirection} 
-        onSort={onSort}
-        style={{ flex: COL_STYLES.revenue.flex, minWidth: COL_STYLES.revenue.minWidth }}
-      />
-      <SortableHeaderCell 
-        label="EBITDA" 
-        column="ebitda" 
-        currentSort={sortColumn} 
-        currentDirection={sortDirection} 
-        onSort={onSort}
-        style={{ flex: COL_STYLES.ebitda.flex, minWidth: COL_STYLES.ebitda.minWidth }}
-      />
-      <div className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" style={{ flex: COL_STYLES.apollo.flex, minWidth: COL_STYLES.apollo.minWidth }}>
-        Apollo
-      </div>
-      <SortableHeaderCell 
-        label="Fecha" 
-        column="created_at" 
-        currentSort={sortColumn} 
-        currentDirection={sortDirection} 
-        onSort={onSort}
-        style={{ flex: COL_STYLES.date.flex, minWidth: COL_STYLES.date.minWidth }}
-      />
-      <div style={{ flex: COL_STYLES.actions.flex, minWidth: COL_STYLES.actions.minWidth }} />
     </div>
+    <div 
+      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+      style={{ width: COLUMN_WIDTHS.contact, minWidth: COLUMN_WIDTHS.contact }}
+    >
+      Contacto
+    </div>
+    <SortableHeaderCell 
+      label="F. Registro" 
+      column="lead_received_at" 
+      currentSort={sortColumn} 
+      currentDirection={sortDirection} 
+      onSort={onSort}
+      style={{ width: COLUMN_WIDTHS.origin, minWidth: COLUMN_WIDTHS.origin }}
+    />
+    <div 
+      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+      style={{ width: COLUMN_WIDTHS.channel, minWidth: COLUMN_WIDTHS.channel }}
+    >
+      Canal
+    </div>
+    <div 
+      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+      style={{ width: COLUMN_WIDTHS.company, minWidth: COLUMN_WIDTHS.company }}
+    >
+      Empresa
+    </div>
+    <div 
+      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+      style={{ width: COLUMN_WIDTHS.province, minWidth: COLUMN_WIDTHS.province }}
+    >
+      Prov.
+    </div>
+    <div 
+      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+      style={{ width: COLUMN_WIDTHS.sector, minWidth: COLUMN_WIDTHS.sector }}
+    >
+      Sector
+    </div>
+    <div 
+      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+      style={{ width: COLUMN_WIDTHS.status, minWidth: COLUMN_WIDTHS.status }}
+    >
+      Estado
+    </div>
+    <SortableHeaderCell 
+      label="Fact." 
+      column="revenue" 
+      currentSort={sortColumn} 
+      currentDirection={sortDirection} 
+      onSort={onSort}
+      style={{ width: COLUMN_WIDTHS.revenue, minWidth: COLUMN_WIDTHS.revenue }}
+    />
+    <SortableHeaderCell 
+      label="EBITDA" 
+      column="ebitda" 
+      currentSort={sortColumn} 
+      currentDirection={sortDirection} 
+      onSort={onSort}
+      style={{ width: COLUMN_WIDTHS.ebitda, minWidth: COLUMN_WIDTHS.ebitda }}
+    />
+    <div 
+      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+      style={{ width: COLUMN_WIDTHS.apollo, minWidth: COLUMN_WIDTHS.apollo }}
+    >
+      Apollo
+    </div>
+    <SortableHeaderCell 
+      label="Fecha" 
+      column="created_at" 
+      currentSort={sortColumn} 
+      currentDirection={sortDirection} 
+      onSort={onSort}
+      style={{ width: COLUMN_WIDTHS.date, minWidth: COLUMN_WIDTHS.date }}
+    />
+    <div style={{ width: COLUMN_WIDTHS.actions, minWidth: COLUMN_WIDTHS.actions }} />
   </div>
 ));
 
@@ -239,7 +276,6 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(500);
-  const [scrollLeft, setScrollLeft] = useState(0);
   
   // Sorting state
   const [sortColumn, setSortColumn] = useState<SortColumn>('lead_received_at');
@@ -369,18 +405,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     [updateContact]
   );
 
-  // Handle horizontal scroll sync via native scroll event
-  useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-    
-    const handleHorizontalScroll = () => {
-      setScrollLeft(scrollContainer.scrollLeft);
-    };
-    
-    scrollContainer.addEventListener('scroll', handleHorizontalScroll);
-    return () => scrollContainer.removeEventListener('scroll', handleHorizontalScroll);
-  }, []);
+  // Note: Horizontal scroll sync is now automatic since header is inside the same scroll container
 
   // Item data for virtualized list - memoized (use sortedContacts)
   const itemData = useMemo<ItemData>(() => ({
@@ -431,27 +456,28 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
         ref={containerRef}
         className="border border-[hsl(var(--linear-border))] rounded-lg overflow-hidden bg-[hsl(var(--linear-bg))]"
       >
-        {/* Header with scroll sync and sorting */}
-        <TableHeader 
-          allSelected={allSelected}
-          someSelected={someSelected}
-          onSelectAll={onSelectAll}
-          scrollLeft={scrollLeft}
-          sortColumn={sortColumn}
-          sortDirection={sortDirection}
-          onSort={handleSort}
-        />
-        
-        {/* Virtualized List with horizontal scroll */}
+        {/* Unified scroll container for header + list */}
         <div ref={scrollContainerRef} className="overflow-x-auto">
-          <div style={{ minWidth: MIN_TABLE_WIDTH }}>
+          <div style={{ minWidth: TOTAL_TABLE_WIDTH }}>
+            {/* Header inside scroll container for synchronized scroll */}
+            <TableHeader 
+              allSelected={allSelected}
+              someSelected={someSelected}
+              onSelectAll={onSelectAll}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+            
+            {/* Virtualized List */}
             <List
               height={listHeight}
-              width="100%"
+              width={TOTAL_TABLE_WIDTH}
               itemCount={sortedContacts.length}
               itemSize={ROW_HEIGHT}
               itemData={itemData}
               overscanCount={5}
+              style={{ overflow: 'hidden' }}
             >
               {VirtualizedRow}
             </List>
