@@ -12,6 +12,7 @@ import ContactDetailSheet from './ContactDetailSheet';
 import { BulkChannelSelect } from './BulkChannelSelect';
 import { BulkLeadFormSelect } from './BulkLeadFormSelect';
 import { BulkDateSelect } from './BulkDateSelect';
+import { BulkStatusSelect } from './BulkStatusSelect';
 import BulkArchiveDialog from './BulkArchiveDialog';
 import BulkDeleteDialog from './BulkDeleteDialog';
 import { ApolloMatchModal } from './ApolloMatchModal';
@@ -234,6 +235,11 @@ const LinearContactsManager = () => {
               Eliminar
             </Button>
 
+            <BulkStatusSelect 
+              selectedIds={selectedIds}
+              contacts={displayedContacts}
+              onSuccess={clearSelection}
+            />
             <BulkChannelSelect 
               selectedIds={selectedIds}
               contacts={displayedContacts}
@@ -249,7 +255,7 @@ const LinearContactsManager = () => {
               contacts={displayedContacts}
               onSuccess={clearSelection}
             />
-            <Button 
+            <Button
               onClick={handleBulkSyncToBrevo} 
               variant="secondary" 
               size="sm"

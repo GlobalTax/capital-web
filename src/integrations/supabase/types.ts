@@ -20946,6 +20946,8 @@ export type Database = {
         | "fase0_bloqueado"
         | "mandato_propuesto"
         | "mandato_firmado"
+        | "lead_perdido_curiosidad"
+        | "ya_advisor"
       loss_reason_type:
         | "precio"
         | "competidor"
@@ -21185,6 +21187,8 @@ export const Constants = {
         "fase0_bloqueado",
         "mandato_propuesto",
         "mandato_firmado",
+        "lead_perdido_curiosidad",
+        "ya_advisor",
       ],
       loss_reason_type: [
         "precio",
