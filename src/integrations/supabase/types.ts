@@ -1135,6 +1135,15 @@ export type Database = {
       advisor_valuations: {
         Row: {
           acquisition_channel_id: string | null
+          ai_business_model_tags: string[] | null
+          ai_classification_at: string | null
+          ai_classification_confidence: number | null
+          ai_company_summary: string | null
+          ai_company_summary_at: string | null
+          ai_negative_tags: string[] | null
+          ai_sector_name: string | null
+          ai_sector_pe: string | null
+          ai_tags: string[] | null
           apollo_candidates: Json | null
           apollo_error: string | null
           apollo_last_enriched_at: string | null
@@ -1180,6 +1189,15 @@ export type Database = {
         }
         Insert: {
           acquisition_channel_id?: string | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           apollo_candidates?: Json | null
           apollo_error?: string | null
           apollo_last_enriched_at?: string | null
@@ -1225,6 +1243,15 @@ export type Database = {
         }
         Update: {
           acquisition_channel_id?: string | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           apollo_candidates?: Json | null
           apollo_error?: string | null
           apollo_last_enriched_at?: string | null
@@ -3323,6 +3350,15 @@ export type Database = {
       collaborator_applications: {
         Row: {
           acquisition_channel_id: string | null
+          ai_business_model_tags: string[] | null
+          ai_classification_at: string | null
+          ai_classification_confidence: number | null
+          ai_company_summary: string | null
+          ai_company_summary_at: string | null
+          ai_negative_tags: string[] | null
+          ai_sector_name: string | null
+          ai_sector_pe: string | null
+          ai_tags: string[] | null
           apollo_candidates: Json | null
           apollo_error: string | null
           apollo_last_enriched_at: string | null
@@ -3378,6 +3414,15 @@ export type Database = {
         }
         Insert: {
           acquisition_channel_id?: string | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           apollo_candidates?: Json | null
           apollo_error?: string | null
           apollo_last_enriched_at?: string | null
@@ -3433,6 +3478,15 @@ export type Database = {
         }
         Update: {
           acquisition_channel_id?: string | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           apollo_candidates?: Json | null
           apollo_error?: string | null
           apollo_last_enriched_at?: string | null
@@ -3521,6 +3575,15 @@ export type Database = {
         Row: {
           acquisition_channel_id: string | null
           acquisition_type: string | null
+          ai_business_model_tags: string[] | null
+          ai_classification_at: string | null
+          ai_classification_confidence: number | null
+          ai_company_summary: string | null
+          ai_company_summary_at: string | null
+          ai_negative_tags: string[] | null
+          ai_sector_name: string | null
+          ai_sector_pe: string | null
+          ai_tags: string[] | null
           apollo_candidates: Json | null
           apollo_error: string | null
           apollo_last_enriched_at: string | null
@@ -3586,6 +3649,15 @@ export type Database = {
         Insert: {
           acquisition_channel_id?: string | null
           acquisition_type?: string | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           apollo_candidates?: Json | null
           apollo_error?: string | null
           apollo_last_enriched_at?: string | null
@@ -3651,6 +3723,15 @@ export type Database = {
         Update: {
           acquisition_channel_id?: string | null
           acquisition_type?: string | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           apollo_candidates?: Json | null
           apollo_error?: string | null
           apollo_last_enriched_at?: string | null

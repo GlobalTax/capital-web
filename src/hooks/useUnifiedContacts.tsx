@@ -214,7 +214,7 @@ export const useUnifiedContacts = () => {
       // Fetch collaborator_applications (exclude soft deleted)
       const { data: collaboratorLeads, error: collaboratorError } = await supabase
         .from('collaborator_applications')
-        .select('*, lead_status_crm, assigned_to, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+        .select('*, lead_status_crm, assigned_to, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -223,14 +223,14 @@ export const useUnifiedContacts = () => {
       // Fetch general_contact_leads (if exists, exclude soft deleted)
       const { data: generalLeads, error: generalError } = await supabase
         .from('general_contact_leads')
-        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
       // Fetch acquisition_leads (exclude soft deleted)
       const { data: acquisitionLeads, error: acquisitionError } = await supabase
         .from('acquisition_leads')
-        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -239,7 +239,7 @@ export const useUnifiedContacts = () => {
       // Fetch company_acquisition_inquiries (exclude soft deleted)
       const { data: companyAcquisitionLeads, error: companyAcquisitionError } = await supabase
         .from('company_acquisition_inquiries')
-        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .is('is_deleted', false)
         .order('created_at', { ascending: false });
 
@@ -248,7 +248,7 @@ export const useUnifiedContacts = () => {
       // Fetch advisor_valuations
       const { data: advisorLeads, error: advisorError } = await supabase
         .from('advisor_valuations')
-        .select('*, lead_form, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
         .order('created_at', { ascending: false });
 
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);

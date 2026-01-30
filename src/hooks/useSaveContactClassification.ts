@@ -26,6 +26,17 @@ const TABLE_MAP: Record<ContactOrigin, string> = {
   company_acquisition: 'company_acquisition_inquiries',
 };
 
+// Tables that support AI classification columns
+const TABLES_WITH_AI_CLASSIFICATION = new Set([
+  'contact_leads',
+  'company_valuations', 
+  'general_contact_leads',
+  'acquisition_leads',
+  'collaborator_applications',
+  'advisor_valuations',
+  'company_acquisition_inquiries',
+]);
+
 export const useSaveContactClassification = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +50,14 @@ export const useSaveContactClassification = () => {
     
     if (!table) {
       const errorMsg = `Tipo de contacto no soportado: ${origin}`;
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return false;
+    }
+
+    // Check if table supports AI classification
+    if (!TABLES_WITH_AI_CLASSIFICATION.has(table)) {
+      const errorMsg = `Este tipo de lead (${origin}) no soporta clasificación AI`;
       toast.error(errorMsg);
       setError(errorMsg);
       return false;
