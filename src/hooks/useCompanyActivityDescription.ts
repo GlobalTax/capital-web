@@ -7,12 +7,13 @@ interface UseCompanyActivityDescriptionReturn {
   isGenerating: boolean;
   error: string | null;
   generateDescription: (companyName: string, cif?: string) => Promise<string | null>;
+  setDescription: (desc: string) => void;
   clearDescription: () => void;
   copyToClipboard: () => void;
 }
 
 export const useCompanyActivityDescription = (): UseCompanyActivityDescriptionReturn => {
-  const [description, setDescription] = useState<string>('');
+  const [description, setDescriptionState] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -51,10 +52,10 @@ export const useCompanyActivityDescription = (): UseCompanyActivityDescriptionRe
         throw new Error('No se recibió descripción del servidor');
       }
 
-      setDescription(data.description);
+      setDescriptionState(data.description);
       toast({
         title: 'Descripción generada',
-        description: 'La descripción de actividad está lista para usar',
+        description: 'La descripción de actividad está lista. Recuerda guardar los cambios.',
       });
 
       return data.description;
@@ -72,8 +73,13 @@ export const useCompanyActivityDescription = (): UseCompanyActivityDescriptionRe
     }
   }, [toast]);
 
+  const setDescription = useCallback((desc: string) => {
+    setDescriptionState(desc);
+    setError(null);
+  }, []);
+
   const clearDescription = useCallback(() => {
-    setDescription('');
+    setDescriptionState('');
     setError(null);
   }, []);
 
@@ -92,6 +98,7 @@ export const useCompanyActivityDescription = (): UseCompanyActivityDescriptionRe
     isGenerating,
     error,
     generateDescription,
+    setDescription,
     clearDescription,
     copyToClipboard,
   };

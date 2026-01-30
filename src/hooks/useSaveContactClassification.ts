@@ -38,7 +38,17 @@ export const useSaveContactClassification = () => {
     const table = TABLE_MAP[origin];
     
     if (!table) {
-      toast.error('Tipo de contacto no soportado');
+      const errorMsg = `Tipo de contacto no soportado: ${origin}`;
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return false;
+    }
+
+    // Validate contactId
+    if (!contactId) {
+      const errorMsg = 'ID de contacto no válido';
+      toast.error(errorMsg);
+      setError(errorMsg);
       return false;
     }
 
@@ -46,25 +56,54 @@ export const useSaveContactClassification = () => {
     setError(null);
 
     try {
-      // Build update object
+      // Build update object atomically
       const updateData: Record<string, any> = {};
       const now = new Date().toISOString();
 
       // Add description if provided
       if (data.description !== undefined) {
-        updateData.ai_company_summary = data.description;
+        // Validate description length
+        if (data.description && data.description.length > 10000) {
+          throw new Error('La descripción es demasiado larga (máximo 10.000 caracteres)');
+        }
+        updateData.ai_company_summary = data.description || null;
         updateData.ai_company_summary_at = now;
       }
 
       // Add sector tags if provided
-      if (data.sectorTags) {
-        updateData.ai_sector_pe = data.sectorTags.sector_pe;
-        updateData.ai_sector_name = data.sectorTags.sector_name_es;
-        updateData.ai_tags = data.sectorTags.tags || [];
-        updateData.ai_business_model_tags = data.sectorTags.business_model_tags || [];
-        updateData.ai_negative_tags = data.sectorTags.negative_tags || [];
-        updateData.ai_classification_confidence = data.sectorTags.confidence;
-        updateData.ai_classification_at = now;
+      if (data.sectorTags !== undefined) {
+        if (data.sectorTags) {
+          // Validate tags arrays
+          const validateArray = (arr: any[], name: string, maxLength: number) => {
+            if (!Array.isArray(arr)) {
+              throw new Error(`${name} debe ser un array`);
+            }
+            if (arr.length > maxLength) {
+              throw new Error(`${name} tiene demasiados elementos (máximo ${maxLength})`);
+            }
+          };
+
+          validateArray(data.sectorTags.tags || [], 'Tags', 50);
+          validateArray(data.sectorTags.business_model_tags || [], 'Tags de modelo de negocio', 20);
+          validateArray(data.sectorTags.negative_tags || [], 'Tags negativos', 20);
+
+          updateData.ai_sector_pe = data.sectorTags.sector_pe || null;
+          updateData.ai_sector_name = data.sectorTags.sector_name_es || null;
+          updateData.ai_tags = data.sectorTags.tags || [];
+          updateData.ai_business_model_tags = data.sectorTags.business_model_tags || [];
+          updateData.ai_negative_tags = data.sectorTags.negative_tags || [];
+          updateData.ai_classification_confidence = data.sectorTags.confidence || 0;
+          updateData.ai_classification_at = now;
+        } else {
+          // Explicitly clearing tags
+          updateData.ai_sector_pe = null;
+          updateData.ai_sector_name = null;
+          updateData.ai_tags = [];
+          updateData.ai_business_model_tags = [];
+          updateData.ai_negative_tags = [];
+          updateData.ai_classification_confidence = null;
+          updateData.ai_classification_at = null;
+        }
       }
 
       // Nothing to save
@@ -73,22 +112,41 @@ export const useSaveContactClassification = () => {
         return false;
       }
 
-      // Perform update
-      const { error: updateError } = await supabase
+      // Add updated_at timestamp
+      updateData.updated_at = now;
+
+      // Perform atomic update
+      const { error: updateError, data: result } = await supabase
         .from(table as any)
         .update(updateData)
-        .eq('id', contactId);
+        .eq('id', contactId)
+        .select('id')
+        .single();
 
       if (updateError) {
-        throw updateError;
+        // Provide specific error messages
+        if (updateError.code === 'PGRST116') {
+          throw new Error('Contacto no encontrado o sin permisos');
+        }
+        if (updateError.code === '23505') {
+          throw new Error('Error de duplicado en la base de datos');
+        }
+        if (updateError.code === '23503') {
+          throw new Error('Error de referencia en la base de datos');
+        }
+        throw new Error(updateError.message || 'Error desconocido al guardar');
       }
 
-      toast.success('Guardado');
+      if (!result) {
+        throw new Error('No se pudo confirmar el guardado');
+      }
+
+      // Success - don't show toast here, let the component handle it
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al guardar';
+      const errorMessage = err instanceof Error ? err.message : 'Error al guardar clasificación';
       setError(errorMessage);
-      toast.error('No se pudo guardar');
+      toast.error(`Error: ${errorMessage}`);
       console.error('Save classification error:', err);
       return false;
     } finally {
@@ -96,9 +154,14 @@ export const useSaveContactClassification = () => {
     }
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     saveClassification,
     isSaving,
     error,
+    clearError,
   };
 };
