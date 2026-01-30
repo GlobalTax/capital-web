@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { HelpCircle } from 'lucide-react';
+import { safeJsonLd } from '@/shared/utils/sanitize';
 
 interface FAQItem {
   question: string;
@@ -40,10 +41,10 @@ const SectorFAQ: React.FC<SectorFAQProps> = ({
 
   return (
     <section className="py-20 bg-slate-50">
-      {/* FAQ Schema for SEO */}
+      {/* FAQ Schema for SEO - escaped to prevent </script> injection */}
       <script 
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(faqSchema) }}
       />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

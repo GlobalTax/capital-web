@@ -25,6 +25,7 @@ import { useLandingPages, useLandingPageTemplates, type LandingPage, type Landin
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { sanitizeHtml, escapeRegex } from '@/shared/utils/sanitize';
 
 interface LandingPageBuilderProps {
   pageId?: string | null;
@@ -155,14 +156,18 @@ export const LandingPageBuilder: React.FC<LandingPageBuilderProps> = ({ pageId, 
     // Simular el renderizado del template con los datos actuales
     let htmlContent = selectedTemplateData.template_html;
     
-    // Reemplazar variables del template
+    // Reemplazar variables del template (escape field names for safe regex)
     const templateConfig = selectedTemplateData.template_config;
     if (templateConfig.fields) {
       templateConfig.fields.forEach((field: string) => {
         const value = currentPage.content_config?.[field] || `{${field}}`;
-        htmlContent = htmlContent.replace(new RegExp(`{{${field}}}`, 'g'), value);
+        const escapedField = escapeRegex(field);
+        htmlContent = htmlContent.replace(new RegExp(`\\{\\{${escapedField}\\}\\}`, 'g'), value);
       });
     }
+    
+    // Sanitize the final HTML to prevent XSS
+    htmlContent = sanitizeHtml(htmlContent);
 
     const previewClasses = {
       desktop: 'w-full',

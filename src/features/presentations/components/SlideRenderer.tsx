@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import type { Slide, SlideContent, BrandKit, Theme } from '../types/presentation.types';
+import { sanitizeHtml } from '@/shared/utils/sanitize';
 
 interface SlideRendererProps {
   slide: Slide;
@@ -441,7 +442,7 @@ const CustomSlide: React.FC<{
     {slide.content?.custom_html && (
       <div 
         className="prose prose-lg max-w-none mt-8"
-        dangerouslySetInnerHTML={{ __html: slide.content.custom_html }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(slide.content.custom_html) }}
       />
     )}
   </div>

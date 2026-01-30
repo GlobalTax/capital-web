@@ -20,6 +20,7 @@ import { useJobPost } from '@/hooks/useJobPosts';
 import { JobApplicationDialog } from '@/components/jobs/JobApplicationDialog';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { sanitizeHtml } from '@/shared/utils/sanitize';
 
 const JobDetailPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -97,7 +98,7 @@ const JobDetailPage = () => {
                 <h2 className="text-2xl font-semibold mb-4">Descripción del puesto</h2>
                 <div 
                   className="prose prose-slate max-w-none"
-                  dangerouslySetInnerHTML={{ __html: job.description }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(job.description) }}
                 />
               </Card>
 

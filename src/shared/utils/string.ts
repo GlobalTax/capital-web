@@ -26,11 +26,14 @@ export const truncate = (text: string, maxLength: number): string => {
 
 /**
  * Highlight search query in text (returns HTML string)
+ * @deprecated Use highlightSearchTerm from @/shared/utils/sanitize instead for XSS safety
  */
 export const highlightText = (text: string, query: string): string => {
   if (!query || !text) return text;
   
-  const regex = new RegExp(`(${query})`, 'gi');
+  // Escape regex special characters to prevent ReDoS
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
   return text.replace(regex, '<mark>$1</mark>');
 };
 
