@@ -1157,6 +1157,7 @@ export type Database = {
           id: string
           ip_address: string | null
           lead_form: string | null
+          lead_received_at: string | null
           pdf_url: string | null
           phone: string | null
           phone_e164: string | null
@@ -1200,6 +1201,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           pdf_url?: string | null
           phone?: string | null
           phone_e164?: string | null
@@ -1243,6 +1245,7 @@ export type Database = {
           id?: string
           ip_address?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           pdf_url?: string | null
           phone?: string | null
           phone_e164?: string | null
@@ -3353,6 +3356,7 @@ export type Database = {
           last_campaign_name: string | null
           last_email_click_at: string | null
           lead_form: string | null
+          lead_received_at: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
           motivation: string | null
           notes: string | null
@@ -3407,6 +3411,7 @@ export type Database = {
           last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           notes?: string | null
@@ -3461,6 +3466,7 @@ export type Database = {
           last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
           motivation?: string | null
           notes?: string | null
@@ -3546,6 +3552,7 @@ export type Database = {
           last_campaign_name: string | null
           last_email_click_at: string | null
           lead_form: string | null
+          lead_received_at: string | null
           message: string | null
           notes: string | null
           page_origin: string
@@ -3609,6 +3616,7 @@ export type Database = {
           last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -3672,6 +3680,7 @@ export type Database = {
           last_campaign_name?: string | null
           last_email_click_at?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           message?: string | null
           notes?: string | null
           page_origin?: string
@@ -4080,6 +4089,7 @@ export type Database = {
           last_modified_field: string | null
           lead_entry_date: string | null
           lead_form: string | null
+          lead_received_at: string | null
           lead_source: string | null
           lead_source_detail: string | null
           lead_status_crm: Database["public"]["Enums"]["lead_status"] | null
@@ -4201,6 +4211,7 @@ export type Database = {
           last_modified_field?: string | null
           lead_entry_date?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           lead_source?: string | null
           lead_source_detail?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
@@ -4322,6 +4333,7 @@ export type Database = {
           last_modified_field?: string | null
           lead_entry_date?: string | null
           lead_form?: string | null
+          lead_received_at?: string | null
           lead_source?: string | null
           lead_source_detail?: string | null
           lead_status_crm?: Database["public"]["Enums"]["lead_status"] | null
@@ -8523,6 +8535,7 @@ export type Database = {
           ip_address: unknown
           is_deleted: boolean | null
           lead_form: string | null
+          lead_received_at: string | null
           message: string
           notes: string | null
           page_origin: string
@@ -8580,6 +8593,7 @@ export type Database = {
           ip_address?: unknown
           is_deleted?: boolean | null
           lead_form?: string | null
+          lead_received_at?: string | null
           message: string
           notes?: string | null
           page_origin: string
@@ -8637,6 +8651,7 @@ export type Database = {
           ip_address?: unknown
           is_deleted?: boolean | null
           lead_form?: string | null
+          lead_received_at?: string | null
           message?: string
           notes?: string | null
           page_origin?: string

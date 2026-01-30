@@ -220,6 +220,18 @@ serve(async (req) => {
       // 'company_valuations' does NOT have updated_at
     ];
 
+    // Tables that support lead_received_at (all major lead tables now have this column)
+    const tablesWithLeadReceivedAt = [
+      'contact_leads',
+      'company_valuations',
+      'general_contact_leads',
+      'collaborator_applications',
+      'acquisition_leads',
+      'advisor_valuations',
+      'company_acquisition_inquiries',
+      'buyer_contacts',
+    ];
+
     // Tables that support lead_status_crm
     const tablesWithStatusCrm = [
       'contact_leads',
@@ -270,7 +282,8 @@ serve(async (req) => {
         if (updates.lead_form !== undefined) {
           updatePayload.lead_form = updates.lead_form;
         }
-        if (updates.lead_received_at !== undefined) {
+        // Only update lead_received_at on tables that support it
+        if (updates.lead_received_at !== undefined && tablesWithLeadReceivedAt.includes(table)) {
           updatePayload.lead_received_at = updates.lead_received_at;
         }
         if (updates.lead_status_crm !== undefined && tablesWithStatusCrm.includes(table)) {

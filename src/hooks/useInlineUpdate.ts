@@ -166,6 +166,9 @@ export const useContactInlineUpdate = () => {
       'contact': 'contact_leads',
       'accountex': 'accountex_leads',
       'advisor': 'advisor_valuations',
+      'general': 'general_contact_leads',
+      'company_acquisition': 'company_acquisition_inquiries',
+      'buyer': 'buyer_contacts',
     };
 
     const table = tableMap[origin];
@@ -175,24 +178,29 @@ export const useContactInlineUpdate = () => {
     }
 
     // Map field names for specific tables
+    // lead_received_at is the same across all tables (no mapping needed)
     const fieldMap: Record<string, Record<string, string>> = {
       'company_valuations': {
         'company': 'company_name',
         'name': 'contact_name',
         'industry': 'industry',
         'location': 'location',
+        'lead_received_at': 'lead_received_at',
       },
       'collaborator_applications': {
         'name': 'full_name',
+        'lead_received_at': 'lead_received_at',
       },
       'acquisition_leads': {
         'name': 'full_name',
         'industry': 'sectors_of_interest',
+        'lead_received_at': 'lead_received_at',
       },
       'contact_leads': {
         'name': 'full_name',
         'industry': 'sector',
         'location': 'location',
+        'lead_received_at': 'lead_received_at',
       },
       'accountex_leads': {
         'name': 'full_name',
@@ -201,6 +209,19 @@ export const useContactInlineUpdate = () => {
       'advisor_valuations': {
         'company': 'company_name',
         'name': 'contact_name',
+        'lead_received_at': 'lead_received_at',
+      },
+      'general_contact_leads': {
+        'name': 'full_name',
+        'lead_received_at': 'lead_received_at',
+      },
+      'company_acquisition_inquiries': {
+        'name': 'full_name',
+        'lead_received_at': 'lead_received_at',
+      },
+      'buyer_contacts': {
+        'name': 'full_name',
+        'lead_received_at': 'lead_received_at',
       },
     };
 
