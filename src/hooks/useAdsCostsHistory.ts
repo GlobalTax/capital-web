@@ -488,49 +488,73 @@ export const useAdsCostsImport = (platform: AdsPlatform) => {
       }
 
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        throw new Error('Debes estar autenticado para importar datos');
+      }
 
+      // Prepare records with proper data types
       const records = validRows.map(row => ({
         platform,
-        campaign_name: row.campaign_name,
+        campaign_name: row.campaign_name.substring(0, 500), // Truncate if too long
         date: row.date,
-        spend: row.spend,
-        currency: row.currency,
-        impressions: row.impressions,
-        clicks: row.clicks,
-        conversions: row.conversions,
-        result_type: row.result_type,
-        results: row.results,
-        cost_per_result: row.cost_per_result,
-        reach: row.reach,
-        frequency: row.frequency,
-        cpm: row.cpm,
-        link_clicks: row.link_clicks,
-        raw_row: row.raw_row,
-        imported_by: user?.id,
+        spend: typeof row.spend === 'number' ? row.spend : 0,
+        currency: row.currency || 'EUR',
+        impressions: row.impressions != null ? Math.round(row.impressions) : null,
+        clicks: row.clicks != null ? Math.round(row.clicks) : null,
+        conversions: row.conversions != null ? Math.round(row.conversions) : null,
+        result_type: row.result_type || null,
+        results: row.results != null ? row.results : null,
+        cost_per_result: row.cost_per_result != null ? row.cost_per_result : null,
+        reach: row.reach != null ? Math.round(row.reach) : null,
+        frequency: row.frequency != null ? row.frequency : null,
+        cpm: row.cpm != null ? row.cpm : null,
+        link_clicks: row.link_clicks != null ? Math.round(row.link_clicks) : null,
+        raw_row: row.raw_row || {},
+        imported_by: user.id,
       }));
 
-      // Use UPSERT with ON CONFLICT
+      // Use UPSERT with ON CONFLICT on the unique index
+      // The unique index is: (platform, campaign_name, date)
       const { data, error } = await supabase
         .from('ads_costs_history')
         .upsert(records, { 
           onConflict: 'platform,campaign_name,date',
           ignoreDuplicates: false // Update existing records
         })
-        .select();
+        .select('id');
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        // Provide specific error messages
+        if (error.code === '42501' || error.message?.includes('row-level security')) {
+          throw new Error('No tienes permisos para importar datos. Contacta al administrador.');
+        }
+        if (error.code === '23505') {
+          throw new Error('Error de datos duplicados. Intenta de nuevo.');
+        }
+        if (error.code === '23503') {
+          throw new Error('Error de referencia en base de datos.');
+        }
+        if (error.code === '22P02') {
+          throw new Error('Error de formato de datos. Revisa el archivo Excel.');
+        }
+        throw new Error(error.message || 'Error desconocido al importar');
+      }
+
+      return data || [];
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['ads-costs-history', platform] });
-      toast.success(`${data.length} registros importados/actualizados correctamente`);
+      const count = Array.isArray(data) ? data.length : 0;
+      toast.success(`${count} registros importados/actualizados correctamente`);
       setParsedRows([]);
       setDuplicates([]);
       setParseStats(null);
     },
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Error al importar');
+    onError: (error: Error) => {
+      console.error('Import error:', error);
+      toast.error(error.message || 'Error al importar');
     },
   });
 
