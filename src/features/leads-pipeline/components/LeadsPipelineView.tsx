@@ -1,6 +1,6 @@
 /**
  * Main Leads Pipeline View - Optimized with useCallback
- * Now uses database-driven columns
+ * Now uses unified contact_statuses system (via wrapper for compatibility)
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { PipelineColumn } from './PipelineColumn';
 import { PipelineColumnsEditor } from './PipelineColumnsEditor';
 import { useLeadsPipeline } from '../hooks/useLeadsPipeline';
-import { useLeadPipelineColumns } from '../hooks/useLeadPipelineColumns';
+import { useContactStatuses } from '@/hooks/useContactStatuses';
 import type { LeadStatus } from '../types';
 
 export const LeadsPipelineView: React.FC = () => {
@@ -36,12 +36,13 @@ export const LeadsPipelineView: React.FC = () => {
     registerCall,
   } = useLeadsPipeline();
 
+  // Use unified contact_statuses system
   const {
-    visibleColumns,
-    isLoading: isLoadingColumns,
-  } = useLeadPipelineColumns();
+    visibleStatuses,
+    isLoading: isLoadingStatuses,
+  } = useContactStatuses();
   
-  const isLoading = isLoadingLeads || isLoadingColumns;
+  const isLoading = isLoadingLeads || isLoadingStatuses;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAssignee, setFilterAssignee] = useState<string>('all');
@@ -53,12 +54,12 @@ export const LeadsPipelineView: React.FC = () => {
     [adminUsers]
   );
 
-  // Memoized filtered leads - now based on database columns
+  // Memoized filtered leads - now based on unified contact_statuses
   const filteredLeadsByStatus = useMemo(() => {
     const result: Record<string, typeof leads> = {} as any;
     
-    visibleColumns.forEach(col => {
-      let columnLeads = leadsByStatus[col.stage_key as LeadStatus] || [];
+    visibleStatuses.forEach(status => {
+      let columnLeads = leadsByStatus[status.status_key as LeadStatus] || [];
       
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -77,11 +78,11 @@ export const LeadsPipelineView: React.FC = () => {
         }
       }
       
-      result[col.stage_key] = columnLeads;
+      result[status.status_key] = columnLeads;
     });
     
     return result;
-  }, [leadsByStatus, searchQuery, filterAssignee, visibleColumns]);
+  }, [leadsByStatus, searchQuery, filterAssignee, visibleStatuses]);
 
   // Memoized handlers with useCallback
   const handleDragEnd = useCallback((result: DropResult) => {
@@ -91,9 +92,9 @@ export const LeadsPipelineView: React.FC = () => {
 
     const newStatus = destination.droppableId as LeadStatus;
     updateStatus({ leadId: draggableId, status: newStatus });
-    const columnLabel = visibleColumns.find(c => c.stage_key === newStatus)?.label || newStatus;
-    toast.success(`Lead movido a "${columnLabel}"`);
-  }, [updateStatus]);
+    const statusLabel = visibleStatuses.find(s => s.status_key === newStatus)?.label || newStatus;
+    toast.success(`Lead movido a "${statusLabel}"`);
+  }, [updateStatus, visibleStatuses]);
 
   const handleSendPrecallEmail = useCallback(async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
@@ -213,16 +214,16 @@ export const LeadsPipelineView: React.FC = () => {
       <div className="flex-1 overflow-hidden">
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="flex gap-4 h-full overflow-x-auto pb-4">
-            {visibleColumns.map((column) => (
+            {visibleStatuses.map((status) => (
               <PipelineColumn
-                key={column.id}
+                key={status.id}
                 column={{
-                  id: column.stage_key as LeadStatus,
-                  label: column.label,
-                  color: column.color,
-                  icon: column.icon,
+                  id: status.status_key as LeadStatus,
+                  label: status.label,
+                  color: status.color,
+                  icon: status.icon,
                 }}
-                leads={filteredLeadsByStatus[column.stage_key] || []}
+                leads={filteredLeadsByStatus[status.status_key] || []}
                 adminUsersMap={adminUsersMap}
                 onSendPrecallEmail={handleSendPrecallEmail}
                 onRegisterCall={handleRegisterCall}

@@ -1,5 +1,6 @@
 /**
  * Modal for editing or creating pipeline columns
+ * Uses the unified contact_statuses system via the wrapper hook
  */
 
 import React, { useState, useEffect } from 'react';

@@ -4936,6 +4936,7 @@ export type Database = {
           is_active: boolean
           is_prospect_stage: boolean
           is_system: boolean
+          is_visible: boolean | null
           label: string
           position: number
           status_key: string
@@ -4949,6 +4950,7 @@ export type Database = {
           is_active?: boolean
           is_prospect_stage?: boolean
           is_system?: boolean
+          is_visible?: boolean | null
           label: string
           position?: number
           status_key: string
@@ -4962,6 +4964,7 @@ export type Database = {
           is_active?: boolean
           is_prospect_stage?: boolean
           is_system?: boolean
+          is_visible?: boolean | null
           label?: string
           position?: number
           status_key?: string
@@ -19119,6 +19122,7 @@ export type Database = {
           id: string
           image_url: string
           is_active: boolean
+          ken_burns_direction: string | null
           subtitle: string | null
           title: string
           updated_at: string
@@ -19129,6 +19133,7 @@ export type Database = {
           id?: string
           image_url: string
           is_active?: boolean
+          ken_burns_direction?: string | null
           subtitle?: string | null
           title: string
           updated_at?: string
@@ -19139,6 +19144,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean
+          ken_burns_direction?: string | null
           subtitle?: string | null
           title?: string
           updated_at?: string
