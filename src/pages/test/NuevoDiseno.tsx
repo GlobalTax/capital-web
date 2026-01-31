@@ -17,30 +17,49 @@ const NuevoDiseno: React.FC = () => {
       <DarkHeroSection />
       
       {/* Placeholder para futuras secciones */}
-      <section className="py-24 bg-[hsl(var(--dark-bg-elevated))]">
+      <section className="py-32 bg-[hsl(0,0%,7%)]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <p className="text-[hsl(var(--dark-text-secondary))] text-center text-sm tracking-wide uppercase">
-            Próximamente: Sección de Servicios
+          <h2 className="font-serif-display text-white text-4xl md:text-5xl mb-6">
+            Nuestros servicios
+          </h2>
+          <p className="text-white/50 text-sm tracking-wide uppercase">
+            Próximamente
           </p>
         </div>
       </section>
 
-      <section className="py-24 bg-[hsl(var(--dark-bg))]">
+      <section className="py-32 bg-[hsl(0,0%,5%)]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <p className="text-[hsl(var(--dark-text-secondary))] text-center text-sm tracking-wide uppercase">
-            Próximamente: Casos de éxito
+          <h2 className="font-serif-display text-white text-4xl md:text-5xl mb-6">
+            Casos de éxito
+          </h2>
+          <p className="text-white/50 text-sm tracking-wide uppercase">
+            Próximamente
           </p>
         </div>
       </section>
 
-      {/* Footer placeholder */}
-      <footer className="py-12 border-t border-[hsl(var(--dark-border))] bg-[hsl(var(--dark-bg))]">
+      {/* Footer */}
+      <footer className="py-16 border-t border-white/10 bg-[hsl(0,0%,5%)]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <span className="text-white text-lg tracking-wide">Capittal</span>
-            <span className="text-[hsl(var(--dark-text-secondary))] text-sm">
-              © 2024 Capittal. Todos los derechos reservados.
-            </span>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+            <div>
+              <span className="text-white text-2xl tracking-[0.1em]">Capittal</span>
+              <p className="text-white/40 text-sm mt-2">
+                Especialistas en M&A y valoraciones
+              </p>
+            </div>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
+              <a href="#" className="text-white/60 text-sm hover:text-white transition-colors">
+                Política de privacidad
+              </a>
+              <a href="#" className="text-white/60 text-sm hover:text-white transition-colors">
+                Aviso legal
+              </a>
+              <span className="text-white/40 text-sm">
+                © 2024 Capittal
+              </span>
+            </div>
           </div>
         </div>
       </footer>

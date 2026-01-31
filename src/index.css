@@ -171,6 +171,11 @@
   }
 }
 
+/* Playfair Display Serif for institutional headlines */
+.font-serif-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
 /* Dark Institutional Theme Scope */
 .dark-institutional {
   --background: var(--dark-bg);
@@ -180,6 +185,16 @@
   --muted: 0 0% 15%;
   --muted-foreground: var(--dark-text-secondary);
   --border: var(--dark-border);
+}
+
+/* Hero overlay gradient for Portobello style */
+.hero-portobello-overlay {
+  background: linear-gradient(
+    to right,
+    rgba(0,0,0,0.75) 0%,
+    rgba(0,0,0,0.5) 40%,
+    rgba(0,0,0,0.3) 100%
+  );
 }
 
 @layer base {

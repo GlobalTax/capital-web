@@ -1,58 +1,93 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 
 const InstitutionalHeader: React.FC = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const navItems = [
-    { label: 'Servicios', href: '#servicios' },
-    { label: 'Casos de éxito', href: '#casos' },
-    { label: 'Equipo', href: '#equipo' },
-    { label: 'Contacto', href: '#contacto' },
+    { label: 'SERVICIOS', href: '#servicios' },
+    { label: 'EQUIPO', href: '#equipo' },
+    { label: 'CASOS', href: '#casos' },
+    { label: 'ACTUALIDAD', href: '#actualidad' },
+    { label: 'CONTACTO', href: '#contacto' },
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-transparent">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex items-center justify-between h-20">
+    <header className="fixed top-0 left-0 right-0 z-50">
+      {/* Top bar - Investor area & Language selector */}
+      <div className="bg-[hsl(0,0%,10%)] border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 flex justify-end items-center h-8">
+          <a 
+            href="#inversores" 
+            className="text-white/60 text-[11px] uppercase tracking-[0.2em] mr-8 hover:text-white transition-colors"
+          >
+            Área de inversores
+          </a>
+          <div className="flex items-center gap-3 text-[11px] tracking-wide">
+            <button className="text-white font-medium">ES</button>
+            <span className="text-white/30">|</span>
+            <button className="text-white/50 hover:text-white transition-colors">EN</button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main navigation */}
+      <div className="bg-transparent backdrop-blur-sm bg-black/20">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between h-20">
           {/* Logo */}
           <Link 
             to="/test/nuevo-diseno" 
-            className="text-white text-2xl tracking-wide font-normal transition-opacity hover:opacity-80"
+            className="text-white text-2xl tracking-[0.1em] font-normal transition-opacity hover:opacity-80"
           >
             Capittal
           </Link>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-10">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-10">
             {navItems.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
-                className="text-white/70 text-sm tracking-wide font-normal transition-colors hover:text-white"
+                className="text-white/80 text-[13px] tracking-[0.15em] font-normal transition-colors hover:text-white"
               >
                 {item.label}
               </a>
             ))}
           </nav>
 
-          {/* CTA Button */}
-          <Link
-            to="/lp/calculadora"
-            className="hidden md:inline-flex px-5 py-2.5 border border-white/30 text-white text-sm tracking-wide font-normal transition-all hover:bg-white hover:text-[hsl(var(--dark-bg))]"
-          >
-            Valorar empresa
-          </Link>
-
           {/* Mobile menu button */}
           <button 
-            className="md:hidden text-white p-2"
-            aria-label="Abrir menú"
+            className="lg:hidden text-white p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-[hsl(0,0%,7%)] border-t border-white/10">
+          <nav className="flex flex-col py-6 px-6">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="text-white/80 text-sm tracking-[0.15em] py-4 border-b border-white/10 last:border-b-0 transition-colors hover:text-white"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
