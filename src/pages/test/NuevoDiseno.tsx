@@ -1,9 +1,12 @@
 import React from 'react';
 import TestLayout from './components/TestLayout';
 import InstitutionalHeader from './components/InstitutionalHeader';
-import HeroSection from './components/HeroSection';
-import ServicesSection from './components/ServicesSection';
+import HeroSliderSection from './components/HeroSliderSection';
+import AboutSection from './components/AboutSection';
+import ServicesSectionWithImages from './components/ServicesSectionWithImages';
+import TeamSection from './components/TeamSection';
 import CaseStudiesSection from './components/CaseStudiesSection';
+import InstitutionalFooter from './components/InstitutionalFooter';
 
 /**
  * Página de prueba con el nuevo diseño institucional claro.
@@ -11,43 +14,38 @@ import CaseStudiesSection from './components/CaseStudiesSection';
  * 
  * Esta página es un prototipo aislado para experimentar con el nuevo diseño
  * sin afectar las páginas de producción.
+ * 
+ * Estructura:
+ * 1. Hero Slider - 3 slides con transición automática
+ * 2. La Firma - Sección institucional con stats animados
+ * 3. Servicios - Cards con imágenes de alta calidad
+ * 4. Equipo - Fotos B&W con hover a color
+ * 5. Casos de Éxito - Cards de operaciones destacadas
+ * 6. Footer - Con noticias y contacto
  */
 const NuevoDiseno: React.FC = () => {
   return (
     <TestLayout>
+      {/* Header */}
       <InstitutionalHeader />
-      <HeroSection />
       
-      {/* Services Section */}
-      <ServicesSection />
+      {/* Hero Slider */}
+      <HeroSliderSection />
+      
+      {/* La Firma / About Section */}
+      <AboutSection />
+
+      {/* Services Section with Images */}
+      <ServicesSectionWithImages />
+
+      {/* Team Section */}
+      <TeamSection />
 
       {/* Case Studies Section */}
       <CaseStudiesSection />
 
-      {/* Footer */}
-      <footer className="py-16 border-t border-slate-200 bg-slate-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-            <div>
-              <span className="text-slate-900 text-2xl tracking-[0.1em]">Capittal</span>
-              <p className="text-slate-500 text-sm mt-2">
-                Especialistas en M&A y valoraciones
-              </p>
-            </div>
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
-              <a href="#" className="text-slate-500 text-sm hover:text-slate-900 transition-colors">
-                Política de privacidad
-              </a>
-              <a href="#" className="text-slate-500 text-sm hover:text-slate-900 transition-colors">
-                Aviso legal
-              </a>
-              <span className="text-slate-400 text-sm">
-                © 2025 Capittal
-              </span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Institutional Footer */}
+      <InstitutionalFooter />
     </TestLayout>
   );
 };
