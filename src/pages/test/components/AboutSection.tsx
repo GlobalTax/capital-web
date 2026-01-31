@@ -53,7 +53,7 @@ const AboutSection: React.FC = () => {
           <span className="text-slate-400 text-sm tracking-[0.2em] uppercase block mb-4">
             La Firma
           </span>
-          <h2 className="font-serif-display text-slate-900 text-4xl md:text-5xl lg:text-6xl leading-tight">
+          <h2 className="font-serif text-slate-900 text-4xl md:text-5xl lg:text-6xl leading-tight">
             Confianza y experiencia
             <br />
             <span className="text-slate-500">desde 2008</span>

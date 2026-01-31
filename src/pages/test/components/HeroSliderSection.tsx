@@ -84,7 +84,7 @@ const HeroSliderSection: React.FC = () => {
               className="max-w-2xl"
             >
               {/* Main Headline */}
-              <h1 className="font-serif-display text-slate-900 font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line">
+              <h1 className="font-serif text-slate-900 font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line">
                 {slides[currentSlide].title}
               </h1>
 

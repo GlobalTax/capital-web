@@ -73,7 +73,7 @@ const ServicesSectionWithImages: React.FC = () => {
           <span className="text-slate-400 text-sm tracking-[0.2em] uppercase mb-4 block">
             Servicios
           </span>
-          <h2 className="font-serif-display text-slate-900 text-4xl md:text-5xl lg:text-6xl leading-tight">
+          <h2 className="font-serif text-slate-900 text-4xl md:text-5xl lg:text-6xl leading-tight">
             Soluciones integrales
             <br />
             <span className="text-slate-500">para tu empresa</span>
@@ -107,7 +107,7 @@ const ServicesSectionWithImages: React.FC = () => {
 
               {/* Content */}
               <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
-                <h3 className="font-serif-display text-white text-2xl md:text-3xl mb-3 group-hover:translate-y-0 translate-y-2 transition-transform duration-300">
+                <h3 className="font-serif text-white text-2xl md:text-3xl mb-3 group-hover:translate-y-0 translate-y-2 transition-transform duration-300">
                   {service.title}
                 </h3>
                 <p className="text-white/80 text-sm leading-relaxed max-w-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">

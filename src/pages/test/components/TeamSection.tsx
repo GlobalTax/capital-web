@@ -67,7 +67,7 @@ const TeamSection: React.FC = () => {
           <span className="text-slate-400 text-sm tracking-[0.2em] uppercase block mb-4">
             Equipo
           </span>
-          <h2 className="font-serif-display text-slate-900 text-4xl md:text-5xl lg:text-6xl leading-tight mb-6">
+          <h2 className="font-serif text-slate-900 text-4xl md:text-5xl lg:text-6xl leading-tight mb-6">
             Profesionales comprometidos
             <br />
             <span className="text-slate-500">con profesionales</span>
@@ -116,7 +116,7 @@ const TeamSection: React.FC = () => {
               </div>
 
               {/* Name & Role */}
-              <h3 className="font-serif-display text-slate-900 text-xl md:text-2xl mb-2">
+              <h3 className="font-serif text-slate-900 text-xl md:text-2xl mb-2">
                 {member.name}
               </h3>
               <p className="text-slate-500 text-sm tracking-wide">
