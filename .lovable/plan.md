@@ -1,50 +1,41 @@
 
-# Corrección de Tipografía en Componentes Institucionales
+# Añadir Ruta `/v2` para el Nuevo Diseño
 
-## Problema Identificado
+## Objetivo
 
-Los nuevos componentes del rediseño institucional están usando la clase `font-serif-display` que **no existe** en la configuración de Tailwind. Esto causa que los títulos fallen silenciosamente al font por defecto.
+Crear una ruta profesional `/v2` que apunte al componente `NuevoDiseno` para compartir fácilmente el nuevo diseño con stakeholders.
 
-## Configuración Actual del Proyecto
+## Cambio a Realizar
+
+**Archivo:** `src/core/routing/AppRoutes.tsx`
+
+Añadir una nueva ruta junto a la ruta de test existente:
 
 ```typescript
-// tailwind.config.ts
-fontFamily: {
-  'sans': ['General Sans', ...],      // ✓ Para cuerpo de texto
-  'serif': ['Playfair Display', ...], // ✓ Para títulos elegantes
-  'mono': ['Roboto Mono', ...],       // Para código
-}
+{/* === TEST ROUTES === */}
+<Route path="/test/nuevo-diseno" element={<NuevoDiseno />} />
+
+{/* === V2 PREVIEW (Nuevo diseño institucional) === */}
+<Route path="/v2" element={<NuevoDiseno />} />
 ```
 
-## Cambios a Realizar
+## URLs Resultantes
 
-### 1. HeroSliderSection.tsx
-- Línea con `font-serif-display` → `font-serif`
-- Afecta: Título principal del hero
+| Ruta | Uso |
+|------|-----|
+| `/test/nuevo-diseno` | Desarrollo interno |
+| `/v2` | Compartir con stakeholders |
 
-### 2. AboutSection.tsx
-- Línea con `font-serif-display` → `font-serif`
-- Afecta: Título "LA FIRMA"
+## URL para Compartir
 
-### 3. TeamSection.tsx
-- Línea con `font-serif-display` → `font-serif`
-- Afecta: Título "NUESTRO EQUIPO"
+Una vez implementado, podrás compartir:
 
-### 4. ServicesSectionWithImages.tsx
-- Línea con `font-serif-display` → `font-serif`
-- Afecta: Título "NUESTROS SERVICIOS"
+**Preview:** `https://id-preview--c1cd2940-10b7-4c6d-900a-07b0f572e7b9.lovable.app/v2`
 
-### 5. InstitutionalFooter.tsx
-- Línea con `font-serif-display` → `font-serif`
-- Afecta: Título "ÚLTIMAS NOTICIAS"
+**Producción:** `https://webcapittal.lovable.app/v2`
 
-## Resultado Esperado
+## Impacto
 
-| Elemento | Antes | Después |
-|----------|-------|---------|
-| Títulos H1/H2 | Font por defecto (fallback) | Playfair Display (serif elegante) |
-| Cuerpo texto | General Sans | General Sans (sin cambios) |
-
-## Impacto Visual
-
-Los títulos pasarán de una tipografía sans-serif genérica a **Playfair Display**, una tipografía serif elegante que aportará el toque institucional y premium que buscan las referencias (Ethos Venture, Miura Partners).
+- Sin riesgo para la home actual (`/`)
+- Mismo componente, solo una nueva ruta de acceso
+- Fácil de recordar y compartir
