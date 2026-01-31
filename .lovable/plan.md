@@ -1,196 +1,112 @@
 
 
-# Plan: Sección de Casos de Éxito para el Nuevo Diseño
+# Plan: Corregir Error de Código de Moneda en CaseStudiesSection
 
-## Objetivo
+## Problema
 
-Crear una sección de "Casos de éxito" que se integre con el diseño oscuro institucional estilo Portobello, usando los datos reales de la base de datos.
-
-## Diseño Visual
+El error `Invalid currency code : €` ocurre porque la base de datos almacena el símbolo de moneda (`€`) pero `Intl.NumberFormat` requiere códigos ISO 4217 (`EUR`, `USD`, etc.).
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          bg-[hsl(0,0%,5%)]                                  │
-│                                                                             │
-│  CASOS DE ÉXITO                                                             │
-│                                                                             │
-│  Operaciones que hablan                                                     │
-│  por sí mismas                                                              │
-│                                                                             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│  │  [Logo]         │  │  [Logo]         │  │  [Logo]         │              │
-│  │                 │  │                 │  │                 │              │
-│  │  Sector • 2024  │  │  Sector • 2024  │  │  Sector • 2024  │              │
-│  │                 │  │                 │  │                 │              │
-│  │  Título del     │  │  Título del     │  │  Título del     │              │
-│  │  caso de éxito  │  │  caso de éxito  │  │  caso de éxito  │              │
-│  │                 │  │                 │  │                 │              │
-│  │  Descripción... │  │  Descripción... │  │  Descripción... │              │
-│  │                 │  │                 │  │                 │              │
-│  │  €12M           │  │  Confidencial   │  │  €8M            │              │
-│  │  ────────────── │  │  ────────────── │  │  ────────────── │              │
-│  │  Ver caso →     │  │  Ver caso →     │  │  Ver caso →     │              │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
-│                                                                             │
-│  ─────────────────────────────────────────────────────────────────────────  │
-│                                                                             │
-│  Más de 200 operaciones cerradas           [ Ver todos los casos ]         │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+Base de datos: value_currency = "€"
+                    ↓
+Intl.NumberFormat espera: "EUR"
+                    ↓
+RangeError: Invalid currency code : €
 ```
 
-## Características
+## Solución
 
-| Elemento | Descripción |
-|----------|-------------|
-| **Fondo** | Oscuro `bg-[hsl(0,0%,5%)]` consistente |
-| **Tipografía** | Serif display para títulos |
-| **Cards** | Fondo ligeramente más claro con hover effect |
-| **Datos** | Cargados desde Supabase via `useCaseStudies` |
-| **Logos** | Prominentes en la parte superior de cada card |
-| **Valor** | Mostrar monto o "Confidencial" con icono |
-| **Animaciones** | Scroll-triggered con Framer Motion |
+Ya existe una función `mapCurrencySymbolToCode` en `src/shared/utils/format.ts` que convierte símbolos a códigos ISO:
 
-## Archivo a Crear
+- `€` → `EUR`
+- `$` → `USD`  
+- `£` → `GBP`
+- etc.
 
-| Archivo | Propósito |
-|---------|-----------|
-| `src/pages/test/components/CaseStudiesSection.tsx` | Sección de casos con estilo oscuro institucional |
+Reutilizaremos esta función existente en lugar de duplicar código.
 
 ## Archivo a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/pages/test/NuevoDiseno.tsx` | Reemplazar placeholder con nuevo componente |
+| `src/pages/test/components/CaseStudiesSection.tsx` | Importar y usar `formatCurrency` de utils existente, o replicar la lógica de mapeo |
 
-## Estructura del Componente
+## Código Actual (líneas 27-41)
 
 ```typescript
-// CaseStudiesSection.tsx
-import { useCaseStudies } from '@/hooks/useCaseStudies';
-import { motion } from 'framer-motion';
-
-const CaseStudiesSection = () => {
-  const { caseStudies, isLoading } = useCaseStudies();
+const formatValue = (amount: number | undefined, currency: string, isConfidential: boolean | undefined) => {
+  if (isConfidential || !amount) {
+    return null;
+  }
   
-  // Mostrar solo 3 casos destacados
-  const featuredCases = caseStudies
-    .filter(c => c.is_featured)
-    .slice(0, 3);
+  const formatted = new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: currency || 'EUR',  // ❌ "€" no es válido
+    ...
+  }).format(amount);
   
-  return (
-    <section className="py-24 md:py-32 bg-[hsl(0,0%,5%)]">
-      {/* Header */}
-      <motion.div>
-        <span className="text-white/40 uppercase tracking-widest">
-          Casos de éxito
-        </span>
-        <h2 className="font-serif-display text-white text-5xl">
-          Operaciones que hablan
-          <br />
-          <span className="text-white/60">por sí mismas</span>
-        </h2>
-      </motion.div>
-      
-      {/* Grid de casos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {featuredCases.map(case_ => (
-          <CaseCard key={case_.id} {...case_} />
-        ))}
-      </div>
-      
-      {/* CTA */}
-      <div className="border-t border-white/10 pt-12 mt-16">
-        <Link to="/casos-exito">Ver todos los casos</Link>
-      </div>
-    </section>
-  );
+  return formatted;
 };
 ```
 
-## Diseño de la Card
+## Código Corregido
 
-Cada card de caso de éxito tendrá:
+```typescript
+// Mapeo de símbolos a códigos ISO
+const mapCurrencySymbolToCode = (currency: string | null | undefined): string => {
+  if (!currency) return 'EUR';
+  
+  const currencyMap: Record<string, string> = {
+    '€': 'EUR',
+    '$': 'USD',
+    '£': 'GBP',
+    '¥': 'JPY',
+    'EUR': 'EUR',
+    'USD': 'USD',
+    'GBP': 'GBP',
+  };
+  
+  return currencyMap[currency.trim()] || 'EUR';
+};
 
-1. **Logo** - Imagen del cliente en la parte superior
-2. **Badge** - Sector y año en etiqueta sutil
-3. **Título** - En serif display
-4. **Descripción** - Texto condensado (2-3 líneas)
-5. **Valor** - Monto de la operación o "Confidencial"
-6. **Hover** - Fondo más claro + "Ver caso →"
+const formatValue = (amount: number | undefined, currency: string, isConfidential: boolean | undefined) => {
+  if (isConfidential || !amount) {
+    return null;
+  }
+  
+  // ✅ Convertir símbolo a código ISO válido
+  const currencyCode = mapCurrencySymbolToCode(currency);
+  
+  const formatted = new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: currencyCode,  // ✅ Ahora usa "EUR" en vez de "€"
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+    notation: amount >= 1000000 ? 'compact' : 'standard',
+    compactDisplay: 'short'
+  }).format(amount);
+  
+  return formatted;
+};
+```
 
-## Estados de Carga
+## Resultado
 
-El componente manejará:
-- **Loading**: Skeleton con pulse animation
-- **Empty**: Mensaje elegante "Próximamente"
-- **Error**: Fallback graceful sin romper el diseño
+- El componente mostrará correctamente valores como `€12 M` o `€5.000.000`
+- No más errores de `RangeError`
+- Funcionará con cualquier moneda almacenada en la base de datos
 
 ## Sección Técnica
 
-### Estilos CSS
+### Alternativa: Importar desde utils existentes
 
-```css
-/* Card base */
-.case-card {
-  background: hsl(0, 0%, 7%);
-  transition: background 0.3s ease;
-}
+También podríamos importar directamente `formatCompactCurrency` desde `@/shared/utils/format.ts`, pero dado que el componente necesita manejar el caso confidencial y tiene una lógica específica de formato, es más claro tener la función local con el mapeo necesario.
 
-.case-card:hover {
-  background: hsl(0, 0%, 10%);
-}
+### Manejo de edge cases
 
-/* Valor confidencial */
-.value-confidential {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-```
-
-### Animaciones
-
-```typescript
-// Stagger animation para las cards
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5 }
-  }
-};
-```
-
-### Integración con NuevoDiseno.tsx
-
-```typescript
-import CaseStudiesSection from './components/CaseStudiesSection';
-
-const NuevoDiseno = () => {
-  return (
-    <TestLayout>
-      <InstitutionalHeader />
-      <DarkHeroSection />
-      <ServicesSection />
-      <CaseStudiesSection /> {/* Nuevo */}
-      <Footer />
-    </TestLayout>
-  );
-};
-```
+La función `mapCurrencySymbolToCode` maneja:
+- `null` / `undefined` → `EUR`
+- Símbolos: `€`, `$`, `£`, `¥`
+- Códigos ya válidos: `EUR`, `USD`, `GBP`
+- Caracteres corruptos (como `â¬` para euro) → `EUR`
 
