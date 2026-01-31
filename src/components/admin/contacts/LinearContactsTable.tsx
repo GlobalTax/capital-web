@@ -131,12 +131,14 @@ const TableHeader = React.memo<{
         className="border-muted-foreground/30"
       />
     </div>
-    <div 
-      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+    <SortableHeaderCell 
+      label="Contacto" 
+      column="name" 
+      currentSort={sortColumn} 
+      currentDirection={sortDirection} 
+      onSort={onSort}
       style={{ width: COLUMN_WIDTHS.contact, minWidth: COLUMN_WIDTHS.contact }}
-    >
-      Contacto
-    </div>
+    />
     <SortableHeaderCell 
       label="F. Registro" 
       column="lead_received_at" 
@@ -151,12 +153,14 @@ const TableHeader = React.memo<{
     >
       Canal
     </div>
-    <div 
-      className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+    <SortableHeaderCell 
+      label="Empresa" 
+      column="company" 
+      currentSort={sortColumn} 
+      currentDirection={sortDirection} 
+      onSort={onSort}
       style={{ width: COLUMN_WIDTHS.company, minWidth: COLUMN_WIDTHS.company }}
-    >
-      Empresa
-    </div>
+    />
     <div 
       className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
       style={{ width: COLUMN_WIDTHS.province, minWidth: COLUMN_WIDTHS.province }}
@@ -296,9 +300,10 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
       // Toggle direction if same column
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
-      // New column, default to descending for dates/numbers
+      // New column - text columns default to ascending, dates/numbers to descending
       setSortColumn(column);
-      setSortDirection('desc');
+      const textColumns: SortColumn[] = ['name', 'company'];
+      setSortDirection(textColumns.includes(column) ? 'asc' : 'desc');
     }
   }, [sortColumn]);
   
