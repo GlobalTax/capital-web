@@ -2,6 +2,7 @@ import React from 'react';
 import TestLayout from './components/TestLayout';
 import InstitutionalHeader from './components/InstitutionalHeader';
 import DarkHeroSection from './components/DarkHeroSection';
+import ServicesSection from './components/ServicesSection';
 
 /**
  * Página de prueba con el nuevo diseño institucional estilo Portobello Capital.
@@ -16,17 +17,8 @@ const NuevoDiseno: React.FC = () => {
       <InstitutionalHeader />
       <DarkHeroSection />
       
-      {/* Placeholder para futuras secciones */}
-      <section className="py-32 bg-[hsl(0,0%,7%)]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <h2 className="font-serif-display text-white text-4xl md:text-5xl mb-6">
-            Nuestros servicios
-          </h2>
-          <p className="text-white/50 text-sm tracking-wide uppercase">
-            Próximamente
-          </p>
-        </div>
-      </section>
+      {/* Services Section */}
+      <ServicesSection />
 
       <section className="py-32 bg-[hsl(0,0%,5%)]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
