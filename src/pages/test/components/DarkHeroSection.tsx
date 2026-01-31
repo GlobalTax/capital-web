@@ -8,8 +8,9 @@ interface StatItem {
 
 const stats: StatItem[] = [
   { value: '€902M', label: 'Valor total asesorado' },
-  { value: '+10', label: 'Años de experiencia' },
-  { value: '+200', label: 'Operaciones cerradas' },
+  { value: '98,7%', label: 'Tasa de éxito' },
+  { value: '200+', label: 'Operaciones cerradas' },
+  { value: '60+', label: 'Profesionales' },
 ];
 
 const DarkHeroSection: React.FC = () => {
@@ -26,7 +27,7 @@ const DarkHeroSection: React.FC = () => {
         <div className="absolute inset-0 hero-portobello-overlay" />
       </div>
 
-      {/* Content - Left aligned like Portobello */}
+      {/* Content - Left aligned */}
       <div className="relative z-10 max-w-7xl mx-auto w-full px-6 lg:px-12 pt-32">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -36,17 +37,17 @@ const DarkHeroSection: React.FC = () => {
         >
           {/* Main Headline - Serif font */}
           <h1 className="font-serif-display text-white font-normal leading-[1.1] tracking-tight text-5xl md:text-6xl lg:text-7xl">
-            Construimos
+            Especialistas en
             <br />
-            empresas líderes
+            compraventa de empresas
           </h1>
 
           {/* Subtitle */}
           <p className="text-white/70 text-lg md:text-xl mt-8 max-w-lg leading-relaxed">
-            Somos una gestora independiente de capital privado líder en el 'Middle Market' español.
+            Maximizamos el valor de tu empresa con un equipo multidisciplinar de más de 60 profesionales y enfoque orientado a resultados.
           </p>
 
-          {/* Stats - Below subtitle, inline like Portobello */}
+          {/* Stats - Below subtitle, inline */}
           <div className="flex flex-wrap gap-12 md:gap-16 mt-16">
             {stats.map((stat, index) => (
               <motion.div
