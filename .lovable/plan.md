@@ -1,145 +1,106 @@
 
+# Plan: Añadir Columnas Ordenables (Nombre y Empresa)
 
-# Plan: Reestructurar Tabla de Contactos — Alineación y Espaciado Corregidos
+## Análisis Actual
 
-## Problema Identificado
+La lógica de ordenamiento ya está **90% implementada**:
+- El tipo `SortColumn` ya incluye `'name' | 'company'`
+- La función `sortedContacts` ya maneja estos campos (líneas 330-337)
+- Solo falta activar los headers interactivos
 
-La tabla actual en `/admin/contacts` usa **flexbox con fracciones variables** (`flex: '2 0 180px'`, etc.) que causa:
-- Columnas desalineadas entre header y filas
-- Datos truncados incorrectamente
-- Espaciado inconsistente en diferentes anchos de pantalla
+## Cambios Requeridos
 
-## Solución
+### Archivo: `src/components/admin/contacts/LinearContactsTable.tsx`
 
-Aplicar el mismo patrón ya probado en `/admin/empresas`:
-1. **Anchos de columna en píxeles fijos** (no flex)
-2. **Contenedor de scroll único** que sincroniza header + lista
-3. **Width total calculado** para alineación perfecta
-4. **Lista virtualizada** con `overflow: hidden`
-
----
-
-## Cambios Técnicos
-
-### 1. Definir Anchos en Píxeles
+**Cambio 1**: Convertir header "Contacto" en ordenable
 
 ```typescript
-// ANTES (problemático)
-export const COL_STYLES = {
-  star: { minWidth: 32, flex: '0 0 32px' },
-  contact: { minWidth: 180, flex: '2 0 180px' },
-  // ...
-};
-
-// DESPUÉS (consistente)
-const COLUMN_WIDTHS: Record<string, number> = {
-  star: 36,
-  checkbox: 36,
-  contact: 180,
-  origin: 90,      // F. Registro
-  channel: 130,
-  company: 150,
-  province: 75,
-  sector: 100,
-  status: 120,
-  revenue: 75,
-  ebitda: 75,
-  apollo: 75,
-  date: 85,
-  actions: 44,
-};
-// Total: ~1271px
-```
-
-### 2. Sincronizar Scroll
-
-```typescript
-// Contenedor único de scroll
-<div className="overflow-x-auto" ref={scrollContainerRef}>
-  <div style={{ minWidth: totalWidth }}>
-    {/* Header con mismo ancho */}
-    <TableHeader ... totalWidth={totalWidth} columnWidths={columnWidths} />
-    
-    {/* Lista con overflow: hidden */}
-    <List
-      width={totalWidth}
-      style={{ overflow: 'hidden' }}
-      ...
-    >
-      {VirtualizedRow}
-    </List>
-  </div>
+// ANTES (línea 134-139)
+<div 
+  className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+  style={{ width: COLUMN_WIDTHS.contact, minWidth: COLUMN_WIDTHS.contact }}
+>
+  Contacto
 </div>
-```
-
-### 3. Actualizar TableHeader
-
-Eliminar la lógica actual de `translateX(-${scrollLeft}px)` y usar anchos fijos:
-
-```typescript
-const TableHeader = memo(({ allSelected, someSelected, onSelectAll, sortColumn, sortDirection, onSort, columnWidths, totalWidth }) => (
-  <div 
-    className="flex bg-[hsl(var(--linear-bg-elevated))] border-b"
-    style={{ width: totalWidth, minWidth: totalWidth }}
-  >
-    {/* Cada columna con width fijo */}
-    <div style={{ width: columnWidths.star, minWidth: columnWidths.star }} ... />
-    <div style={{ width: columnWidths.checkbox, minWidth: columnWidths.checkbox }} ... />
-    ...
-  </div>
-));
-```
-
-### 4. Actualizar ContactTableRow
-
-```typescript
-// ANTES
-<div style={{ flex: COL_STYLES.contact.flex, minWidth: COL_STYLES.contact.minWidth }}>
 
 // DESPUÉS
-<div style={{ width: columnWidths.contact, minWidth: columnWidths.contact }}>
+<SortableHeaderCell 
+  label="Contacto" 
+  column="name" 
+  currentSort={sortColumn} 
+  currentDirection={sortDirection} 
+  onSort={onSort}
+  style={{ width: COLUMN_WIDTHS.contact, minWidth: COLUMN_WIDTHS.contact }}
+/>
 ```
 
----
+**Cambio 2**: Convertir header "Empresa" en ordenable
+
+```typescript
+// ANTES (líneas 153-159)
+<div 
+  className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
+  style={{ width: COLUMN_WIDTHS.company, minWidth: COLUMN_WIDTHS.company }}
+>
+  Empresa
+</div>
+
+// DESPUÉS
+<SortableHeaderCell 
+  label="Empresa" 
+  column="company" 
+  currentSort={sortColumn} 
+  currentDirection={sortDirection} 
+  onSort={onSort}
+  style={{ width: COLUMN_WIDTHS.company, minWidth: COLUMN_WIDTHS.company }}
+/>
+```
+
+**Cambio 3**: Ajustar orden por defecto para texto (ascendente)
+
+```typescript
+// En handleSort (línea 294-303)
+const handleSort = useCallback((column: SortColumn) => {
+  if (sortColumn === column) {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  } else {
+    setSortColumn(column);
+    // Texto ordena ascendente por defecto, fechas/números descendente
+    const textColumns: SortColumn[] = ['name', 'company'];
+    setSortDirection(textColumns.includes(column) ? 'asc' : 'desc');
+  }
+}, [sortColumn]);
+```
+
+## Resultado
+
+| Columna | Ordenable | Tipo |
+|---------|-----------|------|
+| ⭐ Favorito | ❌ | - |
+| ☑️ Checkbox | ❌ | - |
+| **Contacto** | ✅ NUEVO | Texto (A→Z) |
+| F. Registro | ✅ | Fecha |
+| Canal | ❌ | - |
+| **Empresa** | ✅ NUEVO | Texto (A→Z) |
+| Prov. | ❌ | - |
+| Sector | ❌ | - |
+| Estado | ❌ | - |
+| Fact. | ✅ | Numérico |
+| EBITDA | ✅ | Numérico |
+| Apollo | ❌ | - |
+| Fecha | ✅ | Fecha |
 
 ## Archivos a Modificar
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/admin/contacts/LinearContactsTable.tsx` | Anchos fijos, scroll unificado, eliminar translateX |
-| `src/components/admin/contacts/ContactTableRow.tsx` | Recibir `columnWidths`, usar width en lugar de flex |
+| Archivo | Líneas | Cambio |
+|---------|--------|--------|
+| `LinearContactsTable.tsx` | 134-139 | Convertir a SortableHeaderCell |
+| `LinearContactsTable.tsx` | 153-159 | Convertir a SortableHeaderCell |
+| `LinearContactsTable.tsx` | 294-303 | Ajustar dirección default |
 
----
+## Comportamiento
 
-## Beneficios
-
-1. **Alineación perfecta**: Header y filas siempre sincronizadas
-2. **Espaciado consistente**: Sin expansión/contracción según viewport
-3. **Scroll sincronizado**: Un solo contenedor de scroll horizontal
-4. **Datos legibles**: Truncado predecible en cada columna
-5. **Performance**: Sin recálculos de flex en cada render
-
----
-
-## Vista Previa de Resultados
-
-| Columna | Ancho (px) |
-|---------|-----------|
-| ⭐ Favorito | 36 |
-| ☑️ Checkbox | 36 |
-| Contacto | 180 |
-| F. Registro | 90 |
-| Canal | 130 |
-| Empresa | 150 |
-| Provincia | 75 |
-| Sector | 100 |
-| Estado | 120 |
-| Facturación | 75 |
-| EBITDA | 75 |
-| Apollo | 75 |
-| Fecha | 85 |
-| Acciones | 44 |
-| **Total** | **~1271px** |
-
-Este ancho total permite scroll horizontal en pantallas menores y alineación perfecta en pantallas anchas.
-
+- **Clic en "Contacto"**: Ordena alfabéticamente por nombre (A→Z, luego Z→A)
+- **Clic en "Empresa"**: Ordena alfabéticamente por empresa (A→Z, luego Z→A)
+- **Valores vacíos**: Se muestran al final del listado
+- **Indicador visual**: Flecha ↑↓ según dirección activa
