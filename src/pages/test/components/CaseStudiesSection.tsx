@@ -24,14 +24,37 @@ const cardVariants = {
   }
 };
 
+// Mapeo de símbolos de moneda a códigos ISO 4217
+const mapCurrencySymbolToCode = (currency: string | null | undefined): string => {
+  if (!currency) return 'EUR';
+  
+  const cleanCurrency = currency.trim();
+  const currencyMap: Record<string, string> = {
+    '€': 'EUR',
+    'â¬': 'EUR', // Handle corrupted euro symbol
+    '$': 'USD',
+    '£': 'GBP',
+    '¥': 'JPY',
+    'EUR': 'EUR',
+    'USD': 'USD',
+    'GBP': 'GBP',
+    'JPY': 'JPY',
+  };
+  
+  return currencyMap[cleanCurrency] || 'EUR';
+};
+
 const formatValue = (amount: number | undefined, currency: string, isConfidential: boolean | undefined) => {
   if (isConfidential || !amount) {
     return null;
   }
   
+  // Convertir símbolo a código ISO válido
+  const currencyCode = mapCurrencySymbolToCode(currency);
+  
   const formatted = new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: currency || 'EUR',
+    currency: currencyCode,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
     notation: amount >= 1000000 ? 'compact' : 'standard',
