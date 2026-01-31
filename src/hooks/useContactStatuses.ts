@@ -16,7 +16,8 @@ export interface ContactStatus {
   position: number;
   is_active: boolean;
   is_system: boolean;
-  is_prospect_stage: boolean; // NEW: marks if leads in this status appear in Prospects
+  is_prospect_stage: boolean; // Marks if leads in this status appear in Prospects
+  is_visible: boolean; // Controls visibility in pipeline views (unifies with lead_pipeline_columns)
   created_at: string;
   updated_at: string;
 }
@@ -71,6 +72,9 @@ export const useContactStatuses = () => {
 
   // Get statuses marked as prospect stage (for Prospects module)
   const prospectStatuses = statuses.filter(s => s.is_prospect_stage && s.is_active);
+
+  // Get visible statuses (for pipeline views - unifies with lead_pipeline_columns)
+  const visibleStatuses = statuses.filter(s => s.is_visible);
 
   // Get status by key
   const getStatusByKey = (key: string): ContactStatus | undefined => {
@@ -218,10 +222,29 @@ export const useContactStatuses = () => {
     },
   });
 
+  // Toggle visibility (for pipeline views - unifies with lead_pipeline_columns)
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: async ({ id, isVisible }: { id: string; isVisible: boolean }) => {
+      const { error } = await supabase
+        .from('contact_statuses')
+        .update({ is_visible: isVisible, updated_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+    },
+    onError: (error) => {
+      toast.error('Error al cambiar visibilidad', { description: error.message });
+    },
+  });
+
   return {
     statuses,
     activeStatuses,
     prospectStatuses,
+    visibleStatuses,
     isLoading,
     refetch,
     getStatusByKey,
@@ -231,6 +254,8 @@ export const useContactStatuses = () => {
     isAdding: addStatusMutation.isPending,
     toggleActive: toggleActiveMutation.mutate,
     isToggling: toggleActiveMutation.isPending,
+    toggleVisibility: toggleVisibilityMutation.mutate,
+    isTogglingVisibility: toggleVisibilityMutation.isPending,
     deleteStatus: deleteStatusMutation.mutate,
     isDeleting: deleteStatusMutation.isPending,
     reorderStatuses: reorderStatusesMutation.mutate,
