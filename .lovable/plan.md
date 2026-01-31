@@ -1,165 +1,196 @@
 
 
-# Plan: Actualizar Contenido del Nuevo Diseño con Textos de Capittal
+# Plan: Sección de Casos de Éxito para el Nuevo Diseño
 
-## Problema Identificado
+## Objetivo
 
-El Hero del prototipo actual (`/test/nuevo-diseno`) usa textos copiados de Portobello Capital:
-- "Construimos empresas líderes" ❌
-- "Somos una gestora independiente de capital privado líder en el 'Middle Market' español" ❌
+Crear una sección de "Casos de éxito" que se integre con el diseño oscuro institucional estilo Portobello, usando los datos reales de la base de datos.
 
-Estos deben ser reemplazados por el contenido auténtico de Capittal.
-
-## Contenido Actual de Capittal (a usar)
-
-Basado en el sistema de traducciones existente:
-
-| Elemento | Contenido de Capittal |
-|----------|----------------------|
-| **Título principal** | "Especialistas en compraventa de empresas" |
-| **Subtítulo** | "Maximizamos el valor de tu empresa con un equipo multidisciplinar de más de 60 profesionales y enfoque orientado a resultados." |
-| **Stat 1** | €902M - Valor total asesorado |
-| **Stat 2** | 98,7% - Tasa de éxito |
-| **Stat 3** | 200+ - Operaciones cerradas |
-| **Stat 4** | 60+ - Profesionales especializados |
-| **Beneficios** | Máximo precio · Proceso 100% confidencial · +200 operaciones |
-
-## Navegación del Header
-
-Actualizar los enlaces del header para reflejar los servicios de Capittal:
-
-| Actual (copiado) | Correcto (Capittal) |
-|------------------|---------------------|
-| SERVICIOS | SERVICIOS |
-| EQUIPO | EQUIPO |
-| CASOS | CASOS DE ÉXITO |
-| ACTUALIDAD | RECURSOS |
-| CONTACTO | CONTACTO |
-| Área de inversores | (eliminar - Capittal no tiene) |
-
-## Cambios a Realizar
-
-### 1. DarkHeroSection.tsx
-
-**Antes:**
-```
-Construimos
-empresas líderes
-
-Somos una gestora independiente de capital privado...
-```
-
-**Después:**
-```
-Especialistas en
-compraventa de empresas
-
-Maximizamos el valor de tu empresa con un equipo 
-multidisciplinar de más de 60 profesionales.
-```
-
-**Stats actualizados:**
-- €902M → Valor total asesorado ✓ (ya está bien)
-- +10 años → **98,7%** Tasa de éxito
-- +200 operaciones → 200+ Operaciones ✓ (ajustar formato)
-- Añadir: 60+ Profesionales
-
-### 2. InstitutionalHeader.tsx
-
-- Eliminar "Área de inversores" (no aplica a Capittal)
-- Mantener selector de idioma
-- Actualizar navegación:
-  - SERVICIOS → enlace a `/servicios`
-  - EQUIPO → enlace a `/equipo`  
-  - CASOS → enlace a `/casos-exito`
-  - RECURSOS → enlace a `/recursos`
-  - CONTACTO → enlace a `/contacto`
-
-### 3. NuevoDiseno.tsx (Footer)
-
-Actualizar el footer con el contenido de Capittal:
-- "Especialistas en M&A y valoraciones" ✓ (ya está bien)
-- Actualizar año: © 2024 → © 2025
-
-## Archivos a Modificar
-
-| Archivo | Cambios |
-|---------|---------|
-| `src/pages/test/components/DarkHeroSection.tsx` | Actualizar título, subtítulo y stats |
-| `src/pages/test/components/InstitutionalHeader.tsx` | Eliminar "Área inversores", actualizar nav links |
-| `src/pages/test/NuevoDiseno.tsx` | Actualizar año del footer |
-
-## Resultado Visual Esperado
+## Diseño Visual
 
 ```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│                                                            ES | CA | EN │
-├─────────────────────────────────────────────────────────────────────────┤
-│  Capittal            SERVICIOS  EQUIPO  CASOS  RECURSOS  CONTACTO      │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│   Especialistas en                                                      │
-│   compraventa de empresas                                               │
-│                                                                         │
-│   Maximizamos el valor de tu empresa con un equipo                      │
-│   multidisciplinar de más de 60 profesionales.                          │
-│                                                                         │
-│   €902M          98,7%         200+           60+                       │
-│   Valor total    Tasa de       Operaciones    Profesionales             │
-│   asesorado      éxito         cerradas       especializados            │
-│                                                                         │
-│                  [  Valorar Empresa  ]                                  │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          bg-[hsl(0,0%,5%)]                                  │
+│                                                                             │
+│  CASOS DE ÉXITO                                                             │
+│                                                                             │
+│  Operaciones que hablan                                                     │
+│  por sí mismas                                                              │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
+│  │  [Logo]         │  │  [Logo]         │  │  [Logo]         │              │
+│  │                 │  │                 │  │                 │              │
+│  │  Sector • 2024  │  │  Sector • 2024  │  │  Sector • 2024  │              │
+│  │                 │  │                 │  │                 │              │
+│  │  Título del     │  │  Título del     │  │  Título del     │              │
+│  │  caso de éxito  │  │  caso de éxito  │  │  caso de éxito  │              │
+│  │                 │  │                 │  │                 │              │
+│  │  Descripción... │  │  Descripción... │  │  Descripción... │              │
+│  │                 │  │                 │  │                 │              │
+│  │  €12M           │  │  Confidencial   │  │  €8M            │              │
+│  │  ────────────── │  │  ────────────── │  │  ────────────── │              │
+│  │  Ver caso →     │  │  Ver caso →     │  │  Ver caso →     │              │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘              │
+│                                                                             │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                             │
+│  Más de 200 operaciones cerradas           [ Ver todos los casos ]         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
+
+## Características
+
+| Elemento | Descripción |
+|----------|-------------|
+| **Fondo** | Oscuro `bg-[hsl(0,0%,5%)]` consistente |
+| **Tipografía** | Serif display para títulos |
+| **Cards** | Fondo ligeramente más claro con hover effect |
+| **Datos** | Cargados desde Supabase via `useCaseStudies` |
+| **Logos** | Prominentes en la parte superior de cada card |
+| **Valor** | Mostrar monto o "Confidencial" con icono |
+| **Animaciones** | Scroll-triggered con Framer Motion |
+
+## Archivo a Crear
+
+| Archivo | Propósito |
+|---------|-----------|
+| `src/pages/test/components/CaseStudiesSection.tsx` | Sección de casos con estilo oscuro institucional |
+
+## Archivo a Modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/test/NuevoDiseno.tsx` | Reemplazar placeholder con nuevo componente |
+
+## Estructura del Componente
+
+```typescript
+// CaseStudiesSection.tsx
+import { useCaseStudies } from '@/hooks/useCaseStudies';
+import { motion } from 'framer-motion';
+
+const CaseStudiesSection = () => {
+  const { caseStudies, isLoading } = useCaseStudies();
+  
+  // Mostrar solo 3 casos destacados
+  const featuredCases = caseStudies
+    .filter(c => c.is_featured)
+    .slice(0, 3);
+  
+  return (
+    <section className="py-24 md:py-32 bg-[hsl(0,0%,5%)]">
+      {/* Header */}
+      <motion.div>
+        <span className="text-white/40 uppercase tracking-widest">
+          Casos de éxito
+        </span>
+        <h2 className="font-serif-display text-white text-5xl">
+          Operaciones que hablan
+          <br />
+          <span className="text-white/60">por sí mismas</span>
+        </h2>
+      </motion.div>
+      
+      {/* Grid de casos */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {featuredCases.map(case_ => (
+          <CaseCard key={case_.id} {...case_} />
+        ))}
+      </div>
+      
+      {/* CTA */}
+      <div className="border-t border-white/10 pt-12 mt-16">
+        <Link to="/casos-exito">Ver todos los casos</Link>
+      </div>
+    </section>
+  );
+};
+```
+
+## Diseño de la Card
+
+Cada card de caso de éxito tendrá:
+
+1. **Logo** - Imagen del cliente en la parte superior
+2. **Badge** - Sector y año en etiqueta sutil
+3. **Título** - En serif display
+4. **Descripción** - Texto condensado (2-3 líneas)
+5. **Valor** - Monto de la operación o "Confidencial"
+6. **Hover** - Fondo más claro + "Ver caso →"
+
+## Estados de Carga
+
+El componente manejará:
+- **Loading**: Skeleton con pulse animation
+- **Empty**: Mensaje elegante "Próximamente"
+- **Error**: Fallback graceful sin romper el diseño
 
 ## Sección Técnica
 
-### Código actualizado del Hero (fragmento)
+### Estilos CSS
 
-```typescript
-const stats: StatItem[] = [
-  { value: '€902M', label: 'Valor total asesorado' },
-  { value: '98,7%', label: 'Tasa de éxito' },
-  { value: '200+', label: 'Operaciones cerradas' },
-  { value: '60+', label: 'Profesionales especializados' },
-];
+```css
+/* Card base */
+.case-card {
+  background: hsl(0, 0%, 7%);
+  transition: background 0.3s ease;
+}
 
-// En el JSX:
-<h1 className="font-serif-display text-white ...">
-  Especialistas en
-  <br />
-  <span className="text-primary">compraventa</span> de empresas
-</h1>
+.case-card:hover {
+  background: hsl(0, 0%, 10%);
+}
 
-<p className="text-white/70 ...">
-  Maximizamos el valor de tu empresa con un equipo multidisciplinar 
-  de más de 60 profesionales y enfoque orientado a resultados.
-</p>
+/* Valor confidencial */
+.value-confidential {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+}
 ```
 
-### Navegación actualizada
+### Animaciones
 
 ```typescript
-const navItems = [
-  { label: 'SERVICIOS', href: '/servicios' },
-  { label: 'EQUIPO', href: '/equipo' },
-  { label: 'CASOS', href: '/casos-exito' },
-  { label: 'RECURSOS', href: '/recursos' },
-  { label: 'CONTACTO', href: '/contacto' },
-];
+// Stagger animation para las cards
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+};
 ```
 
-### CTA Button
-
-Añadir un botón de llamada a la acción debajo de las stats:
+### Integración con NuevoDiseno.tsx
 
 ```typescript
-<Link to="/lp/calculadora-web">
-  <button className="mt-12 px-8 py-4 bg-white text-black font-medium 
-    tracking-wide hover:bg-white/90 transition-colors">
-    Valorar Empresa
-  </button>
-</Link>
+import CaseStudiesSection from './components/CaseStudiesSection';
+
+const NuevoDiseno = () => {
+  return (
+    <TestLayout>
+      <InstitutionalHeader />
+      <DarkHeroSection />
+      <ServicesSection />
+      <CaseStudiesSection /> {/* Nuevo */}
+      <Footer />
+    </TestLayout>
+  );
+};
 ```
 
