@@ -6,26 +6,22 @@ const InstitutionalHeader: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const navItems = [
-    { label: 'SERVICIOS', href: '#servicios' },
-    { label: 'EQUIPO', href: '#equipo' },
-    { label: 'CASOS', href: '#casos' },
-    { label: 'ACTUALIDAD', href: '#actualidad' },
-    { label: 'CONTACTO', href: '#contacto' },
+    { label: 'SERVICIOS', href: '/servicios' },
+    { label: 'EQUIPO', href: '/equipo' },
+    { label: 'CASOS', href: '/casos-exito' },
+    { label: 'RECURSOS', href: '/recursos' },
+    { label: 'CONTACTO', href: '/contacto' },
   ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Top bar - Investor area & Language selector */}
+      {/* Top bar - Language selector only */}
       <div className="bg-[hsl(0,0%,10%)] border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex justify-end items-center h-8">
-          <a 
-            href="#inversores" 
-            className="text-white/60 text-[11px] uppercase tracking-[0.2em] mr-8 hover:text-white transition-colors"
-          >
-            Área de inversores
-          </a>
           <div className="flex items-center gap-3 text-[11px] tracking-wide">
             <button className="text-white font-medium">ES</button>
+            <span className="text-white/30">|</span>
+            <button className="text-white/50 hover:text-white transition-colors">CA</button>
             <span className="text-white/30">|</span>
             <button className="text-white/50 hover:text-white transition-colors">EN</button>
           </div>

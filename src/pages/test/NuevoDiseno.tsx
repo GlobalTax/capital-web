@@ -57,7 +57,7 @@ const NuevoDiseno: React.FC = () => {
                 Aviso legal
               </a>
               <span className="text-white/40 text-sm">
-                © 2024 Capittal
+                © 2025 Capittal
               </span>
             </div>
           </div>
