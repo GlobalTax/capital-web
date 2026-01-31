@@ -1,106 +1,73 @@
 
-# Plan: Añadir Columnas Ordenables (Nombre y Empresa)
+# Plan: Activar "Etapa Prospecto" en Estados Específicos
 
-## Análisis Actual
+## Objetivo
+Configurar los estados **"Reunión Programada"** y **"PSH Enviada"** como etapas de prospecto para poblar automáticamente el módulo `/admin/prospectos`.
 
-La lógica de ordenamiento ya está **90% implementada**:
-- El tipo `SortColumn` ya incluye `'name' | 'company'`
-- La función `sortedContacts` ya maneja estos campos (líneas 330-337)
-- Solo falta activar los headers interactivos
+## Estados Identificados
 
-## Cambios Requeridos
+| Label | status_key | ID | is_prospect_stage actual |
+|-------|------------|-----|-------------------------|
+| Reunión Programada | fase0_activo | 7e2451a3-cc2b-408e-8e40-f1e1d5d7a522 | ❌ false |
+| PSH Enviada | archivado | 8810d180-4cd8-4ae2-8aa5-12274004e974 | ❌ false |
 
-### Archivo: `src/components/admin/contacts/LinearContactsTable.tsx`
+## Solución
 
-**Cambio 1**: Convertir header "Contacto" en ordenable
+### Opción A: Actualización Manual via UI
+1. Navegar a `/admin/contacts`
+2. Hacer clic en el **icono de engranaje (⚙️)** en la barra de herramientas
+3. En el modal de "Gestionar Estados":
+   - Localizar **"Reunión Programada"**
+   - Activar el toggle **"Etapa Prospecto"**
+   - Localizar **"PSH Enviada"**
+   - Activar el toggle **"Etapa Prospecto"**
+4. Guardar cambios
 
-```typescript
-// ANTES (línea 134-139)
-<div 
-  className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
-  style={{ width: COLUMN_WIDTHS.contact, minWidth: COLUMN_WIDTHS.contact }}
->
-  Contacto
-</div>
+### Opción B: Actualización Directa en Supabase
+Ejecutar en el SQL Editor de Supabase:
 
-// DESPUÉS
-<SortableHeaderCell 
-  label="Contacto" 
-  column="name" 
-  currentSort={sortColumn} 
-  currentDirection={sortDirection} 
-  onSort={onSort}
-  style={{ width: COLUMN_WIDTHS.contact, minWidth: COLUMN_WIDTHS.contact }}
-/>
+```sql
+UPDATE contact_statuses 
+SET is_prospect_stage = true 
+WHERE id IN (
+  '7e2451a3-cc2b-408e-8e40-f1e1d5d7a522',  -- Reunión Programada
+  '8810d180-4cd8-4ae2-8aa5-12274004e974'   -- PSH Enviada
+);
 ```
 
-**Cambio 2**: Convertir header "Empresa" en ordenable
+## Resultado Esperado
 
-```typescript
-// ANTES (líneas 153-159)
-<div 
-  className="flex items-center h-8 px-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider" 
-  style={{ width: COLUMN_WIDTHS.company, minWidth: COLUMN_WIDTHS.company }}
->
-  Empresa
-</div>
+Tras la actualización:
+- El módulo `/admin/prospectos` mostrará automáticamente todos los leads/valoraciones que:
+  - Tengan `lead_status_crm` = 'fase0_activo' (Reunión Programada) o 'archivado' (PSH Enviada)
+  - Tengan un `empresa_id` vinculado
 
-// DESPUÉS
-<SortableHeaderCell 
-  label="Empresa" 
-  column="company" 
-  currentSort={sortColumn} 
-  currentDirection={sortDirection} 
-  onSort={onSort}
-  style={{ width: COLUMN_WIDTHS.company, minWidth: COLUMN_WIDTHS.company }}
-/>
+## Verificación
+
+Ejecutar esta consulta para confirmar la configuración:
+
+```sql
+SELECT status_key, label, is_prospect_stage 
+FROM contact_statuses 
+WHERE is_prospect_stage = true;
 ```
 
-**Cambio 3**: Ajustar orden por defecto para texto (ascendente)
+---
 
-```typescript
-// En handleSort (línea 294-303)
-const handleSort = useCallback((column: SortColumn) => {
-  if (sortColumn === column) {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  } else {
-    setSortColumn(column);
-    // Texto ordena ascendente por defecto, fechas/números descendente
-    const textColumns: SortColumn[] = ['name', 'company'];
-    setSortDirection(textColumns.includes(column) ? 'asc' : 'desc');
-  }
-}, [sortColumn]);
-```
+## Sección Técnica
 
-## Resultado
+### Arquitectura del Flujo
 
-| Columna | Ordenable | Tipo |
-|---------|-----------|------|
-| ⭐ Favorito | ❌ | - |
-| ☑️ Checkbox | ❌ | - |
-| **Contacto** | ✅ NUEVO | Texto (A→Z) |
-| F. Registro | ✅ | Fecha |
-| Canal | ❌ | - |
-| **Empresa** | ✅ NUEVO | Texto (A→Z) |
-| Prov. | ❌ | - |
-| Sector | ❌ | - |
-| Estado | ❌ | - |
-| Fact. | ✅ | Numérico |
-| EBITDA | ✅ | Numérico |
-| Apollo | ❌ | - |
-| Fecha | ✅ | Fecha |
+El hook `useProspects` filtra contactos de la siguiente manera:
+1. Obtiene todos los `status_key` donde `is_prospect_stage = true`
+2. Consulta `contact_leads` + `company_valuations` con esos estados
+3. Filtra solo registros con `empresa_id IS NOT NULL`
+4. Enriquece con datos de la tabla `empresas`
 
-## Archivos a Modificar
+### Nota sobre status_key vs label
 
-| Archivo | Líneas | Cambio |
-|---------|--------|--------|
-| `LinearContactsTable.tsx` | 134-139 | Convertir a SortableHeaderCell |
-| `LinearContactsTable.tsx` | 153-159 | Convertir a SortableHeaderCell |
-| `LinearContactsTable.tsx` | 294-303 | Ajustar dirección default |
+Existe una **desalineación** entre los `status_key` internos y los labels visibles:
+- `fase0_activo` → "Reunión Programada"
+- `archivado` → "PSH Enviada"
 
-## Comportamiento
-
-- **Clic en "Contacto"**: Ordena alfabéticamente por nombre (A→Z, luego Z→A)
-- **Clic en "Empresa"**: Ordena alfabéticamente por empresa (A→Z, luego Z→A)
-- **Valores vacíos**: Se muestran al final del listado
-- **Indicador visual**: Flecha ↑↓ según dirección activa
+Esto es funcional pero puede causar confusión en el código. Considerar estandarizar en el futuro.
