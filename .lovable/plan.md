@@ -1,114 +1,137 @@
 
-# Plan: Corregir estilo del botón Contacto en el Header
+# Plan: Crear Página de Prueba con Nuevo Diseño Estilo Portobello
 
-## Problema Identificado
+## Estrategia Recomendada
 
-El botón "Contacto" en el header debería ser **amber/dorado** (`bg-amber-500`) pero aparece **negro** (`bg-black`).
+Crearemos una **ruta de prueba aislada** (`/test/nuevo-diseno`) que no afectará las páginas de producción. Esto te permitirá:
+- Ver los cambios en tiempo real
+- Iterar sin riesgo
+- Comparar lado a lado con la versión actual
+- Decidir qué elementos adoptar
 
-### Causa Raíz
+## Estructura del Prototipo
 
-En `src/components/ui/simple-button.tsx`, las clases se concatenan en este orden:
-
-```typescript
-const classes = [
-  baseClasses,
-  variantClasses[variant],  // ← bg-black (variant="primary")
-  sizeClasses[size],
-  className                  // ← bg-amber-500 (pasado por Header.tsx)
-].filter(Boolean).join(" ");
+```text
+src/pages/test/
+├── NuevoDiseno.tsx          # Página principal de prueba
+└── components/
+    ├── DarkHeroSection.tsx   # Hero fullscreen estilo Portobello
+    ├── StatsBar.tsx          # Barra de estadísticas horizontales
+    └── MinimalHeader.tsx     # Header oscuro minimalista
 ```
 
-**Tailwind CSS no garantiza que las clases posteriores sobrescriban las anteriores** cuando hay conflicto. El resultado depende del orden de las clases en el CSS compilado, no del orden en la cadena de clases. Por eso `bg-amber-500` no sobrescribe `bg-black`.
+## Elementos de Diseño a Implementar
 
-## Solución
+### 1. Hero Section (Fullscreen)
+Inspirado en Portobello Capital:
+- Fondo oscuro (gris grafito / negro)
+- Estadísticas grandes y prominentes: "€3.7bn | +25 años | 200+ operaciones"
+- Título minimalista con tipografía ligera
+- Sin imágenes de fondo distractoras
 
-Usar `tailwind-merge` (ya instalado en el proyecto) para resolver conflictos de clases correctamente:
+### 2. Header Minimalista
+- Fondo transparente o oscuro
+- Logo en blanco/gris claro
+- Navegación espaciada con tipografía sans-serif
+- Sin badges ni elementos decorativos
 
-```typescript
-// ANTES
-const classes = [
-  baseClasses,
-  variantClasses[variant],
-  sizeClasses[size],
-  className
-].filter(Boolean).join(" ");
+### 3. Sistema de Colores Oscuro
 
-// DESPUÉS
-import { cn } from "@/lib/utils";  // cn usa tailwind-merge
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--dark-bg` | `#111111` | Fondo principal |
+| `--dark-bg-elevated` | `#1a1a1a` | Cards y secciones |
+| `--dark-text-primary` | `#ffffff` | Títulos |
+| `--dark-text-secondary` | `#888888` | Subtítulos |
+| `--dark-border` | `#333333` | Bordes sutiles |
+| `--dark-accent` | `#c4a265` | Detalles dorados (opcional) |
 
-const classes = cn(
-  baseClasses,
-  variantClasses[variant],
-  sizeClasses[size],
-  className  // ← Ahora SÍ sobrescribirá bg-black correctamente
-);
-```
+### 4. Tipografía Institucional
+- General Sans (ya tienes) - más ligera y espaciada
+- Títulos grandes: `clamp(3rem, 8vw, 7rem)`
+- Tracking más amplio en headers
+
+## Archivos a Crear
+
+| Archivo | Propósito |
+|---------|-----------|
+| `src/pages/test/NuevoDiseno.tsx` | Página contenedora del prototipo |
+| `src/pages/test/components/DarkHeroSection.tsx` | Hero fullscreen oscuro con stats |
+| `src/pages/test/components/InstitutionalHeader.tsx` | Header minimalista estilo Portobello |
+| `src/pages/test/components/TestLayout.tsx` | Layout específico para pruebas |
 
 ## Archivos a Modificar
 
-| Archivo | Cambios |
-|---------|---------|
-| `src/components/ui/simple-button.tsx` | Importar `cn` de `@/lib/utils` y usarlo para combinar clases |
+| Archivo | Cambio |
+|---------|--------|
+| `src/core/routing/AppRoutes.tsx` | Añadir ruta `/test/nuevo-diseno` |
+| `src/index.css` | Añadir tokens CSS para modo oscuro institucional |
 
-## Cambio Específico
+## Ejemplo Visual del Hero
 
-```typescript
-// simple-button.tsx
-
-import React from "react";
-import { cn } from "@/lib/utils"; // AGREGAR
-
-// ... resto del código ...
-
-const classes = cn(  // CAMBIAR de .join(" ") a cn()
-  baseClasses,
-  variantClasses[variant],
-  sizeClasses[size],
-  className
-);
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  Capittal                           Servicios   Casos   Contacto│
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│         €902M         200+          98,7%         10+           │
+│      valor total   operaciones   tasa éxito   años exp         │
+│                                                                 │
+│                                                                 │
+│                    VENDE TU EMPRESA                             │
+│               CON EL MÁXIMO VALOR                               │
+│                                                                 │
+│         Asesoramos operaciones de M&A en el middle market       │
+│                                                                 │
+│                  [  Valorar empresa  ]                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+       Fondo: #111111 | Texto: #ffffff | Stats: #888888
 ```
 
-## Resultado Esperado
+## Ruta de Acceso
 
-El botón "Contacto" mostrará correctamente:
-- **Fondo**: amber-500 (dorado)
-- **Texto**: slate-900 (oscuro)
-- **Hover**: amber-400 (dorado más claro)
-- **Borde**: amber-500
+Una vez implementado, podrás acceder a:
+- **Preview**: `https://id-preview--c1cd2940-10b7-4c6d-900a-07b0f572e7b9.lovable.app/test/nuevo-diseno`
 
-## Alternativa
+## Fases de Desarrollo
 
-Si prefieres no modificar el componente base, otra opción es:
+**Fase 1 (Este plan)**: Página de prueba con Hero + Header
+**Fase 2**: Añadir más secciones (Services, Stats, Footer)
+**Fase 3**: Refinar y decidir qué llevar a producción
+**Fase 4**: Migrar gradualmente a la Home principal
 
-1. Agregar una nueva variante `amber` en SimpleButton:
-```typescript
-const variantClasses = {
-  primary: "bg-black text-white border border-black hover:shadow-lg hover:-translate-y-1",
-  secondary: "bg-white text-black border border-black hover:shadow-lg hover:-translate-y-1",
-  outline: "bg-transparent text-black border border-black hover:shadow-md hover:-translate-y-0.5",
-  amber: "bg-amber-500 text-slate-900 border border-amber-500 hover:bg-amber-400 hover:shadow-lg hover:-translate-y-1", // NUEVA
-};
-```
+## Ventajas de este Enfoque
 
-2. Usarla en el Header:
-```typescript
-<SimpleButton 
-  text={t('nav.contacto')}
-  variant="amber"
-  size="sm"
-/>
-```
-
-**Recomendación**: La primera opción (usar `cn()`) es más flexible y soluciona el problema de raíz para cualquier uso futuro del componente.
+- **Sin riesgo**: Las páginas actuales no se modifican
+- **Iterativo**: Podemos ajustar hasta que estés satisfecho
+- **Comparativo**: Puedes ver ambos diseños y decidir
+- **Modular**: Los componentes nuevos pueden reutilizarse después
 
 ## Sección Técnica
 
-### Por qué ocurre el problema
+### Estructura de Tokens CSS
+Se añadirán a `index.css` dentro de un nuevo scope `.dark-institutional`:
 
-CSS Cascade: Cuando dos clases tienen la misma especificidad, la que aparece **después en el archivo CSS compilado** gana, no la que aparece después en el atributo class del HTML.
+```css
+.dark-institutional {
+  --background: 0 0% 7%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 53%;
+  --border: 0 0% 20%;
+  --accent-gold: 38 44% 58%;
+}
+```
 
-Tailwind genera sus clases en un orden determinístico basado en la configuración, no en el orden de uso. Esto significa que `bg-black` podría aparecer después de `bg-amber-500` en el CSS final, haciendo que `bg-black` "gane".
+### Lazy Loading
+La página de prueba usará lazy loading para no afectar el bundle principal:
 
-### Cómo lo soluciona tailwind-merge
+```typescript
+const NuevoDiseno = lazy(() => import('@/pages/test/NuevoDiseno'));
+```
 
-La utilidad `cn()` (que usa `tailwind-merge` internamente) detecta conflictos entre clases de Tailwind y mantiene solo la última clase de cada "grupo" (background, text, border, etc.), garantizando que las clases pasadas como `className` siempre sobrescriban las anteriores.
+### Ruta Protegida (Opcional)
+Si prefieres que la página de prueba no sea pública, podemos añadir autenticación admin.
