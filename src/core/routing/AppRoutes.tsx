@@ -153,6 +153,9 @@ export const AppRoutes = () => {
         {/* === TEST ROUTES === */}
         <Route path="/test/nuevo-diseno" element={<NuevoDiseno />} />
         
+        {/* === V2 PREVIEW (Nuevo diseño institucional) === */}
+        <Route path="/v2" element={<NuevoDiseno />} />
+        
         {/* === SHARED PRESENTATIONS (Public Access with Token) === */}
         <Route path="/p/:token" element={<SharedPresentationPage />} />
         
