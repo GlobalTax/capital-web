@@ -1,182 +1,253 @@
 
-# Plan: Alinear status_key con Labels Actuales
+# Plan: Unificar contact_statuses y lead_pipeline_columns
 
-## Resumen del Problema
+## Análisis Actual
 
-Actualmente existe una **desalineación significativa** entre los `status_key` internos y los `label` visibles en la UI:
+### Dos Sistemas Paralelos Detectados
 
-| status_key actual | Label visible | Nuevo status_key propuesto |
-|-------------------|---------------|---------------------------|
-| `contactando` | Target Lead | `target_lead` |
-| `calificado` | Unqualified Lead | `unqualified_lead` |
-| `propuesta_enviada` | Primer Contacto | `primer_contacto` |
-| `negociacion` | Llamado - NR | `llamado_nr` |
-| `en_espera` | Contacto Efectivo | `contacto_efectivo` |
-| `fase0_activo` | Reunión Programada | `reunion_programada` |
-| `fase0_bloqueado` | Lead Paused | `lead_paused` |
-| `archivado` | PSH Enviada | `psh_enviada` |
-| `mandato_propuesto` | Lead Perdido - No Core | `lead_perdido_no_core` |
-| `mandato_firmado` | Video Realizada | `video_realizada` |
-| `perdido` | Perdido - NR | `perdido_nr` |
+| Aspecto | `contact_statuses` | `lead_pipeline_columns` |
+|---------|-------------------|------------------------|
+| **Registros** | 16 estados | 10 columnas |
+| **Campos únicos** | `is_active`, `is_prospect_stage` | `is_visible` |
+| **Archivos dependientes** | 20+ archivos | 7 archivos |
+| **Módulos** | CRM, Métricas, Prospectos, Filtros | Solo Leads Pipeline |
+| **Hook** | `useContactStatuses` | `useLeadPipelineColumns` |
+| **Editor UI** | `StatusesEditor.tsx` | `PipelineColumnsEditor.tsx` |
 
-## Alcance del Cambio
+### Problemas de la Duplicación Actual
+1. **Desincronización**: Los estados pueden diferir entre sistemas
+2. **Mantenimiento doble**: Cambiar un color/label requiere actualizar 2 tablas
+3. **Confusión de campos**: `is_active` vs `is_visible` (mismo concepto)
+4. **Código duplicado**: Dos hooks, dos editores, lógica similar
 
-### Archivos Afectados (44 archivos identificados)
+## Estrategia de Unificación
 
-**Alto impacto (requieren migración de datos):**
-- Tablas: `contact_leads`, `company_valuations`, `collaborator_applications` (campo `lead_status_crm`)
-- Tabla: `lead_activities` (campo `metadata` contiene referencias a status_key)
-- Tabla: `contact_statuses` (fuente principal de status_key)
+### Decisión: `contact_statuses` como fuente única
 
-**Código TypeScript/React:**
-1. `src/components/admin/metrics/types.ts` - Constantes hardcodeadas (TERMINAL_STATUS_KEYS, etc.)
-2. `src/features/leads-pipeline/types/index.ts` - Type `LeadStatus` y `PIPELINE_COLUMNS`
-3. `src/components/admin/leads/LeadStatusBadge.tsx` - FALLBACK_CONFIG
-4. `src/components/admin/contacts/ContactsTable.tsx` - configs de status
-5. `supabase/functions/generate-rod-document/index.ts` - status 'nuevo'
+Razones:
+- Ya tiene 16 estados (más completo que los 10 de pipeline)
+- Tiene campos adicionales útiles (`is_prospect_stage`)
+- Es usado por más módulos (20+ vs 7 archivos)
+- La nomenclatura `status` es más genérica que `column`
 
-### Riesgo
+### Cambios en Base de Datos
 
-- **ALTO**: Este es un cambio de esquema con migración de datos masiva
-- Afecta 1,256+ registros en producción
-- Requiere coordinación entre migración de BD y código
+#### 1. Agregar campo `is_visible` a `contact_statuses`
+```sql
+ALTER TABLE contact_statuses 
+ADD COLUMN IF NOT EXISTS is_visible BOOLEAN DEFAULT true;
 
-## Estrategia de Migración
+-- Sincronizar con is_active (inicialmente iguales)
+UPDATE contact_statuses SET is_visible = is_active;
+```
 
-### Fase 1: Preparación (Sin downtime)
-1. Crear nuevas columnas temporales o ejecutar UPDATE atómico
-2. Mapear todos los status_key antiguos a nuevos en una sola transacción
+#### 2. Deprecar `lead_pipeline_columns`
+- NO eliminar inmediatamente (mantener como backup)
+- Marcar como deprecated en código
+- Eliminar después de validación
 
-### Fase 2: Migración de Base de Datos
+### Cambios en Código
+
+#### Fase 1: Extender `useContactStatuses`
+
+Agregar funcionalidad de pipeline al hook existente:
+
+```typescript
+// useContactStatuses.ts - Agregar:
+export interface ContactStatus {
+  // ... campos existentes
+  is_visible: boolean; // NUEVO: para compatibilidad con pipeline
+}
+
+// Nuevos métodos:
+const toggleVisibility = useMutation({...}); // Para pipeline
+const visibleStatuses = statuses.filter(s => s.is_visible); // Para pipeline
+```
+
+#### Fase 2: Migrar Leads Pipeline
+
+| Archivo Actual | Cambio |
+|----------------|--------|
+| `useLeadPipelineColumns.ts` | Eliminar, usar `useContactStatuses` |
+| `PipelineColumnsEditor.tsx` | Adaptar a usar `StatusesEditor` o unificar |
+| `LeadsPipelineView.tsx` | Cambiar `useLeadPipelineColumns` → `useContactStatuses` |
+| `ColumnEditModal.tsx` | Eliminar, usar `StatusEditModal` |
+| `ColumnDeleteDialog.tsx` | Eliminar |
+
+#### Fase 3: Unificar Editores
+
+Opciones:
+- **A) Un solo editor**: Fusionar `StatusesEditor` y `PipelineColumnsEditor`
+- **B) Editor compartido**: Componente base con variantes por contexto
+
+Recomendación: **Opción A** - Un solo editor en `/admin/contacts` con todas las opciones
+
+### Mapeo de Campos
+
+| `lead_pipeline_columns` | `contact_statuses` | Acción |
+|------------------------|-------------------|--------|
+| `stage_key` | `status_key` | Ya equivalentes |
+| `is_visible` | `is_visible` (nuevo) | Migrar valores |
+| `is_system` | `is_system` | Ya existe |
+| `position` | `position` | Ya existe |
+
+### Archivos a Modificar
+
+| Archivo | Cambios |
+|---------|---------|
+| `src/hooks/useContactStatuses.ts` | Agregar `is_visible`, `toggleVisibility`, `visibleStatuses` |
+| `src/features/leads-pipeline/hooks/useLeadPipelineColumns.ts` | Deprecar → Wrapper a `useContactStatuses` |
+| `src/features/leads-pipeline/components/LeadsPipelineView.tsx` | Usar `useContactStatuses` |
+| `src/features/leads-pipeline/components/PipelineColumnsEditor.tsx` | Eliminar, usar `StatusesEditor` |
+| `src/features/leads-pipeline/components/ColumnEditModal.tsx` | Eliminar |
+| `src/features/leads-pipeline/components/ColumnDeleteDialog.tsx` | Eliminar |
+| `src/components/admin/contacts/StatusesEditor.tsx` | Agregar toggle de visibilidad |
+| `src/components/admin/contacts/StatusEditModal.tsx` | Agregar campo `is_visible` |
+
+### Migración SQL Completa
 
 ```sql
--- 1. Actualizar contact_statuses (fuente de verdad)
-UPDATE contact_statuses SET status_key = CASE status_key
-  WHEN 'contactando' THEN 'target_lead'
-  WHEN 'calificado' THEN 'unqualified_lead'
-  WHEN 'propuesta_enviada' THEN 'primer_contacto'
-  WHEN 'negociacion' THEN 'llamado_nr'
-  WHEN 'en_espera' THEN 'contacto_efectivo'
-  WHEN 'fase0_activo' THEN 'reunion_programada'
-  WHEN 'fase0_bloqueado' THEN 'lead_paused'
-  WHEN 'archivado' THEN 'psh_enviada'
-  WHEN 'mandato_propuesto' THEN 'lead_perdido_no_core'
-  WHEN 'mandato_firmado' THEN 'video_realizada'
-  WHEN 'perdido' THEN 'perdido_nr'
-  ELSE status_key
-END;
+-- 1. Agregar columna is_visible a contact_statuses
+ALTER TABLE contact_statuses 
+ADD COLUMN IF NOT EXISTS is_visible BOOLEAN DEFAULT true;
 
--- 2. Actualizar contact_leads
-UPDATE contact_leads SET lead_status_crm = CASE lead_status_crm
-  WHEN 'contactando' THEN 'target_lead'
-  -- ... mismo mapeo
-  ELSE lead_status_crm
-END;
+-- 2. Sincronizar valores iniciales
+UPDATE contact_statuses SET is_visible = is_active;
 
--- 3. Actualizar company_valuations
-UPDATE company_valuations SET lead_status_crm = CASE lead_status_crm
-  WHEN 'contactando' THEN 'target_lead'
-  -- ... mismo mapeo
-  ELSE lead_status_crm
-END;
-
--- 4. Actualizar collaborator_applications
-UPDATE collaborator_applications SET lead_status_crm = CASE lead_status_crm
-  WHEN 'contactando' THEN 'target_lead'
-  -- ... mismo mapeo
-  ELSE lead_status_crm
-END;
-```
-
-### Fase 3: Actualización de Código
-
-**Archivo 1: `src/components/admin/metrics/types.ts`**
-```typescript
-// Antes
-export const TERMINAL_STATUS_KEYS = ['ganado', 'perdido', 'archivado', ...];
-export const QUALIFIED_STATUS_KEYS = ['en_espera', 'fase0_activo', ...];
-
-// Después
-export const TERMINAL_STATUS_KEYS = ['ganado', 'perdido_nr', 'psh_enviada', ...];
-export const QUALIFIED_STATUS_KEYS = ['contacto_efectivo', 'reunion_programada', ...];
-```
-
-**Archivo 2: `src/features/leads-pipeline/types/index.ts`**
-```typescript
-// Actualizar type LeadStatus
-export type LeadStatus = 
-  | 'nuevo'
-  | 'target_lead'        // antes: contactando
-  | 'unqualified_lead'   // antes: calificado
-  | 'primer_contacto'    // antes: propuesta_enviada
-  // ... etc
-```
-
-**Archivo 3: `src/components/admin/leads/LeadStatusBadge.tsx`**
-```typescript
-// Actualizar FALLBACK_CONFIG con nuevas claves
-const FALLBACK_CONFIG = {
-  nuevo: { label: 'Nuevo', ... },
-  target_lead: { label: 'Target Lead', ... },
-  unqualified_lead: { label: 'Unqualified Lead', ... },
-  // ... etc
-};
+-- 3. (Opcional) Comentar tabla deprecated
+COMMENT ON TABLE lead_pipeline_columns IS 
+'DEPRECATED: Usar contact_statuses. Mantener para rollback hasta validación completa.';
 ```
 
 ## Secuencia de Implementación
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│  1. MIGRACIÓN SQL (ejecutar en producción)                  │
-│     - Actualizar contact_statuses                           │
-│     - Actualizar contact_leads                              │
-│     - Actualizar company_valuations                         │
-│     - Actualizar collaborator_applications                  │
+│  1. MIGRACIÓN SQL                                           │
+│     - Agregar is_visible a contact_statuses                 │
+│     - Sincronizar valores                                   │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  2. ACTUALIZAR CÓDIGO (deploy inmediatamente después)       │
-│     - types.ts (constantes de métricas)                     │
-│     - leads-pipeline/types/index.ts                         │
-│     - LeadStatusBadge.tsx (fallback)                        │
-│     - ContactsTable.tsx (configs)                           │
-│     - Edge functions                                        │
+│  2. EXTENDER useContactStatuses                             │
+│     - Agregar is_visible al tipo                            │
+│     - Agregar toggleVisibility mutation                     │
+│     - Agregar visibleStatuses getter                        │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  3. VERIFICACIÓN                                            │
-│     - Probar /admin/contacts                                │
-│     - Probar /admin/pipeline                                │
-│     - Probar métricas y dashboard                           │
+│  3. DEPRECAR useLeadPipelineColumns                         │
+│     - Convertir en wrapper de useContactStatuses            │
+│     - Mantener API pública para compatibilidad              │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. MIGRAR COMPONENTES PIPELINE                             │
+│     - LeadsPipelineView → useContactStatuses                │
+│     - Eliminar componentes duplicados                       │
+│     - Unificar editor de estados                            │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│  5. VERIFICACIÓN Y CLEANUP                                  │
+│     - Probar /admin/contacts (tabla + pipeline)             │
+│     - Probar /admin/leads-pipeline                          │
+│     - Eliminar código deprecated                            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Archivos a Modificar
+## Beneficios de la Unificación
 
-| Archivo | Cambios |
-|---------|---------|
-| `src/components/admin/metrics/types.ts` | Actualizar 6 constantes de agrupación |
-| `src/features/leads-pipeline/types/index.ts` | Actualizar type LeadStatus y PIPELINE_COLUMNS |
-| `src/components/admin/leads/LeadStatusBadge.tsx` | Actualizar FALLBACK_CONFIG (13 entries) |
-| `src/components/admin/contacts/ContactsTable.tsx` | Actualizar configs (11 entries) |
-| `supabase/functions/generate-rod-document/index.ts` | Verificar uso de 'nuevo' |
+1. **Una sola fuente de verdad**: Cambios en estados reflejados instantáneamente en todos los módulos
+2. **Menos código**: Eliminar ~300 líneas de código duplicado
+3. **Consistencia**: Mismos colores, iconos y labels en CRM, Pipeline y Métricas
+4. **Mantenimiento simplificado**: Un solo editor, un solo hook
+5. **Extensibilidad**: Nuevos campos como `is_prospect_stage` automáticamente disponibles en pipeline
 
-## Alternativa Recomendada
+## Riesgo
 
-En lugar de migrar los `status_key`, considera **actualizar solo los labels en la base de datos** para que coincidan con los status_key existentes. Esto elimina:
-- Riesgo de migración de datos
-- Cambios en código
-- Downtime potencial
+- **Medio-Bajo**: Cambios son aditivos (nuevos campos) antes de eliminar código
+- La tabla `lead_pipeline_columns` se mantiene como backup
+- El hook `useLeadPipelineColumns` se convierte en wrapper (API compatible)
 
-Simplemente ejecutar:
-```sql
-UPDATE contact_statuses SET label = CASE status_key
-  WHEN 'contactando' THEN 'Contactando'
-  WHEN 'calificado' THEN 'Calificado'
-  -- ... restaurar labels originales
-END;
+## Sección Técnica: Detalle de Implementación
+
+### Hook Unificado (extracto)
+
+```typescript
+// useContactStatuses.ts - Extensiones
+export interface ContactStatus {
+  id: string;
+  status_key: string;
+  label: string;
+  color: string;
+  icon: string;
+  position: number;
+  is_active: boolean;
+  is_system: boolean;
+  is_prospect_stage: boolean;
+  is_visible: boolean;  // NUEVO
+}
+
+export const useContactStatuses = () => {
+  // ... código existente
+  
+  // NUEVO: Para compatibilidad con pipeline
+  const visibleStatuses = statuses.filter(s => s.is_visible);
+  
+  // NUEVO: Toggle visibilidad (distinto de activar/desactivar)
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: async ({ id, isVisible }: { id: string; isVisible: boolean }) => {
+      const { error } = await supabase
+        .from('contact_statuses')
+        .update({ is_visible: isVisible })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contact-statuses'] }),
+  });
+  
+  return {
+    // ... existentes
+    visibleStatuses,           // NUEVO
+    toggleVisibility: toggleVisibilityMutation.mutate, // NUEVO
+  };
+};
 ```
 
-Esta opción es más segura pero requiere que el equipo adopte la nomenclatura original.
+### Wrapper de Compatibilidad
+
+```typescript
+// useLeadPipelineColumns.ts - Convertir a wrapper
+import { useContactStatuses } from '@/hooks/useContactStatuses';
+
+/** @deprecated Usar useContactStatuses directamente */
+export const useLeadPipelineColumns = () => {
+  const {
+    statuses: columns,
+    visibleStatuses: visibleColumns,
+    isLoading,
+    toggleVisibility,
+    updateStatus: updateColumn,
+    addStatus: addColumn,
+    deleteStatus: deleteColumn,
+    reorderStatuses: reorderColumns,
+  } = useContactStatuses();
+  
+  // Adaptar nombres para compatibilidad con código existente
+  return {
+    columns: columns.map(s => ({ ...s, stage_key: s.status_key })),
+    visibleColumns: visibleColumns.map(s => ({ ...s, stage_key: s.status_key })),
+    isLoading,
+    toggleVisibility,
+    updateColumn,
+    addColumn,
+    deleteColumn,
+    reorderColumns,
+  };
+};
+```
