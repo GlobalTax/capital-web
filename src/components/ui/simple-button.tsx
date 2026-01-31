@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
 interface SimpleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text?: string;
@@ -27,12 +28,12 @@ const SimpleButton = React.forwardRef<HTMLButtonElement, SimpleButtonProps>(({
     lg: "px-8 py-4 text-lg h-12"
   };
 
-  const classes = [
+  const classes = cn(
     baseClasses,
     variantClasses[variant],
     sizeClasses[size],
     className
-  ].filter(Boolean).join(" ");
+  );
 
   return (
     <button
