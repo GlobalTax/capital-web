@@ -6,7 +6,7 @@ interface TestLayoutProps {
 
 const TestLayout: React.FC<TestLayoutProps> = ({ children }) => {
   return (
-    <div className="dark-institutional min-h-screen bg-[hsl(var(--dark-bg))]">
+    <div className="light-institutional min-h-screen bg-white">
       {children}
     </div>
   );

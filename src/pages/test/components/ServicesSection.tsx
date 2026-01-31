@@ -43,7 +43,7 @@ const services: Service[] = [
 
 const ServicesSection: React.FC = () => {
   return (
-    <section id="servicios" className="py-24 md:py-32 bg-[hsl(0,0%,7%)]">
+    <section id="servicios" className="py-24 md:py-32 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <motion.div
@@ -53,18 +53,18 @@ const ServicesSection: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="mb-16 md:mb-20"
         >
-          <span className="text-white/40 text-sm tracking-[0.2em] uppercase mb-4 block">
+          <span className="text-slate-400 text-sm tracking-[0.2em] uppercase mb-4 block">
             Servicios
           </span>
-          <h2 className="font-serif-display text-white text-4xl md:text-5xl lg:text-6xl leading-tight">
+          <h2 className="font-serif-display text-slate-900 text-4xl md:text-5xl lg:text-6xl leading-tight">
             Soluciones integrales
             <br />
-            <span className="text-white/60">para tu empresa</span>
+            <span className="text-slate-500">para tu empresa</span>
           </h2>
         </motion.div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200">
           {services.map((service, index) => (
             <motion.div
               key={service.title}
@@ -72,25 +72,25 @@ const ServicesSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="group bg-[hsl(0,0%,7%)] p-8 md:p-10 hover:bg-[hsl(0,0%,9%)] transition-colors duration-300"
+              className="group bg-white p-8 md:p-10 hover:bg-slate-50 transition-colors duration-300"
             >
               {/* Icon */}
-              <div className="text-white/40 group-hover:text-white transition-colors duration-300 mb-6">
+              <div className="text-slate-400 group-hover:text-slate-900 transition-colors duration-300 mb-6">
                 {service.icon}
               </div>
 
               {/* Title */}
-              <h3 className="font-serif-display text-white text-xl md:text-2xl mb-4">
+              <h3 className="font-serif-display text-slate-900 text-xl md:text-2xl mb-4">
                 {service.title}
               </h3>
 
               {/* Description */}
-              <p className="text-white/50 text-sm leading-relaxed">
+              <p className="text-slate-500 text-sm leading-relaxed">
                 {service.description}
               </p>
 
               {/* Hover indicator */}
-              <div className="mt-8 flex items-center gap-2 text-white/30 group-hover:text-white/60 transition-colors duration-300">
+              <div className="mt-8 flex items-center gap-2 text-slate-300 group-hover:text-slate-500 transition-colors duration-300">
                 <span className="text-xs tracking-[0.15em] uppercase">Saber más</span>
                 <svg 
                   className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300" 
@@ -111,12 +111,12 @@ const ServicesSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4, duration: 0.6 }}
-          className="mt-16 md:mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-12 border-t border-white/10"
+          className="mt-16 md:mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-12 border-t border-slate-200"
         >
-          <p className="text-white/50 text-lg max-w-md">
+          <p className="text-slate-500 text-lg max-w-md">
             ¿Necesitas asesoramiento personalizado para tu operación?
           </p>
-          <button className="px-8 py-4 bg-white text-black text-sm font-medium tracking-wide hover:bg-white/90 transition-colors">
+          <button className="px-8 py-4 bg-slate-900 text-white text-sm font-medium tracking-wide hover:bg-slate-800 transition-colors">
             Contactar
           </button>
         </motion.div>

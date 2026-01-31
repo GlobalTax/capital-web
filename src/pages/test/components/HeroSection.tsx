@@ -13,7 +13,7 @@ const stats: StatItem[] = [
   { value: '60+', label: 'Profesionales' },
 ];
 
-const DarkHeroSection: React.FC = () => {
+const HeroSection: React.FC = () => {
   return (
     <section className="relative min-h-screen flex flex-col justify-center">
       {/* Background Image */}
@@ -23,8 +23,8 @@ const DarkHeroSection: React.FC = () => {
           backgroundImage: 'url(https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=1920&q=80)'
         }}
       >
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 hero-portobello-overlay" />
+        {/* Light gradient overlay for dark text legibility */}
+        <div className="absolute inset-0 hero-light-overlay" />
       </div>
 
       {/* Content - Left aligned */}
@@ -36,14 +36,14 @@ const DarkHeroSection: React.FC = () => {
           className="max-w-3xl"
         >
           {/* Main Headline - Serif font */}
-          <h1 className="font-serif-display text-white font-normal leading-[1.1] tracking-tight text-5xl md:text-6xl lg:text-7xl">
+          <h1 className="font-serif-display text-slate-900 font-normal leading-[1.1] tracking-tight text-5xl md:text-6xl lg:text-7xl">
             Especialistas en
             <br />
             compraventa de empresas
           </h1>
 
           {/* Subtitle */}
-          <p className="text-white/70 text-lg md:text-xl mt-8 max-w-lg leading-relaxed">
+          <p className="text-slate-600 text-lg md:text-xl mt-8 max-w-lg leading-relaxed">
             Maximizamos el valor de tu empresa con un equipo multidisciplinar de más de 60 profesionales y enfoque orientado a resultados.
           </p>
 
@@ -57,10 +57,10 @@ const DarkHeroSection: React.FC = () => {
                 transition={{ delay: 0.5 + index * 0.1, duration: 0.6 }}
                 className="text-left"
               >
-                <div className="text-white text-4xl md:text-5xl font-light tracking-tight">
+                <div className="text-slate-900 text-4xl md:text-5xl font-light tracking-tight">
                   {stat.value}
                 </div>
-                <div className="text-white/50 text-sm mt-2 tracking-wide">
+                <div className="text-slate-500 text-sm mt-2 tracking-wide">
                   {stat.label}
                 </div>
               </motion.div>
@@ -69,16 +69,16 @@ const DarkHeroSection: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Slider indicators - Bottom right like Portobello */}
+      {/* Slider indicators - Bottom right */}
       <div className="absolute bottom-12 right-6 lg:right-12 flex items-center gap-3">
-        <div className="w-12 h-0.5 bg-white" />
-        <div className="w-12 h-0.5 bg-white/30" />
-        <div className="w-12 h-0.5 bg-white/30" />
+        <div className="w-12 h-0.5 bg-slate-900" />
+        <div className="w-12 h-0.5 bg-slate-300" />
+        <div className="w-12 h-0.5 bg-slate-300" />
       </div>
 
       {/* Scroll indicator */}
       <motion.div 
-        className="absolute bottom-12 left-6 lg:left-12 text-white/50 text-xs tracking-[0.2em] uppercase"
+        className="absolute bottom-12 left-6 lg:left-12 text-slate-500 text-xs tracking-[0.2em] uppercase"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 0.6 }}
@@ -89,4 +89,4 @@ const DarkHeroSection: React.FC = () => {
   );
 };
 
-export default DarkHeroSection;
+export default HeroSection;
