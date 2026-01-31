@@ -25,6 +25,9 @@ const AdminLoginNew = lazy(() => import('@/pages/AdminLoginNew'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 
+// === TEST PAGES ===
+const NuevoDiseno = lazy(() => import('@/pages/test/NuevoDiseno'));
+
 // === ADMIN PROTECTION ===
 import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
 
@@ -146,6 +149,9 @@ export const AppRoutes = () => {
         <Route path="/admin/login" element={<AdminLoginNew />} />
         <Route path="/admin/login-new" element={<AdminLoginNew />} />
         <Route path="/admin/*" element={<AdminProtectedRoute><Admin /></AdminProtectedRoute>} />
+        
+        {/* === TEST ROUTES === */}
+        <Route path="/test/nuevo-diseno" element={<NuevoDiseno />} />
         
         {/* === SHARED PRESENTATIONS (Public Access with Token) === */}
         <Route path="/p/:token" element={<SharedPresentationPage />} />

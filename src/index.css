@@ -160,7 +160,26 @@
     --admin-success: 142 60% 40%;
     --admin-warning: 38 80% 50%;
     --admin-info: 238 76% 60%;
+
+    /* === DARK INSTITUTIONAL THEME (Portobello Style) === */
+    --dark-bg: 0 0% 7%;
+    --dark-bg-elevated: 0 0% 10%;
+    --dark-text-primary: 0 0% 100%;
+    --dark-text-secondary: 0 0% 53%;
+    --dark-border: 0 0% 20%;
+    --dark-accent-gold: 38 44% 58%;
   }
+}
+
+/* Dark Institutional Theme Scope */
+.dark-institutional {
+  --background: var(--dark-bg);
+  --foreground: var(--dark-text-primary);
+  --card: var(--dark-bg-elevated);
+  --card-foreground: var(--dark-text-primary);
+  --muted: 0 0% 15%;
+  --muted-foreground: var(--dark-text-secondary);
+  --border: var(--dark-border);
 }
 
 @layer base {
