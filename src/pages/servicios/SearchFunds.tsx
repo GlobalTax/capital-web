@@ -22,7 +22,6 @@ import {
   SearchFundsFitCalculator,
   SearchFundsTestimonials,
   SearchFundsResources,
-  SearchFundsVideo,
   SearchFundsOperationsGrid
 } from '@/components/search-funds';
 
@@ -131,7 +130,6 @@ const SearchFunds = () => {
       <SearchFundsTestimonials />
       <SearchFundsProcess />
       <SearchFundsResources />
-      <SearchFundsVideo />
       <SearchFundsFAQ />
       <SearchFundsCTA />
     </UnifiedLayout>
