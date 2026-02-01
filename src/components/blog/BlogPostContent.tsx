@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUp, ArrowLeft, Home, Clock } from 'lucide-react';
-import DOMPurify from 'dompurify';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { BlogProseContent } from './BlogProseContent';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
@@ -243,13 +243,10 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 mb-16">
           <div className="lg:col-span-8">
-            <div className="prose prose-xl dark:prose-invert max-w-prose prose-headings:scroll-mt-24 prose-headings:text-slate-900 prose-headings:font-medium prose-h2:text-3xl prose-h2:mt-14 prose-h2:mb-8 prose-h2:tracking-tight prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6 prose-h3:tracking-tight prose-p:text-slate-700 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8 prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed prose-li:mb-2 prose-strong:text-slate-900 prose-strong:font-semibold prose-ul:my-8 prose-ol:my-8 prose-blockquote:border-l-4 prose-blockquote:border-slate-300 prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600">
-              <div 
-                dangerouslySetInnerHTML={{ 
-                  __html: DOMPurify.sanitize(getFormattedContent(post.content)) 
-                }}
-              />
-            </div>
+            <BlogProseContent 
+              content={getFormattedContent(post.content)} 
+              className="max-w-prose"
+            />
 
             {post.tags && post.tags.length > 0 && (
               <div className="mt-12 pt-8 border-t">
