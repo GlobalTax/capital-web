@@ -1,88 +1,84 @@
 
-# Mejorar la Legibilidad del Blog
+# Plan: Corregir Legibilidad del Blog
 
-## Problema
+## Problema Identificado
 
-El artículo del blog en `/blog/search-funds-espana-informe-actividad-2024-2025` presenta dificultades de lectura. Tras analizar el componente `BlogPostContent.tsx` y los estilos del sistema, se identifican los siguientes problemas:
+El plugin `@tailwindcss/typography` **no está instalado** en el proyecto. Esto significa que todas las clases `prose-*` que se aplicaron (como `prose-xl`, `prose-headings:font-medium`, etc.) **no tienen efecto alguno**.
 
----
-
-## Problemas Detectados
-
-| Problema | Impacto | Solución |
-|----------|---------|----------|
-| Tamaño de fuente pequeño | Fatiga visual | Aumentar a 18-20px |
-| Líneas demasiado largas | Dificultad de seguimiento | Limitar ancho a ~70 caracteres |
-| Poco contraste de texto | Cansancio visual | Texto negro intenso |
-| Espaciado insuficiente | Texto apiñado | Más margen entre elementos |
-| H2/H3 no destacan | Estructura confusa | Mayor peso y tamaño |
-
----
+Además, hay estilos globales en `index.css` que fuerzan todos los headers a `font-weight: 400`.
 
 ## Cambios a Implementar
 
-### 1. Mejorar tipografia del contenido (`BlogPostContent.tsx`)
+### 1. Instalar el Plugin de Typography
 
-Modificar la clase prose en línea 246:
+Añadir la dependencia `@tailwindcss/typography` al proyecto.
+
+### 2. Configurar el Plugin en Tailwind
+
+Modificar `tailwind.config.ts`:
 
 ```typescript
-// ANTES:
-className="prose prose-lg dark:prose-invert max-w-none..."
-
-// DESPUÉS:
-className="prose prose-xl dark:prose-invert max-w-prose mx-auto
-  prose-headings:text-slate-900 prose-headings:font-medium
-  prose-h2:text-3xl prose-h2:mt-14 prose-h2:mb-8
-  prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6
-  prose-p:text-slate-700 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8
-  prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed
-  prose-strong:text-slate-900 prose-strong:font-semibold
-  prose-ul:my-8 prose-ol:my-8
-  prose-blockquote:border-l-4 prose-blockquote:border-slate-300 
-  prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600"
+// Línea 198
+plugins: [
+  require("tailwindcss-animate"),
+  require("@tailwindcss/typography")
+],
 ```
 
-### 2. Ajustar el layout del grid
+### 3. Modificar estilos globales para no interferir con prose
 
-El contenido está en 8 columnas de 12. Para mejor legibilidad, el texto debería tener un ancho máximo de ~65-75 caracteres.
+Actualizar `index.css` para excluir los elementos dentro de `.prose`:
+
+```css
+/* Headers - same weight as body (400) EXCEPT inside prose */
+h1:not(.prose *), 
+h2:not(.prose *), 
+h3:not(.prose *), 
+h4:not(.prose *), 
+h5:not(.prose *), 
+h6:not(.prose *) {
+  @apply font-sans;
+  font-weight: 400;
+}
+```
+
+### 4. Simplificar las clases prose en BlogPostContent
+
+Actualizar las clases en `BlogPostContent.tsx` para que funcionen correctamente con el plugin:
 
 ```typescript
-// ANTES:
-<div className="lg:col-span-8">
-
-// DESPUÉS - añadir max-w-prose al contenedor del texto:
-<div className="lg:col-span-8">
-  <div className="max-w-prose"> // ~65 caracteres de ancho
+<div className="prose prose-lg lg:prose-xl dark:prose-invert max-w-none
+  prose-headings:font-semibold prose-headings:text-slate-900
+  prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6
+  prose-h3:text-xl prose-h3:mt-10 prose-h3:mb-4
+  prose-p:text-slate-700 prose-p:leading-relaxed prose-p:text-[18px]
+  prose-li:text-slate-700
+  prose-strong:text-slate-900
+  prose-blockquote:border-slate-300 prose-blockquote:text-slate-600">
 ```
 
 ---
 
-## Resumen de Mejoras Visuales
+## Resumen de Cambios
 
-| Elemento | Antes | Después |
-|----------|-------|---------|
-| Tamaño texto | 18px (prose-lg) | 20px (prose-xl) |
-| Ancho máximo | Sin límite | 65ch (~700px) |
-| Color texto | Heredado | Slate-700 (más contraste) |
-| Color headings | Normal | Slate-900 + font-medium |
-| Espaciado párrafos | mb-6 | mb-8 |
-| Espaciado h2 | mt-12/mb-6 | mt-14/mb-8 |
-
----
-
-## Archivo a Modificar
-
-**`src/components/blog/BlogPostContent.tsx`** - Líneas 244-252
-
-El cambio afectará solo a la visualización del contenido del artículo, manteniendo el sidebar y la navegación intactos.
+| Archivo | Cambio | Propósito |
+|---------|--------|-----------|
+| `package.json` | Añadir `@tailwindcss/typography` | Habilitar clases prose |
+| `tailwind.config.ts` | Añadir plugin typography | Activar el plugin |
+| `src/index.css` | Excluir `.prose *` del reset de headers | Permitir que prose controle los estilos |
+| `BlogPostContent.tsx` | Ajustar clases prose | Mejorar tipografía |
 
 ---
 
 ## Resultado Esperado
 
-Tras los cambios:
-- Texto más grande y legible
-- Líneas de longitud óptima para lectura
-- Mayor contraste entre texto y fondo
-- Headings que destacan claramente la estructura
-- Experiencia de lectura profesional tipo Medium/Substack
+Después de los cambios:
+- Texto del artículo a 18-20px, legible
+- H2 claramente diferenciados del cuerpo (negrita, más grande)
+- H3 diferenciados de H2
+- Espaciado adecuado entre secciones
+- Ancho de línea óptimo para lectura
+
+## Nota Técnica
+
+El plugin `@tailwindcss/typography` proporciona estilos pre-configurados para contenido HTML generado (como el de un CMS o editor de texto). Sin él, las clases `prose-*` no existen y no aplican ningún estilo.
