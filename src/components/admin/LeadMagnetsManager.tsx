@@ -1,60 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Search, Download, Users, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import type { LeadMagnet } from '@/types/leadMagnets';
+import { useLeadMagnets } from '@/hooks/useLeadMagnets';
 
 const LeadMagnetsManager = () => {
-  const [leadMagnets, setLeadMagnets] = useState<LeadMagnet[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { leadMagnets, isLoading, error } = useLeadMagnets();
   const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
-
-  useEffect(() => {
-    fetchLeadMagnets();
-  }, []);
-
-  const fetchLeadMagnets = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('landing_pages')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Transform landing pages data to lead magnets format
-      const transformedData = data?.map(item => ({
-        id: item.id,
-        title: item.title,
-        type: 'report' as const,
-        sector: 'General',
-        description: item.meta_description || '',
-        download_count: 0,
-        lead_conversion_count: 0,
-        status: item.is_published ? 'active' as const : 'draft' as const,
-        meta_title: item.meta_title,
-        meta_description: item.meta_description,
-        created_at: item.created_at,
-        updated_at: item.updated_at
-      })) || [];
-
-      setLeadMagnets(transformedData);
-    } catch (error) {
-      console.error('Error fetching lead magnets:', error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los lead magnets",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const filteredLeadMagnets = leadMagnets.filter(magnet =>
     magnet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,6 +40,17 @@ const LeadMagnetsManager = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Cargando lead magnets...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <p className="text-destructive mb-2">Error al cargar lead magnets</p>
+          <p className="text-muted-foreground text-sm">{String(error)}</p>
         </div>
       </div>
     );
