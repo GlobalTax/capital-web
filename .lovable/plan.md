@@ -1,84 +1,105 @@
 
-# Plan: Corregir Legibilidad del Blog
+# Plan: Estandarizar Tipografía del Blog en Todos los Componentes
 
-## Problema Identificado
+## Análisis Realizado
 
-El plugin `@tailwindcss/typography` **no está instalado** en el proyecto. Esto significa que todas las clases `prose-*` que se aplicaron (como `prose-xl`, `prose-headings:font-medium`, etc.) **no tienen efecto alguno**.
+He revisado todos los archivos que muestran contenido de blog o texto largo. El componente principal `BlogPostContent.tsx` ya tiene los estilos correctos, pero hay un archivo crítico que necesita actualización:
 
-Además, hay estilos globales en `index.css` que fuerzan todos los headers a `font-weight: 400`.
+### Archivo que Requiere Actualización
+
+| Archivo | Estado Actual | Problema |
+|---------|--------------|----------|
+| `src/pages/admin/BlogPreviewPage.tsx` | `prose prose-lg max-w-none` | Falta la tipografía mejorada |
 
 ## Cambios a Implementar
 
-### 1. Instalar el Plugin de Typography
+### 1. BlogPreviewPage.tsx (líneas 157-160)
 
-Añadir la dependencia `@tailwindcss/typography` al proyecto.
-
-### 2. Configurar el Plugin en Tailwind
-
-Modificar `tailwind.config.ts`:
-
-```typescript
-// Línea 198
-plugins: [
-  require("tailwindcss-animate"),
-  require("@tailwindcss/typography")
-],
+**Antes:**
+```tsx
+<div 
+  className="prose prose-lg max-w-none"
+  dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
+/>
 ```
 
-### 3. Modificar estilos globales para no interferir con prose
-
-Actualizar `index.css` para excluir los elementos dentro de `.prose`:
-
-```css
-/* Headers - same weight as body (400) EXCEPT inside prose */
-h1:not(.prose *), 
-h2:not(.prose *), 
-h3:not(.prose *), 
-h4:not(.prose *), 
-h5:not(.prose *), 
-h6:not(.prose *) {
-  @apply font-sans;
-  font-weight: 400;
-}
+**Después:**
+```tsx
+<div 
+  className="prose prose-xl dark:prose-invert max-w-none
+    prose-headings:scroll-mt-24 prose-headings:text-slate-900 prose-headings:font-medium
+    prose-h2:text-3xl prose-h2:mt-14 prose-h2:mb-8 prose-h2:tracking-tight
+    prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6 prose-h3:tracking-tight
+    prose-p:text-slate-700 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8
+    prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed prose-li:mb-2
+    prose-strong:text-slate-900 prose-strong:font-semibold
+    prose-ul:my-8 prose-ol:my-8
+    prose-blockquote:border-l-4 prose-blockquote:border-slate-300 
+    prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600"
+  dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
+/>
 ```
 
-### 4. Simplificar las clases prose en BlogPostContent
+---
 
-Actualizar las clases en `BlogPostContent.tsx` para que funcionen correctamente con el plugin:
+## Documentación: Estándar de Tipografía para Blog
 
-```typescript
-<div className="prose prose-lg lg:prose-xl dark:prose-invert max-w-none
-  prose-headings:font-semibold prose-headings:text-slate-900
-  prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6
-  prose-h3:text-xl prose-h3:mt-10 prose-h3:mb-4
-  prose-p:text-slate-700 prose-p:leading-relaxed prose-p:text-[18px]
-  prose-li:text-slate-700
-  prose-strong:text-slate-900
-  prose-blockquote:border-slate-300 prose-blockquote:text-slate-600">
+### Clases CSS Estándar para Contenido de Blog
+
+Cuando se muestre contenido HTML de blog (con `dangerouslySetInnerHTML`), usar SIEMPRE estas clases:
+
+```tsx
+className="prose prose-xl dark:prose-invert max-w-none
+  prose-headings:scroll-mt-24 prose-headings:text-slate-900 prose-headings:font-medium
+  prose-h2:text-3xl prose-h2:mt-14 prose-h2:mb-8 prose-h2:tracking-tight
+  prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6 prose-h3:tracking-tight
+  prose-p:text-slate-700 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8
+  prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed prose-li:mb-2
+  prose-strong:text-slate-900 prose-strong:font-semibold
+  prose-ul:my-8 prose-ol:my-8
+  prose-blockquote:border-l-4 prose-blockquote:border-slate-300 
+  prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600"
 ```
+
+### Desglose de Estilos
+
+| Clase | Propósito |
+|-------|-----------|
+| `prose-xl` | Tamaño base de 20px para mejor legibilidad |
+| `prose-headings:font-medium` | Headers con peso semi-negrita |
+| `prose-h2:text-3xl` | H2 grandes y distinguibles |
+| `prose-h2:mt-14 prose-h2:mb-8` | Espaciado generoso alrededor de H2 |
+| `prose-p:text-lg` | Párrafos a 18px |
+| `prose-p:leading-relaxed` | Interlineado amplio (1.625) |
+| `prose-p:mb-8` | Margen inferior entre párrafos |
+| `prose-li:mb-2` | Espaciado entre items de lista |
+| `prose-blockquote:*` | Citas con borde izquierdo y estilo itálica |
+
+### Requisitos Previos
+
+1. **Plugin instalado**: `@tailwindcss/typography`
+2. **Configurado en**: `tailwind.config.ts` → `plugins: [require("@tailwindcss/typography")]`
+3. **CSS global**: Los headers fuera de `.prose` mantienen `font-weight: 400`
+
+### Archivos que Ya Cumplen el Estándar
+
+- ✅ `src/components/blog/BlogPostContent.tsx` - Página principal de artículo
+
+### Archivos a Actualizar
+
+- ⚠️ `src/pages/admin/BlogPreviewPage.tsx` - Preview del admin
 
 ---
 
 ## Resumen de Cambios
 
-| Archivo | Cambio | Propósito |
-|---------|--------|-----------|
-| `package.json` | Añadir `@tailwindcss/typography` | Habilitar clases prose |
-| `tailwind.config.ts` | Añadir plugin typography | Activar el plugin |
-| `src/index.css` | Excluir `.prose *` del reset de headers | Permitir que prose controle los estilos |
-| `BlogPostContent.tsx` | Ajustar clases prose | Mejorar tipografía |
-
----
+| Archivo | Líneas | Cambio |
+|---------|--------|--------|
+| `BlogPreviewPage.tsx` | 157-160 | Aplicar clases prose estándar |
 
 ## Resultado Esperado
 
-Después de los cambios:
-- Texto del artículo a 18-20px, legible
-- H2 claramente diferenciados del cuerpo (negrita, más grande)
-- H3 diferenciados de H2
-- Espaciado adecuado entre secciones
-- Ancho de línea óptimo para lectura
-
-## Nota Técnica
-
-El plugin `@tailwindcss/typography` proporciona estilos pre-configurados para contenido HTML generado (como el de un CMS o editor de texto). Sin él, las clases `prose-*` no existen y no aplican ningún estilo.
+Después de estos cambios:
+- Todos los artículos del blog tendrán tipografía consistente
+- El preview del admin mostrará exactamente lo mismo que verá el usuario final
+- Los estilos están documentados para futuros desarrollos
