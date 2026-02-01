@@ -234,8 +234,13 @@
     overflow-x: hidden;
   }
 
-  /* Headers - same weight as body (400) */
-  h1, h2, h3, h4, h5, h6 {
+  /* Headers - same weight as body (400) EXCEPT inside prose */
+  h1:not(.prose *), 
+  h2:not(.prose *), 
+  h3:not(.prose *), 
+  h4:not(.prose *), 
+  h5:not(.prose *), 
+  h6:not(.prose *) {
     @apply font-sans;
     font-weight: 400;
   }
