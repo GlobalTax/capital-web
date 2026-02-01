@@ -14,7 +14,7 @@ const InstitutionalHeader: React.FC = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
+    <header className="fixed top-0 left-0 right-0 z-50 shadow-sm">
       {/* Top bar - Language selector only */}
       <div className="bg-slate-100 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex justify-end items-center h-8">
