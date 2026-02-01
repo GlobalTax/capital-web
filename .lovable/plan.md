@@ -1,105 +1,50 @@
 
-# Plan: Estandarizar Tipografía del Blog en Todos los Componentes
 
-## Análisis Realizado
+# Plan: Eliminar Sección de Video de Search Funds
 
-He revisado todos los archivos que muestran contenido de blog o texto largo. El componente principal `BlogPostContent.tsx` ya tiene los estilos correctos, pero hay un archivo crítico que necesita actualización:
+## Problema Identificado
 
-### Archivo que Requiere Actualización
+La página de Search Funds muestra una sección placeholder de video con el mensaje "Video próximamente" que el usuario quiere eliminar.
 
-| Archivo | Estado Actual | Problema |
-|---------|--------------|----------|
-| `src/pages/admin/BlogPreviewPage.tsx` | `prose prose-lg max-w-none` | Falta la tipografía mejorada |
+## Análisis del Código
+
+El componente `SearchFundsVideo` se encuentra en:
+- **Componente**: `src/components/search-funds/SearchFundsVideo.tsx`
+- **Usado en**: `src/pages/servicios/SearchFunds.tsx` (línea 134)
+- **Exportado desde**: `src/components/search-funds/index.ts` (línea 16)
 
 ## Cambios a Implementar
 
-### 1. BlogPreviewPage.tsx (líneas 157-160)
+### 1. Eliminar uso del componente en SearchFunds.tsx
 
-**Antes:**
-```tsx
-<div 
-  className="prose prose-lg max-w-none"
-  dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
-/>
-```
+**Archivo**: `src/pages/servicios/SearchFunds.tsx`
 
-**Después:**
-```tsx
-<div 
-  className="prose prose-xl dark:prose-invert max-w-none
-    prose-headings:scroll-mt-24 prose-headings:text-slate-900 prose-headings:font-medium
-    prose-h2:text-3xl prose-h2:mt-14 prose-h2:mb-8 prose-h2:tracking-tight
-    prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6 prose-h3:tracking-tight
-    prose-p:text-slate-700 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8
-    prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed prose-li:mb-2
-    prose-strong:text-slate-900 prose-strong:font-semibold
-    prose-ul:my-8 prose-ol:my-8
-    prose-blockquote:border-l-4 prose-blockquote:border-slate-300 
-    prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600"
-  dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
-/>
-```
+- Quitar `SearchFundsVideo` del import (línea 25)
+- Quitar `<SearchFundsVideo />` del JSX (línea 134)
 
----
+### 2. Eliminar export del index.ts
 
-## Documentación: Estándar de Tipografía para Blog
+**Archivo**: `src/components/search-funds/index.ts`
 
-### Clases CSS Estándar para Contenido de Blog
+- Quitar la línea `export { SearchFundsVideo } from './SearchFundsVideo';`
 
-Cuando se muestre contenido HTML de blog (con `dangerouslySetInnerHTML`), usar SIEMPRE estas clases:
+### 3. Eliminar el componente (opcional)
 
-```tsx
-className="prose prose-xl dark:prose-invert max-w-none
-  prose-headings:scroll-mt-24 prose-headings:text-slate-900 prose-headings:font-medium
-  prose-h2:text-3xl prose-h2:mt-14 prose-h2:mb-8 prose-h2:tracking-tight
-  prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6 prose-h3:tracking-tight
-  prose-p:text-slate-700 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8
-  prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed prose-li:mb-2
-  prose-strong:text-slate-900 prose-strong:font-semibold
-  prose-ul:my-8 prose-ol:my-8
-  prose-blockquote:border-l-4 prose-blockquote:border-slate-300 
-  prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600"
-```
+**Archivo**: `src/components/search-funds/SearchFundsVideo.tsx`
 
-### Desglose de Estilos
-
-| Clase | Propósito |
-|-------|-----------|
-| `prose-xl` | Tamaño base de 20px para mejor legibilidad |
-| `prose-headings:font-medium` | Headers con peso semi-negrita |
-| `prose-h2:text-3xl` | H2 grandes y distinguibles |
-| `prose-h2:mt-14 prose-h2:mb-8` | Espaciado generoso alrededor de H2 |
-| `prose-p:text-lg` | Párrafos a 18px |
-| `prose-p:leading-relaxed` | Interlineado amplio (1.625) |
-| `prose-p:mb-8` | Margen inferior entre párrafos |
-| `prose-li:mb-2` | Espaciado entre items de lista |
-| `prose-blockquote:*` | Citas con borde izquierdo y estilo itálica |
-
-### Requisitos Previos
-
-1. **Plugin instalado**: `@tailwindcss/typography`
-2. **Configurado en**: `tailwind.config.ts` → `plugins: [require("@tailwindcss/typography")]`
-3. **CSS global**: Los headers fuera de `.prose` mantienen `font-weight: 400`
-
-### Archivos que Ya Cumplen el Estándar
-
-- ✅ `src/components/blog/BlogPostContent.tsx` - Página principal de artículo
-
-### Archivos a Actualizar
-
-- ⚠️ `src/pages/admin/BlogPreviewPage.tsx` - Preview del admin
+- Eliminar el archivo completo ya que no se usará
 
 ---
 
 ## Resumen de Cambios
 
-| Archivo | Líneas | Cambio |
-|---------|--------|--------|
-| `BlogPreviewPage.tsx` | 157-160 | Aplicar clases prose estándar |
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/servicios/SearchFunds.tsx` | Quitar import y uso de `SearchFundsVideo` |
+| `src/components/search-funds/index.ts` | Quitar export de `SearchFundsVideo` |
+| `src/components/search-funds/SearchFundsVideo.tsx` | Eliminar archivo |
 
 ## Resultado Esperado
 
-Después de estos cambios:
-- Todos los artículos del blog tendrán tipografía consistente
-- El preview del admin mostrará exactamente lo mismo que verá el usuario final
-- Los estilos están documentados para futuros desarrollos
+La sección de "Video próximamente" desaparecerá de la página de Search Funds, dejando un flujo más limpio entre `SearchFundsResources` y `SearchFundsFAQ`.
+
