@@ -1,88 +1,126 @@
 
-# Corrección del Header y Footer en /v2
+
+# Diagnóstico y Solución: Header y Footer no visibles en /v2
 
 ## Problema Identificado
 
-El `InstitutionalHeader` tiene `position: fixed` con una altura total de **112px** (32px top bar + 80px nav), pero el `HeroSliderSection` y el resto del contenido no compensan esta altura. Esto puede causar:
+Después de una investigación exhaustiva, he identificado **dos problemas distintos**:
 
-1. **Header visible pero contenido tapado**: El hero slider empieza desde el top de la pantalla y puede parecer que "no hay header" porque el contenido del hero empieza debajo visualmente
-2. **El footer está al final**: Si no hay scroll suficiente, el footer puede no ser visible inmediatamente
+### Problema 1: La ruta `/v2` NO está cargando el diseño nuevo
 
-## Solución Propuesta
+Al acceder a `webcapittal.lovable.app/v2` (producción), se muestra la **Calculadora de Valoración** en lugar del **NuevoDiseno institucional**.
 
-### Opción A: Añadir padding-top al contenido (Recomendada para páginas normales)
+**Causa**: Los cambios recientes (añadir la ruta `/v2` en `AppRoutes.tsx`) están en el código pero **no se han publicado a producción todavía**. La versión publicada no incluye esta ruta.
 
-Modificar `TestLayout.tsx` para añadir espacio para el header:
+### Problema 2: El Header está en `position: fixed` pero el Hero ocupa toda la pantalla
 
-```typescript
-const TestLayout: React.FC<TestLayoutProps> = ({ children }) => {
-  return (
-    <div className="light-institutional min-h-screen bg-white pt-28">
-      {children}
-    </div>
-  );
-};
-```
+Aunque el código del header y footer existen en `NuevoDiseno.tsx`, hay un conflicto de capas:
 
-**Problema**: Esto rompería el efecto full-screen del hero slider.
+- `InstitutionalHeader`: `position: fixed`, `z-50`, altura total ~112px
+- `HeroSliderSection`: `h-screen` (100% viewport), sin z-index explícito
+
+El header debería aparecer SOBRE el hero, pero actualmente tiene fondo blanco semi-transparente que puede dificultar su visibilidad contra imágenes claras.
 
 ---
 
-### Opción B: Mantener hero full-screen y ajustar z-index (Recomendada)
+## Solución Propuesta
 
-El hero slider ya está diseñado para ser full-screen (`h-screen`). El header con `z-50` debería ser visible sobre él.
+### Paso 1: Verificar que los cambios se aplican al preview
 
-Si el problema es que el header no se ve, revisar:
+El usuario debe ver el nuevo diseño en el **iframe de preview** dentro de Lovable (no en la URL de producción publicada). La ruta `/v2` debería funcionar igual que `/test/nuevo-diseno`.
 
-1. Verificar que el header tiene `z-50` (ya lo tiene)
-2. Verificar que el hero NO tiene z-index mayor que 50
-3. Verificar que el fondo del header es visible (tiene `bg-white/80 backdrop-blur-sm`)
+### Paso 2: Mejorar la visibilidad del Header
 
-**Revisando el código**:
-- `InstitutionalHeader`: `z-50` ✓
-- `HeroSliderSection`: No tiene z-index explícito ✓
+Modificar `InstitutionalHeader.tsx` para asegurar máxima visibilidad:
 
-El header **debería ser visible**. Si no lo es, puede ser un problema de compilación/caché.
+```typescript
+// ANTES (línea 18):
+<header className="fixed top-0 left-0 right-0 z-50">
+
+// DESPUÉS - añadir sombra sutil para distinguir del contenido:
+<header className="fixed top-0 left-0 right-0 z-50 shadow-sm">
+```
+
+Y asegurar que la barra superior tenga fondo sólido:
+
+```typescript
+// Top bar - garantizar visibilidad
+<div className="bg-slate-100 border-b border-slate-200">
+```
+
+### Paso 3: Verificar imports y lazy loading
+
+Confirmar que `NuevoDiseno` se carga correctamente:
+
+```typescript
+// En AppRoutes.tsx (ya existe en línea 29):
+const NuevoDiseno = lazy(() => import('@/pages/test/NuevoDiseno'));
+
+// Rutas (líneas 154-157):
+<Route path="/test/nuevo-diseno" element={<NuevoDiseno />} />
+<Route path="/v2" element={<NuevoDiseno />} />
+```
 
 ---
 
 ## Cambios a Implementar
 
-### 1. Verificar visibilidad del header
-
-El header actual es semi-transparente (`bg-white/80`). En un hero con imagen clara, podría no tener suficiente contraste. Cambiar a:
-
-```typescript
-// En InstitutionalHeader.tsx línea 32
-<div className="bg-white border-b border-slate-100">
-```
-
-Quitar el `/80` de opacidad para que sea sólido.
-
-### 2. Asegurar que el Hero tiene margen para no tapar contenido importante
-
-El hero ya posiciona el contenido de texto con suficiente margen (`max-w-2xl` y padding), por lo que el header no debería tapar información crítica.
+| Archivo | Cambio | Propósito |
+|---------|--------|-----------|
+| `InstitutionalHeader.tsx` | Añadir `shadow-sm` al header | Mejora contraste visual |
+| Verificación | Navegar a `/v2` en el preview de Lovable | Confirmar que carga NuevoDiseno |
 
 ---
 
-## Resumen de Cambios
+## Sección Técnica
 
-| Archivo | Cambio | Razón |
-|---------|--------|-------|
-| `InstitutionalHeader.tsx` | Cambiar `bg-white/80` a `bg-white` | Header sólido más visible |
-| Verificar | Que el build se regenere | Posible problema de caché |
+### Estructura actual del componente NuevoDiseno
 
-## Pasos de Implementación
+```text
+NuevoDiseno.tsx
+├── TestLayout (min-h-screen, bg-white)
+│   ├── InstitutionalHeader (fixed, z-50, top-0)
+│   ├── HeroSliderSection (h-screen, z-10 para contenido)
+│   ├── AboutSection
+│   ├── ServicesSectionWithImages
+│   ├── TeamSection
+│   ├── CaseStudiesSection
+│   └── InstitutionalFooter
+```
 
-1. **Modificar `InstitutionalHeader.tsx`**: Hacer el fondo del nav sólido
-2. **Forzar rebuild**: El cambio debería regenerar el bundle
-3. **Verificar en navegador**: Confirmar que `/v2` muestra el nuevo diseño
+### Z-index actual
 
-## Verificación
+```text
+Header: z-50 (posición fija, debería estar SOBRE todo)
+Hero content: z-10 (dentro del hero)
+Hero background: sin z-index (por defecto 0)
+```
 
-Después de los cambios, navegar a `/v2` debería mostrar:
-- Top bar con selector de idiomas (ES | CA | EN)
-- Header con logo "Capittal" y navegación (SERVICIOS, EQUIPO, etc.)
-- Hero slider con imágenes y texto
-- Secciones de contenido
-- Footer institucional con noticias y contacto
+### Problema potencial
+
+Si el header no aparece, puede ser porque:
+1. **Error de importación** en el lazy loading
+2. **CSS/Tailwind no compilado** correctamente
+3. **Caché del navegador** mostrando versión antigua
+
+---
+
+## Pasos de Verificación Post-Implementación
+
+1. **Navegar a `/v2` en el iframe de Lovable** (no en producción)
+2. **Hard refresh** (Ctrl+Shift+R) para limpiar caché
+3. **Verificar en DevTools** que el header está en el DOM
+4. **Scroll hasta abajo** para ver el footer
+
+---
+
+## Resultado Esperado
+
+Después de los cambios, al acceder a `/v2`:
+
+- ✓ Top bar con idiomas (ES | CA | EN) visible
+- ✓ Header con logo "Capittal" y navegación visible
+- ✓ Hero slider con imágenes y texto
+- ✓ Secciones de contenido
+- ✓ Footer institucional visible al hacer scroll
+
