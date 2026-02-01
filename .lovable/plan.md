@@ -1,126 +1,88 @@
 
+# Mejorar la Legibilidad del Blog
 
-# Diagnóstico y Solución: Header y Footer no visibles en /v2
+## Problema
 
-## Problema Identificado
-
-Después de una investigación exhaustiva, he identificado **dos problemas distintos**:
-
-### Problema 1: La ruta `/v2` NO está cargando el diseño nuevo
-
-Al acceder a `webcapittal.lovable.app/v2` (producción), se muestra la **Calculadora de Valoración** en lugar del **NuevoDiseno institucional**.
-
-**Causa**: Los cambios recientes (añadir la ruta `/v2` en `AppRoutes.tsx`) están en el código pero **no se han publicado a producción todavía**. La versión publicada no incluye esta ruta.
-
-### Problema 2: El Header está en `position: fixed` pero el Hero ocupa toda la pantalla
-
-Aunque el código del header y footer existen en `NuevoDiseno.tsx`, hay un conflicto de capas:
-
-- `InstitutionalHeader`: `position: fixed`, `z-50`, altura total ~112px
-- `HeroSliderSection`: `h-screen` (100% viewport), sin z-index explícito
-
-El header debería aparecer SOBRE el hero, pero actualmente tiene fondo blanco semi-transparente que puede dificultar su visibilidad contra imágenes claras.
+El artículo del blog en `/blog/search-funds-espana-informe-actividad-2024-2025` presenta dificultades de lectura. Tras analizar el componente `BlogPostContent.tsx` y los estilos del sistema, se identifican los siguientes problemas:
 
 ---
 
-## Solución Propuesta
+## Problemas Detectados
 
-### Paso 1: Verificar que los cambios se aplican al preview
-
-El usuario debe ver el nuevo diseño en el **iframe de preview** dentro de Lovable (no en la URL de producción publicada). La ruta `/v2` debería funcionar igual que `/test/nuevo-diseno`.
-
-### Paso 2: Mejorar la visibilidad del Header
-
-Modificar `InstitutionalHeader.tsx` para asegurar máxima visibilidad:
-
-```typescript
-// ANTES (línea 18):
-<header className="fixed top-0 left-0 right-0 z-50">
-
-// DESPUÉS - añadir sombra sutil para distinguir del contenido:
-<header className="fixed top-0 left-0 right-0 z-50 shadow-sm">
-```
-
-Y asegurar que la barra superior tenga fondo sólido:
-
-```typescript
-// Top bar - garantizar visibilidad
-<div className="bg-slate-100 border-b border-slate-200">
-```
-
-### Paso 3: Verificar imports y lazy loading
-
-Confirmar que `NuevoDiseno` se carga correctamente:
-
-```typescript
-// En AppRoutes.tsx (ya existe en línea 29):
-const NuevoDiseno = lazy(() => import('@/pages/test/NuevoDiseno'));
-
-// Rutas (líneas 154-157):
-<Route path="/test/nuevo-diseno" element={<NuevoDiseno />} />
-<Route path="/v2" element={<NuevoDiseno />} />
-```
+| Problema | Impacto | Solución |
+|----------|---------|----------|
+| Tamaño de fuente pequeño | Fatiga visual | Aumentar a 18-20px |
+| Líneas demasiado largas | Dificultad de seguimiento | Limitar ancho a ~70 caracteres |
+| Poco contraste de texto | Cansancio visual | Texto negro intenso |
+| Espaciado insuficiente | Texto apiñado | Más margen entre elementos |
+| H2/H3 no destacan | Estructura confusa | Mayor peso y tamaño |
 
 ---
 
 ## Cambios a Implementar
 
-| Archivo | Cambio | Propósito |
-|---------|--------|-----------|
-| `InstitutionalHeader.tsx` | Añadir `shadow-sm` al header | Mejora contraste visual |
-| Verificación | Navegar a `/v2` en el preview de Lovable | Confirmar que carga NuevoDiseno |
+### 1. Mejorar tipografia del contenido (`BlogPostContent.tsx`)
+
+Modificar la clase prose en línea 246:
+
+```typescript
+// ANTES:
+className="prose prose-lg dark:prose-invert max-w-none..."
+
+// DESPUÉS:
+className="prose prose-xl dark:prose-invert max-w-prose mx-auto
+  prose-headings:text-slate-900 prose-headings:font-medium
+  prose-h2:text-3xl prose-h2:mt-14 prose-h2:mb-8
+  prose-h3:text-2xl prose-h3:mt-12 prose-h3:mb-6
+  prose-p:text-slate-700 prose-p:text-lg prose-p:leading-relaxed prose-p:mb-8
+  prose-li:text-slate-700 prose-li:text-lg prose-li:leading-relaxed
+  prose-strong:text-slate-900 prose-strong:font-semibold
+  prose-ul:my-8 prose-ol:my-8
+  prose-blockquote:border-l-4 prose-blockquote:border-slate-300 
+  prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-slate-600"
+```
+
+### 2. Ajustar el layout del grid
+
+El contenido está en 8 columnas de 12. Para mejor legibilidad, el texto debería tener un ancho máximo de ~65-75 caracteres.
+
+```typescript
+// ANTES:
+<div className="lg:col-span-8">
+
+// DESPUÉS - añadir max-w-prose al contenedor del texto:
+<div className="lg:col-span-8">
+  <div className="max-w-prose"> // ~65 caracteres de ancho
+```
 
 ---
 
-## Sección Técnica
+## Resumen de Mejoras Visuales
 
-### Estructura actual del componente NuevoDiseno
-
-```text
-NuevoDiseno.tsx
-├── TestLayout (min-h-screen, bg-white)
-│   ├── InstitutionalHeader (fixed, z-50, top-0)
-│   ├── HeroSliderSection (h-screen, z-10 para contenido)
-│   ├── AboutSection
-│   ├── ServicesSectionWithImages
-│   ├── TeamSection
-│   ├── CaseStudiesSection
-│   └── InstitutionalFooter
-```
-
-### Z-index actual
-
-```text
-Header: z-50 (posición fija, debería estar SOBRE todo)
-Hero content: z-10 (dentro del hero)
-Hero background: sin z-index (por defecto 0)
-```
-
-### Problema potencial
-
-Si el header no aparece, puede ser porque:
-1. **Error de importación** en el lazy loading
-2. **CSS/Tailwind no compilado** correctamente
-3. **Caché del navegador** mostrando versión antigua
+| Elemento | Antes | Después |
+|----------|-------|---------|
+| Tamaño texto | 18px (prose-lg) | 20px (prose-xl) |
+| Ancho máximo | Sin límite | 65ch (~700px) |
+| Color texto | Heredado | Slate-700 (más contraste) |
+| Color headings | Normal | Slate-900 + font-medium |
+| Espaciado párrafos | mb-6 | mb-8 |
+| Espaciado h2 | mt-12/mb-6 | mt-14/mb-8 |
 
 ---
 
-## Pasos de Verificación Post-Implementación
+## Archivo a Modificar
 
-1. **Navegar a `/v2` en el iframe de Lovable** (no en producción)
-2. **Hard refresh** (Ctrl+Shift+R) para limpiar caché
-3. **Verificar en DevTools** que el header está en el DOM
-4. **Scroll hasta abajo** para ver el footer
+**`src/components/blog/BlogPostContent.tsx`** - Líneas 244-252
+
+El cambio afectará solo a la visualización del contenido del artículo, manteniendo el sidebar y la navegación intactos.
 
 ---
 
 ## Resultado Esperado
 
-Después de los cambios, al acceder a `/v2`:
-
-- ✓ Top bar con idiomas (ES | CA | EN) visible
-- ✓ Header con logo "Capittal" y navegación visible
-- ✓ Hero slider con imágenes y texto
-- ✓ Secciones de contenido
-- ✓ Footer institucional visible al hacer scroll
-
+Tras los cambios:
+- Texto más grande y legible
+- Líneas de longitud óptima para lectura
+- Mayor contraste entre texto y fondo
+- Headings que destacan claramente la estructura
+- Experiencia de lectura profesional tipo Medium/Substack
