@@ -20,7 +20,7 @@ export interface SelectOption {
 interface EditableSelectProps {
   value: string | null | undefined;
   options: SelectOption[];
-  onSave: (newValue: string) => Promise<void>;
+  onSave: (newValue: string | null) => Promise<void>;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
@@ -67,10 +67,13 @@ export const EditableSelect = React.memo<EditableSelectProps>(({
     }
     lastSaveTimeRef.current = now;
     
-    // Convert special clear value back to empty string
-    const actualValue = newValue === CLEAR_VALUE ? '' : newValue;
+    // Convert special clear value back to null (not empty string)
+    const actualValue = newValue === CLEAR_VALUE ? null : newValue;
     
-    if (actualValue === value) {
+    // Skip if value hasn't changed (handle null/undefined/empty string equivalence)
+    const currentIsEmpty = value === '' || value === null || value === undefined;
+    const newIsEmpty = actualValue === null;
+    if (actualValue === value || (newIsEmpty && currentIsEmpty)) {
       setIsOpen(false);
       return;
     }
@@ -132,7 +135,7 @@ export const EditableSelect = React.memo<EditableSelectProps>(({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {allowClear && value && (
+          {allowClear && (
             <SelectItem value={CLEAR_VALUE}>
               <span className="text-muted-foreground">Sin asignar</span>
             </SelectItem>
