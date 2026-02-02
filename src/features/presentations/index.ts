@@ -5,6 +5,7 @@ export * from './types/presentation.types';
 export * from './hooks/usePresentations';
 export { useAIContentGeneration } from './hooks/useAIContentGeneration';
 export { useCapittalFirmDeckSeeder } from './hooks/useCapittalFirmDeckSeeder';
+export { useCapittalOnePagerSeeder } from './hooks/useCapittalOnePagerSeeder';
 export { usePresentationVersioning } from './hooks/usePresentationVersioning';
 
 // Utils
