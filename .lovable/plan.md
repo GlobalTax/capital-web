@@ -1,177 +1,185 @@
 
-# Plan: Template de Firm Deck Corporativo de Capittal con Contenido Real
+# Plan: Arreglar la pestaña "Estadísticas" de Contactos
 
-## Resumen
+## Diagnóstico Realizado
 
-Mejorar el template de Firm Deck existente con contenido real enriquecido extraído de la web de Capittal, añadiendo más slides y datos corporativos auténticos.
+### Causa Raíz Identificada
+Los logs de Postgres muestran errores de **statement timeout** - las queries están tardando más de lo permitido y son canceladas por el servidor. Esto causa que los componentes reciban errores en lugar de datos, y al no haber Error Boundaries individuales, **un error en cualquier sección tumba toda la vista**.
 
----
-
-## Contenido Real Identificado
-
-### Datos Corporativos (Fuentes Verificadas)
-| Métrica | Valor | Fuente |
-|---------|-------|--------|
-| Valor total asesorado | €902M | Hero.tsx, ValoracionesCTA.tsx |
-| Tasa de éxito | 98,7% | MinimalistHero.tsx, múltiples componentes |
-| Operaciones cerradas | 200+ | DetailedCaseStudies, varios |
-| Profesionales | 60-70+ | MinimalistDifferentiators.tsx |
-| Años de experiencia | 25+ años | MinimalistDifferentiators.tsx |
-| Tiempo de cierre | 6-8 meses | MinimalistDifferentiators.tsx |
-| Incremento valor | +40% más valor | MinimalistDifferentiators.tsx |
-| Grupo | Grupo Navarro (Capittal + Navarro Legal) | MinimalistDifferentiators.tsx |
-
-### Diferenciadores Clave
-1. **Especialización Exclusiva**: Solo M&A desde hace +25 años
-2. **Resultados Medibles**: +40% más valor que media del mercado
-3. **Proceso Optimizado**: 6-8 meses vs el doble del mercado
-4. **Ecosistema Integral**: 70+ especialistas coordinados
-5. **Servicio 360°**: Capittal + Navarro Legal
-
-### Servicios Confirmados
-- Valoración de empresas
-- Venta de empresas (Sell-side)
-- Compra de empresas (Buy-side)
-- Due Diligence financiero, fiscal y legal
-- Planificación fiscal M&A
-- Reestructuraciones y refinanciaciones
-- Asesoramiento legal integrado
-
-### Enfoque (4 Pilares)
-1. Enfoque Personalizado
-2. Confidencialidad Total
-3. Eficiencia Temporal
-4. Maximización de Valor
+### Componentes Afectados
+1. **ContactsStatsPanel** - Panel principal que orquesta todas las sub-secciones
+2. **useContactsCostAnalysis** - Hook que hace cálculos pesados en frontend
+3. **useLeadMetrics** - Hace 4 queries paralelas sin límites
+4. **useCampaignHistory** - Consulta histórico de campañas
+5. **MetaAdsAnalyticsDashboard** - Carga todo el histórico de ads
 
 ---
 
-## Estructura del Nuevo Firm Deck (8 slides)
+## Arquitectura de la Solución
 
-### Slide 1: Hero - Posicionamiento
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `hero` |
-| Headline | Maximizamos el valor de tu empresa |
-| Subline | Especialistas exclusivos en M&A desde 2008 |
-| Content | Bullets: "Asesoramiento M&A integral en España", "Parte del ecosistema Grupo Navarro", "Más de 70 profesionales especializados" |
+### Estrategia de 3 Capas
 
-### Slide 2: Stats - Track Record
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `stats` |
-| Headline | Track Record |
-| Subline | Resultados que avalan más de 25 años de experiencia |
-| Stats | €902M Valor asesorado, 98,7% Tasa de éxito, 200+ Operaciones cerradas, 70+ Profesionales |
-
-### Slide 3: Bullets - Servicios
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `bullets` |
-| Headline | Nuestros Servicios |
-| Subline | Acompañamos a empresarios en todo el ciclo de la transacción |
-| Bullets | Valoración de empresas, Venta de empresas (Sell-side), Compra de empresas (Buy-side), Due Diligence integral (financiero, fiscal, legal), Planificación fiscal M&A, Reestructuraciones y refinanciaciones |
-
-### Slide 4: Comparison - Diferenciadores
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `comparison` |
-| Headline | Lo Que Nos Diferencia |
-| Subline | No somos una consultora generalista |
-| Options | Especialización Exclusiva (Solo M&A 25+ años), Resultados Medibles (+40% más valor), Proceso Optimizado (6-8 meses), Ecosistema Integral (70+ especialistas), Servicio 360° (Capittal + Navarro Legal) |
-
-### Slide 5: Bullets - Nuestro Enfoque
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `bullets` |
-| Headline | Nuestro Enfoque |
-| Subline | Un método probado que combina experiencia con servicio personalizado |
-| Bullets | Enfoque Personalizado: Estrategia adaptada a tu negocio, Confidencialidad Total: Protocolos estrictos de protección, Eficiencia Temporal: Procesos optimizados sin comprometer calidad, Maximización de Valor: Objetivo de mejor precio y términos |
-
-### Slide 6: Timeline - Proceso de Venta
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `timeline` |
-| Headline | Proceso de Venta |
-| Subline | Fases del proceso M&A típico (6-8 meses) |
-| Phases | 1. Preparación (Análisis y documentación, 1-4 sem), 2. Marketing (Contacto con inversores, 5-8 sem), 3. Ofertas (Recepción y negociación, 9-12 sem), 4. Due Diligence (Verificación exhaustiva, 13-16 sem), 5. Cierre (Firma y transmisión, 17-20 sem) |
-
-### Slide 7: Overview - Grupo Navarro
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `overview` |
-| Headline | Ecosistema Grupo Navarro |
-| Subline | Servicio integral desde la valoración hasta el cierre legal |
-| Content | Capittal (M&A Advisory), Navarro Legal (Asesoramiento jurídico), Beneficios: +15-25% incremento en precio final, Un solo equipo coordinado, Menor riesgo por identificación temprana de contingencias |
-
-### Slide 8: Closing - Contacto
-| Campo | Contenido |
-|-------|-----------|
-| Layout | `closing` |
-| Headline | ¿Hablamos? |
-| Subline | Contacta con nosotros para una consulta inicial confidencial |
-| Content | Email: info@capittal.es, Web: www.capittal.es, CTA: "Solicitar reunión", Disclaimer: "Primera consulta sin compromiso" |
-
----
-
-## Implementación Técnica
-
-### 1. Actualizar useCapittalFirmDeckSeeder.ts
-
-**Archivo**: `src/features/presentations/hooks/useCapittalFirmDeckSeeder.ts`
-
-Cambios:
-- Expandir de 6 a 8 slides
-- Añadir slide de Diferenciadores (layout: `comparison`)
-- Añadir slide del Grupo Navarro (layout: `overview`)
-- Actualizar métricas con datos más precisos (70+ profesionales, +25 años)
-- Añadir contenido de enfoque y metodología real
-- Mejorar metadata con más información corporativa
-
-### 2. Actualizar template en base de datos (opcional)
-
-**SQL Migration**: Actualizar el template "Firm Presentation" en `presentation_templates` con la estructura de Capittal como ejemplo base.
-
----
-
-## Cambios en Archivos
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/features/presentations/hooks/useCapittalFirmDeckSeeder.ts` | Reescribir con 8 slides y contenido real enriquecido |
-
----
-
-## Datos Específicos por Slide
-
-### Slide Stats - Métricas Exactas
-```typescript
-stats: [
-  { value: '€902M', label: 'Valor asesorado', suffix: '' },
-  { value: '98,7%', label: 'Tasa de éxito', suffix: '' },
-  { value: '200+', label: 'Operaciones cerradas', suffix: '' },
-  { value: '70+', label: 'Profesionales', suffix: '' }
-]
+```text
+┌─────────────────────────────────────────────────────┐
+│        ContactsStatsPanel (Orquestador)             │
+├─────────────────────────────────────────────────────┤
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐   │
+│  │ ErrorBoundary│ │ ErrorBoundary│ │ ErrorBoundary│ │
+│  │ + Suspense  │ │ + Suspense  │ │ + Suspense  │   │
+│  ├─────────────┤ ├─────────────┤ ├─────────────┤   │
+│  │ Control de  │ │   Meta Ads  │ │   Métricas  │   │
+│  │   Costes    │ │  Analytics  │ │   Leads     │   │
+│  └─────────────┘ └─────────────┘ └─────────────┘   │
+└─────────────────────────────────────────────────────┘
 ```
 
-### Slide Diferenciadores - Datos Reales
+---
+
+## Cambios Técnicos
+
+### 1. Crear StatsErrorBoundary (Nuevo Componente)
+
+**Archivo**: `src/features/contacts/components/stats/StatsErrorBoundary.tsx`
+
+Un Error Boundary reutilizable para cada sección de estadísticas:
+- Captura errores de renderizado
+- Muestra un fallback amigable con botón "Reintentar"
+- Registra el error en consola
+- No afecta a otras secciones
+
+### 2. Modificar ContactsStatsPanel
+
+**Archivo**: `src/features/contacts/components/stats/ContactsStatsPanel.tsx`
+
+Envolver cada `TabsContent` con un Error Boundary individual:
+
 ```typescript
-differentiators: [
-  { metric: 'Solo M&A', title: 'Especialización Exclusiva', description: '+25 años dedicados exclusivamente a M&A' },
-  { metric: '+40% valor', title: 'Resultados Medibles', description: 'Valoraciones superiores a la media del mercado' },
-  { metric: '6-8 meses', title: 'Proceso Optimizado', description: 'Tiempos reducidos sin comprometer calidad' },
-  { metric: '70+ expertos', title: 'Ecosistema Integral', description: 'Abogados, fiscales, laborales y economistas' },
-  { metric: 'Servicio 360°', title: 'Grupo Navarro', description: 'Capittal + Navarro Legal integrados' }
-]
+<TabsContent value="costs">
+  <StatsErrorBoundary section="Control de Costes">
+    <CampaignRegistryTable />
+    <AnalyticsTabs />
+  </StatsErrorBoundary>
+</TabsContent>
+
+<TabsContent value="meta_ads">
+  <StatsErrorBoundary section="Meta Ads">
+    <MetaAdsAnalyticsDashboard />
+  </StatsErrorBoundary>
+</TabsContent>
+
+// ... igual para cada tab
 ```
+
+### 3. Proteger Hook useLeadMetrics
+
+**Archivo**: `src/components/admin/metrics/useLeadMetrics.ts`
+
+Añadir defensas:
+- Normalizar arrays: `const allLeads = data ?? []`
+- Añadir límites a queries: `.limit(5000)`
+- Proteger cálculos de divisiones por cero
+- Envolver parseISO con try/catch
+- Añadir retry con backoff
+
+```typescript
+const { data: valuations } = await supabase
+  .from('company_valuations')
+  .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
+  .is('is_deleted', false)
+  .order('created_at', { ascending: false })
+  .limit(5000);  // Límite para evitar timeouts
+
+// Normalización segura
+if (valuations) {
+  allLeads.push(...(valuations ?? []).map(v => ({...})));
+}
+```
+
+### 4. Proteger Hook useContactsCostAnalysis
+
+**Archivo**: `src/features/contacts/hooks/useContactsCostAnalysis.ts`
+
+Añadir defensas:
+- Verificar que `allContacts` existe antes de filtrar
+- Proteger reduce/map con valores por defecto
+- Evitar divisiones por cero en métricas
+
+```typescript
+const filteredContacts = useMemo(() => {
+  if (!allContacts || !Array.isArray(allContacts)) return [];
+  // ... resto del código
+}, [allContacts, ...]);
+
+const cpl = totalLeads > 0 ? totalCost / totalLeads : 0;
+```
+
+### 5. Proteger Componentes de Gráficos
+
+**Archivos afectados**:
+- `EvolutionCharts.tsx`
+- `TemporalEvolutionBlock.tsx`
+- `StatusDistributionBlock.tsx`
+- `ConversionFunnelBlock.tsx`
+
+Para cada uno:
+- Verificar `data.length > 0` antes de renderizar
+- Envolver parseISO en try/catch
+- Añadir fallback para datos vacíos o inválidos
+
+```typescript
+const chartData = data.map(d => {
+  try {
+    return {
+      ...d,
+      displayDate: format(parseISO(d.date), 'dd MMM', { locale: es }),
+    };
+  } catch {
+    return { ...d, displayDate: d.date || '—' };
+  }
+});
+```
+
+### 6. Optimizar Queries con Límites
+
+**Hook useCampaignHistory** (`src/hooks/useCampaignHistory.ts`):
+- Ya tiene `.limit(1000)` ✓ - pero verificar que maneja error
+
+**Hook useAdsCostsHistory** (`src/hooks/useAdsCostsHistory.ts`):
+- Añadir `.limit(2000)` para evitar cargar todo el histórico
+
+---
+
+## Archivos a Crear/Modificar
+
+| Archivo | Acción | Cambios |
+|---------|--------|---------|
+| `src/features/contacts/components/stats/StatsErrorBoundary.tsx` | **Crear** | Error Boundary reutilizable con UI de fallback |
+| `src/features/contacts/components/stats/ContactsStatsPanel.tsx` | Modificar | Envolver cada tab con StatsErrorBoundary |
+| `src/components/admin/metrics/useLeadMetrics.ts` | Modificar | Añadir límites, normalización y try/catch |
+| `src/features/contacts/hooks/useContactsCostAnalysis.ts` | Modificar | Añadir verificaciones null/undefined |
+| `src/components/admin/campaigns/MetaAdsAnalytics/EvolutionCharts.tsx` | Modificar | Proteger parseISO |
+| `src/components/admin/metrics/TemporalEvolutionBlock.tsx` | Modificar | Proteger parseISO |
+| `src/hooks/useAdsCostsHistory.ts` | Modificar | Añadir límite a query |
+
+---
+
+## Pruebas de Verificación
+
+Después de implementar:
+
+1. **Entrar en `/admin/contacts` → click "Estadísticas"** → No debe mostrar error
+2. **Cambiar entre tabs** (Control de Costes / Meta Ads / Google Ads / Métricas) → Cada uno carga independiente
+3. **Probar con rango de fechas vacío** → Muestra empty state, no rompe
+4. **Simular fallo de una query** (desconectar red brevemente) → Solo falla ese bloque, muestra "Reintentar"
+5. **Refrescar página** → Sigue funcionando
 
 ---
 
 ## Resultado Esperado
 
-- Firm Deck profesional de 8 slides con datos corporativos reales de Capittal
-- Contenido extraído y verificado de la web actual
-- Diferenciadores competitivos destacados
-- Proceso de venta con tiempos reales
-- Integración con Grupo Navarro visible
-- Métricas de track record actualizadas
-- Un clic para generar la presentación completa lista para editar
+- ✅ "Estadísticas" siempre navegable (nunca pantalla de error global)
+- ✅ Errores aislados por sección (un bloque falla, los demás funcionan)
+- ✅ Mensajes de error claros con opción de reintentar
+- ✅ Queries optimizadas con límites para evitar timeouts
+- ✅ Cálculos robustos sin NaN/undefined/Infinity
+- ✅ Tabs "Todos", "Favoritos", "Pipeline" no afectados
