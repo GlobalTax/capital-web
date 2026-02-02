@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Json } from '@/integrations/supabase/types';
 import type { Slide } from '../types/presentation.types';
 
 export type TranslationLanguage = 'es' | 'en' | 'ca' | 'fr' | 'de' | 'pt' | 'it';
@@ -86,7 +87,7 @@ export function usePresentationTranslation() {
           .update({
             headline: translated.headline || original.headline,
             subline: translated.subline ?? original.subline,
-            content: updatedContent,
+            content: updatedContent as unknown as Json,
           })
           .eq('id', original.id);
 
