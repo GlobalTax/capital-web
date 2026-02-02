@@ -38,11 +38,22 @@ const formatNumber = (value: number) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || !payload.length) return null;
   
+  // Safe date formatting in tooltip
+  let formattedDate = label;
+  try {
+    if (label) {
+      const parsed = parseISO(label);
+      if (!isNaN(parsed.getTime())) {
+        formattedDate = format(parsed, 'dd MMMM yyyy', { locale: es });
+      }
+    }
+  } catch {
+    formattedDate = label || '—';
+  }
+  
   return (
     <div className="bg-background border rounded-lg shadow-lg p-3 text-sm">
-      <p className="font-medium mb-2">
-        {format(parseISO(label), 'dd MMMM yyyy', { locale: es })}
-      </p>
+      <p className="font-medium mb-2">{formattedDate}</p>
       {payload.map((entry: any, index: number) => (
         <div key={index} className="flex items-center gap-2">
           <div 
@@ -52,8 +63,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           <span className="text-muted-foreground">{entry.name}:</span>
           <span className="font-medium">
             {entry.dataKey.includes('spend') || entry.dataKey.includes('cost') || entry.dataKey.includes('cpm')
-              ? formatCurrency(entry.value)
-              : formatNumber(entry.value)}
+              ? formatCurrency(entry.value ?? 0)
+              : formatNumber(entry.value ?? 0)}
           </span>
         </div>
       ))}
@@ -81,11 +92,20 @@ export const EvolutionCharts: React.FC<EvolutionChartsProps> = ({
     );
   }
 
-  // Format dates for display
-  const chartData = data.map(d => ({
-    ...d,
-    displayDate: format(parseISO(d.date), 'dd MMM', { locale: es }),
-  }));
+  // Format dates for display with safe parsing
+  const chartData = data.map(d => {
+    try {
+      if (!d.date) return { ...d, displayDate: '—' };
+      const parsed = parseISO(d.date);
+      if (isNaN(parsed.getTime())) return { ...d, displayDate: d.date };
+      return {
+        ...d,
+        displayDate: format(parsed, 'dd MMM', { locale: es }),
+      };
+    } catch {
+      return { ...d, displayDate: d.date || '—' };
+    }
+  });
 
   return (
     <div className="space-y-6">

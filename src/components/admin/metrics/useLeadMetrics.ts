@@ -46,13 +46,19 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
     queryFn: async () => {
       const allLeads: LeadRecord[] = [];
       
-      // Fetch from company_valuations
-      const { data: valuations } = await supabase
+      // Fetch from company_valuations with LIMIT to prevent timeout
+      const { data: valuations, error: valError } = await supabase
         .from('company_valuations')
         .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
-        .is('is_deleted', false);
+        .is('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .limit(5000);
       
-      if (valuations) {
+      if (valError) {
+        console.warn('[useLeadMetrics] Error fetching valuations:', valError.message);
+      }
+      
+      if (valuations && Array.isArray(valuations)) {
         allLeads.push(...valuations.map(v => ({
           id: v.id,
           lead_status_crm: v.lead_status_crm,
@@ -63,13 +69,19 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
         })));
       }
       
-      // Fetch from contact_leads
-      const { data: contacts } = await supabase
+      // Fetch from contact_leads with LIMIT
+      const { data: contacts, error: contactsError } = await supabase
         .from('contact_leads')
         .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
-        .is('is_deleted', false);
+        .is('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .limit(5000);
       
-      if (contacts) {
+      if (contactsError) {
+        console.warn('[useLeadMetrics] Error fetching contacts:', contactsError.message);
+      }
+      
+      if (contacts && Array.isArray(contacts)) {
         allLeads.push(...contacts.map(c => ({
           id: c.id,
           lead_status_crm: c.lead_status_crm,
@@ -80,13 +92,19 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
         })));
       }
       
-      // Fetch from acquisition_leads
-      const { data: acquisitions } = await supabase
+      // Fetch from acquisition_leads with LIMIT
+      const { data: acquisitions, error: acqError } = await supabase
         .from('acquisition_leads')
         .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
-        .is('is_deleted', false);
+        .is('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .limit(5000);
       
-      if (acquisitions) {
+      if (acqError) {
+        console.warn('[useLeadMetrics] Error fetching acquisitions:', acqError.message);
+      }
+      
+      if (acquisitions && Array.isArray(acquisitions)) {
         allLeads.push(...acquisitions.map(a => ({
           id: a.id,
           lead_status_crm: a.lead_status_crm,
@@ -97,13 +115,19 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
         })));
       }
       
-      // Fetch from collaborator_applications
-      const { data: collaborators } = await supabase
+      // Fetch from collaborator_applications with LIMIT
+      const { data: collaborators, error: collabError } = await supabase
         .from('collaborator_applications')
         .select('id, lead_status_crm, created_at, lead_form')
-        .is('is_deleted', false);
+        .is('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .limit(2000);
       
-      if (collaborators) {
+      if (collabError) {
+        console.warn('[useLeadMetrics] Error fetching collaborators:', collabError.message);
+      }
+      
+      if (collaborators && Array.isArray(collaborators)) {
         allLeads.push(...collaborators.map(c => ({
           id: c.id,
           lead_status_crm: c.lead_status_crm,
@@ -119,25 +143,37 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
     refetchOnWindowFocus: true,
   });
 
-  // Filter leads by date range
+  // Filter leads by date range with safe date parsing
   const filteredLeads = useMemo(() => {
-    if (!leads) return [];
+    if (!leads || !Array.isArray(leads)) return [];
     
     let filtered = [...leads];
     
     if (options.dateFrom) {
       const from = startOfDay(options.dateFrom);
       filtered = filtered.filter(l => {
-        const date = parseISO(l.lead_received_at || l.created_at);
-        return date >= from;
+        try {
+          const dateStr = l.lead_received_at || l.created_at;
+          if (!dateStr) return false;
+          const date = parseISO(dateStr);
+          return !isNaN(date.getTime()) && date >= from;
+        } catch {
+          return false;
+        }
       });
     }
     
     if (options.dateTo) {
       const to = endOfDay(options.dateTo);
       filtered = filtered.filter(l => {
-        const date = parseISO(l.lead_received_at || l.created_at);
-        return date <= to;
+        try {
+          const dateStr = l.lead_received_at || l.created_at;
+          if (!dateStr) return false;
+          const date = parseISO(dateStr);
+          return !isNaN(date.getTime()) && date <= to;
+        } catch {
+          return false;
+        }
       });
     }
     

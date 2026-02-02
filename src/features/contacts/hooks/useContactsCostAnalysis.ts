@@ -116,49 +116,80 @@ export const useContactsCostAnalysis = () => {
     compareWithPrevious: true,
   });
 
-  // Contactos filtrados por periodo
+  // Contactos filtrados por periodo - with safety checks
   const filteredContacts = useMemo(() => {
-    if (!allContacts.length) return [];
+    if (!allContacts || !Array.isArray(allContacts) || allContacts.length === 0) return [];
     
     return allContacts.filter(contact => {
-      const contactDate = parseISO(contact.created_at);
-      const from = parseISO(filters.dateFrom);
-      const to = parseISO(filters.dateTo);
-      
-      return isWithinInterval(contactDate, { start: from, end: to });
+      try {
+        if (!contact.created_at) return false;
+        const contactDate = parseISO(contact.created_at);
+        if (isNaN(contactDate.getTime())) return false;
+        
+        const from = parseISO(filters.dateFrom);
+        const to = parseISO(filters.dateTo);
+        if (isNaN(from.getTime()) || isNaN(to.getTime())) return true; // Include if dates invalid
+        
+        return isWithinInterval(contactDate, { start: from, end: to });
+      } catch {
+        return false;
+      }
     });
   }, [allContacts, filters.dateFrom, filters.dateTo]);
 
-  // Contactos del periodo anterior (para comparativas)
+  // Contactos del periodo anterior (para comparativas) - with safety
   const previousPeriodContacts = useMemo(() => {
-    if (!allContacts.length || !filters.compareWithPrevious) return [];
+    if (!allContacts || !Array.isArray(allContacts) || allContacts.length === 0 || !filters.compareWithPrevious) return [];
     
-    const from = parseISO(filters.dateFrom);
-    const to = parseISO(filters.dateTo);
-    const periodLength = to.getTime() - from.getTime();
-    
-    const prevFrom = new Date(from.getTime() - periodLength);
-    const prevTo = new Date(from.getTime() - 1);
-    
-    return allContacts.filter(contact => {
-      const contactDate = parseISO(contact.created_at);
-      return isWithinInterval(contactDate, { start: prevFrom, end: prevTo });
-    });
+    try {
+      const from = parseISO(filters.dateFrom);
+      const to = parseISO(filters.dateTo);
+      if (isNaN(from.getTime()) || isNaN(to.getTime())) return [];
+      
+      const periodLength = to.getTime() - from.getTime();
+      
+      const prevFrom = new Date(from.getTime() - periodLength);
+      const prevTo = new Date(from.getTime() - 1);
+      
+      return allContacts.filter(contact => {
+        try {
+          if (!contact.created_at) return false;
+          const contactDate = parseISO(contact.created_at);
+          if (isNaN(contactDate.getTime())) return false;
+          return isWithinInterval(contactDate, { start: prevFrom, end: prevTo });
+        } catch {
+          return false;
+        }
+      });
+    } catch {
+      return [];
+    }
   }, [allContacts, filters.dateFrom, filters.dateTo, filters.compareWithPrevious]);
 
-  // Costes del periodo
+  // Costes del periodo - with safety
   const periodCosts = useMemo(() => {
-    if (!costs.length) return [];
+    if (!costs || !Array.isArray(costs) || costs.length === 0) return [];
     
-    return costs.filter(cost => {
-      const costStart = parseISO(cost.period_start);
-      const costEnd = parseISO(cost.period_end);
+    try {
       const filterFrom = parseISO(filters.dateFrom);
       const filterTo = parseISO(filters.dateTo);
+      if (isNaN(filterFrom.getTime()) || isNaN(filterTo.getTime())) return costs;
       
-      // El coste se solapa con el periodo de filtro
-      return costStart <= filterTo && costEnd >= filterFrom;
-    });
+      return costs.filter(cost => {
+        try {
+          const costStart = parseISO(cost.period_start);
+          const costEnd = parseISO(cost.period_end);
+          if (isNaN(costStart.getTime()) || isNaN(costEnd.getTime())) return true;
+          
+          // El coste se solapa con el periodo de filtro
+          return costStart <= filterTo && costEnd >= filterFrom;
+        } catch {
+          return true;
+        }
+      });
+    } catch {
+      return costs;
+    }
   }, [costs, filters.dateFrom, filters.dateTo]);
 
   // Coste total del periodo
