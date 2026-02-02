@@ -1,16 +1,18 @@
 // ============= CONTACTS STATS PANEL =============
 // Panel principal de estadísticas con Control de Costes
+// Cada tab está protegido con Error Boundary para aislamiento de fallos
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, BarChart3, TrendingUp, Euro, CircleOff, RefreshCw, Table2 } from 'lucide-react';
+import { Calendar, BarChart3, TrendingUp, Euro, CircleOff, RefreshCw, Table2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 import { useContactsCostAnalysis } from '../../hooks/useContactsCostAnalysis';
@@ -19,6 +21,7 @@ import { ChannelCostAnalysis } from './ChannelCostAnalysis';
 import { TimeEvolutionChart } from './TimeEvolutionChart';
 import { EconomicFunnel } from './EconomicFunnel';
 import { QualityVsCostMatrix } from './QualityVsCostMatrix';
+import { StatsErrorBoundary } from './StatsErrorBoundary';
 
 // Cost Control components
 import { CampaignRegistryTable } from '@/components/admin/campaigns/CampaignRegistryTable';
@@ -26,6 +29,18 @@ import { AnalyticsTabs } from '@/components/admin/campaigns/AnalyticsTabs';
 import { AdsCostsHistoryTable } from '@/components/admin/campaigns/AdsCostsHistoryTable';
 import { MetaAdsAnalyticsDashboard } from '@/components/admin/campaigns/MetaAdsAnalytics';
 import { LeadMetricsDashboard } from '@/components/admin/metrics';
+
+// Loading fallback for Suspense
+const SectionLoading = () => (
+  <Card>
+    <CardContent className="py-12">
+      <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="text-sm">Cargando datos...</span>
+      </div>
+    </CardContent>
+  </Card>
+);
 type PeriodPreset = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
 const PERIOD_PRESETS: { value: PeriodPreset; label: string }[] = [
@@ -165,28 +180,44 @@ export const ContactsStatsPanel: React.FC = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Tab: Cost Control */}
+        {/* Tab: Cost Control - protected with error boundary */}
         <TabsContent value="costs" className="space-y-6 mt-4">
-          {/* Campaign Registry Table - PRIMARY INPUT */}
-          <CampaignRegistryTable />
+          <StatsErrorBoundary section="Control de Costes">
+            <Suspense fallback={<SectionLoading />}>
+              {/* Campaign Registry Table - PRIMARY INPUT */}
+              <CampaignRegistryTable />
 
-          {/* Analytics Tabs (derived from history) */}
-          <AnalyticsTabs />
+              {/* Analytics Tabs (derived from history) */}
+              <AnalyticsTabs />
+            </Suspense>
+          </StatsErrorBoundary>
         </TabsContent>
 
-        {/* Tab: Meta Ads - NEW ANALYTICS DASHBOARD */}
+        {/* Tab: Meta Ads - protected with error boundary */}
         <TabsContent value="meta_ads" className="space-y-6 mt-4">
-          <MetaAdsAnalyticsDashboard />
+          <StatsErrorBoundary section="Meta Ads">
+            <Suspense fallback={<SectionLoading />}>
+              <MetaAdsAnalyticsDashboard />
+            </Suspense>
+          </StatsErrorBoundary>
         </TabsContent>
 
-        {/* Tab: Google Ads */}
+        {/* Tab: Google Ads - protected with error boundary */}
         <TabsContent value="google_ads" className="space-y-6 mt-4">
-          <AdsCostsHistoryTable platform="google_ads" />
+          <StatsErrorBoundary section="Google Ads">
+            <Suspense fallback={<SectionLoading />}>
+              <AdsCostsHistoryTable platform="google_ads" />
+            </Suspense>
+          </StatsErrorBoundary>
         </TabsContent>
 
-        {/* Tab: Lead Metrics - NEW ANALYTICS DASHBOARD */}
+        {/* Tab: Lead Metrics - protected with error boundary */}
         <TabsContent value="metrics" className="space-y-6 mt-4">
-          <LeadMetricsDashboard />
+          <StatsErrorBoundary section="Métricas de Leads">
+            <Suspense fallback={<SectionLoading />}>
+              <LeadMetricsDashboard />
+            </Suspense>
+          </StatsErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>

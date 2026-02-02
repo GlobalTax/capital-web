@@ -67,12 +67,21 @@ export const TemporalEvolutionBlock: React.FC<TemporalEvolutionBlockProps> = ({
     );
   }
 
-  // Prepare chart data with formatted dates
-  const chartData = data.map(d => ({
-    ...d,
-    displayDate: format(parseISO(d.date), 'dd MMM', { locale: es }),
-    fullDate: format(parseISO(d.date), 'dd MMMM yyyy', { locale: es }),
-  }));
+  // Prepare chart data with formatted dates - safe parsing
+  const chartData = data.map(d => {
+    try {
+      if (!d.date) return { ...d, displayDate: '—', fullDate: '—' };
+      const parsed = parseISO(d.date);
+      if (isNaN(parsed.getTime())) return { ...d, displayDate: d.date, fullDate: d.date };
+      return {
+        ...d,
+        displayDate: format(parsed, 'dd MMM', { locale: es }),
+        fullDate: format(parsed, 'dd MMMM yyyy', { locale: es }),
+      };
+    } catch {
+      return { ...d, displayDate: d.date || '—', fullDate: d.date || '—' };
+    }
+  });
 
   // Calculate totals for the period
   const totals = data.reduce((acc, d) => ({

@@ -84,12 +84,17 @@ export const useAdsCostsHistory = (platform: AdsPlatform) => {
         .from('ads_costs_history')
         .select('*')
         .eq('platform', platform)
-        .order('date', { ascending: false });
+        .order('date', { ascending: false })
+        .limit(2000); // Limit to prevent timeout
 
-      if (error) throw error;
-      return data as AdsCostRecord[];
+      if (error) {
+        console.warn('[useAdsCostsHistory] Error fetching:', error.message);
+        throw error;
+      }
+      return (data ?? []) as AdsCostRecord[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
+    retry: 1, // Only retry once to avoid long waits
   });
 };
 
@@ -116,8 +121,9 @@ export interface CalculatedStats {
   uniqueDays: number;
 }
 
-export const calculateStats = (records: AdsCostRecord[]): CalculatedStats => {
-  if (!records.length) {
+export const calculateStats = (records: AdsCostRecord[] | null | undefined): CalculatedStats => {
+  // Safe check for empty or invalid data
+  if (!records || !Array.isArray(records) || records.length === 0) {
     return {
       totalSpend: 0,
       totalResults: 0,
