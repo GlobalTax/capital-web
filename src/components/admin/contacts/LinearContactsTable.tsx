@@ -482,7 +482,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
               itemSize={ROW_HEIGHT}
               itemData={itemData}
               overscanCount={5}
-              style={{ overflow: 'hidden' }}
+              style={{ overflowX: 'hidden', overflowY: 'auto' }}
             >
               {VirtualizedRow}
             </List>
