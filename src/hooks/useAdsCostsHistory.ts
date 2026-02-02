@@ -277,7 +277,9 @@ export const useAdsCostsImport = (platform: AdsPlatform) => {
 
       const campaignIdx = findColumnIndex(['nombre de la campaña', 'campaign name', 'campaña', 'campaign']);
       const dateIdx = findColumnIndex(['día', 'dia', 'day', 'date', 'fecha']);
-      const spendIdx = findColumnIndex(['importe gastado', 'amount spent', 'spend', 'gasto', 'coste']);
+      // IMPORTANT: 'importe gastado' must be specific to avoid matching 'Coste por resultado'
+      // Do NOT use generic patterns like 'coste' or 'gasto' which could match wrong columns
+      const spendIdx = findColumnIndex(['importe gastado', 'amount spent', 'spend']);
       const resultTypeIdx = findColumnIndex(['tipo de resultado', 'result type']);
       const resultsIdx = findColumnIndex(['resultados', 'results']);
       const costPerResultIdx = findColumnIndex(['coste por resultado', 'cost per result']);
