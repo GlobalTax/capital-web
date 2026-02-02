@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import type { Slide, SlideContent, BrandKit, Theme, Testimonial } from '../types/presentation.types';
 import { Quote } from 'lucide-react';
 import { sanitizeHtml } from '@/shared/utils/sanitize';
+import { OnePagerSlide } from './slides/OnePagerSlide';
 
 interface SlideRendererProps {
   slide: Slide;
@@ -62,6 +63,11 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
       case 'closing':
         return <ClosingSlide slide={slide} colors={colors} fonts={fonts} brandKit={brandKit} />;
       default:
+        // Check for custom content types
+        const contentType = (slide.content as Record<string, unknown>)?.type;
+        if (contentType === 'one_pager_commercial') {
+          return <OnePagerSlide slide={slide} colors={colors} fonts={fonts} brandKit={brandKit} />;
+        }
         return <CustomSlide slide={slide} colors={colors} fonts={fonts} />;
     }
   };
