@@ -4,6 +4,7 @@ export * from './types/presentation.types';
 // Hooks
 export * from './hooks/usePresentations';
 export { useAIContentGeneration } from './hooks/useAIContentGeneration';
+export { useCapittalFirmDeckSeeder } from './hooks/useCapittalFirmDeckSeeder';
 export { usePresentationVersioning } from './hooks/usePresentationVersioning';
 
 // Utils
