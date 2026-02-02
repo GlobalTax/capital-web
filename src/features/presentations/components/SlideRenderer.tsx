@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import type { Slide, SlideContent, BrandKit, Theme } from '../types/presentation.types';
+import type { Slide, SlideContent, BrandKit, Theme, Testimonial } from '../types/presentation.types';
+import { Quote } from 'lucide-react';
 import { sanitizeHtml } from '@/shared/utils/sanitize';
 
 interface SlideRendererProps {
@@ -56,6 +57,8 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
         return <TeamSlide slide={slide} colors={colors} fonts={fonts} />;
       case 'financials':
         return <FinancialsSlide slide={slide} colors={colors} fonts={fonts} />;
+      case 'testimonials':
+        return <TestimonialsSlide slide={slide} colors={colors} fonts={fonts} />;
       case 'closing':
         return <ClosingSlide slide={slide} colors={colors} fonts={fonts} brandKit={brandKit} />;
       default:
@@ -382,6 +385,89 @@ const FinancialsSlide: React.FC<{
     </div>
   </div>
 );
+
+// Testimonials Slide
+const TestimonialsSlide: React.FC<{
+  slide: Slide;
+  colors: { bg: string; text: string; accent: string; secondary: string };
+  fonts: { heading: string; body: string };
+}> = ({ slide, colors, fonts }) => {
+  const testimonials = slide.content?.testimonials || [];
+  const gridCols = testimonials.length === 1 ? 'grid-cols-1 max-w-2xl mx-auto' 
+    : testimonials.length === 2 ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto'
+    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+
+  return (
+    <div className="flex-1 flex flex-col justify-center px-16 py-16">
+      <h2 
+        className="text-4xl md:text-5xl font-semibold tracking-tight mb-6 text-center"
+        style={{ fontFamily: fonts.heading }}
+      >
+        {slide.headline}
+      </h2>
+      {slide.subline && (
+        <p 
+          className="text-lg opacity-70 mb-12 text-center max-w-2xl mx-auto"
+          style={{ color: colors.secondary }}
+        >
+          {slide.subline}
+        </p>
+      )}
+      <div className={`grid ${gridCols} gap-8`}>
+        {testimonials.map((testimonial, idx) => (
+          <div 
+            key={idx} 
+            className="p-8 rounded-xl border border-current/10 flex flex-col"
+            style={{ backgroundColor: colors.accent + '08' }}
+          >
+            <Quote 
+              className="w-8 h-8 mb-4 opacity-30"
+              style={{ color: colors.accent }}
+            />
+            <p className="text-lg italic mb-6 flex-1 leading-relaxed opacity-90">
+              "{testimonial.quote}"
+            </p>
+            <div className="flex items-center gap-4">
+              {testimonial.image_url ? (
+                <img 
+                  src={testimonial.image_url} 
+                  alt={testimonial.author}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold"
+                  style={{ backgroundColor: colors.accent + '20', color: colors.accent }}
+                >
+                  {testimonial.author.charAt(0)}
+                </div>
+              )}
+              <div>
+                <div className="font-semibold">{testimonial.author}</div>
+                {(testimonial.role || testimonial.company) && (
+                  <div 
+                    className="text-sm opacity-60"
+                    style={{ color: colors.secondary }}
+                  >
+                    {testimonial.role}{testimonial.role && testimonial.company && ' · '}{testimonial.company}
+                  </div>
+                )}
+                {testimonial.sector && (
+                  <div 
+                    className="text-xs mt-1 opacity-50"
+                    style={{ color: colors.secondary }}
+                  >
+                    {testimonial.sector}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // Closing Slide
 const ClosingSlide: React.FC<{
