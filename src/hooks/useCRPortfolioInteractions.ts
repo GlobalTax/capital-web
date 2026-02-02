@@ -33,6 +33,17 @@ export interface CreateInteractionData {
   metadata?: Record<string, any>;
 }
 
+export interface UpdateInteractionData {
+  id: string;
+  portfolio_id: string;
+  interaction_type?: InteractionType;
+  subject?: string;
+  body?: string;
+  contact_email?: string;
+  contact_name?: string;
+  sent_at?: string;
+}
+
 // Obtener interacciones de una empresa
 export function useCRPortfolioInteractions(portfolioId: string | undefined) {
   return useQuery({
@@ -89,6 +100,46 @@ export function useCreateCRPortfolioInteraction() {
     onError: (error) => {
       console.error('Error creating interaction:', error);
       toast.error('Error al registrar la interacción');
+    },
+  });
+}
+
+// Actualizar interacción existente
+export function useUpdateCRPortfolioInteraction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: UpdateInteractionData) => {
+      const updatePayload: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      
+      // Solo incluir campos que se pasaron explícitamente
+      if (data.interaction_type !== undefined) updatePayload.interaction_type = data.interaction_type;
+      if (data.subject !== undefined) updatePayload.subject = data.subject || null;
+      if (data.body !== undefined) updatePayload.body = data.body || null;
+      if (data.contact_email !== undefined) updatePayload.contact_email = data.contact_email || null;
+      if (data.contact_name !== undefined) updatePayload.contact_name = data.contact_name || null;
+      if (data.sent_at !== undefined) updatePayload.sent_at = data.sent_at;
+
+      const { data: result, error } = await supabase
+        .from('cr_portfolio_interactions')
+        .update(updatePayload)
+        .eq('id', data.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { ...result, portfolio_id: data.portfolio_id };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['cr-portfolio-interactions', result.portfolio_id] });
+      queryClient.invalidateQueries({ queryKey: ['cr-portfolio-list'] });
+      toast.success('Interacción actualizada');
+    },
+    onError: (error) => {
+      console.error('Error updating interaction:', error);
+      toast.error('Error al actualizar la interacción');
     },
   });
 }
