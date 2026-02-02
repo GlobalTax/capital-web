@@ -1,8 +1,9 @@
 // ============= CR PORTFOLIO INTERACTIONS TAB =============
 // Pestaña de historial de comunicaciones con una empresa del portfolio
+// Soporta: Crear, Editar, Eliminar interacciones
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +15,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -23,6 +26,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Mail,
   Phone,
   Calendar,
@@ -30,15 +49,18 @@ import {
   Linkedin,
   Plus,
   Clock,
-  Trash2,
   MessageSquare,
   Loader2,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   useCRPortfolioInteractions,
   useCreateCRPortfolioInteraction,
+  useUpdateCRPortfolioInteraction,
   useDeleteCRPortfolioInteraction,
   type InteractionType,
   type CRPortfolioInteraction,
@@ -73,11 +95,14 @@ const INTERACTION_COLORS: Record<InteractionType, string> = {
   linkedin: 'bg-sky-500/10 text-sky-700 border-sky-200',
 };
 
+// ============= INTERACTION CARD =============
 function InteractionCard({ 
   interaction, 
-  onDelete 
+  onEdit,
+  onDelete,
 }: { 
   interaction: CRPortfolioInteraction; 
+  onEdit: () => void;
   onDelete: () => void;
 }) {
   const sentDate = new Date(interaction.sent_at);
@@ -123,19 +148,185 @@ function InteractionCard({
             </div>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        
+        {/* Kebab Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onEdit}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onDelete} className="text-destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
 }
 
+// ============= INTERACTION FORM (shared between Add/Edit) =============
+interface InteractionFormProps {
+  mode: 'create' | 'edit';
+  initialData?: CRPortfolioInteraction;
+  portfolioId: string;
+  companyName: string;
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+function InteractionForm({
+  mode,
+  initialData,
+  portfolioId,
+  companyName,
+  onSuccess,
+  onCancel,
+}: InteractionFormProps) {
+  const [type, setType] = useState<InteractionType>(
+    initialData?.interaction_type || 'note'
+  );
+  const [subject, setSubject] = useState(initialData?.subject || '');
+  const [body, setBody] = useState(initialData?.body || '');
+  const [contactName, setContactName] = useState(initialData?.contact_name || '');
+  const [contactEmail, setContactEmail] = useState(initialData?.contact_email || '');
+  const [sentAt, setSentAt] = useState(
+    initialData?.sent_at 
+      ? format(new Date(initialData.sent_at), "yyyy-MM-dd'T'HH:mm")
+      : format(new Date(), "yyyy-MM-dd'T'HH:mm")
+  );
+
+  const createInteraction = useCreateCRPortfolioInteraction();
+  const updateInteraction = useUpdateCRPortfolioInteraction();
+
+  const isLoading = createInteraction.isPending || updateInteraction.isPending;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (mode === 'create') {
+        await createInteraction.mutateAsync({
+          portfolio_id: portfolioId,
+          interaction_type: type,
+          subject: subject || undefined,
+          body: body || undefined,
+          contact_name: contactName || undefined,
+          contact_email: contactEmail || undefined,
+          sent_at: new Date(sentAt).toISOString(),
+        });
+      } else if (initialData) {
+        await updateInteraction.mutateAsync({
+          id: initialData.id,
+          portfolio_id: portfolioId,
+          interaction_type: type,
+          subject,
+          body,
+          contact_name: contactName,
+          contact_email: contactEmail,
+          sent_at: new Date(sentAt).toISOString(),
+        });
+      }
+      onSuccess();
+    } catch (error) {
+      // Error ya manejado en los hooks
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Tipo de interacción</Label>
+        <Select value={type} onValueChange={(v) => setType(v as InteractionType)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(INTERACTION_LABELS) as InteractionType[]).map((t) => (
+              <SelectItem key={t} value={t}>
+                <div className="flex items-center gap-2">
+                  {INTERACTION_ICONS[t]}
+                  {INTERACTION_LABELS[t]}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Fecha y hora</Label>
+        <Input
+          type="datetime-local"
+          value={sentAt}
+          onChange={(e) => setSentAt(e.target.value)}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Contacto (nombre)</Label>
+          <Input
+            value={contactName}
+            onChange={(e) => setContactName(e.target.value)}
+            placeholder="Nombre del contacto"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Email del contacto</Label>
+          <Input
+            type="email"
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+            placeholder="email@ejemplo.com"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Asunto</Label>
+        <Input
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          placeholder="Breve descripción"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Contenido / Notas</Label>
+        <Textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Detalles de la interacción..."
+          rows={4}
+        />
+      </div>
+
+      <DialogFooter className="gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {mode === 'create' ? 'Guardar' : 'Guardar cambios'}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+// ============= ADD INTERACTION DIALOG =============
 function AddInteractionDialog({ 
   portfolioId, 
   companyName,
@@ -146,32 +337,8 @@ function AddInteractionDialog({
   onSuccess: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState<InteractionType>('note');
-  const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
 
-  const createInteraction = useCreateCRPortfolioInteraction();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    await createInteraction.mutateAsync({
-      portfolio_id: portfolioId,
-      interaction_type: type,
-      subject: subject || undefined,
-      body: body || undefined,
-      contact_name: contactName || undefined,
-      contact_email: contactEmail || undefined,
-    });
-
-    // Reset form
-    setType('note');
-    setSubject('');
-    setBody('');
-    setContactName('');
-    setContactEmail('');
+  const handleSuccess = () => {
     setOpen(false);
     onSuccess();
   };
@@ -187,91 +354,133 @@ function AddInteractionDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Registrar interacción</DialogTitle>
-          <p className="text-sm text-muted-foreground">
+          <DialogDescription>
             Con {companyName}
-          </p>
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label>Tipo de interacción</Label>
-            <Select value={type} onValueChange={(v) => setType(v as InteractionType)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(INTERACTION_LABELS) as InteractionType[]).map((t) => (
-                  <SelectItem key={t} value={t}>
-                    <div className="flex items-center gap-2">
-                      {INTERACTION_ICONS[t]}
-                      {INTERACTION_LABELS[t]}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Contacto (nombre)</Label>
-              <Input
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="Nombre del contacto"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Email del contacto</Label>
-              <Input
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="email@ejemplo.com"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Asunto</Label>
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Breve descripción"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Contenido / Notas</Label>
-            <Textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Detalles de la interacción..."
-              rows={4}
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={createInteraction.isPending}>
-              {createInteraction.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Guardar
-            </Button>
-          </div>
-        </form>
+        <InteractionForm
+          mode="create"
+          portfolioId={portfolioId}
+          companyName={companyName}
+          onSuccess={handleSuccess}
+          onCancel={() => setOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
+// ============= EDIT INTERACTION DIALOG =============
+function EditInteractionDialog({ 
+  interaction,
+  portfolioId, 
+  companyName,
+  open,
+  onOpenChange,
+  onSuccess 
+}: { 
+  interaction: CRPortfolioInteraction;
+  portfolioId: string;
+  companyName: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}) {
+  const handleSuccess = () => {
+    onOpenChange(false);
+    onSuccess();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Editar interacción</DialogTitle>
+          <DialogDescription>
+            Con {companyName}
+          </DialogDescription>
+        </DialogHeader>
+        <InteractionForm
+          mode="edit"
+          initialData={interaction}
+          portfolioId={portfolioId}
+          companyName={companyName}
+          onSuccess={handleSuccess}
+          onCancel={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ============= DELETE CONFIRMATION DIALOG =============
+function DeleteInteractionDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+  isDeleting,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  isDeleting: boolean;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Eliminar interacción?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. La interacción será eliminada permanentemente.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onConfirm} 
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={isDeleting}
+          >
+            {isDeleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+// ============= MAIN COMPONENT =============
 export function CRPortfolioInteractionsTab({ portfolioId, companyName }: CRPortfolioInteractionsTabProps) {
   const { data: interactions, isLoading, refetch } = useCRPortfolioInteractions(portfolioId);
   const deleteInteraction = useDeleteCRPortfolioInteraction();
+  
+  // Edit state
+  const [editingInteraction, setEditingInteraction] = useState<CRPortfolioInteraction | null>(null);
+  
+  // Delete state
+  const [deletingInteraction, setDeletingInteraction] = useState<CRPortfolioInteraction | null>(null);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar esta interacción?')) return;
-    await deleteInteraction.mutateAsync({ id, portfolioId });
+  const handleEdit = (interaction: CRPortfolioInteraction) => {
+    setEditingInteraction(interaction);
+  };
+
+  const handleDelete = (interaction: CRPortfolioInteraction) => {
+    setDeletingInteraction(interaction);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingInteraction) return;
+    
+    try {
+      await deleteInteraction.mutateAsync({ 
+        id: deletingInteraction.id, 
+        portfolioId 
+      });
+      setDeletingInteraction(null);
+    } catch (error) {
+      // Error ya manejado en el hook
+    }
   };
 
   if (isLoading) {
@@ -306,7 +515,8 @@ export function CRPortfolioInteractionsTab({ portfolioId, companyName }: CRPortf
             <InteractionCard
               key={interaction.id}
               interaction={interaction}
-              onDelete={() => handleDelete(interaction.id)}
+              onEdit={() => handleEdit(interaction)}
+              onDelete={() => handleDelete(interaction)}
             />
           ))}
         </div>
@@ -325,6 +535,26 @@ export function CRPortfolioInteractionsTab({ portfolioId, companyName }: CRPortf
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Dialog */}
+      {editingInteraction && (
+        <EditInteractionDialog
+          interaction={editingInteraction}
+          portfolioId={portfolioId}
+          companyName={companyName}
+          open={!!editingInteraction}
+          onOpenChange={(open) => !open && setEditingInteraction(null)}
+          onSuccess={refetch}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      <DeleteInteractionDialog
+        open={!!deletingInteraction}
+        onOpenChange={(open) => !open && setDeletingInteraction(null)}
+        onConfirm={confirmDelete}
+        isDeleting={deleteInteraction.isPending}
+      />
     </div>
   );
 }
