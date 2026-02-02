@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePresentations, useDeletePresentation } from '../hooks/usePresentations';
 import { useDemoPresentationSeeder } from '../hooks/useDemoPresentationSeeder';
+import { useCapittalFirmDeckSeeder } from '../hooks/useCapittalFirmDeckSeeder';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,8 @@ import {
   Presentation,
   Clock,
   Lock,
-  Beaker
+  Beaker,
+  Building2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PRESENTATION_TYPE_LABELS, STATUS_LABELS, type PresentationStatus } from '../types/presentation.types';
@@ -38,7 +40,7 @@ export const PresentationsListPage: React.FC = () => {
   const { data: presentations, isLoading } = usePresentations();
   const deletePresentation = useDeletePresentation();
   const demoSeeder = useDemoPresentationSeeder();
-
+  const capittalSeeder = useCapittalFirmDeckSeeder();
   const [searchQuery, setSearchQuery] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -70,6 +72,13 @@ export const PresentationsListPage: React.FC = () => {
     }
   };
 
+  const handleCreateCapittalDeck = async () => {
+    const project = await capittalSeeder.mutateAsync();
+    if (project) {
+      navigate(`/admin/presentations/${project.id}/edit`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
@@ -88,11 +97,19 @@ export const PresentationsListPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <Button 
                 variant="outline" 
+                onClick={handleCreateCapittalDeck}
+                disabled={capittalSeeder.isPending}
+              >
+                <Building2 className="w-4 h-4 mr-2" />
+                {capittalSeeder.isPending ? 'Creando...' : 'Firm Deck Capittal'}
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={handleCreateDemo}
                 disabled={demoSeeder.isPending}
               >
                 <Beaker className="w-4 h-4 mr-2" />
-                {demoSeeder.isPending ? 'Creating...' : 'Create Demo (Proyecto Acero)'}
+                {demoSeeder.isPending ? 'Creating...' : 'Demo (Proyecto Acero)'}
               </Button>
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
