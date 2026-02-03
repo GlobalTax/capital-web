@@ -260,7 +260,7 @@ serve(async (req) => {
     const url = buildDealsuitUrl(filters);
     console.log('Scraping Dealsuite URL:', url);
 
-    // Call Firecrawl with session cookie
+    // Call Firecrawl with session cookie - increased timeout for JS-heavy pages
     const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
@@ -270,13 +270,15 @@ serve(async (req) => {
       body: JSON.stringify({
         url,
         formats: ['markdown', 'html'],
-        waitFor: 8000,
+        waitFor: 15000, // Wait 15s for JS to render
+        timeout: 60000, // 60s total timeout
         onlyMainContent: false,
         headers: {
           'Cookie': session_cookie,
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.5',
+          'Referer': 'https://app.dealsuite.com/',
         }
       }),
     });
