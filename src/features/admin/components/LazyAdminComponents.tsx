@@ -140,3 +140,6 @@ export const LazyDataEnrichmentPanel = lazy(() => import('@/components/admin/Dat
 
 // === CALCULATOR ERRORS ===
 export const LazyCalculatorErrorsPage = lazy(() => import('@/pages/admin/CalculatorErrorsPage'));
+
+// === DEALSUITE SYNC ===
+export const LazyDealsuitePage = lazy(() => import('@/pages/admin/DealsuitePage'));
