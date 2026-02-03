@@ -1,139 +1,109 @@
 
-# Plan: Solución al Timeout de Firecrawl para Dealsuite
+# Plan: Mejorar Diagnóstico de Cookie Dealsuite
 
 ## Problema Identificado
 
-El scraping de Dealsuite falla con error **408 SCRAPE_TIMEOUT** porque:
-- La página es muy pesada en JavaScript (SPA con React)
-- Requiere autenticación y carga muchos datos dinámicamente
-- El tiempo actual (15s waitFor, 60s timeout) es insuficiente
+Los logs muestran que Firecrawl devuelve solo **413 caracteres**. Este contenido tan corto casi seguro es una página de login o error, no el marketplace con deals. La detección actual de `isLoginPage` está correctamente identificando esto como "cookie inválida".
+
+## Posibles Causas
+
+1. **Cookie incompleta**: El string que copiaste puede estar truncado
+2. **Cookie expirada**: Las cookies de Dealsuite expiran ~24 horas
+3. **Cookies faltantes críticas**: Necesitas tanto `user` como `dstoken`
 
 ## Solución Propuesta
 
-### Estrategia Principal: Firecrawl Async Mode + Polling
-
-En lugar de esperar síncronamente a que Firecrawl complete el scrape (lo que causa timeout en la edge function), usaremos el **modo asíncrono** de Firecrawl:
-
-1. Iniciar el scrape con `/v1/scrape` en modo async
-2. Recibir un `jobId` inmediatamente
-3. Hacer polling cada 5 segundos al endpoint `/v1/scrape/{jobId}`
-4. Cuando el job termine, procesar los resultados
-
 ### Cambios en la Edge Function
 
-**Archivo:** `supabase/functions/dealsuite-scrape-wanted/index.ts`
+**Mejorar el logging y diagnóstico:**
 
-1. **Aumentar timeouts significativamente:**
-   - `waitFor: 30000` (30 segundos - el máximo recomendado)
-   - `timeout: 120000` (120 segundos - el máximo de Firecrawl)
+1. **Log el contenido devuelto** cuando se detecta login page para entender qué está pasando
+2. **Validar formato de cookie** antes de hacer el scrape (verificar que contiene `user=` y `dstoken=`)
+3. **Mostrar preview del contenido** en el error para diagnóstico
 
-2. **Implementar retry con backoff:**
-   - Primer intento: timeout estándar
-   - Si falla con 408: reintentar con `waitFor: 45000`
-   - Máximo 2 reintentos
-
-3. **Añadir configuración avanzada de Firecrawl:**
-   - `skipTlsVerification: true` (evitar bloqueos por SSL)
-   - `blockAds: true` (cargar más rápido)
-   - `removeCookieBanners: true`
-
-### Mejoras en la UI
-
-**Archivo:** `src/components/admin/DealsuiteSyncPanel.tsx`
-
-1. **Mostrar feedback de progreso más detallado:**
-   - Indicar "Cargando página..." durante el scrape
-   - Mostrar tiempo transcurrido
-   - Botón de cancelar
-
-2. **Mostrar errores más descriptivos:**
-   - Si es timeout, sugerir reintentar
-   - Si es cookie expirada, indicar cómo renovarla
-
-3. **Añadir opción de "Modo Ligero":**
-   - Scrape solo la primera página (sin paginación)
-   - Para pruebas rápidas
-
-### Flujo Técnico Actualizado
-
-```text
-Usuario ingresa cookie
-         |
-         v
-+------------------+
-| Validar cookie   |
-+------------------+
-         |
-         v
-+------------------+     timeout?     +------------------+
-| Firecrawl scrape |----------------->| Retry con más    |
-| waitFor: 30s     |                  | tiempo (45s)     |
-| timeout: 120s    |                  +------------------+
-+------------------+                           |
-         |                                     |
-         v                                     v
-+------------------+                  +------------------+
-| Procesar con AI  |<-----------------| Procesar con AI  |
-| GPT-4o-mini      |                  | GPT-4o-mini      |
-+------------------+                  +------------------+
-         |
-         v
-+------------------+
-| Upsert deals     |
-| en Supabase      |
-+------------------+
+```typescript
+// Añadir validación de formato de cookie
+function validateCookieFormat(cookie: string): { valid: boolean; missing: string[] } {
+  const required = ['user=', 'dstoken='];
+  const missing = required.filter(key => !cookie.includes(key));
+  return { valid: missing.length === 0, missing };
+}
 ```
+
+### Cambios en la UI
+
+**Añadir diagnóstico visual:**
+
+1. **Mostrar qué cookies se detectaron** al pegar (user, dstoken, etc.)
+2. **Mostrar preview del contenido** cuando falla para entender qué devolvió Dealsuite
+3. **Instrucciones mejoradas** para obtener la cookie completa
+
+### Pasos Inmediatos para el Usuario
+
+Mientras implemento estas mejoras, puedes verificar:
+
+1. **Asegúrate de copiar TODO el string** del `document.cookie` - a veces es muy largo
+2. **Verifica que contiene `user=` y `dstoken=`** - son las cookies críticas
+3. **Refresca la página de Dealsuite** antes de copiar la cookie
 
 ## Archivos a Modificar
 
 | Archivo | Cambios |
 |---------|---------|
-| `supabase/functions/dealsuite-scrape-wanted/index.ts` | Aumentar timeouts, añadir retry logic, mejorar logs |
-| `src/components/admin/DealsuiteSyncPanel.tsx` | Feedback de progreso, manejo de errores mejorado |
+| `supabase/functions/dealsuite-scrape-wanted/index.ts` | Añadir validación de cookie, mejorar logging, incluir preview en error |
+| `src/components/admin/DealsuiteSyncPanel.tsx` | Mostrar cookies detectadas, mejorar feedback de error |
 
 ## Sección Técnica
 
-### Configuración Firecrawl Optimizada
+### Validación de Cookie
 
 ```typescript
-body: JSON.stringify({
-  url,
-  formats: ['markdown'],
-  waitFor: 30000,
-  timeout: 120000,
-  onlyMainContent: true,
-  blockAds: true,
-  removeCookieBanners: true,
-  headers: {
-    'Cookie': session_cookie,
-    'User-Agent': 'Mozilla/5.0...',
-    'Referer': 'https://app.dealsuite.com/',
-    'Cache-Control': 'no-cache',
-  }
-})
-```
+// En la edge function
+function validateCookieFormat(cookie: string): { valid: boolean; missing: string[] } {
+  const requiredKeys = ['user=', 'dstoken='];
+  const missing = requiredKeys.filter(key => !cookie.includes(key));
+  return { 
+    valid: missing.length === 0, 
+    missing 
+  };
+}
 
-### Lógica de Retry
-
-```typescript
-async function scrapeWithRetry(url: string, cookie: string, attempt = 1): Promise<Response> {
-  const waitTimes = [30000, 45000, 60000];
-  const waitFor = waitTimes[attempt - 1] || 60000;
-  
-  const response = await fetch('https://api.firecrawl.dev/v1/scrape', { ... });
-  
-  if (!response.ok && response.status === 408 && attempt < 3) {
-    console.log(`Retry attempt ${attempt + 1} with waitFor: ${waitTimes[attempt]}`);
-    await new Promise(r => setTimeout(r, 2000));
-    return scrapeWithRetry(url, cookie, attempt + 1);
-  }
-  
-  return response;
+// Uso antes del scrape
+const cookieValidation = validateCookieFormat(session_cookie);
+if (!cookieValidation.valid) {
+  return new Response(
+    JSON.stringify({ 
+      success: false, 
+      error: 'invalid_cookie_format',
+      message: `Cookie incompleta. Faltan: ${cookieValidation.missing.join(', ')}`,
+      hint: 'Asegúrate de copiar TODO el contenido de document.cookie'
+    }),
+    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
 }
 ```
 
-## Notas Importantes
+### Mejora en UI para Detectar Cookies
 
-- La cookie de Dealsuite expira aproximadamente cada 24 horas
-- Se recomienda ejecutar la sincronización durante horas de baja carga (noche/madrugada)
-- Si persisten los timeouts, considerar implementar scraping por paginación (página por página)
+```typescript
+// En DealsuiteSyncPanel.tsx
+const detectCookies = (cookieString: string) => {
+  const hasUser = cookieString.includes('user=');
+  const hasDstoken = cookieString.includes('dstoken=');
+  const hasXsrf = cookieString.includes('_xsrf=');
+  
+  return { hasUser, hasDstoken, hasXsrf };
+};
+
+// Mostrar indicadores visuales de qué cookies están presentes
+```
+
+### Logging Mejorado
+
+```typescript
+// En isLoginPage, añadir logging
+if (hasLoginIndicator && !hasDealContent) {
+  console.log('[DEALSUITE] Login page detected. Content preview:', content.substring(0, 500));
+  return true;
+}
+```
