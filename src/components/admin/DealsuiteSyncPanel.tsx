@@ -36,7 +36,10 @@ interface SyncResult {
   updated?: number;
   error?: string;
   message?: string;
+  hint?: string;
   attempts?: number;
+  detected?: string[];
+  missing?: string[];
   data?: {
     preview?: string;
     extracted?: number;
@@ -44,6 +47,13 @@ interface SyncResult {
     updated?: number;
     attempts?: number;
   };
+}
+
+interface CookieStatus {
+  hasUser: boolean;
+  hasDstoken: boolean;
+  hasXsrf: boolean;
+  length: number;
 }
 
 export const DealsuiteSyncPanel = () => {
@@ -55,11 +65,31 @@ export const DealsuiteSyncPanel = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [statusMessage, setStatusMessage] = useState('');
+  const [cookieStatus, setCookieStatus] = useState<CookieStatus | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(20);
 
   const isLoading = isTestingConnection || isSyncing;
+
+  // Analyze cookie when it changes
+  const analyzeCookie = (cookieString: string): CookieStatus => {
+    return {
+      hasUser: cookieString.includes('user='),
+      hasDstoken: cookieString.includes('dstoken='),
+      hasXsrf: cookieString.includes('_xsrf='),
+      length: cookieString.length
+    };
+  };
+
+  // Update cookie status when cookie changes
+  useEffect(() => {
+    if (cookie.trim()) {
+      setCookieStatus(analyzeCookie(cookie));
+    } else {
+      setCookieStatus(null);
+    }
+  }, [cookie]);
 
   // Timer for elapsed time
   useEffect(() => {
@@ -113,9 +143,14 @@ export const DealsuiteSyncPanel = () => {
     return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
   };
 
-  const getErrorSuggestion = (error?: string, message?: string): string => {
+  const getErrorSuggestion = (error?: string, message?: string, hint?: string): string => {
+    if (hint) return hint;
+    
     const fullError = `${error || ''} ${message || ''}`.toLowerCase();
     
+    if (fullError.includes('invalid_cookie_format') || fullError.includes('faltan cookies')) {
+      return 'La cookie está incompleta. Asegúrate de copiar TODO el contenido de document.cookie. Las cookies críticas son "user" y "dstoken".';
+    }
     if (fullError.includes('timeout') || fullError.includes('408') || fullError.includes('tardó')) {
       return 'La página de Dealsuite tardó demasiado en cargar. Esto puede ocurrir si hay mucho tráfico. Intenta de nuevo en unos minutos o durante horas de menor uso (temprano en la mañana o tarde en la noche).';
     }
@@ -298,6 +333,35 @@ export const DealsuiteSyncPanel = () => {
             </Button>
           </div>
 
+          {/* Cookie Status Indicator */}
+          {cookieStatus && (
+            <div className="flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-lg">
+              <span className="text-xs text-muted-foreground mr-1">Cookies detectadas:</span>
+              <Badge variant={cookieStatus.hasUser ? "default" : "destructive"} className="text-xs">
+                {cookieStatus.hasUser ? '✓' : '✗'} user
+              </Badge>
+              <Badge variant={cookieStatus.hasDstoken ? "default" : "destructive"} className="text-xs">
+                {cookieStatus.hasDstoken ? '✓' : '✗'} dstoken
+              </Badge>
+              <Badge variant={cookieStatus.hasXsrf ? "secondary" : "outline"} className="text-xs">
+                {cookieStatus.hasXsrf ? '✓' : '○'} _xsrf
+              </Badge>
+              <span className="text-xs text-muted-foreground ml-auto">
+                {cookieStatus.length} caracteres
+              </span>
+              {(!cookieStatus.hasUser || !cookieStatus.hasDstoken) && (
+                <div className="w-full mt-2">
+                  <Alert variant="destructive" className="py-2">
+                    <AlertCircle className="h-3 w-3" />
+                    <AlertDescription className="text-xs">
+                      Faltan cookies críticas. Asegúrate de copiar TODO el contenido de <code>document.cookie</code>.
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3">
             <Button
@@ -409,11 +473,31 @@ export const DealsuiteSyncPanel = () => {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error de sincronización</AlertTitle>
-                <AlertDescription className="space-y-2">
+                <AlertDescription className="space-y-3">
                   <p>{result.message || result.error}</p>
                   <p className="text-sm opacity-80">
-                    {getErrorSuggestion(result.error, result.message)}
+                    {getErrorSuggestion(result.error, result.message, result.hint)}
                   </p>
+                  {/* Show detected/missing cookies if available */}
+                  {(result.detected || result.missing) && (
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-destructive/20">
+                      {result.detected?.map(c => (
+                        <Badge key={c} variant="secondary" className="text-xs">✓ {c}</Badge>
+                      ))}
+                      {result.missing?.map(c => (
+                        <Badge key={c} variant="destructive" className="text-xs">✗ {c}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  {/* Show content preview for debugging */}
+                  {result.preview && (
+                    <div className="mt-2 pt-2 border-t border-destructive/20">
+                      <p className="text-xs font-medium mb-1">Contenido devuelto (preview):</p>
+                      <pre className="bg-background/50 p-2 rounded text-xs overflow-auto max-h-24 text-destructive-foreground/70">
+                        {result.preview}
+                      </pre>
+                    </div>
+                  )}
                 </AlertDescription>
               </Alert>
             )}
