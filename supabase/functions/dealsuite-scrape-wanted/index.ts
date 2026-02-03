@@ -59,6 +59,36 @@ function buildDealsuitUrl(filters?: Record<string, string>): string {
   return `${baseUrl}?${queryString}`;
 }
 
+// Cookie validation - check for required session tokens
+function validateCookieFormat(cookie: string): { valid: boolean; missing: string[]; detected: string[] } {
+  const requiredKeys = ['user=', 'dstoken='];
+  const optionalKeys = ['_xsrf=', '_ga', 'hubspotutk'];
+  
+  const missing = requiredKeys.filter(key => !cookie.includes(key));
+  const detected: string[] = [];
+  
+  // Log what we found
+  requiredKeys.forEach(key => {
+    if (cookie.includes(key)) detected.push(key.replace('=', ''));
+  });
+  optionalKeys.forEach(key => {
+    if (cookie.includes(key)) detected.push(key.replace('=', ''));
+  });
+  
+  console.log('[DEALSUITE] Cookie validation:', { 
+    length: cookie.length, 
+    detected, 
+    missing: missing.map(k => k.replace('=', '')),
+    valid: missing.length === 0 
+  });
+  
+  return { 
+    valid: missing.length === 0, 
+    missing: missing.map(k => k.replace('=', '')),
+    detected
+  };
+}
+
 function isLoginPage(content: string | undefined): boolean {
   if (!content) return true;
   
@@ -78,6 +108,12 @@ function isLoginPage(content: string | undefined): boolean {
   // También verificar que NO tiene contenido de deals
   const hasDealContent = lowerContent.includes('wanted') && 
     (lowerContent.includes('ebitda') || lowerContent.includes('revenue') || lowerContent.includes('sector'));
+  
+  // Log for debugging when login page is detected
+  if (hasLoginIndicator && !hasDealContent) {
+    console.log('[DEALSUITE] Login page detected. Content length:', content.length);
+    console.log('[DEALSUITE] Content preview (first 500 chars):', content.substring(0, 500));
+  }
   
   return hasLoginIndicator && !hasDealContent;
 }
@@ -324,11 +360,27 @@ serve(async (req) => {
 
     const { session_cookie, filters, dry_run } = body;
 
-    // Validate session cookie
+    // Validate session cookie exists
     if (!session_cookie || typeof session_cookie !== 'string') {
       return new Response(
         JSON.stringify({ success: false, error: 'session_cookie es requerida' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate cookie format - check for required tokens
+    const cookieValidation = validateCookieFormat(session_cookie);
+    if (!cookieValidation.valid) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'invalid_cookie_format',
+          message: `Cookie incompleta. Faltan cookies críticas: ${cookieValidation.missing.join(', ')}`,
+          hint: 'Asegúrate de copiar TODO el contenido de document.cookie desde la consola de Dealsuite',
+          detected: cookieValidation.detected,
+          missing: cookieValidation.missing
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
