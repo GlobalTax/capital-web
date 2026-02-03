@@ -54,6 +54,8 @@ interface CookieStatus {
   hasDstoken: boolean;
   hasXsrf: boolean;
   length: number;
+  isTruncated: boolean;
+  hasExtraQuotes: boolean;
 }
 
 export const DealsuiteSyncPanel = () => {
@@ -72,13 +74,31 @@ export const DealsuiteSyncPanel = () => {
 
   const isLoading = isTestingConnection || isSyncing;
 
-  // Analyze cookie when it changes
-  const analyzeCookie = (cookieString: string): CookieStatus => {
+  // Clean and analyze cookie when it changes
+  const cleanCookie = (raw: string): string => {
+    let cleaned = raw.trim();
+    // Remove surrounding quotes (from console output)
+    if ((cleaned.startsWith("'") && cleaned.endsWith("'")) || 
+        (cleaned.startsWith('"') && cleaned.endsWith('"'))) {
+      cleaned = cleaned.slice(1, -1);
+    }
+    return cleaned;
+  };
+
+  const analyzeCookie = (cookieString: string): CookieStatus & { isTruncated: boolean; hasExtraQuotes: boolean } => {
+    const raw = cookieString;
+    const hasExtraQuotes = (raw.startsWith("'") || raw.startsWith('"')) && 
+                           (raw.endsWith("'") || raw.endsWith('"'));
+    const isTruncated = raw.includes('…') || raw.endsWith('...');
+    const cleaned = cleanCookie(raw);
+    
     return {
-      hasUser: cookieString.includes('user='),
-      hasDstoken: cookieString.includes('dstoken='),
-      hasXsrf: cookieString.includes('_xsrf='),
-      length: cookieString.length
+      hasUser: cleaned.includes('user='),
+      hasDstoken: cleaned.includes('dstoken='),
+      hasXsrf: cleaned.includes('_xsrf='),
+      length: cleaned.length,
+      isTruncated,
+      hasExtraQuotes
     };
   };
 
@@ -180,7 +200,9 @@ export const DealsuiteSyncPanel = () => {
     setResult(null);
 
     try {
-      const response = await firecrawlApi.scrapeDealsuite(cookie.trim(), { dryRun: true });
+      // Clean the cookie before sending
+      const cleanedCookie = cleanCookie(cookie.trim());
+      const response = await firecrawlApi.scrapeDealsuite(cleanedCookie, { dryRun: true });
       setResult(response);
       
       if (response.success) {
@@ -221,7 +243,9 @@ export const DealsuiteSyncPanel = () => {
     setResult(null);
 
     try {
-      const response = await firecrawlApi.scrapeDealsuite(cookie.trim());
+      // Clean the cookie before sending
+      const cleanedCookie = cleanCookie(cookie.trim());
+      const response = await firecrawlApi.scrapeDealsuite(cleanedCookie);
       setResult(response);
 
       if (response.success) {
@@ -349,14 +373,34 @@ export const DealsuiteSyncPanel = () => {
               <span className="text-xs text-muted-foreground ml-auto">
                 {cookieStatus.length} caracteres
               </span>
-              {(!cookieStatus.hasUser || !cookieStatus.hasDstoken) && (
-                <div className="w-full mt-2">
-                  <Alert variant="destructive" className="py-2">
-                    <AlertCircle className="h-3 w-3" />
-                    <AlertDescription className="text-xs">
-                      Faltan cookies críticas. Asegúrate de copiar TODO el contenido de <code>document.cookie</code>.
-                    </AlertDescription>
-                  </Alert>
+              
+              {/* Warnings */}
+              {(cookieStatus.isTruncated || cookieStatus.hasExtraQuotes || !cookieStatus.hasUser || !cookieStatus.hasDstoken) && (
+                <div className="w-full mt-2 space-y-2">
+                  {cookieStatus.isTruncated && (
+                    <Alert variant="destructive" className="py-2">
+                      <AlertCircle className="h-3 w-3" />
+                      <AlertDescription className="text-xs">
+                        <strong>Cookie truncada:</strong> El texto termina en "…". Asegúrate de copiar TODO el contenido sin que se corte.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {cookieStatus.hasExtraQuotes && (
+                    <Alert className="py-2 border-yellow-500 bg-yellow-500/10">
+                      <AlertCircle className="h-3 w-3 text-yellow-600" />
+                      <AlertDescription className="text-xs">
+                        <strong>Comillas detectadas:</strong> Las comillas al inicio/final serán eliminadas automáticamente.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {(!cookieStatus.hasUser || !cookieStatus.hasDstoken) && !cookieStatus.isTruncated && (
+                    <Alert variant="destructive" className="py-2">
+                      <AlertCircle className="h-3 w-3" />
+                      <AlertDescription className="text-xs">
+                        Faltan cookies críticas. Asegúrate de copiar TODO el contenido de <code>document.cookie</code>.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
               )}
             </div>
