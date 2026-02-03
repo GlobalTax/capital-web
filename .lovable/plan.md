@@ -1,239 +1,329 @@
 
-# Plan: Rediseño Data-Dense de la Vista de Contactos (/admin/contacts)
+# Plan: Diagnóstico y Corrección del Flujo de Creación de Corporate Buyers
 
-## Diagnóstico del Problema
+## Resumen Ejecutivo
 
-### Problemas Identificados
+El flujo de creación de Corporate Buyers tiene **un problema crítico con RLS (Row Level Security)** que bloquea silenciosamente los inserts. La UI no muestra feedback cuando el insert falla por permisos.
 
-1. **Contenedor principal limitado**: `AdminLayout.tsx` (línea 130) tiene `<div className="w-full max-w-full">` - correcto, pero el componente hijo `LinearContactsManager` tiene `space-y-6` que añade demasiado espacio vertical.
+---
 
-2. **KPIs ocupan demasiada altura**: Los stats cards (líneas 333-350) usan `grid-cols-2 md:grid-cols-4 gap-3` con `p-4` y `text-2xl`, creando bloques de ~80px de altura.
+## Diagnóstico Completo
 
-3. **Filtros en múltiples líneas**: `LinearFilterBar.tsx` usa `space-y-3` y distribuye filtros en 3 secciones verticales (búsqueda, dropdowns, badges), ocupando ~120-150px.
+### A) Estado del Frontend ✅
+- **Botón "Nuevo"**: Existe en línea 195 de `CorporateBuyersPage.tsx`
+- **Navegación**: Correcta a `/admin/corporate-buyers/new`
+- **Formulario**: `CorporateBuyerForm.tsx` completo con validación Zod
+- **Submit**: Llama a `handleCreateBuyer()` → `createBuyer.mutateAsync(data)`
+- **Mutation**: `useCreateCorporateBuyer()` ejecuta `supabase.from('corporate_buyers').insert(data)`
 
-4. **Altura de tabla limitada artificialmente**: En `LinearContactsTable.tsx` (línea 365) hay un `Math.min(availableHeight, 800)` que limita la altura máxima a 800px.
+### B) Estado de la Base de Datos ✅
+La tabla `corporate_buyers` existe con esta estructura:
 
-5. **Header con Tabs empuja todo hacia abajo**: El header con tabs y botones de acción bulk ocupa ~60px adicionales.
+| Campo | Tipo | Nullable | Default |
+|-------|------|----------|---------|
+| id | uuid | NO | gen_random_uuid() |
+| name | text | **NO** | - |
+| website | text | YES | - |
+| buyer_type | text | YES | - |
+| is_active | boolean | YES | true |
+| is_deleted | boolean | YES | false |
+| created_at | timestamptz | YES | now() |
+| ... otros 20+ campos opcionales |
 
-6. **Espaciado excesivo**: `TabsContent` usa `space-y-6` (24px entre elementos), duplicando el espaciado ya presente en el padre.
+**Solo `name` es obligatorio** - el formulario lo valida correctamente.
 
-### Estructura Actual (Altura Consumida)
+### C) Estado de RLS 🔴 **PROBLEMA IDENTIFICADO**
+
 ```
-AdminHeader:           48px
-Page Header + Tabs:    ~60px
-KPIs (4 cards):        ~90px
-Search bar:            ~50px
-Filter dropdowns:      ~40px
-Active filters badges: ~30px (condicional)
-Results count:         ~20px
-Tabla:                 ~500-600px (limitada por max 800)
-─────────────────────────────────
-TOTAL:                 ~340px antes de la tabla
+RLS: ACTIVO en corporate_buyers
 ```
+
+**Políticas actuales:**
+
+| Operación | Policy | Condición |
+|-----------|--------|-----------|
+| SELECT | Authenticated users can view | `is_deleted = false` |
+| INSERT | Admins can insert | `has_role(auth.uid(), 'admin')` |
+| UPDATE | Admins can update | `has_role(auth.uid(), 'admin')` |
+| DELETE | Admins can delete | `has_role(auth.uid(), 'admin')` |
+
+**Función `has_role()`:**
+```sql
+-- Verifica en admin_users si el user_id tiene rol >= required_role
+SELECT role FROM admin_users WHERE user_id = check_user_id AND is_active = true
+-- Jerarquía: super_admin(4) > admin(3) > editor(2) > viewer(1)
+```
+
+**Usuarios admin_users activos:**
+- `marc@capittal.es` - super_admin ✅
+- `lluis@capittal.es` - super_admin ✅
+- `marcel@capittal.es` - admin ✅
+- etc.
+
+### D) Causa Raíz Identificada 🎯
+
+El problema es **doble**:
+
+1. **RLS bloquea silenciosamente**: Si el usuario no tiene el rol `admin` o `super_admin` en `admin_users`, el INSERT falla sin devolver error visible al frontend.
+
+2. **El frontend no maneja correctamente el error RLS**: Cuando Supabase bloquea por RLS, devuelve `data: null, error: null` (o un error genérico que no se muestra claramente).
+
+### E) Escenario de Fallo
+
+```
+1. Usuario navega a /admin/corporate-buyers/new
+2. Llena el formulario y hace submit
+3. Frontend ejecuta: supabase.from('corporate_buyers').insert({name: '...'})
+4. Supabase verifica RLS: has_role(auth.uid(), 'admin')
+5. Si usuario no está en admin_users con rol admin → INSERT bloqueado
+6. Supabase devuelve: { data: null, error: null } o error genérico
+7. Frontend no detecta el fallo correctamente
+8. Usuario no ve ningún feedback
+```
+
+---
 
 ## Solución Propuesta
 
-### Arquitectura de Layout Optimizada
-
-```
-AdminHeader:           48px (fijo, sin cambios)
-Page Header + Tabs:    ~40px (compactado)
-KPIs inline:           ~32px (una línea horizontal)
-Filtros compactos:     ~44px (una sola línea)
-Tabla:                 flex-1 (resto del viewport)
-```
-
-### Cambios por Archivo
-
-#### 1. `LinearContactsManager.tsx` - Layout Principal
-
-**Problema**: `space-y-6` y KPIs grandes empujan la tabla hacia abajo.
-
-**Cambios**:
-- Reducir `space-y-6` a `space-y-2` en el contenedor principal
-- Convertir KPIs a una barra horizontal compacta (inline)
-- Eliminar `space-y-6 mt-0` de `TabsContent`
-- Usar estructura flex-col con la tabla en `flex-1`
-
-#### 2. `LinearContactsTable.tsx` - Tabla Virtualizada
-
-**Problema**: Altura máxima fija de 800px y no ocupa el espacio disponible.
-
-**Cambios**:
-- Eliminar el `Math.min(availableHeight, 800)` (línea 365)
-- Cambiar cálculo de altura: usar `calc(100vh - offsetTop - footerMargin)`
-- Aumentar la altura mínima de 300 a algo más razonable
-- Reducir `ROW_HEIGHT` de 44 a 40 para más densidad
-
-#### 3. `LinearFilterBar.tsx` - Barra de Filtros
-
-**Problema**: Múltiples líneas de filtros con espaciado excesivo.
-
-**Cambios**:
-- Reducir `space-y-3` a `space-y-1`
-- Colapsar search + dropdowns en una sola línea con `flex-wrap`
-- Mover badges de filtros activos inline con los dropdowns
-- Reducir altura de botones de `h-8` a `h-7`
-
-#### 4. Nuevo: `CompactStatsBar.tsx` - KPIs Inline
-
-**Problema**: Los KPIs actuales son cards grandes que ocupan mucha altura.
-
-**Solución**: Crear un componente compacto que muestre los 4 valores en una sola línea horizontal con un estilo tipo "pill/badge".
-
-### Estructura Final del Layout
-
-```tsx
-<div className="h-[calc(100vh-48px-16px)] flex flex-col">
-  {/* Header compacto: ~40px */}
-  <div className="flex items-center justify-between shrink-0">
-    <h1 + Tabs />
-    <Actions />
-  </div>
-  
-  {/* Stats inline: ~32px */}
-  <CompactStatsBar total={} valuations={} unique={} qualified={} />
-  
-  {/* Filtros compactos: ~44px */}
-  <LinearFilterBar />
-  
-  {/* Tabla: flex-1 ocupa todo el resto */}
-  <div className="flex-1 min-h-0">
-    <LinearContactsTable />
-  </div>
-</div>
-```
-
-## Sección Tecnica
-
-### Modificaciones Detalladas
-
-#### `src/components/admin/contacts/LinearContactsManager.tsx`
+### 1. Añadir Logging de Debug al Hook (Temporal para diagnóstico)
 
 ```typescript
-// Línea 187: Cambiar className del Tabs container
-<Tabs 
-  value={activeTab} 
-  onValueChange={...} 
-  className="h-[calc(100vh-48px-32px)] flex flex-col"  // Altura fija, flex column
->
-
-// Líneas 189-217: Compactar header
-<div className="flex items-center justify-between shrink-0 pb-2">
-  <div className="flex items-center gap-3">
-    <h1 className="text-lg font-semibold">Leads</h1>
-    <TabsList className="h-7">
-      <TabsTrigger className="text-[11px] px-2 h-5 gap-1" />
-    </TabsList>
-  </div>
-</div>
-
-// Líneas 331-350: Reemplazar KPIs cards por stats inline
-<div className="flex items-center gap-3 px-1 shrink-0 text-xs">
-  <span className="text-muted-foreground">Total: <b>{stats.total}</b></span>
-  <span className="text-muted-foreground/50">|</span>
-  <span className="text-emerald-600">Valoraciones: <b>{stats.byOrigin.valuation}</b></span>
-  <span className="text-muted-foreground/50">|</span>
-  <span className="text-blue-600">Únicos: <b>{stats.uniqueContacts}</b></span>
-  <span className="text-muted-foreground/50">|</span>
-  <span className="text-amber-600">Calificados: <b>{stats.qualified}</b></span>
-</div>
-
-// TabsContent: usar flex-1 y space-y-1
-<TabsContent value="directory" className="flex-1 flex flex-col space-y-1 min-h-0 mt-0">
-  {/* Stats inline */}
-  <CompactStatsBar stats={stats} />
+// useCorporateBuyers.ts - línea 73-80
+mutationFn: async (data: CorporateBuyerFormData) => {
+  console.log('[createCorporateBuyer] Iniciando insert...', data);
   
-  {/* Filtros compactos */}
-  <LinearFilterBar {...props} />
+  const { data: result, error } = await supabase
+    .from('corporate_buyers')
+    .insert(data)
+    .select()
+    .single();
+
+  console.log('[createCorporateBuyer] Resultado:', { result, error });
   
-  {/* Tabla con flex-1 */}
-  <div className="flex-1 min-h-0">
-    <LinearContactsTable {...props} />
-  </div>
-</TabsContent>
+  if (error) {
+    console.error('[createCorporateBuyer] Error RLS/DB:', error);
+    throw error;
+  }
+  
+  if (!result) {
+    console.error('[createCorporateBuyer] Insert silencioso - posible RLS block');
+    throw new Error('No se pudo crear el comprador. Verifica tus permisos.');
+  }
+  
+  return result as CorporateBuyer;
+},
 ```
 
-#### `src/components/admin/contacts/LinearContactsTable.tsx`
+### 2. Mejorar Manejo de Errores en el Hook
 
 ```typescript
-// Línea 55: Reducir altura de fila
-const ROW_HEIGHT = 40;  // Era 44
+// useCorporateBuyers.ts
+export const useCreateCorporateBuyer = () => {
+  const queryClient = useQueryClient();
 
-// Líneas 359-366: Nuevo cálculo de altura sin límite artificial
-useEffect(() => {
-  const updateHeight = () => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      // Sin límite máximo, ocupar todo el espacio disponible
-      const availableHeight = window.innerHeight - rect.top - 16; // 16px padding bottom
-      setListHeight(Math.max(200, availableHeight));
-    }
-  };
-  
-  updateHeight();
-  window.addEventListener('resize', updateHeight);
-  return () => window.removeEventListener('resize', updateHeight);
-}, []);
-```
+  return useMutation({
+    mutationFn: async (data: CorporateBuyerFormData) => {
+      const { data: result, error } = await supabase
+        .from('corporate_buyers')
+        .insert(data)
+        .select()
+        .single();
 
-#### `src/components/admin/contacts/LinearFilterBar.tsx`
-
-```typescript
-// Línea 290-291: Compactar espaciado
-<div className="space-y-1">
-
-// Línea 300: Una sola línea para todos los filtros
-<div className="flex items-center gap-1.5 flex-wrap">
-  {/* Todos los dropdowns con h-7 en lugar de h-8 */}
-  <Button size="sm" className="h-7 text-xs">
-  
-// Líneas 754-776: Compactar las acciones
-<div className="flex items-center gap-2 ml-auto shrink-0">
-  <Button size="sm" className="h-7 text-xs">
-```
-
-### Anchos de Columna Optimizados
-
-Los anchos actuales en `COLUMN_WIDTHS` suman 1284px. Se pueden ajustar para balance:
-
-```typescript
-export const COLUMN_WIDTHS: Record<string, number> = {
-  star: 32,      // Era 36
-  checkbox: 36,  // Era 40
-  contact: 170,  // Era 180
-  origin: 80,    // Era 90 (F. Registro)
-  channel: 120,  // Era 130
-  company: 140,  // Era 150
-  province: 70,  // Era 80
-  sector: 90,    // Era 100
-  status: 110,   // Era 120
-  revenue: 70,   // Era 75
-  ebitda: 70,    // Era 75
-  apollo: 75,    // Era 80
-  date: 75,      // Era 85
-  actions: 40,   // Era 44
+      // Error explícito de Supabase
+      if (error) {
+        console.error('[createCorporateBuyer] DB Error:', error);
+        
+        // Detectar errores de RLS específicamente
+        if (error.code === '42501' || error.message?.includes('policy')) {
+          throw new Error('No tienes permisos para crear compradores. Contacta al administrador.');
+        }
+        
+        throw error;
+      }
+      
+      // Insert silencioso (RLS puede devolver null sin error)
+      if (!result) {
+        throw new Error('Error al crear el comprador. Verifica tus permisos de administrador.');
+      }
+      
+      return result as CorporateBuyer;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Comprador creado correctamente');
+    },
+    onError: (error: Error) => {
+      console.error('[createCorporateBuyer] Error:', error);
+      toast.error(error.message || 'Error al crear el comprador');
+    },
+  });
 };
-// Total: ~1178px (más compacto)
 ```
 
-### Resultado Visual Esperado
+### 3. Mejorar Feedback en el Formulario
 
-**Antes**:
-- ~15-18 filas visibles sin scroll
-- Mucho espacio visual "desperdiciado"
-- Sensación de herramienta decorativa
+```typescript
+// CorporateBuyerDetailPage.tsx - handleCreateBuyer
+const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
+  try {
+    const result = await createBuyer.mutateAsync(data);
+    if (result?.id) {
+      toast.success('Comprador creado correctamente');
+      navigate(`/admin/corporate-buyers/${result.id}`);
+    }
+  } catch (error) {
+    // El error ya se maneja en el hook con toast.error
+    console.error('[handleCreateBuyer] Fallo:', error);
+  }
+};
+```
 
-**Después**:
-- ~25-30 filas visibles sin scroll (dependiendo de resolución)
-- Layout denso y profesional tipo Linear/Notion
-- La tabla domina visualmente la pantalla
-- Scroll contenido solo dentro de la tabla
+### 4. Verificar que el Usuario Tenga Rol Admin
 
-### Orden de Implementación
+Añadir una verificación preventiva al cargar la página de creación:
 
-1. Modificar `LinearContactsTable.tsx` (altura dinámica sin límite)
-2. Crear componente `CompactStatsBar.tsx`
-3. Modificar `LinearContactsManager.tsx` (layout flex-col)
-4. Modificar `LinearFilterBar.tsx` (compactar a una línea)
-5. Ajustar anchos de columna si es necesario
+```typescript
+// CorporateBuyerDetailPage.tsx
+import { useAdminRole } from '@/hooks/useAdminRole'; // o similar
+
+const CorporateBuyerDetailPage = () => {
+  const { role, isLoading: roleLoading } = useAdminRole();
+  
+  // Si es modo new y no tiene rol admin, mostrar warning
+  if (isNew && !roleLoading && role !== 'admin' && role !== 'super_admin') {
+    return (
+      <div className="space-y-6">
+        <Alert variant="destructive">
+          <AlertDescription>
+            No tienes permisos para crear compradores corporativos.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+  
+  // ... resto del código
+};
+```
+
+---
+
+## Archivos a Modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/hooks/useCorporateBuyers.ts` | Mejorar manejo de errores RLS en useCreateCorporateBuyer |
+| `src/pages/admin/CorporateBuyerDetailPage.tsx` | Añadir try/catch explícito y verificación de rol |
+| (Opcional) Crear hook `useAdminRole` | Para verificar permisos antes de mostrar formulario |
+
+---
+
+## Sección Técnica Detallada
+
+### Cambio 1: `src/hooks/useCorporateBuyers.ts`
+
+**Líneas 68-92 - Reemplazar useCreateCorporateBuyer:**
+
+```typescript
+// Create buyer - con manejo robusto de errores RLS
+export const useCreateCorporateBuyer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: CorporateBuyerFormData) => {
+      console.log('[useCreateCorporateBuyer] Payload:', data);
+      
+      const { data: result, error } = await supabase
+        .from('corporate_buyers')
+        .insert(data)
+        .select()
+        .single();
+
+      console.log('[useCreateCorporateBuyer] Response:', { result, error });
+
+      if (error) {
+        // Log completo del error para debugging
+        console.error('[useCreateCorporateBuyer] Supabase error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+        
+        // Traducir errores comunes
+        if (error.code === '42501') {
+          throw new Error('Sin permisos: Necesitas rol de administrador para crear compradores.');
+        }
+        if (error.code === '23505') {
+          throw new Error('Ya existe un comprador con ese nombre.');
+        }
+        if (error.message?.toLowerCase().includes('policy')) {
+          throw new Error('Acceso denegado por políticas de seguridad.');
+        }
+        
+        throw new Error(error.message || 'Error al crear el comprador');
+      }
+      
+      if (!result) {
+        console.error('[useCreateCorporateBuyer] Null result - posible bloqueo RLS silencioso');
+        throw new Error('No se pudo crear el comprador. Verifica que tengas permisos de administrador.');
+      }
+      
+      return result as CorporateBuyer;
+    },
+    onSuccess: (data) => {
+      console.log('[useCreateCorporateBuyer] Success:', data.id);
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Comprador creado correctamente');
+    },
+    onError: (error: Error) => {
+      console.error('[useCreateCorporateBuyer] Mutation error:', error);
+      toast.error(error.message);
+    },
+  });
+};
+```
+
+### Cambio 2: `src/pages/admin/CorporateBuyerDetailPage.tsx`
+
+**Líneas 128-133 - Mejorar handleCreateBuyer:**
+
+```typescript
+const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
+  try {
+    console.log('[handleCreateBuyer] Submitting:', data);
+    const result = await createBuyer.mutateAsync(data);
+    
+    if (result?.id) {
+      console.log('[handleCreateBuyer] Created successfully:', result.id);
+      navigate(`/admin/corporate-buyers/${result.id}`);
+    } else {
+      console.error('[handleCreateBuyer] No result returned');
+      toast.error('Error inesperado al crear el comprador');
+    }
+  } catch (error) {
+    // El toast ya se muestra desde el hook, solo log adicional
+    console.error('[handleCreateBuyer] Error caught:', error);
+  }
+};
+```
+
+---
+
+## Verificación Post-Implementación
+
+1. **Test como admin**: Login como `marc@capittal.es` (super_admin), crear comprador → debe funcionar
+2. **Test de error**: Forzar campo vacío → debe mostrar error de validación
+3. **Verificar en DB**: `SELECT * FROM corporate_buyers ORDER BY created_at DESC LIMIT 1`
+4. **Verificar KPI**: El contador "Total compradores" debe incrementar
+5. **Verificar logs**: Console debe mostrar los logs de debug
+
+---
+
+## Resultado Esperado
+
+Tras implementar estos cambios:
+- El flujo de creación funcionará end-to-end para usuarios con rol admin/super_admin
+- Los errores de RLS serán visibles con mensajes claros
+- La consola mostrará logs detallados para debugging futuro
+- Los usuarios sin permisos recibirán feedback claro
