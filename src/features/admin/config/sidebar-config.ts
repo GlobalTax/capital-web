@@ -37,7 +37,8 @@ import {
   Globe,
   ShoppingCart,
   PanelLeft,
-  Landmark
+  Landmark,
+  RefreshCw
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -270,6 +271,12 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/apollo-visitors", 
         icon: Eye,
         description: "Importar visitantes desde Apollo"
+      },
+      { 
+        title: "Dealsuite Sync", 
+        url: "/admin/dealsuite", 
+        icon: RefreshCw,
+        description: "Sincronizar deals desde Dealsuite"
       },
     ]
   },
