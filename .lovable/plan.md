@@ -1,185 +1,74 @@
 
-# Plan: Arreglar la pestaña "Estadísticas" de Contactos
+# Plan: Arreglar Scroll/Paginación de la Tabla de Contactos
 
 ## Diagnóstico Realizado
 
 ### Causa Raíz Identificada
-Los logs de Postgres muestran errores de **statement timeout** - las queries están tardando más de lo permitido y son canceladas por el servidor. Esto causa que los componentes reciban errores en lugar de datos, y al no haber Error Boundaries individuales, **un error en cualquier sección tumba toda la vista**.
+El problema está en la jerarquía de contenedores con overflow en `LinearContactsTable.tsx`. Hay un conflicto entre:
 
-### Componentes Afectados
-1. **ContactsStatsPanel** - Panel principal que orquesta todas las sub-secciones
-2. **useContactsCostAnalysis** - Hook que hace cálculos pesados en frontend
-3. **useLeadMetrics** - Hace 4 queries paralelas sin límites
-4. **useCampaignHistory** - Consulta histórico de campañas
-5. **MetaAdsAnalyticsDashboard** - Carga todo el histórico de ads
+1. **Contenedor exterior** (línea 462): `overflow-hidden` - correcto para bordes redondeados
+2. **Contenedor de scroll horizontal** (línea 465): `overflow-x-auto` pero sin `overflow-y` definido
+3. **`<List>` de react-window** (línea 485): `overflowX: 'hidden', overflowY: 'auto'`
 
----
+El contenedor intermedio (línea 465) con solo `overflow-x-auto` está interfiriendo con el scroll vertical del `<List>`. En CSS, cuando defines `overflow-x: auto` sin definir `overflow-y`, el navegador puede aplicar comportamientos inesperados.
 
-## Arquitectura de la Solución
-
-### Estrategia de 3 Capas
+### Arquitectura de Scroll Correcta
 
 ```text
-┌─────────────────────────────────────────────────────┐
-│        ContactsStatsPanel (Orquestador)             │
-├─────────────────────────────────────────────────────┤
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐   │
-│  │ ErrorBoundary│ │ ErrorBoundary│ │ ErrorBoundary│ │
-│  │ + Suspense  │ │ + Suspense  │ │ + Suspense  │   │
-│  ├─────────────┤ ├─────────────┤ ├─────────────┤   │
-│  │ Control de  │ │   Meta Ads  │ │   Métricas  │   │
-│  │   Costes    │ │  Analytics  │ │   Leads     │   │
-│  └─────────────┘ └─────────────┘ └─────────────┘   │
-└─────────────────────────────────────────────────────┘
+┌─ Contenedor exterior ────────────────────────────────┐
+│  overflow: hidden (para bordes redondeados)          │
+│  ┌─ Contenedor scroll horizontal ─────────────────┐  │
+│  │  overflow-x: auto                              │  │
+│  │  overflow-y: hidden (NO competir con List)     │  │
+│  │  ┌─ List (react-window) ─────────────────────┐ │  │
+│  │  │  overflow-x: hidden                       │ │  │
+│  │  │  overflow-y: auto (scroll vertical AQUÍ)  │ │  │
+│  │  └───────────────────────────────────────────┘ │  │
+│  └────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Cambios Técnicos
 
-### 1. Crear StatsErrorBoundary (Nuevo Componente)
+### 1. Modificar contenedor de scroll horizontal
 
-**Archivo**: `src/features/contacts/components/stats/StatsErrorBoundary.tsx`
+**Archivo**: `src/components/admin/contacts/LinearContactsTable.tsx`
 
-Un Error Boundary reutilizable para cada sección de estadísticas:
-- Captura errores de renderizado
-- Muestra un fallback amigable con botón "Reintentar"
-- Registra el error en consola
-- No afecta a otras secciones
-
-### 2. Modificar ContactsStatsPanel
-
-**Archivo**: `src/features/contacts/components/stats/ContactsStatsPanel.tsx`
-
-Envolver cada `TabsContent` con un Error Boundary individual:
-
+**Línea 465**: Cambiar de:
 ```typescript
-<TabsContent value="costs">
-  <StatsErrorBoundary section="Control de Costes">
-    <CampaignRegistryTable />
-    <AnalyticsTabs />
-  </StatsErrorBoundary>
-</TabsContent>
-
-<TabsContent value="meta_ads">
-  <StatsErrorBoundary section="Meta Ads">
-    <MetaAdsAnalyticsDashboard />
-  </StatsErrorBoundary>
-</TabsContent>
-
-// ... igual para cada tab
+<div ref={scrollContainerRef} className="overflow-x-auto">
 ```
 
-### 3. Proteger Hook useLeadMetrics
-
-**Archivo**: `src/components/admin/metrics/useLeadMetrics.ts`
-
-Añadir defensas:
-- Normalizar arrays: `const allLeads = data ?? []`
-- Añadir límites a queries: `.limit(5000)`
-- Proteger cálculos de divisiones por cero
-- Envolver parseISO con try/catch
-- Añadir retry con backoff
-
+**A**:
 ```typescript
-const { data: valuations } = await supabase
-  .from('company_valuations')
-  .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
-  .is('is_deleted', false)
-  .order('created_at', { ascending: false })
-  .limit(5000);  // Límite para evitar timeouts
-
-// Normalización segura
-if (valuations) {
-  allLeads.push(...(valuations ?? []).map(v => ({...})));
-}
+<div ref={scrollContainerRef} className="overflow-x-auto overflow-y-hidden">
 ```
 
-### 4. Proteger Hook useContactsCostAnalysis
-
-**Archivo**: `src/features/contacts/hooks/useContactsCostAnalysis.ts`
-
-Añadir defensas:
-- Verificar que `allContacts` existe antes de filtrar
-- Proteger reduce/map con valores por defecto
-- Evitar divisiones por cero en métricas
-
-```typescript
-const filteredContacts = useMemo(() => {
-  if (!allContacts || !Array.isArray(allContacts)) return [];
-  // ... resto del código
-}, [allContacts, ...]);
-
-const cpl = totalLeads > 0 ? totalCost / totalLeads : 0;
-```
-
-### 5. Proteger Componentes de Gráficos
-
-**Archivos afectados**:
-- `EvolutionCharts.tsx`
-- `TemporalEvolutionBlock.tsx`
-- `StatusDistributionBlock.tsx`
-- `ConversionFunnelBlock.tsx`
-
-Para cada uno:
-- Verificar `data.length > 0` antes de renderizar
-- Envolver parseISO en try/catch
-- Añadir fallback para datos vacíos o inválidos
-
-```typescript
-const chartData = data.map(d => {
-  try {
-    return {
-      ...d,
-      displayDate: format(parseISO(d.date), 'dd MMM', { locale: es }),
-    };
-  } catch {
-    return { ...d, displayDate: d.date || '—' };
-  }
-});
-```
-
-### 6. Optimizar Queries con Límites
-
-**Hook useCampaignHistory** (`src/hooks/useCampaignHistory.ts`):
-- Ya tiene `.limit(1000)` ✓ - pero verificar que maneja error
-
-**Hook useAdsCostsHistory** (`src/hooks/useAdsCostsHistory.ts`):
-- Añadir `.limit(2000)` para evitar cargar todo el histórico
+Esto asegura que:
+- El scroll horizontal funciona para la sincronización header/contenido
+- El scroll vertical NO compite con el `<List>` de react-window
+- El único scroll vertical es el del `<List>` virtualizado
 
 ---
 
-## Archivos a Crear/Modificar
+## Verificación
 
-| Archivo | Acción | Cambios |
-|---------|--------|---------|
-| `src/features/contacts/components/stats/StatsErrorBoundary.tsx` | **Crear** | Error Boundary reutilizable con UI de fallback |
-| `src/features/contacts/components/stats/ContactsStatsPanel.tsx` | Modificar | Envolver cada tab con StatsErrorBoundary |
-| `src/components/admin/metrics/useLeadMetrics.ts` | Modificar | Añadir límites, normalización y try/catch |
-| `src/features/contacts/hooks/useContactsCostAnalysis.ts` | Modificar | Añadir verificaciones null/undefined |
-| `src/components/admin/campaigns/MetaAdsAnalytics/EvolutionCharts.tsx` | Modificar | Proteger parseISO |
-| `src/components/admin/metrics/TemporalEvolutionBlock.tsx` | Modificar | Proteger parseISO |
-| `src/hooks/useAdsCostsHistory.ts` | Modificar | Añadir límite a query |
+El cambio es mínimo (añadir una clase CSS) pero resuelve el conflicto de scrolls:
+
+| Contenedor | overflow-x | overflow-y | Scroll responsable |
+|------------|------------|------------|-------------------|
+| Exterior | hidden | hidden | Ninguno (bordes) |
+| Scroll container | auto | **hidden** | Solo horizontal |
+| List (react-window) | hidden | auto | **Solo vertical** |
 
 ---
 
-## Pruebas de Verificación
+## Pruebas Post-Implementación
 
-Después de implementar:
-
-1. **Entrar en `/admin/contacts` → click "Estadísticas"** → No debe mostrar error
-2. **Cambiar entre tabs** (Control de Costes / Meta Ads / Google Ads / Métricas) → Cada uno carga independiente
-3. **Probar con rango de fechas vacío** → Muestra empty state, no rompe
-4. **Simular fallo de una query** (desconectar red brevemente) → Solo falla ese bloque, muestra "Reintentar"
-5. **Refrescar página** → Sigue funcionando
-
----
-
-## Resultado Esperado
-
-- ✅ "Estadísticas" siempre navegable (nunca pantalla de error global)
-- ✅ Errores aislados por sección (un bloque falla, los demás funcionan)
-- ✅ Mensajes de error claros con opción de reintentar
-- ✅ Queries optimizadas con límites para evitar timeouts
-- ✅ Cálculos robustos sin NaN/undefined/Infinity
-- ✅ Tabs "Todos", "Favoritos", "Pipeline" no afectados
+1. **Scroll vertical**: Usar trackpad/mouse wheel en la tabla → debe scrollear fluidamente
+2. **Scroll horizontal**: Si hay más columnas que ancho de pantalla → debe scrollear horizontalmente
+3. **Tabs**: Cambiar entre Favoritos/Todos/Pipeline/Estadísticas → cada uno funciona
+4. **Filtros**: Aplicar filtros → tabla se actualiza y scroll sigue funcionando
+5. **Sheet lateral**: Abrir y cerrar detalle de contacto → scroll se restaura correctamente
