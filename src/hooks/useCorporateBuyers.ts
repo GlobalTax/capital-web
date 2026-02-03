@@ -65,28 +65,60 @@ export const useCorporateBuyer = (id: string | undefined) => {
   });
 };
 
-// Create buyer
+// Create buyer - with robust RLS error handling
 export const useCreateCorporateBuyer = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: CorporateBuyerFormData) => {
+      console.log('[useCreateCorporateBuyer] Payload:', data);
+      
       const { data: result, error } = await supabase
         .from('corporate_buyers')
         .insert(data)
         .select()
         .single();
 
-      if (error) throw error;
+      console.log('[useCreateCorporateBuyer] Response:', { result, error });
+
+      if (error) {
+        console.error('[useCreateCorporateBuyer] Supabase error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+        
+        // Translate common errors to user-friendly messages
+        if (error.code === '42501') {
+          throw new Error('Sin permisos: Necesitas rol de administrador para crear compradores.');
+        }
+        if (error.code === '23505') {
+          throw new Error('Ya existe un comprador con ese nombre.');
+        }
+        if (error.message?.toLowerCase().includes('policy')) {
+          throw new Error('Acceso denegado por políticas de seguridad.');
+        }
+        
+        throw new Error(error.message || 'Error al crear el comprador');
+      }
+      
+      // Silent RLS block detection (insert returns null without error)
+      if (!result) {
+        console.error('[useCreateCorporateBuyer] Null result - possible silent RLS block');
+        throw new Error('No se pudo crear el comprador. Verifica que tengas permisos de administrador.');
+      }
+      
       return result as CorporateBuyer;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('[useCreateCorporateBuyer] Success:', data.id);
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success('Comprador creado correctamente');
     },
-    onError: (error) => {
-      console.error('Error creating buyer:', error);
-      toast.error('Error al crear el comprador');
+    onError: (error: Error) => {
+      console.error('[useCreateCorporateBuyer] Mutation error:', error);
+      toast.error(error.message);
     },
   });
 };
