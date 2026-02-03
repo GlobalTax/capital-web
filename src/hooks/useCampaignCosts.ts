@@ -227,10 +227,10 @@ export const useCampaignCosts = () => {
       .gte('created_at', periodStart)
       .lte('created_at', periodEnd);
     
-    // Filter by UTM source
+    // Filter by UTM source (use * for PostgREST wildcards, not %)
     if (utmValues.length > 0) {
       leadsQuery = leadsQuery.or(
-        utmValues.map(v => `utm_source.ilike.%${v}%`).join(',')
+        utmValues.map(v => `utm_source.ilike.*${v}*`).join(',')
       );
     }
     
@@ -243,9 +243,10 @@ export const useCampaignCosts = () => {
       .gte('created_at', periodStart)
       .lte('created_at', periodEnd);
     
+    // Use * for PostgREST wildcards
     if (utmValues.length > 0) {
       valuationsQuery = valuationsQuery.or(
-        utmValues.map(v => `utm_source.ilike.%${v}%`).join(',')
+        utmValues.map(v => `utm_source.ilike.*${v}*`).join(',')
       );
     }
     
@@ -257,7 +258,8 @@ export const useCampaignCosts = () => {
     };
   };
 
-  // Calculate channel analytics
+  // Calculate channel analytics - DISABLED temporarily due to performance issues
+  // The getLeadsByChannelAndPeriod function makes 8 queries which causes timeouts
   const { data: channelAnalytics = [], isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['campaign_costs_analytics', costs],
     queryFn: async () => {
@@ -286,15 +288,9 @@ export const useCampaignCosts = () => {
             c.period_start >= prevMonthStart && c.period_end <= prevMonthEnd)
           .reduce((sum, c) => sum + Number(c.amount), 0);
 
-        // Get leads for current month
-        const { leads, valuations } = await getLeadsByChannelAndPeriod(
-          channel, 
-          monthStart, 
-          monthEnd
-        );
-
-        const totalContacts = leads + valuations;
-        const cac = totalContacts > 0 ? currentSpend / totalContacts : 0;
+        // Skip expensive getLeadsByChannelAndPeriod - use cost data only for now
+        const totalContacts = 0;
+        const cac = 0;
         const trend = prevSpend > 0 
           ? Math.round(((currentSpend - prevSpend) / prevSpend) * 100) 
           : 0;
@@ -303,16 +299,17 @@ export const useCampaignCosts = () => {
           channel,
           channelLabel: CHANNEL_LABELS[channel],
           totalSpend: currentSpend,
-          totalLeads: leads,
-          totalValuations: valuations,
-          cac: Math.round(cac * 100) / 100,
+          totalLeads: 0,
+          totalValuations: 0,
+          cac: 0,
           trend
         });
       }
 
       return analytics;
     },
-    enabled: costs.length >= 0
+    enabled: costs.length >= 0,
+    staleTime: 1000 * 60 * 5, // 5 min cache to reduce load
   });
 
   // Get monthly analytics for chart

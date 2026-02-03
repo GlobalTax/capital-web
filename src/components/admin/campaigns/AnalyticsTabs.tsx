@@ -8,7 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TrendingUp, BarChart3, AlertTriangle, LineChart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, BarChart3, AlertTriangle, LineChart, RefreshCw } from 'lucide-react';
 import { EvolutionTable } from './EvolutionTable';
 import { CampaignSummaryTable } from './CampaignSummaryTable';
 import { AlertsTable } from './AlertsTable';
@@ -23,6 +24,8 @@ export const AnalyticsTabs: React.FC = () => {
 
   const {
     isLoading,
+    error,
+    refetch,
     evolutionData,
     campaignSummaries,
     alertsData,
@@ -32,6 +35,36 @@ export const AnalyticsTabs: React.FC = () => {
     uniqueCampaigns,
     hasEnoughData,
   } = useCampaignHistory(period, campaignFilter);
+
+  // Handle query error with fallback UI
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <div className="text-center space-y-4">
+            <AlertTriangle className="h-10 w-10 mx-auto text-amber-500" />
+            <div className="space-y-2">
+              <h3 className="text-base font-semibold text-foreground">
+                No se pudieron cargar los datos de análisis
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                Ha ocurrido un error al obtener el histórico de campañas. Puedes reintentar o continuar con las otras secciones.
+              </p>
+            </div>
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Reintentar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
