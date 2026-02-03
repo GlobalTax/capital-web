@@ -308,8 +308,15 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
 
     const temporalEvolution: TemporalDataPoint[] = last30Days.map(dateStr => {
       const dayLeads = filteredLeads.filter(l => {
-        const leadDate = format(parseISO(l.lead_received_at || l.created_at), 'yyyy-MM-dd');
-        return leadDate === dateStr;
+        try {
+          const dateToCheck = l.lead_received_at || l.created_at;
+          if (!dateToCheck) return false;
+          const leadDate = format(parseISO(dateToCheck), 'yyyy-MM-dd');
+          return leadDate === dateStr;
+        } catch {
+          // Skip malformed dates without crashing
+          return false;
+        }
       });
 
       return {
