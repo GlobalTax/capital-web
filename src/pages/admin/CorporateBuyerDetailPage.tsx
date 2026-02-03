@@ -126,9 +126,20 @@ const CorporateBuyerDetailPage = () => {
   };
 
   const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
-    const result = await createBuyer.mutateAsync(data);
-    if (result?.id) {
-      navigate(`/admin/corporate-buyers/${result.id}`);
+    try {
+      console.log('[handleCreateBuyer] Submitting:', data);
+      const result = await createBuyer.mutateAsync(data);
+      
+      if (result?.id) {
+        console.log('[handleCreateBuyer] Created successfully:', result.id);
+        navigate(`/admin/corporate-buyers/${result.id}`);
+      } else {
+        console.error('[handleCreateBuyer] No result returned');
+        toast.error('Error inesperado al crear el comprador');
+      }
+    } catch (error) {
+      // Toast already shown from hook, just log
+      console.error('[handleCreateBuyer] Error caught:', error);
     }
   };
 
