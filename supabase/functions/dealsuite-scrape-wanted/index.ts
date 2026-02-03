@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// Retry configuration with increasing wait times
+const RETRY_CONFIG = {
+  maxAttempts: 3,
+  waitTimes: [30000, 45000, 60000], // 30s, 45s, 60s progressive wait
+  baseTimeout: 120000, // 120 seconds total timeout (Firecrawl max)
+};
+
 interface DealRecord {
   deal_id: string;
   title: string;
@@ -28,6 +35,14 @@ interface ExtractionResult {
   total_found: number;
   has_more_pages: boolean;
   warnings: string[];
+}
+
+interface ScrapeResult {
+  success: boolean;
+  markdown?: string;
+  html?: string;
+  error?: string;
+  attempt?: number;
 }
 
 function buildDealsuitUrl(filters?: Record<string, string>): string {
@@ -83,6 +98,114 @@ function isCaptchaPage(content: string | undefined): boolean {
   return captchaIndicators.some(indicator => lowerContent.includes(indicator));
 }
 
+async function scrapeWithRetry(
+  url: string,
+  sessionCookie: string,
+  firecrawlKey: string,
+  attempt: number = 1
+): Promise<ScrapeResult> {
+  const waitFor = RETRY_CONFIG.waitTimes[attempt - 1] || 60000;
+  
+  console.log(`[DEALSUITE] Scrape attempt ${attempt}/${RETRY_CONFIG.maxAttempts} with waitFor: ${waitFor}ms`);
+  
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url,
+        formats: ['markdown', 'html'],
+        waitFor,
+        timeout: RETRY_CONFIG.baseTimeout,
+        onlyMainContent: false,
+        headers: {
+          'Cookie': sessionCookie,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9,es;q=0.8',
+          'Referer': 'https://app.dealsuite.com/',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      }),
+    });
+
+    // Check for timeout or scrape failure
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[DEALSUITE] Firecrawl error on attempt ${attempt}:`, response.status, errorText);
+      
+      const isTimeout = errorText.includes('timeout') || 
+                        errorText.includes('408') ||
+                        response.status === 408;
+      
+      if (isTimeout && attempt < RETRY_CONFIG.maxAttempts) {
+        console.log(`[DEALSUITE] Timeout on attempt ${attempt}, retrying with longer wait...`);
+        await new Promise(r => setTimeout(r, 3000)); // Wait 3s before retry
+        return scrapeWithRetry(url, sessionCookie, firecrawlKey, attempt + 1);
+      }
+      
+      // Rate limit - no retry
+      if (response.status === 429) {
+        return { 
+          success: false, 
+          error: 'rate_limited',
+          attempt 
+        };
+      }
+      
+      return { 
+        success: false, 
+        error: `Firecrawl error: ${response.status}`,
+        attempt 
+      };
+    }
+
+    const scrapeData = await response.json();
+    const markdown = scrapeData.data?.markdown || scrapeData.markdown;
+    const html = scrapeData.data?.html || scrapeData.html;
+    
+    // Check if we got valid content
+    if (!markdown || markdown.length < 200) {
+      if (attempt < RETRY_CONFIG.maxAttempts) {
+        console.log(`[DEALSUITE] Empty or short content on attempt ${attempt} (${markdown?.length || 0} chars), retrying...`);
+        await new Promise(r => setTimeout(r, 3000));
+        return scrapeWithRetry(url, sessionCookie, firecrawlKey, attempt + 1);
+      }
+      return { 
+        success: false, 
+        error: 'No content retrieved from page',
+        attempt 
+      };
+    }
+
+    console.log(`[DEALSUITE] Successfully scraped ${markdown.length} characters on attempt ${attempt}`);
+    return { 
+      success: true, 
+      markdown, 
+      html,
+      attempt 
+    };
+    
+  } catch (error) {
+    console.error(`[DEALSUITE] Error on attempt ${attempt}:`, error);
+    
+    if (attempt < RETRY_CONFIG.maxAttempts) {
+      await new Promise(r => setTimeout(r, 3000));
+      return scrapeWithRetry(url, sessionCookie, firecrawlKey, attempt + 1);
+    }
+    
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown scrape error',
+      attempt 
+    };
+  }
+}
+
 async function extractDealsWithAI(content: string, openaiKey: string): Promise<ExtractionResult> {
   const systemPrompt = `Eres un analista de M&A especializado en deal sourcing.
 
@@ -132,7 +255,7 @@ Responde SOLO con JSON válido, sin markdown ni comentarios.`;
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Extrae los deals de este contenido de Dealsuite:\n\n${content}` }
+        { role: 'user', content: `Extrae los deals de este contenido de Dealsuite:\n\n${content.substring(0, 30000)}` }
       ],
       temperature: 0.1,
       max_tokens: 4000,
@@ -258,51 +381,34 @@ serve(async (req) => {
 
     // Build URL
     const url = buildDealsuitUrl(filters);
-    console.log('Scraping Dealsuite URL:', url);
+    console.log('[DEALSUITE] Scraping URL:', url);
 
-    // Call Firecrawl with session cookie - increased timeout for JS-heavy pages
-    const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url,
-        formats: ['markdown', 'html'],
-        waitFor: 15000, // Wait 15s for JS to render
-        timeout: 60000, // 60s total timeout
-        onlyMainContent: false,
-        headers: {
-          'Cookie': session_cookie,
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Referer': 'https://app.dealsuite.com/',
-        }
-      }),
-    });
-
-    if (!scrapeResponse.ok) {
-      const errorText = await scrapeResponse.text();
-      console.error('Firecrawl error:', scrapeResponse.status, errorText);
+    // Scrape with retry logic
+    const scrapeResult = await scrapeWithRetry(url, session_cookie, firecrawlKey);
+    
+    if (!scrapeResult.success) {
+      // Provide helpful error messages
+      let errorMessage = scrapeResult.error || 'Scrape failed';
+      let suggestion = '';
       
-      if (scrapeResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'rate_limited', message: 'Firecrawl rate limit exceeded' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (errorMessage.includes('timeout') || errorMessage.includes('408')) {
+        suggestion = ' La página tardó demasiado en cargar. Intenta de nuevo más tarde o durante horas de menor tráfico.';
+      } else if (errorMessage === 'rate_limited') {
+        suggestion = ' Se ha excedido el límite de peticiones de Firecrawl. Espera unos minutos antes de reintentar.';
       }
       
       return new Response(
-        JSON.stringify({ success: false, error: 'scrape_failed', message: `Firecrawl error: ${scrapeResponse.status}` }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          success: false, 
+          error: 'scrape_failed', 
+          message: errorMessage + suggestion,
+          attempts: scrapeResult.attempt
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const scrapeData = await scrapeResponse.json();
-    const markdown = scrapeData.data?.markdown || scrapeData.markdown;
-    const html = scrapeData.data?.html || scrapeData.html;
+    const { markdown, html } = scrapeResult;
 
     // Check for login page
     if (isLoginPage(markdown)) {
@@ -313,7 +419,7 @@ serve(async (req) => {
           message: 'Cookie inválida o expirada. El contenido devuelto parece ser una página de login.',
           preview: markdown?.substring(0, 500)
         }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -325,7 +431,7 @@ serve(async (req) => {
           error: 'captcha_detected', 
           message: 'Dealsuite ha mostrado un captcha. Intenta de nuevo más tarde.'
         }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -338,16 +444,17 @@ serve(async (req) => {
           is_authenticated: true,
           content_length: markdown?.length || 0,
           preview: markdown?.substring(0, 5000),
-          html_preview: html?.substring(0, 2000)
+          html_preview: html?.substring(0, 2000),
+          attempts: scrapeResult.attempt
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Extract deals with AI
-    console.log('Extracting deals with AI...');
-    const extractionResult = await extractDealsWithAI(markdown, openaiKey);
-    console.log(`Extracted ${extractionResult.deals.length} deals`);
+    console.log('[DEALSUITE] Extracting deals with AI...');
+    const extractionResult = await extractDealsWithAI(markdown!, openaiKey);
+    console.log(`[DEALSUITE] Extracted ${extractionResult.deals.length} deals`);
 
     if (extractionResult.deals.length === 0) {
       return new Response(
@@ -357,7 +464,8 @@ serve(async (req) => {
           total_found: 0,
           warning: 'no_deals_found',
           has_more_pages: extractionResult.has_more_pages,
-          extraction_warnings: extractionResult.warnings
+          extraction_warnings: extractionResult.warnings,
+          attempts: scrapeResult.attempt
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -414,13 +522,14 @@ serve(async (req) => {
         inserted,
         updated,
         has_more_pages: extractionResult.has_more_pages,
-        warnings: extractionResult.warnings
+        warnings: extractionResult.warnings,
+        attempts: scrapeResult.attempt
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in dealsuite-scrape-wanted:', error);
+    console.error('[DEALSUITE] Error:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 

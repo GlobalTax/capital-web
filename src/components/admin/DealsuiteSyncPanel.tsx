@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { firecrawlApi } from '@/lib/api/firecrawl';
 import { useDealsuitDeals } from '@/hooks/useDealsuitDeals';
@@ -18,7 +20,9 @@ import {
   ChevronRight,
   HelpCircle,
   Eye,
-  EyeOff
+  EyeOff,
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -31,11 +35,14 @@ interface SyncResult {
   inserted?: number;
   updated?: number;
   error?: string;
+  message?: string;
+  attempts?: number;
   data?: {
     preview?: string;
     extracted?: number;
     inserted?: number;
     updated?: number;
+    attempts?: number;
   };
 }
 
@@ -46,8 +53,83 @@ export const DealsuiteSyncPanel = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [result, setResult] = useState<SyncResult | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [statusMessage, setStatusMessage] = useState('');
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(20);
+
+  const isLoading = isTestingConnection || isSyncing;
+
+  // Timer for elapsed time
+  useEffect(() => {
+    if (isLoading) {
+      const startTime = Date.now();
+      timerRef.current = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setElapsedTime(0);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isLoading]);
+
+  // Update status message based on elapsed time
+  useEffect(() => {
+    if (!isLoading) {
+      setStatusMessage('');
+      return;
+    }
+
+    if (elapsedTime < 5) {
+      setStatusMessage('Iniciando conexión con Dealsuite...');
+    } else if (elapsedTime < 20) {
+      setStatusMessage('Esperando que la página cargue (intento 1/3)...');
+    } else if (elapsedTime < 45) {
+      setStatusMessage('Renderizando contenido JavaScript...');
+    } else if (elapsedTime < 70) {
+      setStatusMessage('Reintentando con más tiempo (intento 2/3)...');
+    } else if (elapsedTime < 100) {
+      setStatusMessage('Último intento con tiempo máximo...');
+    } else if (elapsedTime < 130) {
+      setStatusMessage('Procesando deals con IA...');
+    } else {
+      setStatusMessage('Finalizando... Esto puede tardar un poco más.');
+    }
+  }, [elapsedTime, isLoading]);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+  };
+
+  const getErrorSuggestion = (error?: string, message?: string): string => {
+    const fullError = `${error || ''} ${message || ''}`.toLowerCase();
+    
+    if (fullError.includes('timeout') || fullError.includes('408') || fullError.includes('tardó')) {
+      return 'La página de Dealsuite tardó demasiado en cargar. Esto puede ocurrir si hay mucho tráfico. Intenta de nuevo en unos minutos o durante horas de menor uso (temprano en la mañana o tarde en la noche).';
+    }
+    if (fullError.includes('session') || fullError.includes('cookie') || fullError.includes('login') || fullError.includes('expirada')) {
+      return 'La cookie de sesión parece haber expirado o ser inválida. Ve a Dealsuite, inicia sesión de nuevo, y copia una cookie fresca.';
+    }
+    if (fullError.includes('rate_limit') || fullError.includes('429')) {
+      return 'Se ha excedido el límite de peticiones. Espera unos minutos antes de reintentar.';
+    }
+    if (fullError.includes('captcha')) {
+      return 'Dealsuite está mostrando un captcha. Intenta de nuevo más tarde o accede manualmente a Dealsuite primero.';
+    }
+    return 'Verifica la cookie de sesión e intenta de nuevo. Si el problema persiste, contacta a soporte.';
+  };
 
   const handleTestConnection = async () => {
     if (!cookie.trim()) {
@@ -69,12 +151,12 @@ export const DealsuiteSyncPanel = () => {
       if (response.success) {
         toast({
           title: 'Conexión exitosa',
-          description: 'La cookie es válida y se puede acceder a Dealsuite.',
+          description: `La cookie es válida. Contenido recuperado en ${response.data?.attempts || 1} intento(s).`,
         });
       } else {
         toast({
           title: 'Error de conexión',
-          description: response.error || 'No se pudo validar la cookie.',
+          description: response.message || response.error || 'No se pudo validar la cookie.',
           variant: 'destructive',
         });
       }
@@ -117,7 +199,7 @@ export const DealsuiteSyncPanel = () => {
       } else {
         toast({
           title: 'Error de sincronización',
-          description: response.error || 'No se pudieron sincronizar los deals.',
+          description: response.message || response.error || 'No se pudieron sincronizar los deals.',
           variant: 'destructive',
         });
       }
@@ -141,8 +223,6 @@ export const DealsuiteSyncPanel = () => {
       maximumFractionDigits: 0,
     }).format(value);
   };
-
-  const isLoading = isTestingConnection || isSyncing;
 
   return (
     <div className="space-y-6">
@@ -244,6 +324,23 @@ export const DealsuiteSyncPanel = () => {
               Sincronizar Deals
             </Button>
           </div>
+
+          {/* Progress indicator while loading */}
+          {isLoading && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{statusMessage}</span>
+                <span className="font-mono text-muted-foreground flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {formatTime(elapsedTime)}
+                </span>
+              </div>
+              <Progress value={Math.min((elapsedTime / 150) * 100, 95)} className="h-2" />
+              <p className="text-xs text-muted-foreground text-center">
+                Este proceso puede tardar hasta 2-3 minutos. El sistema reintenta automáticamente si hay timeouts.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -256,6 +353,11 @@ export const DealsuiteSyncPanel = () => {
                 <>
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                   <span>{result.dry_run ? 'Conexión Válida' : 'Sincronización Exitosa'}</span>
+                  {(result.attempts || result.data?.attempts) && (result.attempts || result.data?.attempts) > 1 && (
+                    <Badge variant="secondary" className="ml-2">
+                      {result.attempts || result.data?.attempts} intentos
+                    </Badge>
+                  )}
                 </>
               ) : (
                 <>
@@ -304,7 +406,16 @@ export const DealsuiteSyncPanel = () => {
                 )}
               </div>
             ) : (
-              <p className="text-sm text-destructive">{result.error}</p>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error de sincronización</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>{result.message || result.error}</p>
+                  <p className="text-sm opacity-80">
+                    {getErrorSuggestion(result.error, result.message)}
+                  </p>
+                </AlertDescription>
+              </Alert>
             )}
           </CardContent>
         </Card>
