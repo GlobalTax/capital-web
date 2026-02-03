@@ -68,4 +68,23 @@ export const firecrawlApi = {
     }
     return data;
   },
+
+  // Scrape Dealsuite wanted market with session cookie
+  async scrapeDealsuite(
+    sessionCookie: string, 
+    options?: { dryRun?: boolean; filters?: Record<string, string> }
+  ): Promise<FirecrawlResponse> {
+    const { data, error } = await supabase.functions.invoke('dealsuite-scrape-wanted', {
+      body: { 
+        session_cookie: sessionCookie,
+        dry_run: options?.dryRun,
+        filters: options?.filters
+      },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return data;
+  },
 };

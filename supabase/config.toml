@@ -278,3 +278,6 @@ verify_jwt = false
 
 [functions.translate-operations]
 verify_jwt = false
+
+[functions.dealsuite-scrape-wanted]
+verify_jwt = false
