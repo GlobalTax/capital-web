@@ -1,8 +1,14 @@
 /**
  * Hook for fetching prospects (leads in prospect stage with linked empresa)
  * Prospects are leads whose status has is_prospect_stage = true
+ * 
+ * Features:
+ * - Realtime subscription for instant updates when status changes
+ * - Polling fallback every 60 seconds
+ * - Cache invalidation on window focus
  */
 
+import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
@@ -45,11 +51,81 @@ export const useProspects = (filters?: ProspectFilters) => {
     .filter(s => (s as any).is_prospect_stage && s.is_active)
     .map(s => s.status_key);
 
+  // Realtime subscription for status changes
+  useEffect(() => {
+    if (prospectStatusKeys.length === 0) return;
+
+    const channel = supabase
+      .channel('prospects-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'company_valuations',
+        },
+        (payload) => {
+          const newStatus = payload.new?.lead_status_crm;
+          const oldStatus = payload.old?.lead_status_crm;
+          
+          // If status changed to/from a prospect status, invalidate cache
+          if (prospectStatusKeys.includes(newStatus) || 
+              prospectStatusKeys.includes(oldStatus)) {
+            if (process.env.NODE_ENV === 'development') {
+              console.info('[useProspects] Realtime: company_valuations status changed', {
+                oldStatus,
+                newStatus,
+                id: payload.new?.id,
+              });
+            }
+            queryClient.invalidateQueries({ queryKey: ['prospects'] });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'contact_leads',
+        },
+        (payload) => {
+          const newStatus = payload.new?.lead_status_crm;
+          const oldStatus = payload.old?.lead_status_crm;
+          
+          if (prospectStatusKeys.includes(newStatus) || 
+              prospectStatusKeys.includes(oldStatus)) {
+            if (process.env.NODE_ENV === 'development') {
+              console.info('[useProspects] Realtime: contact_leads status changed', {
+                oldStatus,
+                newStatus,
+                id: payload.new?.id,
+              });
+            }
+            queryClient.invalidateQueries({ queryKey: ['prospects'] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [prospectStatusKeys, queryClient]);
+
   const query = useQuery({
     queryKey: ['prospects', prospectStatusKeys, filters],
     queryFn: async (): Promise<Prospect[]> => {
       if (prospectStatusKeys.length === 0) {
         return [];
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.info('[useProspects] Fetching prospects', {
+          prospectStatusKeys,
+          filters,
+          timestamp: new Date().toISOString(),
+        });
       }
 
       // Fetch from company_valuations
@@ -223,10 +299,20 @@ export const useProspects = (filters?: ProspectFilters) => {
         return dateB - dateA;
       });
 
+      if (process.env.NODE_ENV === 'development') {
+        console.info('[useProspects] Results', {
+          totalProspects: prospects.length,
+          fromValuations: (valuationLeads || []).length,
+          fromContacts: (contactLeads || []).length,
+        });
+      }
+
       return prospects;
     },
     enabled: prospectStatusKeys.length > 0,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds (reduced from 2 minutes)
+    refetchInterval: 1000 * 60, // Polling every 60 seconds as fallback
+    refetchOnWindowFocus: true, // Refetch when tab becomes active
   });
 
   return {

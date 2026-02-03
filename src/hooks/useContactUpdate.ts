@@ -221,6 +221,11 @@ export const useContactUpdate = () => {
         queryKey: ['company-valuations'],
         refetchType: 'none',
       });
+      
+      // Invalidar prospectos cuando cambia un estado (sincronización inmediata)
+      queryClient.invalidateQueries({
+        queryKey: ['prospects'],
+      });
 
       toast({
         title: 'Contacto actualizado',

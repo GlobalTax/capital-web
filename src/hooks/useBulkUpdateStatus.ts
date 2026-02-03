@@ -84,6 +84,11 @@ export function useBulkUpdateStatus() {
         refetchType: 'none',
       });
       
+      // Invalidar prospectos cuando cambian estados (sincronización inmediata)
+      queryClient.invalidateQueries({
+        queryKey: ['prospects'],
+      });
+      
       // Invalidate status history for all affected contacts
       variables.contactIds.forEach(contactId => {
         // Extract the UUID from the prefixed ID (e.g., "valuation_uuid" -> "uuid")
