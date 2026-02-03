@@ -1,326 +1,234 @@
 
-# Plan: Edge Function para Scraping de Dealsuite con Cookies de Sesión
+# Plan: Componente Admin para Sincronización de Dealsuite
 
-## Objetivo
+## Resumen
 
-Crear una edge function `dealsuite-scrape-wanted` que permita extraer deals del "Wanted Market" de Dealsuite autenticándose mediante cookies de sesión del usuario.
-
-## Arquitectura Propuesta
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  Usuario obtiene cookie de sesión desde DevTools               │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Panel Admin: Botón "Sincronizar Dealsuite"                     │
-│  → Input para pegar cookie de sesión                            │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Edge Function: dealsuite-scrape-wanted                         │
-│  1. Recibe cookie y parámetros de filtro                        │
-│  2. Llama a Firecrawl con headers.Cookie                        │
-│  3. Si éxito → parsea con OpenAI                                │
-│  4. Guarda deals en tabla dealsuite_deals                       │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Resultado: JSON con deals o respuesta de validación            │
-└─────────────────────────────────────────────────────────────────┘
-```
+Crear un componente `DealsuiteSyncPanel` en el panel de administración que permita:
+1. Pegar la cookie de sesión de Dealsuite
+2. Probar la conexión (dry run)
+3. Sincronizar deals con la base de datos
+4. Ver el historial de sincronizaciones y deals extraídos
 
 ---
 
-## Campos a Extraer de Cada Deal
+## Arquitectura
 
-| Campo | Descripción |
-|-------|-------------|
-| `deal_id` | ID o slug único del deal (de la URL o contenido) |
-| `title` | Título del deal |
-| `sector` | Industria/sector |
-| `country` | País |
-| `ebitda_range` | Rango de EBITDA (min-max) |
-| `revenue_range` | Rango de facturación (min-max) |
-| `deal_type` | Tipo (MBO, MBI, Acquisition, etc.) |
-| `advisor` | Asesor/firma que lista el deal |
-| `description` | Descripción resumida |
-| `published_at` | Fecha de publicación (si disponible) |
-| `detail_url` | URL al detalle del deal |
-| `raw_data` | JSON con todos los datos brutos |
+```text
+┌────────────────────────────────────────────────────────────────┐
+│                   DealsuiteSyncPanel                           │
+├────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  Cookie Input (textarea)                                │   │
+│  │  [Pegar cookie de sesión aquí...]                       │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                │
+│  ┌─────────────┐  ┌─────────────────┐  ┌──────────────────┐   │
+│  │ Probar      │  │ Sincronizar     │  │ Ver Deals        │   │
+│  │ Conexión    │  │ Deals           │  │ Guardados        │   │
+│  └─────────────┘  └─────────────────┘  └──────────────────┘   │
+│                                                                │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  Resultado / Preview del contenido                      │   │
+│  │  - Status de autenticación                              │   │
+│  │  - Número de deals encontrados                          │   │
+│  │  - Warnings y errores                                   │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  Tabla de Deals Sincronizados (últimos 20)              │   │
+│  │  | Título | Sector | País | EBITDA | Fecha |            │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Archivos a Crear/Modificar
 
-### 1. Nueva Edge Function: `supabase/functions/dealsuite-scrape-wanted/index.ts`
+### 1. Nuevo Componente: `src/components/admin/DealsuiteSyncPanel.tsx`
 
+Componente principal con:
+- **Textarea** para pegar la cookie de sesión
+- **Botón "Probar Conexión"**: Llama a `firecrawlApi.scrapeDealsuite(cookie, { dryRun: true })`
+- **Botón "Sincronizar Deals"**: Llama a `firecrawlApi.scrapeDealsuite(cookie)`
+- **Estado de resultado**: Muestra preview, errores, o estadísticas
+- **Tabla de deals**: Muestra los últimos deals sincronizados desde `dealsuite_deals`
+
+Funcionalidades:
+- Indicadores de estado (loading, success, error)
+- Preview del contenido HTML/markdown devuelto
+- Estadísticas de sincronización (insertados, actualizados)
+- Instrucciones claras de cómo obtener la cookie
+
+### 2. Nueva Página: `src/pages/admin/DealsuitePage.tsx`
+
+Página wrapper que renderiza `DealsuiteSyncPanel` con el layout correcto.
+
+### 3. Lazy Import: `src/features/admin/components/LazyAdminComponents.tsx`
+
+Añadir:
 ```typescript
-// Estructura principal
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
-
-serve(async (req) => {
-  // 1. Recibir cookie y opciones
-  const { session_cookie, filters, dry_run } = await req.json();
-  
-  // 2. Validar que tenemos la cookie
-  if (!session_cookie) {
-    return error('session_cookie es requerida');
-  }
-  
-  // 3. Construir URL de Dealsuite con filtros
-  const url = buildDealsuitUrl(filters);
-  
-  // 4. Llamar a Firecrawl con headers incluyendo Cookie
-  const scrapeResult = await fetch('https://api.firecrawl.dev/v1/scrape', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      url,
-      formats: ['html', 'markdown'],
-      waitFor: 8000, // JS rendering
-      headers: {
-        'Cookie': session_cookie,
-        'User-Agent': 'Mozilla/5.0 ...'
-      }
-    }),
-  });
-  
-  // 5. Validar que obtuvimos contenido autenticado
-  const content = scrapeResult.data?.markdown;
-  if (isLoginPage(content)) {
-    return error('Cookie inválida o expirada');
-  }
-  
-  // 6. Si dry_run, devolver markdown para inspección
-  if (dry_run) {
-    return { success: true, preview: content.substring(0, 3000) };
-  }
-  
-  // 7. Parsear con OpenAI
-  const deals = await extractDealsWithAI(content);
-  
-  // 8. Guardar en base de datos
-  const { inserted, updated } = await upsertDeals(deals);
-  
-  return { success: true, extracted: deals.length, inserted, updated };
-});
-```
-
-### 2. Nuevo Archivo de Config: `supabase/config.toml` (añadir entrada)
-
-```toml
-[functions.dealsuite-scrape-wanted]
-verify_jwt = true  # Requiere autenticación de admin
-```
-
-### 3. Migración SQL: Nueva tabla `dealsuite_deals`
-
-```sql
-CREATE TABLE IF NOT EXISTS dealsuite_deals (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  deal_id TEXT UNIQUE NOT NULL,
-  title TEXT NOT NULL,
-  sector TEXT,
-  country TEXT,
-  ebitda_min NUMERIC,
-  ebitda_max NUMERIC,
-  revenue_min NUMERIC,
-  revenue_max NUMERIC,
-  deal_type TEXT,
-  advisor TEXT,
-  description TEXT,
-  published_at TIMESTAMPTZ,
-  detail_url TEXT,
-  raw_data JSONB,
-  source_url TEXT,
-  scraped_at TIMESTAMPTZ DEFAULT NOW(),
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+export const LazyDealsuitePage = React.lazy(() => 
+  import('@/pages/admin/DealsuitePage')
 );
-
--- Índices para búsqueda
-CREATE INDEX idx_dealsuite_deals_sector ON dealsuite_deals(sector);
-CREATE INDEX idx_dealsuite_deals_country ON dealsuite_deals(country);
-CREATE INDEX idx_dealsuite_deals_scraped_at ON dealsuite_deals(scraped_at DESC);
-
--- RLS
-ALTER TABLE dealsuite_deals ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Admins can manage dealsuite_deals"
-  ON dealsuite_deals
-  FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM user_roles 
-      WHERE user_roles.user_id = auth.uid() 
-      AND user_roles.role IN ('admin', 'super_admin')
-    )
-  );
 ```
 
-### 4. Actualizar API cliente: `src/lib/api/firecrawl.ts`
+### 4. Ruta Admin: `src/features/admin/components/AdminRouter.tsx`
 
-Añadir nuevo tipo y método:
-
+Añadir ruta:
 ```typescript
-type AuthenticatedScrapeOptions = ScrapeOptions & {
-  headers?: Record<string, string>;
-};
+<Route path="/dealsuite" element={<LazyDealsuitePage />} />
+```
 
-export const firecrawlApi = {
-  // ... métodos existentes ...
-  
-  // Scrape Dealsuite wanted market
-  async scrapeDealsuite(
-    sessionCookie: string, 
-    options?: { dryRun?: boolean; filters?: Record<string, string> }
-  ): Promise<FirecrawlResponse> {
-    const { data, error } = await supabase.functions.invoke('dealsuite-scrape-wanted', {
-      body: { 
-        session_cookie: sessionCookie,
-        dry_run: options?.dryRun,
-        filters: options?.filters
-      },
-    });
+### 5. Hook de datos: `src/hooks/useDealsuitDeals.ts`
 
-    if (error) {
-      return { success: false, error: error.message };
+Hook para obtener los deals guardados:
+```typescript
+export const useDealsuitDeals = () => {
+  return useQuery({
+    queryKey: ['dealsuite-deals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dealsuite_deals')
+        .select('*')
+        .order('scraped_at', { ascending: false })
+        .limit(50);
+      
+      if (error) throw error;
+      return data;
     }
-    return data;
-  },
+  });
 };
 ```
 
 ---
 
-## Prompt de Extracción para OpenAI
+## Diseño del Componente
 
-El prompt seguirá el patrón de `cr-extract-portfolio`:
+### Estados de UI
+
+| Estado | Indicador Visual |
+|--------|------------------|
+| Sin cookie | Textarea vacío, botones deshabilitados |
+| Probando conexión | Spinner + "Verificando autenticación..." |
+| Conexión exitosa | Badge verde + preview del contenido |
+| Cookie inválida | Badge rojo + mensaje de error |
+| Sincronizando | Progress bar + "Extrayendo deals..." |
+| Sync completo | Stats de insertados/actualizados |
+
+### Instrucciones para el Usuario
+
+El componente incluirá un bloque colapsable con instrucciones:
+
+1. Abre Dealsuite en tu navegador y asegúrate de estar logueado
+2. Abre DevTools (F12 o Cmd+Option+I)
+3. Ve a la pestaña "Application" (Chrome) o "Storage" (Firefox)
+4. En la sección "Cookies", selecciona "https://app.dealsuite.com"
+5. Copia todos los valores de las cookies (o usa `document.cookie` en Console)
+6. Pega el resultado en el campo de abajo
+
+---
+
+## Dependencias
+
+Usa componentes existentes:
+- `Card`, `CardHeader`, `CardContent` de `@/components/ui/card`
+- `Button` de `@/components/ui/button`
+- `Textarea` de `@/components/ui/textarea`
+- `Badge` de `@/components/ui/badge`
+- `Table` de `@/components/ui/table`
+- `Collapsible` de `@/components/ui/collapsible`
+- `toast` de `@/hooks/use-toast`
+
+API existente:
+- `firecrawlApi.scrapeDealsuite()` de `@/lib/api/firecrawl`
+
+---
+
+## Sección Técnica
+
+### Estructura del Componente Principal
 
 ```typescript
-const systemPrompt = `Eres un analista de M&A especializado en deal sourcing.
+// DealsuiteSyncPanel.tsx
+import { useState } from 'react';
+import { firecrawlApi } from '@/lib/api/firecrawl';
+import { useDealsuitDeals } from '@/hooks/useDealsuitDeals';
 
-Tu objetivo es extraer deals del marketplace "Wanted" de Dealsuite.
-
-Reglas: precisión > completitud. No inventes datos.
-
-TASK
-1) Identifica todos los deals listados en la página
-2) Para cada deal, extrae:
-   - deal_id (string) - ID único (de URL o contenido)
-   - title (string) - Título del deal
-   - sector (string|null) - Industria
-   - country (string|null) - País
-   - ebitda_range: { min: number|null, max: number|null } - en miles €
-   - revenue_range: { min: number|null, max: number|null } - en miles €
-   - deal_type (string|null) - MBO, MBI, Acquisition, etc.
-   - advisor (string|null) - Asesor/firma
-   - description (string|null) - Descripción
-   - published_at (string|null) - Fecha ISO si aparece
-   - detail_url (string|null) - URL al detalle
-
-SCHEMA OBLIGATORIO:
-{
-  "deals": [DealRecord],
-  "total_found": number,
-  "has_more_pages": boolean,
-  "warnings": [string]
+interface SyncResult {
+  success: boolean;
+  dry_run?: boolean;
+  preview?: string;
+  extracted?: number;
+  inserted?: number;
+  updated?: number;
+  error?: string;
 }
 
-Responde SOLO con JSON válido.`;
+export const DealsuiteSyncPanel = () => {
+  const [cookie, setCookie] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<SyncResult | null>(null);
+  const { data: deals, refetch } = useDealsuitDeals();
+
+  const handleTestConnection = async () => {
+    setIsLoading(true);
+    setResult(null);
+    const response = await firecrawlApi.scrapeDealsuite(cookie, { dryRun: true });
+    setResult(response);
+    setIsLoading(false);
+  };
+
+  const handleSync = async () => {
+    setIsLoading(true);
+    setResult(null);
+    const response = await firecrawlApi.scrapeDealsuite(cookie);
+    setResult(response);
+    if (response.success) {
+      refetch(); // Actualizar tabla de deals
+    }
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Cookie Input Section */}
+      {/* Action Buttons */}
+      {/* Result Display */}
+      {/* Deals Table */}
+    </div>
+  );
+};
 ```
 
----
+### Manejo de Errores
 
-## Flujo de Uso
+| Error | Mensaje al Usuario |
+|-------|-------------------|
+| `session_expired` | "La cookie ha expirado. Por favor, obtén una nueva desde Dealsuite." |
+| `captcha_detected` | "Dealsuite ha mostrado un captcha. Intenta de nuevo más tarde." |
+| `rate_limited` | "Se ha excedido el límite de Firecrawl. Espera unos minutos." |
+| `FIRECRAWL_API_KEY not configured` | "El conector de Firecrawl no está configurado." |
 
-1. **Usuario va a DevTools** del navegador con Dealsuite abierto
-2. **Copia la cookie de sesión** (Application → Cookies)
-3. **En el admin de Capittal**, pega la cookie en un modal
-4. **Click "Sincronizar"** → llama a la edge function
-5. **Si dry_run**: ve preview del contenido para validar
-6. **Si ok**: ejecuta extracción completa y guarda deals
+### Seguridad
 
----
-
-## Modo de Prueba (Dry Run)
-
-Para validar que la cookie funciona antes de parsear:
-
-```json
-{
-  "session_cookie": "...",
-  "dry_run": true
-}
-```
-
-Respuesta:
-```json
-{
-  "success": true,
-  "preview": "## Wanted Market\n\n### Deal 1: Technology Company...",
-  "content_length": 45000,
-  "is_authenticated": true
-}
-```
-
----
-
-## Manejo de Errores
-
-| Escenario | Detección | Respuesta |
-|-----------|-----------|-----------|
-| Cookie expirada | Markdown contiene "login" o "sign in" | `{ success: false, error: 'session_expired' }` |
-| Rate limit Firecrawl | HTTP 429 | `{ success: false, error: 'rate_limited' }` |
-| Contenido vacío | Sin deals detectados | `{ success: true, deals: [], warning: 'no_deals_found' }` |
-| Captcha | Detectar texto de captcha | `{ success: false, error: 'captcha_detected' }` |
-
----
-
-## Seguridad
-
-- La edge function requiere JWT válido (admin)
-- La cookie de sesión NO se guarda en base de datos
-- Logs no registran el valor de la cookie
-- La tabla tiene RLS restrictivo para admins
+- La cookie NO se guarda en ningún momento
+- El campo de cookie tiene `type="password"` para ocultarlo
+- Solo usuarios admin pueden acceder a esta página
+- La cookie se envía cifrada vía HTTPS
 
 ---
 
 ## Entregables
 
-1. Edge function `dealsuite-scrape-wanted` con soporte de cookies
-2. Tabla `dealsuite_deals` con RLS
-3. Método en `firecrawlApi` para llamar desde frontend
-4. Modo dry_run para validación rápida
-5. Prompt optimizado para extracción de deals
+1. `src/components/admin/DealsuiteSyncPanel.tsx` - Componente principal
+2. `src/pages/admin/DealsuitePage.tsx` - Página wrapper
+3. `src/hooks/useDealsuitDeals.ts` - Hook para datos
+4. Actualización de `LazyAdminComponents.tsx` - Lazy import
+5. Actualización de `AdminRouter.tsx` - Nueva ruta `/admin/dealsuite`
 
 ---
 
-## Verificación
+## Navegación
 
-Prueba inicial con:
-```bash
-# Desde consola del navegador en Dealsuite
-document.cookie  # Copiar todo
-```
-
-Luego probar el endpoint:
-```json
-POST /functions/v1/dealsuite-scrape-wanted
-{
-  "session_cookie": "COPIAR_AQUI",
-  "dry_run": true
-}
-```
-
-Si devuelve contenido con deals → la integración funciona.
-Si devuelve página de login → cookie incorrecta o protección adicional.
+Se puede añadir un enlace en el sidebar del admin, en la sección de integraciones o deal sourcing, apuntando a `/admin/dealsuite`.
