@@ -18,6 +18,7 @@ import BulkDeleteDialog from './BulkDeleteDialog';
 import { ApolloMatchModal } from './ApolloMatchModal';
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
 import { StatusesEditor } from './StatusesEditor';
+import CompactStatsBar from './CompactStatsBar';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Send, RefreshCw, CheckCircle2, Archive, Trash2, BarChart3, Users, Star, Kanban } from 'lucide-react';
@@ -184,59 +185,55 @@ const LinearContactsManager = () => {
   }
 
   return (
-    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'pipeline' | 'stats')} className="space-y-6">
-      {/* Header with Tabs */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground">Leads</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Gestión unificada de leads
-            </p>
-          </div>
-          <TabsList className="h-8">
-            <TabsTrigger value="favorites" className="text-xs px-3 h-6 gap-1.5">
+    <Tabs 
+      value={activeTab} 
+      onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'pipeline' | 'stats')} 
+      className="h-[calc(100vh-48px-24px)] flex flex-col"
+    >
+      {/* Compact Header with Tabs */}
+      <div className="flex items-center justify-between shrink-0 pb-2">
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold text-foreground">Leads</h1>
+          <TabsList className="h-7">
+            <TabsTrigger value="favorites" className="text-[11px] px-2.5 h-5 gap-1">
               <Star className="h-3 w-3" />
-              Favoritos {favoriteCount > 0 && <span className="text-[10px] ml-0.5 text-amber-500">({favoriteCount})</span>}
+              Favoritos {favoriteCount > 0 && <span className="text-[10px] text-amber-500">({favoriteCount})</span>}
             </TabsTrigger>
-            <TabsTrigger value="directory" className="text-xs px-3 h-6 gap-1.5">
+            <TabsTrigger value="directory" className="text-[11px] px-2.5 h-5 gap-1">
               <Users className="h-3 w-3" />
               Todos
             </TabsTrigger>
-            <TabsTrigger value="pipeline" className="text-xs px-3 h-6 gap-1.5">
+            <TabsTrigger value="pipeline" className="text-[11px] px-2.5 h-5 gap-1">
               <Kanban className="h-3 w-3" />
               Pipeline
             </TabsTrigger>
-            <TabsTrigger value="stats" className="text-xs px-3 h-6 gap-1.5">
+            <TabsTrigger value="stats" className="text-[11px] px-2.5 h-5 gap-1">
               <BarChart3 className="h-3 w-3" />
-              Estadísticas
+              Stats
             </TabsTrigger>
           </TabsList>
-          {/* Status Management Button */}
           <StatusesEditor />
         </div>
         
         {selectedIds.length > 0 && (
-          <div className="flex items-center gap-2">
-            {/* Archivar button */}
+          <div className="flex items-center gap-1.5">
             <Button 
               onClick={() => setShowArchiveDialog(true)}
               variant="outline" 
               size="sm"
-              className="h-8"
+              className="h-7 text-xs"
             >
-              <Archive className="h-3.5 w-3.5 mr-1.5" />
+              <Archive className="h-3 w-3 mr-1" />
               Archivar ({selectedIds.length})
             </Button>
             
-            {/* Eliminar button */}
             <Button 
               onClick={() => setShowDeleteDialog(true)}
               variant="outline" 
               size="sm"
-              className="h-8 text-destructive hover:text-destructive border-destructive/50 hover:bg-destructive/10"
+              className="h-7 text-xs text-destructive hover:text-destructive border-destructive/50 hover:bg-destructive/10"
             >
-              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+              <Trash2 className="h-3 w-3 mr-1" />
               Eliminar
             </Button>
 
@@ -266,19 +263,19 @@ const LinearContactsManager = () => {
               size="sm"
               disabled={isSyncing || notSyncedCount === 0}
               className={cn(
-                "h-8",
+                "h-7 text-xs",
                 notSyncedCount === 0 && "border-green-500/30 text-green-600"
               )}
             >
               {notSyncedCount === 0 ? (
                 <>
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-green-600" />
-                  Ya en Brevo ({selectedIds.length})
+                  <CheckCircle2 className="h-3 w-3 mr-1 text-green-600" />
+                  En Brevo ({selectedIds.length})
                 </>
               ) : (
                 <>
-                  <Send className="h-3.5 w-3.5 mr-1.5" />
-                  {isSyncing ? 'Sincronizando...' : `Brevo (${notSyncedCount}${alreadySyncedCount > 0 ? `/${selectedIds.length}` : ''})`}
+                  <Send className="h-3 w-3 mr-1" />
+                  {isSyncing ? 'Sync...' : `Brevo (${notSyncedCount})`}
                 </>
               )}
             </Button>
@@ -287,9 +284,9 @@ const LinearContactsManager = () => {
       </div>
 
       {/* Favorites Tab */}
-      <TabsContent value="favorites" className="space-y-6 mt-0">
+      <TabsContent value="favorites" className="flex-1 flex flex-col space-y-1 min-h-0 mt-0">
         {favoriteCount === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg">
+          <div className="flex-1 flex flex-col items-center justify-center text-center bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg">
             <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
               <Star className="h-6 w-6 text-amber-500" />
             </div>
@@ -310,44 +307,29 @@ const LinearContactsManager = () => {
               isRefreshing={isRefreshing}
             />
 
-            {/* Table */}
-            <LinearContactsTable
-              contacts={displayedContacts}
-              selectedContacts={selectedIds}
-              onSelectContact={selectContact}
-              onSelectAll={selectAll}
-              onViewDetails={handleViewDetails}
-              onSoftDelete={handleSoftDelete}
-              isLoading={isLoading || isFavoritesLoading}
-              onApolloEnrich={handleApolloEnrich}
-              onApolloSelectCandidate={handleApolloSelectCandidate}
-              isEnriching={isEnriching}
-            />
+            {/* Table - flex-1 to fill remaining space */}
+            <div className="flex-1 min-h-0">
+              <LinearContactsTable
+                contacts={displayedContacts}
+                selectedContacts={selectedIds}
+                onSelectContact={selectContact}
+                onSelectAll={selectAll}
+                onViewDetails={handleViewDetails}
+                onSoftDelete={handleSoftDelete}
+                isLoading={isLoading || isFavoritesLoading}
+                onApolloEnrich={handleApolloEnrich}
+                onApolloSelectCandidate={handleApolloSelectCandidate}
+                isEnriching={isEnriching}
+              />
+            </div>
           </>
         )}
       </TabsContent>
 
       {/* Directory Tab */}
-      <TabsContent value="directory" className="space-y-6 mt-0">
-        {/* Stats Cards - Compact version */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Total</p>
-            <p className="text-2xl font-semibold mt-1">{stats.total}</p>
-          </div>
-          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Valoraciones</p>
-            <p className="text-2xl font-semibold mt-1 text-emerald-600">{stats.byOrigin.valuation || 0}</p>
-          </div>
-          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Únicos</p>
-            <p className="text-2xl font-semibold mt-1 text-blue-600">{stats.uniqueContacts || 0}</p>
-          </div>
-          <div className="bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Calificados</p>
-            <p className="text-2xl font-semibold mt-1 text-amber-600">{stats.qualified || 0}</p>
-          </div>
-        </div>
+      <TabsContent value="directory" className="flex-1 flex flex-col space-y-1 min-h-0 mt-0">
+        {/* Inline Stats Bar - compact */}
+        <CompactStatsBar stats={stats} />
 
         {/* Filter Bar */}
         <LinearFilterBar
@@ -361,23 +343,25 @@ const LinearContactsManager = () => {
           isRefreshing={isRefreshing}
         />
 
-        {/* Table */}
-        <LinearContactsTable
-          contacts={contacts}
-          selectedContacts={selectedIds}
-          onSelectContact={selectContact}
-          onSelectAll={selectAll}
-          onViewDetails={handleViewDetails}
-          onSoftDelete={handleSoftDelete}
-          isLoading={isLoading}
-          onApolloEnrich={handleApolloEnrich}
-          onApolloSelectCandidate={handleApolloSelectCandidate}
-          isEnriching={isEnriching}
-        />
+        {/* Table - flex-1 to fill remaining space */}
+        <div className="flex-1 min-h-0">
+          <LinearContactsTable
+            contacts={contacts}
+            selectedContacts={selectedIds}
+            onSelectContact={selectContact}
+            onSelectAll={selectAll}
+            onViewDetails={handleViewDetails}
+            onSoftDelete={handleSoftDelete}
+            isLoading={isLoading}
+            onApolloEnrich={handleApolloEnrich}
+            onApolloSelectCandidate={handleApolloSelectCandidate}
+            isEnriching={isEnriching}
+          />
+        </div>
       </TabsContent>
 
       {/* Pipeline Tab */}
-      <TabsContent value="pipeline" className="mt-0 h-[calc(100vh-180px)]">
+      <TabsContent value="pipeline" className="flex-1 min-h-0 mt-0">
         <ContactsPipelineView
           contacts={displayedContacts}
           onViewDetails={handleViewDetails}
@@ -386,7 +370,7 @@ const LinearContactsManager = () => {
       </TabsContent>
 
       {/* Statistics Tab */}
-      <TabsContent value="stats" className="mt-0">
+      <TabsContent value="stats" className="flex-1 min-h-0 mt-0 overflow-auto">
         <ContactsStatsPanel />
       </TabsContent>
 

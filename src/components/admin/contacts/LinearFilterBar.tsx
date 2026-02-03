@@ -288,16 +288,16 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
   };
 
   return (
-    <div className="space-y-3">
-      {/* 🔥 Single Unified Search Bar with AI */}
-      <SmartSearchInput
-        onFiltersChange={handleSmartFiltersChange}
-        onTextSearchChange={(text) => handleFilterChange('search', text)}
-        className="w-full"
-      />
+    <div className="space-y-1.5 shrink-0">
+      {/* Compact single row: search + all dropdowns */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {/* 🔥 Unified Search Bar with AI */}
+        <SmartSearchInput
+          onFiltersChange={handleSmartFiltersChange}
+          onTextSearchChange={(text) => handleFilterChange('search', text)}
+          className="w-64 shrink-0"
+        />
 
-      {/* Traditional filter dropdowns */}
-      <div className="flex items-center gap-2 flex-wrap">
         {/* Origin filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -751,35 +751,36 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
           </label>
         </div>
 
-        {/* Actions */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]"
-          onClick={onRefresh}
-          disabled={isRefreshing}
-        >
-          <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isRefreshing && "animate-spin")} />
-          Actualizar
-        </Button>
-
-        {onExport && (
+        {/* Actions - compact */}
+        <div className="flex items-center gap-1.5 ml-auto shrink-0">
           <Button
             variant="outline"
             size="sm"
-            className="h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]"
-            onClick={onExport}
+            className="h-7 text-xs border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]"
+            onClick={onRefresh}
+            disabled={isRefreshing}
           >
-            <Download className="h-3.5 w-3.5 mr-1.5" />
-            Exportar
+            <RefreshCw className={cn("h-3 w-3 mr-1", isRefreshing && "animate-spin")} />
+            Actualizar
           </Button>
-        )}
+
+          {onExport && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]"
+              onClick={onExport}
+            >
+              <Download className="h-3 w-3 mr-1" />
+              Exportar
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* 🔥 Active Financial Filters Badges */}
+      {/* 🔥 Active Financial Filters Badges - inline */}
       {(filters.revenueMin || filters.revenueMax || filters.ebitdaMin || filters.ebitdaMax || filters.location) && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted-foreground">Filtros activos:</span>
+        <div className="flex items-center gap-1.5 flex-wrap text-xs">
           
           {/* Revenue filters */}
           {(filters.revenueMin || filters.revenueMax) && (

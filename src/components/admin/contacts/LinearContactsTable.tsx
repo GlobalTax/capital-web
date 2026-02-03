@@ -13,22 +13,22 @@ import { ContactTableRow } from './ContactTableRow';
 import { useContactStatuses, STATUS_COLOR_MAP, ContactStatus } from '@/hooks/useContactStatuses';
 import { useLeadForms } from '@/hooks/useLeadForms';
 
-// ===== COLUMN WIDTHS IN FIXED PIXELS (like empresas pattern) =====
+// ===== COLUMN WIDTHS IN FIXED PIXELS (optimized for data-density) =====
 export const COLUMN_WIDTHS: Record<string, number> = {
-  star: 36,
-  checkbox: 40,
-  contact: 180,
-  origin: 90,      // F. Registro
-  channel: 130,
-  company: 150,
-  province: 80,
-  sector: 100,
-  status: 120,
-  revenue: 75,
-  ebitda: 75,
-  apollo: 80,
-  date: 85,
-  actions: 44,
+  star: 32,
+  checkbox: 36,
+  contact: 170,
+  origin: 80,      // F. Registro
+  channel: 120,
+  company: 140,
+  province: 70,
+  sector: 90,
+  status: 110,
+  revenue: 70,
+  ebitda: 70,
+  apollo: 75,
+  date: 75,
+  actions: 40,
 };
 
 // Calculate total width from column widths
@@ -51,8 +51,8 @@ interface LinearContactsTableProps {
   isEnriching?: string | null;
 }
 
-// Row height for virtualization - compact
-const ROW_HEIGHT = 44;
+// Row height for virtualization - data-dense
+const ROW_HEIGHT = 40;
 
 // Helper to get channel color
 const getChannelColor = (category?: string) => {
@@ -355,14 +355,14 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     });
   }, [contacts, sortColumn, sortDirection]);
   
-  // Calculate dynamic height based on container
+  // Calculate dynamic height based on container - NO artificial limit
   useEffect(() => {
     const updateHeight = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        // Leave some space for footer/padding
-        const availableHeight = window.innerHeight - rect.top - 60;
-        setListHeight(Math.max(300, Math.min(availableHeight, 800)));
+        // Use all available space minus a small bottom margin
+        const availableHeight = window.innerHeight - rect.top - 16;
+        setListHeight(Math.max(200, availableHeight));
       }
     };
     
