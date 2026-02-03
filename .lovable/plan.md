@@ -1,194 +1,143 @@
 
-# Plan: Sincronización en Tiempo Real de Prospectos
+# Plan: Corregir la Pestaña "Estadísticas" de Contactos
 
-## Diagnóstico Completado
+## Diagnóstico Completo
 
 ### Causas Raíz Identificadas
 
-#### 1. **Falta de Invalidación de Cache al Cambiar Estados**
-Cuando se actualiza el estado de un lead en `/admin/contacts`:
-- `useContactUpdate.ts` (líneas 212-223) invalida `['unified-contacts']` pero **NO invalida `['prospects']`**
-- `useBulkUpdateStatus.ts` (líneas 82-95) invalida `['unified-contacts']` pero **NO invalida `['prospects']`**
+#### 1. Queries ILIKE Malformadas (Error 400)
+En `useCampaignCosts.ts` (líneas 231-234 y 247-249), las queries usan el patrón incorrecto:
+```typescript
+utmValues.map(v => `utm_source.ilike.%${v}%`).join(',')
+```
 
-Esto significa que cuando un lead pasa a "Reunión programada" o "PSH enviada", la tabla de prospectos **NO se entera del cambio**.
+Esto genera filtros como `utm_source.ilike.%meta%` que, al ser codificados en URL, se convierten en `utm_source.ilike.%25meta%25`, causando que Supabase devuelva **error 400**.
 
-#### 2. **Sin Realtime Subscription**
-El hook `useProspects.ts` no tiene ninguna suscripción a cambios en tiempo real de Supabase (postgres_changes). A diferencia de otros componentes como `RealtimeLeadsWidget` o `BookingsWidget`, los prospectos dependen únicamente del cache de React Query sin invalidación activa.
+La sintaxis correcta de Supabase PostgREST usa `*` como comodín, no `%`:
+```typescript
+utmValues.map(v => `utm_source.ilike.*${v}*`).join(',')
+```
 
-#### 3. **StaleTime de 2 Minutos**
-El hook `useProspects.ts` tiene `staleTime: 1000 * 60 * 2` (2 minutos), lo que significa que aunque se navegue a la página, si no han pasado 2 minutos desde la última consulta, se mostrará data obsoleta.
+#### 2. Statement Timeouts en Postgres
+Los logs de analytics muestran múltiples errores:
+```
+"canceling statement due to statement timeout"
+```
 
-### Verificación en Base de Datos
-Los datos SÍ están correctos en la BD:
-- `contact_statuses` tiene 2 estados marcados como `is_prospect_stage = true`:
-  - "Reunión Programada" (`status_key: fase0_activo`)
-  - "PSH Enviada" (`status_key: archivado`)
-- Hay leads en estos estados con `empresa_id` vinculado (1 en valuations, 6 en contact_leads)
+Esto indica que las queries de agregación (`getLeadsByChannelAndPeriod`) tardan demasiado y son canceladas por el servidor.
+
+#### 3. parseISO sin Protección en Evolución Temporal
+En `useLeadMetrics.ts` línea 311, hay un `parseISO` que puede lanzar excepción si la fecha es inválida:
+```typescript
+const leadDate = format(parseISO(l.lead_received_at || l.created_at), 'yyyy-MM-dd');
+```
+
+Si cualquier lead tiene una fecha malformada, esto crashea el componente.
+
+#### 4. Error Boundaries No Capturan Errores de Query
+Los Error Boundaries de React solo capturan errores durante el **render**. Los errores que ocurren en las funciones `queryFn` de React Query no se propagan a los Error Boundaries, causando que el error se muestre como "Error inesperado" global.
 
 ---
 
 ## Solución Propuesta
 
-### Cambio 1: Invalidar Cache de Prospectos al Cambiar Estados
+### Cambio 1: Corregir Sintaxis ILIKE en useCampaignCosts.ts
 
-**Archivo**: `src/hooks/useContactUpdate.ts`
+**Archivo**: `src/hooks/useCampaignCosts.ts`
 
-En la función `onSuccess` (línea 210), añadir invalidación de prospectos:
-
+**Líneas 232-234** - Cambiar:
 ```typescript
-onSuccess: () => {
-  queryClient.invalidateQueries({
-    queryKey: ['unified-contacts'],
-    refetchType: 'none',
-  });
-  // ... otras invalidaciones existentes ...
-  
-  // NUEVO: Invalidar prospectos cuando cambia un estado
-  queryClient.invalidateQueries({
-    queryKey: ['prospects'],
-  });
-  
-  toast({ ... });
-},
+// ANTES (incorrecto)
+leadsQuery = leadsQuery.or(
+  utmValues.map(v => `utm_source.ilike.%${v}%`).join(',')
+);
+
+// DESPUÉS (correcto)
+leadsQuery = leadsQuery.or(
+  utmValues.map(v => `utm_source.ilike.*${v}*`).join(',')
+);
 ```
 
-**Archivo**: `src/hooks/useBulkUpdateStatus.ts`
+**Líneas 247-249** - Mismo cambio para `valuationsQuery`.
 
-En `onSuccess` (línea 80), añadir:
+### Cambio 2: Proteger parseISO en useLeadMetrics.ts
 
+**Archivo**: `src/components/admin/metrics/useLeadMetrics.ts`
+
+**Líneas 309-322** - Envolver la evolución temporal con try/catch:
 ```typescript
-onSuccess: (data, variables) => {
-  queryClient.invalidateQueries({
-    queryKey: ['unified-contacts'],
-    refetchType: 'none',
+const temporalEvolution: TemporalDataPoint[] = last30Days.map(dateStr => {
+  const dayLeads = filteredLeads.filter(l => {
+    try {
+      const dateToCheck = l.lead_received_at || l.created_at;
+      if (!dateToCheck) return false;
+      const leadDate = format(parseISO(dateToCheck), 'yyyy-MM-dd');
+      return leadDate === dateStr;
+    } catch {
+      return false; // Skip malformed dates
+    }
   });
-  
-  // NUEVO: Invalidar prospectos
-  queryClient.invalidateQueries({
-    queryKey: ['prospects'],
-  });
-  
-  // ... resto del código ...
-},
-```
-
-### Cambio 2: Añadir Realtime Subscription a Prospectos
-
-**Archivo**: `src/hooks/useProspects.ts`
-
-Añadir suscripción en tiempo real para cambios de estado:
-
-```typescript
-import { useEffect } from 'react';
-
-export const useProspects = (filters?: ProspectFilters) => {
-  const queryClient = useQueryClient();
-  const { statuses } = useContactStatuses();
-  
-  const prospectStatusKeys = statuses
-    .filter(s => (s as any).is_prospect_stage && s.is_active)
-    .map(s => s.status_key);
-
-  // NUEVO: Suscripción realtime para cambios de estado
-  useEffect(() => {
-    if (prospectStatusKeys.length === 0) return;
-
-    const channel = supabase
-      .channel('prospects-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'company_valuations',
-          filter: 'is_deleted=eq.false'
-        },
-        (payload) => {
-          const newStatus = payload.new?.lead_status_crm;
-          const oldStatus = payload.old?.lead_status_crm;
-          
-          // Si el estado cambió hacia/desde un estado de prospecto
-          if (prospectStatusKeys.includes(newStatus) || 
-              prospectStatusKeys.includes(oldStatus)) {
-            queryClient.invalidateQueries({ queryKey: ['prospects'] });
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'contact_leads',
-          filter: 'is_deleted=eq.false'
-        },
-        (payload) => {
-          const newStatus = payload.new?.lead_status_crm;
-          const oldStatus = payload.old?.lead_status_crm;
-          
-          if (prospectStatusKeys.includes(newStatus) || 
-              prospectStatusKeys.includes(oldStatus)) {
-            queryClient.invalidateQueries({ queryKey: ['prospects'] });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [prospectStatusKeys, queryClient]);
-
-  // ... resto del hook ...
-};
-```
-
-### Cambio 3: Reducir StaleTime y Añadir Polling de Respaldo
-
-**Archivo**: `src/hooks/useProspects.ts`
-
-Modificar la configuración de la query:
-
-```typescript
-const query = useQuery({
-  queryKey: ['prospects', prospectStatusKeys, filters],
-  queryFn: async (): Promise<Prospect[]> => {
-    // ... función existente ...
-  },
-  enabled: prospectStatusKeys.length > 0,
-  staleTime: 1000 * 30, // REDUCIDO: 30 segundos (era 2 minutos)
-  refetchInterval: 1000 * 60, // NUEVO: Polling cada 60 segundos como respaldo
-  refetchOnWindowFocus: true, // NUEVO: Refetch al volver a la pestaña
+  // ... resto del código
 });
 ```
 
-### Cambio 4: Añadir Logging de Desarrollo
+### Cambio 3: Deshabilitar Query de Channel Analytics Problemática
 
-Para debugging futuro, añadir logs en desarrollo:
+**Archivo**: `src/hooks/useCampaignCosts.ts`
+
+La función `getLeadsByChannelAndPeriod` hace 2 queries por cada uno de los 4 canales = 8 queries adicionales. Esto es lento y causa timeouts.
+
+**Solución temporal**: Marcar `enabled: false` en la query `campaign_costs_analytics` mientras se optimiza, o simplificar la lógica para no usar ILIKE:
 
 ```typescript
-queryFn: async (): Promise<Prospect[]> => {
-  if (process.env.NODE_ENV === 'development') {
-    console.info('[useProspects] Fetching prospects', {
-      prospectStatusKeys,
-      filters,
-      timestamp: new Date().toISOString(),
-    });
-  }
-  
-  // ... resto de la función ...
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.info('[useProspects] Results', {
-      totalProspects: prospects.length,
-      fromValuations: (valuationLeads || []).length,
-      fromContacts: (contactLeads || []).length,
-    });
-  }
-  
-  return prospects;
-},
+// Líneas 261-316 - Deshabilitar temporalmente
+const { data: channelAnalytics = [], isLoading: isLoadingAnalytics } = useQuery({
+  queryKey: ['campaign_costs_analytics', costs],
+  queryFn: async () => {
+    // ... código existente
+  },
+  enabled: false, // TEMPORAL: Deshabilitar hasta optimizar
+  staleTime: 1000 * 60 * 5, // 5 minutos
+});
 ```
+
+O mejor aún, simplificar para no depender de filtros ILIKE costosos en tiempo real.
+
+### Cambio 4: Añadir ErrorBoundary con Fallback para Errores de Query
+
+Los Error Boundaries actuales no capturan errores asíncronos. Necesitamos usar el patrón de React Query `throwOnError` combinado con Error Boundaries.
+
+**Archivo**: `src/components/admin/campaigns/AnalyticsTabs.tsx`
+
+Añadir manejo de errores explícito:
+```typescript
+const {
+  isLoading,
+  error, // Añadir
+  // ... resto
+} = useCampaignHistory(period, campaignFilter);
+
+// Mostrar fallback si hay error
+if (error) {
+  return (
+    <Card>
+      <CardContent className="py-8 text-center">
+        <AlertTriangle className="h-10 w-10 mx-auto text-amber-500 mb-4" />
+        <p className="text-muted-foreground">
+          No se pudieron cargar los datos de análisis.
+        </p>
+        <Button onClick={() => refetch()} variant="outline" size="sm" className="mt-4">
+          Reintentar
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### Cambio 5: Proteger CampaignRegistryTable y MetaAdsAnalyticsDashboard
+
+Verificar que estos componentes manejan correctamente el estado de error de sus queries internas.
 
 ---
 
@@ -196,59 +145,55 @@ queryFn: async (): Promise<Prospect[]> => {
 
 | Archivo | Cambios |
 |---------|---------|
-| `src/hooks/useContactUpdate.ts` | Añadir invalidación de `['prospects']` en `onSuccess` |
-| `src/hooks/useBulkUpdateStatus.ts` | Añadir invalidación de `['prospects']` en `onSuccess` |
-| `src/hooks/useProspects.ts` | Añadir realtime subscription + reducir staleTime + añadir polling |
+| `src/hooks/useCampaignCosts.ts` | Corregir `%` → `*` en ILIKE + deshabilitar query pesada |
+| `src/components/admin/metrics/useLeadMetrics.ts` | Envolver parseISO en try/catch en evolución temporal |
+| `src/components/admin/campaigns/AnalyticsTabs.tsx` | Añadir manejo explícito de error con fallback UI |
+| `src/hooks/useCampaignHistory.ts` | (Opcional) Añadir retry: 1 y staleTime para resiliencia |
 
 ---
 
-## Flujo Resultante
+## Flujo de Corrección
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  Usuario cambia estado a "Reunión Programada" en /contacts │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│  useContactUpdate.onSuccess()                               │
-│  → invalidateQueries(['prospects'])                         │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-         ┌───────────────┼───────────────┐
-         │               │               │
-         ▼               ▼               ▼
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│ Cache       │  │ Realtime    │  │ Polling     │
-│ Invalidated │  │ Subscription│  │ (60s backup)│
-│ (inmediato) │  │ (UPDATE)    │  │             │
-└─────────────┘  └─────────────┘  └─────────────┘
-         │               │               │
-         └───────────────┼───────────────┘
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│  /admin/prospectos muestra el lead actualizado              │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│              ANTES (Estado Actual)                               │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Usuario entra en Estadísticas                                │
+│  2. useCampaignCosts lanza 8 queries ILIKE con %                │
+│  3. Supabase devuelve 400 (URL malformada)                      │
+│  4. Error no capturado → Crash global                           │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│              DESPUÉS (Estado Corregido)                          │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Usuario entra en Estadísticas                                │
+│  2. Queries ILIKE usan * (correcto)                             │
+│  3. Query pesada deshabilitada o optimizada                      │
+│  4. parseISO protegido con try/catch                            │
+│  5. Componentes manejan error con fallback UI                    │
+│  6. Error Boundaries capturan cualquier crash residual          │
+│  7. Vista estable, nunca crash global                           │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Verificación Post-Implementación
 
-1. **Cambiar estado inline en /admin/contacts** → Lead aparece en prospectos en <2s
-2. **Cambiar estado desde panel lateral** → Lead aparece en prospectos en <2s
-3. **Cambio masivo de estados** → Todos aparecen en prospectos en <2s
-4. **Cambiar a estado NO prospecto** → Lead desaparece de prospectos
-5. **Otro usuario cambia estados** → Realtime detecta y actualiza (<5s)
-6. **Refrescar pestaña prospectos** → Datos actualizados
-7. **Búsqueda en prospectos** → Resultados coherentes
+1. **Entrar en `/admin/contacts` → click "Estadísticas"** → NO debe mostrar error global
+2. **Cambiar entre tabs** (Control de Costes / Meta Ads / Google Ads / Métricas) → Cada uno funciona independiente
+3. **Si un tab tiene error** → Muestra fallback "No se pudo cargar" con botón reintentar
+4. **Consola del navegador** → Sin errores 400
+5. **Probar con dataset grande** → Sin timeout visible al usuario
+6. **Probar filtros de fecha** → Funciona sin crashear
 
 ---
 
 ## Notas Técnicas
 
-- **No se modifica la base de datos**: Solo cambios en frontend
-- **Sin duplicación de datos**: Los prospectos siguen siendo un derivado de leads
-- **Compatibilidad RLS**: Las políticas existentes no se modifican
-- **Sin romper otros módulos**: Las invalidaciones son aditivas, no reemplazan las existentes
-- **Polling como respaldo**: Si realtime falla, el polling garantiza actualización máxima cada 60s
+- **No se modifica la base de datos**: Solo cambios en frontend/hooks
+- **Cambio mínimo e incremental**: Solo se tocan las líneas problemáticas
+- **Compatible con Error Boundaries existentes**: Se complementan, no se reemplazan
+- **Retrocompatible**: No afecta otras funcionalidades del admin
+- **Impacto en performance**: Deshabilitar la query pesada mejora tiempos de carga
