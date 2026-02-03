@@ -86,7 +86,8 @@ import {
   LazyDataEnrichmentPanel,
   LazyCorporateBuyersPage,
   LazyCorporateBuyerDetailPage,
-  LazyCalculatorErrorsPage
+  LazyCalculatorErrorsPage,
+  LazyDealsuitePage
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -264,6 +265,9 @@ const AdminRouter = () => {
           
           {/* Apollo Website Visitors */}
           <Route path="/apollo-visitors" element={<LazyApolloVisitorsPage />} />
+          
+          {/* Dealsuite Sync */}
+          <Route path="/dealsuite" element={<LazyDealsuitePage />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />
