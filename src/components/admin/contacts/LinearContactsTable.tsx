@@ -462,7 +462,7 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
         className="border border-[hsl(var(--linear-border))] rounded-lg overflow-hidden bg-[hsl(var(--linear-bg))]"
       >
         {/* Unified scroll container for header + list */}
-        <div ref={scrollContainerRef} className="overflow-x-auto">
+        <div ref={scrollContainerRef} className="overflow-x-auto overflow-y-hidden">
           <div style={{ minWidth: TOTAL_TABLE_WIDTH }}>
             {/* Header inside scroll container for synchronized scroll */}
             <TableHeader 
