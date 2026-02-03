@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 type FirecrawlResponse<T = any> = {
   success: boolean;
   error?: string;
+  message?: string;
   data?: T;
 };
 
