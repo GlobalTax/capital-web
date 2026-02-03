@@ -1,329 +1,139 @@
 
-# Plan: Diagnóstico y Corrección del Flujo de Creación de Corporate Buyers
+# Plan: Solución al Timeout de Firecrawl para Dealsuite
 
-## Resumen Ejecutivo
+## Problema Identificado
 
-El flujo de creación de Corporate Buyers tiene **un problema crítico con RLS (Row Level Security)** que bloquea silenciosamente los inserts. La UI no muestra feedback cuando el insert falla por permisos.
-
----
-
-## Diagnóstico Completo
-
-### A) Estado del Frontend ✅
-- **Botón "Nuevo"**: Existe en línea 195 de `CorporateBuyersPage.tsx`
-- **Navegación**: Correcta a `/admin/corporate-buyers/new`
-- **Formulario**: `CorporateBuyerForm.tsx` completo con validación Zod
-- **Submit**: Llama a `handleCreateBuyer()` → `createBuyer.mutateAsync(data)`
-- **Mutation**: `useCreateCorporateBuyer()` ejecuta `supabase.from('corporate_buyers').insert(data)`
-
-### B) Estado de la Base de Datos ✅
-La tabla `corporate_buyers` existe con esta estructura:
-
-| Campo | Tipo | Nullable | Default |
-|-------|------|----------|---------|
-| id | uuid | NO | gen_random_uuid() |
-| name | text | **NO** | - |
-| website | text | YES | - |
-| buyer_type | text | YES | - |
-| is_active | boolean | YES | true |
-| is_deleted | boolean | YES | false |
-| created_at | timestamptz | YES | now() |
-| ... otros 20+ campos opcionales |
-
-**Solo `name` es obligatorio** - el formulario lo valida correctamente.
-
-### C) Estado de RLS 🔴 **PROBLEMA IDENTIFICADO**
-
-```
-RLS: ACTIVO en corporate_buyers
-```
-
-**Políticas actuales:**
-
-| Operación | Policy | Condición |
-|-----------|--------|-----------|
-| SELECT | Authenticated users can view | `is_deleted = false` |
-| INSERT | Admins can insert | `has_role(auth.uid(), 'admin')` |
-| UPDATE | Admins can update | `has_role(auth.uid(), 'admin')` |
-| DELETE | Admins can delete | `has_role(auth.uid(), 'admin')` |
-
-**Función `has_role()`:**
-```sql
--- Verifica en admin_users si el user_id tiene rol >= required_role
-SELECT role FROM admin_users WHERE user_id = check_user_id AND is_active = true
--- Jerarquía: super_admin(4) > admin(3) > editor(2) > viewer(1)
-```
-
-**Usuarios admin_users activos:**
-- `marc@capittal.es` - super_admin ✅
-- `lluis@capittal.es` - super_admin ✅
-- `marcel@capittal.es` - admin ✅
-- etc.
-
-### D) Causa Raíz Identificada 🎯
-
-El problema es **doble**:
-
-1. **RLS bloquea silenciosamente**: Si el usuario no tiene el rol `admin` o `super_admin` en `admin_users`, el INSERT falla sin devolver error visible al frontend.
-
-2. **El frontend no maneja correctamente el error RLS**: Cuando Supabase bloquea por RLS, devuelve `data: null, error: null` (o un error genérico que no se muestra claramente).
-
-### E) Escenario de Fallo
-
-```
-1. Usuario navega a /admin/corporate-buyers/new
-2. Llena el formulario y hace submit
-3. Frontend ejecuta: supabase.from('corporate_buyers').insert({name: '...'})
-4. Supabase verifica RLS: has_role(auth.uid(), 'admin')
-5. Si usuario no está en admin_users con rol admin → INSERT bloqueado
-6. Supabase devuelve: { data: null, error: null } o error genérico
-7. Frontend no detecta el fallo correctamente
-8. Usuario no ve ningún feedback
-```
-
----
+El scraping de Dealsuite falla con error **408 SCRAPE_TIMEOUT** porque:
+- La página es muy pesada en JavaScript (SPA con React)
+- Requiere autenticación y carga muchos datos dinámicamente
+- El tiempo actual (15s waitFor, 60s timeout) es insuficiente
 
 ## Solución Propuesta
 
-### 1. Añadir Logging de Debug al Hook (Temporal para diagnóstico)
+### Estrategia Principal: Firecrawl Async Mode + Polling
 
-```typescript
-// useCorporateBuyers.ts - línea 73-80
-mutationFn: async (data: CorporateBuyerFormData) => {
-  console.log('[createCorporateBuyer] Iniciando insert...', data);
-  
-  const { data: result, error } = await supabase
-    .from('corporate_buyers')
-    .insert(data)
-    .select()
-    .single();
+En lugar de esperar síncronamente a que Firecrawl complete el scrape (lo que causa timeout en la edge function), usaremos el **modo asíncrono** de Firecrawl:
 
-  console.log('[createCorporateBuyer] Resultado:', { result, error });
-  
-  if (error) {
-    console.error('[createCorporateBuyer] Error RLS/DB:', error);
-    throw error;
-  }
-  
-  if (!result) {
-    console.error('[createCorporateBuyer] Insert silencioso - posible RLS block');
-    throw new Error('No se pudo crear el comprador. Verifica tus permisos.');
-  }
-  
-  return result as CorporateBuyer;
-},
+1. Iniciar el scrape con `/v1/scrape` en modo async
+2. Recibir un `jobId` inmediatamente
+3. Hacer polling cada 5 segundos al endpoint `/v1/scrape/{jobId}`
+4. Cuando el job termine, procesar los resultados
+
+### Cambios en la Edge Function
+
+**Archivo:** `supabase/functions/dealsuite-scrape-wanted/index.ts`
+
+1. **Aumentar timeouts significativamente:**
+   - `waitFor: 30000` (30 segundos - el máximo recomendado)
+   - `timeout: 120000` (120 segundos - el máximo de Firecrawl)
+
+2. **Implementar retry con backoff:**
+   - Primer intento: timeout estándar
+   - Si falla con 408: reintentar con `waitFor: 45000`
+   - Máximo 2 reintentos
+
+3. **Añadir configuración avanzada de Firecrawl:**
+   - `skipTlsVerification: true` (evitar bloqueos por SSL)
+   - `blockAds: true` (cargar más rápido)
+   - `removeCookieBanners: true`
+
+### Mejoras en la UI
+
+**Archivo:** `src/components/admin/DealsuiteSyncPanel.tsx`
+
+1. **Mostrar feedback de progreso más detallado:**
+   - Indicar "Cargando página..." durante el scrape
+   - Mostrar tiempo transcurrido
+   - Botón de cancelar
+
+2. **Mostrar errores más descriptivos:**
+   - Si es timeout, sugerir reintentar
+   - Si es cookie expirada, indicar cómo renovarla
+
+3. **Añadir opción de "Modo Ligero":**
+   - Scrape solo la primera página (sin paginación)
+   - Para pruebas rápidas
+
+### Flujo Técnico Actualizado
+
+```text
+Usuario ingresa cookie
+         |
+         v
++------------------+
+| Validar cookie   |
++------------------+
+         |
+         v
++------------------+     timeout?     +------------------+
+| Firecrawl scrape |----------------->| Retry con más    |
+| waitFor: 30s     |                  | tiempo (45s)     |
+| timeout: 120s    |                  +------------------+
++------------------+                           |
+         |                                     |
+         v                                     v
++------------------+                  +------------------+
+| Procesar con AI  |<-----------------| Procesar con AI  |
+| GPT-4o-mini      |                  | GPT-4o-mini      |
++------------------+                  +------------------+
+         |
+         v
++------------------+
+| Upsert deals     |
+| en Supabase      |
++------------------+
 ```
-
-### 2. Mejorar Manejo de Errores en el Hook
-
-```typescript
-// useCorporateBuyers.ts
-export const useCreateCorporateBuyer = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: CorporateBuyerFormData) => {
-      const { data: result, error } = await supabase
-        .from('corporate_buyers')
-        .insert(data)
-        .select()
-        .single();
-
-      // Error explícito de Supabase
-      if (error) {
-        console.error('[createCorporateBuyer] DB Error:', error);
-        
-        // Detectar errores de RLS específicamente
-        if (error.code === '42501' || error.message?.includes('policy')) {
-          throw new Error('No tienes permisos para crear compradores. Contacta al administrador.');
-        }
-        
-        throw error;
-      }
-      
-      // Insert silencioso (RLS puede devolver null sin error)
-      if (!result) {
-        throw new Error('Error al crear el comprador. Verifica tus permisos de administrador.');
-      }
-      
-      return result as CorporateBuyer;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-      toast.success('Comprador creado correctamente');
-    },
-    onError: (error: Error) => {
-      console.error('[createCorporateBuyer] Error:', error);
-      toast.error(error.message || 'Error al crear el comprador');
-    },
-  });
-};
-```
-
-### 3. Mejorar Feedback en el Formulario
-
-```typescript
-// CorporateBuyerDetailPage.tsx - handleCreateBuyer
-const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
-  try {
-    const result = await createBuyer.mutateAsync(data);
-    if (result?.id) {
-      toast.success('Comprador creado correctamente');
-      navigate(`/admin/corporate-buyers/${result.id}`);
-    }
-  } catch (error) {
-    // El error ya se maneja en el hook con toast.error
-    console.error('[handleCreateBuyer] Fallo:', error);
-  }
-};
-```
-
-### 4. Verificar que el Usuario Tenga Rol Admin
-
-Añadir una verificación preventiva al cargar la página de creación:
-
-```typescript
-// CorporateBuyerDetailPage.tsx
-import { useAdminRole } from '@/hooks/useAdminRole'; // o similar
-
-const CorporateBuyerDetailPage = () => {
-  const { role, isLoading: roleLoading } = useAdminRole();
-  
-  // Si es modo new y no tiene rol admin, mostrar warning
-  if (isNew && !roleLoading && role !== 'admin' && role !== 'super_admin') {
-    return (
-      <div className="space-y-6">
-        <Alert variant="destructive">
-          <AlertDescription>
-            No tienes permisos para crear compradores corporativos.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-  
-  // ... resto del código
-};
-```
-
----
 
 ## Archivos a Modificar
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/hooks/useCorporateBuyers.ts` | Mejorar manejo de errores RLS en useCreateCorporateBuyer |
-| `src/pages/admin/CorporateBuyerDetailPage.tsx` | Añadir try/catch explícito y verificación de rol |
-| (Opcional) Crear hook `useAdminRole` | Para verificar permisos antes de mostrar formulario |
+| Archivo | Cambios |
+|---------|---------|
+| `supabase/functions/dealsuite-scrape-wanted/index.ts` | Aumentar timeouts, añadir retry logic, mejorar logs |
+| `src/components/admin/DealsuiteSyncPanel.tsx` | Feedback de progreso, manejo de errores mejorado |
 
----
+## Sección Técnica
 
-## Sección Técnica Detallada
-
-### Cambio 1: `src/hooks/useCorporateBuyers.ts`
-
-**Líneas 68-92 - Reemplazar useCreateCorporateBuyer:**
+### Configuración Firecrawl Optimizada
 
 ```typescript
-// Create buyer - con manejo robusto de errores RLS
-export const useCreateCorporateBuyer = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: CorporateBuyerFormData) => {
-      console.log('[useCreateCorporateBuyer] Payload:', data);
-      
-      const { data: result, error } = await supabase
-        .from('corporate_buyers')
-        .insert(data)
-        .select()
-        .single();
-
-      console.log('[useCreateCorporateBuyer] Response:', { result, error });
-
-      if (error) {
-        // Log completo del error para debugging
-        console.error('[useCreateCorporateBuyer] Supabase error:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-        });
-        
-        // Traducir errores comunes
-        if (error.code === '42501') {
-          throw new Error('Sin permisos: Necesitas rol de administrador para crear compradores.');
-        }
-        if (error.code === '23505') {
-          throw new Error('Ya existe un comprador con ese nombre.');
-        }
-        if (error.message?.toLowerCase().includes('policy')) {
-          throw new Error('Acceso denegado por políticas de seguridad.');
-        }
-        
-        throw new Error(error.message || 'Error al crear el comprador');
-      }
-      
-      if (!result) {
-        console.error('[useCreateCorporateBuyer] Null result - posible bloqueo RLS silencioso');
-        throw new Error('No se pudo crear el comprador. Verifica que tengas permisos de administrador.');
-      }
-      
-      return result as CorporateBuyer;
-    },
-    onSuccess: (data) => {
-      console.log('[useCreateCorporateBuyer] Success:', data.id);
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-      toast.success('Comprador creado correctamente');
-    },
-    onError: (error: Error) => {
-      console.error('[useCreateCorporateBuyer] Mutation error:', error);
-      toast.error(error.message);
-    },
-  });
-};
-```
-
-### Cambio 2: `src/pages/admin/CorporateBuyerDetailPage.tsx`
-
-**Líneas 128-133 - Mejorar handleCreateBuyer:**
-
-```typescript
-const handleCreateBuyer = async (data: CorporateBuyerFormData) => {
-  try {
-    console.log('[handleCreateBuyer] Submitting:', data);
-    const result = await createBuyer.mutateAsync(data);
-    
-    if (result?.id) {
-      console.log('[handleCreateBuyer] Created successfully:', result.id);
-      navigate(`/admin/corporate-buyers/${result.id}`);
-    } else {
-      console.error('[handleCreateBuyer] No result returned');
-      toast.error('Error inesperado al crear el comprador');
-    }
-  } catch (error) {
-    // El toast ya se muestra desde el hook, solo log adicional
-    console.error('[handleCreateBuyer] Error caught:', error);
+body: JSON.stringify({
+  url,
+  formats: ['markdown'],
+  waitFor: 30000,
+  timeout: 120000,
+  onlyMainContent: true,
+  blockAds: true,
+  removeCookieBanners: true,
+  headers: {
+    'Cookie': session_cookie,
+    'User-Agent': 'Mozilla/5.0...',
+    'Referer': 'https://app.dealsuite.com/',
+    'Cache-Control': 'no-cache',
   }
-};
+})
 ```
 
----
+### Lógica de Retry
 
-## Verificación Post-Implementación
+```typescript
+async function scrapeWithRetry(url: string, cookie: string, attempt = 1): Promise<Response> {
+  const waitTimes = [30000, 45000, 60000];
+  const waitFor = waitTimes[attempt - 1] || 60000;
+  
+  const response = await fetch('https://api.firecrawl.dev/v1/scrape', { ... });
+  
+  if (!response.ok && response.status === 408 && attempt < 3) {
+    console.log(`Retry attempt ${attempt + 1} with waitFor: ${waitTimes[attempt]}`);
+    await new Promise(r => setTimeout(r, 2000));
+    return scrapeWithRetry(url, cookie, attempt + 1);
+  }
+  
+  return response;
+}
+```
 
-1. **Test como admin**: Login como `marc@capittal.es` (super_admin), crear comprador → debe funcionar
-2. **Test de error**: Forzar campo vacío → debe mostrar error de validación
-3. **Verificar en DB**: `SELECT * FROM corporate_buyers ORDER BY created_at DESC LIMIT 1`
-4. **Verificar KPI**: El contador "Total compradores" debe incrementar
-5. **Verificar logs**: Console debe mostrar los logs de debug
+## Notas Importantes
 
----
-
-## Resultado Esperado
-
-Tras implementar estos cambios:
-- El flujo de creación funcionará end-to-end para usuarios con rol admin/super_admin
-- Los errores de RLS serán visibles con mensajes claros
-- La consola mostrará logs detallados para debugging futuro
-- Los usuarios sin permisos recibirán feedback claro
+- La cookie de Dealsuite expira aproximadamente cada 24 horas
+- Se recomienda ejecutar la sincronización durante horas de baja carga (noche/madrugada)
+- Si persisten los timeouts, considerar implementar scraping por paginación (página por página)
