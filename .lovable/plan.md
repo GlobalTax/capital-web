@@ -1,127 +1,109 @@
 
-# Plan: Corrección Final del Espacio Vacío en /admin/contacts
+# Plan: Corrección Definitiva del Espacio Vacío en /admin/contacts
 
-## Análisis de la Distancia
+## Causa Raíz Identificada
 
-Según la captura proporcionada, hay aproximadamente **~450-480px de espacio vacío** entre:
-- Los tabs ("Leads", "Favoritos", "Todos", "Pipeline", "Stats") 
-- El contenido (stats bar con "Total: 1207", filtros, tabla)
+Después de analizar exhaustivamente el código, he identificado **3 problemas que actúan simultáneamente**:
 
-## Diagnóstico del Problema Real
-
-He identificado la **causa raíz definitiva** que los cambios anteriores no abordaron:
-
-### El Problema
-
-El componente `SidebarProvider` en `src/components/ui/sidebar.tsx` (línea 142-143) tiene:
-
+### Problema 1: TabsContent base tiene margin-top
+En `src/components/ui/tabs.tsx` (línea 45):
 ```tsx
-className="group/sidebar-wrapper flex min-h-svh w-full"
+className="mt-2 ring-offset-background..."
 ```
+Este `mt-2` añade 8px de margin a TODOS los TabsContent, aunque en `LinearContactsManager.tsx` se intenta sobreescribir con `mt-0`.
 
-Esto crea una **cadena de altura rota**:
-
+### Problema 2: La tabla calcula altura basándose en `window.innerHeight - rect.top`
+En `LinearContactsTable.tsx` (líneas 350-351):
+```tsx
+const availableHeight = window.innerHeight - rect.top - 16;
 ```
-SidebarProvider (min-h-svh, NO h-svh) ← ⚠️ PROBLEMA AQUÍ
-  └─ div (h-screen, overflow-hidden) 
-     └─ SidebarInset (h-svh, overflow-hidden)
-        └─ main (flex-1, overflow-hidden)
-           └─ children (h-full) ← No funciona porque SidebarProvider no tiene height fijo
+Este cálculo depende de dónde esté posicionada la tabla en el viewport. Si hay espacio vacío arriba, la tabla se hace más pequeña, creando un ciclo visual.
+
+### Problema 3: El componente `main` tiene padding que no se considera
+En `AdminLayout.tsx` (línea 129):
+```tsx
+<main className="flex-1 p-2 sm:p-3 md:p-4 overflow-hidden flex flex-col">
 ```
+Este padding reduce el espacio disponible pero la tabla no lo está considerando correctamente.
 
-El `div` con `h-screen` está **DENTRO** de `SidebarProvider` que tiene `min-h-svh` (puede crecer) pero NO `h-svh` (altura fija). Esto significa que:
+## Solución Integral (4 archivos)
 
-1. `SidebarProvider` puede crecer más allá del viewport
-2. Sus hijos no tienen una referencia de altura fija
-3. `h-full` en hijos no funciona correctamente
-
-## Solución
-
-Añadir `h-svh` al `SidebarProvider` para que tenga altura **fija** igual al viewport, no solo altura mínima:
-
-### Archivo: `src/components/ui/sidebar.tsx`
+### Archivo 1: `src/components/ui/tabs.tsx`
+**Cambio**: Eliminar `mt-2` del `TabsContent` base - los componentes que lo necesiten pueden añadirlo explícitamente.
 
 | Línea | Antes | Después |
 |-------|-------|---------|
-| 142-143 | `"group/sidebar-wrapper flex min-h-svh w-full"` | `"group/sidebar-wrapper flex h-svh min-h-svh w-full overflow-hidden"` |
+| 44-45 | `"mt-2 ring-offset-background..."` | `"ring-offset-background..."` |
+
+### Archivo 2: `src/components/admin/contacts/LinearContactsManager.tsx`
+**Cambio**: Los `TabsContent` ya no necesitan `mt-0` porque el base ya no lo tiene. Mantener `gap-1` para espaciado interno.
+
+Sin cambios necesarios si se arregla el componente base.
+
+### Archivo 3: `src/components/admin/contacts/LinearContactsTable.tsx`
+**Cambio**: En lugar de calcular altura basándose en `window.innerHeight - rect.top`, usar el contenedor padre con `h-full` y dejar que CSS maneje la altura.
+
+| Línea | Antes | Después |
+|-------|-------|---------|
+| 344-358 | Cálculo dinámico con `window.innerHeight` | Usar altura del contenedor padre directamente |
+
+Cambiar el cálculo de altura para usar el contenedor padre:
+```tsx
+useEffect(() => {
+  const updateHeight = () => {
+    if (containerRef.current) {
+      const parent = containerRef.current.parentElement;
+      if (parent) {
+        // Usar la altura del padre (que tiene h-full y flex-1)
+        const parentHeight = parent.clientHeight;
+        // Header de la tabla es ~32px
+        setListHeight(Math.max(200, parentHeight - 40));
+      }
+    }
+  };
+  
+  // ... resize listener
+}, []);
+```
+
+### Archivo 4: `src/features/admin/components/AdminLayout.tsx`
+**Cambio**: Quitar padding del main y pasarlo al div hijo, para que el cálculo de altura sea más predecible.
+
+| Línea | Antes | Después |
+|-------|-------|---------|
+| 129 | `"flex-1 p-2 sm:p-3 md:p-4 overflow-hidden flex flex-col"` | `"flex-1 overflow-hidden flex flex-col"` |
+| 130 | `"flex-1 min-h-0 w-full max-w-full flex flex-col"` | `"flex-1 min-h-0 w-full max-w-full flex flex-col p-2 sm:p-3 md:p-4"` |
 
 ## Sección Técnica
 
-### Por Qué Esto Soluciona el Problema
+### Por Qué Estas Correcciones Funcionan
 
-| Propiedad | Estado Actual | Estado Después |
-|-----------|---------------|----------------|
-| `min-h-svh` | ✅ Altura mínima = viewport | ✅ Mantener para protección |
-| `h-svh` | ❌ **FALTA** | ✅ Altura FIJA = viewport |
-| `overflow-hidden` | ❌ **FALTA** | ✅ Previene crecimiento |
+1. **Sin `mt-2` en TabsContent**: Elimina el margin automático que crea espacio no deseado
+2. **Altura basada en contenedor padre**: En lugar de usar `window.innerHeight - rect.top` (que depende del posicionamiento absoluto), usamos `parent.clientHeight` que siempre refleja el espacio real disponible
+3. **Padding movido al div interno**: Permite que el `main` tenga altura exacta y predecible para la propagación de flex
 
-### Cadena de Altura Corregida
+### Flujo de Altura Corregido
 
-```
-SidebarProvider (h-svh, min-h-svh, overflow-hidden) ← ARREGLADO
-  └─ div (h-screen, overflow-hidden) ← Ahora funciona
-     └─ SidebarInset (h-svh, overflow-hidden) ← Ahora funciona
-        └─ main (flex-1, overflow-hidden)
-           └─ div (flex-1, min-h-0)
-              └─ ContactsPage (h-full) ← Ahora SÍ tiene referencia
-                 └─ LinearContactsManager
-                    └─ Tabs (flex-1, min-h-0) ✓
-                       └─ Content (sin gap)
+```text
+SidebarInset (h-svh, flex-1, overflow-hidden)
+└── main (flex-1, overflow-hidden) ← SIN padding aquí
+    └── div (flex-1, min-h-0, p-4) ← Padding AQUÍ
+        └── ContactsPage (h-full)
+            └── LinearContactsManager (flex-1, flex-col)
+                └── Tabs (flex-1, flex-col)
+                    └── TabsContent (flex-1, min-h-0) ← SIN mt-2
+                        └── div (flex-1, min-h-0)
+                            └── Table (height = parent.clientHeight - 40)
 ```
 
-### Por Qué `min-h-svh` Solo No Es Suficiente
+## Archivos a Modificar
 
-```css
-/* ANTES: Solo min-h-svh */
-.sidebar-wrapper {
-  min-height: 100svh;  /* Mínimo = viewport */
-  height: auto;        /* PUEDE CRECER al infinito */
-}
-
-.hijo-con-h-full {
-  height: 100%;        /* 100% de... ¿qué? padre no tiene height */
-}
-
-/* DESPUÉS: h-svh + min-h-svh */
-.sidebar-wrapper {
-  height: 100svh;      /* FIJO = viewport */
-  min-height: 100svh;  /* Protección */
-  overflow: hidden;    /* No puede crecer */
-}
-
-.hijo-con-h-full {
-  height: 100%;        /* 100% de 100svh = funciona! */
-}
-```
-
-## Archivo a Modificar
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/ui/sidebar.tsx` | Línea 142-143: añadir `h-svh` y `overflow-hidden` |
+| Archivo | Cambio Principal |
+|---------|------------------|
+| `src/components/ui/tabs.tsx` | Quitar `mt-2` de TabsContent |
+| `src/components/admin/contacts/LinearContactsTable.tsx` | Cambiar cálculo de altura a usar contenedor padre |
+| `src/features/admin/components/AdminLayout.tsx` | Mover padding de main al div hijo |
 
 ## Resultado Esperado
 
-```
-+------------------------------------------+ ← Viewport top
-| [Logo] Header Admin [User]               | 48px
-+------------------------------------------+
-| Leads [Favoritos] [Todos] [Pipeline]...  | 32px ← SIN espacio vacío
-| Total: 1207 | Valoraciones: 1000 | ...   | 24px ← Inmediatamente debajo
-| [Buscar] [Origen] [Estado] [Email]...    | 32px
-+------------------------------------------+
-| ☐ | Contacto | Fecha | Canal | ...       | 32px header
-| ☐ | María G. | 04 feb| Google|           |
-| ☐ | Jaime S. | 03 feb| Meta  |           |
-|   ... tabla ocupa resto de pantalla      |
-+------------------------------------------+ ← Viewport bottom
-```
-
-## Verificación Post-Implementación
-
-Para verificar que el arreglo funciona:
-1. El contenido debe aparecer **inmediatamente** debajo de los tabs
-2. El espacio de ~450px debe desaparecer completamente
-3. La tabla virtualizada debe llenar todo el espacio restante
-4. No debe haber scroll global en la página
-5. El scroll debe estar contenido solo dentro de la tabla
+El contenido (stats, filtros, tabla) aparecerá inmediatamente debajo de los tabs sin espacio vacío. La tabla ocupará todo el espacio vertical disponible, calculando su altura correctamente basándose en su contenedor padre en lugar de la posición en el viewport.
