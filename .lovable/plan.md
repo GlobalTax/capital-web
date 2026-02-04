@@ -1,247 +1,210 @@
 
 
-# Plan: Importación Inteligente de Google Ads con IA (Screenshot)
+# Plan: Trigger para Alimentar campaign_cost_history desde ads_costs_history
 
-## Contexto
+## Situación Actual
 
-Ya existe un sistema funcional para importar pantallazos de campañas publicitarias:
-- **Edge Function**: `parse-campaign-screenshot` (usa OpenAI GPT-4o)
-- **Componentes UI**: `ScreenshotUploader`, `PasteImageProcessor`
-- **Integración**: `CostEntryForm` con botón "Importar pantallazo"
+### Estructura de Tablas
 
-Sin embargo, la imagen de Google Ads que compartiste muestra un formato específico:
-- **Conversiones**: 25,00
-- **Clics**: 791
-- **CTR**: 13,87%
-- **Coste**: 3,25 mil € (formateado como "mil" en español)
-- **Rango de fechas**: 1 ene 2026 - 31 ene 2026
+| Tabla | Propósito | Registros |
+|-------|-----------|-----------|
+| `ads_costs_history` | Importaciones de Excel/Screenshot | 216 registros |
+| `campaign_cost_history` | Historial de auditoría | 0 registros (vacía) |
+| `campaigns` | Campañas maestras | 4 campañas |
 
-## Mejoras Propuestas
+### Problema Identificado
 
-### 1. Optimizar Edge Function para Google Ads
+El trigger `log_campaign_cost_change` está diseñado para `campaign_costs` (tabla de entrada manual), pero los datos reales se importan vía `ads_costs_history`. Por eso `campaign_cost_history` permanece vacía.
 
-Actualizar el prompt de IA para detectar mejor los formatos específicos de Google Ads:
+### Mapeo de Campos
 
-| Campo | Formato Meta Ads | Formato Google Ads |
-|-------|-----------------|-------------------|
-| Gasto | €1.234,56 | 3,25 mil € |
-| Resultados | Resultados | Conversiones |
-| Clics | Clics en el enlace | Clics |
-| Período | Fechas específicas | "1 ene 2026 - 31 ene 2026" |
-
-**Cambios en el prompt**:
-```text
-- Reconocer "mil €" como multiplicador (3,25 mil € = €3.250)
-- Extraer "Conversiones" como campo específico (además de "Resultados")
-- Parsear fechas en formato "1 ene 2026" a YYYY-MM-DD
-- Detectar automáticamente plataforma Google Ads por colores/layout
-```
-
-### 2. Migrar a Lovable AI Gateway
-
-Cambiar de OpenAI directo a Lovable AI para:
-- Usar `LOVABLE_API_KEY` (ya configurado)
-- Modelo: `google/gemini-2.5-flash` (más rápido y con buen soporte multimodal)
-- Eliminar dependencia de `OPENAI_API_KEY`
-
-### 3. Extender Interface de Datos Extraídos
-
-Añadir campo `conversions` específico para Google Ads:
-
-```typescript
-export interface ExtractedCampaignData {
-  channel: 'meta_ads' | 'google_ads' | 'linkedin_ads';
-  campaign_name: string | null;
-  period_start: string;
-  period_end: string;
-  amount: number;
-  currency: 'EUR' | 'USD';
-  impressions: number | null;
-  clicks: number | null;
-  ctr: number | null;
-  cpc: number | null;
-  confidence: number;
-  detected_text: string;
-  
-  // NUEVOS - Específicos Google Ads
-  conversions: number | null;    // Conversiones (no "results")
-  cost_per_conversion: number | null;
-}
-```
-
-### 4. Actualizar UI para Mostrar Conversiones
-
-En `ScreenshotUploader` y `PasteImageProcessor`, mostrar el campo "Conversiones" cuando el canal sea Google Ads.
+| ads_costs_history | → | campaign_cost_history |
+|-------------------|---|----------------------|
+| `id` | → | `campaign_cost_id` |
+| `campaign_name` | → | `campaign_name` |
+| `platform` (enum) | → | `channel` (text) |
+| `results` | → | `results` |
+| `spend` | → | `amount` |
+| `cost_per_result` | → | `cost_per_result` |
+| `imported_by` | → | `changed_by` |
+| INSERT/UPDATE | → | `change_type` |
 
 ---
 
-## Arquitectura de la Solución
+## Implementación
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          FLUJO DE IMPORTACIÓN                               │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  1. Usuario sube/pega screenshot de Google Ads                              │
-│                        │                                                    │
-│                        ▼                                                    │
-│  ┌─────────────────────────────────────┐                                    │
-│  │   ScreenshotUploader.tsx            │                                    │
-│  │   - Convierte imagen a base64       │                                    │
-│  │   - Valida tamaño (máx 4MB)         │                                    │
-│  └─────────────────────────────────────┘                                    │
-│                        │                                                    │
-│                        ▼                                                    │
-│  ┌─────────────────────────────────────┐                                    │
-│  │   Edge Function:                    │                                    │
-│  │   parse-campaign-screenshot         │                                    │
-│  │                                     │                                    │
-│  │   - Usa Lovable AI Gateway          │                                    │
-│  │   - Modelo: gemini-2.5-flash        │                                    │
-│  │   - Prompt optimizado Google Ads    │                                    │
-│  └─────────────────────────────────────┘                                    │
-│                        │                                                    │
-│                        ▼                                                    │
-│  ┌─────────────────────────────────────┐                                    │
-│  │   Datos Extraídos:                  │                                    │
-│  │   - channel: "google_ads"           │                                    │
-│  │   - conversions: 25                 │                                    │
-│  │   - clicks: 791                     │                                    │
-│  │   - amount: 3250                    │                                    │
-│  │   - period: 2026-01-01 → 2026-01-31 │                                    │
-│  └─────────────────────────────────────┘                                    │
-│                        │                                                    │
-│                        ▼                                                    │
-│  ┌─────────────────────────────────────┐                                    │
-│  │   CostEntryForm.tsx                 │                                    │
-│  │   - Auto-rellena formulario         │                                    │
-│  │   - Usuario confirma y guarda       │                                    │
-│  │   → ads_costs_history               │                                    │
-│  └─────────────────────────────────────┘                                    │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+### 1. Nueva Función Trigger
+
+```sql
+CREATE OR REPLACE FUNCTION log_ads_cost_to_history()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+BEGIN
+  INSERT INTO campaign_cost_history (
+    campaign_cost_id,
+    campaign_name,
+    channel,
+    results,
+    amount,
+    cost_per_result,
+    daily_budget,
+    monthly_budget,
+    target_cpl,
+    internal_status,
+    delivery_status,
+    notes,
+    changed_by,
+    change_type
+  ) VALUES (
+    NEW.id,
+    NEW.campaign_name,
+    NEW.platform::text,  -- Convertir enum a text
+    COALESCE(NEW.results::integer, 0),
+    NEW.spend,
+    NEW.cost_per_result,
+    NULL,  -- No hay daily_budget en ads_costs_history
+    NULL,  -- No hay monthly_budget
+    NULL,  -- No hay target_cpl
+    NULL,  -- No hay internal_status
+    NULL,  -- No hay delivery_status
+    'Importado desde ' || NEW.platform::text || ' el ' || NEW.imported_at::date,
+    COALESCE(NEW.imported_by, auth.uid()),
+    CASE 
+      WHEN TG_OP = 'INSERT' THEN 'import'
+      WHEN TG_OP = 'UPDATE' THEN 'update'
+      ELSE 'create'
+    END
+  );
+  RETURN NEW;
+END;
+$$;
+```
+
+### 2. Crear Trigger en ads_costs_history
+
+```sql
+-- Trigger para INSERT
+CREATE TRIGGER ads_costs_to_history_trigger
+AFTER INSERT ON ads_costs_history
+FOR EACH ROW
+EXECUTE FUNCTION log_ads_cost_to_history();
+
+-- Trigger para UPDATE (opcional, si se editan registros)
+CREATE TRIGGER ads_costs_update_to_history_trigger
+AFTER UPDATE ON ads_costs_history
+FOR EACH ROW
+EXECUTE FUNCTION log_ads_cost_to_history();
+```
+
+### 3. Poblar Historial con Datos Existentes
+
+Para los 216 registros ya existentes en `ads_costs_history`:
+
+```sql
+INSERT INTO campaign_cost_history (
+  campaign_cost_id,
+  campaign_name,
+  channel,
+  results,
+  amount,
+  cost_per_result,
+  notes,
+  changed_by,
+  change_type,
+  recorded_at
+)
+SELECT 
+  id,
+  campaign_name,
+  platform::text,
+  COALESCE(results::integer, 0),
+  spend,
+  cost_per_result,
+  'Migración inicial desde ' || platform::text,
+  imported_by,
+  'import',
+  imported_at
+FROM ads_costs_history
+WHERE NOT EXISTS (
+  SELECT 1 FROM campaign_cost_history 
+  WHERE campaign_cost_id = ads_costs_history.id
+);
 ```
 
 ---
 
-## Archivos a Modificar
+## Flujo Resultante
 
-### Edge Function
-
-| Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/parse-campaign-screenshot/index.ts` | Migrar a Lovable AI, optimizar prompt para Google Ads |
-
-### Frontend
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/admin/campaigns/ScreenshotUploader.tsx` | Añadir campo "Conversiones" en preview |
-| `src/components/admin/campaigns/PasteImageProcessor.tsx` | Mostrar conversiones para Google Ads |
-| `src/components/admin/campaigns/CostEntryForm.tsx` | Mapear conversions a campo del formulario |
-
-### Tipos
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/admin/campaigns/ScreenshotUploader.tsx` | Extender `ExtractedCampaignData` con conversions |
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    IMPORTACIÓN DE COSTES                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Excel/Screenshot                                              │
+│        │                                                        │
+│        ▼                                                        │
+│   ┌─────────────────────┐                                       │
+│   │  ads_costs_history  │ ──────► 216 registros                 │
+│   └─────────────────────┘                                       │
+│        │                                                        │
+│        │ TRIGGER: ads_costs_to_history_trigger                  │
+│        │ (AFTER INSERT/UPDATE)                                  │
+│        ▼                                                        │
+│   ┌─────────────────────────┐                                   │
+│   │ campaign_cost_history   │ ──────► Auditoría completa        │
+│   └─────────────────────────┘                                   │
+│                                                                 │
+│   Campos registrados:                                           │
+│   - campaign_name, channel, amount, results                     │
+│   - cost_per_result, changed_by, change_type                    │
+│   - recorded_at (timestamp automático)                          │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Detalles Técnicos
 
-### Nuevo Prompt Optimizado
+### Conversiones Necesarias
 
-```text
-Analiza pantallazos de Meta Ads y Google Ads.
+| Campo Origen | Tipo | Campo Destino | Tipo | Conversión |
+|--------------|------|---------------|------|------------|
+| `platform` | `ads_platform` (enum) | `channel` | `text` | `::text` |
+| `results` | `numeric` | `results` | `integer` | `::integer` |
+| `spend` | `numeric` | `amount` | `numeric` | directo |
 
-FORMATOS ESPECÍFICOS DE GOOGLE ADS:
-- Los montos pueden usar "mil" como multiplicador: "3,25 mil €" = 3250 EUR
-- Busca "Conversiones" en lugar de "Resultados"
-- Las fechas pueden estar en formato "1 ene 2026" o "Jan 1, 2026"
-- El layout usa colores rojo/amarillo/verde para métricas principales
+### Nuevo Tipo de Cambio
 
-CAMPOS A EXTRAER:
-- channel: "google_ads" si ves "Conversiones", "Clics", "CTR" en layout Google
-- conversions: número de conversiones (puede tener decimales como 25,00)
-- clicks: número de clics
-- ctr: porcentaje CTR (ej: 13,87)
-- amount: gasto total (convertir "mil" a número completo)
-- period_start/end: fechas del rango mostrado
+Se añade `'import'` como valor de `change_type` para distinguir:
+- `'create'` → Creación manual
+- `'update'` → Modificación manual
+- `'import'` → Importación desde plataforma de ads
 
-RESPUESTA JSON:
-{
-  "channel": "google_ads",
-  "campaign_name": null,
-  "period_start": "2026-01-01",
-  "period_end": "2026-01-31",
-  "amount": 3250,
-  "currency": "EUR",
-  "conversions": 25,
-  "clicks": 791,
-  "ctr": 13.87,
-  "impressions": null,
-  "cpc": null,
-  "confidence": 0.95,
-  "detected_text": "Conversiones: 25, Clics: 791, CTR: 13,87%, Coste: 3,25 mil €"
-}
-```
+### Verificación de Duplicados
 
-### Estructura de la Edge Function Actualizada
-
-```typescript
-// Usar Lovable AI Gateway en lugar de OpenAI directo
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-
-const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    model: 'google/gemini-2.5-flash',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: [
-        { type: 'text', text: userPrompt },
-        { type: 'image_url', image_url: { url: imageBase64 } }
-      ]}
-    ],
-    max_tokens: 1000,
-    temperature: 0.1
-  }),
-});
-```
+La migración inicial incluye `WHERE NOT EXISTS` para evitar duplicados si se ejecuta múltiples veces.
 
 ---
 
 ## Beneficios
 
-1. **Soporte Nativo Google Ads**: Extracción correcta de "Conversiones", formatos "mil €", fechas españolas
-2. **Lovable AI**: Usa el gateway centralizado con `LOVABLE_API_KEY` ya configurado
-3. **Modelo Optimizado**: Gemini 2.5 Flash es rápido y excelente para análisis de imágenes
-4. **Retrocompatible**: Meta Ads sigue funcionando igual
-5. **Flujo Integrado**: Los datos van directo al sistema unificado `ads_costs_history`
+1. **Auditoría Automática**: Cada importación de Excel/Screenshot queda registrada
+2. **Trazabilidad**: Se puede ver quién importó qué y cuándo
+3. **Consistencia**: Un único punto de auditoría para todos los costes
+4. **Retrocompatible**: Los triggers existentes de `campaign_costs` siguen funcionando
 
 ---
 
-## Validación Post-Implementación
+## Resumen de Cambios
 
-Con la imagen de ejemplo que compartiste:
-- **Input**: Screenshot con "Conversiones: 25,00 | Clics: 791 | CTR: 13,87% | Coste: 3,25 mil €"
-- **Output esperado**:
-  ```json
-  {
-    "channel": "google_ads",
-    "period_start": "2026-01-01",
-    "period_end": "2026-01-31",
-    "amount": 3250,
-    "conversions": 25,
-    "clicks": 791,
-    "ctr": 13.87,
-    "currency": "EUR",
-    "confidence": 0.9
-  }
-  ```
+| Elemento | Acción |
+|----------|--------|
+| Función `log_ads_cost_to_history()` | **Crear** |
+| Trigger `ads_costs_to_history_trigger` | **Crear** |
+| Trigger `ads_costs_update_to_history_trigger` | **Crear** |
+| Datos existentes en `campaign_cost_history` | **Poblar** (216 registros) |
 
