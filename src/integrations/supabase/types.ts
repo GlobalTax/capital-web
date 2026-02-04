@@ -843,6 +843,7 @@ export type Database = {
           imported_by: string | null
           impressions: number | null
           link_clicks: number | null
+          linked_campaign_id: string | null
           platform: Database["public"]["Enums"]["ads_platform"]
           raw_row: Json
           reach: number | null
@@ -866,6 +867,7 @@ export type Database = {
           imported_by?: string | null
           impressions?: number | null
           link_clicks?: number | null
+          linked_campaign_id?: string | null
           platform: Database["public"]["Enums"]["ads_platform"]
           raw_row: Json
           reach?: number | null
@@ -889,6 +891,7 @@ export type Database = {
           imported_by?: string | null
           impressions?: number | null
           link_clicks?: number | null
+          linked_campaign_id?: string | null
           platform?: Database["public"]["Enums"]["ads_platform"]
           raw_row?: Json
           reach?: number | null
@@ -896,7 +899,22 @@ export type Database = {
           results?: number | null
           spend?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ads_costs_history_linked_campaign_id_fkey"
+            columns: ["linked_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ads_costs_history_linked_campaign_id_fkey"
+            columns: ["linked_campaign_id"]
+            isOneToOne: false
+            referencedRelation: "unified_costs_daily"
+            referencedColumns: ["campaign_id"]
+          },
+        ]
       }
       advisor_ebitda_multiples_by_range: {
         Row: {
@@ -3000,6 +3018,13 @@ export type Database = {
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaign_cost_snapshots_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "unified_costs_daily"
+            referencedColumns: ["campaign_id"]
+          },
         ]
       }
       campaign_costs: {
@@ -3071,13 +3096,70 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_leads_mapping: {
+        Row: {
+          campaign_id: string | null
+          campaign_name_pattern: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          lead_form_pattern: string | null
+          notes: string | null
+          priority: number | null
+          updated_at: string | null
+          utm_campaign_pattern: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_name_pattern?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          lead_form_pattern?: string | null
+          notes?: string | null
+          priority?: number | null
+          updated_at?: string | null
+          utm_campaign_pattern?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_name_pattern?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          lead_form_pattern?: string | null
+          notes?: string | null
+          priority?: number | null
+          updated_at?: string | null
+          utm_campaign_pattern?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_leads_mapping_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_leads_mapping_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "unified_costs_daily"
+            referencedColumns: ["campaign_id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           archived: boolean | null
           channel: string
           created_at: string | null
           created_by: string | null
+          default_lead_form: string | null
           delivery_status: string | null
+          external_campaign_id: string | null
+          external_name: string | null
           id: string
           name: string
           updated_at: string | null
@@ -3087,7 +3169,10 @@ export type Database = {
           channel?: string
           created_at?: string | null
           created_by?: string | null
+          default_lead_form?: string | null
           delivery_status?: string | null
+          external_campaign_id?: string | null
+          external_name?: string | null
           id?: string
           name: string
           updated_at?: string | null
@@ -3097,7 +3182,10 @@ export type Database = {
           channel?: string
           created_at?: string | null
           created_by?: string | null
+          default_lead_form?: string | null
           delivery_status?: string | null
+          external_campaign_id?: string | null
+          external_name?: string | null
           id?: string
           name?: string
           updated_at?: string | null
@@ -19828,6 +19916,33 @@ export type Database = {
           },
         ]
       }
+      campaign_leads_stats: {
+        Row: {
+          avg_ebitda: number | null
+          avg_revenue: number | null
+          campaign_id: string | null
+          campaign_name: string | null
+          lead_count: number | null
+          lead_date: string | null
+          qualified_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_leads_mapping_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_leads_mapping_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "unified_costs_daily"
+            referencedColumns: ["campaign_id"]
+          },
+        ]
+      }
       mandato_time_summary: {
         Row: {
           descripcion: string | null
@@ -19895,6 +20010,22 @@ export type Database = {
             referencedColumns: ["mandato_id"]
           },
         ]
+      }
+      unified_costs_daily: {
+        Row: {
+          campaign_id: string | null
+          campaign_name: string | null
+          channel: Database["public"]["Enums"]["ads_platform"] | null
+          clicks: number | null
+          cost_per_result: number | null
+          date: string | null
+          impressions: number | null
+          original_campaign_name: string | null
+          reach: number | null
+          results: number | null
+          spend: number | null
+        }
+        Relationships: []
       }
       v_active_alerts: {
         Row: {
@@ -21215,6 +21346,7 @@ export type Database = {
       }
       refresh_banner_analytics: { Args: never; Returns: undefined }
       refresh_mandatos_days_in_stage: { Args: never; Returns: undefined }
+      refresh_unified_costs: { Args: never; Returns: undefined }
       reject_user_registration: {
         Args: { reason?: string; request_id: string }
         Returns: boolean

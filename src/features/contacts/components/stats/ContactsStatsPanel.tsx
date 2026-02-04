@@ -1,11 +1,12 @@
 // ============= CONTACTS STATS PANEL =============
 // Panel principal de estadísticas con Control de Costes
+// Sistema unificado de costes publicitarios v2
 // Cada tab está protegido con Error Boundary para aislamiento de fallos
 
 import React, { useState, Suspense } from 'react';
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, BarChart3, TrendingUp, Euro, CircleOff, RefreshCw, Table2, Loader2 } from 'lucide-react';
+import { Calendar, BarChart3, TrendingUp, Euro, CircleOff, RefreshCw, Table2, Loader2, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -28,6 +29,7 @@ import { CampaignRegistryTable } from '@/components/admin/campaigns/CampaignRegi
 import { AnalyticsTabs } from '@/components/admin/campaigns/AnalyticsTabs';
 import { AdsCostsHistoryTable } from '@/components/admin/campaigns/AdsCostsHistoryTable';
 import { MetaAdsAnalyticsDashboard } from '@/components/admin/campaigns/MetaAdsAnalytics';
+import { CampaignMappingPanel } from '@/components/admin/campaigns/CampaignMappingPanel';
 import { LeadMetricsDashboard } from '@/components/admin/metrics';
 
 // Loading fallback for Suspense
@@ -103,7 +105,7 @@ export const ContactsStatsPanel: React.FC = () => {
 
   const [selectedPreset, setSelectedPreset] = useState<PeriodPreset>('month');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'costs' | 'meta_ads' | 'google_ads' | 'metrics'>('costs');
+  const [activeTab, setActiveTab] = useState<'costs' | 'mapping' | 'meta_ads' | 'google_ads' | 'metrics'>('costs');
 
   const handlePresetChange = (preset: PeriodPreset) => {
     setSelectedPreset(preset);
@@ -156,27 +158,34 @@ export const ContactsStatsPanel: React.FC = () => {
       </div>
 
       {/* Main Tabs: Cost Control vs Contact Metrics */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'costs' | 'metrics')}>
-        <TabsList className="grid w-full max-w-2xl grid-cols-4">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <TabsList className="grid w-full max-w-3xl grid-cols-5">
           <TabsTrigger value="costs" className="flex items-center gap-2">
             <Table2 className="h-4 w-4" />
-            Control de Costes
+            <span className="hidden sm:inline">Control de Costes</span>
+            <span className="sm:hidden">Costes</span>
+          </TabsTrigger>
+          <TabsTrigger value="mapping" className="flex items-center gap-2">
+            <Link2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Mapeo</span>
+            <span className="sm:hidden">Mapeo</span>
           </TabsTrigger>
           <TabsTrigger value="meta_ads" className="flex items-center gap-2">
-            <div className="h-4 w-4 rounded bg-blue-500 flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">M</span>
+            <div className="h-4 w-4 rounded bg-primary/80 flex items-center justify-center">
+              <span className="text-primary-foreground text-[10px] font-bold">M</span>
             </div>
             Meta Ads
           </TabsTrigger>
           <TabsTrigger value="google_ads" className="flex items-center gap-2">
-            <div className="h-4 w-4 rounded bg-amber-500 flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">G</span>
+            <div className="h-4 w-4 rounded bg-accent flex items-center justify-center">
+              <span className="text-accent-foreground text-[10px] font-bold">G</span>
             </div>
             Google Ads
           </TabsTrigger>
           <TabsTrigger value="metrics" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
-            Métricas
+            <span className="hidden sm:inline">Métricas</span>
+            <span className="sm:hidden">Métr</span>
           </TabsTrigger>
         </TabsList>
 
@@ -189,6 +198,15 @@ export const ContactsStatsPanel: React.FC = () => {
 
               {/* Analytics Tabs (derived from history) */}
               <AnalyticsTabs />
+            </Suspense>
+          </StatsErrorBoundary>
+        </TabsContent>
+
+        {/* Tab: Campaign Mapping - NEW for unified costs */}
+        <TabsContent value="mapping" className="space-y-6 mt-4">
+          <StatsErrorBoundary section="Mapeo de Campañas">
+            <Suspense fallback={<SectionLoading />}>
+              <CampaignMappingPanel />
             </Suspense>
           </StatsErrorBoundary>
         </TabsContent>
