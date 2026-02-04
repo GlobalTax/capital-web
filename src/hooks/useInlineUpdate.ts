@@ -427,6 +427,32 @@ export const useContactInlineUpdate = () => {
         refetchType: 'none',
       });
 
+      // Cross-invalidation for Leads ↔ Prospects sync
+      if (field === 'lead_status_crm') {
+        queryClient.invalidateQueries({ queryKey: ['contacts-v2'] });
+        queryClient.invalidateQueries({ queryKey: ['prospects'] });
+        
+        // Check if new status is a prospect stage for user feedback
+        if (value) {
+          const { data: statusData } = await supabase
+            .from('contact_statuses')
+            .select('is_prospect_stage, label')
+            .eq('status_key', value)
+            .single();
+          
+          if (statusData?.is_prospect_stage) {
+            toast.success(`Movido a Prospectos: ${statusData.label}`, { 
+              duration: 3000,
+              action: {
+                label: 'Ver Prospectos',
+                onClick: () => window.location.href = '/admin/prospectos',
+              }
+            });
+            return { success: true };
+          }
+        }
+      }
+
       toast.success('Guardado', { duration: 1500 });
       return { success: true };
     } catch (error) {
