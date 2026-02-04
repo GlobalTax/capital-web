@@ -206,13 +206,28 @@ export const useContactUpdate = () => {
       });
     },
 
-    // 3. REVALIDACIÓN silenciosa en éxito
-    onSuccess: () => {
-      // Solo invalida queries en background, no refetch inmediato
-      queryClient.invalidateQueries({
-        queryKey: ['unified-contacts'],
-        refetchType: 'none',
-      });
+    // 3. REVALIDACIÓN en éxito - SINCRONIZACIÓN CRUZADA
+    onSuccess: (_, variables) => {
+      // 🔥 Si cambió el estado CRM, invalidar AMBAS listas con refetch inmediato
+      const statusChanged = !!variables.data.lead_status_crm;
+      
+      if (statusChanged) {
+        // Refetch inmediato para sincronización Leads ↔ Prospectos
+        queryClient.invalidateQueries({
+          queryKey: ['unified-contacts'],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['prospects'],
+        });
+        console.log('[useContactUpdate] Status changed - invalidated both leads and prospects');
+      } else {
+        // Solo invalida en background para cambios no relacionados con estado
+        queryClient.invalidateQueries({
+          queryKey: ['unified-contacts'],
+          refetchType: 'none',
+        });
+      }
+      
       queryClient.invalidateQueries({
         queryKey: ['contact-leads'],
         refetchType: 'none',
@@ -220,11 +235,6 @@ export const useContactUpdate = () => {
       queryClient.invalidateQueries({
         queryKey: ['company-valuations'],
         refetchType: 'none',
-      });
-      
-      // Invalidar prospectos cuando cambia un estado (sincronización inmediata)
-      queryClient.invalidateQueries({
-        queryKey: ['prospects'],
       });
 
       toast({
