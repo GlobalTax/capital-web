@@ -73,7 +73,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
       </div>
 
       {/* Grid Content */}
-      <div className="flex-1 grid grid-cols-[2fr_2fr_1fr_1fr_1fr_80px] gap-2 text-xs items-center min-w-0">
+      <div className="flex-1 grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_1fr_80px] gap-2 text-xs items-center min-w-0">
         {/* Name + Email */}
         <div className="flex items-center gap-1.5 min-w-0">
           <div onClick={(e) => e.stopPropagation()}>
@@ -99,6 +99,16 @@ const ContactRow: React.FC<ContactRowProps> = ({
           ) : (
             <span className="text-muted-foreground/60">-</span>
           )}
+        </div>
+
+        {/* Channel */}
+        <div className="truncate text-muted-foreground text-[10px]">
+          {contact.acquisition_channel_name || '-'}
+        </div>
+
+        {/* Form */}
+        <div className="truncate text-muted-foreground text-[10px]">
+          {contact.lead_form_name || '-'}
         </div>
 
         {/* Origin */}
