@@ -1,106 +1,184 @@
 
+# Plan: Sincronización Automática Leads ↔ Prospectos
 
-# Diagnóstico: Bug de Layout en /admin/contacts
+## Causa Raíz
 
-## Causa Raíz Identificada
+El módulo `/admin/contacts` (Gestión de Leads) usa `useUnifiedContacts` que **no filtra por estado** - muestra todos los leads independientemente de su estado CRM. Mientras tanto, `/admin/prospectos` sí filtra correctamente leads con estados marcados como `is_prospect_stage = true`.
 
-El problema está en un **conflicto de cálculo de altura** entre el `AdminLayout` y el componente `LinearContactsManager`.
+**Resultado actual**: Un lead con estado "PSH Enviada" aparece en **AMBAS** vistas.
 
-### Análisis del DOM:
+## Regla de Negocio a Implementar
 
+| Vista | Condición de filtro |
+|-------|---------------------|
+| **Gestión de Leads** | `lead_status_crm NOT IN (estados con is_prospect_stage = true)` |
+| **Gestión de Prospectos** | `lead_status_crm IN (estados con is_prospect_stage = true)` |
+
+Estados actuales configurados como prospecto:
+- `fase0_activo` → "Reunión Programada"  
+- `archivado` → "PSH Enviada"
+
+## Cambios a Implementar
+
+### 1. Backend: Single Source of Truth (ya implementado parcialmente)
+
+La lógica de negocio ya está en `contact_statuses.is_prospect_stage`. Solo necesitamos consumirla correctamente en el frontend.
+
+### 2. Hook `useUnifiedContacts.tsx` - Excluir estados de prospecto
+
+Modificar la función `fetchUnifiedContacts` para:
+
+1. Obtener primero los `prospectStatusKeys` de `contact_statuses`
+2. Añadir filtro `.not('lead_status_crm', 'in', prospectStatusKeys)` a cada query
+
+```typescript
+// Dentro de fetchUnifiedContacts:
+// 1. Obtener status keys de prospecto
+const { data: prospectStatuses } = await supabase
+  .from('contact_statuses')
+  .select('status_key')
+  .eq('is_prospect_stage', true)
+  .eq('is_active', true);
+
+const prospectStatusKeys = (prospectStatuses || []).map(s => s.status_key);
+
+// 2. Aplicar filtro a cada tabla (si hay prospect keys)
+// Para company_valuations:
+let valuationsQuery = supabase
+  .from('company_valuations')
+  .select('...')
+  .is('is_deleted', false);
+
+if (prospectStatusKeys.length > 0) {
+  valuationsQuery = valuationsQuery.not('lead_status_crm', 'in', `(${prospectStatusKeys.join(',')})`);
+}
 ```
-AdminLayout
-├── div.min-h-screen.flex.w-full
-│   ├── AdminSidebar (fixed, 100vh)
-│   └── SidebarInset.flex-1.flex.flex-col.min-h-svh
-│       ├── LinearAdminHeader (h-12, sticky top-0) ← 48px
-│       ├── main.flex-1.p-2-to-4.overflow-auto
-│       │   └── div.w-full.max-w-full
-│       │       └── LinearContactsManager (Tabs)
-│       │           className="h-[calc(100vh-48px-24px)]" ← PROBLEMA
+
+### 3. Invalidación de Cache Cruzada
+
+Los hooks `useContactUpdate` y `useBulkUpdateStatus` ya invalidan `['prospects']`. Necesitamos asegurar que también se invalide correctamente `['unified-contacts']` con refetch inmediato cuando el estado cambia hacia/desde un estado de prospecto.
+
+```typescript
+// En useBulkUpdateStatus.ts y useContactUpdate.ts
+onSuccess: () => {
+  // Invalidar AMBAS queries con refetch inmediato
+  queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
+  queryClient.invalidateQueries({ queryKey: ['prospects'] });
+}
 ```
 
-### El Bug:
+### 4. Realtime Subscription para Leads
 
-1. **`LinearContactsManager`** usa `h-[calc(100vh-48px-24px)]` = `calc(100vh - 72px)`
-2. Pero está **anidado dentro de** `<main className="flex-1 p-2 sm:p-3 md:p-4 overflow-auto">`
-3. El `main` ya tiene `flex-1` que calcula su altura dinámicamente
-4. Además tiene padding (`p-2` a `p-4`) que añade espacio extra
-5. El resultado: la altura calculada de `100vh - 72px` es **mayor** que el espacio disponible real
-6. Esto causa que el contenido se desborde y **empuja la tabla hacia abajo**
+Añadir suscripción realtime en `useUnifiedContacts` similar a la de `useProspects` para que cuando un lead cambie de estado, la lista se actualice automáticamente:
 
-### Por qué aparece el espacio en blanco:
+```typescript
+// Dentro de useUnifiedContacts
+useEffect(() => {
+  const channel = supabase
+    .channel('leads-status-sync')
+    .on('postgres_changes', {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'company_valuations',
+    }, (payload) => {
+      // Si el status cambió, refetch
+      if (payload.new?.lead_status_crm !== payload.old?.lead_status_crm) {
+        refetch();
+      }
+    })
+    .subscribe();
 
-El componente `Tabs` con altura fija de `100vh - 72px` excede el contenedor padre, y como el `<main>` tiene `overflow-auto`, el contenido se comporta de forma inesperada. Los `TabsContent` con `flex-1` intentan ocupar el espacio restante, pero el cálculo inicial está mal.
-
-## Solución Propuesta (Fix Mínimo)
-
-### Opción A: Corregir el cálculo en `LinearContactsManager.tsx` (RECOMENDADO)
-
-Cambiar de altura fija basada en `100vh` a usar `h-full` y dejar que el contenedor padre (main) controle la altura.
-
-**Archivo:** `src/components/admin/contacts/LinearContactsManager.tsx`
-
-**Cambio:**
-```diff
-- className="h-[calc(100vh-48px-24px)] flex flex-col"
-+ className="h-full flex flex-col"
+  return () => supabase.removeChannel(channel);
+}, []);
 ```
-
-**Y ajustar el `main` en `AdminLayout.tsx`:**
-```diff
-- <main className="flex-1 p-2 sm:p-3 md:p-4 overflow-auto">
--   <div className="w-full max-w-full">
-+ <main className="flex-1 p-2 sm:p-3 md:p-4 overflow-hidden flex flex-col">
-+   <div className="flex-1 min-h-0 w-full max-w-full flex flex-col">
-```
-
-### Detalle de los Cambios
-
-| Archivo | Línea | Cambio | Razón |
-|---------|-------|--------|-------|
-| `AdminLayout.tsx` | 129 | `overflow-auto` → `overflow-hidden flex flex-col` | Evitar scroll en main, habilitar flex container |
-| `AdminLayout.tsx` | 130 | Añadir `flex-1 min-h-0 flex flex-col` al wrapper | Permitir que children ocupen altura disponible |
-| `LinearContactsManager.tsx` | 191 | `h-[calc(100vh-48px-24px)]` → `h-full` | Usar altura del contenedor padre, no viewport |
-
-## Validación Visual Esperada
-
-Después del fix:
-- Los tabs + filtros aparecen **inmediatamente** debajo del header (48px)
-- No hay espacio en blanco gigante
-- La tabla comienza justo debajo de los filtros
-- Scroll interno solo en la tabla virtualizada
-- Sin doble scroll (página + tabla)
 
 ## Archivos a Modificar
 
-1. `src/features/admin/components/AdminLayout.tsx` (2 líneas)
-2. `src/components/admin/contacts/LinearContactsManager.tsx` (1 línea)
+| Archivo | Cambio |
+|---------|--------|
+| `src/hooks/useUnifiedContacts.tsx` | Añadir filtro que excluye estados de prospecto + suscripción realtime |
+| `src/hooks/useContactUpdate.ts` | Asegurar invalidación inmediata de ambas queries |
+| `src/hooks/useBulkUpdateStatus.ts` | Asegurar invalidación inmediata de ambas queries |
+
+## Flujo Esperado Después de la Implementación
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    contact_statuses (DB)                        │
+│  status_key='nuevo'         → is_prospect_stage=false           │
+│  status_key='fase0_activo'  → is_prospect_stage=true  ◄─────┐  │
+│  status_key='archivado'     → is_prospect_stage=true  ◄─────┤  │
+└───────────────────────────────────────────────────────────────│─┘
+                                                                │
+                                                                │
+           ┌──────────────────┐    Usuario cambia    ┌─────────┴─────────┐
+           │   Gestión de     │      estado a        │   Gestión de       │
+           │     Leads        │  "Reunión Programada"│    Prospectos      │
+           │ (/admin/contacts)│   ─────────────────► │ (/admin/prospectos)│
+           │                  │                      │                    │
+           │ Muestra leads    │   ◄───────────────── │ Muestra leads      │
+           │ con is_prospect_ │  Usuario cambia      │ con is_prospect_   │
+           │ stage = false    │  estado a "Nuevo"    │ stage = true       │
+           └──────────────────┘                      └────────────────────┘
+                     │                                         │
+                     └─────────────────────────────────────────┘
+                           Invalidación cruzada de cache
+                         (ambas listas se actualizan al instante)
+```
+
+## Casos de Prueba
+
+| # | Acción | Resultado Esperado |
+|---|--------|-------------------|
+| A | En `/admin/contacts`, cambiar un lead a "PSH Enviada" | Lead desaparece de Contacts, aparece en Prospectos |
+| B | En `/admin/contacts`, cambiar un lead a "Reunión Programada" | Lead desaparece de Contacts, aparece en Prospectos |
+| C | En `/admin/prospectos`, cambiar lead a "Nuevo" | Lead desaparece de Prospectos, aparece en Contacts |
+| D | Refresh de ambas páginas | La pertenencia es correcta según estado en DB |
+| E | Cambio de estado desde ficha del lead | Se replica en ambas listas |
 
 ## Sección Técnica
 
-### Patrón Correcto de Dashboard Layout
+### Filtro SQL en Supabase
 
-```text
-┌─────────────────────────────────────────────────┐
-│ SidebarProvider (min-h-svh)                     │
-├──────────────┬──────────────────────────────────┤
-│              │ SidebarInset (flex-1 flex-col)   │
-│   Sidebar    ├──────────────────────────────────┤
-│   (fixed)    │ Header (h-12, shrink-0, sticky)  │
-│              ├──────────────────────────────────┤
-│              │ main (flex-1 overflow-hidden)    │
-│              │   └─ div (flex-1 min-h-0)        │
-│              │       └─ Page (h-full flex-col)  │
-│              │           ├─ Filters (shrink-0)  │
-│              │           └─ Table (flex-1)      │
-└──────────────┴──────────────────────────────────┘
+El cliente de Supabase no soporta directamente `NOT IN` con arrays. La implementación usa:
+
+```typescript
+// Opción 1: Filtrar en cliente (más simple, menos eficiente)
+const filteredData = data.filter(lead => 
+  !prospectStatusKeys.includes(lead.lead_status_crm)
+);
+
+// Opción 2: Múltiples .neq (verbose pero funciona en DB)
+let query = supabase.from('company_valuations').select('*');
+prospectStatusKeys.forEach(key => {
+  query = query.neq('lead_status_crm', key);
+});
+
+// Opción 3: RPC con SQL puro (más eficiente para muchos estados)
+// Crear una RPC get_leads_excluding_prospects()
 ```
 
-### Reglas Clave:
-1. **Nunca usar `100vh` en componentes anidados** - usar `h-full` y dejar que el padre controle
-2. **`min-h-0`** es crítico en flex containers para permitir shrink
-3. **`overflow-hidden`** en el contenedor padre + **`overflow-auto`** solo en el elemento scrolleable (la tabla)
-4. **`shrink-0`** para elementos que no deben comprimirse (header, filtros)
-5. **`flex-1`** solo para el elemento que debe llenar el espacio restante
+Para simplicidad y consistencia con el código existente, usaremos **Opción 1** (filtro en cliente) ya que:
+- El volumen de datos es manejable
+- Mantiene consistencia con el enfoque actual de `useUnifiedContacts`
+- Evita cambios en la base de datos
 
+### Invalidación Optimizada
+
+```typescript
+// Patrón actual (refetchType: 'none')
+queryClient.invalidateQueries({
+  queryKey: ['unified-contacts'],
+  refetchType: 'none', // No refetch inmediato
+});
+
+// Cambiar a refetch inmediato cuando cambia status hacia/desde prospecto
+queryClient.invalidateQueries({
+  queryKey: ['unified-contacts'],
+  // Sin refetchType = refetch inmediato por defecto
+});
+```
+
+### Subscripción Realtime Compartida
+
+Para evitar múltiples conexiones websocket, considerar crear un hook compartido `useLeadStatusSync` que gestione la suscripción central para ambos módulos.
