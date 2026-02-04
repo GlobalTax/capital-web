@@ -1,184 +1,159 @@
 
-# Plan: Sincronización Automática Leads ↔ Prospectos
+# Plan: Mejorar Robustez de Sincronización Dealsuite (Timeouts)
 
-## Causa Raíz
+## Problema Identificado
 
-El módulo `/admin/contacts` (Gestión de Leads) usa `useUnifiedContacts` que **no filtra por estado** - muestra todos los leads independientemente de su estado CRM. Mientras tanto, `/admin/prospectos` sí filtra correctamente leads con estados marcados como `is_prospect_stage = true`.
+El scraping de Dealsuite falla por **timeout** porque:
 
-**Resultado actual**: Un lead con estado "PSH Enviada" aparece en **AMBAS** vistas.
+1. Dealsuite tiene JavaScript muy pesado que tarda mucho en renderizar completamente
+2. Firecrawl tiene un límite de timeout máximo de ~120s
+3. Los tiempos de espera actuales (30s, 45s, 60s) pueden no ser suficientes para páginas con muchos deals
+4. Las edge functions de Supabase tienen un límite de ejecución de ~60s para usuarios free/pro
 
-## Regla de Negocio a Implementar
-
-| Vista | Condición de filtro |
-|-------|---------------------|
-| **Gestión de Leads** | `lead_status_crm NOT IN (estados con is_prospect_stage = true)` |
-| **Gestión de Prospectos** | `lead_status_crm IN (estados con is_prospect_stage = true)` |
-
-Estados actuales configurados como prospecto:
-- `fase0_activo` → "Reunión Programada"  
-- `archivado` → "PSH Enviada"
-
-## Cambios a Implementar
-
-### 1. Backend: Single Source of Truth (ya implementado parcialmente)
-
-La lógica de negocio ya está en `contact_statuses.is_prospect_stage`. Solo necesitamos consumirla correctamente en el frontend.
-
-### 2. Hook `useUnifiedContacts.tsx` - Excluir estados de prospecto
-
-Modificar la función `fetchUnifiedContacts` para:
-
-1. Obtener primero los `prospectStatusKeys` de `contact_statuses`
-2. Añadir filtro `.not('lead_status_crm', 'in', prospectStatusKeys)` a cada query
+## Causa Raíz Técnica
 
 ```typescript
-// Dentro de fetchUnifiedContacts:
-// 1. Obtener status keys de prospecto
-const { data: prospectStatuses } = await supabase
-  .from('contact_statuses')
-  .select('status_key')
-  .eq('is_prospect_stage', true)
-  .eq('is_active', true);
+// Configuración actual en dealsuite-scrape-wanted/index.ts
+const RETRY_CONFIG = {
+  maxAttempts: 3,
+  waitTimes: [30000, 45000, 60000], // 30s, 45s, 60s
+  baseTimeout: 120000, // 120s timeout de Firecrawl
+};
+```
 
-const prospectStatusKeys = (prospectStatuses || []).map(s => s.status_key);
+El problema es que Firecrawl espera que la página se renderice completamente (waitFor) pero Dealsuite puede tardar más de 60s en cargar todos los deals con JavaScript.
 
-// 2. Aplicar filtro a cada tabla (si hay prospect keys)
-// Para company_valuations:
-let valuationsQuery = supabase
-  .from('company_valuations')
-  .select('...')
-  .is('is_deleted', false);
+## Solución Propuesta
 
-if (prospectStatusKeys.length > 0) {
-  valuationsQuery = valuationsQuery.not('lead_status_crm', 'in', `(${prospectStatusKeys.join(',')})`);
+### 1. Aumentar tiempos de espera y timeout de Firecrawl
+
+Incrementar los tiempos de espera para dar más margen a Dealsuite:
+
+```typescript
+const RETRY_CONFIG = {
+  maxAttempts: 3,
+  waitTimes: [45000, 60000, 90000], // 45s, 60s, 90s (incrementado)
+  baseTimeout: 180000, // 180s timeout (aumentado)
+};
+```
+
+### 2. Añadir opciones adicionales de Firecrawl
+
+Firecrawl tiene opciones que pueden ayudar:
+- `actions: [{ type: 'wait', milliseconds: X }]` - espera activa
+- `blockResources: ['image', 'media', 'font']` - bloquear recursos no esenciales para acelerar carga
+
+```typescript
+body: JSON.stringify({
+  url,
+  formats: ['markdown', 'html'],
+  waitFor,
+  timeout: RETRY_CONFIG.baseTimeout,
+  onlyMainContent: false,
+  // Bloquear recursos pesados para acelerar carga
+  blockResources: ['image', 'media', 'font', 'stylesheet'],
+  headers: { ... },
+}),
+```
+
+### 3. Mejorar mensajes de error y sugerencias
+
+Cuando hay timeout, ofrecer sugerencias más específicas:
+
+```typescript
+if (errorMessage.includes('timeout')) {
+  suggestion = `
+    La página tardó demasiado. Sugerencias:
+    1. Intenta en horas de menor tráfico (madrugada/mañana temprano)
+    2. Verifica que tu sesión de Dealsuite sigue activa
+    3. Intenta de nuevo - el segundo intento suele ser más rápido
+  `;
 }
 ```
 
-### 3. Invalidación de Cache Cruzada
+### 4. Opción de retry manual en UI
 
-Los hooks `useContactUpdate` y `useBulkUpdateStatus` ya invalidan `['prospects']`. Necesitamos asegurar que también se invalide correctamente `['unified-contacts']` con refetch inmediato cuando el estado cambia hacia/desde un estado de prospecto.
-
-```typescript
-// En useBulkUpdateStatus.ts y useContactUpdate.ts
-onSuccess: () => {
-  // Invalidar AMBAS queries con refetch inmediato
-  queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
-  queryClient.invalidateQueries({ queryKey: ['prospects'] });
-}
-```
-
-### 4. Realtime Subscription para Leads
-
-Añadir suscripción realtime en `useUnifiedContacts` similar a la de `useProspects` para que cuando un lead cambie de estado, la lista se actualice automáticamente:
-
-```typescript
-// Dentro de useUnifiedContacts
-useEffect(() => {
-  const channel = supabase
-    .channel('leads-status-sync')
-    .on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'company_valuations',
-    }, (payload) => {
-      // Si el status cambió, refetch
-      if (payload.new?.lead_status_crm !== payload.old?.lead_status_crm) {
-        refetch();
-      }
-    })
-    .subscribe();
-
-  return () => supabase.removeChannel(channel);
-}, []);
-```
+Añadir un botón visible después del error para reintentar fácilmente.
 
 ## Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/hooks/useUnifiedContacts.tsx` | Añadir filtro que excluye estados de prospecto + suscripción realtime |
-| `src/hooks/useContactUpdate.ts` | Asegurar invalidación inmediata de ambas queries |
-| `src/hooks/useBulkUpdateStatus.ts` | Asegurar invalidación inmediata de ambas queries |
-
-## Flujo Esperado Después de la Implementación
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    contact_statuses (DB)                        │
-│  status_key='nuevo'         → is_prospect_stage=false           │
-│  status_key='fase0_activo'  → is_prospect_stage=true  ◄─────┐  │
-│  status_key='archivado'     → is_prospect_stage=true  ◄─────┤  │
-└───────────────────────────────────────────────────────────────│─┘
-                                                                │
-                                                                │
-           ┌──────────────────┐    Usuario cambia    ┌─────────┴─────────┐
-           │   Gestión de     │      estado a        │   Gestión de       │
-           │     Leads        │  "Reunión Programada"│    Prospectos      │
-           │ (/admin/contacts)│   ─────────────────► │ (/admin/prospectos)│
-           │                  │                      │                    │
-           │ Muestra leads    │   ◄───────────────── │ Muestra leads      │
-           │ con is_prospect_ │  Usuario cambia      │ con is_prospect_   │
-           │ stage = false    │  estado a "Nuevo"    │ stage = true       │
-           └──────────────────┘                      └────────────────────┘
-                     │                                         │
-                     └─────────────────────────────────────────┘
-                           Invalidación cruzada de cache
-                         (ambas listas se actualizan al instante)
-```
-
-## Casos de Prueba
-
-| # | Acción | Resultado Esperado |
-|---|--------|-------------------|
-| A | En `/admin/contacts`, cambiar un lead a "PSH Enviada" | Lead desaparece de Contacts, aparece en Prospectos |
-| B | En `/admin/contacts`, cambiar un lead a "Reunión Programada" | Lead desaparece de Contacts, aparece en Prospectos |
-| C | En `/admin/prospectos`, cambiar lead a "Nuevo" | Lead desaparece de Prospectos, aparece en Contacts |
-| D | Refresh de ambas páginas | La pertenencia es correcta según estado en DB |
-| E | Cambio de estado desde ficha del lead | Se replica en ambas listas |
+| `supabase/functions/dealsuite-scrape-wanted/index.ts` | Incrementar timeouts, añadir blockResources, mejorar mensajes de error |
+| `src/components/admin/DealsuiteSyncPanel.tsx` | Mejorar feedback de timeout, añadir botón de retry visible tras error |
 
 ## Sección Técnica
 
-### Filtro SQL en Supabase
-
-El cliente de Supabase no soporta directamente `NOT IN` con arrays. La implementación usa:
+### Nueva Configuración de Retry
 
 ```typescript
-// Opción 1: Filtrar en cliente (más simple, menos eficiente)
-const filteredData = data.filter(lead => 
-  !prospectStatusKeys.includes(lead.lead_status_crm)
-);
-
-// Opción 2: Múltiples .neq (verbose pero funciona en DB)
-let query = supabase.from('company_valuations').select('*');
-prospectStatusKeys.forEach(key => {
-  query = query.neq('lead_status_crm', key);
-});
-
-// Opción 3: RPC con SQL puro (más eficiente para muchos estados)
-// Crear una RPC get_leads_excluding_prospects()
+const RETRY_CONFIG = {
+  maxAttempts: 3,
+  waitTimes: [45000, 60000, 90000], // Incrementado: 45s, 60s, 90s
+  baseTimeout: 180000, // 3 minutos max para Firecrawl
+};
 ```
 
-Para simplicidad y consistencia con el código existente, usaremos **Opción 1** (filtro en cliente) ya que:
-- El volumen de datos es manejable
-- Mantiene consistencia con el enfoque actual de `useUnifiedContacts`
-- Evita cambios en la base de datos
-
-### Invalidación Optimizada
+### Request Optimizado a Firecrawl
 
 ```typescript
-// Patrón actual (refetchType: 'none')
-queryClient.invalidateQueries({
-  queryKey: ['unified-contacts'],
-  refetchType: 'none', // No refetch inmediato
-});
-
-// Cambiar a refetch inmediato cuando cambia status hacia/desde prospecto
-queryClient.invalidateQueries({
-  queryKey: ['unified-contacts'],
-  // Sin refetchType = refetch inmediato por defecto
+const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${firecrawlKey}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    url,
+    formats: ['markdown', 'html'],
+    waitFor,
+    timeout: RETRY_CONFIG.baseTimeout,
+    onlyMainContent: false,
+    // NUEVO: Bloquear recursos pesados
+    blockResources: ['image', 'media', 'font'],
+    // NUEVO: Acciones para esperar carga del DOM
+    actions: [
+      { type: 'wait', selector: '.deal-card, .listing-item, [data-deal-id]', timeout: waitFor }
+    ],
+    headers: {
+      'Cookie': sessionCookie,
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'text/html,application/xhtml+xml',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': 'https://app.dealsuite.com/',
+      'Cache-Control': 'no-cache',
+    },
+  }),
 });
 ```
 
-### Subscripción Realtime Compartida
+### UI con Mejor Feedback de Timeout
 
-Para evitar múltiples conexiones websocket, considerar crear un hook compartido `useLeadStatusSync` que gestione la suscripción central para ambos módulos.
+El panel mostrará:
+1. Un mensaje más claro cuando hay timeout
+2. Sugerencias específicas (hora del día, verificar sesión)
+3. Un botón "Reintentar" prominente después del error
+4. Indicador de progreso mejorado que muestra en qué intento está
+
+## Casos de Prueba
+
+| # | Escenario | Resultado Esperado |
+|---|-----------|-------------------|
+| A | Sincronización normal | Completa en 1-3 minutos, extrae deals |
+| B | Primer timeout | Reintenta automáticamente con más tiempo |
+| C | Todos los intentos fallan | Muestra mensaje claro con sugerencias y botón de retry |
+| D | Cookie expirada | Detecta login page y pide cookie nueva |
+
+## Alternativa: Paginación por Filtros
+
+Si los timeouts persisten, se puede implementar extracción por sectores/países para reducir la carga:
+
+```typescript
+// En lugar de cargar todo, filtrar por país
+const countries = ['spain', 'france', 'germany'];
+for (const country of countries) {
+  await scrapeWithRetry(buildDealsuitUrl({ country }), ...);
+}
+```
+
+Esto está fuera del scope de esta mejora pero es una opción para el futuro.
