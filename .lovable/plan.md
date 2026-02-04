@@ -1,195 +1,109 @@
 
-# Plan: Reemplazo Completo del Sistema de Contactos
 
-## Resumen Ejecutivo
+# Plan: Añadir Columnas de Canal, Formulario y Estado en Contacts V2
 
-El sistema actual de contactos tiene una arquitectura demasiado compleja que causa problemas recurrentes de layout y altura. Este plan propone un reemplazo completo con una arquitectura más simple, usando CSS Grid/Flexbox nativo en lugar de cálculos dinámicos de altura.
+## Problema Identificado
 
-## Problemas del Sistema Actual
+La nueva implementación de ContactRow.tsx no muestra las columnas de:
+1. **Canal de adquisición** (`acquisition_channel_name`)
+2. **Formulario de origen** (`lead_form_name`)
 
-| Problema | Causa | Impacto |
-|----------|-------|---------|
-| Altura incorrecta en tabs | `ResizeObserver` + cálculos dinámicos | Espacio en blanco masivo |
-| Suscripciones duplicadas | Nombre fijo de canal Supabase | Errores en consola |
-| Complejidad excesiva | ~30 archivos, 1278 líneas en hook principal | Difícil de mantener |
-| Dependencias circulares | Componentes que importan de otros | Bugs intermitentes |
+Los datos SÍ se cargan correctamente en el hook (líneas 224-226, 263-265), pero la UI no los renderiza.
 
-## Nueva Arquitectura Propuesta
+## Solución
 
-```text
-ContactsPage (nuevo)
-├── ContactsLayout (CSS Grid, altura 100%)
-│   ├── ContactsHeader (tabs + acciones)
-│   ├── ContactsFilters (barra de filtros)
-│   └── ContactsContent (contenido según tab)
-│       ├── ContactsTableView (tabla virtualizada)
-│       ├── ContactsPipelineView (kanban)
-│       └── ContactsStatsView (estadísticas)
-│
-├── useContacts (hook simplificado)
-│   ├── fetchContacts
-│   ├── filterContacts
-│   └── subscribeToChanges
-│
-└── Shared Components
-    ├── VirtualTable (genérico, reutilizable)
-    └── ContactRow (fila simple)
-```
+Modificar `ContactRow.tsx` y `VirtualContactsTable.tsx` para incluir las columnas faltantes.
 
-## Componentes a Crear
+### Archivo 1: `src/components/admin/contacts-v2/ContactRow.tsx`
 
-### 1. ContactsLayout.tsx (NUEVO)
-Contenedor principal con CSS Grid que elimina cálculos de altura:
+**Cambios en la grid de columnas (línea 76):**
 
+| Antes | Después |
+|-------|---------|
+| `grid-cols-[2fr_2fr_1fr_1fr_1fr_80px]` | `grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_80px]` |
+
+**Columnas nuevas a añadir:**
+
+1. Añadir columna de **Canal** después de "Estado":
 ```tsx
-// Layout fijo con grid, sin cálculos dinámicos
-<div className="h-full grid grid-rows-[auto_auto_1fr] overflow-hidden">
-  <header>{/* Tabs + acciones */}</header>
-  <div>{/* Filtros */}</div>
-  <main className="overflow-hidden">{/* Tabla/Pipeline/Stats */}</main>
+{/* Channel */}
+<div className="truncate text-muted-foreground text-[10px]">
+  {contact.acquisition_channel_name || '-'}
 </div>
 ```
 
-### 2. useContacts.tsx (SIMPLIFICADO)
-Hook reducido de 1278 líneas a ~300 líneas:
-- Sin lógica de filtrado compleja en el hook
-- Filtrado delegado a useMemo en el componente
-- Canal Supabase con ID único automático
-
-### 3. VirtualContactsTable.tsx (NUEVO)
-Tabla virtualizada simple que usa `height: 100%` del padre:
-
+2. Añadir columna de **Formulario** después de "Canal":
 ```tsx
-// Sin useState para altura, usa CSS
-<div className="h-full" ref={containerRef}>
-  <List
-    height={containerHeight} // Leído una vez del contenedor
-    itemCount={contacts.length}
-    itemSize={40}
-  >
-    {Row}
-  </List>
+{/* Form */}
+<div className="truncate text-muted-foreground text-[10px]">
+  {contact.lead_form_name || '-'}
 </div>
 ```
 
-### 4. ContactRow.tsx (SIMPLIFICADO)
-Fila de contacto reducida de 484 a ~150 líneas:
-- Menos props, más autonomía
-- Sin inline editing complejo
-- Click para abrir modal de edición
+### Archivo 2: `src/components/admin/contacts-v2/VirtualContactsTable.tsx`
 
-## Archivos a Eliminar
+**Cambios en el header (línea 109):**
 
-| Archivo | Razón |
-|---------|-------|
-| `LinearContactsManager.tsx` | Reemplazado por ContactsLayout |
-| `LinearContactsTable.tsx` | Reemplazado por VirtualContactsTable |
-| `LinearFilterBar.tsx` (882 líneas) | Reemplazado por ContactsFilters simple |
-| `ContactTableRow.tsx` (484 líneas) | Reemplazado por ContactRow simple |
-| `CompactStatsBar.tsx` | Integrado en header |
-| `ContactFilters.tsx` | Redundante |
-| `ContactsManager.tsx` | Wrapper innecesario |
+| Antes | Después |
+|-------|---------|
+| `grid-cols-[2fr_2fr_1fr_1fr_1fr_80px]` | `grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_80px]` |
 
-## Archivos a Crear
-
-| Archivo | Descripción | Líneas aprox. |
-|---------|-------------|---------------|
-| `ContactsLayout.tsx` | Layout principal con grid | ~80 |
-| `ContactsHeader.tsx` | Tabs + acciones bulk | ~100 |
-| `ContactsFilters.tsx` | Barra de filtros compacta | ~200 |
-| `VirtualContactsTable.tsx` | Tabla virtualizada simple | ~150 |
-| `ContactRow.tsx` | Fila de contacto | ~120 |
-| `useContacts.ts` | Hook simplificado | ~300 |
-
-**Total nuevo**: ~950 líneas vs ~3,500 líneas actuales (73% reducción)
-
-## Estrategia de Altura (Solución Definitiva)
-
-En lugar de calcular alturas dinámicamente, usar CSS puro:
-
-```css
-/* En la página */
-.contacts-page {
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-}
-
-/* El contenedor de la tabla */
-.table-container {
-  height: 100%;
-  overflow: hidden;
-}
-```
-
-El componente de tabla leerá `offsetHeight` del contenedor una sola vez al montar, sin ResizeObserver complejo.
-
-## Gestión de Tabs
-
-Usar `display: contents` o montar/desmontar condicionalmente para evitar el problema de tabs ocultos:
-
+**Añadir encabezados nuevos:**
 ```tsx
-{activeTab === 'directory' && <VirtualContactsTable contacts={contacts} />}
-{activeTab === 'pipeline' && <ContactsPipelineView contacts={contacts} />}
-{activeTab === 'stats' && <ContactsStatsView />}
+<span>Nombre</span>
+<span>Empresa</span>
+<span>Estado</span>
+<span>Canal</span>      {/* NUEVO */}
+<span>Formulario</span> {/* NUEVO */}
+<span>Origen</span>
+<span className="text-right">Valoración</span>
 ```
-
-Esto evita que el componente intente calcular su altura mientras está oculto.
 
 ## Sección Técnica
 
-### Por Qué El Sistema Actual Falla
+### Distribución de Columnas Actualizada
 
-1. **Radix Tabs** usa `display: none` para tabs inactivos
-2. Los componentes se montan todos pero solo uno es visible
-3. `ResizeObserver` en un elemento oculto reporta altura 0
-4. El fallback `Math.max(200, ...)` crea el espacio en blanco
+| Columna | Ancho | Campo de datos |
+|---------|-------|----------------|
+| Nombre | 2fr | `name`, `email` |
+| Empresa | 1.5fr | `empresa_nombre`, `company` |
+| Estado | 1fr | `lead_status_crm` |
+| Canal | 1fr | `acquisition_channel_name` |
+| Formulario | 1fr | `lead_form_name` |
+| Origen | 1fr | `origin` (badge) |
+| Valoración | 80px | `final_valuation` |
 
-### Por Qué La Nueva Arquitectura Funciona
+### Verificación de Datos
 
-1. **Montaje condicional**: Solo existe el tab activo
-2. **CSS Grid nativo**: `grid-template-rows: 1fr` distribuye espacio automáticamente
-3. **Sin cálculos**: La tabla hereda altura del contenedor padre
-4. **Lectura única**: `offsetHeight` se lee una vez al montar, cuando ya es visible
+Los datos ya se cargan correctamente en `useContacts.ts`:
 
-### Migración de Datos
+```typescript
+// Líneas 224-226 (transformContact)
+acquisition_channel_id: lead.acquisition_channel_id,
+acquisition_channel_name: lead.acquisition_channel?.name,
+lead_form: lead.lead_form,
+lead_form_name: lead.lead_form_ref?.name,
 
-El hook `useContacts` mantendrá compatibilidad con:
-- Tipos `UnifiedContact` y `ContactOrigin` existentes
-- Funciones de filtrado y exportación
-- Integración con Supabase existente
+// Líneas 263-265 (transformValuation)
+acquisition_channel_name: lead.acquisition_channel?.name,
+lead_form_name: lead.lead_form_ref?.name,
+```
 
-## Plan de Implementación
+## Archivos a Modificar
 
-### Fase 1: Crear estructura base
-1. Crear `ContactsLayout.tsx` con grid
-2. Crear `ContactsHeader.tsx` con tabs
-3. Crear `ContactsFilters.tsx` simplificado
-
-### Fase 2: Tabla virtualizada
-1. Crear `VirtualContactsTable.tsx`
-2. Crear `ContactRow.tsx` simplificado
-3. Implementar selección y acciones
-
-### Fase 3: Hook simplificado
-1. Crear `useContacts.ts` nuevo
-2. Migrar lógica esencial de `useUnifiedContacts.tsx`
-3. Simplificar subscripción realtime
-
-### Fase 4: Integración
-1. Actualizar `ContactsPage.tsx` para usar nuevo layout
-2. Conectar todos los componentes
-3. Verificar funcionamiento
-
-### Fase 5: Limpieza
-1. Eliminar archivos obsoletos
-2. Actualizar imports
-3. Testing final
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/admin/contacts-v2/ContactRow.tsx` | Añadir columnas de Canal y Formulario |
+| `src/components/admin/contacts-v2/VirtualContactsTable.tsx` | Añadir encabezados de Canal y Formulario |
 
 ## Resultado Esperado
 
-1. **Altura correcta** en todas las pestañas, siempre
-2. **Sin errores** de suscripción duplicada
-3. **70% menos código** que mantener
-4. **Performance mejorada** por menos cálculos
-5. **Más fácil de debuggear** por arquitectura simple
+La tabla mostrará 7 columnas:
+1. Nombre (con email)
+2. Empresa
+3. Estado
+4. **Canal** (nuevo)
+5. **Formulario** (nuevo)
+6. Origen
+7. Valoración
+
