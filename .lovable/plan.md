@@ -1,40 +1,55 @@
 
-# Plan: Corregir Espacio Vacío en /admin/contacts
+# Plan: Corrección Definitiva del Espaciado Vacío en /admin/contacts
 
-## Problema Identificado
+## Diagnóstico del Problema
 
-La captura muestra un **enorme espacio blanco vacío** entre el header de tabs ("Leads") y el contenido (stats, filtros, tabla). El contenido aparece "empujado" al fondo de la pantalla.
+El problema persiste porque hay una **ruptura en la cadena de propagación de altura CSS** en múltiples niveles. Aunque se aplicó `h-full` a `ContactsPage`, esto no funciona correctamente debido a cómo se propagan las alturas en CSS.
+
+### Cadena de Componentes Actual
+
+```
+AdminLayout
+└─ SidebarProvider (min-h-svh) ← Problema: usa viewport height
+   └─ div (min-h-screen)
+      └─ SidebarInset (min-h-svh, flex-1) ← Problema: min-h-svh
+         └─ main (flex-1, overflow-hidden)
+            └─ div (flex-1, min-h-0)
+               └─ ContactsPage (h-full) ← h-full no tiene referencia
+                  └─ LinearContactsManager
+                     └─ Tabs (flex-1)
+```
 
 ### Causa Raíz
 
-La cadena de propagación de altura está rota:
-
-```
-AdminLayout (flex-1)
-  └─ main (flex-1, flex-col)
-      └─ div (flex-1, min-h-0, flex-col)
-          └─ ContactsPage ❌ (sin h-full ni flex-1)
-              └─ LinearContactsManager
-                  └─ Tabs (h-full) ← No tiene referencia de altura padre
-```
-
-El componente `ContactsPage.tsx` no tiene clases de altura, por lo que el `h-full` del `Tabs` en `LinearContactsManager` no tiene un contenedor con altura definida del cual heredar.
-
-## Solución
-
-### Archivo 1: `src/pages/admin/ContactsPage.tsx`
-
-Añadir `h-full` al wrapper del componente para que la altura se propague correctamente:
-
-**Antes:**
+El componente `SidebarInset` en `sidebar.tsx` (línea 324) tiene:
 ```tsx
-const ContactsPage = () => {
-  return <LinearContactsManager />;
-};
+className="relative flex min-h-svh flex-1 flex-col bg-background"
 ```
 
-**Después:**
+El `min-h-svh` (100vh) fuerza una altura mínima de viewport, pero **no define una altura explícita**. Cuando `ContactsPage` usa `h-full`, busca el 100% de la altura del padre, pero si el padre no tiene `height` definido (solo `min-height`), `h-full` no funciona correctamente.
+
+## Solución Propuesta
+
+Modificar la clase del wrapper de `ContactsPage` para usar **`flex-1`** en lugar de `h-full`. Esto funciona porque:
+- `flex-1` = `flex-grow: 1` + `flex-shrink: 1` + `flex-basis: 0%`
+- Hace que el elemento ocupe todo el espacio disponible en un contenedor flex
+- **No depende** de que el padre tenga una altura explícita
+
+Adicionalmente, añadir `h-full` al `SidebarInset` en `AdminLayout.tsx` para reforzar la propagación.
+
+## Archivos a Modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/admin/ContactsPage.tsx` | Cambiar de `h-full` a `flex-1` |
+| `src/features/admin/components/AdminLayout.tsx` | Añadir `h-full` al `SidebarInset` |
+
+## Sección Técnica
+
+### Cambio 1: ContactsPage.tsx
+
 ```tsx
+// ANTES
 const ContactsPage = () => {
   return (
     <div className="h-full flex flex-col">
@@ -42,82 +57,58 @@ const ContactsPage = () => {
     </div>
   );
 };
+
+// DESPUÉS
+const ContactsPage = () => {
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <LinearContactsManager />
+    </div>
+  );
+};
 ```
 
-### Archivo 2: `src/components/admin/contacts/LinearContactsManager.tsx` (Opcional)
+### Cambio 2: AdminLayout.tsx
 
-Como medida adicional de seguridad, cambiar `h-full` por `flex-1` en el Tabs para que use el espacio disponible del padre flex en lugar de depender de altura heredada:
-
-**Antes:**
 ```tsx
-<Tabs 
-  value={activeTab} 
-  onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'pipeline' | 'stats')} 
-  className="h-full flex flex-col"
->
+// ANTES (línea 118)
+<SidebarInset className="flex-1 flex flex-col min-w-0">
+
+// DESPUÉS
+<SidebarInset className="flex-1 flex flex-col min-w-0 h-full">
 ```
 
-**Después:**
-```tsx
-<Tabs 
-  value={activeTab} 
-  onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'pipeline' | 'stats')} 
-  className="flex-1 flex flex-col min-h-0"
->
-```
+### Por Qué Esta Solución Funciona
 
-## Sección Técnica
+| Propiedad | Comportamiento |
+|-----------|----------------|
+| `h-full` | Requiere que el padre tenga `height` definida (no solo `min-height`) |
+| `flex-1` | Ocupa el espacio restante en un contenedor flex, independiente de height |
+| `min-h-0` | Permite que el contenedor se contraiga para permitir overflow |
 
-### Flujo de Altura Corregido
+### Cadena Corregida
 
 ```
 AdminLayout
-  └─ SidebarInset (flex-1, flex-col)
-      └─ main (flex-1, p-4, overflow-hidden, flex-col)
-          └─ div (flex-1, min-h-0, flex-col)
-              └─ ContactsPage (h-full, flex-col) ✓
+└─ SidebarProvider (min-h-svh)
+   └─ div (min-h-screen, flex)
+      └─ SidebarInset (flex-1, h-full) ← Añadido h-full
+         └─ main (flex-1, flex-col, overflow-hidden)
+            └─ div (flex-1, min-h-0, flex-col)
+               └─ ContactsPage (flex-1, min-h-0) ← Cambiado a flex-1
                   └─ LinearContactsManager
-                      └─ Tabs (flex-1, flex-col, min-h-0) ✓
-                          └─ TabsContent (flex-1, flex-col, min-h-0)
-                              └─ LinearContactsTable (flex-1)
+                     └─ Tabs (flex-1, min-h-0) ✓
+                        └─ TabsContent (flex-1, min-h-0) ✓
 ```
 
-### Claves del Arreglo
+## Verificación
 
-| Propiedad | Propósito |
-|-----------|-----------|
-| `h-full` | Hereda el 100% de altura del padre |
-| `flex-1` | Ocupa todo el espacio disponible en un contenedor flex |
-| `min-h-0` | Permite que el contenido flex se contraiga (necesario para overflow) |
-| `flex flex-col` | Establece dirección de columna para hijos |
+Después de aplicar los cambios:
+1. El contenido (tabs, stats, filtros, tabla) debe aparecer inmediatamente debajo del header
+2. No debe haber espacio blanco vacío entre el header y el contenido
+3. La tabla virtualizada debe ocupar todo el espacio vertical restante
+4. El scroll debe estar contenido solo dentro de la tabla
 
-### Verificación
+## Beneficio Adicional
 
-Para verificar que el arreglo funciona:
-1. El contenido (stats, filtros, tabla) debe aparecer inmediatamente debajo de los tabs
-2. La tabla virtualizada debe ocupar todo el espacio vertical restante
-3. No debe haber scroll global en la página, solo scroll dentro de la tabla
-
-## Archivos a Modificar
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/pages/admin/ContactsPage.tsx` | Envolver en contenedor con `h-full flex flex-col` |
-| `src/components/admin/contacts/LinearContactsManager.tsx` | Cambiar `h-full` por `flex-1 min-h-0` en Tabs |
-
-## Resultado Esperado
-
-```
-+------------------------------------------+
-| Leads [Favoritos] [Todos] [Pipeline]...  | <- 32px header
-+------------------------------------------+
-| Total: 1207 | Valoraciones: 1000 | ...   | <- 24px stats (inmediato, sin gap)
-+------------------------------------------+
-| [Buscar] [Origen] [Estado] [Email]...    | <- 28px filtros
-+------------------------------------------+
-| ☐ | Contacto | Fecha | Canal | ...       | <- Header tabla
-| ☐ | María G. | 04 feb| Google|           | <- Filas
-| ☐ | Jaime S. | 03 feb| Meta  |           |
-|   ... tabla ocupa resto de pantalla      |
-+------------------------------------------+
-```
+Este mismo patrón (`flex-1 flex flex-col min-h-0`) se puede aplicar a **todas las páginas admin** para prevenir problemas similares en el futuro. Es el patrón estándar para layouts de altura completa con flexbox.
