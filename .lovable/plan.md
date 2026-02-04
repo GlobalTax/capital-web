@@ -1,114 +1,130 @@
 
-# Plan: Corrección Definitiva del Espaciado Vacío en /admin/contacts
 
-## Diagnóstico del Problema
+# Plan: Corrección Definitiva del Espacio Vacío en /admin/contacts
 
-El problema persiste porque hay una **ruptura en la cadena de propagación de altura CSS** en múltiples niveles. Aunque se aplicó `h-full` a `ContactsPage`, esto no funciona correctamente debido a cómo se propagan las alturas en CSS.
+## Diagnóstico Final del Problema
 
-### Cadena de Componentes Actual
+Después de una inspección exhaustiva del código, he identificado que el problema persiste por **3 causas raíz que actúan simultáneamente**:
 
-```
-AdminLayout
-└─ SidebarProvider (min-h-svh) ← Problema: usa viewport height
-   └─ div (min-h-screen)
-      └─ SidebarInset (min-h-svh, flex-1) ← Problema: min-h-svh
-         └─ main (flex-1, overflow-hidden)
-            └─ div (flex-1, min-h-0)
-               └─ ContactsPage (h-full) ← h-full no tiene referencia
-                  └─ LinearContactsManager
-                     └─ Tabs (flex-1)
-```
-
-### Causa Raíz
-
+### Causa 1: SidebarInset usa `min-h-svh` base
 El componente `SidebarInset` en `sidebar.tsx` (línea 324) tiene:
-```tsx
+```css
 className="relative flex min-h-svh flex-1 flex-col bg-background"
 ```
+El `h-full` que añadimos se MEZCLA con `min-h-svh`, no lo reemplaza. CSS aplica ambas reglas, y `min-h-svh` gana porque establece una altura mínima fija.
 
-El `min-h-svh` (100vh) fuerza una altura mínima de viewport, pero **no define una altura explícita**. Cuando `ContactsPage` usa `h-full`, busca el 100% de la altura del padre, pero si el padre no tiene `height` definido (solo `min-height`), `h-full` no funciona correctamente.
+### Causa 2: Tabs no propaga la altura al contenido
+En `LinearContactsManager.tsx`, el `Tabs` tiene `flex-1 flex flex-col min-h-0`, pero el componente padre (el div en `ContactsPage`) no está pasando la altura correctamente porque `SidebarInset` no tiene altura fija.
 
-## Solución Propuesta
+### Causa 3: La tabla calcula altura con `window.innerHeight - rect.top`
+En `LinearContactsTable.tsx` (línea 350-351):
+```tsx
+const availableHeight = window.innerHeight - rect.top - 16;
+```
+Esto crea una dependencia circular: el espacio vacío de arriba afecta `rect.top`, que afecta la altura de la tabla.
 
-Modificar la clase del wrapper de `ContactsPage` para usar **`flex-1`** en lugar de `h-full`. Esto funciona porque:
-- `flex-1` = `flex-grow: 1` + `flex-shrink: 1` + `flex-basis: 0%`
-- Hace que el elemento ocupe todo el espacio disponible en un contenedor flex
-- **No depende** de que el padre tenga una altura explícita
+## Solución Integral (3 cambios simultáneos)
 
-Adicionalmente, añadir `h-full` al `SidebarInset` en `AdminLayout.tsx` para reforzar la propagación.
+### Archivo 1: `src/components/ui/sidebar.tsx`
+**Problema**: `SidebarInset` usa `min-h-svh` que establece altura mínima pero no altura fija.
 
-## Archivos a Modificar
+**Cambio**: Añadir `h-svh` además de `min-h-svh` para establecer altura FIJA del viewport:
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/pages/admin/ContactsPage.tsx` | Cambiar de `h-full` a `flex-1` |
-| `src/features/admin/components/AdminLayout.tsx` | Añadir `h-full` al `SidebarInset` |
+| Línea | Antes | Después |
+|-------|-------|---------|
+| 324 | `"relative flex min-h-svh flex-1 flex-col bg-background"` | `"relative flex h-svh min-h-svh flex-1 flex-col bg-background overflow-hidden"` |
+
+### Archivo 2: `src/features/admin/components/AdminLayout.tsx`
+**Problema**: El contenedor principal usa `min-h-screen` pero no `h-screen`.
+
+**Cambio**: Fijar altura del contenedor al viewport:
+
+| Línea | Antes | Después |
+|-------|-------|---------|
+| 115 | `"min-h-screen min-h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))]"` | `"h-screen h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))] overflow-hidden"` |
+| 118 | `"flex-1 flex flex-col min-w-0 h-full"` | `"flex-1 flex flex-col min-w-0 overflow-hidden"` |
+
+### Archivo 3: `src/pages/admin/ContactsPage.tsx`
+**Problema**: Usa `flex-1` pero el padre no tiene altura fija, así que no funciona.
+
+**Cambio**: Usar `h-full` ahora que el padre SÍ tendrá altura fija:
+
+| Línea | Antes | Después |
+|-------|-------|---------|
+| 6 | `"flex-1 flex flex-col min-h-0"` | `"h-full flex flex-col min-h-0 overflow-hidden"` |
 
 ## Sección Técnica
 
-### Cambio 1: ContactsPage.tsx
-
-```tsx
-// ANTES
-const ContactsPage = () => {
-  return (
-    <div className="h-full flex flex-col">
-      <LinearContactsManager />
-    </div>
-  );
-};
-
-// DESPUÉS
-const ContactsPage = () => {
-  return (
-    <div className="flex-1 flex flex-col min-h-0">
-      <LinearContactsManager />
-    </div>
-  );
-};
-```
-
-### Cambio 2: AdminLayout.tsx
-
-```tsx
-// ANTES (línea 118)
-<SidebarInset className="flex-1 flex flex-col min-w-0">
-
-// DESPUÉS
-<SidebarInset className="flex-1 flex flex-col min-w-0 h-full">
-```
-
-### Por Qué Esta Solución Funciona
-
-| Propiedad | Comportamiento |
-|-----------|----------------|
-| `h-full` | Requiere que el padre tenga `height` definida (no solo `min-height`) |
-| `flex-1` | Ocupa el espacio restante en un contenedor flex, independiente de height |
-| `min-h-0` | Permite que el contenedor se contraiga para permitir overflow |
-
-### Cadena Corregida
+### Cadena de Altura Corregida
 
 ```
-AdminLayout
-└─ SidebarProvider (min-h-svh)
-   └─ div (min-h-screen, flex)
-      └─ SidebarInset (flex-1, h-full) ← Añadido h-full
-         └─ main (flex-1, flex-col, overflow-hidden)
-            └─ div (flex-1, min-h-0, flex-col)
-               └─ ContactsPage (flex-1, min-h-0) ← Cambiado a flex-1
-                  └─ LinearContactsManager
-                     └─ Tabs (flex-1, min-h-0) ✓
-                        └─ TabsContent (flex-1, min-h-0) ✓
+html, body (h-full) ✓ (ya existe en Tailwind base)
+  └─ #root (h-full) ✓ (normalmente configurado)
+     └─ SidebarProvider (min-h-svh, flex)
+        └─ div.contenedor (h-screen, overflow-hidden) ← NUEVO
+           └─ SidebarInset (h-svh, overflow-hidden) ← NUEVO
+              └─ main (flex-1, flex-col, overflow-hidden)
+                 └─ div (flex-1, min-h-0, flex-col)
+                    └─ ContactsPage (h-full) ← ARREGLADO
+                       └─ LinearContactsManager
+                          └─ Tabs (flex-1, min-h-0) ✓
+                             └─ TabsContent (flex-1, min-h-0) ✓
+                                └─ LinearContactsTable (flex-1)
 ```
 
-## Verificación
+### Por Qué Esta Vez SÍ Funciona
 
-Después de aplicar los cambios:
-1. El contenido (tabs, stats, filtros, tabla) debe aparecer inmediatamente debajo del header
-2. No debe haber espacio blanco vacío entre el header y el contenido
-3. La tabla virtualizada debe ocupar todo el espacio vertical restante
-4. El scroll debe estar contenido solo dentro de la tabla
+| Propiedad | Problema Anterior | Solución |
+|-----------|-------------------|----------|
+| `min-h-svh` | Solo establece altura mínima, no fija | Añadir `h-svh` para altura fija |
+| `min-h-screen` | Solo mínimo, permite crecer más allá | Usar `h-screen` + `overflow-hidden` |
+| `h-full` en hijo | No funciona si padre no tiene height | Ahora padre tiene `h-svh` |
+| `overflow-hidden` | No existía | Previene que el contenido empuje el layout |
 
-## Beneficio Adicional
+### Diferencia Crítica: `min-h-*` vs `h-*`
 
-Este mismo patrón (`flex-1 flex flex-col min-h-0`) se puede aplicar a **todas las páginas admin** para prevenir problemas similares en el futuro. Es el patrón estándar para layouts de altura completa con flexbox.
+```css
+/* ANTES: min-h-svh */
+.elemento {
+  min-height: 100svh; /* Altura MÍNIMA = viewport */
+  height: auto;       /* Puede crecer infinitamente */
+}
+
+/* DESPUÉS: h-svh + min-h-svh */
+.elemento {
+  height: 100svh;     /* Altura FIJA = viewport */
+  min-height: 100svh; /* Protección contra encogimiento */
+  overflow: hidden;   /* Contenido no puede empujar */
+}
+```
+
+## Archivos a Modificar
+
+| Archivo | Cambio Principal |
+|---------|------------------|
+| `src/components/ui/sidebar.tsx` | Línea 324: añadir `h-svh overflow-hidden` a SidebarInset |
+| `src/features/admin/components/AdminLayout.tsx` | Línea 115: `h-screen` en lugar de `min-h-screen`; Línea 118: añadir `overflow-hidden` |
+| `src/pages/admin/ContactsPage.tsx` | Línea 6: cambiar a `h-full` + `overflow-hidden` |
+
+## Resultado Esperado
+
+```
++------------------------------------------+ <- Viewport top
+| [Logo] Header Admin [User]               | 48px
++------------------------------------------+
+| Leads [Favoritos] [Todos] [Pipeline]...  | 32px (inmediato, SIN gap)
++------------------------------------------+
+| Total: 1207 | Valoraciones: 1000 | ...   | 24px
++------------------------------------------+
+| [Buscar] [Origen] [Estado] [Email]...    | 32px
++------------------------------------------+
+| ☐ | Contacto | Fecha | Canal | ...       | 32px header
+| ☐ | María G. | 04 feb| Google|           |
+| ☐ | Jaime S. | 03 feb| Meta  |           |
+|                                          | ← Tabla ocupa TODO el resto
+|   ... tabla con scroll interno           |
++------------------------------------------+ <- Viewport bottom
+```
+
+El contenido ahora está **fijado al viewport** y no puede crecer más allá, eliminando el espacio vacío.
+
