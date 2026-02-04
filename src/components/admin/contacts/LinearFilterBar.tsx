@@ -288,9 +288,9 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
   };
 
   return (
-    <div className="space-y-1.5 shrink-0">
+    <div className="shrink-0">
       {/* Compact single row: search + all dropdowns */}
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-1 flex-wrap">
         {/* 🔥 Unified Search Bar with AI */}
         <SmartSearchInput
           onFiltersChange={handleSmartFiltersChange}
@@ -305,7 +305,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                "h-7 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
                 filters.origin && filters.origin !== 'all' && "border-[hsl(var(--accent-primary))] text-[hsl(var(--accent-primary))]"
               )}
             >
@@ -341,7 +341,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                "h-7 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
                 filters.status && "border-[hsl(var(--accent-primary))] text-[hsl(var(--accent-primary))]"
               )}
             >
@@ -377,7 +377,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                "h-7 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
                 filters.emailStatus && filters.emailStatus !== 'all' && "border-[hsl(var(--accent-primary))] text-[hsl(var(--accent-primary))]"
               )}
             >
@@ -413,7 +413,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                "h-7 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
                 filters.valuationType === 'pro' && "border-emerald-500 text-emerald-600 bg-emerald-500/5",
                 filters.valuationType === 'standard' && "border-slate-500 text-slate-600 bg-slate-500/5"
               )}
@@ -466,7 +466,7 @@ const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
               variant="outline" 
               size="sm" 
               className={cn(
-                "h-8 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
+                "h-7 text-sm border-[hsl(var(--linear-border))] bg-[hsl(var(--linear-bg))]",
                 filters.acquisitionChannelId && "border-purple-500 text-purple-600 bg-purple-500/5"
               )}
             >

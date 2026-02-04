@@ -107,10 +107,10 @@ export const ContactsPipelineView: React.FC<ContactsPipelineViewProps> = ({
   const noStatusContacts = contactsByStatus['__no_status__'] || [];
 
   return (
-    <div className="h-full">
+    <div className="h-full flex flex-col">
       <DragDropContext onDragEnd={handleDragEnd}>
-        <ScrollArea className="w-full pb-4">
-          <div className="flex gap-4 p-4 min-w-max">
+        <ScrollArea className="flex-1 w-full">
+          <div className="flex gap-2 p-2 min-w-max">
             {/* Render columns for each active status */}
             {activeStatuses.map(status => (
               <PipelineColumn
@@ -149,7 +149,7 @@ export const ContactsPipelineView: React.FC<ContactsPipelineViewProps> = ({
       </DragDropContext>
 
       {/* Summary footer */}
-      <div className="px-4 py-2 border-t bg-muted/30 text-xs text-muted-foreground">
+      <div className="px-2 py-1 border-t bg-muted/30 text-xs text-muted-foreground shrink-0">
         {contacts.length} leads en pipeline • {activeStatuses.length} estados activos
       </div>
     </div>
