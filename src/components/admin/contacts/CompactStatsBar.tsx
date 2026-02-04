@@ -21,7 +21,7 @@ interface CompactStatsBarProps {
 export const CompactStatsBar: React.FC<CompactStatsBarProps> = ({ stats, className }) => {
   return (
     <div className={cn(
-      "flex items-center gap-4 px-1 py-1.5 text-xs shrink-0",
+      "admin-compact-row text-xs shrink-0 gap-3",
       className
     )}>
       <div className="flex items-center gap-1.5">

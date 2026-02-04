@@ -12,24 +12,10 @@ import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { ContactTableRow } from './ContactTableRow';
 import { useContactStatuses, STATUS_COLOR_MAP, ContactStatus } from '@/hooks/useContactStatuses';
 import { useLeadForms } from '@/hooks/useLeadForms';
+import { ADMIN_LAYOUT, getTableContainerHeight } from '@/config/admin-layout.config';
 
-// ===== COLUMN WIDTHS IN FIXED PIXELS (optimized for data-density) =====
-export const COLUMN_WIDTHS: Record<string, number> = {
-  star: 32,
-  checkbox: 36,
-  contact: 170,
-  origin: 80,      // F. Registro
-  channel: 120,
-  company: 140,
-  province: 70,
-  sector: 90,
-  status: 110,
-  revenue: 70,
-  ebitda: 70,
-  apollo: 75,
-  date: 75,
-  actions: 40,
-};
+// ===== COLUMN WIDTHS FROM CENTRALIZED CONFIG =====
+export const COLUMN_WIDTHS = ADMIN_LAYOUT.columns;
 
 // Calculate total width from column widths
 const TOTAL_TABLE_WIDTH = Object.values(COLUMN_WIDTHS).reduce((sum, w) => sum + w, 0);
@@ -51,8 +37,8 @@ interface LinearContactsTableProps {
   isEnriching?: string | null;
 }
 
-// Row height for virtualization - data-dense
-const ROW_HEIGHT = 40;
+// Row height from centralized config
+const ROW_HEIGHT = ADMIN_LAYOUT.table.rowHeight;
 
 // Helper to get channel color
 const getChannelColor = (category?: string) => {
