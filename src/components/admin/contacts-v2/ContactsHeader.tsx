@@ -10,6 +10,7 @@ import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useContactActions } from '@/features/contacts';
 import { BulkStatusSelect } from '../contacts/BulkStatusSelect';
 import { BulkChannelSelect } from '../contacts/BulkChannelSelect';
+import { BulkLeadFormSelect } from '../contacts/BulkLeadFormSelect';
 import { StatusesEditor } from '../contacts/StatusesEditor';
 
 interface ContactsHeaderProps {
@@ -95,6 +96,12 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
           />
 
           <BulkChannelSelect
+            selectedIds={selectedIds}
+            contacts={contacts as any}
+            onSuccess={onClearSelection}
+          />
+
+          <BulkLeadFormSelect
             selectedIds={selectedIds}
             contacts={contacts as any}
             onSuccess={onClearSelection}

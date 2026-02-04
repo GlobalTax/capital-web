@@ -424,7 +424,13 @@ export const useContactInlineUpdate = () => {
 
       queryClient.invalidateQueries({
         queryKey: ['unified-contacts'],
-        refetchType: 'none',
+        refetchType: 'active',
+      });
+      
+      // Also invalidate contacts-v2 for table/pipeline sync
+      queryClient.invalidateQueries({
+        queryKey: ['contacts-v2'],
+        refetchType: 'active',
       });
 
       // Cross-invalidation for Leads ↔ Prospects sync

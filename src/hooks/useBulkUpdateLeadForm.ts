@@ -75,12 +75,18 @@ export function useBulkUpdateLeadForm() {
       });
     },
 
-    // 3. REVALIDACIÓN silenciosa en éxito
+    // 3. REVALIDACIÓN activa en éxito
     onSuccess: (data) => {
-      // Solo invalida queries en background, no refetch inmediato
+      // Invalidar y refrescar queries activas
       queryClient.invalidateQueries({
         queryKey: ['unified-contacts'],
-        refetchType: 'none',
+        refetchType: 'active',
+      });
+      
+      // Sincronizar tabla y pipeline de contacts-v2
+      queryClient.invalidateQueries({
+        queryKey: ['contacts-v2'],
+        refetchType: 'active',
       });
 
       if (data.failed_count === 0) {

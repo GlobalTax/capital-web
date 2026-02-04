@@ -2634,6 +2634,33 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_source_tags: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          key: string
+          label: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key: string
+          label: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key?: string
+          label?: string
+        }
+        Relationships: []
+      }
       buyer_testimonials: {
         Row: {
           avatar_initials: string
@@ -5336,6 +5363,7 @@ export type Database = {
           search_keywords: string[] | null
           sector_exclusions: string[] | null
           sector_focus: string[] | null
+          source_tag_id: string | null
           source_url: string | null
           updated_at: string | null
           website: string | null
@@ -5366,6 +5394,7 @@ export type Database = {
           search_keywords?: string[] | null
           sector_exclusions?: string[] | null
           sector_focus?: string[] | null
+          source_tag_id?: string | null
           source_url?: string | null
           updated_at?: string | null
           website?: string | null
@@ -5396,11 +5425,20 @@ export type Database = {
           search_keywords?: string[] | null
           sector_exclusions?: string[] | null
           sector_focus?: string[] | null
+          source_tag_id?: string | null
           source_url?: string | null
           updated_at?: string | null
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "corporate_buyers_source_tag_id_fkey"
+            columns: ["source_tag_id"]
+            isOneToOne: false
+            referencedRelation: "buyer_source_tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       corporate_contacts: {
         Row: {
@@ -6451,6 +6489,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_plan_authorized_editors: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       daily_plan_items: {
         Row: {
           actual_time_entry_id: string | null
@@ -6589,6 +6651,59 @@ export type Database = {
             columns: ["work_task_type_id"]
             isOneToOne: false
             referencedRelation: "work_task_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_plan_notifications: {
+        Row: {
+          created_at: string
+          editor_email: string
+          editor_id: string
+          editor_name: string | null
+          error: string | null
+          id: string
+          item_title: string | null
+          operation: string
+          plan_id: string
+          plan_owner_id: string
+          planned_for_date: string
+          processed_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          editor_email: string
+          editor_id: string
+          editor_name?: string | null
+          error?: string | null
+          id?: string
+          item_title?: string | null
+          operation: string
+          plan_id: string
+          plan_owner_id: string
+          planned_for_date: string
+          processed_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          editor_email?: string
+          editor_id?: string
+          editor_name?: string | null
+          error?: string | null
+          id?: string
+          item_title?: string | null
+          operation?: string
+          plan_id?: string
+          plan_owner_id?: string
+          planned_for_date?: string
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_plan_notifications_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "daily_plans"
             referencedColumns: ["id"]
           },
         ]
