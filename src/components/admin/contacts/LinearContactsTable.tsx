@@ -341,20 +341,28 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
     });
   }, [contacts, sortColumn, sortDirection]);
   
-  // Calculate dynamic height based on container - NO artificial limit
+  // Calculate dynamic height based on parent container
   useEffect(() => {
     const updateHeight = () => {
       if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        // Use all available space minus a small bottom margin
-        const availableHeight = window.innerHeight - rect.top - 16;
-        setListHeight(Math.max(200, availableHeight));
+        const parent = containerRef.current.parentElement;
+        if (parent) {
+          // Use parent's height (which has h-full and flex-1)
+          const parentHeight = parent.clientHeight;
+          // Table header is ~32px, leave small margin
+          setListHeight(Math.max(200, parentHeight - 40));
+        }
       }
     };
     
     updateHeight();
+    // Small delay to ensure layout is complete
+    const timeout = setTimeout(updateHeight, 100);
     window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener('resize', updateHeight);
+    };
   }, []);
   
   // Memoize selected contacts as Set for O(1) lookup
