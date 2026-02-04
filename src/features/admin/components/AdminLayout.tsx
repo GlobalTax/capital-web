@@ -126,8 +126,8 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
             <KeyboardShortcutsHelp />
 
             {/* Main content area - responsive padding */}
-            <main className="flex-1 p-2 sm:p-3 md:p-4 overflow-hidden flex flex-col">
-              <div className="flex-1 min-h-0 w-full max-w-full flex flex-col">
+            <main className="flex-1 overflow-hidden flex flex-col">
+              <div className="flex-1 min-h-0 w-full max-w-full flex flex-col p-2 sm:p-3 md:p-4">
                 {children}
               </div>
             </main>
