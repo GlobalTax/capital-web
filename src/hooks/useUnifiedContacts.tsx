@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -1203,9 +1203,12 @@ export const useUnifiedContacts = () => {
   }, []);
 
   // 🔥 REALTIME: Subscribe to status changes for automatic sync with Prospectos
+  // Use unique channel ID per instance to avoid "subscribe multiple times" error on remounts
+  const channelIdRef = useRef(`leads-prospects-sync-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
+  
   useEffect(() => {
     const channel = supabase
-      .channel('leads-prospects-sync')
+      .channel(channelIdRef.current)
       .on(
         'postgres_changes',
         {
