@@ -7,11 +7,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Retry configuration with increasing wait times
+// Retry configuration with increasing wait times - optimized for heavy JS pages
 const RETRY_CONFIG = {
   maxAttempts: 3,
-  waitTimes: [30000, 45000, 60000], // 30s, 45s, 60s progressive wait
-  baseTimeout: 120000, // 120 seconds total timeout (Firecrawl max)
+  waitTimes: [45000, 60000, 90000], // 45s, 60s, 90s progressive wait (increased)
+  baseTimeout: 180000, // 180 seconds (3 min) for Firecrawl - increased for heavy JS
 };
 
 interface DealRecord {
@@ -157,6 +157,12 @@ async function scrapeWithRetry(
         waitFor,
         timeout: RETRY_CONFIG.baseTimeout,
         onlyMainContent: false,
+        // Block heavy resources to speed up page load
+        blockResources: ['image', 'media', 'font'],
+        // Wait for specific deal-related elements to render
+        actions: [
+          { type: 'wait', selector: '.deal-card, .listing-item, [data-deal-id], .market-listing, table tbody tr', timeout: waitFor }
+        ],
         headers: {
           'Cookie': sessionCookie,
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -439,22 +445,29 @@ serve(async (req) => {
     const scrapeResult = await scrapeWithRetry(url, session_cookie, firecrawlKey);
     
     if (!scrapeResult.success) {
-      // Provide helpful error messages
+      // Provide helpful error messages with specific suggestions
       let errorMessage = scrapeResult.error || 'Scrape failed';
       let suggestion = '';
+      let errorCode = 'scrape_failed';
       
       if (errorMessage.includes('timeout') || errorMessage.includes('408')) {
-        suggestion = ' La página tardó demasiado en cargar. Intenta de nuevo más tarde o durante horas de menor tráfico.';
+        errorCode = 'timeout';
+        suggestion = ' Sugerencias: 1) Intenta en horas de menor tráfico (madrugada/mañana temprano). 2) Verifica que tu sesión de Dealsuite sigue activa. 3) Intenta de nuevo - el segundo intento suele ser más rápido debido al caché del servidor.';
       } else if (errorMessage === 'rate_limited') {
-        suggestion = ' Se ha excedido el límite de peticiones de Firecrawl. Espera unos minutos antes de reintentar.';
+        errorCode = 'rate_limited';
+        suggestion = ' Se ha excedido el límite de peticiones de Firecrawl. Espera 5-10 minutos antes de reintentar.';
+      } else if (errorMessage.includes('connect') || errorMessage.includes('network')) {
+        errorCode = 'connection_error';
+        suggestion = ' Error de conexión. Verifica tu conexión a internet y que Dealsuite esté accesible.';
       }
       
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'scrape_failed', 
+          error: errorCode, 
           message: errorMessage + suggestion,
-          attempts: scrapeResult.attempt
+          attempts: scrapeResult.attempt,
+          can_retry: true // Signal to UI that retry is possible
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
