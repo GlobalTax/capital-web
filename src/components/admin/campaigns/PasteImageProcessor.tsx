@@ -176,6 +176,12 @@ export const PasteImageProcessor: React.FC<PasteImageProcessorProps> = ({
                     <span className="font-medium">{extractedData.ctr}%</span>
                   </span>
                 )}
+                {extractedData.conversions && (
+                  <span>
+                    <span className="text-muted-foreground">Conv:</span>{' '}
+                    <span className="font-medium">{extractedData.conversions.toLocaleString('es-ES')}</span>
+                  </span>
+                )}
               </div>
             </div>
           ) : null}

@@ -39,6 +39,8 @@ const formSchema = z.object({
   clicks: z.coerce.number().optional(),
   ctr: z.coerce.number().optional(),
   cpc: z.coerce.number().optional(),
+  conversions: z.coerce.number().optional(),
+  cost_per_conversion: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
 
@@ -129,6 +131,8 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
     if (data.clicks) setValue('clicks', data.clicks);
     if (data.ctr) setValue('ctr', data.ctr);
     if (data.cpc) setValue('cpc', data.cpc);
+    if (data.conversions) setValue('conversions', data.conversions);
+    if (data.cost_per_conversion) setValue('cost_per_conversion', data.cost_per_conversion);
     setShowScreenshotUploader(false);
   };
 
@@ -136,6 +140,7 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
   const clicks = watch('clicks');
   const impressions = watch('impressions');
   const amount = watch('amount');
+  const conversions = watch('conversions');
 
   // Auto-calculate CTR and CPC
   React.useEffect(() => {
@@ -151,6 +156,14 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
       setValue('cpc', Math.round(calculatedCpc * 100) / 100);
     }
   }, [amount, clicks, setValue]);
+
+  // Auto-calculate cost per conversion for Google Ads
+  React.useEffect(() => {
+    if (amount && conversions && conversions > 0) {
+      const calculatedCostPerConversion = amount / conversions;
+      setValue('cost_per_conversion', Math.round(calculatedCostPerConversion * 100) / 100);
+    }
+  }, [amount, conversions, setValue]);
 
   const handleQuickPeriod = (getValue: () => { start: string; end: string }) => {
     const { start, end } = getValue();
@@ -374,6 +387,41 @@ const CostEntryForm: React.FC<CostEntryFormProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Google Ads Specific - Conversions */}
+          {channel === 'google_ads' && (
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Métricas Google Ads</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="conversions" className="text-xs">Conversiones</Label>
+                  <Input
+                    id="conversions"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="h-9 text-sm"
+                    placeholder="0"
+                    {...register('conversions')}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="cost_per_conversion" className="text-xs">Coste/Conversión (€)</Label>
+                  <Input
+                    id="cost_per_conversion"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="h-9 text-sm bg-muted"
+                    placeholder="Auto"
+                    {...register('cost_per_conversion')}
+                    readOnly
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           <div className="space-y-2">
