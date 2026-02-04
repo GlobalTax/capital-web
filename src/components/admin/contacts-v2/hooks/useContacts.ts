@@ -2,6 +2,7 @@
 // Simplified hook for fetching and managing contacts
 
 import { useState, useEffect, useRef, useId, useMemo, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Contact, ContactFilters, ContactStats, ContactOrigin } from '../types';
@@ -28,6 +29,7 @@ export const useContacts = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<ContactFilters>({ origin: 'all', emailStatus: 'all' });
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Unique channel ID per instance to avoid subscription conflicts
   const instanceId = useId();
@@ -113,8 +115,16 @@ export const useContacts = () => {
     const channelName = `contacts-realtime-${instanceId.replace(/:/g, '-')}`;
     channelRef.current = supabase
       .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, fetchContacts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, fetchContacts)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, () => {
+        fetchContacts();
+        // Cross-invalidation: also update prospects list
+        queryClient.invalidateQueries({ queryKey: ['prospects'] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, () => {
+        fetchContacts();
+        // Cross-invalidation: also update prospects list
+        queryClient.invalidateQueries({ queryKey: ['prospects'] });
+      })
       .subscribe();
 
     return () => {

@@ -71,14 +71,16 @@ export const useProspects = (filters?: ProspectFilters) => {
           // If status changed to/from a prospect status, invalidate cache
           if (prospectStatusKeys.includes(newStatus) || 
               prospectStatusKeys.includes(oldStatus)) {
-            if (process.env.NODE_ENV === 'development') {
-              console.info('[useProspects] Realtime: company_valuations status changed', {
-                oldStatus,
-                newStatus,
-                id: payload.new?.id,
-              });
-            }
-            queryClient.invalidateQueries({ queryKey: ['prospects'] });
+              if (process.env.NODE_ENV === 'development') {
+                console.info('[useProspects] Realtime: company_valuations status changed', {
+                  oldStatus,
+                  newStatus,
+                  id: payload.new?.id,
+                });
+              }
+              queryClient.invalidateQueries({ queryKey: ['prospects'] });
+              // Cross-invalidation: also update contacts list
+              queryClient.invalidateQueries({ queryKey: ['contacts-v2'] });
           }
         }
       )
@@ -95,14 +97,16 @@ export const useProspects = (filters?: ProspectFilters) => {
           
           if (prospectStatusKeys.includes(newStatus) || 
               prospectStatusKeys.includes(oldStatus)) {
-            if (process.env.NODE_ENV === 'development') {
-              console.info('[useProspects] Realtime: contact_leads status changed', {
-                oldStatus,
-                newStatus,
-                id: payload.new?.id,
-              });
-            }
-            queryClient.invalidateQueries({ queryKey: ['prospects'] });
+              if (process.env.NODE_ENV === 'development') {
+                console.info('[useProspects] Realtime: contact_leads status changed', {
+                  oldStatus,
+                  newStatus,
+                  id: payload.new?.id,
+                });
+              }
+              queryClient.invalidateQueries({ queryKey: ['prospects'] });
+              // Cross-invalidation: also update contacts list
+              queryClient.invalidateQueries({ queryKey: ['contacts-v2'] });
           }
         }
       )
