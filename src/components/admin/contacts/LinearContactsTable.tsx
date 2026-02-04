@@ -342,25 +342,36 @@ const LinearContactsTable: React.FC<LinearContactsTableProps> = ({
   }, [contacts, sortColumn, sortDirection]);
   
   // Calculate dynamic height based on parent container
+  // Uses ResizeObserver to detect when tab becomes visible (display: none → block)
   useEffect(() => {
     const updateHeight = () => {
       if (containerRef.current) {
         const parent = containerRef.current.parentElement;
         if (parent) {
-          // Use parent's height (which has h-full and flex-1)
           const parentHeight = parent.clientHeight;
-          // Table header is ~32px, leave small margin
-          setListHeight(Math.max(200, parentHeight - 40));
+          // Only update if parent has valid height (is visible)
+          if (parentHeight > 50) {
+            setListHeight(Math.max(200, parentHeight - 40));
+          }
         }
       }
     };
     
     updateHeight();
-    // Small delay to ensure layout is complete
-    const timeout = setTimeout(updateHeight, 100);
+    
+    // ResizeObserver detects when tab becomes visible (size changes from 0 to N)
+    const observer = new ResizeObserver(() => {
+      updateHeight();
+    });
+    
+    if (containerRef.current?.parentElement) {
+      observer.observe(containerRef.current.parentElement);
+    }
+    
     window.addEventListener('resize', updateHeight);
+    
     return () => {
-      clearTimeout(timeout);
+      observer.disconnect();
       window.removeEventListener('resize', updateHeight);
     };
   }, []);
