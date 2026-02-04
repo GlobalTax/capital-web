@@ -1,105 +1,178 @@
 
-# Plan: Eliminar Origen y Añadir Colores a Canal y Estado
+# Plan: Sincronización Automática Leads ↔ Prospectos
+
+## Problema Actual
+
+Cuando un lead cambia a estado "Reunión Programada" o "PSH Enviada" (estados con `is_prospect_stage: true`):
+- ✅ Desaparece de la tabla de Leads (correcto)
+- ❌ NO aparece inmediatamente en Prospectos (error)
+- ❌ Requiere refrescar manualmente la página de Prospectos
+
+## Causa Raíz
+
+El hook `useContactInlineUpdate` (línea 425) solo invalida la query `['unified-contacts']`:
+
+```typescript
+queryClient.invalidateQueries({
+  queryKey: ['unified-contacts'],
+  refetchType: 'none',
+});
+```
+
+Falta invalidar `['prospects']` y `['contacts-v2']` para que ambas vistas se actualicen.
+
+## Solución: Cross-Invalidation
+
+Cuando se actualiza `lead_status_crm`, invalidar todas las queries relacionadas:
+- `['unified-contacts']` - Lista antigua de leads
+- `['contacts-v2']` - Lista nueva de leads (tu sistema actual)
+- `['prospects']` - Lista de prospectos
+
+Además, verificar si el nuevo estado es un "prospect stage" para mostrar feedback visual al usuario.
 
 ## Cambios a Realizar
 
-### 1. Eliminar columna "Origen"
+### Archivo 1: `src/hooks/useInlineUpdate.ts`
 
-Quitar la columna Origen de la tabla y ajustar el grid de 8 a 6 columnas.
+**Añadir invalidación cruzada cuando cambia `lead_status_crm`:**
 
-### 2. Añadir colores al Estado (lead_status_crm)
+```typescript
+// Después de la actualización exitosa (línea 425)
+// Invalidar queries de contacts
+queryClient.invalidateQueries({
+  queryKey: ['unified-contacts'],
+  refetchType: 'none',
+});
 
-| Estado | Color | Significado |
-|--------|-------|-------------|
-| `nuevo` | Azul | Lead recién llegado |
-| `contactando` | Amarillo/Ámbar | En proceso de contacto |
-| `calificado` | Verde | Lead cualificado |
-| `propuesta_enviada` | Púrpura | Propuesta comercial enviada |
-| `negociacion` | Índigo | En negociación activa |
-| `mandato_propuesto` | Cyan | Mandato propuesto |
-| `en_espera` | Gris | Pausado temporalmente |
-| `archivado` | Slate | Archivado |
-| `lead_perdido_curiosidad` | Rojo | Descartado |
-| `compras` | Rosa | Compras |
-| `fase0_activo` | Esmeralda | Fase 0 activo |
+// NUEVO: Cross-invalidation para sincronizar Leads ↔ Prospectos
+if (field === 'lead_status_crm') {
+  queryClient.invalidateQueries({ queryKey: ['contacts-v2'] });
+  queryClient.invalidateQueries({ queryKey: ['prospects'] });
+  
+  // Verificar si el nuevo estado es prospecto para feedback
+  const { data: statusData } = await supabase
+    .from('contact_statuses')
+    .select('is_prospect_stage, label')
+    .eq('status_key', value)
+    .single();
+  
+  if (statusData?.is_prospect_stage) {
+    toast.success(`Movido a Prospectos: ${statusData.label}`, { 
+      duration: 3000,
+      action: {
+        label: 'Ver Prospectos',
+        onClick: () => window.location.href = '/admin/prospectos',
+      }
+    });
+  }
+}
+```
 
-### 3. Añadir colores al Canal (acquisition_channel_name)
+### Archivo 2: `src/components/admin/contacts-v2/hooks/useContacts.ts`
 
-| Canal | Color |
-|-------|-------|
-| `Google Ads` | Rojo (branding Google) |
-| `Meta Ads` / `Meta ads - Formulario instantáneo` | Azul (branding Meta) |
-| `LinkedIn Ads` | Azul LinkedIn |
-| `SEO Orgánico` | Verde |
-| `Email Marketing` | Ámbar |
-| `Referido` | Púrpura |
-| `Directo` | Slate |
-| `Evento/Feria` | Cyan |
-| `Marketplace` | Rosa |
+**Añadir invalidación cruzada en la suscripción Realtime:**
+
+```typescript
+// Línea 116-118: Añadir invalidación de prospects también
+.on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, () => {
+  fetchContacts();
+  queryClient.invalidateQueries({ queryKey: ['prospects'] });
+})
+.on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, () => {
+  fetchContacts();
+  queryClient.invalidateQueries({ queryKey: ['prospects'] });
+})
+```
+
+### Archivo 3: `src/hooks/useProspects.ts`
+
+**Añadir invalidación cruzada en la suscripción Realtime (ya existe, pero verificar):**
+
+El hook ya tiene suscripciones Realtime (líneas 55-113) que invalidan `['prospects']` cuando cambia el estado. Solo falta añadir invalidación de `['contacts-v2']`:
+
+```typescript
+// Dentro del callback de postgres_changes
+queryClient.invalidateQueries({ queryKey: ['prospects'] });
+queryClient.invalidateQueries({ queryKey: ['contacts-v2'] }); // NUEVO
+```
+
+## Estados de Prospecto Actuales
+
+Según la base de datos, estos estados tienen `is_prospect_stage: true`:
+
+| status_key | label | is_prospect_stage |
+|------------|-------|-------------------|
+| `fase0_activo` | Reunión Programada | ✅ true |
+| `archivado` | PSH Enviada | ✅ true |
+
+Cuando un lead se mueve a cualquiera de estos estados, automáticamente:
+1. Desaparece de la tabla de Leads (`/admin/contacts`)
+2. Aparece en la tabla de Prospectos (`/admin/prospectos`)
+
+## Sección Técnica
+
+### Flujo de Sincronización
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    Usuario cambia estado                     │
+│          (Pipeline drag, selector de estado, etc.)          │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  useContactInlineUpdate                      │
+│  1. Valida status_key existe en contact_statuses            │
+│  2. Actualiza BD (company_valuations/contact_leads)         │
+│  3. Cross-invalidation: contacts + prospects                │
+│  4. Si is_prospect_stage → toast con link                   │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌─────────────────────────┐     ┌─────────────────────────────┐
+│   /admin/contacts       │     │    /admin/prospectos        │
+│                         │     │                             │
+│  useContacts refetch    │     │  useProspects refetch       │
+│  (excluye prospects)    │     │  (solo is_prospect_stage)   │
+└─────────────────────────┘     └─────────────────────────────┘
+```
+
+### Validación Pre-Guardado
+
+El sistema ya valida (líneas 383-401) que el `status_key` existe en `contact_statuses` antes de guardar:
+
+```typescript
+if (field === 'lead_status_crm' && value) {
+  const { data: statusData } = await supabase
+    .from('contact_statuses')
+    .select('status_key, is_active')
+    .eq('status_key', value)
+    .maybeSingle();
+  
+  if (!statusData) {
+    throw new Error('El estado seleccionado no existe');
+  }
+}
+```
 
 ## Archivos a Modificar
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/admin/contacts-v2/ContactRow.tsx` | Eliminar columna Origen, añadir mapas de colores para Estado y Canal, cambiar grid a 6 columnas |
-| `src/components/admin/contacts-v2/VirtualContactsTable.tsx` | Eliminar header Origen, cambiar grid a 6 columnas |
+| Archivo | Cambios |
+|---------|---------|
+| `src/hooks/useInlineUpdate.ts` | Añadir cross-invalidation para prospects y contacts-v2 cuando cambia lead_status_crm |
+| `src/components/admin/contacts-v2/hooks/useContacts.ts` | Añadir invalidación de prospects en suscripción Realtime |
+| `src/hooks/useProspects.ts` | Añadir invalidación de contacts-v2 en suscripción Realtime |
 
-## Detalle Técnico
+## Resultado Esperado
 
-### Nueva estructura de grid
+1. Al cambiar estado a "Reunión Programada" o "PSH Enviada":
+   - Lead desaparece de `/admin/contacts` instantáneamente
+   - Lead aparece en `/admin/prospectos` instantáneamente
+   - Toast muestra "Movido a Prospectos" con link para ver
 
-```
-grid-cols-[2fr_1.5fr_1fr_1fr_1fr_80px]
-```
+2. Al cambiar estado desde Prospectos a un estado no-prospecto:
+   - Lead desaparece de `/admin/prospectos` instantáneamente
+   - Lead aparece en `/admin/contacts` instantáneamente
 
-| Columna | Ancho |
-|---------|-------|
-| Nombre | 2fr |
-| Empresa | 1.5fr |
-| Estado | 1fr (con badge de color) |
-| Canal | 1fr (con badge de color) |
-| Fecha | 1fr |
-| Valoración | 80px |
-
-### Mapas de colores a añadir en ContactRow.tsx
-
-```tsx
-const STATUS_COLORS: Record<string, string> = {
-  nuevo: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  contactando: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  calificado: 'bg-green-500/10 text-green-700 border-green-500/20',
-  propuesta_enviada: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-  negociacion: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/20',
-  mandato_propuesto: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-  en_espera: 'bg-gray-500/10 text-gray-700 border-gray-500/20',
-  archivado: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
-  lead_perdido_curiosidad: 'bg-red-500/10 text-red-700 border-red-500/20',
-  compras: 'bg-rose-500/10 text-rose-700 border-rose-500/20',
-  fase0_activo: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
-};
-
-const CHANNEL_COLORS: Record<string, string> = {
-  'Google Ads': 'bg-red-500/10 text-red-700 border-red-500/20',
-  'Meta Ads': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  'Meta ads - Formulario instantáneo': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  'LinkedIn Ads': 'bg-sky-500/10 text-sky-700 border-sky-500/20',
-  'SEO Orgánico': 'bg-green-500/10 text-green-700 border-green-500/20',
-  'Email Marketing': 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  'Referido': 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-  'Directo': 'bg-slate-500/10 text-slate-700 border-slate-500/20',
-  'Evento/Feria': 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-  'Marketplace': 'bg-pink-500/10 text-pink-700 border-pink-500/20',
-};
-```
-
-## Resultado Visual Esperado
-
-La tabla mostrará:
-1. **Nombre** - Nombre + email + favorito
-2. **Empresa** - Nombre de empresa
-3. **Estado** - Badge con color según estado CRM (verde para calificado, azul para nuevo, etc.)
-4. **Canal** - Badge con color según canal (rojo para Google Ads, azul para Meta, etc.)
-5. **Fecha** - Fecha de recepción
-6. **Valoración** - Valor formateado
-
-Se elimina la columna "Formulario" también para mantener la tabla compacta con 6 columnas.
+3. Sincronización bidireccional sin necesidad de refrescar la página
