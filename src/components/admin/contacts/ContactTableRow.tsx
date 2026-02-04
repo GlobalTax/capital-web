@@ -156,7 +156,7 @@ export const ContactTableRow = memo<ContactRowProps>(({
     <div 
       style={style}
       className={cn(
-        "flex items-center h-[44px] cursor-pointer transition-colors border-b border-[hsl(var(--linear-border))]",
+        "flex items-center h-[40px] cursor-pointer transition-colors border-b border-[hsl(var(--linear-border))]",
         isSelected 
           ? "bg-[hsl(var(--accent-primary)/0.05)]" 
           : "hover:bg-[hsl(var(--linear-bg-hover))]",

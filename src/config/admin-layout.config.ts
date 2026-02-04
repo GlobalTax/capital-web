@@ -45,7 +45,7 @@ export const ADMIN_LAYOUT = {
     star: 32,
     contact: 170,
     company: 140,
-    origin: 80,
+    origin: 95,
     channel: 120,
     province: 70,
     sector: 90,
