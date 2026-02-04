@@ -4,7 +4,7 @@
 import React, { memo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Contact, ContactOrigin } from './types';
+import { Contact } from './types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -18,24 +18,43 @@ interface ContactRowProps {
   style: React.CSSProperties;
 }
 
-const ORIGIN_COLORS: Record<ContactOrigin, string> = {
-  valuation: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
-  contact: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  collaborator: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-  acquisition: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  company_acquisition: 'bg-rose-500/10 text-rose-700 border-rose-500/20',
-  advisor: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-  general: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
+// Color mappings for lead status
+const STATUS_COLORS: Record<string, string> = {
+  nuevo: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+  contactando: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
+  calificado: 'bg-green-500/10 text-green-700 border-green-500/20',
+  propuesta_enviada: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
+  negociacion: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/20',
+  mandato_propuesto: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
+  en_espera: 'bg-gray-500/10 text-gray-700 border-gray-500/20',
+  archivado: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
+  lead_perdido_curiosidad: 'bg-red-500/10 text-red-700 border-red-500/20',
+  compras: 'bg-rose-500/10 text-rose-700 border-rose-500/20',
+  fase0_activo: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
 };
 
-const ORIGIN_LABELS: Record<ContactOrigin, string> = {
-  valuation: 'Valoración',
-  contact: 'Comercial',
-  collaborator: 'Colaborador',
-  acquisition: 'Adquisición',
-  company_acquisition: 'Compra',
-  advisor: 'Asesor',
-  general: 'General',
+// Color mappings for acquisition channels
+const CHANNEL_COLORS: Record<string, string> = {
+  'Google Ads': 'bg-red-500/10 text-red-700 border-red-500/20',
+  'Meta Ads': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+  'Meta ads - Formulario instantáneo': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+  'LinkedIn Ads': 'bg-sky-500/10 text-sky-700 border-sky-500/20',
+  'SEO Orgánico': 'bg-green-500/10 text-green-700 border-green-500/20',
+  'Email Marketing': 'bg-amber-500/10 text-amber-700 border-amber-500/20',
+  'Referido': 'bg-purple-500/10 text-purple-700 border-purple-500/20',
+  'Directo': 'bg-slate-500/10 text-slate-700 border-slate-500/20',
+  'Evento/Feria': 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
+  'Marketplace': 'bg-pink-500/10 text-pink-700 border-pink-500/20',
+};
+
+const getStatusColor = (status?: string): string => {
+  if (!status) return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
+  return STATUS_COLORS[status] || 'bg-gray-500/10 text-gray-700 border-gray-500/20';
+};
+
+const getChannelColor = (channel?: string): string => {
+  if (!channel) return 'bg-slate-500/10 text-slate-700 border-slate-500/20';
+  return CHANNEL_COLORS[channel] || 'bg-slate-500/10 text-slate-700 border-slate-500/20';
 };
 
 const formatCurrency = (value?: number) => {
@@ -73,7 +92,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
       </div>
 
       {/* Grid Content */}
-      <div className="flex-1 grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_1fr_1fr_80px] gap-2 text-xs items-center min-w-0">
+      <div className="flex-1 grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_80px] gap-2 text-xs items-center min-w-0">
         {/* Name + Email */}
         <div className="flex items-center gap-1.5 min-w-0">
           <div onClick={(e) => e.stopPropagation()}>
@@ -90,10 +109,13 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.empresa_nombre || contact.company || '-'}
         </div>
 
-        {/* Status */}
+        {/* Status - with color badge */}
         <div>
           {contact.lead_status_crm ? (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
+            <Badge 
+              variant="outline" 
+              className={cn('text-[10px] px-1.5 py-0 h-5 border', getStatusColor(contact.lead_status_crm))}
+            >
               {contact.lead_status_crm.replace(/_/g, ' ')}
             </Badge>
           ) : (
@@ -101,24 +123,18 @@ const ContactRow: React.FC<ContactRowProps> = ({
           )}
         </div>
 
-        {/* Channel */}
-        <div className="truncate text-muted-foreground text-[10px]">
-          {contact.acquisition_channel_name || '-'}
-        </div>
-
-        {/* Form */}
-        <div className="truncate text-muted-foreground text-[10px]">
-          {contact.lead_form_name || '-'}
-        </div>
-
-        {/* Origin */}
+        {/* Channel - with color badge */}
         <div>
-          <Badge 
-            variant="outline" 
-            className={cn('text-[10px] px-1.5 py-0 h-5 border', ORIGIN_COLORS[contact.origin])}
-          >
-            {ORIGIN_LABELS[contact.origin]}
-          </Badge>
+          {contact.acquisition_channel_name ? (
+            <Badge 
+              variant="outline" 
+              className={cn('text-[10px] px-1.5 py-0 h-5 border truncate max-w-full', getChannelColor(contact.acquisition_channel_name))}
+            >
+              {contact.acquisition_channel_name}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground/60">-</span>
+          )}
         </div>
 
         {/* Date */}
