@@ -188,7 +188,7 @@ const LinearContactsManager = () => {
     <Tabs 
       value={activeTab} 
       onValueChange={(v) => setActiveTab(v as 'favorites' | 'directory' | 'pipeline' | 'stats')} 
-      className="h-[calc(100vh-48px-24px)] flex flex-col"
+      className="h-full flex flex-col"
     >
       {/* Compact Header with Tabs */}
       <div className="flex items-center justify-between shrink-0 pb-2">
