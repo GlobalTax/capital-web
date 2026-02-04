@@ -3,7 +3,7 @@ import LinearContactsManager from '@/components/admin/contacts/LinearContactsMan
 
 const ContactsPage = () => {
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex-1 flex flex-col min-h-0">
       <LinearContactsManager />
     </div>
   );
