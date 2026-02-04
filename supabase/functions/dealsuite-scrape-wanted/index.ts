@@ -59,33 +59,106 @@ function buildDealsuitUrl(filters?: Record<string, string>): string {
   return `${baseUrl}?${queryString}`;
 }
 
-// Cookie validation - check for required session tokens
-function validateCookieFormat(cookie: string): { valid: boolean; missing: string[]; detected: string[] } {
+// Cookie validation - comprehensive check for session tokens and common issues
+interface CookieValidationResult {
+  valid: boolean;
+  missing: string[];
+  detected: string[];
+  warnings: string[];
+  diagnostics: {
+    length: number;
+    isTruncated: boolean;
+    hasExtraQuotes: boolean;
+    hasInvalidChars: boolean;
+    estimatedExpiry: string | null;
+    cookieCount: number;
+  };
+}
+
+function validateCookieFormat(cookie: string): CookieValidationResult {
   const requiredKeys = ['user=', 'dstoken='];
-  const optionalKeys = ['_xsrf=', '_ga', 'hubspotutk'];
+  const optionalKeys = ['_xsrf=', '_ga', 'hubspotutk', 'session=', '_dd_s'];
   
   const missing = requiredKeys.filter(key => !cookie.includes(key));
   const detected: string[] = [];
+  const warnings: string[] = [];
   
-  // Log what we found
+  // Detect all found keys
   requiredKeys.forEach(key => {
     if (cookie.includes(key)) detected.push(key.replace('=', ''));
   });
   optionalKeys.forEach(key => {
     if (cookie.includes(key)) detected.push(key.replace('=', ''));
   });
+
+  // Diagnostic checks
+  const isTruncated = cookie.includes('…') || cookie.endsWith('...') || cookie.endsWith('…');
+  const hasExtraQuotes = (cookie.startsWith("'") || cookie.startsWith('"')) && 
+                         (cookie.endsWith("'") || cookie.endsWith('"'));
+  const hasInvalidChars = /[\n\r\t]/.test(cookie);
+  const cookieCount = (cookie.match(/=/g) || []).length;
+
+  // Check for potential expiry indicators
+  let estimatedExpiry: string | null = null;
+  const expiryMatch = cookie.match(/expires?[=:]([^;,]+)/i);
+  if (expiryMatch) {
+    try {
+      const expiryDate = new Date(expiryMatch[1].trim());
+      if (!isNaN(expiryDate.getTime())) {
+        estimatedExpiry = expiryDate.toISOString();
+        if (expiryDate < new Date()) {
+          warnings.push('cookie_expired');
+        }
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+  }
+
+  // Add warnings based on diagnostics
+  if (isTruncated) {
+    warnings.push('cookie_truncated');
+  }
+  if (hasExtraQuotes) {
+    warnings.push('has_quotes');
+  }
+  if (hasInvalidChars) {
+    warnings.push('invalid_chars');
+  }
+  if (cookie.length < 100) {
+    warnings.push('cookie_too_short');
+  }
+  if (cookieCount < 2) {
+    warnings.push('too_few_cookies');
+  }
+  
+  // Check for common copy-paste issues
+  if (cookie.includes('undefined') || cookie.includes('null')) {
+    warnings.push('contains_undefined');
+  }
   
   console.log('[DEALSUITE] Cookie validation:', { 
     length: cookie.length, 
     detected, 
     missing: missing.map(k => k.replace('=', '')),
-    valid: missing.length === 0 
+    warnings,
+    cookieCount,
+    valid: missing.length === 0 && !isTruncated
   });
   
   return { 
-    valid: missing.length === 0, 
+    valid: missing.length === 0 && !isTruncated && !hasInvalidChars, 
     missing: missing.map(k => k.replace('=', '')),
-    detected
+    detected,
+    warnings,
+    diagnostics: {
+      length: cookie.length,
+      isTruncated,
+      hasExtraQuotes,
+      hasInvalidChars,
+      estimatedExpiry,
+      cookieCount
+    }
   };
 }
 
@@ -376,15 +449,43 @@ serve(async (req) => {
 
     // Validate cookie format - check for required tokens
     const cookieValidation = validateCookieFormat(session_cookie);
+    
+    // Build detailed error messages based on diagnostics
     if (!cookieValidation.valid) {
+      let detailedMessage = '';
+      let detailedHint = '';
+      
+      if (cookieValidation.diagnostics.isTruncated) {
+        detailedMessage = 'La cookie está truncada (cortada). El navegador ha cortado el texto.';
+        detailedHint = 'En la consola, haz clic derecho en el resultado de document.cookie y selecciona "Copiar valor de cadena" o "Copy string contents". No copies directamente el texto visible.';
+      } else if (cookieValidation.missing.length > 0) {
+        detailedMessage = `Cookie incompleta. Faltan cookies críticas: ${cookieValidation.missing.join(', ')}.`;
+        detailedHint = 'Asegúrate de estar logueado en Dealsuite. Las cookies "user" y "dstoken" solo aparecen después de iniciar sesión correctamente.';
+      } else if (cookieValidation.diagnostics.hasInvalidChars) {
+        detailedMessage = 'La cookie contiene caracteres inválidos (saltos de línea o tabulaciones).';
+        detailedHint = 'Pega el contenido en una sola línea, sin saltos de línea.';
+      }
+      
+      const warningMessages: Record<string, string> = {
+        'cookie_truncated': 'Cookie truncada - usa "Copiar valor de cadena"',
+        'has_quotes': 'Las comillas serán eliminadas automáticamente',
+        'invalid_chars': 'Contiene caracteres inválidos',
+        'cookie_too_short': 'Cookie muy corta - probablemente incompleta',
+        'too_few_cookies': 'Muy pocas cookies detectadas',
+        'contains_undefined': 'Contiene "undefined" o "null" - cookie corrupta',
+        'cookie_expired': 'La cookie parece haber expirado'
+      };
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'invalid_cookie_format',
-          message: `Cookie incompleta. Faltan cookies críticas: ${cookieValidation.missing.join(', ')}`,
-          hint: 'Asegúrate de copiar TODO el contenido de document.cookie desde la consola de Dealsuite',
+          message: detailedMessage,
+          hint: detailedHint,
           detected: cookieValidation.detected,
-          missing: cookieValidation.missing
+          missing: cookieValidation.missing,
+          warnings: cookieValidation.warnings.map(w => warningMessages[w] || w),
+          diagnostics: cookieValidation.diagnostics
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
