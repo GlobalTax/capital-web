@@ -1,210 +1,179 @@
 
+# Plan: Recuperar Selección Masiva de Formulario + Auto-Update en Pipeline
 
-# Plan: Trigger para Alimentar campaign_cost_history desde ads_costs_history
+## Diagnóstico Completado
 
-## Situación Actual
+### Problema A: Selección Masiva para Formulario
+**Causa raíz identificada**: El componente `BulkLeadFormSelect` existe y funciona correctamente, pero **no está importado** en `ContactsHeader.tsx`. Las otras acciones masivas (Estado, Canal, Archivar, Sync) sí están incluidas.
 
-### Estructura de Tablas
+| Componente | Estado |
+|------------|--------|
+| `BulkStatusSelect` | ✅ Importado y funcionando |
+| `BulkChannelSelect` | ✅ Importado y funcionando |
+| `BulkLeadFormSelect` | ❌ **NO importado** (existe en `/contacts/BulkLeadFormSelect.tsx`) |
 
-| Tabla | Propósito | Registros |
-|-------|-----------|-----------|
-| `ads_costs_history` | Importaciones de Excel/Screenshot | 216 registros |
-| `campaign_cost_history` | Historial de auditoría | 0 registros (vacía) |
-| `campaigns` | Campañas maestras | 4 campañas |
+### Problema B: Pipeline Drag & Drop sin Auto-Update
+**Causa raíz identificada**: El hook `useContactInlineUpdate` actualiza correctamente el estado vía `supabase.update()` con optimistic UI, pero:
+1. La invalidación de cache usa `refetchType: 'none'` (no refetch inmediato)
+2. El hook `useContacts` de contacts-v2 usa su propio fetch y Realtime (escucha `contact_leads` y `company_valuations`)
+3. **El canal Realtime ya está configurado** y debería funcionar
 
-### Problema Identificado
-
-El trigger `log_campaign_cost_change` está diseñado para `campaign_costs` (tabla de entrada manual), pero los datos reales se importan vía `ads_costs_history`. Por eso `campaign_cost_history` permanece vacía.
-
-### Mapeo de Campos
-
-| ads_costs_history | → | campaign_cost_history |
-|-------------------|---|----------------------|
-| `id` | → | `campaign_cost_id` |
-| `campaign_name` | → | `campaign_name` |
-| `platform` (enum) | → | `channel` (text) |
-| `results` | → | `results` |
-| `spend` | → | `amount` |
-| `cost_per_result` | → | `cost_per_result` |
-| `imported_by` | → | `changed_by` |
-| INSERT/UPDATE | → | `change_type` |
+El Realtime está bien configurado. El issue puede ser que tras el drag, la UI local se actualiza pero si el usuario cambia de pestaña, el estado puede no estar sincronizado hasta el próximo refetch.
 
 ---
 
 ## Implementación
 
-### 1. Nueva Función Trigger
+### 1. Añadir BulkLeadFormSelect al Header
 
-```sql
-CREATE OR REPLACE FUNCTION log_ads_cost_to_history()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-BEGIN
-  INSERT INTO campaign_cost_history (
-    campaign_cost_id,
-    campaign_name,
-    channel,
-    results,
-    amount,
-    cost_per_result,
-    daily_budget,
-    monthly_budget,
-    target_cpl,
-    internal_status,
-    delivery_status,
-    notes,
-    changed_by,
-    change_type
-  ) VALUES (
-    NEW.id,
-    NEW.campaign_name,
-    NEW.platform::text,  -- Convertir enum a text
-    COALESCE(NEW.results::integer, 0),
-    NEW.spend,
-    NEW.cost_per_result,
-    NULL,  -- No hay daily_budget en ads_costs_history
-    NULL,  -- No hay monthly_budget
-    NULL,  -- No hay target_cpl
-    NULL,  -- No hay internal_status
-    NULL,  -- No hay delivery_status
-    'Importado desde ' || NEW.platform::text || ' el ' || NEW.imported_at::date,
-    COALESCE(NEW.imported_by, auth.uid()),
-    CASE 
-      WHEN TG_OP = 'INSERT' THEN 'import'
-      WHEN TG_OP = 'UPDATE' THEN 'update'
-      ELSE 'create'
-    END
-  );
-  RETURN NEW;
-END;
-$$;
+**Archivo**: `src/components/admin/contacts-v2/ContactsHeader.tsx`
+
+Cambios mínimos:
+- Importar `BulkLeadFormSelect` desde `../contacts/BulkLeadFormSelect`
+- Añadirlo en el bloque de bulk actions junto a los otros selectores
+
+```typescript
+// Añadir import
+import { BulkLeadFormSelect } from '../contacts/BulkLeadFormSelect';
+
+// En el JSX, después de BulkChannelSelect:
+<BulkLeadFormSelect
+  selectedIds={selectedIds}
+  contacts={contacts as any}
+  onSuccess={onClearSelection}
+/>
 ```
 
-### 2. Crear Trigger en ads_costs_history
+### 2. Mejorar Invalidación de Cache tras Drag & Drop
 
-```sql
--- Trigger para INSERT
-CREATE TRIGGER ads_costs_to_history_trigger
-AFTER INSERT ON ads_costs_history
-FOR EACH ROW
-EXECUTE FUNCTION log_ads_cost_to_history();
+**Archivo**: `src/hooks/useInlineUpdate.ts`
 
--- Trigger para UPDATE (opcional, si se editan registros)
-CREATE TRIGGER ads_costs_update_to_history_trigger
-AFTER UPDATE ON ads_costs_history
-FOR EACH ROW
-EXECUTE FUNCTION log_ads_cost_to_history();
+Cambio en la función `update` del hook `useContactInlineUpdate`:
+- Cambiar `refetchType: 'none'` a `refetchType: 'active'` para que refetche las queries activas
+- Añadir invalidación del hook local de contacts-v2
+
+```typescript
+// Línea ~425-428: Cambiar invalidación
+queryClient.invalidateQueries({
+  queryKey: ['unified-contacts'],
+  refetchType: 'active', // Cambiado de 'none' a 'active'
+});
+
+// Añadir invalidación de contacts-v2 para sincronía
+queryClient.invalidateQueries({ 
+  queryKey: ['contacts-v2'],
+  refetchType: 'active'
+});
 ```
 
-### 3. Poblar Historial con Datos Existentes
+### 3. Mejorar Invalidación en BulkUpdateLeadForm
 
-Para los 216 registros ya existentes en `ads_costs_history`:
+**Archivo**: `src/hooks/useBulkUpdateLeadForm.ts`
 
-```sql
-INSERT INTO campaign_cost_history (
-  campaign_cost_id,
-  campaign_name,
-  channel,
-  results,
-  amount,
-  cost_per_result,
-  notes,
-  changed_by,
-  change_type,
-  recorded_at
-)
-SELECT 
-  id,
-  campaign_name,
-  platform::text,
-  COALESCE(results::integer, 0),
-  spend,
-  cost_per_result,
-  'Migración inicial desde ' || platform::text,
-  imported_by,
-  'import',
-  imported_at
-FROM ads_costs_history
-WHERE NOT EXISTS (
-  SELECT 1 FROM campaign_cost_history 
-  WHERE campaign_cost_id = ads_costs_history.id
-);
+Asegurar que tras bulk update de formulario, se invalide correctamente:
+
+```typescript
+// Línea ~79-84: Cambiar invalidación
+onSuccess: (data) => {
+  queryClient.invalidateQueries({
+    queryKey: ['unified-contacts'],
+    refetchType: 'active', // Cambiado de 'none'
+  });
+  
+  // Añadir para contacts-v2
+  queryClient.invalidateQueries({ 
+    queryKey: ['contacts-v2'],
+    refetchType: 'active'
+  });
+  
+  // ... resto del toast
+}
 ```
+
+---
+
+## Archivos a Modificar
+
+| Archivo | Cambio | Líneas Afectadas |
+|---------|--------|------------------|
+| `src/components/admin/contacts-v2/ContactsHeader.tsx` | Importar y añadir `BulkLeadFormSelect` | +2 líneas import, +5 líneas JSX |
+| `src/hooks/useInlineUpdate.ts` | Cambiar `refetchType` + añadir invalidación contacts-v2 | ~3 líneas |
+| `src/hooks/useBulkUpdateLeadForm.ts` | Cambiar `refetchType` + añadir invalidación contacts-v2 | ~3 líneas |
 
 ---
 
 ## Flujo Resultante
 
+### Selección Masiva de Formulario
+
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    IMPORTACIÓN DE COSTES                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   Excel/Screenshot                                              │
-│        │                                                        │
-│        ▼                                                        │
-│   ┌─────────────────────┐                                       │
-│   │  ads_costs_history  │ ──────► 216 registros                 │
-│   └─────────────────────┘                                       │
-│        │                                                        │
-│        │ TRIGGER: ads_costs_to_history_trigger                  │
-│        │ (AFTER INSERT/UPDATE)                                  │
-│        ▼                                                        │
-│   ┌─────────────────────────┐                                   │
-│   │ campaign_cost_history   │ ──────► Auditoría completa        │
-│   └─────────────────────────┘                                   │
-│                                                                 │
-│   Campos registrados:                                           │
-│   - campaign_name, channel, amount, results                     │
-│   - cost_per_result, changed_by, change_type                    │
-│   - recorded_at (timestamp automático)                          │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    BULK ACTIONS TOOLBAR                      │
+├─────────────────────────────────────────────────────────────┤
+│  [Archivar (3)] [Estado ▼] [Canal ▼] [Formulario ▼] [Brevo] │
+│                                          ▲                   │
+│                                   NUEVO (restaurado)         │
+└─────────────────────────────────────────────────────────────┘
+
+Flujo:
+1. Usuario selecciona N leads (checkboxes)
+2. Aparece toolbar de bulk actions
+3. Usuario elige "Formulario" → dropdown con formularios disponibles
+4. Click "Aplicar" → diálogo de confirmación
+5. Confirmar → bulk-update-contacts edge function
+6. Optimistic update + invalidación de cache
+7. Toast de éxito, limpiar selección
+```
+
+### Pipeline Drag & Drop
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│   [Nuevo]          [Contactando]        [Calificado]        │
+│  ┌──────────┐      ┌──────────┐        ┌──────────┐         │
+│  │ Lead A   │ ───▶ │          │        │          │         │
+│  └──────────┘  D&D └──────────┘        └──────────┘         │
+│                                                              │
+│  1. onDragEnd detecta nuevo droppableId                     │
+│  2. useContactInlineUpdate.update()                         │
+│  3. Optimistic UI (movimiento inmediato)                    │
+│  4. Supabase update lead_status_crm                         │
+│  5. invalidateQueries(['unified-contacts'], 'active')       │
+│  6. invalidateQueries(['contacts-v2'], 'active')            │
+│  7. Realtime propaga a otras pestañas/vistas               │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Detalles Técnicos
+## Verificación Rápida
 
-### Conversiones Necesarias
+### Test 1: Bulk Form Update
+1. Ir a `/admin/contacts`
+2. Seleccionar 3+ leads con checkboxes
+3. Verificar que aparece dropdown "Formulario"
+4. Seleccionar un formulario y click "Aplicar"
+5. Confirmar en diálogo
+6. Verificar toast de éxito
+7. Verificar que la columna "Formulario" (si existe) muestra el nuevo valor
 
-| Campo Origen | Tipo | Campo Destino | Tipo | Conversión |
-|--------------|------|---------------|------|------------|
-| `platform` | `ads_platform` (enum) | `channel` | `text` | `::text` |
-| `results` | `numeric` | `results` | `integer` | `::integer` |
-| `spend` | `numeric` | `amount` | `numeric` | directo |
-
-### Nuevo Tipo de Cambio
-
-Se añade `'import'` como valor de `change_type` para distinguir:
-- `'create'` → Creación manual
-- `'update'` → Modificación manual
-- `'import'` → Importación desde plataforma de ads
-
-### Verificación de Duplicados
-
-La migración inicial incluye `WHERE NOT EXISTS` para evitar duplicados si se ejecuta múltiples veces.
+### Test 2: Pipeline Drag & Drop
+1. Ir a `/admin/contacts` → Tab "Pipeline"
+2. Arrastrar un lead de "Nuevo" a "Contactando"
+3. Verificar movimiento inmediato (optimistic)
+4. Cambiar a tab "Todos"
+5. Verificar que el lead muestra nuevo estado SIN refresh manual
 
 ---
 
-## Beneficios
-
-1. **Auditoría Automática**: Cada importación de Excel/Screenshot queda registrada
-2. **Trazabilidad**: Se puede ver quién importó qué y cuándo
-3. **Consistencia**: Un único punto de auditoría para todos los costes
-4. **Retrocompatible**: Los triggers existentes de `campaign_costs` siguen funcionando
-
----
-
-## Resumen de Cambios
+## Resumen Técnico
 
 | Elemento | Acción |
 |----------|--------|
-| Función `log_ads_cost_to_history()` | **Crear** |
-| Trigger `ads_costs_to_history_trigger` | **Crear** |
-| Trigger `ads_costs_update_to_history_trigger` | **Crear** |
-| Datos existentes en `campaign_cost_history` | **Poblar** (216 registros) |
+| `BulkLeadFormSelect` | **Importar** en `ContactsHeader.tsx` |
+| `useContactInlineUpdate` | Cambiar `refetchType: 'active'` + invalidar `contacts-v2` |
+| `useBulkUpdateLeadForm` | Cambiar `refetchType: 'active'` + invalidar `contacts-v2` |
+| Edge function | Sin cambios (ya funciona correctamente) |
+| Realtime | Sin cambios (ya configurado) |
 
+**Total de cambios**: ~15 líneas de código en 3 archivos
