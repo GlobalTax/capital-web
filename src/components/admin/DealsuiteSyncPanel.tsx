@@ -54,9 +54,14 @@ interface CookieStatus {
   hasUser: boolean;
   hasDstoken: boolean;
   hasXsrf: boolean;
+  hasSession: boolean;
   length: number;
   isTruncated: boolean;
   hasExtraQuotes: boolean;
+  hasInvalidChars: boolean;
+  cookieCount: number;
+  healthScore: number; // 0-100
+  issues: string[];
 }
 
 export const DealsuiteSyncPanel = () => {
@@ -86,20 +91,52 @@ export const DealsuiteSyncPanel = () => {
     return cleaned;
   };
 
-  const analyzeCookie = (cookieString: string): CookieStatus & { isTruncated: boolean; hasExtraQuotes: boolean } => {
+  const analyzeCookie = (cookieString: string): CookieStatus => {
     const raw = cookieString;
     const hasExtraQuotes = (raw.startsWith("'") || raw.startsWith('"')) && 
                            (raw.endsWith("'") || raw.endsWith('"'));
     const isTruncated = raw.includes('…') || raw.endsWith('...');
+    const hasInvalidChars = /[\n\r\t]/.test(raw);
     const cleaned = cleanCookie(raw);
     
+    const hasUser = cleaned.includes('user=');
+    const hasDstoken = cleaned.includes('dstoken=');
+    const hasXsrf = cleaned.includes('_xsrf=');
+    const hasSession = cleaned.includes('session=');
+    const cookieCount = (cleaned.match(/=/g) || []).length;
+    
+    // Calculate health score
+    const issues: string[] = [];
+    let healthScore = 100;
+    
+    // Critical issues (-40 each)
+    if (!hasUser) { issues.push('Falta cookie "user"'); healthScore -= 40; }
+    if (!hasDstoken) { issues.push('Falta cookie "dstoken"'); healthScore -= 40; }
+    
+    // Major issues (-20 each)
+    if (isTruncated) { issues.push('Cookie truncada (cortada)'); healthScore -= 20; }
+    if (hasInvalidChars) { issues.push('Contiene caracteres inválidos'); healthScore -= 20; }
+    
+    // Minor issues (-10 each)
+    if (hasExtraQuotes) { issues.push('Comillas extra (se eliminarán)'); healthScore -= 5; }
+    if (cleaned.length < 100) { issues.push('Cookie muy corta'); healthScore -= 10; }
+    if (cookieCount < 2) { issues.push('Pocas cookies detectadas'); healthScore -= 10; }
+    
+    // Ensure score is between 0-100
+    healthScore = Math.max(0, Math.min(100, healthScore));
+    
     return {
-      hasUser: cleaned.includes('user='),
-      hasDstoken: cleaned.includes('dstoken='),
-      hasXsrf: cleaned.includes('_xsrf='),
+      hasUser,
+      hasDstoken,
+      hasXsrf,
+      hasSession,
       length: cleaned.length,
       isTruncated,
-      hasExtraQuotes
+      hasExtraQuotes,
+      hasInvalidChars,
+      cookieCount,
+      healthScore,
+      issues
     };
   };
 
@@ -361,50 +398,74 @@ export const DealsuiteSyncPanel = () => {
             </Button>
           </div>
 
-          {/* Cookie Status Indicator */}
+          {/* Cookie Status Indicator - Enhanced */}
           {cookieStatus && (
-            <div className="flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-lg">
-              <span className="text-xs text-muted-foreground mr-1">Cookies detectadas:</span>
-              <Badge variant={cookieStatus.hasUser ? "default" : "destructive"} className="text-xs">
-                {cookieStatus.hasUser ? '✓' : '✗'} user
-              </Badge>
-              <Badge variant={cookieStatus.hasDstoken ? "default" : "destructive"} className="text-xs">
-                {cookieStatus.hasDstoken ? '✓' : '✗'} dstoken
-              </Badge>
-              <Badge variant={cookieStatus.hasXsrf ? "secondary" : "outline"} className="text-xs">
-                {cookieStatus.hasXsrf ? '✓' : '○'} _xsrf
-              </Badge>
-              <span className="text-xs text-muted-foreground ml-auto">
-                {cookieStatus.length} caracteres
-              </span>
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
+              {/* Health Score Bar */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium">Estado de la cookie</span>
+                  <span className={`font-bold ${
+                    cookieStatus.healthScore >= 80 ? 'text-green-600' :
+                    cookieStatus.healthScore >= 50 ? 'text-yellow-600' : 'text-destructive'
+                  }`}>
+                    {cookieStatus.healthScore >= 80 ? '✓ Lista para usar' :
+                     cookieStatus.healthScore >= 50 ? '⚠ Revisar problemas' : '✗ Cookie inválida'}
+                  </span>
+                </div>
+                <Progress 
+                  value={cookieStatus.healthScore} 
+                  className={`h-2 ${
+                    cookieStatus.healthScore >= 80 ? '[&>div]:bg-green-500' :
+                    cookieStatus.healthScore >= 50 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-destructive'
+                  }`}
+                />
+              </div>
               
-              {/* Warnings */}
-              {(cookieStatus.isTruncated || cookieStatus.hasExtraQuotes || !cookieStatus.hasUser || !cookieStatus.hasDstoken) && (
-                <div className="w-full mt-2 space-y-2">
-                  {cookieStatus.isTruncated && (
-                    <Alert variant="destructive" className="py-2">
+              {/* Cookie Tokens Detected */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground mr-1">Tokens:</span>
+                <Badge variant={cookieStatus.hasUser ? "default" : "destructive"} className="text-xs">
+                  {cookieStatus.hasUser ? '✓' : '✗'} user
+                </Badge>
+                <Badge variant={cookieStatus.hasDstoken ? "default" : "destructive"} className="text-xs">
+                  {cookieStatus.hasDstoken ? '✓' : '✗'} dstoken
+                </Badge>
+                <Badge variant={cookieStatus.hasXsrf ? "secondary" : "outline"} className="text-xs">
+                  {cookieStatus.hasXsrf ? '✓' : '○'} _xsrf
+                </Badge>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {cookieStatus.cookieCount} cookies • {cookieStatus.length} chars
+                </span>
+              </div>
+              
+              {/* Issues List */}
+              {cookieStatus.issues.length > 0 && (
+                <div className="space-y-2">
+                  {cookieStatus.issues.map((issue, idx) => (
+                    <Alert 
+                      key={idx} 
+                      variant={issue.includes('Falta') ? 'destructive' : 'default'}
+                      className="py-2"
+                    >
                       <AlertCircle className="h-3 w-3" />
-                      <AlertDescription className="text-xs">
-                        <strong>Cookie truncada:</strong> El texto termina en "…". Asegúrate de copiar TODO el contenido sin que se corte.
-                      </AlertDescription>
+                      <AlertDescription className="text-xs">{issue}</AlertDescription>
                     </Alert>
-                  )}
-                  {cookieStatus.hasExtraQuotes && (
-                    <Alert className="py-2 border-yellow-500 bg-yellow-500/10">
-                      <AlertCircle className="h-3 w-3 text-yellow-600" />
-                      <AlertDescription className="text-xs">
-                        <strong>Comillas detectadas:</strong> Las comillas al inicio/final serán eliminadas automáticamente.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  {(!cookieStatus.hasUser || !cookieStatus.hasDstoken) && !cookieStatus.isTruncated && (
-                    <Alert variant="destructive" className="py-2">
-                      <AlertCircle className="h-3 w-3" />
-                      <AlertDescription className="text-xs">
-                        Faltan cookies críticas. Asegúrate de copiar TODO el contenido de <code>document.cookie</code>.
-                      </AlertDescription>
-                    </Alert>
-                  )}
+                  ))}
+                </div>
+              )}
+              
+              {/* Copy Instructions - Only show if critical cookies missing */}
+              {(!cookieStatus.hasUser || !cookieStatus.hasDstoken) && (
+                <div className="bg-background rounded p-3 border space-y-2">
+                  <p className="text-xs font-medium text-destructive">⚠️ Cómo copiar la cookie correctamente:</p>
+                  <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+                    <li>Abre DevTools (F12) en <strong>app.dealsuite.com</strong></li>
+                    <li>Ve a Console y escribe: <code className="bg-muted px-1 rounded">document.cookie</code></li>
+                    <li><strong>Importante:</strong> Haz clic derecho en el resultado</li>
+                    <li>Selecciona <strong>"Copy string contents"</strong> o <strong>"Copiar valor de cadena"</strong></li>
+                    <li>Pega aquí el contenido completo</li>
+                  </ol>
                 </div>
               )}
             </div>
