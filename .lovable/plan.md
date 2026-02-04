@@ -1,131 +1,135 @@
 
-# Plan: Corrección del Error "tried to subscribe multiple times"
+# Plan: Corrección del Cálculo de Altura en Pestañas de Contactos
 
 ## Problema Identificado
 
-El error `tried to subscribe multiple times. 'subscribe' can only be called a single time per channel instance` ocurre en el componente `ContactsStatsPanel` debido a un problema con la gestión de suscripciones de Supabase Realtime.
+La tabla de contactos se muestra correctamente en la pestaña "Favoritos" pero incorrectamente en "Todos" y otras pestañas. Analizando las capturas:
+
+- **Favoritos**: La tabla ocupa todo el espacio disponible correctamente
+- **Todos**: Hay un espacio en blanco enorme entre los filtros y la tabla (aprox. 450px de hueco)
 
 ### Causa Raíz
 
-En `src/hooks/useUnifiedContacts.tsx` (línea 1207-1208):
+En `LinearContactsTable.tsx` (líneas 345-366), el cálculo de altura usa:
+
 ```tsx
-const channel = supabase
-  .channel('leads-prospects-sync')  // ← Nombre FIJO del canal
+useEffect(() => {
+  const updateHeight = () => {
+    if (containerRef.current) {
+      const parent = containerRef.current.parentElement;
+      if (parent) {
+        const parentHeight = parent.clientHeight;
+        setListHeight(Math.max(200, parentHeight - 40));
+      }
+    }
+  };
+  
+  updateHeight();
+  const timeout = setTimeout(updateHeight, 100);
+  // ...
+}, []); // ← Array vacío: solo se ejecuta al montar
 ```
 
-Cuando el `AdminErrorBoundary` captura un error y recrea el árbol de componentes:
-1. El componente `LinearContactsManager` se desmonta
-2. Antes de que `supabase.removeChannel(channel)` se ejecute completamente
-3. El nuevo componente se monta e intenta crear un canal con el mismo nombre
-4. Supabase rechaza porque ya existe una suscripción activa con ese nombre
+**El problema**:
+1. El `useEffect` tiene dependencias vacías (`[]`), ejecutándose solo una vez
+2. Radix UI Tabs oculta el contenido inactivo con `display: none` (via `data-[state=inactive]`)
+3. Cuando un tab inactivo tiene `display: none`, su `clientHeight` es 0
+4. Si la tabla se monta mientras está en un tab oculto, calcula altura incorrecta
+5. El `setTimeout(100)` no es suficiente para capturar el cambio de visibilidad del tab
 
 ### Flujo del Error
 
 ```text
-1. Error en ContactsStatsPanel
-2. AdminErrorBoundary lo captura
-3. React desmonta el árbol: LinearContactsManager → useUnifiedContacts cleanup scheduled
-4. React remonta el árbol: LinearContactsManager → useUnifiedContacts → .channel('leads-prospects-sync')
-5. El cleanup anterior aún no se ejecutó
-6. Supabase: "tried to subscribe multiple times" ❌
+1. Usuario abre /admin/contacts
+2. Tab activo = "Favoritos" (se ve bien, parent.clientHeight = correcto)
+3. Tab "Todos" está oculto (display: none)
+4. LinearContactsTable en "Todos" se monta
+5. updateHeight() calcula parent.clientHeight = 0 o muy pequeño
+6. setListHeight(200) ← altura mínima por defecto
+7. Usuario cambia a tab "Todos"
+8. Tab ahora visible, pero listHeight sigue siendo 200
+9. Resultado: espacio en blanco enorme ❌
 ```
 
 ## Solución
 
-### Archivo: `src/hooks/useUnifiedContacts.tsx`
+### Archivo: `src/components/admin/contacts/LinearContactsTable.tsx`
 
-Cambiar el nombre del canal para que sea único por instancia usando un ID único:
+Añadir un detector de visibilidad usando `ResizeObserver` o `IntersectionObserver` para recalcular la altura cuando el componente se hace visible:
 
-| Línea | Antes | Después |
-|-------|-------|---------|
-| 1206-1208 | Nombre fijo del canal | Usar `useId()` o `Date.now()` para generar nombre único |
-
-**Cambios específicos:**
-
-1. Importar `useId` de React (o usar `useRef` para generar ID)
-2. Crear el canal con nombre único para cada instancia del hook
+**Cambios en líneas 345-366:**
 
 ```tsx
-// Antes:
+// Calculate dynamic height based on parent container
 useEffect(() => {
-  const channel = supabase
-    .channel('leads-prospects-sync')
-    ...
-
-// Después:
-import { useState, useEffect, useId } from 'react';
-...
-
-// En el hook:
-const channelId = useId();
-
-useEffect(() => {
-  const channel = supabase
-    .channel(`leads-prospects-sync-${channelId}`)
-    ...
-```
-
-**Alternativa con useRef (más compatible):**
-```tsx
-const channelIdRef = useRef(`leads-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
-
-useEffect(() => {
-  const channel = supabase
-    .channel(channelIdRef.current)
-    ...
-```
-
-## Sección Técnica
-
-### Por Qué Esto Soluciona el Problema
-
-1. **Nombre único por instancia**: Cada vez que el hook se monta, tiene su propio canal con nombre único
-2. **Sin colisiones**: Aunque dos instancias existan brevemente durante el remount del Error Boundary, tienen nombres diferentes
-3. **Cleanup correcto**: El cleanup eventual del canal anterior no afecta al nuevo
-
-### Patrón Recomendado para Supabase Realtime
-
-```typescript
-// ✅ CORRECTO: Nombre único por instancia
-const channelIdRef = useRef(`my-channel-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-
-useEffect(() => {
-  const channel = supabase
-    .channel(channelIdRef.current)
-    .on('postgres_changes', { ... }, callback)
-    .subscribe();
-
+  const updateHeight = () => {
+    if (containerRef.current) {
+      const parent = containerRef.current.parentElement;
+      if (parent) {
+        const parentHeight = parent.clientHeight;
+        // Solo actualizar si el padre tiene altura válida (visible)
+        if (parentHeight > 50) {
+          setListHeight(Math.max(200, parentHeight - 40));
+        }
+      }
+    }
+  };
+  
+  updateHeight();
+  
+  // Usar ResizeObserver para detectar cambios de tamaño/visibilidad
+  const observer = new ResizeObserver(() => {
+    updateHeight();
+  });
+  
+  if (containerRef.current?.parentElement) {
+    observer.observe(containerRef.current.parentElement);
+  }
+  
+  window.addEventListener('resize', updateHeight);
+  
   return () => {
-    supabase.removeChannel(channel);
+    observer.disconnect();
+    window.removeEventListener('resize', updateHeight);
   };
 }, []);
 ```
 
-```typescript
-// ❌ INCORRECTO: Nombre fijo (puede colisionar)
-useEffect(() => {
-  const channel = supabase
-    .channel('fixed-channel-name')  // ← Problema si se remonta antes del cleanup
-    .on('postgres_changes', { ... }, callback)
-    .subscribe();
-  ...
-}, []);
-```
+El `ResizeObserver` detectará automáticamente cuando el elemento padre cambie de `display: none` a `display: block` (al cambiar de tab), disparando un recálculo de altura.
+
+## Sección Técnica
+
+### Por Qué ResizeObserver Soluciona el Problema
+
+| Evento | Antes (setTimeout) | Después (ResizeObserver) |
+|--------|-------------------|--------------------------|
+| Tab oculto se hace visible | No se detecta | ✓ Detectado (resize de 0 a N) |
+| Ventana cambia tamaño | Detectado | ✓ Detectado |
+| Layout shift | No detectado | ✓ Detectado |
+
+### Compatibilidad
+
+`ResizeObserver` tiene soporte en todos los navegadores modernos (97%+ global):
+- Chrome 64+
+- Firefox 69+
+- Safari 13.1+
+- Edge 79+
+
+### Consideraciones de Performance
+
+- `ResizeObserver` es más eficiente que múltiples `setTimeout`
+- Se ejecuta de forma asíncrona, no bloquea el main thread
+- Auto-limpieza en el cleanup del useEffect
 
 ## Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/hooks/useUnifiedContacts.tsx` | Generar nombre único de canal con `useRef` |
-
-## Impacto
-
-- **Bajo riesgo**: Solo cambia el nombre del canal, la lógica permanece igual
-- **Sin breaking changes**: No afecta a ningún consumidor del hook
-- **Mejor resiliencia**: El hook soportará remounts sin errores
+| `src/components/admin/contacts/LinearContactsTable.tsx` | Reemplazar setTimeout con ResizeObserver para detectar cambios de visibilidad del tab |
 
 ## Resultado Esperado
 
-1. El error "tried to subscribe multiple times" desaparecerá
-2. Los componentes podrán remontarse sin problemas después de errores capturados por Error Boundaries
-3. La funcionalidad de Realtime continuará funcionando correctamente
+1. Al cambiar a cualquier pestaña, la tabla recalculará su altura correctamente
+2. No más espacio en blanco entre filtros y tabla
+3. Comportamiento consistente en todas las pestañas (Favoritos, Todos, Pipeline, Stats)
+4. La tabla ocupará todo el espacio disponible en el contenedor flex
