@@ -40,6 +40,7 @@ interface SyncResult {
   attempts?: number;
   detected?: string[];
   missing?: string[];
+  can_retry?: boolean;
   data?: {
     preview?: string;
     extracted?: number;
@@ -133,7 +134,7 @@ export const DealsuiteSyncPanel = () => {
     };
   }, [isLoading]);
 
-  // Update status message based on elapsed time
+  // Update status message based on elapsed time - adjusted for increased timeouts
   useEffect(() => {
     if (!isLoading) {
       setStatusMessage('');
@@ -142,15 +143,15 @@ export const DealsuiteSyncPanel = () => {
 
     if (elapsedTime < 5) {
       setStatusMessage('Iniciando conexión con Dealsuite...');
-    } else if (elapsedTime < 20) {
-      setStatusMessage('Esperando que la página cargue (intento 1/3)...');
-    } else if (elapsedTime < 45) {
-      setStatusMessage('Renderizando contenido JavaScript...');
-    } else if (elapsedTime < 70) {
-      setStatusMessage('Reintentando con más tiempo (intento 2/3)...');
-    } else if (elapsedTime < 100) {
-      setStatusMessage('Último intento con tiempo máximo...');
+    } else if (elapsedTime < 30) {
+      setStatusMessage('Esperando que la página cargue (intento 1/3, ~45s)...');
+    } else if (elapsedTime < 60) {
+      setStatusMessage('Renderizando contenido JavaScript pesado...');
+    } else if (elapsedTime < 90) {
+      setStatusMessage('Reintentando con más tiempo (intento 2/3, ~60s)...');
     } else if (elapsedTime < 130) {
+      setStatusMessage('Último intento con tiempo máximo (intento 3/3, ~90s)...');
+    } else if (elapsedTime < 180) {
       setStatusMessage('Procesando deals con IA...');
     } else {
       setStatusMessage('Finalizando... Esto puede tardar un poco más.');
@@ -172,16 +173,19 @@ export const DealsuiteSyncPanel = () => {
       return 'La cookie está incompleta. Asegúrate de copiar TODO el contenido de document.cookie. Las cookies críticas son "user" y "dstoken".';
     }
     if (fullError.includes('timeout') || fullError.includes('408') || fullError.includes('tardó')) {
-      return 'La página de Dealsuite tardó demasiado en cargar. Esto puede ocurrir si hay mucho tráfico. Intenta de nuevo en unos minutos o durante horas de menor uso (temprano en la mañana o tarde en la noche).';
+      return '⏱️ La página tardó demasiado. Sugerencias: 1) Intenta en horas de menor tráfico (madrugada/mañana temprano). 2) Verifica que tu sesión de Dealsuite sigue activa. 3) El segundo intento suele ser más rápido. Usa el botón "Reintentar" de abajo.';
     }
     if (fullError.includes('session') || fullError.includes('cookie') || fullError.includes('login') || fullError.includes('expirada')) {
       return 'La cookie de sesión parece haber expirado o ser inválida. Ve a Dealsuite, inicia sesión de nuevo, y copia una cookie fresca.';
     }
     if (fullError.includes('rate_limit') || fullError.includes('429')) {
-      return 'Se ha excedido el límite de peticiones. Espera unos minutos antes de reintentar.';
+      return 'Se ha excedido el límite de peticiones. Espera 5-10 minutos antes de reintentar.';
     }
     if (fullError.includes('captcha')) {
       return 'Dealsuite está mostrando un captcha. Intenta de nuevo más tarde o accede manualmente a Dealsuite primero.';
+    }
+    if (fullError.includes('connection') || fullError.includes('network')) {
+      return 'Error de conexión. Verifica tu conexión a internet y que Dealsuite esté accesible.';
     }
     return 'Verifica la cookie de sesión e intenta de nuevo. Si el problema persiste, contacta a soporte.';
   };
@@ -443,9 +447,9 @@ export const DealsuiteSyncPanel = () => {
                   {formatTime(elapsedTime)}
                 </span>
               </div>
-              <Progress value={Math.min((elapsedTime / 150) * 100, 95)} className="h-2" />
+              <Progress value={Math.min((elapsedTime / 200) * 100, 95)} className="h-2" />
               <p className="text-xs text-muted-foreground text-center">
-                Este proceso puede tardar hasta 2-3 minutos. El sistema reintenta automáticamente si hay timeouts.
+                Este proceso puede tardar hasta 3-4 minutos. El sistema reintenta automáticamente con tiempos incrementales (45s → 60s → 90s).
               </p>
             </div>
           )}
@@ -531,6 +535,20 @@ export const DealsuiteSyncPanel = () => {
                       {result.missing?.map(c => (
                         <Badge key={c} variant="destructive" className="text-xs">✗ {c}</Badge>
                       ))}
+                    </div>
+                  )}
+                  {/* Retry button for timeout/connection errors */}
+                  {(result.can_retry || result.error?.includes('timeout') || result.error?.includes('connection')) && (
+                    <div className="pt-3 border-t border-destructive/20">
+                      <Button 
+                        onClick={handleSync}
+                        disabled={isLoading || !cookie.trim()}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Reintentar Sincronización
+                      </Button>
                     </div>
                   )}
                   {/* Show content preview for debugging */}
