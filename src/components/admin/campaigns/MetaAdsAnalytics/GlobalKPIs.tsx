@@ -10,7 +10,10 @@ import {
   TrendingUp, 
   MousePointerClick,
   Zap,
-  BarChart3
+  BarChart3,
+  Users,
+  UserCheck,
+  CircleDollarSign
 } from 'lucide-react';
 import { GlobalStats } from './types';
 
@@ -18,7 +21,8 @@ interface GlobalKPIsProps {
   stats: GlobalStats;
 }
 
-const formatCurrency = (value: number) => {
+const formatCurrency = (value: number | null) => {
+  if (value === null || value === 0) return '—';
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -115,6 +119,56 @@ export const GlobalKPIs: React.FC<GlobalKPIsProps> = ({ stats }) => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Real Leads Section */}
+      {(stats.totalRealLeads > 0 || stats.totalQualifiedLeads > 0) && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-emerald-500" />
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Leads Reales
+            </h4>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                  <Users className="h-3.5 w-3.5" />
+                  <span className="text-[10px] uppercase tracking-wider">Leads Totales</span>
+                </div>
+                <p className="text-lg font-semibold text-emerald-700">{formatNumber(stats.totalRealLeads)}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                  <UserCheck className="h-3.5 w-3.5" />
+                  <span className="text-[10px] uppercase tracking-wider">Calificados</span>
+                </div>
+                <p className="text-lg font-semibold text-emerald-700">{formatNumber(stats.totalQualifiedLeads)}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                  <CircleDollarSign className="h-3.5 w-3.5" />
+                  <span className="text-[10px] uppercase tracking-wider">CPL Real</span>
+                </div>
+                <p className="text-lg font-semibold text-emerald-700">{formatCurrency(stats.realCPL)}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                  <CircleDollarSign className="h-3.5 w-3.5" />
+                  <span className="text-[10px] uppercase tracking-wider">CPL Calificado</span>
+                </div>
+                <p className="text-lg font-semibold text-emerald-700">{formatCurrency(stats.qualifiedCPL)}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Secondary KPIs */}
       {stats.totalClicks > 0 && (

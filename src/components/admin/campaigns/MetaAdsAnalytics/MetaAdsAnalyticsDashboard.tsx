@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Upload, Download, Loader2, FileSpreadsheet } from 'lucide-react';
 import { useAdsCostsHistory, useExportAdsCosts, AdsCostRecord } from '@/hooks/useAdsCostsHistory';
+import { useUnifiedCosts } from '@/hooks/useUnifiedCosts';
 import { AdsCostsImportModal } from '../AdsCostsImportModal';
 import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
@@ -16,16 +17,25 @@ import { GlobalKPIs } from './GlobalKPIs';
 import { CampaignCard } from './CampaignCard';
 import { EvolutionCharts } from './EvolutionCharts';
 import { MetaAdsFilters } from './MetaAdsFilters';
+import { CPLComparisonChart } from './CPLComparison';
 import { 
   analyzeMetaAdsData, 
   getDailyEvolution, 
   CORE_CAMPAIGNS,
-  CampaignStats
+  CampaignStats,
+  GlobalStats
 } from './types';
 
 export const MetaAdsAnalyticsDashboard: React.FC = () => {
   const { data: records, isLoading } = useAdsCostsHistory('meta_ads');
   const { exportToExcel } = useExportAdsCosts();
+  
+  // Get unified costs with real leads data
+  const { 
+    campaignSummaries, 
+    globalStats: unifiedGlobalStats,
+    isLoading: isLoadingUnified 
+  } = useUnifiedCosts({ channel: 'meta_ads' });
   
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -77,12 +87,24 @@ export const MetaAdsAnalyticsDashboard: React.FC = () => {
     return analyzeMetaAdsData(filteredRecords);
   }, [filteredRecords]);
 
+  // Merge real leads data into global stats
+  const enhancedGlobalStats = useMemo((): GlobalStats => {
+    return {
+      ...analysis.global,
+      totalRealLeads: unifiedGlobalStats.totalLeads,
+      totalQualifiedLeads: unifiedGlobalStats.totalQualifiedLeads,
+      realCPL: unifiedGlobalStats.realCPL,
+      qualifiedCPL: unifiedGlobalStats.qualifiedCPL,
+      avgEbitda: null, // Could be added from unifiedGlobalStats if needed
+    };
+  }, [analysis.global, unifiedGlobalStats]);
+
   // Get daily evolution for charts
   const dailyEvolution = useMemo(() => {
     return getDailyEvolution(filteredRecords);
   }, [filteredRecords]);
 
-  // Get campaign cards to display
+  // Get campaign cards with enhanced leads data
   const campaignCards = useMemo(() => {
     const cards: CampaignStats[] = [];
     
@@ -90,7 +112,20 @@ export const MetaAdsAnalyticsDashboard: React.FC = () => {
     for (const campaignName of CORE_CAMPAIGNS) {
       const stats = analysis.core.get(campaignName);
       if (stats) {
-        cards.push(stats);
+        // Find matching unified summary for real leads data
+        const unifiedSummary = campaignSummaries.find(s => 
+          s.campaign_name.toLowerCase().includes(campaignName.toLowerCase().split(' ')[0]) ||
+          campaignName.toLowerCase().includes(s.campaign_name.toLowerCase().split(' ')[0])
+        );
+        
+        cards.push({
+          ...stats,
+          totalRealLeads: unifiedSummary?.totalLeads || 0,
+          totalQualifiedLeads: unifiedSummary?.totalQualifiedLeads || 0,
+          realCPL: unifiedSummary?.realCPL || null,
+          qualifiedCPL: unifiedSummary?.qualifiedCPL || null,
+          avgEbitda: unifiedSummary?.avgEbitda || null,
+        });
       }
     }
     
@@ -100,7 +135,19 @@ export const MetaAdsAnalyticsDashboard: React.FC = () => {
     }
     
     return cards;
-  }, [analysis]);
+  }, [analysis, campaignSummaries]);
+
+  // CPL comparison data for chart
+  const cplComparisonData = useMemo(() => {
+    return campaignCards
+      .filter(c => c.totalResults > 0)
+      .map(c => ({
+        campaignName: c.campaignName,
+        cplMeta: c.avgCostPerResult,
+        cplReal: c.realCPL,
+        cplQualified: c.qualifiedCPL,
+      }));
+  }, [campaignCards]);
 
   const handleExport = () => {
     if (filteredRecords.length > 0) {
@@ -183,9 +230,17 @@ export const MetaAdsAnalyticsDashboard: React.FC = () => {
           <Separator />
 
           {/* Global KPIs */}
-          <GlobalKPIs stats={analysis.global} />
+          <GlobalKPIs stats={enhancedGlobalStats} />
 
           <Separator />
+
+          {/* CPL Comparison Chart */}
+          {cplComparisonData.length > 0 && (
+            <>
+              <CPLComparisonChart data={cplComparisonData} />
+              <Separator />
+            </>
+          )}
 
           {/* Evolution Charts */}
           <EvolutionCharts data={dailyEvolution} />

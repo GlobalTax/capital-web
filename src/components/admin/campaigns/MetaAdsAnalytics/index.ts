@@ -6,4 +6,5 @@ export { GlobalKPIs } from './GlobalKPIs';
 export { CampaignCard } from './CampaignCard';
 export { EvolutionCharts } from './EvolutionCharts';
 export { MetaAdsFilters } from './MetaAdsFilters';
+export { CPLComparisonChart } from './CPLComparison';
 export * from './types';
