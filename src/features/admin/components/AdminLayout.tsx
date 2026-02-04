@@ -112,10 +112,10 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
         />
       )}
       <SidebarProvider defaultOpen={true}>
-        <div className="min-h-screen min-h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))]">
+        <div className="h-screen h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))] overflow-hidden">
           <AdminSidebar />
           
-          <SidebarInset className="flex-1 flex flex-col min-w-0 h-full">
+          <SidebarInset className="flex-1 flex flex-col min-w-0 overflow-hidden">
             {/* Unified Linear Header - 48px */}
             <LinearAdminHeader onLogout={onLogout} />
             
