@@ -92,7 +92,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
       </div>
 
       {/* Grid Content */}
-      <div className="flex-1 grid grid-cols-[2fr_1.5fr_1fr_1fr_1fr_80px] gap-2 text-xs items-center min-w-0">
+      <div className="flex-1 grid grid-cols-[2fr_1.5fr_1fr_1fr_80px_80px_1fr_80px] gap-2 text-xs items-center min-w-0">
         {/* Name + Email */}
         <div className="flex items-center gap-1.5 min-w-0">
           <div onClick={(e) => e.stopPropagation()}>
@@ -137,6 +137,16 @@ const ContactRow: React.FC<ContactRowProps> = ({
           )}
         </div>
 
+        {/* Revenue/Facturación */}
+        <div className="text-right text-muted-foreground">
+          {formatCurrency(contact.revenue || contact.empresa_facturacion)}
+        </div>
+
+        {/* EBITDA */}
+        <div className="text-right text-muted-foreground">
+          {formatCurrency(contact.ebitda)}
+        </div>
+
         {/* Date */}
         <div className="text-muted-foreground">
           {format(new Date(displayDate), 'd MMM yy', { locale: es })}
@@ -144,7 +154,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
 
         {/* Valuation */}
         <div className="text-right font-medium">
-          {formatCurrency(contact.final_valuation || contact.empresa_facturacion)}
+          {formatCurrency(contact.final_valuation)}
         </div>
       </div>
     </div>
