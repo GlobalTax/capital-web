@@ -193,6 +193,16 @@ export const useUnifiedContacts = () => {
     try {
       setIsLoading(true);
       
+      // 🔥 FIRST: Fetch prospect status keys to exclude from leads list
+      const { data: prospectStatuses } = await supabase
+        .from('contact_statuses')
+        .select('status_key')
+        .eq('is_prospect_stage', true)
+        .eq('is_active', true);
+      
+      const prospectStatusKeys = (prospectStatuses || []).map(s => s.status_key);
+      console.log('[useUnifiedContacts] Prospect status keys to exclude:', prospectStatusKeys);
+      
       // Fetch contact_leads with linked empresa, acquisition channel, lead form, and AI classification fields (exclude soft deleted)
       const { data: contactLeads, error: contactError } = await supabase
         .from('contact_leads')
@@ -625,11 +635,21 @@ export const useUnifiedContacts = () => {
         valuation_count: emailCounts[contact.email.toLowerCase()] || 1,
       }));
 
-      // Sort by creation date
-      unifiedDataWithNames.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // 🔥 FILTER: Exclude leads with prospect status keys
+      // Leads with status in prospectStatusKeys should appear in /admin/prospectos, not here
+      const filteredFromProspects = prospectStatusKeys.length > 0
+        ? unifiedDataWithNames.filter(contact => 
+            !prospectStatusKeys.includes(contact.lead_status_crm || '')
+          )
+        : unifiedDataWithNames;
+      
+      console.log(`[useUnifiedContacts] Total leads: ${unifiedDataWithNames.length}, After excluding prospects: ${filteredFromProspects.length}`);
 
-      setContacts(unifiedDataWithNames);
-      setFilteredContacts(unifiedDataWithNames);
+      // Sort by creation date
+      filteredFromProspects.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setContacts(filteredFromProspects);
+      setFilteredContacts(filteredFromProspects);
       
       // Calculate stats
       calculateStats(unifiedDataWithNames);
@@ -1177,8 +1197,66 @@ export const useUnifiedContacts = () => {
     }
   };
 
+  // Initial fetch
   useEffect(() => {
     fetchUnifiedContacts();
+  }, []);
+
+  // 🔥 REALTIME: Subscribe to status changes for automatic sync with Prospectos
+  useEffect(() => {
+    const channel = supabase
+      .channel('leads-prospects-sync')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'company_valuations',
+        },
+        (payload: any) => {
+          // If status changed, refetch to sync with prospects view
+          if (payload.new?.lead_status_crm !== payload.old?.lead_status_crm) {
+            console.log('[useUnifiedContacts] Status changed, refetching...', {
+              oldStatus: payload.old?.lead_status_crm,
+              newStatus: payload.new?.lead_status_crm,
+            });
+            fetchUnifiedContacts();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'contact_leads',
+        },
+        (payload: any) => {
+          if (payload.new?.lead_status_crm !== payload.old?.lead_status_crm) {
+            console.log('[useUnifiedContacts] contact_leads status changed, refetching...');
+            fetchUnifiedContacts();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'collaborator_applications',
+        },
+        (payload: any) => {
+          if (payload.new?.lead_status_crm !== payload.old?.lead_status_crm) {
+            console.log('[useUnifiedContacts] collaborator_applications status changed, refetching...');
+            fetchUnifiedContacts();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {

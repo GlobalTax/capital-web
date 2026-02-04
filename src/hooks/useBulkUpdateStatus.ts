@@ -76,18 +76,18 @@ export function useBulkUpdateStatus() {
       });
     },
 
-    // 3. REVALIDACIÓN silenciosa en éxito
+    // 3. REVALIDACIÓN en éxito - SINCRONIZACIÓN CRUZADA LEADS ↔ PROSPECTOS
     onSuccess: (data, variables) => {
-      // Invalidate contacts and all status histories
+      // 🔥 Invalidar AMBAS listas con refetch inmediato para sincronización
       queryClient.invalidateQueries({
         queryKey: ['unified-contacts'],
-        refetchType: 'none',
       });
       
-      // Invalidar prospectos cuando cambian estados (sincronización inmediata)
       queryClient.invalidateQueries({
         queryKey: ['prospects'],
       });
+      
+      console.log('[useBulkUpdateStatus] Invalidated both leads and prospects for cross-sync');
       
       // Invalidate status history for all affected contacts
       variables.contactIds.forEach(contactId => {
