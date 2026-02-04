@@ -28,7 +28,7 @@ export const LinearFilterBar: React.FC<LinearFilterBarProps> = ({
 
   return (
     <div className={cn(
-      "flex flex-col gap-2 py-2 border-b border-[hsl(var(--linear-border-subtle))]",
+      "flex flex-col gap-1 py-1 border-b border-[hsl(var(--linear-border-subtle))]",
       className
     )}>
       {/* Filter trigger/controls */}

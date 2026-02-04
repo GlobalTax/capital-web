@@ -191,7 +191,7 @@ const LinearContactsManager = () => {
       className="h-full flex flex-col"
     >
       {/* Compact Header with Tabs */}
-      <div className="flex items-center justify-between shrink-0 pb-2">
+      <div className="flex items-center justify-between shrink-0 pb-1">
         <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold text-foreground">Leads</h1>
           <TabsList className="h-7">
@@ -284,7 +284,7 @@ const LinearContactsManager = () => {
       </div>
 
       {/* Favorites Tab */}
-      <TabsContent value="favorites" className="flex-1 flex flex-col space-y-1 min-h-0 mt-0">
+      <TabsContent value="favorites" className="flex-1 flex flex-col gap-1 min-h-0 mt-0">
         {favoriteCount === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center bg-[hsl(var(--linear-bg-elevated))] border border-[hsl(var(--linear-border))] rounded-lg">
             <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
@@ -327,7 +327,7 @@ const LinearContactsManager = () => {
       </TabsContent>
 
       {/* Directory Tab */}
-      <TabsContent value="directory" className="flex-1 flex flex-col space-y-1 min-h-0 mt-0">
+      <TabsContent value="directory" className="flex-1 flex flex-col gap-1 min-h-0 mt-0">
         {/* Inline Stats Bar - compact */}
         <CompactStatsBar stats={stats} />
 
