@@ -1,240 +1,247 @@
 
 
-# Plan: Vincular Costes con Leads Reales para CPL Real
+# Plan: Importación Inteligente de Google Ads con IA (Screenshot)
 
-## Situación Actual
+## Contexto
 
-### Lo Que Ya Tenemos (Implementado)
+Ya existe un sistema funcional para importar pantallazos de campañas publicitarias:
+- **Edge Function**: `parse-campaign-screenshot` (usa OpenAI GPT-4o)
+- **Componentes UI**: `ScreenshotUploader`, `PasteImageProcessor`
+- **Integración**: `CostEntryForm` con botón "Importar pantallazo"
 
-| Componente | Estado | Función |
-|------------|--------|---------|
-| `campaign_leads_mapping` | Tabla creada | 4 mappings configurados (Q4-API, Valoración, Compra, Venta) |
-| `unified_costs_daily` | Vista materializada | Agrega costes diarios por campaña |
-| `campaign_leads_stats` | Vista | Calcula leads reales por campaña y fecha |
-| `useUnifiedCosts` | Hook funcional | Combina costes + leads, calcula CPL real |
-| `useCampaignMapping` | Hook funcional | CRUD para mappings |
-| `CampaignMappingPanel` | Componente UI | Panel de gestión de mappings |
+Sin embargo, la imagen de Google Ads que compartiste muestra un formato específico:
+- **Conversiones**: 25,00
+- **Clics**: 791
+- **CTR**: 13,87%
+- **Coste**: 3,25 mil € (formateado como "mil" en español)
+- **Rango de fechas**: 1 ene 2026 - 31 ene 2026
 
-### CPL Real Ya Calculado en Base de Datos
+## Mejoras Propuestas
 
-| Campaña | Gasto Total | Resultados Meta | Leads Reales | CPL Meta | CPL Real | CPL Calificado |
-|---------|-------------|-----------------|--------------|----------|----------|----------------|
-| Q4-API | €4,621 | 207 | 262 | €22.33 | €17.64 | €18.94 |
-| Valoración | €4,497 | 619 | 261 | €7.26 | €17.23 | €18.43 |
-| Compra | €788 | 39 | 13 | €20.21 | €60.63 | — |
-| Venta | €735 | 77 | 48 | €9.54 | €15.31 | €23.70 |
+### 1. Optimizar Edge Function para Google Ads
 
-### Lo Que Falta: Integración en UI
+Actualizar el prompt de IA para detectar mejor los formatos específicos de Google Ads:
 
-El dashboard `MetaAdsAnalyticsDashboard` todavía usa:
-- `useAdsCostsHistory` (costes brutos de Excel)
-- No muestra leads reales ni CPL real
-- No consume `useUnifiedCosts`
+| Campo | Formato Meta Ads | Formato Google Ads |
+|-------|-----------------|-------------------|
+| Gasto | €1.234,56 | 3,25 mil € |
+| Resultados | Resultados | Conversiones |
+| Clics | Clics en el enlace | Clics |
+| Período | Fechas específicas | "1 ene 2026 - 31 ene 2026" |
+
+**Cambios en el prompt**:
+```text
+- Reconocer "mil €" como multiplicador (3,25 mil € = €3.250)
+- Extraer "Conversiones" como campo específico (además de "Resultados")
+- Parsear fechas en formato "1 ene 2026" a YYYY-MM-DD
+- Detectar automáticamente plataforma Google Ads por colores/layout
+```
+
+### 2. Migrar a Lovable AI Gateway
+
+Cambiar de OpenAI directo a Lovable AI para:
+- Usar `LOVABLE_API_KEY` (ya configurado)
+- Modelo: `google/gemini-2.5-flash` (más rápido y con buen soporte multimodal)
+- Eliminar dependencia de `OPENAI_API_KEY`
+
+### 3. Extender Interface de Datos Extraídos
+
+Añadir campo `conversions` específico para Google Ads:
+
+```typescript
+export interface ExtractedCampaignData {
+  channel: 'meta_ads' | 'google_ads' | 'linkedin_ads';
+  campaign_name: string | null;
+  period_start: string;
+  period_end: string;
+  amount: number;
+  currency: 'EUR' | 'USD';
+  impressions: number | null;
+  clicks: number | null;
+  ctr: number | null;
+  cpc: number | null;
+  confidence: number;
+  detected_text: string;
+  
+  // NUEVOS - Específicos Google Ads
+  conversions: number | null;    // Conversiones (no "results")
+  cost_per_conversion: number | null;
+}
+```
+
+### 4. Actualizar UI para Mostrar Conversiones
+
+En `ScreenshotUploader` y `PasteImageProcessor`, mostrar el campo "Conversiones" cuando el canal sea Google Ads.
 
 ---
 
-## Cambios Propuestos
-
-### 1. Extender Tipos de Meta Ads Analytics
-
-Añadir campos de leads reales a `GlobalStats` y `CampaignStats`:
-
-```typescript
-// src/components/admin/campaigns/MetaAdsAnalytics/types.ts
-
-export interface GlobalStats {
-  // Existentes...
-  totalSpend: number;
-  totalResults: number;
-  avgCostPerResult: number;
-  
-  // NUEVOS - Leads Reales
-  totalRealLeads: number;
-  totalQualifiedLeads: number;
-  realCPL: number | null;
-  qualifiedCPL: number | null;
-  avgEbitda: number | null;
-}
-
-export interface CampaignStats {
-  // Existentes...
-  campaignName: string;
-  totalSpend: number;
-  totalResults: number;
-  avgCostPerResult: number;
-  
-  // NUEVOS - Leads Reales
-  totalRealLeads: number;
-  totalQualifiedLeads: number;
-  realCPL: number | null;
-  qualifiedCPL: number | null;
-  avgEbitda: number | null;
-}
-```
-
-### 2. Actualizar MetaAdsAnalyticsDashboard
-
-Cambiar de `useAdsCostsHistory` a `useUnifiedCosts`:
-
-```typescript
-// ANTES
-const { data: records, isLoading } = useAdsCostsHistory('meta_ads');
-
-// DESPUÉS
-const { 
-  costWithLeads,      // Costes + leads combinados
-  campaignSummaries,  // Ya tiene realCPL calculado
-  globalStats,        // Ya tiene totalRealLeads
-  isLoading 
-} = useUnifiedCosts({ channel: 'meta_ads' });
-```
-
-### 3. Actualizar GlobalKPIs
-
-Añadir 3 nuevas tarjetas de KPIs:
+## Arquitectura de la Solución
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           RESUMEN GLOBAL                                    │
+│                          FLUJO DE IMPORTACIÓN                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      │
-│  │ €10,641  │  │ 108 días │  │ 942      │  │ 1.4M     │  │ 2.1x     │      │
-│  │ Gasto    │  │ Activos  │  │ Resultados│ │ Impress. │  │ Frecuencia│     │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘      │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │              LEADS REALES (NUEVO)                                    │   │
-│  ├──────────┬──────────┬──────────┬──────────┐                          │   │
-│  │ 584      │ 517      │ €18.22   │ €20.58   │                          │   │
-│  │ Leads    │ Calificad│ CPL Real │ CPL Calif│                          │   │
-│  │ Reales   │ ados     │          │          │                          │   │
-│  └──────────┴──────────┴──────────┴──────────┘                          │   │
+│  1. Usuario sube/pega screenshot de Google Ads                              │
+│                        │                                                    │
+│                        ▼                                                    │
+│  ┌─────────────────────────────────────┐                                    │
+│  │   ScreenshotUploader.tsx            │                                    │
+│  │   - Convierte imagen a base64       │                                    │
+│  │   - Valida tamaño (máx 4MB)         │                                    │
+│  └─────────────────────────────────────┘                                    │
+│                        │                                                    │
+│                        ▼                                                    │
+│  ┌─────────────────────────────────────┐                                    │
+│  │   Edge Function:                    │                                    │
+│  │   parse-campaign-screenshot         │                                    │
+│  │                                     │                                    │
+│  │   - Usa Lovable AI Gateway          │                                    │
+│  │   - Modelo: gemini-2.5-flash        │                                    │
+│  │   - Prompt optimizado Google Ads    │                                    │
+│  └─────────────────────────────────────┘                                    │
+│                        │                                                    │
+│                        ▼                                                    │
+│  ┌─────────────────────────────────────┐                                    │
+│  │   Datos Extraídos:                  │                                    │
+│  │   - channel: "google_ads"           │                                    │
+│  │   - conversions: 25                 │                                    │
+│  │   - clicks: 791                     │                                    │
+│  │   - amount: 3250                    │                                    │
+│  │   - period: 2026-01-01 → 2026-01-31 │                                    │
+│  └─────────────────────────────────────┘                                    │
+│                        │                                                    │
+│                        ▼                                                    │
+│  ┌─────────────────────────────────────┐                                    │
+│  │   CostEntryForm.tsx                 │                                    │
+│  │   - Auto-rellena formulario         │                                    │
+│  │   - Usuario confirma y guarda       │                                    │
+│  │   → ads_costs_history               │                                    │
+│  └─────────────────────────────────────┘                                    │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 4. Actualizar CampaignCard
-
-Añadir columna "Leads Reales" y "CPL Real" en cada tarjeta:
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────┐
-│  Q4-API                                              18.7% del total        │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐                    │
-│  │ €4,621   │  │ 207      │  │ €22.33   │  │ €7.27    │                    │
-│  │ Gasto    │  │ Resultados│ │ Coste/Res│  │ CPM      │                    │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘                    │
-│                                                                             │
-│  ┌──────────────────────────────────────────────────────┐  NUEVO           │
-│  │  LEADS REALES                                        │                   │
-│  ├──────────┬──────────┬──────────┬──────────┐          │                   │
-│  │ 262      │ 244      │ €17.64   │ €18.94   │          │                   │
-│  │ Leads    │ Calif.   │ CPL Real │ CPL Calif│          │                   │
-│  └──────────┴──────────┴──────────┴──────────┘          │                   │
-│                                                                             │
-│  [▼ Ver detalle diario]                                                     │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### 5. Componente de Comparación CPL
-
-Nuevo componente visual que muestre la diferencia entre CPL Meta vs CPL Real:
-
-```typescript
-// src/components/admin/campaigns/MetaAdsAnalytics/CPLComparison.tsx
-
-// Muestra un gráfico de barras comparando:
-// - CPL reportado por Meta (resultados de la plataforma)
-// - CPL Real (leads en nuestra base de datos)
-// - CPL Calificado (leads que llegaron a reunión)
 ```
 
 ---
 
 ## Archivos a Modificar
 
+### Edge Function
+
 | Archivo | Cambio |
 |---------|--------|
-| `MetaAdsAnalytics/types.ts` | Añadir campos leads/CPL a interfaces |
-| `MetaAdsAnalytics/MetaAdsAnalyticsDashboard.tsx` | Usar `useUnifiedCosts` en lugar de `useAdsCostsHistory` |
-| `MetaAdsAnalytics/GlobalKPIs.tsx` | Añadir sección "Leads Reales" con 4 KPIs nuevos |
-| `MetaAdsAnalytics/CampaignCard.tsx` | Añadir fila de métricas de leads reales |
-| `MetaAdsAnalytics/CPLComparison.tsx` | **Nuevo** - Gráfico comparativo CPL Meta vs Real |
+| `supabase/functions/parse-campaign-screenshot/index.ts` | Migrar a Lovable AI, optimizar prompt para Google Ads |
+
+### Frontend
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/admin/campaigns/ScreenshotUploader.tsx` | Añadir campo "Conversiones" en preview |
+| `src/components/admin/campaigns/PasteImageProcessor.tsx` | Mostrar conversiones para Google Ads |
+| `src/components/admin/campaigns/CostEntryForm.tsx` | Mapear conversions a campo del formulario |
+
+### Tipos
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/admin/campaigns/ScreenshotUploader.tsx` | Extender `ExtractedCampaignData` con conversions |
 
 ---
 
 ## Detalles Técnicos
 
-### Mapeo Actual en Base de Datos
-
-Los 4 mappings configurados:
-
-| Campaña | lead_form_pattern | campaign_name_pattern |
-|---------|-------------------|----------------------|
-| Q4-API | `form_nov_2025%` | `%Q4%` |
-| Valoración | `form_nov_2025_negocios` | `%Valoración%` |
-| Compra | `form_enero_2025_compra` | `%Compra%` |
-| Venta | `form_enero_2026_ventas` | `%Venta%` |
-
-### Flujo de Datos
+### Nuevo Prompt Optimizado
 
 ```text
-ads_costs_history (216 registros)
-        │
-        ▼
-┌───────────────────────────────────────┐
-│   unified_costs_daily (vista mat.)    │
-│   - Agrupa por fecha + campaña        │
-│   - JOIN con campaigns via external_name
-└───────────────────────────────────────┘
-        │
-        ▼
-┌───────────────────────────────────────┐
-│   campaign_leads_stats (vista)        │
-│   - JOIN company_valuations via       │
-│     lead_form LIKE pattern            │
-│   - Cuenta leads + calificados        │
-└───────────────────────────────────────┘
-        │
-        ▼
-┌───────────────────────────────────────┐
-│   useUnifiedCosts (hook)              │
-│   - Combina costes + leads            │
-│   - Calcula CPL real por registro     │
-│   - Agrupa en campaignSummaries       │
-└───────────────────────────────────────┘
-        │
-        ▼
-┌───────────────────────────────────────┐
-│   MetaAdsAnalyticsDashboard (UI)      │
-│   - Muestra GlobalKPIs con leads      │
-│   - Muestra CampaignCards con CPL real│
-│   - Añade CPLComparison chart         │
-└───────────────────────────────────────┘
+Analiza pantallazos de Meta Ads y Google Ads.
+
+FORMATOS ESPECÍFICOS DE GOOGLE ADS:
+- Los montos pueden usar "mil" como multiplicador: "3,25 mil €" = 3250 EUR
+- Busca "Conversiones" en lugar de "Resultados"
+- Las fechas pueden estar en formato "1 ene 2026" o "Jan 1, 2026"
+- El layout usa colores rojo/amarillo/verde para métricas principales
+
+CAMPOS A EXTRAER:
+- channel: "google_ads" si ves "Conversiones", "Clics", "CTR" en layout Google
+- conversions: número de conversiones (puede tener decimales como 25,00)
+- clicks: número de clics
+- ctr: porcentaje CTR (ej: 13,87)
+- amount: gasto total (convertir "mil" a número completo)
+- period_start/end: fechas del rango mostrado
+
+RESPUESTA JSON:
+{
+  "channel": "google_ads",
+  "campaign_name": null,
+  "period_start": "2026-01-01",
+  "period_end": "2026-01-31",
+  "amount": 3250,
+  "currency": "EUR",
+  "conversions": 25,
+  "clicks": 791,
+  "ctr": 13.87,
+  "impressions": null,
+  "cpc": null,
+  "confidence": 0.95,
+  "detected_text": "Conversiones: 25, Clics: 791, CTR: 13,87%, Coste: 3,25 mil €"
+}
+```
+
+### Estructura de la Edge Function Actualizada
+
+```typescript
+// Usar Lovable AI Gateway en lugar de OpenAI directo
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+
+const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: 'google/gemini-2.5-flash',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: [
+        { type: 'text', text: userPrompt },
+        { type: 'image_url', image_url: { url: imageBase64 } }
+      ]}
+    ],
+    max_tokens: 1000,
+    temperature: 0.1
+  }),
+});
 ```
 
 ---
 
 ## Beneficios
 
-1. **Visibilidad Real**: Ver cuántos leads reales generó cada campaña (no solo "resultados" de Meta)
-2. **CPL Comparativo**: Comparar lo que Meta reporta vs lo que realmente llegó a la base de datos
-3. **Calidad de Leads**: Ver CPL de leads calificados (los que avanzan en el funnel)
-4. **EBITDA Promedio**: Ver el valor potencial de los leads por campaña
-5. **Decisiones Informadas**: Optimizar presupuesto basándose en datos reales, no en métricas de plataforma
+1. **Soporte Nativo Google Ads**: Extracción correcta de "Conversiones", formatos "mil €", fechas españolas
+2. **Lovable AI**: Usa el gateway centralizado con `LOVABLE_API_KEY` ya configurado
+3. **Modelo Optimizado**: Gemini 2.5 Flash es rápido y excelente para análisis de imágenes
+4. **Retrocompatible**: Meta Ads sigue funcionando igual
+5. **Flujo Integrado**: Los datos van directo al sistema unificado `ads_costs_history`
 
 ---
 
-## Resumen de Implementación
+## Validación Post-Implementación
 
-| Paso | Descripción | Complejidad |
-|------|-------------|-------------|
-| 1 | Extender tipos con campos de leads | Baja |
-| 2 | Refactorizar Dashboard para usar useUnifiedCosts | Media |
-| 3 | Actualizar GlobalKPIs con sección de leads | Baja |
-| 4 | Actualizar CampaignCard con métricas de leads | Baja |
-| 5 | Crear CPLComparison chart (opcional) | Media |
+Con la imagen de ejemplo que compartiste:
+- **Input**: Screenshot con "Conversiones: 25,00 | Clics: 791 | CTR: 13,87% | Coste: 3,25 mil €"
+- **Output esperado**:
+  ```json
+  {
+    "channel": "google_ads",
+    "period_start": "2026-01-01",
+    "period_end": "2026-01-31",
+    "amount": 3250,
+    "conversions": 25,
+    "clicks": 791,
+    "ctr": 13.87,
+    "currency": "EUR",
+    "confidence": 0.9
+  }
+  ```
 
