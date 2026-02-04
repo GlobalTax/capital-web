@@ -2,7 +2,11 @@ import React from 'react';
 import LinearContactsManager from '@/components/admin/contacts/LinearContactsManager';
 
 const ContactsPage = () => {
-  return <LinearContactsManager />;
+  return (
+    <div className="h-full flex flex-col">
+      <LinearContactsManager />
+    </div>
+  );
 };
 
 export default ContactsPage;
