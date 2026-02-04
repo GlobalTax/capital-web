@@ -19,6 +19,9 @@ export interface ExtractedCampaignData {
   cpc: number | null;
   confidence: number;
   detected_text: string;
+  // Google Ads specific fields
+  conversions: number | null;
+  cost_per_conversion: number | null;
 }
 
 interface ScreenshotUploaderProps {
@@ -277,6 +280,20 @@ export const ScreenshotUploader: React.FC<ScreenshotUploaderProps> = ({
                     <span className="text-muted-foreground">CPC:</span>
                     <span className="ml-2 font-medium">
                       {extractedData.currency === 'EUR' ? '€' : '$'}{extractedData.cpc.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {extractedData.conversions && (
+                  <div>
+                    <span className="text-muted-foreground">Conversiones:</span>
+                    <span className="ml-2 font-medium">{extractedData.conversions.toLocaleString('es-ES')}</span>
+                  </div>
+                )}
+                {extractedData.cost_per_conversion && (
+                  <div>
+                    <span className="text-muted-foreground">Coste/Conv:</span>
+                    <span className="ml-2 font-medium">
+                      {extractedData.currency === 'EUR' ? '€' : '$'}{extractedData.cost_per_conversion.toFixed(2)}
                     </span>
                   </div>
                 )}
