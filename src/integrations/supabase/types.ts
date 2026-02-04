@@ -2954,15 +2954,7 @@ export type Database = {
           results?: number | null
           target_cpl?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "campaign_cost_history_campaign_cost_id_fkey"
-            columns: ["campaign_cost_id"]
-            isOneToOne: false
-            referencedRelation: "campaign_costs"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       campaign_cost_snapshots: {
         Row: {
