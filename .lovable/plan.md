@@ -1,109 +1,106 @@
 
-# Plan: Mejorar Diagnóstico de Cookie Dealsuite
 
-## Problema Identificado
+# Diagnóstico: Bug de Layout en /admin/contacts
 
-Los logs muestran que Firecrawl devuelve solo **413 caracteres**. Este contenido tan corto casi seguro es una página de login o error, no el marketplace con deals. La detección actual de `isLoginPage` está correctamente identificando esto como "cookie inválida".
+## Causa Raíz Identificada
 
-## Posibles Causas
+El problema está en un **conflicto de cálculo de altura** entre el `AdminLayout` y el componente `LinearContactsManager`.
 
-1. **Cookie incompleta**: El string que copiaste puede estar truncado
-2. **Cookie expirada**: Las cookies de Dealsuite expiran ~24 horas
-3. **Cookies faltantes críticas**: Necesitas tanto `user` como `dstoken`
+### Análisis del DOM:
 
-## Solución Propuesta
-
-### Cambios en la Edge Function
-
-**Mejorar el logging y diagnóstico:**
-
-1. **Log el contenido devuelto** cuando se detecta login page para entender qué está pasando
-2. **Validar formato de cookie** antes de hacer el scrape (verificar que contiene `user=` y `dstoken=`)
-3. **Mostrar preview del contenido** en el error para diagnóstico
-
-```typescript
-// Añadir validación de formato de cookie
-function validateCookieFormat(cookie: string): { valid: boolean; missing: string[] } {
-  const required = ['user=', 'dstoken='];
-  const missing = required.filter(key => !cookie.includes(key));
-  return { valid: missing.length === 0, missing };
-}
+```
+AdminLayout
+├── div.min-h-screen.flex.w-full
+│   ├── AdminSidebar (fixed, 100vh)
+│   └── SidebarInset.flex-1.flex.flex-col.min-h-svh
+│       ├── LinearAdminHeader (h-12, sticky top-0) ← 48px
+│       ├── main.flex-1.p-2-to-4.overflow-auto
+│       │   └── div.w-full.max-w-full
+│       │       └── LinearContactsManager (Tabs)
+│       │           className="h-[calc(100vh-48px-24px)]" ← PROBLEMA
 ```
 
-### Cambios en la UI
+### El Bug:
 
-**Añadir diagnóstico visual:**
+1. **`LinearContactsManager`** usa `h-[calc(100vh-48px-24px)]` = `calc(100vh - 72px)`
+2. Pero está **anidado dentro de** `<main className="flex-1 p-2 sm:p-3 md:p-4 overflow-auto">`
+3. El `main` ya tiene `flex-1` que calcula su altura dinámicamente
+4. Además tiene padding (`p-2` a `p-4`) que añade espacio extra
+5. El resultado: la altura calculada de `100vh - 72px` es **mayor** que el espacio disponible real
+6. Esto causa que el contenido se desborde y **empuja la tabla hacia abajo**
 
-1. **Mostrar qué cookies se detectaron** al pegar (user, dstoken, etc.)
-2. **Mostrar preview del contenido** cuando falla para entender qué devolvió Dealsuite
-3. **Instrucciones mejoradas** para obtener la cookie completa
+### Por qué aparece el espacio en blanco:
 
-### Pasos Inmediatos para el Usuario
+El componente `Tabs` con altura fija de `100vh - 72px` excede el contenedor padre, y como el `<main>` tiene `overflow-auto`, el contenido se comporta de forma inesperada. Los `TabsContent` con `flex-1` intentan ocupar el espacio restante, pero el cálculo inicial está mal.
 
-Mientras implemento estas mejoras, puedes verificar:
+## Solución Propuesta (Fix Mínimo)
 
-1. **Asegúrate de copiar TODO el string** del `document.cookie` - a veces es muy largo
-2. **Verifica que contiene `user=` y `dstoken=`** - son las cookies críticas
-3. **Refresca la página de Dealsuite** antes de copiar la cookie
+### Opción A: Corregir el cálculo en `LinearContactsManager.tsx` (RECOMENDADO)
+
+Cambiar de altura fija basada en `100vh` a usar `h-full` y dejar que el contenedor padre (main) controle la altura.
+
+**Archivo:** `src/components/admin/contacts/LinearContactsManager.tsx`
+
+**Cambio:**
+```diff
+- className="h-[calc(100vh-48px-24px)] flex flex-col"
++ className="h-full flex flex-col"
+```
+
+**Y ajustar el `main` en `AdminLayout.tsx`:**
+```diff
+- <main className="flex-1 p-2 sm:p-3 md:p-4 overflow-auto">
+-   <div className="w-full max-w-full">
++ <main className="flex-1 p-2 sm:p-3 md:p-4 overflow-hidden flex flex-col">
++   <div className="flex-1 min-h-0 w-full max-w-full flex flex-col">
+```
+
+### Detalle de los Cambios
+
+| Archivo | Línea | Cambio | Razón |
+|---------|-------|--------|-------|
+| `AdminLayout.tsx` | 129 | `overflow-auto` → `overflow-hidden flex flex-col` | Evitar scroll en main, habilitar flex container |
+| `AdminLayout.tsx` | 130 | Añadir `flex-1 min-h-0 flex flex-col` al wrapper | Permitir que children ocupen altura disponible |
+| `LinearContactsManager.tsx` | 191 | `h-[calc(100vh-48px-24px)]` → `h-full` | Usar altura del contenedor padre, no viewport |
+
+## Validación Visual Esperada
+
+Después del fix:
+- Los tabs + filtros aparecen **inmediatamente** debajo del header (48px)
+- No hay espacio en blanco gigante
+- La tabla comienza justo debajo de los filtros
+- Scroll interno solo en la tabla virtualizada
+- Sin doble scroll (página + tabla)
 
 ## Archivos a Modificar
 
-| Archivo | Cambios |
-|---------|---------|
-| `supabase/functions/dealsuite-scrape-wanted/index.ts` | Añadir validación de cookie, mejorar logging, incluir preview en error |
-| `src/components/admin/DealsuiteSyncPanel.tsx` | Mostrar cookies detectadas, mejorar feedback de error |
+1. `src/features/admin/components/AdminLayout.tsx` (2 líneas)
+2. `src/components/admin/contacts/LinearContactsManager.tsx` (1 línea)
 
 ## Sección Técnica
 
-### Validación de Cookie
+### Patrón Correcto de Dashboard Layout
 
-```typescript
-// En la edge function
-function validateCookieFormat(cookie: string): { valid: boolean; missing: string[] } {
-  const requiredKeys = ['user=', 'dstoken='];
-  const missing = requiredKeys.filter(key => !cookie.includes(key));
-  return { 
-    valid: missing.length === 0, 
-    missing 
-  };
-}
-
-// Uso antes del scrape
-const cookieValidation = validateCookieFormat(session_cookie);
-if (!cookieValidation.valid) {
-  return new Response(
-    JSON.stringify({ 
-      success: false, 
-      error: 'invalid_cookie_format',
-      message: `Cookie incompleta. Faltan: ${cookieValidation.missing.join(', ')}`,
-      hint: 'Asegúrate de copiar TODO el contenido de document.cookie'
-    }),
-    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
+```text
+┌─────────────────────────────────────────────────┐
+│ SidebarProvider (min-h-svh)                     │
+├──────────────┬──────────────────────────────────┤
+│              │ SidebarInset (flex-1 flex-col)   │
+│   Sidebar    ├──────────────────────────────────┤
+│   (fixed)    │ Header (h-12, shrink-0, sticky)  │
+│              ├──────────────────────────────────┤
+│              │ main (flex-1 overflow-hidden)    │
+│              │   └─ div (flex-1 min-h-0)        │
+│              │       └─ Page (h-full flex-col)  │
+│              │           ├─ Filters (shrink-0)  │
+│              │           └─ Table (flex-1)      │
+└──────────────┴──────────────────────────────────┘
 ```
 
-### Mejora en UI para Detectar Cookies
+### Reglas Clave:
+1. **Nunca usar `100vh` en componentes anidados** - usar `h-full` y dejar que el padre controle
+2. **`min-h-0`** es crítico en flex containers para permitir shrink
+3. **`overflow-hidden`** en el contenedor padre + **`overflow-auto`** solo en el elemento scrolleable (la tabla)
+4. **`shrink-0`** para elementos que no deben comprimirse (header, filtros)
+5. **`flex-1`** solo para el elemento que debe llenar el espacio restante
 
-```typescript
-// En DealsuiteSyncPanel.tsx
-const detectCookies = (cookieString: string) => {
-  const hasUser = cookieString.includes('user=');
-  const hasDstoken = cookieString.includes('dstoken=');
-  const hasXsrf = cookieString.includes('_xsrf=');
-  
-  return { hasUser, hasDstoken, hasXsrf };
-};
-
-// Mostrar indicadores visuales de qué cookies están presentes
-```
-
-### Logging Mejorado
-
-```typescript
-// En isLoginPage, añadir logging
-if (hasLoginIndicator && !hasDealContent) {
-  console.log('[DEALSUITE] Login page detected. Content preview:', content.substring(0, 500));
-  return true;
-}
-```
