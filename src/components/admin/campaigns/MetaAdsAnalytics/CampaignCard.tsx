@@ -28,6 +28,9 @@ import {
   ChevronDown,
   ChevronUp,
   Percent,
+  Users,
+  UserCheck,
+  CircleDollarSign,
 } from 'lucide-react';
 import { CampaignStats } from './types';
 import { cn } from '@/lib/utils';
@@ -153,6 +156,47 @@ export const CampaignCard: React.FC<CampaignCardProps> = ({ stats, colorIndex })
               <p className="text-lg font-bold">{formatCurrency(stats.avgCpm)}</p>
             </div>
           </div>
+
+          {/* Real Leads Section */}
+          {(stats.totalRealLeads > 0 || stats.totalQualifiedLeads > 0) && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <Users className="h-3 w-3" />
+                  <span className="text-[10px] uppercase tracking-wider">Leads Reales</span>
+                </div>
+                <p className="text-lg font-bold text-emerald-700">{formatNumber(stats.totalRealLeads)}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <UserCheck className="h-3 w-3" />
+                  <span className="text-[10px] uppercase tracking-wider">Calificados</span>
+                </div>
+                <p className="text-lg font-bold text-emerald-700">{formatNumber(stats.totalQualifiedLeads)}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <CircleDollarSign className="h-3 w-3" />
+                  <span className="text-[10px] uppercase tracking-wider">CPL Real</span>
+                </div>
+                <p className="text-lg font-bold text-emerald-700">
+                  {stats.realCPL ? formatCurrency(stats.realCPL) : '—'}
+                </p>
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <CircleDollarSign className="h-3 w-3" />
+                  <span className="text-[10px] uppercase tracking-wider">CPL Calif.</span>
+                </div>
+                <p className="text-lg font-bold text-emerald-700">
+                  {stats.qualifiedCPL ? formatCurrency(stats.qualifiedCPL) : '—'}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Collapsible Daily Table */}
           <CollapsibleContent>

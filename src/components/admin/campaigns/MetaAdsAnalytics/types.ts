@@ -55,6 +55,12 @@ export interface CampaignStats {
   avgFrequency: number;
   percentOfTotal: number;
   records: AdsCostRecord[];
+  // Real leads data
+  totalRealLeads: number;
+  totalQualifiedLeads: number;
+  realCPL: number | null;
+  qualifiedCPL: number | null;
+  avgEbitda: number | null;
 }
 
 export interface GlobalStats {
@@ -68,6 +74,12 @@ export interface GlobalStats {
   avgFrequency: number;
   totalClicks: number;
   avgCpc: number;
+  // Real leads data
+  totalRealLeads: number;
+  totalQualifiedLeads: number;
+  realCPL: number | null;
+  qualifiedCPL: number | null;
+  avgEbitda: number | null;
 }
 
 export interface DailyDataPoint {
@@ -133,6 +145,12 @@ export const calculateCampaignStats = (
     avgFrequency: calculateWeightedFrequency(records),
     percentOfTotal: globalSpend > 0 ? (totalSpend / globalSpend) * 100 : 0,
     records,
+    // Real leads data - populated separately via useUnifiedCosts
+    totalRealLeads: 0,
+    totalQualifiedLeads: 0,
+    realCPL: null,
+    qualifiedCPL: null,
+    avgEbitda: null,
   };
 };
 
@@ -156,6 +174,12 @@ export const analyzeMetaAdsData = (records: AdsCostRecord[]): CampaignAnalysis =
     avgFrequency: calculateWeightedFrequency(records),
     totalClicks: globalClicks,
     avgCpc: globalClicks > 0 ? globalSpend / globalClicks : 0,
+    // Real leads data - populated separately via useUnifiedCosts
+    totalRealLeads: 0,
+    totalQualifiedLeads: 0,
+    realCPL: null,
+    qualifiedCPL: null,
+    avgEbitda: null,
   };
   
   // Group by campaign
