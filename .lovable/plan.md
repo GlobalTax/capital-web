@@ -1,81 +1,85 @@
 
-# Plan: Corrección del Layout - Elementos `<main>` Anidados
+# Plan: Corrección de Alineación de la Tabla de Contactos
 
-## Problema Encontrado
+## Problema Identificado
 
-He identificado el problema real después de los cambios anteriores:
+Analizando la captura y el código, he encontrado varios problemas de alineación:
 
-### El Problema: Dos `<main>` Anidados
-
-En `AdminLayout.tsx` hay una estructura HTML inválida:
-
-```html
-<SidebarInset>  <!-- Este componente renderiza un <main> -->
-  <LinearAdminHeader />
-  <main className="flex-1 overflow-hidden flex flex-col">  <!-- ¡OTRO main anidado! -->
-    <div>
-      {children}
-    </div>
-  </main>
-</SidebarInset>
-```
-
-El componente `SidebarInset` (línea 321 de sidebar.tsx) **ya es un `<main>`**:
+### Problema 1: Altura de fila inconsistente
+En `ContactTableRow.tsx` (línea 159):
 ```tsx
-const SidebarInset = (...) => {
-  return (
-    <main className="relative flex h-svh min-h-svh flex-1 flex-col...">
-      {props.children}
-    </main>
-  )
-}
+className="flex items-center h-[44px] cursor-pointer..."
 ```
 
-Esto crea `<main><main>...</main></main>`, que es HTML semánticamente incorrecto y puede causar problemas de layout impredecibles en diferentes navegadores.
+Pero en `LinearContactsTable.tsx` (línea 41):
+```tsx
+const ROW_HEIGHT = ADMIN_LAYOUT.table.rowHeight; // = 40px
+```
+
+La lista virtualizada usa `itemSize={ROW_HEIGHT}` (40px) pero el componente de fila tiene `h-[44px]` (44px), causando un desajuste de 4px por fila que se acumula.
+
+### Problema 2: Ancho de columna "origin" muy pequeño
+La columna "F. Registro" tiene solo `80px` asignados pero contiene una fecha editable que necesita más espacio. En la captura se ve cómo el header se corta.
+
+### Problema 3: Header fuera de flujo
+El header de la tabla está separado de la lista virtualizada, lo que puede causar desalineación horizontal si hay scroll.
 
 ## Solución
 
-Cambiar el `<main>` interno en `AdminLayout.tsx` a un `<div>`, ya que el `<main>` semántico ya viene de `SidebarInset`:
-
-### Archivo: `src/features/admin/components/AdminLayout.tsx`
+### Archivo 1: `src/components/admin/contacts/ContactTableRow.tsx`
+Cambiar la altura fija hardcodeada para usar la constante centralizada:
 
 | Línea | Antes | Después |
 |-------|-------|---------|
-| 129 | `<main className="flex-1 overflow-hidden flex flex-col">` | `<div className="flex-1 overflow-hidden flex flex-col">` |
-| 133 | `</main>` | `</div>` |
+| 159 | `h-[44px]` | `h-[40px]` (usando ROW_HEIGHT de config) |
+
+### Archivo 2: `src/config/admin-layout.config.ts`
+Aumentar el ancho de la columna "origin" para que quepa "F. REGISTRO":
+
+| Propiedad | Antes | Después |
+|-----------|-------|---------|
+| `origin` | 80 | 95 |
+
+Esto mejorará la legibilidad sin afectar mucho al ancho total.
 
 ## Sección Técnica
 
-### Estructura Corregida
+### Por Qué La Altura Causa Desalineación
 
-```text
-SidebarProvider (h-svh, overflow-hidden)
-└── div.h-screen (overflow-hidden)
-    └── SidebarInset → <main> (h-svh, flex-1, flex-col, overflow-hidden)
-       └── LinearAdminHeader (48px, shrink-0)
-       └── CommandPalette
-       └── KeyboardShortcutsHelp  
-       └── <div> (flex-1, overflow-hidden, flex-col)  ← ANTES era <main>
-           └── <div> (flex-1, min-h-0, p-4)
-               └── ContactsPage (h-full)
-                   └── LinearContactsManager (flex-1, flex-col, min-h-0)
-                       └── Tabs
-                           └── TabsContent (sin mt-2)
-                               └── Tabla
+```
+react-window dice: cada fila = 40px
+  Fila 0: posición top = 0px
+  Fila 1: posición top = 40px
+  Fila 2: posición top = 80px
+
+Pero ContactTableRow renderiza 44px de alto:
+  Fila 0: ocupa 0-44px ← 4px de overlap
+  Fila 1: ocupa 40-84px ← solapamiento continuo
+  
+Resultado: contenido visual desplazado del scroll esperado
 ```
 
-### Por Qué Esto Puede Solucionar el Problema
+### Anchos de Columnas Actuales vs Necesarios
 
-1. **HTML válido**: Un solo `<main>` semántico
-2. **Flexbox más predecible**: Los navegadores manejan mejor estructuras semánticamente correctas
-3. **Sin conflictos de especificidad**: Algunos navegadores aplican estilos por defecto a `<main>`
+| Columna | Actual | Contenido | ¿Suficiente? |
+|---------|--------|-----------|--------------|
+| star | 32px | Icono | ✓ |
+| checkbox | 36px | Checkbox | ✓ |
+| contact | 170px | Nombre + email | ✓ |
+| origin | 80px | "dd MMM yy" | ⚠️ Corto para header |
+| channel | 120px | Select + subtext | ✓ |
+| company | 140px | Nombre empresa | ✓ |
 
 ## Archivos a Modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/features/admin/components/AdminLayout.tsx` | Cambiar `<main>` interno a `<div>` (líneas 129 y 133) |
+| `src/components/admin/contacts/ContactTableRow.tsx` | Cambiar `h-[44px]` a `h-[40px]` |
+| `src/config/admin-layout.config.ts` | Aumentar `origin: 80` a `origin: 95` |
 
 ## Resultado Esperado
 
-La tabla de contactos debe aparecer inmediatamente debajo de los tabs sin el espacio de ~450px. El `<main>` de `SidebarInset` proporciona la semántica correcta, y el `<div>` interior maneja el layout con flexbox de manera predecible.
+1. Las filas tendrán exactamente 40px de altura, coincidiendo con `itemSize` de react-window
+2. La columna "F. REGISTRO" tendrá espacio suficiente para mostrar el header completo
+3. El scroll será suave sin saltos visuales
+4. La alineación vertical entre header y filas será perfecta
