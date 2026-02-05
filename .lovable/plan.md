@@ -1,264 +1,232 @@
 
-# Plan: Añadir Sector "Distribución" y Estandarizar Uso de Sectores Dinámicos
+# Plan: Recuperar Filtros Avanzados y Edición Inline de Fecha en Gestión de Leads
 
 ## Diagnóstico Completado
 
-### Estado Actual del Sistema de Sectores
+### Estado Actual del Sistema
 
-| Componente | Estado |
-|------------|--------|
-| Tabla `sectors` en DB | ✅ Existe con 22 sectores activos |
-| Hook `useSectors.tsx` | ✅ Carga sectores desde DB dinámicamente |
-| Componente `SectorSelect` | ✅ Reutilizable, conectado a DB |
-| Panel admin `/admin/sectores` | ✅ SectorManagement permite CRUD de sectores |
-| Sector "Distribución" | ❌ **NO existe** |
+| Funcionalidad | Infraestructura | UI en contacts-v2 |
+|---------------|-----------------|-------------------|
+| Filtro Estado | ✅ Hook implementado | ✅ Dropdown visible |
+| Filtro Origen | ✅ Hook implementado | ✅ Dropdown visible |
+| Filtro Fecha (presets/rango) | ✅ Lógica en useContacts | ❌ **NO hay controles** |
+| Filtro Facturación | ✅ Lógica en useContacts | ❌ **NO hay controles** |
+| Filtro EBITDA | ✅ Lógica en useContacts | ❌ **NO hay controles** |
+| Filtro Tipo Valoración (PRO/Normal) | ✅ Lógica en useUnifiedContacts | ❌ **NO implementado en v2** |
+| Edición inline de fecha | ✅ Componente `EditableDateCell` existe | ❌ **NO usado en ContactRow** |
+| Bulk update de fecha | ✅ Componente `BulkDateSelect` existe | ❌ **NO importado en Header** |
 
-### Formularios que Necesitan Migración a Sectores Dinámicos
+### Causa Raíz de la Regresión
 
-| Formulario | Archivo | Problema |
-|------------|---------|----------|
-| Nueva Empresa/Target | `CompanyFormDialog.tsx` | Usa `<Input>` texto libre |
-| Mandato de Compra | `BuySideMandateModal.tsx` | Usa array HARDCODED `SECTORS` |
-| Adquisición SF | `SFAcquisitionEditModal.tsx` | Usa `<Input>` texto libre |
-| Participada CR | `CRPortfolioEditModal.tsx` | Usa `<Input>` texto libre |
+El sistema contacts-v2 se creó como versión "simplificada" y se omitieron los controles de UI para filtros avanzados que ya estaban implementados en el hook. También se eliminó:
+- El componente `BulkDateSelect` del header (pero existe en `/contacts/`)
+- El uso de `EditableDateCell` en las filas de la tabla
+- Los controles de filtro de fecha y rangos financieros
 
 ---
 
 ## Implementación
 
-### Paso 1: Insertar Sector "Distribución" en DB
+### Fase 1: Recuperar Filtros en ContactsFilters.tsx
 
-Ejecutar en Supabase:
+**Cambios en `src/components/admin/contacts-v2/ContactsFilters.tsx`:**
 
-```sql
-INSERT INTO sectors (name_es, name_en, slug, is_active, display_order)
-VALUES ('Distribución', 'Distribution', 'distribucion', true, 7);
+Añadir 4 nuevos filtros a la barra de filtros:
+
+1. **Filtro Tipo Valoración (PRO/Normal)**
+   - Dropdown con opciones: Todos, PRO, Normal
+   - Campo: nuevo `valuationType` en tipos
+
+2. **Filtro Fecha (presets + rango)**
+   - Dropdown con presets: Última semana, Último mes, Personalizado
+   - Usa `dateFrom`/`dateTo` del hook
+
+3. **Filtro Facturación (rangos)**
+   - Popover con inputs min/max
+   - Presets rápidos: >500k, >1M, >5M
+   - Usa `revenueMin`/`revenueMax`
+
+4. **Filtro EBITDA (rangos)**
+   - Popover con inputs min/max
+   - Presets rápidos: >50k, >100k, >500k
+   - Usa `ebitdaMin`/`ebitdaMax`
+
+### Fase 2: Actualizar Tipos
+
+**Cambios en `src/components/admin/contacts-v2/types.ts`:**
+
+Añadir a `ContactFilters`:
+```typescript
+valuationType?: 'all' | 'pro' | 'standard';
 ```
 
-Esto añade "Distribución" después de "Energía y Renovables" (display_order 7).
-
----
-
-### Paso 2: Migrar CompanyFormDialog a SectorSelect
-
-**Archivo**: `src/components/admin/companies/CompanyFormDialog.tsx`
-
-Cambiar de Input de texto libre a `SectorSelect`:
-
-**Antes (líneas 201-213)**:
-```tsx
-<FormField
-  control={form.control}
-  name="sector"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Sector *</FormLabel>
-      <FormControl>
-        <Input placeholder="Tecnología, Industrial, etc." {...field} />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+Añadir a `Contact`:
+```typescript
+is_from_pro_valuation?: boolean;
 ```
 
-**Después**:
-```tsx
-import SectorSelect from '@/components/admin/shared/SectorSelect';
+### Fase 3: Actualizar Hook useContacts
 
-<FormField
-  control={form.control}
-  name="sector"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Sector *</FormLabel>
-      <FormControl>
-        <SectorSelect
-          value={field.value}
-          onChange={field.onChange}
-          placeholder="Selecciona un sector"
-          className="w-full"
-        />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+**Cambios en `src/components/admin/contacts-v2/hooks/useContacts.ts`:**
+
+1. Añadir lógica de filtro `valuationType`:
+```typescript
+if (filters.valuationType && filters.valuationType !== 'all') {
+  if (filters.valuationType === 'pro') {
+    result = result.filter(c => c.source_project?.includes('pro') || c.is_from_pro_valuation);
+  } else {
+    result = result.filter(c => !c.source_project?.includes('pro') && !c.is_from_pro_valuation);
+  }
+}
 ```
 
----
-
-### Paso 3: Migrar BuySideMandateModal a SectorSelect
-
-**Archivo**: `src/components/admin/buyside/BuySideMandateModal.tsx`
-
-Cambiar de array hardcoded a `SectorSelect`:
-
-**Antes (líneas 43-58)**:
-```tsx
-const SECTORS = [
-  'Tecnología',
-  'Salud',
-  'Industrial',
-  // ... array hardcoded
-];
+2. Añadir filtros `revenueMax`, `ebitdaMin`, `ebitdaMax`:
+```typescript
+if (filters.revenueMax) {
+  result = result.filter(c => (c.empresa_facturacion ?? c.revenue ?? 0) <= filters.revenueMax!);
+}
+if (filters.ebitdaMin) {
+  result = result.filter(c => (c.ebitda ?? 0) >= filters.ebitdaMin!);
+}
+if (filters.ebitdaMax) {
+  result = result.filter(c => (c.ebitda ?? Infinity) <= filters.ebitdaMax!);
+}
 ```
 
-**Después**:
-- Eliminar el array `SECTORS`
-- Importar y usar `SectorSelect`
-- Cambiar el `<select>` nativo por `SectorSelect`
+3. En `transformValuation()`, añadir detección de PRO:
+```typescript
+is_from_pro_valuation: lead.referral === 'Valoración Pro' || lead.source_project?.includes('pro'),
+```
 
+### Fase 4: Recuperar Edición Inline de Fecha
+
+**Cambios en `src/components/admin/contacts-v2/ContactRow.tsx`:**
+
+Reemplazar la celda de fecha estática por `EditableDateCell`:
+
+Antes:
 ```tsx
-import SectorSelect from '@/components/admin/shared/SectorSelect';
-
-// En el formulario, líneas ~224-237:
-<div>
-  <Label htmlFor="sector">Sector *</Label>
-  <SectorSelect
-    value={watch('sector')}
-    onChange={(value) => setValue('sector', value)}
-    placeholder="Selecciona un sector"
-    required
-  />
-  {errors.sector && (
-    <p className="text-sm text-destructive mt-1">{errors.sector.message}</p>
-  )}
+<div className="text-muted-foreground">
+  {format(new Date(displayDate), 'd MMM yy', { locale: es })}
 </div>
 ```
 
----
-
-### Paso 4: Migrar SFAcquisitionEditModal a SectorSelect
-
-**Archivo**: `src/components/admin/search-funds/SFAcquisitionEditModal.tsx`
-
-Cambiar Input de texto libre a `SectorSelect`:
-
-**Antes (líneas 205-217)**:
+Después:
 ```tsx
-<FormField
-  control={form.control}
-  name="sector"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Sector</FormLabel>
-      <FormControl>
-        <Input {...field} placeholder="Tecnología" />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
+<div onClick={(e) => e.stopPropagation()}>
+  <EditableDateCell
+    value={contact.lead_received_at || contact.created_at}
+    onSave={async (newDate) => {
+      await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
+    }}
+    displayFormat="d MMM yy"
+    displayClassName="text-muted-foreground"
+    emptyText="—"
+  />
+</div>
+```
+
+Esto requiere pasar `updateField` como prop desde el parent o usar `useContactInlineUpdate` directamente en el row.
+
+### Fase 5: Recuperar Bulk Update de Fecha
+
+**Cambios en `src/components/admin/contacts-v2/ContactsHeader.tsx`:**
+
+Importar y añadir `BulkDateSelect`:
+
+```tsx
+import { BulkDateSelect } from '../contacts/BulkDateSelect';
+
+// En el JSX, junto a los otros bulk actions:
+<BulkDateSelect
+  selectedIds={selectedIds}
+  contacts={contacts as any}
+  onSuccess={onClearSelection}
 />
 ```
 
-**Después**:
-```tsx
-import SectorSelect from '@/components/admin/shared/SectorSelect';
+### Fase 6: Actualizar Invalidación de Cache
 
-<FormField
-  control={form.control}
-  name="sector"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Sector</FormLabel>
-      <FormControl>
-        <SectorSelect
-          value={field.value || ''}
-          onChange={field.onChange}
-          placeholder="Selecciona un sector"
-        />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
-```
+**Cambios en `src/hooks/useBulkUpdateReceivedDate.ts`:**
 
----
+Asegurar que se invalide `contacts-v2`:
 
-### Paso 5: Migrar CRPortfolioEditModal a SectorSelect
-
-**Archivo**: `src/components/admin/capital-riesgo/CRPortfolioEditModal.tsx`
-
-Cambiar Input de texto libre a `SectorSelect`:
-
-**Antes (líneas 212-224)**:
-```tsx
-<FormField
-  control={form.control}
-  name="sector"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Sector</FormLabel>
-      <FormControl>
-        <Input {...field} placeholder="Tecnología" />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
-```
-
-**Después**:
-```tsx
-import SectorSelect from '@/components/admin/shared/SectorSelect';
-
-<FormField
-  control={form.control}
-  name="sector"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Sector</FormLabel>
-      <FormControl>
-        <SectorSelect
-          value={field.value || ''}
-          onChange={field.onChange}
-          placeholder="Selecciona un sector"
-        />
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
+```typescript
+onSuccess: (data) => {
+  queryClient.invalidateQueries({
+    queryKey: ['unified-contacts'],
+    refetchType: 'active',
+  });
+  // Añadir para contacts-v2
+  queryClient.invalidateQueries({ 
+    queryKey: ['contacts-v2'],
+    refetchType: 'active'
+  });
+  // ... resto del código
+}
 ```
 
 ---
 
 ## Resumen de Archivos a Modificar
 
-| Archivo | Cambio | Tipo |
-|---------|--------|------|
-| BD `sectors` | INSERT "Distribución" | SQL |
-| `CompanyFormDialog.tsx` | Input → SectorSelect | Migración |
-| `BuySideMandateModal.tsx` | SECTORS array → SectorSelect | Migración |
-| `SFAcquisitionEditModal.tsx` | Input → SectorSelect | Migración |
-| `CRPortfolioEditModal.tsx` | Input → SectorSelect | Migración |
+| Archivo | Cambios | Tipo |
+|---------|---------|------|
+| `src/components/admin/contacts-v2/types.ts` | Añadir `valuationType` y `is_from_pro_valuation` | Tipos |
+| `src/components/admin/contacts-v2/hooks/useContacts.ts` | Añadir filtros PRO, revenueMax, EBITDA; detectar PRO en transform | Lógica |
+| `src/components/admin/contacts-v2/ContactsFilters.tsx` | Añadir 4 dropdowns/popovers de filtros | UI |
+| `src/components/admin/contacts-v2/ContactRow.tsx` | Reemplazar fecha estática por `EditableDateCell` | UI |
+| `src/components/admin/contacts-v2/ContactsHeader.tsx` | Importar y usar `BulkDateSelect` | UI |
+| `src/hooks/useBulkUpdateReceivedDate.ts` | Añadir invalidación `contacts-v2` | Cache |
 
 ---
 
-## Compatibilidad con Histórico
+## Flujo Resultante
 
-- **Preservado**: Los sectores ya existentes en registros antiguos se mantienen como strings en sus columnas
-- **Display**: `SectorSelect` usa `name_es` como valor, que coincide con los strings históricos
-- **Nuevos registros**: Usarán nombres consistentes de la tabla `sectors`
-- **Filtros**: Los filtros de sector en listados seguirán funcionando porque comparan strings
+### Barra de Filtros (Recuperada)
+
+```text
+┌──────────────────────────────────────────────────────────────────────────────────────┐
+│ [🔍 Buscar...] [Origen ▼] [Estado ▼] [Tipo ▼] [Fecha ▼] [Facturación ▼] [EBITDA ▼]  │
+│                                       PRO      Últ.7d    >1M€           >100k€       │
+│                                       Normal   Rango...  Min-Max        Min-Max      │
+└──────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Edición Inline de Fecha
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│  Nombre     │ Empresa │ Estado │ ... │    Fecha     │ ... │
+├─────────────┼─────────┼────────┼─────┼──────────────┼─────┤
+│  Juan García│ Tech SL │ Nuevo  │ ... │ [5 Feb 25 📅]│ ... │
+│             │         │        │     │   ▲ Click    │     │
+│             │         │        │     │   abre picker│     │
+└─────────────┴─────────┴────────┴─────┴──────────────┴─────┘
+```
+
+### Bulk Actions (Con Fecha)
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ [Archivar (5)] [Estado ▼] [Canal ▼] [Formulario ▼] [Fecha registro 📅] [Brevo (5)] │
+│                                                      ▲ NUEVO                        │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## Resultado Final
+## Verificación Post-Implementación
 
-1. **Sector "Distribución"** disponible en todos los formularios
-2. **Todos los formularios de Sector** usan datos dinámicos desde DB
-3. **Panel Admin** (`/admin/sectores`) permite añadir/editar sectores sin código
-4. **Cero roturas** en datos históricos
+### Tests Obligatorios
 
----
-
-## Verificación Rápida (2 minutos)
-
-1. Ir a `/admin/sectores` → Verificar "Distribución" aparece
-2. Ir a `/admin/empresas` → Crear "Nueva Empresa" → Verificar dropdown con "Distribución"
-3. Crear empresa con sector "Distribución" → Verificar se guarda correctamente
-4. Ir a `/admin/mandatos-compra` → Crear nuevo mandato → Verificar dropdown dinámico
-5. Crear un sector nuevo desde `/admin/sectores` (ej: "Packaging") → Verificar aparece automáticamente en formularios
+| Test | Verificación |
+|------|--------------|
+| Filtro Estado | Seleccionar "Nuevo" → solo leads nuevos |
+| Filtro PRO/Normal | Seleccionar "PRO" → solo leads de valoración pro |
+| Última semana | Activar → solo leads de últimos 7 días |
+| Facturación >1M€ | Activar → solo leads con revenue/facturacion >1M |
+| EBITDA >100k€ | Activar → solo leads con EBITDA >100k |
+| Edición fecha inline | Click en fecha → picker → seleccionar → guarda y actualiza |
+| Bulk fecha | Seleccionar 5 leads → "Fecha registro" → seleccionar fecha → aplicar → toast éxito |
+| Sin refresh | Cambios visibles inmediatamente sin F5 ni botón actualizar |
