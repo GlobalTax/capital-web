@@ -30,6 +30,7 @@ import {
 import { SFAcquisition, SFDealType, SFAcquisitionStatus } from '@/types/searchFunds';
 import { useCreateSFAcquisition, useUpdateSFAcquisition } from '@/hooks/useSFAcquisitions';
 import { Loader2 } from 'lucide-react';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 const acquisitionSchema = z.object({
   company_name: z.string().min(1, 'Nombre de empresa requerido'),
@@ -209,7 +210,11 @@ export const SFAcquisitionEditModal: React.FC<SFAcquisitionEditModalProps> = ({
                   <FormItem>
                     <FormLabel>Sector</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Tecnología" />
+                      <SectorSelect
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Selecciona un sector"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
