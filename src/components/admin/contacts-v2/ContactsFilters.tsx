@@ -1,19 +1,29 @@
 // ============= CONTACTS FILTERS =============
 // Compact filter bar with stats
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Download, Search, X, TrendingUp, Users, Target, BarChart3 } from 'lucide-react';
+import { RefreshCw, Download, Search, X, TrendingUp, Users, Target, BarChart3, Calendar, Euro } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { ContactFilters as Filters, ContactStats, ContactOrigin } from './types';
 import { cn } from '@/lib/utils';
+import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface ContactsFiltersProps {
   filters: Filters;
@@ -44,6 +54,30 @@ const STATUS_OPTIONS = [
   { value: 'perdido', label: 'Perdido' },
 ];
 
+const VALUATION_TYPE_OPTIONS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'pro', label: 'PRO' },
+  { value: 'standard', label: 'Normal' },
+];
+
+const DATE_PRESETS = [
+  { label: 'Última semana', days: 7 },
+  { label: 'Último mes', days: 30 },
+  { label: 'Últimos 3 meses', days: 90 },
+];
+
+const REVENUE_PRESETS = [
+  { label: '>500k€', min: 500000 },
+  { label: '>1M€', min: 1000000 },
+  { label: '>5M€', min: 5000000 },
+];
+
+const EBITDA_PRESETS = [
+  { label: '>50k€', min: 50000 },
+  { label: '>100k€', min: 100000 },
+  { label: '>500k€', min: 500000 },
+];
+
 const ContactsFilters: React.FC<ContactsFiltersProps> = ({
   filters,
   onFiltersChange,
@@ -54,16 +88,46 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
   isRefreshing,
   showStats = true,
 }) => {
+  const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
+  const [isRevenueOpen, setIsRevenueOpen] = useState(false);
+  const [isEbitdaOpen, setIsEbitdaOpen] = useState(false);
+
   const hasActiveFilters = !!(
     filters.search ||
     (filters.origin && filters.origin !== 'all') ||
     (filters.status && filters.status !== 'all') ||
+    (filters.valuationType && filters.valuationType !== 'all') ||
     filters.dateFrom ||
-    filters.revenueMin
+    filters.dateTo ||
+    filters.revenueMin ||
+    filters.revenueMax ||
+    filters.ebitdaMin ||
+    filters.ebitdaMax
   );
 
   const clearFilters = () => {
     onFiltersChange({ origin: 'all', emailStatus: 'all' });
+  };
+
+  const handleDatePreset = (days: number) => {
+    const from = startOfDay(subDays(new Date(), days)).toISOString();
+    const to = endOfDay(new Date()).toISOString();
+    onFiltersChange({ 
+      ...filters, 
+      dateFrom: from, 
+      dateTo: to,
+      dateRangeLabel: DATE_PRESETS.find(p => p.days === days)?.label
+    });
+  };
+
+  const handleRevenuePreset = (min: number) => {
+    onFiltersChange({ ...filters, revenueMin: min, revenueMax: undefined });
+    setIsRevenueOpen(false);
+  };
+
+  const handleEbitdaPreset = (min: number) => {
+    onFiltersChange({ ...filters, ebitdaMin: min, ebitdaMax: undefined });
+    setIsEbitdaOpen(false);
   };
 
   return (
@@ -167,6 +231,248 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Valuation Type Filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+              Tipo
+              {filters.valuationType && filters.valuationType !== 'all' && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+                  {filters.valuationType === 'pro' ? 'PRO' : 'STD'}
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {VALUATION_TYPE_OPTIONS.map(opt => (
+              <DropdownMenuCheckboxItem
+                key={opt.value}
+                checked={filters.valuationType === opt.value || (!filters.valuationType && opt.value === 'all')}
+                onCheckedChange={() => onFiltersChange({ ...filters, valuationType: opt.value as 'all' | 'pro' | 'standard' })}
+              >
+                {opt.label}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Date Filter */}
+        <Popover open={isDateRangeOpen} onOpenChange={setIsDateRangeOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+              <Calendar className="h-3 w-3" />
+              {filters.dateRangeLabel || (filters.dateFrom ? 'Fecha' : 'Fecha')}
+              {(filters.dateFrom || filters.dateTo) && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-3" align="start">
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-muted-foreground">Presets</div>
+              <div className="flex flex-wrap gap-1">
+                {DATE_PRESETS.map(preset => (
+                  <Button
+                    key={preset.days}
+                    variant={filters.dateRangeLabel === preset.label ? 'secondary' : 'outline'}
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={() => {
+                      handleDatePreset(preset.days);
+                      setIsDateRangeOpen(false);
+                    }}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="text-xs font-medium text-muted-foreground pt-2">Rango personalizado</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Desde</label>
+                  <CalendarComponent
+                    mode="single"
+                    selected={filters.dateFrom ? new Date(filters.dateFrom) : undefined}
+                    onSelect={(date) => {
+                      onFiltersChange({ 
+                        ...filters, 
+                        dateFrom: date ? startOfDay(date).toISOString() : undefined,
+                        dateRangeLabel: undefined
+                      });
+                    }}
+                    disabled={{ after: new Date() }}
+                    className="rounded-md border pointer-events-auto"
+                    locale={es}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Hasta</label>
+                  <CalendarComponent
+                    mode="single"
+                    selected={filters.dateTo ? new Date(filters.dateTo) : undefined}
+                    onSelect={(date) => {
+                      onFiltersChange({ 
+                        ...filters, 
+                        dateTo: date ? endOfDay(date).toISOString() : undefined,
+                        dateRangeLabel: undefined
+                      });
+                    }}
+                    disabled={{ after: new Date() }}
+                    className="rounded-md border pointer-events-auto"
+                    locale={es}
+                  />
+                </div>
+              </div>
+              {(filters.dateFrom || filters.dateTo) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-6 text-xs"
+                  onClick={() => {
+                    onFiltersChange({ ...filters, dateFrom: undefined, dateTo: undefined, dateRangeLabel: undefined });
+                    setIsDateRangeOpen(false);
+                  }}
+                >
+                  Limpiar fechas
+                </Button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Revenue Filter */}
+        <Popover open={isRevenueOpen} onOpenChange={setIsRevenueOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+              <Euro className="h-3 w-3" />
+              Fact.
+              {(filters.revenueMin || filters.revenueMax) && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3" align="start">
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-muted-foreground">Presets facturación</div>
+              <div className="flex flex-wrap gap-1">
+                {REVENUE_PRESETS.map(preset => (
+                  <Button
+                    key={preset.min}
+                    variant={filters.revenueMin === preset.min ? 'secondary' : 'outline'}
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={() => handleRevenuePreset(preset.min)}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="text-xs font-medium text-muted-foreground pt-2">Rango personalizado</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Mín (€)</label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={filters.revenueMin || ''}
+                    onChange={(e) => onFiltersChange({ ...filters, revenueMin: e.target.value ? Number(e.target.value) : undefined })}
+                    className="h-7 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Máx (€)</label>
+                  <Input
+                    type="number"
+                    placeholder="∞"
+                    value={filters.revenueMax || ''}
+                    onChange={(e) => onFiltersChange({ ...filters, revenueMax: e.target.value ? Number(e.target.value) : undefined })}
+                    className="h-7 text-xs"
+                  />
+                </div>
+              </div>
+              {(filters.revenueMin || filters.revenueMax) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-6 text-xs"
+                  onClick={() => {
+                    onFiltersChange({ ...filters, revenueMin: undefined, revenueMax: undefined });
+                    setIsRevenueOpen(false);
+                  }}
+                >
+                  Limpiar
+                </Button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* EBITDA Filter */}
+        <Popover open={isEbitdaOpen} onOpenChange={setIsEbitdaOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+              EBITDA
+              {(filters.ebitdaMin || filters.ebitdaMax) && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-3" align="start">
+            <div className="space-y-3">
+              <div className="text-xs font-medium text-muted-foreground">Presets EBITDA</div>
+              <div className="flex flex-wrap gap-1">
+                {EBITDA_PRESETS.map(preset => (
+                  <Button
+                    key={preset.min}
+                    variant={filters.ebitdaMin === preset.min ? 'secondary' : 'outline'}
+                    size="sm"
+                    className="h-6 text-xs"
+                    onClick={() => handleEbitdaPreset(preset.min)}
+                  >
+                    {preset.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="text-xs font-medium text-muted-foreground pt-2">Rango personalizado</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Mín (€)</label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={filters.ebitdaMin || ''}
+                    onChange={(e) => onFiltersChange({ ...filters, ebitdaMin: e.target.value ? Number(e.target.value) : undefined })}
+                    className="h-7 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground">Máx (€)</label>
+                  <Input
+                    type="number"
+                    placeholder="∞"
+                    value={filters.ebitdaMax || ''}
+                    onChange={(e) => onFiltersChange({ ...filters, ebitdaMax: e.target.value ? Number(e.target.value) : undefined })}
+                    className="h-7 text-xs"
+                  />
+                </div>
+              </div>
+              {(filters.ebitdaMin || filters.ebitdaMax) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-6 text-xs"
+                  onClick={() => {
+                    onFiltersChange({ ...filters, ebitdaMin: undefined, ebitdaMax: undefined });
+                    setIsEbitdaOpen(false);
+                  }}
+                >
+                  Limpiar
+                </Button>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {/* Clear Filters */}
         {hasActiveFilters && (

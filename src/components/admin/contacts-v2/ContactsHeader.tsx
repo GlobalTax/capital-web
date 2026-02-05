@@ -11,6 +11,7 @@ import { useContactActions } from '@/features/contacts';
 import { BulkStatusSelect } from '../contacts/BulkStatusSelect';
 import { BulkChannelSelect } from '../contacts/BulkChannelSelect';
 import { BulkLeadFormSelect } from '../contacts/BulkLeadFormSelect';
+import { BulkDateSelect } from '../contacts/BulkDateSelect';
 import { StatusesEditor } from '../contacts/StatusesEditor';
 
 interface ContactsHeaderProps {
@@ -102,6 +103,12 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
           />
 
           <BulkLeadFormSelect
+            selectedIds={selectedIds}
+            contacts={contacts as any}
+            onSuccess={onClearSelection}
+          />
+
+          <BulkDateSelect
             selectedIds={selectedIds}
             contacts={contacts as any}
             onSuccess={onClearSelection}

@@ -9,6 +9,8 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
+import { EditableDateCell } from '../shared/EditableDateCell';
+import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 
 interface ContactRowProps {
   contact: Contact;
@@ -71,7 +73,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
   onViewDetails,
   style,
 }) => {
-  const displayDate = contact.lead_received_at || contact.created_at;
+  const { update: updateField } = useContactInlineUpdate();
   
   return (
     <div
@@ -148,8 +150,16 @@ const ContactRow: React.FC<ContactRowProps> = ({
         </div>
 
         {/* Date */}
-        <div className="text-muted-foreground">
-          {format(new Date(displayDate), 'd MMM yy', { locale: es })}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableDateCell
+            value={contact.lead_received_at || contact.created_at}
+            onSave={async (newDate) => {
+              await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
+            }}
+            displayFormat="d MMM yy"
+            displayClassName="text-muted-foreground text-xs"
+            emptyText="—"
+          />
         </div>
 
         {/* Valuation */}

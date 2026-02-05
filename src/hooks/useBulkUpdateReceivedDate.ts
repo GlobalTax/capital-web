@@ -83,7 +83,13 @@ export function useBulkUpdateReceivedDate() {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({
         queryKey: ['unified-contacts'],
-        refetchType: 'none',
+        refetchType: 'active',
+      });
+      
+      // Also invalidate contacts-v2 for table sync
+      queryClient.invalidateQueries({
+        queryKey: ['contacts-v2'],
+        refetchType: 'active',
       });
 
       if (data.failed_count === 0) {
