@@ -47,6 +47,7 @@ export interface CorporateBuyer {
   key_highlights: string[] | null;
   is_active: boolean;
   is_deleted: boolean;
+  is_reviewed: boolean;
   created_at: string;
   updated_at: string;
 }

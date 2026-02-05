@@ -18,7 +18,7 @@ import {
   CorporateBuyersImportModal,
   BulkDeleteBuyersDialog
 } from '@/components/admin/corporate-buyers';
-import { useCorporateBuyers, useCorporateBuyerCountries, useBulkDeleteCorporateBuyers } from '@/hooks/useCorporateBuyers';
+import { useCorporateBuyers, useCorporateBuyerCountries, useBulkDeleteCorporateBuyers, useToggleBuyerReviewed } from '@/hooks/useCorporateBuyers';
 import { useFavoriteBuyerIds, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
 import { CorporateBuyersFilters } from '@/types/corporateBuyers';
 
@@ -36,6 +36,7 @@ const CorporateBuyersPage = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const bulkDelete = useBulkDeleteCorporateBuyers();
+  const { mutate: toggleReviewed } = useToggleBuyerReviewed();
 
   // Data hooks
   const { data: buyers = [], isLoading: loadingBuyers } = useCorporateBuyers(filters);
@@ -232,6 +233,7 @@ const CorporateBuyersPage = () => {
             buyers={displayedBuyers}
             favoriteIds={favoriteIds}
             onToggleFavorite={handleToggleFavorite}
+            onToggleReviewed={(id, isReviewed) => toggleReviewed({ id, isReviewed })}
             isLoading={isLoading}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
@@ -244,6 +246,7 @@ const CorporateBuyersPage = () => {
             buyers={displayedBuyers}
             favoriteIds={favoriteIds}
             onToggleFavorite={handleToggleFavorite}
+            onToggleReviewed={(id, isReviewed) => toggleReviewed({ id, isReviewed })}
             isLoading={isLoading}
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}

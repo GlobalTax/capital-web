@@ -193,6 +193,29 @@ export const useCorporateBuyerCountries = () => {
   });
 };
 
+// Toggle is_reviewed status
+export const useToggleBuyerReviewed = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, isReviewed }: { id: string; isReviewed: boolean }) => {
+      const { error } = await supabase
+        .from('corporate_buyers')
+        .update({ is_reviewed: isReviewed })
+        .eq('id', id);
+
+      if (error) throw error;
+      return { id, isReviewed };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+    },
+    onError: () => {
+      toast.error('Error al actualizar estado de revisión');
+    },
+  });
+};
+
 // Bulk soft delete multiple buyers
 export const useBulkDeleteCorporateBuyers = () => {
   const queryClient = useQueryClient();
