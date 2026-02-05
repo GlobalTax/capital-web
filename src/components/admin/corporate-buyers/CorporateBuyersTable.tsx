@@ -5,7 +5,7 @@
 import { memo, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList as List } from 'react-window';
-import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe } from 'lucide-react';
+import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CorporateBuyer, BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/types/corporateBuyers';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ interface CorporateBuyersTableProps {
   buyers: CorporateBuyer[];
   favoriteIds: Set<string>;
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
+  onToggleReviewed: (id: string, isReviewed: boolean) => void;
   isLoading?: boolean;
   // Selection props
   selectedIds?: Set<string>;
@@ -44,6 +45,7 @@ export const CorporateBuyersTable = memo(({
   buyers,
   favoriteIds,
   onToggleFavorite,
+  onToggleReviewed,
   isLoading = false,
   selectedIds = new Set(),
   onSelectionChange,
@@ -123,6 +125,18 @@ export const CorporateBuyersTable = memo(({
                 )}
               />
             </Button>
+          </div>
+
+          {/* Reviewed */}
+          <div className="w-10 flex-shrink-0 flex justify-center">
+            <Checkbox
+              checked={buyer.is_reviewed}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleReviewed(buyer.id, !buyer.is_reviewed);
+              }}
+              className="data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+            />
           </div>
 
           {/* Name */}
@@ -222,7 +236,7 @@ export const CorporateBuyersTable = memo(({
         </div>
       );
     }),
-    [buyers, favoriteIds, selectedIds, navigate, onToggleFavorite, selectionMode, handleSelectOne]
+    [buyers, favoriteIds, selectedIds, navigate, onToggleFavorite, onToggleReviewed, selectionMode, handleSelectOne]
   );
 
   if (isLoading) {
@@ -242,7 +256,7 @@ export const CorporateBuyersTable = memo(({
     );
   }
 
-  const minTableWidth = selectionMode ? 1140 : 1100;
+  const minTableWidth = selectionMode ? 1180 : 1140;
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
@@ -268,6 +282,9 @@ export const CorporateBuyersTable = memo(({
         )}
         <div className="w-12 flex-shrink-0 flex items-center justify-center">
           <Star className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="w-10 flex-shrink-0 flex items-center justify-center">
+          <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
         </div>
         <div className="w-[200px] flex-shrink-0 px-3 flex items-center font-medium text-sm text-muted-foreground">
           Nombre
