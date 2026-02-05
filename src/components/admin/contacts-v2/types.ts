@@ -58,6 +58,9 @@ export interface Contact {
   apollo_status?: 'none' | 'running' | 'ok' | 'needs_review' | 'error';
   apollo_candidates?: any[];
   
+  // Pro detection
+  is_from_pro_valuation?: boolean;
+  
   // Channel & Form
   acquisition_channel_id?: string;
   acquisition_channel_name?: string;
@@ -69,6 +72,7 @@ export interface ContactFilters {
   search?: string;
   origin?: ContactOrigin | 'all';
   status?: string;
+  valuationType?: 'all' | 'pro' | 'standard';
   emailStatus?: 'all' | 'opened' | 'sent' | 'not_contacted';
   dateFrom?: string;
   dateTo?: string;

@@ -171,6 +171,26 @@ export const useContacts = () => {
     if (filters.revenueMin) {
       result = result.filter(c => (c.empresa_facturacion ?? c.revenue ?? 0) >= filters.revenueMin!);
     }
+  
+  if (filters.revenueMax) {
+    result = result.filter(c => (c.empresa_facturacion ?? c.revenue ?? 0) <= filters.revenueMax!);
+  }
+  
+  if (filters.ebitdaMin) {
+    result = result.filter(c => (c.ebitda ?? 0) >= filters.ebitdaMin!);
+  }
+  
+  if (filters.ebitdaMax) {
+    result = result.filter(c => (c.ebitda ?? 0) <= filters.ebitdaMax!);
+  }
+  
+  if (filters.valuationType && filters.valuationType !== 'all') {
+    if (filters.valuationType === 'pro') {
+      result = result.filter(c => c.is_from_pro_valuation === true);
+    } else {
+      result = result.filter(c => !c.is_from_pro_valuation);
+    }
+  }
 
     if (filters.acquisitionChannelId) {
       result = result.filter(c => c.acquisition_channel_id === filters.acquisitionChannelId);
@@ -275,6 +295,7 @@ function transformValuation(lead: any): Contact {
     lead_form_name: lead.lead_form_ref?.name,
     apollo_status: lead.apollo_status || 'none',
     apollo_candidates: lead.apollo_candidates,
+    is_from_pro_valuation: lead.source_project?.includes('pro') || lead.referrer === 'Valoración Pro',
     priority: determinePriority(lead),
     is_hot_lead: determinePriority(lead) === 'hot',
   };
