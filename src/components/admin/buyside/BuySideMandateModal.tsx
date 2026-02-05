@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Plus, X } from 'lucide-react';
 import { BuySideMandate, BuySideMandateInput } from '@/hooks/useBuySideMandates';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 const mandateSchema = z.object({
   title: z.string().min(1, 'El título es obligatorio'),
@@ -39,23 +40,6 @@ interface BuySideMandateModalProps {
   onSave: (mandate: BuySideMandateInput) => void;
   isLoading?: boolean;
 }
-
-const SECTORS = [
-  'Tecnología',
-  'Salud',
-  'Industrial',
-  'Servicios',
-  'Retail',
-  'Alimentación',
-  'Construcción',
-  'Energía',
-  'Transporte y Logística',
-  'Hostelería',
-  'Educación',
-  'Finanzas',
-  'Agricultura',
-  'Otros',
-];
 
 const GEOGRAPHIC_SCOPES = [
   'España',
@@ -221,16 +205,12 @@ export const BuySideMandateModal: React.FC<BuySideMandateModalProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="sector">Sector *</Label>
-                <select
-                  id="sector"
-                  {...register('sector')}
-                  className="w-full h-10 px-3 rounded-md border border-input bg-background"
-                >
-                  <option value="">Seleccionar sector</option>
-                  {SECTORS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+                <SectorSelect
+                  value={watch('sector')}
+                  onChange={(value) => setValue('sector', value)}
+                  placeholder="Seleccionar sector"
+                  required
+                />
                 {errors.sector && (
                   <p className="text-sm text-destructive mt-1">{errors.sector.message}</p>
                 )}

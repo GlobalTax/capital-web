@@ -44,6 +44,7 @@ import {
 import { useCreateCRPortfolio, useUpdateCRPortfolio } from '@/hooks/useCRPortfolio';
 import { useCRFunds } from '@/hooks/useCRFunds';
 import { Loader2 } from 'lucide-react';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 const portfolioSchema = z.object({
   company_name: z.string().min(1, 'Nombre requerido'),
@@ -216,7 +217,11 @@ export const CRPortfolioEditModal: React.FC<CRPortfolioEditModalProps> = ({
                   <FormItem>
                     <FormLabel>Sector</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Tecnología" />
+                      <SectorSelect
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Selecciona un sector"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -24,6 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Building2, Save } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
 // Función para normalizar CIF: trim, mayúsculas, sin espacios
 const normalizeCif = (cif: string | undefined | null): string | null => {
@@ -205,7 +206,12 @@ export const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({
                       <FormItem>
                         <FormLabel>Sector *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Tecnología, Industrial, etc." {...field} />
+                          <SectorSelect
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Selecciona un sector"
+                            className="w-full"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
