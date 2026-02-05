@@ -1,232 +1,121 @@
 
-# Plan: Recuperar Filtros Avanzados y Edición Inline de Fecha en Gestión de Leads
+
+# Plan: Corregir Columna Estado en Tabla de Leads
 
 ## Diagnóstico Completado
 
-### Estado Actual del Sistema
+### Causa Raíz
 
-| Funcionalidad | Infraestructura | UI en contacts-v2 |
-|---------------|-----------------|-------------------|
-| Filtro Estado | ✅ Hook implementado | ✅ Dropdown visible |
-| Filtro Origen | ✅ Hook implementado | ✅ Dropdown visible |
-| Filtro Fecha (presets/rango) | ✅ Lógica en useContacts | ❌ **NO hay controles** |
-| Filtro Facturación | ✅ Lógica en useContacts | ❌ **NO hay controles** |
-| Filtro EBITDA | ✅ Lógica en useContacts | ❌ **NO hay controles** |
-| Filtro Tipo Valoración (PRO/Normal) | ✅ Lógica en useUnifiedContacts | ❌ **NO implementado en v2** |
-| Edición inline de fecha | ✅ Componente `EditableDateCell` existe | ❌ **NO usado en ContactRow** |
-| Bulk update de fecha | ✅ Componente `BulkDateSelect` existe | ❌ **NO importado en Header** |
+| Ubicación | Campo Usado | Valor Mostrado | Correcto? |
+|-----------|-------------|----------------|-----------|
+| **Perfil del lead** | `lead_status_crm` → lookup en `contact_statuses.label` | "Unqualified Lead" | ✅ Correcto |
+| **Tabla de leads** | `lead_status_crm` renderizado directamente | "calificado" | ❌ Incorrecto |
 
-### Causa Raíz de la Regresión
+**El problema está en `ContactRow.tsx` línea 121:**
+```tsx
+// INCORRECTO - muestra el status_key, no el label
+{contact.lead_status_crm.replace(/_/g, ' ')}
+```
 
-El sistema contacts-v2 se creó como versión "simplificada" y se omitieron los controles de UI para filtros avanzados que ya estaban implementados en el hook. También se eliminó:
-- El componente `BulkDateSelect` del header (pero existe en `/contacts/`)
-- El uso de `EditableDateCell` en las filas de la tabla
-- Los controles de filtro de fecha y rangos financieros
+### Mapeo Real en Base de Datos (`contact_statuses`)
+
+| status_key | label (nombre real) |
+|------------|---------------------|
+| `nuevo` | Nuevo |
+| `contactando` | Target Lead |
+| `calificado` | **Unqualified Lead** |
+| `propuesta_enviada` | Primer Contacto |
+| `negociacion` | Llamado - NR |
+| `en_espera` | Contacto Efectivo |
+| `fase0_activo` | Reunión Programada |
+| `archivado` | PSH Enviada |
+| `ganado` | Ganado |
+| `perdido` | Perdido - NR |
+
+El perfil usa `LeadStatusBadge` → `useContactStatuses.getStatusByKey()` para resolver el label correcto.
+La tabla NO hace esta resolución.
 
 ---
 
-## Implementación
+## Solución
 
-### Fase 1: Recuperar Filtros en ContactsFilters.tsx
+### Opción A: Usar LeadStatusBadge en ContactRow (Recomendada)
 
-**Cambios en `src/components/admin/contacts-v2/ContactsFilters.tsx`:**
+Reutilizar el mismo componente que usa el perfil para garantizar consistencia total.
 
-Añadir 4 nuevos filtros a la barra de filtros:
+**Cambio en `src/components/admin/contacts-v2/ContactRow.tsx`:**
 
-1. **Filtro Tipo Valoración (PRO/Normal)**
-   - Dropdown con opciones: Todos, PRO, Normal
-   - Campo: nuevo `valuationType` en tipos
-
-2. **Filtro Fecha (presets + rango)**
-   - Dropdown con presets: Última semana, Último mes, Personalizado
-   - Usa `dateFrom`/`dateTo` del hook
-
-3. **Filtro Facturación (rangos)**
-   - Popover con inputs min/max
-   - Presets rápidos: >500k, >1M, >5M
-   - Usa `revenueMin`/`revenueMax`
-
-4. **Filtro EBITDA (rangos)**
-   - Popover con inputs min/max
-   - Presets rápidos: >50k, >100k, >500k
-   - Usa `ebitdaMin`/`ebitdaMax`
-
-### Fase 2: Actualizar Tipos
-
-**Cambios en `src/components/admin/contacts-v2/types.ts`:**
-
-Añadir a `ContactFilters`:
-```typescript
-valuationType?: 'all' | 'pro' | 'standard';
-```
-
-Añadir a `Contact`:
-```typescript
-is_from_pro_valuation?: boolean;
-```
-
-### Fase 3: Actualizar Hook useContacts
-
-**Cambios en `src/components/admin/contacts-v2/hooks/useContacts.ts`:**
-
-1. Añadir lógica de filtro `valuationType`:
-```typescript
-if (filters.valuationType && filters.valuationType !== 'all') {
-  if (filters.valuationType === 'pro') {
-    result = result.filter(c => c.source_project?.includes('pro') || c.is_from_pro_valuation);
-  } else {
-    result = result.filter(c => !c.source_project?.includes('pro') && !c.is_from_pro_valuation);
-  }
-}
-```
-
-2. Añadir filtros `revenueMax`, `ebitdaMin`, `ebitdaMax`:
-```typescript
-if (filters.revenueMax) {
-  result = result.filter(c => (c.empresa_facturacion ?? c.revenue ?? 0) <= filters.revenueMax!);
-}
-if (filters.ebitdaMin) {
-  result = result.filter(c => (c.ebitda ?? 0) >= filters.ebitdaMin!);
-}
-if (filters.ebitdaMax) {
-  result = result.filter(c => (c.ebitda ?? Infinity) <= filters.ebitdaMax!);
-}
-```
-
-3. En `transformValuation()`, añadir detección de PRO:
-```typescript
-is_from_pro_valuation: lead.referral === 'Valoración Pro' || lead.source_project?.includes('pro'),
-```
-
-### Fase 4: Recuperar Edición Inline de Fecha
-
-**Cambios en `src/components/admin/contacts-v2/ContactRow.tsx`:**
-
-Reemplazar la celda de fecha estática por `EditableDateCell`:
-
-Antes:
 ```tsx
-<div className="text-muted-foreground">
-  {format(new Date(displayDate), 'd MMM yy', { locale: es })}
+// ANTES (líneas 116-126):
+<div>
+  {contact.lead_status_crm ? (
+    <Badge 
+      variant="outline" 
+      className={cn('text-[10px] px-1.5 py-0 h-5 border', getStatusColor(contact.lead_status_crm))}
+    >
+      {contact.lead_status_crm.replace(/_/g, ' ')}
+    </Badge>
+  ) : (
+    <span className="text-muted-foreground/60">-</span>
+  )}
+</div>
+
+// DESPUÉS:
+import { LeadStatusBadge } from '../leads/LeadStatusBadge';
+
+<div>
+  {contact.lead_status_crm ? (
+    <LeadStatusBadge status={contact.lead_status_crm} showIcon={false} />
+  ) : (
+    <span className="text-muted-foreground/60">-</span>
+  )}
 </div>
 ```
 
-Después:
-```tsx
-<div onClick={(e) => e.stopPropagation()}>
-  <EditableDateCell
-    value={contact.lead_received_at || contact.created_at}
-    onSave={async (newDate) => {
-      await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
-    }}
-    displayFormat="d MMM yy"
-    displayClassName="text-muted-foreground"
-    emptyText="—"
-  />
-</div>
-```
-
-Esto requiere pasar `updateField` como prop desde el parent o usar `useContactInlineUpdate` directamente en el row.
-
-### Fase 5: Recuperar Bulk Update de Fecha
-
-**Cambios en `src/components/admin/contacts-v2/ContactsHeader.tsx`:**
-
-Importar y añadir `BulkDateSelect`:
-
-```tsx
-import { BulkDateSelect } from '../contacts/BulkDateSelect';
-
-// En el JSX, junto a los otros bulk actions:
-<BulkDateSelect
-  selectedIds={selectedIds}
-  contacts={contacts as any}
-  onSuccess={onClearSelection}
-/>
-```
-
-### Fase 6: Actualizar Invalidación de Cache
-
-**Cambios en `src/hooks/useBulkUpdateReceivedDate.ts`:**
-
-Asegurar que se invalide `contacts-v2`:
-
-```typescript
-onSuccess: (data) => {
-  queryClient.invalidateQueries({
-    queryKey: ['unified-contacts'],
-    refetchType: 'active',
-  });
-  // Añadir para contacts-v2
-  queryClient.invalidateQueries({ 
-    queryKey: ['contacts-v2'],
-    refetchType: 'active'
-  });
-  // ... resto del código
-}
-```
+**Ventajas:**
+- Una sola fuente de verdad para renderizar estados
+- Consistencia automática entre tabla y perfil
+- Labels dinámicos desde `contact_statuses`
+- Colores consistentes
 
 ---
 
-## Resumen de Archivos a Modificar
+## Archivos a Modificar
 
-| Archivo | Cambios | Tipo |
-|---------|---------|------|
-| `src/components/admin/contacts-v2/types.ts` | Añadir `valuationType` y `is_from_pro_valuation` | Tipos |
-| `src/components/admin/contacts-v2/hooks/useContacts.ts` | Añadir filtros PRO, revenueMax, EBITDA; detectar PRO en transform | Lógica |
-| `src/components/admin/contacts-v2/ContactsFilters.tsx` | Añadir 4 dropdowns/popovers de filtros | UI |
-| `src/components/admin/contacts-v2/ContactRow.tsx` | Reemplazar fecha estática por `EditableDateCell` | UI |
-| `src/components/admin/contacts-v2/ContactsHeader.tsx` | Importar y usar `BulkDateSelect` | UI |
-| `src/hooks/useBulkUpdateReceivedDate.ts` | Añadir invalidación `contacts-v2` | Cache |
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/admin/contacts-v2/ContactRow.tsx` | Usar `LeadStatusBadge` en lugar de Badge manual |
 
 ---
 
-## Flujo Resultante
+## Limpieza Adicional (Opcional)
 
-### Barra de Filtros (Recuperada)
-
-```text
-┌──────────────────────────────────────────────────────────────────────────────────────┐
-│ [🔍 Buscar...] [Origen ▼] [Estado ▼] [Tipo ▼] [Fecha ▼] [Facturación ▼] [EBITDA ▼]  │
-│                                       PRO      Últ.7d    >1M€           >100k€       │
-│                                       Normal   Rango...  Min-Max        Min-Max      │
-└──────────────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Edición Inline de Fecha
-
-```text
-┌────────────────────────────────────────────────────────────┐
-│  Nombre     │ Empresa │ Estado │ ... │    Fecha     │ ... │
-├─────────────┼─────────┼────────┼─────┼──────────────┼─────┤
-│  Juan García│ Tech SL │ Nuevo  │ ... │ [5 Feb 25 📅]│ ... │
-│             │         │        │     │   ▲ Click    │     │
-│             │         │        │     │   abre picker│     │
-└─────────────┴─────────┴────────┴─────┴──────────────┴─────┘
-```
-
-### Bulk Actions (Con Fecha)
-
-```text
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│ [Archivar (5)] [Estado ▼] [Canal ▼] [Formulario ▼] [Fecha registro 📅] [Brevo (5)] │
-│                                                      ▲ NUEVO                        │
-└─────────────────────────────────────────────────────────────────────────────────────┘
-```
+Eliminar el mapa `STATUS_COLORS` hardcodeado (líneas 24-36) de `ContactRow.tsx` ya que no se usará más - `LeadStatusBadge` ya gestiona los colores dinámicamente desde la base de datos.
 
 ---
 
 ## Verificación Post-Implementación
 
-### Tests Obligatorios
-
 | Test | Verificación |
 |------|--------------|
-| Filtro Estado | Seleccionar "Nuevo" → solo leads nuevos |
-| Filtro PRO/Normal | Seleccionar "PRO" → solo leads de valoración pro |
-| Última semana | Activar → solo leads de últimos 7 días |
-| Facturación >1M€ | Activar → solo leads con revenue/facturacion >1M |
-| EBITDA >100k€ | Activar → solo leads con EBITDA >100k |
-| Edición fecha inline | Click en fecha → picker → seleccionar → guarda y actualiza |
-| Bulk fecha | Seleccionar 5 leads → "Fecha registro" → seleccionar fecha → aplicar → toast éxito |
-| Sin refresh | Cambios visibles inmediatamente sin F5 ni botón actualizar |
+| Caso A | Lead con `lead_status_crm = "calificado"` muestra "Unqualified Lead" en tabla |
+| Caso B | Lead con `lead_status_crm = "contactando"` muestra "Target Lead" en tabla |
+| Caso C | Cambiar estado en perfil → tabla refleja cambio sin refresh |
+| Caso D | Filtro por estado sigue funcionando (usa `status_key` internamente) |
+
+---
+
+## Resultado Esperado
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ Nombre        │ Empresa          │ Estado          │ Canal      │
+├───────────────┼──────────────────┼─────────────────┼────────────┤
+│ Edu Alonso    │ Energías Alonso  │ Unqualified Lead│ Meta Ads   │
+│ Juan García   │ Tech SL          │ Target Lead     │ Google Ads │
+│ María López   │ Industrias ML    │ Primer Contacto │ SEO        │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+La tabla mostrará **el mismo label** que aparece en el perfil del lead.
+
