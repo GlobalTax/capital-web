@@ -1,168 +1,264 @@
 
-# Plan: Arreglar Scroll Vertical Bloqueado en CRM
+# Plan: Añadir Sector "Distribución" y Estandarizar Uso de Sectores Dinámicos
 
 ## Diagnóstico Completado
 
-### Causa Raíz Principal
+### Estado Actual del Sistema de Sectores
 
-El problema de scroll bloqueado se origina en el **AdminLayout**, donde hay una cascada de `overflow-hidden` que bloquea el scroll en todo el CRM:
+| Componente | Estado |
+|------------|--------|
+| Tabla `sectors` en DB | ✅ Existe con 22 sectores activos |
+| Hook `useSectors.tsx` | ✅ Carga sectores desde DB dinámicamente |
+| Componente `SectorSelect` | ✅ Reutilizable, conectado a DB |
+| Panel admin `/admin/sectores` | ✅ SectorManagement permite CRUD de sectores |
+| Sector "Distribución" | ❌ **NO existe** |
+
+### Formularios que Necesitan Migración a Sectores Dinámicos
+
+| Formulario | Archivo | Problema |
+|------------|---------|----------|
+| Nueva Empresa/Target | `CompanyFormDialog.tsx` | Usa `<Input>` texto libre |
+| Mandato de Compra | `BuySideMandateModal.tsx` | Usa array HARDCODED `SECTORS` |
+| Adquisición SF | `SFAcquisitionEditModal.tsx` | Usa `<Input>` texto libre |
+| Participada CR | `CRPortfolioEditModal.tsx` | Usa `<Input>` texto libre |
+
+---
+
+## Implementación
+
+### Paso 1: Insertar Sector "Distribución" en DB
+
+Ejecutar en Supabase:
+
+```sql
+INSERT INTO sectors (name_es, name_en, slug, is_active, display_order)
+VALUES ('Distribución', 'Distribution', 'distribucion', true, 7);
+```
+
+Esto añade "Distribución" después de "Energía y Renovables" (display_order 7).
+
+---
+
+### Paso 2: Migrar CompanyFormDialog a SectorSelect
+
+**Archivo**: `src/components/admin/companies/CompanyFormDialog.tsx`
+
+Cambiar de Input de texto libre a `SectorSelect`:
+
+**Antes (líneas 201-213)**:
+```tsx
+<FormField
+  control={form.control}
+  name="sector"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Sector *</FormLabel>
+      <FormControl>
+        <Input placeholder="Tecnología, Industrial, etc." {...field} />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+**Después**:
+```tsx
+import SectorSelect from '@/components/admin/shared/SectorSelect';
+
+<FormField
+  control={form.control}
+  name="sector"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Sector *</FormLabel>
+      <FormControl>
+        <SectorSelect
+          value={field.value}
+          onChange={field.onChange}
+          placeholder="Selecciona un sector"
+          className="w-full"
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+```
+
+---
+
+### Paso 3: Migrar BuySideMandateModal a SectorSelect
+
+**Archivo**: `src/components/admin/buyside/BuySideMandateModal.tsx`
+
+Cambiar de array hardcoded a `SectorSelect`:
+
+**Antes (líneas 43-58)**:
+```tsx
+const SECTORS = [
+  'Tecnología',
+  'Salud',
+  'Industrial',
+  // ... array hardcoded
+];
+```
+
+**Después**:
+- Eliminar el array `SECTORS`
+- Importar y usar `SectorSelect`
+- Cambiar el `<select>` nativo por `SectorSelect`
 
 ```tsx
-// AdminLayout.tsx - Línea 115
-<div className="h-screen h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))] overflow-hidden">
-  
-  // Línea 118 - SEGUNDO overflow-hidden
-  <SidebarInset className="flex-1 flex flex-col min-w-0 overflow-hidden">
-    
-    // Línea 129 - TERCER overflow-hidden en el contenedor de contenido
-    <div className="flex-1 overflow-hidden flex flex-col">
-      <div className="flex-1 min-h-0 w-full max-w-full flex flex-col p-2 sm:p-3 md:p-4">
-        {children}  // ← Las páginas NO tienen scroll disponible
-      </div>
-    </div>
-  </SidebarInset>
+import SectorSelect from '@/components/admin/shared/SectorSelect';
+
+// En el formulario, líneas ~224-237:
+<div>
+  <Label htmlFor="sector">Sector *</Label>
+  <SectorSelect
+    value={watch('sector')}
+    onChange={(value) => setValue('sector', value)}
+    placeholder="Selecciona un sector"
+    required
+  />
+  {errors.sector && (
+    <p className="text-sm text-destructive mt-1">{errors.sector.message}</p>
+  )}
 </div>
 ```
 
-### Problema Técnico
-
-1. **Triple `overflow-hidden`** en contenedores anidados bloquea cualquier scroll
-2. **Falta `overflow-y-auto`** en el contenedor principal de contenido (`{children}`)
-3. **Las páginas no tienen un scroll container** - confían en que el layout proporcione uno
-
-### Páginas Afectadas (Ejemplos)
-
-| Ruta | Problema Específico |
-|------|---------------------|
-| `/admin/valoraciones-pro/:id` | Formulario largo sin scroll (usa `p-6 space-y-6` sin overflow) |
-| `/admin/cr-fund/:id` | Tiene `h-full` pero depende del padre para scroll |
-| `/admin/sf-acquisition/:id` | Usa `flex flex-1 overflow-hidden` que necesita scroll interno |
-| Cualquier página con contenido >100vh | Bloqueada por `overflow-hidden` del layout |
-
 ---
 
-## Solución Global
+### Paso 4: Migrar SFAcquisitionEditModal a SectorSelect
 
-### 1. Modificar AdminLayout.tsx (Cambio Principal)
+**Archivo**: `src/components/admin/search-funds/SFAcquisitionEditModal.tsx`
 
-Cambiar el contenedor de contenido para que sea el **único scroll container**:
+Cambiar Input de texto libre a `SectorSelect`:
 
-**Antes (líneas 128-133):**
+**Antes (líneas 205-217)**:
 ```tsx
-{/* Main content area - responsive padding */}
-<div className="flex-1 overflow-hidden flex flex-col">
-  <div className="flex-1 min-h-0 w-full max-w-full flex flex-col p-2 sm:p-3 md:p-4">
-    {children}
-  </div>
-</div>
+<FormField
+  control={form.control}
+  name="sector"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Sector</FormLabel>
+      <FormControl>
+        <Input {...field} placeholder="Tecnología" />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 ```
 
-**Después:**
+**Después**:
 ```tsx
-{/* Main content area - SCROLLABLE */}
-<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-  <div className="min-h-full w-full max-w-full p-2 sm:p-3 md:p-4">
-    {children}
-  </div>
-</div>
+import SectorSelect from '@/components/admin/shared/SectorSelect';
+
+<FormField
+  control={form.control}
+  name="sector"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Sector</FormLabel>
+      <FormControl>
+        <SectorSelect
+          value={field.value || ''}
+          onChange={field.onChange}
+          placeholder="Selecciona un sector"
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 ```
 
-**Cambios clave:**
-- `overflow-hidden` → `overflow-y-auto overflow-x-hidden` (habilita scroll vertical)
-- `min-h-0` obligatorio para que flex items puedan colapsar y scrollear
-- Quitar `flex flex-col` del wrapper interno (no necesario, simplifica)
-- Cambiar `flex-1` por `min-h-full` en el div interior para que crezca con contenido
+---
 
-### 2. Verificar SidebarInset (sidebar.tsx)
+### Paso 5: Migrar CRPortfolioEditModal a SectorSelect
 
-El `SidebarInset` ya tiene `overflow-hidden` en la línea 324:
+**Archivo**: `src/components/admin/capital-riesgo/CRPortfolioEditModal.tsx`
 
+Cambiar Input de texto libre a `SectorSelect`:
+
+**Antes (líneas 212-224)**:
 ```tsx
-// sidebar.tsx línea 323-324
-className={cn(
-  "relative flex h-svh min-h-svh flex-1 flex-col bg-background overflow-hidden",
+<FormField
+  control={form.control}
+  name="sector"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Sector</FormLabel>
+      <FormControl>
+        <Input {...field} placeholder="Tecnología" />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 ```
 
-Esto está BIEN porque el scroll debe estar en el hijo (`main content area`), no en el SidebarInset. Pero debemos asegurar que el hijo interno pueda scrollear.
+**Después**:
+```tsx
+import SectorSelect from '@/components/admin/shared/SectorSelect';
 
----
-
-## Archivos a Modificar
-
-| Archivo | Cambio | Impacto |
-|---------|--------|---------|
-| `src/features/admin/components/AdminLayout.tsx` | Cambiar contenedor de contenido a scrollable | **GLOBAL** - arregla todas las rutas |
-
-**Solo 1 archivo, ~4 líneas cambiadas.**
-
----
-
-## Política de Scroll Definida
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    VIEWPORT (100vh)                         │
-├────────────────────┬────────────────────────────────────────┤
-│                    │  HEADER (fixed height, shrink-0)       │
-│                    ├────────────────────────────────────────┤
-│   SIDEBAR          │                                        │
-│   (fixed)          │   MAIN CONTENT AREA                    │
-│   h-svh            │   (flex-1, min-h-0, overflow-y-auto)   │
-│   overflow-y-auto  │                                        │
-│                    │   ← ÚNICO SCROLL CONTAINER ←            │
-│                    │                                        │
-│                    │   Páginas renderizan aquí sin          │
-│                    │   preocuparse por overflow             │
-│                    │                                        │
-└────────────────────┴────────────────────────────────────────┘
+<FormField
+  control={form.control}
+  name="sector"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Sector</FormLabel>
+      <FormControl>
+        <SectorSelect
+          value={field.value || ''}
+          onChange={field.onChange}
+          placeholder="Selecciona un sector"
+        />
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
 ```
 
-**Regla crítica:** `min-h-0` es obligatorio en flex items para que `overflow-y-auto` funcione.
+---
+
+## Resumen de Archivos a Modificar
+
+| Archivo | Cambio | Tipo |
+|---------|--------|------|
+| BD `sectors` | INSERT "Distribución" | SQL |
+| `CompanyFormDialog.tsx` | Input → SectorSelect | Migración |
+| `BuySideMandateModal.tsx` | SECTORS array → SectorSelect | Migración |
+| `SFAcquisitionEditModal.tsx` | Input → SectorSelect | Migración |
+| `CRPortfolioEditModal.tsx` | Input → SectorSelect | Migración |
 
 ---
 
-## Verificación Post-Implementación
+## Compatibilidad con Histórico
 
-### Rutas a Probar
-
-| Ruta | Verificar |
-|------|-----------|
-| `/admin/contacts` | Scroll en tabla virtualizada (ya tiene su propio overflow interno) |
-| `/admin/valoraciones-pro/:id` | Formulario largo debe scrollear |
-| `/admin/cr-fund/:id` | Tabs con contenido largo deben scrollear |
-| `/admin/sf-acquisition/:id` | Layout con sidebar debe permitir scroll en panel derecho |
-| `/admin/valoraciones-pro` | Listado con tabla |
-| `/admin/operations/dashboard` | Dashboard con múltiples cards |
-
-### Criterios de Éxito
-
-1. Scroll vertical funciona en TODAS las rutas con contenido >100vh
-2. NO hay doble scroll (solo 1 scrollbar visible)
-3. Sidebar permanece fija
-4. Header permanece fijo
-5. Tablas virtualizadas (contacts, empresas) mantienen su scroll interno
+- **Preservado**: Los sectores ya existentes en registros antiguos se mantienen como strings en sus columnas
+- **Display**: `SectorSelect` usa `name_es` como valor, que coincide con los strings históricos
+- **Nuevos registros**: Usarán nombres consistentes de la tabla `sectors`
+- **Filtros**: Los filtros de sector en listados seguirán funcionando porque comparan strings
 
 ---
 
-## Páginas con Scroll Interno (Sin Cambios Necesarios)
+## Resultado Final
 
-Estas páginas ya manejan su propio scroll interno y seguirán funcionando:
-
-- **ContactsPage**: Usa CSS Grid con `overflow-hidden` en el contenedor y scroll interno en tabla
-- **CRFundDetailPage**: Tiene `overflow-auto` en el panel derecho (línea 153)
-- **SFAcquisitionDetailPage**: Tiene `overflow-hidden` pero contenido interno no excede viewport
-
-El fix global les proporciona un scroll de respaldo si el contenido excede su container.
+1. **Sector "Distribución"** disponible en todos los formularios
+2. **Todos los formularios de Sector** usan datos dinámicos desde DB
+3. **Panel Admin** (`/admin/sectores`) permite añadir/editar sectores sin código
+4. **Cero roturas** en datos históricos
 
 ---
 
-## Resumen Técnico
+## Verificación Rápida (2 minutos)
 
-| Elemento | Estado Actual | Cambio |
-|----------|---------------|--------|
-| Layout externo | `overflow-hidden` | Sin cambio (mantiene) |
-| SidebarInset | `overflow-hidden` | Sin cambio (correcto) |
-| Contenedor de contenido | `overflow-hidden flex flex-col` | → `overflow-y-auto min-h-0` |
-| Div interior | `flex-1 min-h-0 flex flex-col` | → `min-h-full` |
-
-**Total: 4 líneas modificadas en 1 archivo.**
+1. Ir a `/admin/sectores` → Verificar "Distribución" aparece
+2. Ir a `/admin/empresas` → Crear "Nueva Empresa" → Verificar dropdown con "Distribución"
+3. Crear empresa con sector "Distribución" → Verificar se guarda correctamente
+4. Ir a `/admin/mandatos-compra` → Crear nuevo mandato → Verificar dropdown dinámico
+5. Crear un sector nuevo desde `/admin/sectores` (ej: "Packaging") → Verificar aparece automáticamente en formularios
