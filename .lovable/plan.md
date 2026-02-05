@@ -1,82 +1,136 @@
 
 
-# Plan: Corregir Columna Estado en Tabla de Leads
+# Plan: Añadir Checkbox "Revisado" en Tabla de Corporate Buyers
 
-## Diagnóstico Completado
+## Resumen
 
-### Causa Raíz
-
-| Ubicación | Campo Usado | Valor Mostrado | Correcto? |
-|-----------|-------------|----------------|-----------|
-| **Perfil del lead** | `lead_status_crm` → lookup en `contact_statuses.label` | "Unqualified Lead" | ✅ Correcto |
-| **Tabla de leads** | `lead_status_crm` renderizado directamente | "calificado" | ❌ Incorrecto |
-
-**El problema está en `ContactRow.tsx` línea 121:**
-```tsx
-// INCORRECTO - muestra el status_key, no el label
-{contact.lead_status_crm.replace(/_/g, ' ')}
-```
-
-### Mapeo Real en Base de Datos (`contact_statuses`)
-
-| status_key | label (nombre real) |
-|------------|---------------------|
-| `nuevo` | Nuevo |
-| `contactando` | Target Lead |
-| `calificado` | **Unqualified Lead** |
-| `propuesta_enviada` | Primer Contacto |
-| `negociacion` | Llamado - NR |
-| `en_espera` | Contacto Efectivo |
-| `fase0_activo` | Reunión Programada |
-| `archivado` | PSH Enviada |
-| `ganado` | Ganado |
-| `perdido` | Perdido - NR |
-
-El perfil usa `LeadStatusBadge` → `useContactStatuses.getStatusByKey()` para resolver el label correcto.
-La tabla NO hace esta resolución.
+Añadir una columna con checkbox para marcar compradores corporativos como "revisados" en la tabla `/admin/corporate-buyers`. El cambio persiste en base de datos y se actualiza al instante en la UI.
 
 ---
 
-## Solución
+## Cambios Necesarios
 
-### Opción A: Usar LeadStatusBadge en ContactRow (Recomendada)
+### 1. Base de Datos - Nueva Columna
 
-Reutilizar el mismo componente que usa el perfil para garantizar consistencia total.
+Ejecutar migración SQL para añadir el campo `is_reviewed`:
 
-**Cambio en `src/components/admin/contacts-v2/ContactRow.tsx`:**
+```sql
+ALTER TABLE corporate_buyers 
+ADD COLUMN is_reviewed BOOLEAN DEFAULT FALSE;
 
+-- Opcional: índice si se planea filtrar por este campo
+CREATE INDEX idx_corporate_buyers_is_reviewed 
+ON corporate_buyers(is_reviewed) 
+WHERE is_deleted = false;
+```
+
+### 2. Tipos TypeScript
+
+**Archivo:** `src/types/corporateBuyers.ts`
+
+Añadir campo al interface `CorporateBuyer`:
+
+```typescript
+export interface CorporateBuyer {
+  // ... campos existentes ...
+  is_reviewed: boolean;  // NUEVO
+}
+```
+
+### 3. Hook para Toggle "Revisado"
+
+**Archivo:** `src/hooks/useCorporateBuyers.ts`
+
+Añadir nuevo hook:
+
+```typescript
+export const useToggleBuyerReviewed = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, isReviewed }: { id: string; isReviewed: boolean }) => {
+      const { error } = await supabase
+        .from('corporate_buyers')
+        .update({ is_reviewed: isReviewed })
+        .eq('id', id);
+
+      if (error) throw error;
+      return { id, isReviewed };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['corporate-buyers'] });
+    },
+    onError: () => {
+      toast.error('Error al actualizar estado de revisión');
+    },
+  });
+};
+```
+
+### 4. UI - Columna Checkbox en Tabla
+
+**Archivo:** `src/components/admin/corporate-buyers/CorporateBuyersTable.tsx`
+
+Añadir columna "Revisado" con checkbox:
+
+| Ubicación | Cambio |
+|-----------|--------|
+| Props | Añadir `onToggleReviewed: (id: string, isReviewed: boolean) => void` |
+| Header | Añadir columna "✓" (check icon) entre Favorito y Nombre |
+| Row | Añadir Checkbox clicable que llama `onToggleReviewed` |
+
+**Header:**
 ```tsx
-// ANTES (líneas 116-126):
-<div>
-  {contact.lead_status_crm ? (
-    <Badge 
-      variant="outline" 
-      className={cn('text-[10px] px-1.5 py-0 h-5 border', getStatusColor(contact.lead_status_crm))}
-    >
-      {contact.lead_status_crm.replace(/_/g, ' ')}
-    </Badge>
-  ) : (
-    <span className="text-muted-foreground/60">-</span>
-  )}
-</div>
-
-// DESPUÉS:
-import { LeadStatusBadge } from '../leads/LeadStatusBadge';
-
-<div>
-  {contact.lead_status_crm ? (
-    <LeadStatusBadge status={contact.lead_status_crm} showIcon={false} />
-  ) : (
-    <span className="text-muted-foreground/60">-</span>
-  )}
+<div className="w-10 flex-shrink-0 flex items-center justify-center">
+  <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
 </div>
 ```
 
-**Ventajas:**
-- Una sola fuente de verdad para renderizar estados
-- Consistencia automática entre tabla y perfil
-- Labels dinámicos desde `contact_statuses`
-- Colores consistentes
+**Row:**
+```tsx
+<div className="w-10 flex-shrink-0 flex justify-center">
+  <Checkbox
+    checked={buyer.is_reviewed}
+    onClick={(e) => {
+      e.stopPropagation();
+      onToggleReviewed(buyer.id, !buyer.is_reviewed);
+    }}
+    className="data-[state=checked]:bg-green-600"
+  />
+</div>
+```
+
+### 5. Página - Conectar Handler
+
+**Archivo:** `src/pages/admin/CorporateBuyersPage.tsx`
+
+Importar y usar el nuevo hook:
+
+```tsx
+import { useToggleBuyerReviewed } from '@/hooks/useCorporateBuyers';
+
+const { mutate: toggleReviewed } = useToggleBuyerReviewed();
+
+<CorporateBuyersTable
+  // ...props existentes
+  onToggleReviewed={(id, isReviewed) => toggleReviewed({ id, isReviewed })}
+/>
+```
+
+---
+
+## Resultado Visual
+
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ☐  │ ⭐ │ ✓  │ Nombre        │ Tipo     │ País │ Sectores │ Facturación │
+├────┼────┼────┼───────────────┼──────────┼──────┼──────────┼─────────────┤
+│ ☐  │ ☆  │ ☑  │ Grupo ABC     │ Corporate│ ES   │ Tech     │ €5M - €50M  │
+│ ☐  │ ★  │ ☐  │ Inversiones XY│ PE Fund  │ ES   │ Industria│ €10M - €100M│
+└────┴────┴────┴───────────────┴──────────┴──────┴──────────┴─────────────┘
+        ▲
+        Nueva columna "Revisado"
+```
 
 ---
 
@@ -84,38 +138,17 @@ import { LeadStatusBadge } from '../leads/LeadStatusBadge';
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/admin/contacts-v2/ContactRow.tsx` | Usar `LeadStatusBadge` en lugar de Badge manual |
+| **SQL Migration** | Añadir columna `is_reviewed` |
+| `src/types/corporateBuyers.ts` | Añadir `is_reviewed: boolean` al interface |
+| `src/hooks/useCorporateBuyers.ts` | Añadir hook `useToggleBuyerReviewed` |
+| `src/components/admin/corporate-buyers/CorporateBuyersTable.tsx` | Añadir columna con checkbox |
+| `src/pages/admin/CorporateBuyersPage.tsx` | Conectar handler toggle |
 
 ---
 
-## Limpieza Adicional (Opcional)
+## Comportamiento
 
-Eliminar el mapa `STATUS_COLORS` hardcodeado (líneas 24-36) de `ContactRow.tsx` ya que no se usará más - `LeadStatusBadge` ya gestiona los colores dinámicamente desde la base de datos.
-
----
-
-## Verificación Post-Implementación
-
-| Test | Verificación |
-|------|--------------|
-| Caso A | Lead con `lead_status_crm = "calificado"` muestra "Unqualified Lead" en tabla |
-| Caso B | Lead con `lead_status_crm = "contactando"` muestra "Target Lead" en tabla |
-| Caso C | Cambiar estado en perfil → tabla refleja cambio sin refresh |
-| Caso D | Filtro por estado sigue funcionando (usa `status_key` internamente) |
-
----
-
-## Resultado Esperado
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ Nombre        │ Empresa          │ Estado          │ Canal      │
-├───────────────┼──────────────────┼─────────────────┼────────────┤
-│ Edu Alonso    │ Energías Alonso  │ Unqualified Lead│ Meta Ads   │
-│ Juan García   │ Tech SL          │ Target Lead     │ Google Ads │
-│ María López   │ Industrias ML    │ Primer Contacto │ SEO        │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-La tabla mostrará **el mismo label** que aparece en el perfil del lead.
+- **Click en checkbox** → Toggle instantáneo (optimista) → Persiste en DB
+- **Visual**: Checkbox verde cuando está marcado
+- **Sin refresh**: La tabla se actualiza automáticamente via React Query invalidation
 
