@@ -5,12 +5,11 @@ import React, { memo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Contact } from './types';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
 import { EditableDateCell } from '../shared/EditableDateCell';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
+import { LeadStatusBadge } from '../leads/LeadStatusBadge';
 
 interface ContactRowProps {
   contact: Contact;
@@ -19,21 +18,6 @@ interface ContactRowProps {
   onViewDetails: () => void;
   style: React.CSSProperties;
 }
-
-// Color mappings for lead status
-const STATUS_COLORS: Record<string, string> = {
-  nuevo: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  contactando: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  calificado: 'bg-green-500/10 text-green-700 border-green-500/20',
-  propuesta_enviada: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-  negociacion: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/20',
-  mandato_propuesto: 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-  en_espera: 'bg-gray-500/10 text-gray-700 border-gray-500/20',
-  archivado: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
-  lead_perdido_curiosidad: 'bg-red-500/10 text-red-700 border-red-500/20',
-  compras: 'bg-rose-500/10 text-rose-700 border-rose-500/20',
-  fase0_activo: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
-};
 
 // Color mappings for acquisition channels
 const CHANNEL_COLORS: Record<string, string> = {
@@ -47,11 +31,6 @@ const CHANNEL_COLORS: Record<string, string> = {
   'Directo': 'bg-slate-500/10 text-slate-700 border-slate-500/20',
   'Evento/Feria': 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
   'Marketplace': 'bg-pink-500/10 text-pink-700 border-pink-500/20',
-};
-
-const getStatusColor = (status?: string): string => {
-  if (!status) return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
-  return STATUS_COLORS[status] || 'bg-gray-500/10 text-gray-700 border-gray-500/20';
 };
 
 const getChannelColor = (channel?: string): string => {
@@ -111,15 +90,10 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.empresa_nombre || contact.company || '-'}
         </div>
 
-        {/* Status - with color badge */}
+        {/* Status - using LeadStatusBadge for consistent labels from contact_statuses */}
         <div>
           {contact.lead_status_crm ? (
-            <Badge 
-              variant="outline" 
-              className={cn('text-[10px] px-1.5 py-0 h-5 border', getStatusColor(contact.lead_status_crm))}
-            >
-              {contact.lead_status_crm.replace(/_/g, ' ')}
-            </Badge>
+            <LeadStatusBadge status={contact.lead_status_crm} showIcon={false} />
           ) : (
             <span className="text-muted-foreground/60">-</span>
           )}
