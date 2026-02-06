@@ -73,7 +73,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
       </div>
 
       {/* Grid Content */}
-      <div className="flex-1 grid grid-cols-[2fr_1.5fr_1fr_1fr_80px_80px_1fr_80px] gap-2 text-xs items-center min-w-0">
+      <div className="flex-1 grid grid-cols-[2fr_1.5fr_90px_1fr_1fr_100px_100px_80px_80px_1fr_80px] gap-2 text-xs items-center min-w-0">
         {/* Name + Email */}
         <div className="flex items-center gap-1.5 min-w-0">
           <div onClick={(e) => e.stopPropagation()}>
@@ -88,6 +88,11 @@ const ContactRow: React.FC<ContactRowProps> = ({
         {/* Company */}
         <div className="truncate text-muted-foreground">
           {contact.empresa_nombre || contact.company || '-'}
+        </div>
+
+        {/* Phone */}
+        <div className="truncate text-muted-foreground text-[11px]">
+          {contact.phone || '-'}
         </div>
 
         {/* Status - using LeadStatusBadge for consistent labels from contact_statuses */}
@@ -111,6 +116,16 @@ const ContactRow: React.FC<ContactRowProps> = ({
           ) : (
             <span className="text-muted-foreground/60">-</span>
           )}
+        </div>
+
+        {/* Form */}
+        <div className="truncate text-muted-foreground text-[11px]">
+          {contact.lead_form_name || '-'}
+        </div>
+
+        {/* Sector */}
+        <div className="truncate text-muted-foreground text-[11px]">
+          {contact.industry || contact.ai_sector_name || '-'}
         </div>
 
         {/* Revenue/Facturación */}

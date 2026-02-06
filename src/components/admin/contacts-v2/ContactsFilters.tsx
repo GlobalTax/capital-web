@@ -24,6 +24,7 @@ import { ContactFilters as Filters, ContactStats, ContactOrigin } from './types'
 import { cn } from '@/lib/utils';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
 
 interface ContactsFiltersProps {
   filters: Filters;
@@ -44,15 +45,7 @@ const ORIGIN_OPTIONS: { value: ContactOrigin; label: string }[] = [
   { value: 'advisor', label: 'Asesor' },
 ];
 
-const STATUS_OPTIONS = [
-  { value: 'nuevo', label: 'Nuevo' },
-  { value: 'contactado', label: 'Contactado' },
-  { value: 'calificado', label: 'Calificado' },
-  { value: 'propuesta_enviada', label: 'Propuesta' },
-  { value: 'negociacion', label: 'Negociación' },
-  { value: 'ganado', label: 'Ganado' },
-  { value: 'perdido', label: 'Perdido' },
-];
+// STATUS_OPTIONS removed - now loaded dynamically from useContactStatuses
 
 const VALUATION_TYPE_OPTIONS = [
   { value: 'all', label: 'Todos' },
@@ -91,6 +84,7 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const [isRevenueOpen, setIsRevenueOpen] = useState(false);
   const [isEbitdaOpen, setIsEbitdaOpen] = useState(false);
+  const { activeStatuses } = useContactStatuses();
 
   const hasActiveFilters = !!(
     filters.search ||
@@ -102,7 +96,8 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
     filters.revenueMin ||
     filters.revenueMax ||
     filters.ebitdaMin ||
-    filters.ebitdaMax
+    filters.ebitdaMax ||
+    filters.leadFormId
   );
 
   const clearFilters = () => {
@@ -220,15 +215,19 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
             >
               Todos
             </DropdownMenuCheckboxItem>
-            {STATUS_OPTIONS.map(opt => (
-              <DropdownMenuCheckboxItem
-                key={opt.value}
-                checked={filters.status === opt.value}
-                onCheckedChange={() => onFiltersChange({ ...filters, status: opt.value })}
-              >
-                {opt.label}
-              </DropdownMenuCheckboxItem>
-            ))}
+            {activeStatuses.map(s => {
+              const colors = STATUS_COLOR_MAP[s.color] || STATUS_COLOR_MAP['gray'];
+              return (
+                <DropdownMenuCheckboxItem
+                  key={s.status_key}
+                  checked={filters.status === s.status_key}
+                  onCheckedChange={() => onFiltersChange({ ...filters, status: s.status_key })}
+                >
+                  <span className={cn('inline-block w-2 h-2 rounded-full mr-1.5', colors.bg)} />
+                  {s.label}
+                </DropdownMenuCheckboxItem>
+              );
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -473,6 +472,42 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Form Filter */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+              Formulario
+              {filters.leadFormId && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuCheckboxItem
+              checked={!filters.leadFormId}
+              onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: undefined })}
+            >
+              Todos
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+            {/* Common form labels */}
+            {[
+              { value: 'valoracion_empresa', label: 'Valoración Empresa' },
+              { value: 'contacto_comercial', label: 'Contacto Comercial' },
+              { value: 'colaborador', label: 'Colaborador' },
+              { value: 'adquisicion', label: 'Adquisición' },
+            ].map(opt => (
+              <DropdownMenuCheckboxItem
+                key={opt.value}
+                checked={filters.leadFormId === opt.value}
+                onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: opt.value })}
+              >
+                {opt.label}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Clear Filters */}
         {hasActiveFilters && (
