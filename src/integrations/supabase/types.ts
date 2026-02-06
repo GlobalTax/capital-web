@@ -6307,6 +6307,13 @@ export type Database = {
             referencedRelation: "cr_funds"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cr_portfolio_sector_pe_fkey"
+            columns: ["sector_pe"]
+            isOneToOne: false
+            referencedRelation: "pe_sector_taxonomy"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cr_portfolio_interactions: {
@@ -20303,6 +20310,13 @@ export type Database = {
             columns: ["fund_id"]
             isOneToOne: false
             referencedRelation: "cr_funds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cr_portfolio_sector_pe_fkey"
+            columns: ["sector_pe"]
+            isOneToOne: false
+            referencedRelation: "pe_sector_taxonomy"
             referencedColumns: ["id"]
           },
         ]
