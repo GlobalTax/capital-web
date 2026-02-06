@@ -1,154 +1,42 @@
 
 
-# Plan: Añadir Checkbox "Revisado" en Tabla de Corporate Buyers
+# Plan: Corregir Error 400 en Query de cr_portfolio
 
-## Resumen
+## Diagnostico
 
-Añadir una columna con checkbox para marcar compradores corporativos como "revisados" en la tabla `/admin/corporate-buyers`. El cambio persiste en base de datos y se actualiza al instante en la UI.
+La query en `useCRPortfolioList.ts` usa un join con sintaxis de foreign key:
+```
+pe_sector_taxonomy!cr_portfolio_sector_pe_fkey(name_es)
+```
 
----
+Pero **no existe** ninguna foreign key constraint entre `cr_portfolio.sector_pe` y `pe_sector_taxonomy.id` en la base de datos. PostgREST devuelve 400 porque no puede resolver esa referencia.
 
-## Cambios Necesarios
+Ambas columnas son de tipo `text`, por lo que el FK es viable.
 
-### 1. Base de Datos - Nueva Columna
+## Solucion
 
-Ejecutar migración SQL para añadir el campo `is_reviewed`:
+### Migracion SQL
+
+Crear la foreign key que falta:
 
 ```sql
-ALTER TABLE corporate_buyers 
-ADD COLUMN is_reviewed BOOLEAN DEFAULT FALSE;
-
--- Opcional: índice si se planea filtrar por este campo
-CREATE INDEX idx_corporate_buyers_is_reviewed 
-ON corporate_buyers(is_reviewed) 
-WHERE is_deleted = false;
+ALTER TABLE cr_portfolio
+ADD CONSTRAINT cr_portfolio_sector_pe_fkey
+FOREIGN KEY (sector_pe) REFERENCES pe_sector_taxonomy(id)
+ON DELETE SET NULL;
 ```
 
-### 2. Tipos TypeScript
-
-**Archivo:** `src/types/corporateBuyers.ts`
-
-Añadir campo al interface `CorporateBuyer`:
-
-```typescript
-export interface CorporateBuyer {
-  // ... campos existentes ...
-  is_reviewed: boolean;  // NUEVO
-}
-```
-
-### 3. Hook para Toggle "Revisado"
-
-**Archivo:** `src/hooks/useCorporateBuyers.ts`
-
-Añadir nuevo hook:
-
-```typescript
-export const useToggleBuyerReviewed = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, isReviewed }: { id: string; isReviewed: boolean }) => {
-      const { error } = await supabase
-        .from('corporate_buyers')
-        .update({ is_reviewed: isReviewed })
-        .eq('id', id);
-
-      if (error) throw error;
-      return { id, isReviewed };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['corporate-buyers'] });
-    },
-    onError: () => {
-      toast.error('Error al actualizar estado de revisión');
-    },
-  });
-};
-```
-
-### 4. UI - Columna Checkbox en Tabla
-
-**Archivo:** `src/components/admin/corporate-buyers/CorporateBuyersTable.tsx`
-
-Añadir columna "Revisado" con checkbox:
-
-| Ubicación | Cambio |
-|-----------|--------|
-| Props | Añadir `onToggleReviewed: (id: string, isReviewed: boolean) => void` |
-| Header | Añadir columna "✓" (check icon) entre Favorito y Nombre |
-| Row | Añadir Checkbox clicable que llama `onToggleReviewed` |
-
-**Header:**
-```tsx
-<div className="w-10 flex-shrink-0 flex items-center justify-center">
-  <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-</div>
-```
-
-**Row:**
-```tsx
-<div className="w-10 flex-shrink-0 flex justify-center">
-  <Checkbox
-    checked={buyer.is_reviewed}
-    onClick={(e) => {
-      e.stopPropagation();
-      onToggleReviewed(buyer.id, !buyer.is_reviewed);
-    }}
-    className="data-[state=checked]:bg-green-600"
-  />
-</div>
-```
-
-### 5. Página - Conectar Handler
-
-**Archivo:** `src/pages/admin/CorporateBuyersPage.tsx`
-
-Importar y usar el nuevo hook:
-
-```tsx
-import { useToggleBuyerReviewed } from '@/hooks/useCorporateBuyers';
-
-const { mutate: toggleReviewed } = useToggleBuyerReviewed();
-
-<CorporateBuyersTable
-  // ...props existentes
-  onToggleReviewed={(id, isReviewed) => toggleReviewed({ id, isReviewed })}
-/>
-```
-
----
-
-## Resultado Visual
-
-```text
-┌─────────────────────────────────────────────────────────────────────────┐
-│ ☐  │ ⭐ │ ✓  │ Nombre        │ Tipo     │ País │ Sectores │ Facturación │
-├────┼────┼────┼───────────────┼──────────┼──────┼──────────┼─────────────┤
-│ ☐  │ ☆  │ ☑  │ Grupo ABC     │ Corporate│ ES   │ Tech     │ €5M - €50M  │
-│ ☐  │ ★  │ ☐  │ Inversiones XY│ PE Fund  │ ES   │ Industria│ €10M - €100M│
-└────┴────┴────┴───────────────┴──────────┴──────┴──────────┴─────────────┘
-        ▲
-        Nueva columna "Revisado"
-```
-
----
+Esto permite que PostgREST resuelva el join automaticamente sin cambiar ninguna linea de codigo TypeScript.
 
 ## Archivos a Modificar
 
-| Archivo | Cambio |
+| Recurso | Cambio |
 |---------|--------|
-| **SQL Migration** | Añadir columna `is_reviewed` |
-| `src/types/corporateBuyers.ts` | Añadir `is_reviewed: boolean` al interface |
-| `src/hooks/useCorporateBuyers.ts` | Añadir hook `useToggleBuyerReviewed` |
-| `src/components/admin/corporate-buyers/CorporateBuyersTable.tsx` | Añadir columna con checkbox |
-| `src/pages/admin/CorporateBuyersPage.tsx` | Conectar handler toggle |
+| SQL Migration | Crear constraint `cr_portfolio_sector_pe_fkey` |
 
----
+No se requieren cambios en el codigo TypeScript. El hook `useCRPortfolioList.ts` ya esta escrito correctamente -- solo faltaba la constraint en la base de datos.
 
-## Comportamiento
+## Verificacion
 
-- **Click en checkbox** → Toggle instantáneo (optimista) → Persiste en DB
-- **Visual**: Checkbox verde cuando está marcado
-- **Sin refresh**: La tabla se actualiza automáticamente via React Query invalidation
+Tras la migracion, la query a `/admin/cr-directory` dejara de devolver 400 y mostrara los nombres de sector PE resueltos desde `pe_sector_taxonomy.name_es`.
 
