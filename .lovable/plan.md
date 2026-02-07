@@ -1,73 +1,37 @@
 
+# Plan: Tabla de contactos full-height
 
-# Plan: Corregir fechas incorrectas en company_valuations
+## Causa raiz
 
-## Diagnostico (Causa Raiz Encontrada)
+La cadena de altura se rompe en `AdminLayout.tsx` linea 130. El wrapper del contenido usa `min-h-full` (que NO define una altura explicita para que los hijos hereden con `h-full`). El resultado: `ContactsPage > ContactsLayout > VirtualContactsTable` nunca recibe una altura real, y la tabla virtualizada cae al fallback de 400px.
 
-El problema NO es que el cambio de estado modifique la fecha. El problema es que **1086 de 1142 registros** en `company_valuations` tienen `lead_received_at` incorrecto desde la migracion del 30 de enero de 2026.
+## Solucion (1 archivo, 1 linea)
 
-**Que paso:** La migracion `20260130081237` anadio la columna `lead_received_at` con `DEFAULT now()`. Postgres aplico el DEFAULT a todas las filas existentes, estableciendo `lead_received_at = '2026-01-30 08:12:36'` en lugar de copiar el `created_at` real.
+Cambiar **solo** `ContactsPage.tsx` para usar una altura calculada basada en viewport, restando el header (48px) y el padding responsivo del wrapper.
 
-**Por que parece que el estado lo cambia:** El frontend muestra `lead_received_at || created_at`. Cuando el lead ya tiene `lead_received_at` (el valor incorrecto de la migracion), el fallback a `created_at` nunca se activa. El usuario solo nota la fecha incorrecta al revisar el lead tras cambiar el estado, pero la fecha ya estaba mal desde el 30 de enero.
+### Archivo: `src/pages/admin/ContactsPage.tsx`
 
-**Datos concretos:**
-- `company_valuations`: 1086/1142 registros con fecha incorrecta (30 ene 2026)
-- `contact_leads`: OK (182/186 coinciden con created_at)
-- El status update (`LeadStatusSelect`, `useContactInlineUpdate`) NO toca `lead_received_at` en ningun caso
-
-## Solucion
-
-### 1. Migracion SQL: Corregir datos historicos
-
-Actualizar los 1086 registros de `company_valuations` donde `lead_received_at` tiene el valor de la migracion, reemplazandolo con `created_at`:
-
-```sql
-UPDATE company_valuations
-SET lead_received_at = created_at
-WHERE lead_received_at = '2026-01-30 08:12:36.65917+00';
+Cambiar:
+```tsx
+<div className="h-full flex flex-col min-h-0 overflow-hidden">
 ```
 
-Esto restaura la fecha real de entrada para todos los leads afectados. No toca leads cuya fecha fue editada manualmente (esos tendrian un valor distinto).
-
-### 2. Verificar las otras tablas
-
-Ejecutar la misma correccion para las demas tablas de leads si tienen el mismo problema:
-
-```sql
--- Verificar y corregir collaborator_applications, general_contact_leads, 
--- advisor_valuations, company_acquisition_inquiries, acquisition_leads
--- (solo si tienen el timestamp de la migracion)
+Por:
+```tsx
+<div className="h-[calc(100dvh-48px-1rem)] sm:h-[calc(100dvh-48px-1.5rem)] md:h-[calc(100dvh-48px-2rem)] flex flex-col min-h-0 overflow-hidden">
 ```
 
-### 3. No hay cambios de codigo necesarios
+Los valores corresponden a:
+- `48px` = altura del `LinearAdminHeader`
+- `1rem` / `1.5rem` / `2rem` = padding top+bottom del wrapper (`p-2` / `p-3` / `p-4`)
 
-El frontend ya funciona correctamente:
-- `ContactRow.tsx` muestra `contact.lead_received_at || contact.created_at`
-- `useUnifiedContacts.tsx` transforma con `lead.lead_received_at || lead.created_at`
-- `useContactInlineUpdate` NO toca `lead_received_at` al cambiar estado
-- `LeadStatusSelect` solo actualiza `lead_status_crm`
+### Por que esta solucion
 
-El problema es exclusivamente de datos corruptos por la migracion.
+- **No toca AdminLayout**: cambiar `min-h-full` a `h-full` alli romperia otras paginas que necesitan scroll natural (dashboard, blog, etc.)
+- **No toca logica de negocio**: cero cambios en filtros, queries, estados, seleccion, side panel
+- **No toca VirtualContactsTable**: el ResizeObserver ya funciona correctamente; solo necesita recibir una altura real del padre
+- **Responsivo**: los breakpoints coinciden exactamente con el padding del wrapper en AdminLayout
 
-## Archivos a modificar
+### Resultado
 
-| Archivo | Cambio |
-|---------|--------|
-| Nueva migracion SQL | UPDATE para corregir `lead_received_at` en `company_valuations` y tablas afectadas |
-
-## Lo que NO se toca
-
-- Ningun componente frontend (ya funcionan correctamente)
-- Ningun hook ni mutation
-- Ninguna tabla de schema / estructura
-- Ningun trigger ni funcion de Postgres
-- Los 56 registros de `company_valuations` creados despues de la migracion (ya tienen fecha correcta)
-- Los 4 registros de `contact_leads` con fecha diferente (posiblemente editados manualmente)
-
-## Verificaciones post-implementacion
-
-1. Consultar `SELECT id, lead_received_at, created_at FROM company_valuations WHERE lead_received_at = '2026-01-30 08:12:36.65917+00'` -- debe devolver 0 filas
-2. En `/admin/contacts`, los leads de valoracion deben mostrar su fecha real de creacion
-3. Cambiar un lead a "Unqualified Lead" -- la fecha NO debe cambiar
-4. La edicion manual de fecha debe seguir funcionando
-
+La cadena de altura queda: viewport calc en ContactsPage, `h-full` en ContactsLayout grid, `1fr` llena el espacio restante, ResizeObserver en VirtualContactsTable detecta la altura real, y la lista virtualizada ocupa toda la pantalla.
