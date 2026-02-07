@@ -71,9 +71,7 @@ export interface Contact {
 
 export interface ContactFilters {
   search?: string;
-  origin?: ContactOrigin | 'all';
   status?: string;
-  valuationType?: 'all' | 'pro' | 'standard';
   emailStatus?: 'all' | 'opened' | 'sent' | 'not_contacted';
   dateFrom?: string;
   dateTo?: string;

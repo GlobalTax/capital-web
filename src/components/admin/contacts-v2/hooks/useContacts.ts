@@ -27,7 +27,7 @@ const DEFAULT_STATS: ContactStats = {
 export const useContacts = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState<ContactFilters>({ origin: 'all', emailStatus: 'all' });
+  const [filters, setFilters] = useState<ContactFilters>({ emailStatus: 'all' });
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -158,9 +158,7 @@ export const useContacts = () => {
       );
     }
 
-    if (filters.origin && filters.origin !== 'all') {
-      result = result.filter(c => c.origin === filters.origin);
-    }
+    // origin filter removed - no longer needed
 
     if (filters.status && filters.status !== 'all') {
       result = result.filter(c => c.status === filters.status || c.lead_status_crm === filters.status);
@@ -195,13 +193,7 @@ export const useContacts = () => {
     result = result.filter(c => (c.ebitda ?? 0) <= filters.ebitdaMax!);
   }
   
-  if (filters.valuationType && filters.valuationType !== 'all') {
-    if (filters.valuationType === 'pro') {
-      result = result.filter(c => c.is_from_pro_valuation === true);
-    } else {
-      result = result.filter(c => !c.is_from_pro_valuation);
-    }
-  }
+    // valuationType filter removed - no longer needed
 
     if (filters.acquisitionChannelId) {
       result = result.filter(c => c.acquisition_channel_id === filters.acquisitionChannelId);
