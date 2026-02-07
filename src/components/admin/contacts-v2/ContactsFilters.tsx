@@ -5,14 +5,13 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Download, Search, X, TrendingUp, Users, Target, BarChart3, Calendar, Euro } from 'lucide-react';
+import { RefreshCw, Search, X, TrendingUp, Users, Target, BarChart3, Calendar, Euro } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import {
   Popover,
@@ -20,12 +19,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { ContactFilters as Filters, ContactStats, ContactOrigin } from './types';
+import { ContactFilters as Filters, ContactStats } from './types';
 import { cn } from '@/lib/utils';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, subDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
 import { useLeadForms } from '@/hooks/useLeadForms';
+import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
 
 interface ContactsFiltersProps {
   filters: Filters;
@@ -37,22 +37,6 @@ interface ContactsFiltersProps {
   isRefreshing: boolean;
   showStats?: boolean;
 }
-
-const ORIGIN_OPTIONS: { value: ContactOrigin; label: string }[] = [
-  { value: 'valuation', label: 'Valoración' },
-  { value: 'contact', label: 'Comercial' },
-  { value: 'collaborator', label: 'Colaborador' },
-  { value: 'acquisition', label: 'Adquisición' },
-  { value: 'advisor', label: 'Asesor' },
-];
-
-// STATUS_OPTIONS removed - now loaded dynamically from useContactStatuses
-
-const VALUATION_TYPE_OPTIONS = [
-  { value: 'all', label: 'Todos' },
-  { value: 'pro', label: 'PRO' },
-  { value: 'standard', label: 'Normal' },
-];
 
 const DATE_PRESETS = [
   { label: 'Última semana', days: 7 },
@@ -87,23 +71,23 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
   const [isEbitdaOpen, setIsEbitdaOpen] = useState(false);
   const { activeStatuses } = useContactStatuses();
   const { displayNameGroups } = useLeadForms();
+  const { channels } = useAcquisitionChannels();
 
   const hasActiveFilters = !!(
     filters.search ||
-    (filters.origin && filters.origin !== 'all') ||
     (filters.status && filters.status !== 'all') ||
-    (filters.valuationType && filters.valuationType !== 'all') ||
     filters.dateFrom ||
     filters.dateTo ||
     filters.revenueMin ||
     filters.revenueMax ||
     filters.ebitdaMin ||
     filters.ebitdaMax ||
+    filters.acquisitionChannelId ||
     filters.leadFormId
   );
 
   const clearFilters = () => {
-    onFiltersChange({ origin: 'all', emailStatus: 'all' });
+    onFiltersChange({ emailStatus: 'all' });
   };
 
   const handleDatePreset = (days: number) => {
@@ -171,35 +155,6 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
           />
         </div>
 
-        {/* Origin Filter */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-              Origen
-              {filters.origin && filters.origin !== 'all' && (
-                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuCheckboxItem
-              checked={!filters.origin || filters.origin === 'all'}
-              onCheckedChange={() => onFiltersChange({ ...filters, origin: 'all' })}
-            >
-              Todos
-            </DropdownMenuCheckboxItem>
-            {ORIGIN_OPTIONS.map(opt => (
-              <DropdownMenuCheckboxItem
-                key={opt.value}
-                checked={filters.origin === opt.value}
-                onCheckedChange={() => onFiltersChange({ ...filters, origin: opt.value })}
-              >
-                {opt.label}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
         {/* Status Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -233,26 +188,61 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Valuation Type Filter */}
+        {/* Channel Filter - Dynamic from acquisition_channels */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-              Tipo
-              {filters.valuationType && filters.valuationType !== 'all' && (
-                <Badge variant="secondary" className="h-4 px-1 text-[10px]">
-                  {filters.valuationType === 'pro' ? 'PRO' : 'STD'}
-                </Badge>
+              Canal
+              {filters.acquisitionChannelId && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
               )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            {VALUATION_TYPE_OPTIONS.map(opt => (
+            <DropdownMenuCheckboxItem
+              checked={!filters.acquisitionChannelId}
+              onCheckedChange={() => onFiltersChange({ ...filters, acquisitionChannelId: undefined })}
+            >
+              Todos
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+            {(channels || []).map(ch => (
               <DropdownMenuCheckboxItem
-                key={opt.value}
-                checked={filters.valuationType === opt.value || (!filters.valuationType && opt.value === 'all')}
-                onCheckedChange={() => onFiltersChange({ ...filters, valuationType: opt.value as 'all' | 'pro' | 'standard' })}
+                key={ch.id}
+                checked={filters.acquisitionChannelId === ch.id}
+                onCheckedChange={() => onFiltersChange({ ...filters, acquisitionChannelId: ch.id })}
               >
-                {opt.label}
+                {ch.name}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Form Filter - Dynamic from lead_forms.display_name */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
+              Formulario
+              {filters.leadFormId && (
+                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuCheckboxItem
+              checked={!filters.leadFormId}
+              onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: undefined })}
+            >
+              Todos
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+            {displayNameGroups.map(group => (
+              <DropdownMenuCheckboxItem
+                key={group.displayName}
+                checked={filters.leadFormId === group.displayName}
+                onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: group.displayName })}
+              >
+                {group.displayName}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
@@ -263,7 +253,7 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
               <Calendar className="h-3 w-3" />
-              {filters.dateRangeLabel || (filters.dateFrom ? 'Fecha' : 'Fecha')}
+              {filters.dateRangeLabel || 'Fecha'}
               {(filters.dateFrom || filters.dateTo) && (
                 <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
               )}
@@ -474,36 +464,6 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
             </div>
           </PopoverContent>
         </Popover>
-
-        {/* Form Filter - Dynamic from lead_forms.display_name */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-              Formulario
-              {filters.leadFormId && (
-                <Badge variant="secondary" className="h-4 px-1 text-[10px]">1</Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuCheckboxItem
-              checked={!filters.leadFormId}
-              onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: undefined })}
-            >
-              Todos
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuSeparator />
-            {displayNameGroups.map(group => (
-              <DropdownMenuCheckboxItem
-                key={group.displayName}
-                checked={filters.leadFormId === group.displayName}
-                onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: group.displayName })}
-              >
-                {group.displayName}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         {/* Clear Filters */}
         {hasActiveFilters && (
