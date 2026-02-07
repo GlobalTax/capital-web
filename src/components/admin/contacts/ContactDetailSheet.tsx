@@ -505,6 +505,7 @@ const ContactDetailSheet: React.FC<ContactDetailSheetProps> = ({
                 origin={contact.origin}
                 companyName={contact.company}
                 cif={contact.cif}
+                empresaId={contact.empresa_id}
                 initialDescription={contact.ai_company_summary}
                 initialSectorTags={{
                   ai_sector_pe: (contact as any).ai_sector_pe,

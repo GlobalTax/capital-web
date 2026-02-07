@@ -13,6 +13,7 @@ interface SaveClassificationParams {
   contactId: string;
   origin: ContactOrigin;
   data: ClassificationData;
+  empresaId?: string;
 }
 
 // Map origin to database table
@@ -44,7 +45,8 @@ export const useSaveContactClassification = () => {
   const saveClassification = useCallback(async ({ 
     contactId, 
     origin, 
-    data 
+    data,
+    empresaId,
   }: SaveClassificationParams): Promise<boolean> => {
     const table = TABLE_MAP[origin];
     
@@ -158,6 +160,28 @@ export const useSaveContactClassification = () => {
 
       if (!result) {
         throw new Error('No se pudo confirmar el guardado');
+      }
+
+      // Double persist: also save to empresas if empresaId is provided
+      if (empresaId) {
+        try {
+          const empresaUpdateData: Record<string, any> = { ...updateData };
+          delete empresaUpdateData.updated_at; // empresas may use different timestamp field
+          
+          const { error: empresaError } = await supabase
+            .from('empresas')
+            .update(empresaUpdateData)
+            .eq('id', empresaId);
+
+          if (empresaError) {
+            console.warn('[aiProfileSave] Warning: failed to save to empresas:', empresaError.message);
+            // Don't block - lead save succeeded
+          } else {
+            console.log('[aiProfileSave] Successfully saved to empresas:', empresaId);
+          }
+        } catch (empresaErr) {
+          console.warn('[aiProfileSave] Warning: empresas update failed:', empresaErr);
+        }
       }
 
       // Success - don't show toast here, let the component handle it
