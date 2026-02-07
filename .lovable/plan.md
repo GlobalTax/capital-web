@@ -1,104 +1,94 @@
 
 
-## Plan: Base de datos de empresas y contactos Dealsuite
+## Plan: Edicion directa de empresas y contactos desde el directorio
 
-La tabla `dealsuite_contacts` existe pero esta vacia porque el upsert solo funciona cuando hay email en el deal (2 de 3 deals no tienen email). Ademas, la imagen de referencia muestra un perfil de **empresa** mucho mas rico que lo que tenemos. Se creara una estructura completa de empresas + contactos.
+Permitir crear y editar empresas y contactos sin necesidad de pasar por un deal, directamente desde la pestana "Directorio".
 
-### 1. Nueva tabla `dealsuite_empresas`
+### 1. Formulario de edicion de empresa
 
-Basada en el perfil de Dealsuite de la imagen, con estos campos:
+Nuevo componente `DealsuiteEmpresaForm.tsx` con un formulario completo para editar todos los campos de una empresa:
+- Nombre, ubicacion, descripcion, tipo de empresa, parte de
+- Experiencia M&A y sectores (input de tags separados por coma)
+- Tamano de proyectos min/max
+- Enfoque consultivo, sitio web, imagen URL
+- Notas internas
 
-| Campo | Tipo | Descripcion |
-|-------|------|-------------|
-| id | UUID | PK |
-| nombre | TEXT NOT NULL | Nombre de la empresa (ej. "CDI Global Iberia") |
-| ubicacion | TEXT | Pais/ciudad |
-| descripcion | TEXT | Acerca de la empresa |
-| tipo_empresa | TEXT | Tipo (ej. "Asesoramiento M&A") |
-| parte_de | TEXT | Grupo al que pertenece (ej. "CDI Global") |
-| experiencia_ma | TEXT[] | Tags de experiencia M&A |
-| experiencia_sector | TEXT[] | Tags de sectores |
-| tamano_proyectos_min | NUMERIC | Min tamano proyectos |
-| tamano_proyectos_max | NUMERIC | Max tamano proyectos |
-| enfoque_consultivo | TEXT | "En venta", "Para comprar", etc. |
-| sitio_web | TEXT | URL del sitio web |
-| imagen_url | TEXT | Logo o imagen |
-| notas | TEXT | Notas internas |
-| deal_ids | TEXT[] | Deals asociados |
-| created_at / updated_at | TIMESTAMPTZ | Timestamps |
+Se usara desde `DealsuiteEmpresaCard` con un boton "Editar" que alterna entre vista lectura y formulario de edicion.
 
-### 2. Ampliar tabla `dealsuite_contacts`
+### 2. Formulario de edicion/creacion de contactos
 
-Anadir campos adicionales:
+Dentro de `DealsuiteEmpresaCard`, en el sidebar de contactos:
+- Boton "Anadir contacto" para crear uno nuevo vinculado a esa empresa
+- Boton de edicion en cada contacto existente
+- Formulario inline o en dialog con campos: nombre, cargo, email, telefono, notas
 
-- `empresa_id` UUID (FK a dealsuite_empresas, nullable)
-- `cargo` TEXT (cargo/rol, ej. "Managing Partner")
-- `imagen_url` TEXT (foto del contacto)
+### 3. Boton "Nueva empresa" en el directorio
 
-### 3. Logica de guardado mejorada
+En la cabecera de la pestana "Directorio" de `DealsuiteSyncPanel`, un boton para crear una empresa desde cero (abre el formulario vacio).
 
-Cuando se guarda un deal:
-- Si hay `contact_company` o `advisor`: buscar/crear empresa en `dealsuite_empresas`
-- Si hay `contact_name` (aunque no haya email): crear contacto en `dealsuite_contacts` vinculado a la empresa
-- Permitir crear contactos sin email (quitar requisito de email obligatorio para el upsert)
+### 4. Mutations en el hook
 
-### 4. Pestaña "Empresas y Contactos" en DealsuiteSyncPanel
+Anadir a `useDealsuiteEmpresas.ts`:
+- `useUpdateEmpresa`: mutation para actualizar una empresa por ID
+- `useCreateEmpresa`: mutation para crear una empresa nueva
+- `useUpdateContacto`: mutation para actualizar un contacto
+- `useCreateContacto`: mutation para crear un contacto nuevo
+- `useDeleteContacto`: mutation para eliminar un contacto
 
-Anadir una tercera pestana junto a "Favoritos" y "Todos":
+### Archivos a modificar
 
-- **Pestana "Directorio"**: muestra listado de empresas con sus contactos asociados
-- Cada empresa muestra: nombre, ubicacion, tipo, numero de contactos, numero de deals vinculados
-- Al hacer clic en una empresa: vista detalle similar al perfil de Dealsuite de la imagen (badges de experiencia, contactos listados al lado, info de la empresa)
-
-### 5. Archivos a modificar
-
-- **Migracion SQL**: Crear `dealsuite_empresas`, alterar `dealsuite_contacts` (anadir empresa_id, cargo, imagen_url)
-- **`DealsuiteSyncPanel.tsx`**: Mejorar `upsertContact` para crear empresa + contacto, anadir pestana "Directorio"
-- **Nuevo componente `DealsuiteEmpresaCard.tsx`**: Vista de detalle de empresa tipo Dealsuite (basada en la imagen de referencia)
-- **Nuevo hook `useDealsuiteEmpresas.ts`**: Queries para empresas y contactos
+- **`src/hooks/useDealsuiteEmpresas.ts`**: Anadir mutations (create/update empresa, create/update/delete contacto)
+- **`src/components/admin/DealsuiteEmpresaCard.tsx`**: Anadir modo edicion para empresa + gestion de contactos (crear/editar/eliminar)
+- **`src/components/admin/DealsuiteSyncPanel.tsx`**: Boton "Nueva empresa" en la pestana directorio, estado para empresa nueva
 
 ### Detalle tecnico
 
 ```text
--- Migracion
-CREATE TABLE public.dealsuite_empresas (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nombre TEXT NOT NULL,
-  ubicacion TEXT,
-  descripcion TEXT,
-  tipo_empresa TEXT,
-  parte_de TEXT,
-  experiencia_ma TEXT[] DEFAULT '{}',
-  experiencia_sector TEXT[] DEFAULT '{}',
-  tamano_proyectos_min NUMERIC,
-  tamano_proyectos_max NUMERIC,
-  enfoque_consultivo TEXT,
-  sitio_web TEXT,
-  imagen_url TEXT,
-  notas TEXT,
-  deal_ids TEXT[] DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
+Nuevas mutations en useDealsuiteEmpresas.ts:
 
-ALTER TABLE public.dealsuite_contacts
-  ADD COLUMN empresa_id UUID REFERENCES public.dealsuite_empresas(id),
-  ADD COLUMN cargo TEXT,
-  ADD COLUMN imagen_url TEXT,
-  ALTER COLUMN nombre DROP NOT NULL,
-  ALTER COLUMN nombre SET DEFAULT 'Sin nombre';
+useCreateEmpresa:
+  insert -> dealsuite_empresas
+  invalidate ['dealsuite-empresas']
 
--- RLS para dealsuite_empresas (misma politica admin)
+useUpdateEmpresa:
+  update -> dealsuite_empresas where id = empresaId
+  invalidate ['dealsuite-empresas']
+
+useCreateContacto:
+  insert -> dealsuite_contacts con empresa_id
+  invalidate ['dealsuite-contactos', empresaId]
+
+useUpdateContacto:
+  update -> dealsuite_contacts where id = contactoId
+  invalidate ['dealsuite-contactos', empresaId]
+
+useDeleteContacto:
+  delete -> dealsuite_contacts where id = contactoId
+  invalidate ['dealsuite-contactos', empresaId]
 ```
 
-Logica de upsert mejorada:
 ```text
-handleSave -> 
-  1. Si contact_company/advisor existe:
-     - Buscar empresa por nombre
-     - Si no existe, crearla
-  2. Si contact_name existe (con o sin email):
-     - Buscar contacto por email (si hay) o por nombre+empresa
-     - Crear/actualizar contacto con empresa_id
-  3. Guardar deal normalmente
+DealsuiteEmpresaCard cambios:
+
+Estado: isEditing (boolean)
+  - false: vista actual (solo lectura)
+  - true: campos editables con inputs/textareas
+
+Boton "Editar" en la cabecera junto al nombre
+Boton "Guardar" / "Cancelar" al editar
+
+Sidebar contactos:
+  - Boton "+ Anadir contacto" al final
+  - Icono editar en cada contacto -> dialog con formulario
+  - Icono eliminar en cada contacto -> confirmacion
 ```
+
+```text
+DealsuiteSyncPanel cambios:
+
+Nuevo estado: creatingEmpresa (boolean)
+  - true: muestra DealsuiteEmpresaCard con empresa vacia en modo edicion
+  
+Boton "Nueva empresa" en CardHeader del directorio
+```
+
