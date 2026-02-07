@@ -36,6 +36,7 @@ import { Empresa, useEmpresas } from '@/hooks/useEmpresas';
 import { CompanyFormDialog } from '@/components/admin/companies/CompanyFormDialog';
 import { EmpresaFinancialsCard } from '@/components/admin/companies/EmpresaFinancialsCard';
 import { EmpresaContactsTable } from '@/components/admin/companies/EmpresaContactsTable';
+import { useEmpresaContactos } from '@/hooks/useEmpresaContactos';
 import { EmpresaLinkContactDialog } from '@/components/admin/companies/EmpresaLinkContactDialog';
 import { formatCompactCurrency } from '@/shared/utils/format';
 import { format } from 'date-fns';
@@ -72,56 +73,8 @@ export default function EmpresaDetailPage() {
     enabled: !!id,
   });
 
-  // Fetch associated contacts
-  const { data: contacts, isLoading: isLoadingContacts, refetch: refetchContacts } = useQuery({
-    queryKey: ['empresa-contacts', id],
-    queryFn: async () => {
-      if (!id) return [];
-      
-      // Get contacts from contact_leads
-      const { data: contactLeads, error: contactError } = await supabase
-        .from('contact_leads')
-        .select('id, full_name, email, lead_status_crm, created_at')
-        .eq('empresa_id', id)
-        .eq('is_deleted', false);
-      
-      if (contactError) throw contactError;
-
-      // Get contacts from company_valuations
-      const { data: valuationLeads, error: valuationError } = await supabase
-        .from('company_valuations')
-        .select('id, contact_name, email, lead_status_crm, created_at')
-        .eq('empresa_id', id)
-        .eq('is_deleted', false);
-      
-      if (valuationError) throw valuationError;
-
-      // Combine and format
-      const combined = [
-        ...(contactLeads || []).map(c => ({
-          id: c.id,
-          full_name: c.full_name,
-          email: c.email,
-          origin: 'contact' as const,
-          status: c.lead_status_crm,
-          created_at: c.created_at,
-        })),
-        ...(valuationLeads || []).map(v => ({
-          id: v.id,
-          full_name: v.contact_name,
-          email: v.email,
-          origin: 'valuation' as const,
-          status: v.lead_status_crm,
-          created_at: v.created_at,
-        })),
-      ];
-
-      return combined.sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    },
-    enabled: !!id,
-  });
+  // Contactos count from hook
+  const { contactos: empresaContactos } = useEmpresaContactos(id);
 
   // Update mutation for quick fields
   const updateMutation = useMutation({
@@ -185,7 +138,6 @@ export default function EmpresaDetailPage() {
 
   const handleLinkSuccess = () => {
     setIsLinkDialogOpen(false);
-    refetchContacts();
   };
 
   if (isLoadingEmpresa) {
@@ -281,19 +233,14 @@ export default function EmpresaDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between py-3">
               <CardTitle className="text-base font-medium">
-                Contactos Asociados ({contacts?.length || 0})
+                Contactos Asociados ({empresaContactos?.length || 0})
               </CardTitle>
               <Button size="sm" variant="outline" onClick={() => setIsLinkDialogOpen(true)}>
-                + Vincular contacto
+                + Añadir Contacto
               </Button>
             </CardHeader>
             <CardContent className="p-0">
-              <EmpresaContactsTable 
-                contacts={contacts || []} 
-                isLoading={isLoadingContacts}
-                empresaId={empresa.id}
-                onUnlink={refetchContacts}
-              />
+              <EmpresaContactsTable empresaId={empresa.id} />
             </CardContent>
           </Card>
 
