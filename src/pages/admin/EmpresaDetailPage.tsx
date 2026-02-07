@@ -37,7 +37,14 @@ import {
   Scale,
   PauseCircle,
   Zap,
+  User,
+  Mail,
+  Phone,
+  Unlink,
+  X,
+  Check,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { useCreateServicio } from '@/hooks/useCreateServicio';
 import { useActivePause } from '@/hooks/useDealsPaused';
 import { DealPausedDialog } from '@/components/admin/companies/DealPausedDialog';
@@ -63,6 +70,8 @@ export default function EmpresaDetailPage() {
   const [isDealPausedOpen, setIsDealPausedOpen] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [descriptionValue, setDescriptionValue] = useState('');
+  const [editingContact, setEditingContact] = useState(false);
+  const [contactEditValues, setContactEditValues] = useState({ nombre: '', apellidos: '', email: '', telefono: '', cargo: '' });
   
   const { deleteEmpresa, updateEmpresa } = useEmpresas();
 
@@ -84,7 +93,8 @@ export default function EmpresaDetailPage() {
   });
 
   // Contactos count from hook
-  const { contactos: empresaContactos } = useEmpresaContactos(id);
+  const { contactos: empresaContactos, unlinkContacto, updateContacto } = useEmpresaContactos(id);
+  const contactoPrincipal = empresaContactos[0] || null;
 
   // Service creation hook
   const { createServicio, isPending: isCreatingServicio } = useCreateServicio(id, empresa?.nombre);
@@ -242,6 +252,129 @@ export default function EmpresaDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
         {/* Left Column - Main Content */}
         <div className="space-y-6">
+          {/* Contacto Principal */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between py-3">
+              <CardTitle className="text-base font-medium flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Contacto Principal
+              </CardTitle>
+              {contactoPrincipal && !editingContact && (
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setContactEditValues({
+                        nombre: contactoPrincipal.nombre || '',
+                        apellidos: contactoPrincipal.apellidos || '',
+                        email: contactoPrincipal.email || '',
+                        telefono: contactoPrincipal.telefono || '',
+                        cargo: contactoPrincipal.cargo || '',
+                      });
+                      setEditingContact(true);
+                    }}
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      if (confirm('¿Desasociar este contacto de la empresa?')) {
+                        unlinkContacto.mutate(contactoPrincipal.id);
+                      }
+                    }}
+                  >
+                    <Unlink className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </CardHeader>
+            <CardContent>
+              {!contactoPrincipal ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Sin contacto principal</span>
+                  <Button size="sm" variant="outline" onClick={() => setIsLinkDialogOpen(true)}>
+                    + Añadir
+                  </Button>
+                </div>
+              ) : editingContact ? (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Nombre"
+                      value={contactEditValues.nombre}
+                      onChange={(e) => setContactEditValues(v => ({ ...v, nombre: e.target.value }))}
+                    />
+                    <Input
+                      placeholder="Apellidos"
+                      value={contactEditValues.apellidos}
+                      onChange={(e) => setContactEditValues(v => ({ ...v, apellidos: e.target.value }))}
+                    />
+                  </div>
+                  <Input
+                    placeholder="Email"
+                    type="email"
+                    value={contactEditValues.email}
+                    onChange={(e) => setContactEditValues(v => ({ ...v, email: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Teléfono"
+                    value={contactEditValues.telefono}
+                    onChange={(e) => setContactEditValues(v => ({ ...v, telefono: e.target.value }))}
+                  />
+                  <Input
+                    placeholder="Cargo"
+                    value={contactEditValues.cargo}
+                    onChange={(e) => setContactEditValues(v => ({ ...v, cargo: e.target.value }))}
+                  />
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button size="sm" variant="outline" onClick={() => setEditingContact(false)}>
+                      <X className="h-3 w-3 mr-1" /> Cancelar
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        updateContacto.mutate({
+                          id: contactoPrincipal.id,
+                          nombre: contactEditValues.nombre,
+                          apellidos: contactEditValues.apellidos || null,
+                          email: contactEditValues.email,
+                          telefono: contactEditValues.telefono || null,
+                          cargo: contactEditValues.cargo || null,
+                        });
+                        setEditingContact(false);
+                      }}
+                      disabled={updateContacto.isPending}
+                    >
+                      <Check className="h-3 w-3 mr-1" /> Guardar
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="font-medium">{contactoPrincipal.nombre} {contactoPrincipal.apellidos || ''}</span>
+                    {contactoPrincipal.cargo && (
+                      <span className="text-muted-foreground ml-2">· {contactoPrincipal.cargo}</span>
+                    )}
+                  </div>
+                  {contactoPrincipal.email && (
+                    <a href={`mailto:${contactoPrincipal.email}`} className="flex items-center gap-1.5 text-primary hover:underline">
+                      <Mail className="h-3.5 w-3.5" /> {contactoPrincipal.email}
+                    </a>
+                  )}
+                  {contactoPrincipal.telefono && (
+                    <a href={`tel:${contactoPrincipal.telefono}`} className="flex items-center gap-1.5 text-primary hover:underline">
+                      <Phone className="h-3.5 w-3.5" /> {contactoPrincipal.telefono}
+                    </a>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Financial KPIs */}
           <EmpresaFinancialsCard empresa={empresa} />
 
