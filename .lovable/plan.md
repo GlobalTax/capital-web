@@ -1,45 +1,91 @@
 
 
-## Plan: Seccion "Contacto Principal" en Perfil de Empresa
+## Plan: UI de Gestion de Motivos de Deal Paused
 
-### Objetivo
+### Resumen
 
-Anadir un bloque compacto **"Contacto Principal"** justo encima del card "Financial KPIs" en la columna izquierda del perfil de empresa. Muestra el primer contacto asociado con nombre completo, email clickable (`mailto:`), telefono clickable (`tel:`), cargo, y acciones inline de editar y desasociar.
+Crear una pagina de administracion en `/admin/settings/deal-paused-reasons` para gestionar el catalogo de motivos de Deal Paused. Seguira el mismo patron que `AcquisitionChannelsSettings.tsx`: tabla con acciones inline, dialog para crear/editar, y reordenamiento.
 
 ---
 
-### Cambio unico: `src/pages/admin/EmpresaDetailPage.tsx`
+### Paso 1: Crear la pagina `PausedReasonsSettingsPage.tsx`
 
-**Ubicacion**: Entre la linea 244 (inicio de la columna izquierda) y la linea 246 (EmpresaFinancialsCard), insertar un nuevo bloque condicional.
+**Archivo nuevo**: `src/pages/admin/PausedReasonsSettingsPage.tsx`
 
-**Logica**:
-- Tomar `empresaContactos[0]` como contacto principal (primer contacto por orden alfabetico, ya ordenado por el hook)
-- Si no hay contactos, mostrar un CTA compacto: "Sin contacto principal" + boton "Anadir"
-- Si hay contacto, mostrar card compacta con:
+Basado en el patron de `AcquisitionChannelsSettings.tsx`:
 
-**Contenido del card**:
-- Icono `User` + titulo "Contacto Principal"
-- Nombre completo (`nombre` + `apellidos`) y cargo en gris
-- Email como link `mailto:` con icono `Mail`
-- Telefono como link `tel:` con icono `Phone`
-- Boton inline "Editar" (icono `Edit`) -> abre un estado de edicion inline con inputs para nombre, email, telefono
-- Boton inline "Desasociar" (icono `Unlink`) -> llama `unlinkContacto` del hook existente con confirmacion
+**Estructura:**
+- Header con boton "Volver a Ajustes" y titulo "Motivos de Deal Paused"
+- Boton "+ Nuevo Motivo"
+- Tabla con columnas:
+  - **Orden** (icono `GripVertical` + numero)
+  - **Nombre** del motivo
+  - **Estado** (badge verde "Activo" / gris "Inactivo")
+  - **Acciones**: Editar (Pencil), Subir/Bajar orden (ArrowUp/ArrowDown), Toggle activo/inactivo (ToggleLeft)
 
-**Edicion inline**:
-- Al pulsar "Editar", los campos de texto se convierten en inputs editables
-- Boton "Guardar" llama `updateContacto` del hook existente
-- Boton "Cancelar" vuelve al modo lectura
+**Dialog crear/editar:**
+- Input de nombre (obligatorio)
+- Switch activo/inactivo
+- Input numerico de orden
 
-**Imports nuevos**: `User`, `Mail`, `Phone`, `Unlink` de lucide-react, `Input` de ui.
+**Logica:**
+- No se permite borrar motivos (preservar historico); solo desactivar
+- Reordenar con botones arriba/abajo que intercambian `sort_order` entre items adyacentes
+- Al desactivar, el motivo no aparecera en el dropdown de `DealPausedDialog` pero los registros historicos mantienen la referencia
 
-**Estado nuevo**: `editingContact` (boolean) y `contactEditValues` (objeto con nombre, apellidos, email, telefono, cargo).
+---
+
+### Paso 2: Crear hook `usePausedReasons.ts`
+
+**Archivo nuevo**: `src/hooks/usePausedReasons.ts`
+
+Funciones expuestas:
+- `reasons` - query de todos los motivos (activos e inactivos), ordenados por `sort_order`
+- `createReason(name)` - inserta con `sort_order` = max + 1
+- `updateReason(id, { name, is_active, sort_order })` - actualiza campos
+- `swapOrder(id1, id2)` - intercambia `sort_order` entre dos motivos
+
+No incluye `deleteReason` para preservar historico.
+
+---
+
+### Paso 3: Registrar ruta y lazy component
+
+**Modificar**: `src/features/admin/components/LazyAdminComponents.tsx`
+- Anadir lazy import de `PausedReasonsSettingsPage`
+
+**Modificar**: `src/features/admin/components/AdminRouter.tsx`
+- Anadir ruta: `<Route path="/settings/deal-paused-reasons" element={<LazyPausedReasonsSettings />} />`
+
+---
+
+### Paso 4: Anadir enlace en AdminSettings
+
+**Modificar**: `src/components/admin/AdminSettings.tsx`
+- Anadir entrada en `configLinks` con:
+  - Titulo: "Motivos Deal Paused"
+  - Descripcion: "Gestiona los motivos para marcar deals como pausados"
+  - Icono: `PauseCircle`
+  - href: `/admin/settings/deal-paused-reasons`
+
+---
+
+### Archivos a crear/modificar
+
+| Archivo | Accion |
+|---------|--------|
+| `src/hooks/usePausedReasons.ts` | Nuevo - CRUD + reorder de paused_reasons |
+| `src/pages/admin/PausedReasonsSettingsPage.tsx` | Nuevo - pagina de gestion |
+| `src/features/admin/components/LazyAdminComponents.tsx` | Modificar - lazy import |
+| `src/features/admin/components/AdminRouter.tsx` | Modificar - nueva ruta |
+| `src/components/admin/AdminSettings.tsx` | Modificar - enlace en configLinks |
 
 ---
 
 ### Detalles tecnicos
 
-- Reutiliza completamente `useEmpresaContactos` ya importado (linea 48) y su variable `empresaContactos` (linea 87)
-- Usa `unlinkContacto` y `updateContacto` del mismo hook (requiere desestructurar estas funciones adicionales)
-- No crea componentes nuevos ni hooks nuevos; todo inline en la pagina
-- El bloque se renderiza condicionalmente y es responsive (flex-wrap para mobile)
+- La tabla `paused_reasons` ya tiene RLS para SELECT, INSERT y UPDATE para usuarios autenticados
+- No se necesita migracion SQL; la tabla ya soporta `is_active`, `sort_order` y `name`
+- El hook `useDealsPaused` existente ya filtra por `is_active = true` al mostrar motivos en el dialog, por lo que desactivar un motivo aqui lo oculta automaticamente del flujo de pausar
+- Patron identico a `AcquisitionChannelsSettings` para consistencia visual
 
