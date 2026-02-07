@@ -1,58 +1,46 @@
 
 
-## Plan: Vista tipo Dealsuite para datos extraidos
+## Plan: Vista tipo listado Dealsuite + guardar imagen
 
-Redisenar la seccion de "Datos extraidos" para que tenga el mismo aspecto visual que la ficha de deal en Dealsuite, en lugar del formulario generico actual con inputs en grid.
+Dos mejoras: (1) redisenar la tabla de "Deals guardados" para que se parezca al listado de Dealsuite (tarjetas en lugar de tabla), y (2) asegurar que la imagen subida se guarda y se muestra junto al deal.
 
-### Layout propuesto (inspirado en Dealsuite)
+### 1. Redisenar la tabla de deals como listado de tarjetas
 
-La vista se dividira en dos columnas principales, imitando la estructura de la captura:
+Reemplazar el `<Table>` actual por un listado de tarjetas similar al de la captura de Dealsuite:
 
-**Columna izquierda (2/3)**
-- **Titulo grande** del deal en la parte superior
-- **Badges de tipo**: Complete Sale, Majority Stake, etc.
-- **Seccion "Details"**: tabla de pares clave-valor con filas alternadas
-  - Sector | Management Consulting, IT Consulting
-  - Country | DACH, France, Spain
-  - Revenue | 3.000.000 - 20.000.000
-  - EBITDA | (si disponible)
-  - Stake offered | Complete Sale (100%), Majority Stake (>50%)
-  - Customer types | B2B
-  - Reference | ESG
-- **Seccion "Description"**: bloque de texto con la descripcion completa
-- Cada valor sera editable al hacer clic (inline editing)
+**Cada tarjeta tendra:**
+- **Fecha** encima del titulo (texto pequeno, gris, ej. "Yesterday" o fecha formateada)
+- **Titulo** en negrita como enlace/heading
+- **Descripcion** truncada a 2 lineas
+- **Fila inferior**: icono de ubicacion + pais/location + badges de sector
+- **Lado derecho**: Revenue min/max alineado a la derecha con label "Revenue"
+- **Imagen thumbnail** si existe (pequena, en la esquina)
 
-**Columna derecha (1/3) — Sidebar**
-- **Tarjeta de contacto/advisor**: foto placeholder, nombre, empresa, email
-- **Estado**: badge "Active" con fecha de publicacion
-- **Imagen original**: thumbnail de la captura subida
+Layout de cada tarjeta:
+```text
++------------------------------------------------------------------+
+| Yesterday                                    Revenue             |
+| **Titulo del deal**                     min. EUR 3.000.000       |
+|                                         max. EUR 20.000.000      |
+| Descripcion truncada a dos lineas...                             |
+|                                                                  |
+| [pin] Europe (5)  [Management Consulting]  [IT Consulting]       |
++------------------------------------------------------------------+
+```
 
-**Barra inferior**
-- Botones "Guardar deal" y "Descartar"
+### 2. Guardar imagen del deal
 
-### Cambios visuales clave
+La edge function ya sube la imagen al bucket `dealsuite-images` y devuelve `image_url` en los datos extraidos. Solo hay que asegurar que:
+- El campo `image_url` se guarda correctamente en la BD (ya se hace en `handleSave`)
+- Se muestra un pequeno thumbnail en cada tarjeta del listado si existe
 
-| Elemento actual | Nuevo estilo Dealsuite |
-|---|---|
-| Grid de inputs con labels | Tabla de pares clave-valor con fondo alternado |
-| Todos los campos visibles siempre | Agrupados por secciones (Details, Description, Contact) |
-| Inputs estandar | Inline editing: texto plano que se convierte en input al clicar |
-| Layout de 2 columnas uniforme | Layout 2/3 + 1/3 sidebar como Dealsuite |
-| Sin jerarquia visual | Titulo destacado, badges de tipo de deal |
+### Archivo a modificar
 
-### Detalles tecnicos
+**`src/components/admin/DealsuiteSyncPanel.tsx`**
+- Reemplazar la seccion de `<Table>` (lineas 303-359) por un listado de tarjetas estilo Dealsuite
+- Cada tarjeta es un `div` con bordes, hover effect, y layout grid para titulo/revenue
+- Los badges de sector se separan por coma y se muestran como chips individuales
+- Truncar descripcion con `line-clamp-2`
 
-**Archivo a modificar**: `src/components/admin/DealsuiteSyncPanel.tsx`
-
-Solo se modifica la seccion de renderizado de `extractedDeal` (lineas 277-446). El resto del componente (upload zone, tabla de deals, logica de estado) permanece igual.
-
-Elementos UI a utilizar:
-- `Badge` para tipos de deal, sector, estado
-- `Separator` para dividir secciones
-- Tailwind grid `grid-cols-3` para layout principal/sidebar
-- Clases `even:bg-muted/30` para filas alternadas en la tabla de detalles
-- `contentEditable` o toggle input/span para edicion inline
-- Avatar placeholder con icono de `User` para contacto
-
-No se necesitan cambios en la edge function, base de datos ni hooks.
+No se necesitan cambios en la edge function, base de datos ni hooks (la imagen ya se guarda).
 
