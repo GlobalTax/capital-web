@@ -1,46 +1,55 @@
 
 
-## Plan: Vista tipo listado Dealsuite + guardar imagen
+## Plan: Abrir ficha de deal + arreglar imagen
 
-Dos mejoras: (1) redisenar la tabla de "Deals guardados" para que se parezca al listado de Dealsuite (tarjetas en lugar de tabla), y (2) asegurar que la imagen subida se guarda y se muestra junto al deal.
+Hay dos problemas:
 
-### 1. Redisenar la tabla de deals como listado de tarjetas
+1. **Las tarjetas de deals no se abren** porque tienen `cursor-pointer` en el estilo pero no tienen ningun `onClick` — al hacer clic no pasa nada.
+2. **La imagen no se ve** — la URL en la base de datos existe y el bucket es publico, pero hay que verificar que se renderiza correctamente.
 
-Reemplazar el `<Table>` actual por un listado de tarjetas similar al de la captura de Dealsuite:
+### Solucion
 
-**Cada tarjeta tendra:**
-- **Fecha** encima del titulo (texto pequeno, gris, ej. "Yesterday" o fecha formateada)
-- **Titulo** en negrita como enlace/heading
-- **Descripcion** truncada a 2 lineas
-- **Fila inferior**: icono de ubicacion + pais/location + badges de sector
-- **Lado derecho**: Revenue min/max alineado a la derecha con label "Revenue"
-- **Imagen thumbnail** si existe (pequena, en la esquina)
+#### 1. Vista de detalle al hacer clic en un deal
 
-Layout de cada tarjeta:
+Se anadira un estado `selectedDeal` al componente `DealsuiteSyncPanel`. Al hacer clic en una tarjeta del listado, se mostrara el componente `DealsuitePreviewCard` ya existente con los datos de ese deal (reutilizando la misma vista Dealsuite que ya funciona para datos extraidos).
+
+**Cambios en `DealsuiteSyncPanel.tsx`:**
+- Nuevo estado: `selectedDeal` (tipo `DealsuiteDeal | null`)
+- `onClick` en cada tarjeta del listado que establece `selectedDeal`
+- Renderizar `DealsuitePreviewCard` cuando `selectedDeal` tiene valor, pasando los datos del deal guardado
+- Boton "Cerrar" en lugar de "Guardar/Descartar" cuando se ve un deal existente (o permitir edicion y re-guardado)
+
+#### 2. Imagen visible en la ficha y en el listado
+
+- En la tarjeta del listado: ya se renderiza `deal.image_url` pero se verificara que no hay problemas de carga (anadir fallback si la imagen falla)
+- En la ficha de detalle: usar `deal.image_url` como `imagePreview` para que se muestre en el sidebar del `DealsuitePreviewCard`
+
+### Detalle tecnico
+
 ```text
-+------------------------------------------------------------------+
-| Yesterday                                    Revenue             |
-| **Titulo del deal**                     min. EUR 3.000.000       |
-|                                         max. EUR 20.000.000      |
-| Descripcion truncada a dos lineas...                             |
-|                                                                  |
-| [pin] Europe (5)  [Management Consulting]  [IT Consulting]       |
-+------------------------------------------------------------------+
+Estado nuevo:
+  const [selectedDeal, setSelectedDeal] = useState<DealsuiteDeal | null>(null)
+
+En cada tarjeta:
+  onClick={() => setSelectedDeal(deal)}
+
+Renderizado condicional:
+  {selectedDeal && (
+    <DealsuitePreviewCard
+      deal={selectedDeal}
+      imagePreview={selectedDeal.image_url}
+      isSaving={false}
+      onUpdate={...}
+      onSave={...}
+      onDiscard={() => setSelectedDeal(null)}
+    />
+  )}
+
+Fallback de imagen en tarjetas:
+  <img ... onError={(e) => e.currentTarget.style.display = 'none'} />
 ```
 
-### 2. Guardar imagen del deal
+### Archivos a modificar
 
-La edge function ya sube la imagen al bucket `dealsuite-images` y devuelve `image_url` en los datos extraidos. Solo hay que asegurar que:
-- El campo `image_url` se guarda correctamente en la BD (ya se hace en `handleSave`)
-- Se muestra un pequeno thumbnail en cada tarjeta del listado si existe
-
-### Archivo a modificar
-
-**`src/components/admin/DealsuiteSyncPanel.tsx`**
-- Reemplazar la seccion de `<Table>` (lineas 303-359) por un listado de tarjetas estilo Dealsuite
-- Cada tarjeta es un `div` con bordes, hover effect, y layout grid para titulo/revenue
-- Los badges de sector se separan por coma y se muestran como chips individuales
-- Truncar descripcion con `line-clamp-2`
-
-No se necesitan cambios en la edge function, base de datos ni hooks (la imagen ya se guarda).
-
+- **`src/components/admin/DealsuiteSyncPanel.tsx`**: Anadir estado `selectedDeal`, onClick en tarjetas, renderizar preview card para deal seleccionado, fallback de imagen
+- **`src/components/admin/DealsuitePreviewCard.tsx`**: Pequeno ajuste para mostrar "Cerrar" en vez de "Guardar" cuando se usa en modo solo lectura (prop opcional `readOnly`)
