@@ -1,131 +1,131 @@
 
 
-# Plan: Google Ads Stats (Import + Dashboard)
+# Plan: Metricas de Conversion por Canal y Formulario
 
 ## Resumen
 
-Implementar la importacion y visualizacion de Google Ads con la misma experiencia que Meta Ads, reutilizando la tabla existente `ads_costs_history` (que ya soporta `platform = 'google_ads'`) y creando un dashboard analitico paralelo.
+Anadir una nueva seccion "Conversion por Canal y Formulario" al dashboard de Metricas existente (`LeadMetricsDashboard`), sin modificar nada del codigo ni componentes actuales. Se extiende el hook `useLeadMetrics` para incluir datos de canal y formulario, y se crean 3 nuevos componentes visuales.
 
-**No se toca nada de Meta Ads.**
+## Datos disponibles en BD (verificado)
 
-## Arquitectura
+**Canales** (tabla `acquisition_channels`, campo `acquisition_channel_id` en leads):
+- Meta Ads: 321 leads
+- Meta ads - Formulario instantaneo: 615 leads
+- Google Ads: 27 leads
+- Directo, Marketplace, etc.
+- NULL (sin canal): ~100 leads
 
-La tabla `ads_costs_history` ya tiene los campos necesarios (clicks, conversions, cpm, spend, cost_per_result) y el enum `ads_platform` ya incluye `google_ads`. No se necesitan migraciones de esquema.
+**Formularios** (tabla `lead_forms`, campo `lead_form` en leads):
+- form_nov_2025_negocios (display: "Valoracion"): 423 leads
+- form_enero_2026_ventas (display: "Ventas"): 50 leads
+- form_enero_2025_compra (display: "Compras"): 13 leads
+- NULL (sin formulario): ~756 leads
 
-Se necesita:
-1. Un parser especifico para el formato Google Ads (UTF-16, TAB, skiprows, numeros ES)
-2. Un modal de importacion con campo "Nombre de campana" cuando el archivo no lo trae
-3. Un dashboard analitico como el de Meta
+**Estados** (tabla `contact_statuses`, campo `lead_status_crm`):
+17 estados ordenados por position. Los relevantes para conversion:
+- pos 1: Nuevo (status_key: nuevo)
+- pos 4: Primer Contacto (propuesta_enviada)
+- pos 2: Target Lead (contactando) = cualificado
+- pos 7: Reunion Programada (fase0_activo)
+- pos 9: PSH Enviada (archivado)
+- pos 11: Ganado
+- pos 12-16: Varios estados de perdido
+
+## Definicion de "Conversion" (2 niveles)
+
+Basado en los estados reales del sistema:
+- **Nivel A - Contactado**: lead llego a position >= 4 (Primer Contacto o superior, excluyendo terminales perdidos)
+- **Nivel B - Cualificado**: lead llego a position >= 6 (Contacto Efectivo o superior, excluyendo terminales perdidos)
+- **Nivel C - Avanzado**: lead llego a position >= 7 (Reunion Programada o superior)
+
+Estos niveles se calculan dinamicamente desde `contact_statuses.position`, no hardcodeados.
 
 ## Cambios detallados
 
-### 1. Hook: `src/hooks/useGoogleAdsImport.ts` (NUEVO)
+### 1. Extender hook: `src/components/admin/metrics/useLeadMetrics.ts`
 
-Parser especializado para el formato Google Ads:
-- Detectar encoding UTF-16 (BOM) y convertir a texto
-- Separador TAB
-- Saltar las 2 primeras filas (metadata del export)
-- Mapeo de columnas Google Ads:
-  - "Dia" -> date
-  - "Clics" -> clicks (parseando "1.487" como 1487: eliminar puntos de miles)
-  - "Coste" -> spend (parseando "36,33" como 36.33: coma a punto decimal)
-  - "Conversiones" -> conversions/results
-  - "CTR" -> raw_row (guardar como porcentaje en raw_row, calcular ratio si se necesita)
-  - "CPM medio" -> cpm
-  - "Estado de la campana" -> result_type (o campo campaign_status en raw_row)
-  - "Codigo de moneda" -> IGNORAR
-- Normalizacion de numeros estilo ES:
-  - Funcion `parseSpanishNumber("1.487")` -> 1487
-  - Funcion `parseSpanishNumber("36,33")` -> 36.33
-  - Funcion `parseSpanishPercent("7,35%")` -> 7.35 (guardar como porcentaje, no ratio)
-- Si no existe columna "Campana"/"Nombre de la campana": requerir que el usuario introduzca el nombre manualmente
-- Upsert en `ads_costs_history` con `platform = 'google_ads'`
-- Calcular metricas derivadas:
-  - `cost_per_result` = spend / conversions (division segura)
+Anadir al fetch de leads el campo `acquisition_channel_id` (ya se consulta la tabla, solo falta incluir el campo en el SELECT).
 
-### 2. Modal: `src/components/admin/campaigns/GoogleAdsImportModal.tsx` (NUEVO)
+Anadir al return del hook un nuevo campo `conversionMetrics` que contenga:
+- `byChannel`: agrupacion por canal (Meta Ads agrupado, Google Ads, Sin canal, Otros)
+  - Para cada canal: total leads, conteo por etapa del funnel, tasas de conversion A/B/C
+- `byForm`: agrupacion por formulario (usando `displayNameMap` del hook `useLeadForms`)
+  - Para cada formulario: total leads, conteo por etapa, tasas de conversion A/B/C
+- `channelTimeSeries`: serie temporal semanal de leads nuevos y cualificados por canal
 
-Basado en `AdsCostsImportModal` pero con:
-- Input obligatorio "Nombre de campana" si el archivo no trae columna de campana
-- Informacion de formato esperado adaptada a Google Ads
-- Preview con columnas: Fecha, Campana, Clics, Coste, Conversiones, CTR, CPM
-- Soporte para archivos .csv (ademas de .xlsx/.xls)
+**Agrupacion de canales**: "Meta Ads" y "Meta ads - Formulario instantaneo" se agrupan bajo "Meta Ads" para la comparativa. "Google Ads" es su propio grupo.
 
-### 3. Dashboard: `src/components/admin/campaigns/GoogleAdsAnalytics/` (NUEVO directorio)
+### 2. Nuevo componente: `src/components/admin/metrics/ChannelConversionBlock.tsx`
 
-Estructura paralela a `MetaAdsAnalytics/`:
+Seccion "Conversion por Canal" con:
+- **KPI cards por canal** (Meta vs Google vs Otros): Total leads, Contact Rate, Qualification Rate
+- **Grafico de barras comparativo** (Recharts `BarChart`): tasas de conversion A/B/C por canal, lado a lado
+- **Mini-funnel por canal**: conteos por etapa principal (Nuevo -> Contactado -> Cualificado -> Reunion -> Ganado -> Perdido)
 
-- **`index.ts`** - Re-exports
-- **`GoogleAdsAnalyticsDashboard.tsx`** - Dashboard principal:
-  - Header con boton Importar + Exportar
-  - Filtros (busqueda, selector campana, rango fechas)
-  - KPIs globales (Gasto total, Clics, Conversiones, CPC, CPA, CPM)
-  - Graficos de evolucion diaria (Clics, Coste, Conversiones, CTR, CPM)
-  - Tarjetas por campana con sus metricas
-  - Consume `useAdsCostsHistory('google_ads')`
-- **`GoogleAdsKPIs.tsx`** - KPIs globales adaptados a metricas Google Ads
-- **`GoogleAdsCampaignCard.tsx`** - Tarjeta por campana
-- **`GoogleAdsEvolutionCharts.tsx`** - Graficos de series temporales con Recharts
-- **`GoogleAdsFilters.tsx`** - Filtros (misma estructura que MetaAdsFilters)
-- **`types.ts`** - Tipos y funciones de analisis para Google Ads
+### 3. Nuevo componente: `src/components/admin/metrics/FormConversionBlock.tsx`
 
-### 4. Integracion: `src/features/contacts/components/stats/ContactsStatsPanel.tsx`
+Seccion "Conversion por Formulario" con:
+- **Tabla heatmap** por formulario: filas = formularios (Ventas, Compras, Valoracion, Sin formulario), columnas = etapas del funnel, celdas con conteo y color segun intensidad
+- **Barras comparativas** de tasas de conversion por formulario
+- Leads "Sin formulario" visibles para limpieza de datos
 
-Cambiar el contenido del tab "Google Ads" (linea 224-230):
-- Reemplazar `<AdsCostsHistoryTable platform="google_ads" />` por `<GoogleAdsAnalyticsDashboard />`
-- Anadir import del nuevo componente
+### 4. Nuevo componente: `src/components/admin/metrics/ChannelEvolutionBlock.tsx`
 
-### Metricas y KPIs del dashboard Google Ads
+Serie temporal semanal:
+- Lineas por canal (Meta en azul, Google en verde, Otros en gris)
+- Toggle entre: leads nuevos vs leads cualificados vs tasa de cualificacion
+- Usa Recharts `LineChart` con `ResponsiveContainer`
 
-| KPI | Calculo |
-|-----|---------|
-| Gasto Total | SUM(spend) |
-| Clics Totales | SUM(clicks) |
-| Conversiones | SUM(conversions) |
-| CPC (Coste por Clic) | totalSpend / totalClicks |
-| CPA (Coste por Conversion) | totalSpend / totalConversions |
-| CPM | Directo de los datos importados |
-| CTR | Almacenado en raw_row, mostrado como % |
+### 5. Integrar en: `src/components/admin/metrics/LeadMetricsDashboard.tsx`
 
-Todas las divisiones protegidas contra division por cero.
-
-### Normalizacion de numeros (detalle tecnico)
-
-```text
-parseSpanishNumber("1.487")   -> 1487     (int, eliminar puntos)
-parseSpanishNumber("36,33")   -> 36.33    (float, coma a punto)
-parseSpanishNumber("87,00")   -> 87.0     (float)
-parseSpanishPercent("7,35%")  -> 7.35     (float, quitar %, coma a punto)
-parseSpanishNumber("1,80")    -> 1.80     (float)
+Despues del bloque existente `TemporalEvolutionBlock`, anadir:
+```
+<Separator />
+<ChannelConversionBlock data={metrics.conversionMetrics.byChannel} ... />
+<Separator />
+<FormConversionBlock data={metrics.conversionMetrics.byForm} ... />
+<Separator />
+<ChannelEvolutionBlock data={metrics.conversionMetrics.channelTimeSeries} ... />
 ```
 
-Logica: si el string contiene puntos Y comas, los puntos son separadores de miles. Si solo tiene puntos y el numero tiene mas de 3 digitos despues del punto, son miles. Si solo tiene coma, es decimal.
+Cada bloque envuelto en el mismo patron de loading/empty state.
+
+### 6. Invalidacion automatica
+
+Extender `useInlineUpdate.ts` (linea ~437) para invalidar `lead-metrics-data` cuando se cambia `lead_status_crm`:
+```ts
+queryClient.invalidateQueries({ queryKey: ['lead-metrics-data'] });
+```
+
+Tambien anadir la misma invalidacion en:
+- `LeadStatusSelect.tsx` (ya invalida otros queries, anadir este)
+- `ContactDetailSheet.tsx` (cuando cambia status)
 
 ## Archivos a crear
 
 | Archivo | Descripcion |
 |---------|-------------|
-| `src/hooks/useGoogleAdsImport.ts` | Hook de parseo e importacion Google Ads |
-| `src/components/admin/campaigns/GoogleAdsImportModal.tsx` | Modal de importacion |
-| `src/components/admin/campaigns/GoogleAdsAnalytics/index.ts` | Re-exports |
-| `src/components/admin/campaigns/GoogleAdsAnalytics/GoogleAdsAnalyticsDashboard.tsx` | Dashboard principal |
-| `src/components/admin/campaigns/GoogleAdsAnalytics/GoogleAdsKPIs.tsx` | KPIs globales |
-| `src/components/admin/campaigns/GoogleAdsAnalytics/GoogleAdsCampaignCard.tsx` | Tarjeta campana |
-| `src/components/admin/campaigns/GoogleAdsAnalytics/GoogleAdsEvolutionCharts.tsx` | Graficos evolucion |
-| `src/components/admin/campaigns/GoogleAdsAnalytics/GoogleAdsFilters.tsx` | Filtros |
-| `src/components/admin/campaigns/GoogleAdsAnalytics/types.ts` | Tipos y funciones analisis |
+| `src/components/admin/metrics/ChannelConversionBlock.tsx` | Funnel + KPIs + barras por canal |
+| `src/components/admin/metrics/FormConversionBlock.tsx` | Heatmap + barras por formulario |
+| `src/components/admin/metrics/ChannelEvolutionBlock.tsx` | Serie temporal por canal |
 
 ## Archivos a modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/features/contacts/components/stats/ContactsStatsPanel.tsx` | Import + reemplazar contenido tab Google Ads |
+| `src/components/admin/metrics/useLeadMetrics.ts` | Anadir acquisition_channel_id al fetch + calcular conversionMetrics |
+| `src/components/admin/metrics/types.ts` | Nuevos tipos para conversion metrics |
+| `src/components/admin/metrics/LeadMetricsDashboard.tsx` | Importar + renderizar 3 nuevos bloques |
+| `src/components/admin/metrics/index.ts` | Exportar nuevos componentes |
+| `src/hooks/useInlineUpdate.ts` | Invalidar lead-metrics-data en status change |
+| `src/components/admin/leads/LeadStatusSelect.tsx` | Invalidar lead-metrics-data |
 
 ## Lo que NO se toca
 
-- Nada de Meta Ads (ni componentes, ni hooks, ni imports)
-- Ninguna tabla de base de datos (se reutiliza `ads_costs_history`)
+- Ninguna tabla de base de datos
+- Ningun componente existente de metricas (MetricsKPISummary, StatusDistributionBlock, ConversionFunnelBlock, CampaignQualityBlock, TemporalEvolutionBlock)
+- Nada de Meta Ads ni Google Ads
+- Nada del tab de Costes, Mapeo
 - Ningun endpoint backend
-- Ninguna migracion SQL necesaria
-- El tab de "Control de Costes", "Mapeo" y "Metricas" quedan intactos
+- La logica actual del hook solo se extiende (se anade al return, no se modifica lo existente)
 
