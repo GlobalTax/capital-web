@@ -7090,6 +7090,42 @@ export type Database = {
           },
         ]
       }
+      dealsuite_contacts: {
+        Row: {
+          created_at: string | null
+          deal_ids: string[] | null
+          email: string | null
+          empresa: string | null
+          id: string
+          nombre: string
+          notas: string | null
+          telefono: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deal_ids?: string[] | null
+          email?: string | null
+          empresa?: string | null
+          id?: string
+          nombre: string
+          notas?: string | null
+          telefono?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deal_ids?: string[] | null
+          email?: string | null
+          empresa?: string | null
+          id?: string
+          nombre?: string
+          notas?: string | null
+          telefono?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       dealsuite_deals: {
         Row: {
           advisor: string | null

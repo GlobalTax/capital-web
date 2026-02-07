@@ -47,6 +47,8 @@ export const DealsuiteSyncPanel = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [extractedDeal, setExtractedDeal] = useState<ExtractedDeal | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<ExtractedDeal | null>(null);
+  const [notes, setNotes] = useState('');
+  const [selectedDealNotes, setSelectedDealNotes] = useState('');
   const { toast } = useToast();
   const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(20);
 
@@ -58,10 +60,10 @@ export const DealsuiteSyncPanel = () => {
     reader.onload = () => {
       const result = reader.result as string;
       setImagePreview(result);
-      // Extract base64 without the data URI prefix
       const base64 = result.split(',')[1];
       setImageBase64(base64);
       setExtractedDeal(null);
+      setNotes('');
     };
     reader.readAsDataURL(file);
   }, []);
@@ -70,13 +72,13 @@ export const DealsuiteSyncPanel = () => {
     onDrop,
     accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] },
     maxFiles: 1,
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 10 * 1024 * 1024,
   });
 
-  // Paste from clipboard (e.g. Snipping Tool)
+  // Paste from clipboard
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
-      if (imagePreview) return; // Don't overwrite existing image
+      if (imagePreview) return;
       const item = Array.from(e.clipboardData?.items || []).find(i => i.type.startsWith('image/'));
       if (!item) return;
       const file = item.getAsFile();
@@ -88,12 +90,52 @@ export const DealsuiteSyncPanel = () => {
         setImagePreview(result);
         setImageBase64(result.split(',')[1]);
         setExtractedDeal(null);
+        setNotes('');
       };
       reader.readAsDataURL(file);
     };
     document.addEventListener('paste', handlePaste);
     return () => document.removeEventListener('paste', handlePaste);
   }, [imagePreview]);
+
+  // Upsert contact in dealsuite_contacts
+  const upsertContact = async (deal: ExtractedDeal, dealId: string) => {
+    if (!deal.contact_email) return;
+    try {
+      // Check if contact exists
+      const { data: existing } = await supabase
+        .from('dealsuite_contacts' as any)
+        .select('id, deal_ids')
+        .eq('email', deal.contact_email)
+        .maybeSingle();
+
+      if (existing) {
+        const currentDealIds = (existing as any).deal_ids || [];
+        if (!currentDealIds.includes(dealId)) {
+          await supabase
+            .from('dealsuite_contacts' as any)
+            .update({
+              nombre: deal.contact_name || 'Sin nombre',
+              empresa: deal.contact_company || deal.advisor || null,
+              deal_ids: [...currentDealIds, dealId],
+              updated_at: new Date().toISOString(),
+            } as any)
+            .eq('id', (existing as any).id);
+        }
+      } else {
+        await supabase
+          .from('dealsuite_contacts' as any)
+          .insert({
+            nombre: deal.contact_name || 'Sin nombre',
+            empresa: deal.contact_company || deal.advisor || null,
+            email: deal.contact_email,
+            deal_ids: [dealId],
+          } as any);
+      }
+    } catch (err) {
+      console.error('Error upserting contact:', err);
+    }
+  };
 
   const handleExtract = async () => {
     if (!imageBase64) return;
@@ -131,6 +173,9 @@ export const DealsuiteSyncPanel = () => {
     try {
       const dealId = extractedDeal.reference || `img-${Date.now()}`;
       
+      const rawData: Record<string, unknown> = {};
+      if (notes.trim()) rawData.notes = notes.trim();
+
       const { error } = await supabase.from('dealsuite_deals').upsert(
         {
           deal_id: dealId,
@@ -153,6 +198,7 @@ export const DealsuiteSyncPanel = () => {
           contact_company: extractedDeal.contact_company,
           published_at: extractedDeal.published_at,
           image_url: extractedDeal.image_url,
+          raw_data: Object.keys(rawData).length > 0 ? rawData : null,
           scraped_at: new Date().toISOString(),
         } as any,
         { onConflict: 'deal_id' }
@@ -160,10 +206,14 @@ export const DealsuiteSyncPanel = () => {
 
       if (error) throw error;
 
+      // Upsert contact
+      await upsertContact(extractedDeal, dealId);
+
       toast({ title: 'Deal guardado', description: `"${extractedDeal.title}" guardado correctamente.` });
       setExtractedDeal(null);
       setImagePreview(null);
       setImageBase64(null);
+      setNotes('');
       refetch();
     } catch (err: any) {
       console.error('Save error:', err);
@@ -181,11 +231,18 @@ export const DealsuiteSyncPanel = () => {
     setImagePreview(null);
     setImageBase64(null);
     setExtractedDeal(null);
+    setNotes('');
   };
 
   const updateField = (field: keyof ExtractedDeal, value: string | number | null) => {
     if (!extractedDeal) return;
     setExtractedDeal({ ...extractedDeal, [field]: value });
+  };
+
+  const handleSelectDeal = (deal: any) => {
+    setSelectedDeal(deal);
+    const rawNotes = (deal.raw_data as any)?.notes || '';
+    setSelectedDealNotes(rawNotes);
   };
 
   const formatCurrency = (value: number | null | undefined) => {
@@ -272,12 +329,14 @@ export const DealsuiteSyncPanel = () => {
         </CardContent>
       </Card>
 
-      {/* Extracted Data Preview — Dealsuite style */}
+      {/* Extracted Data Preview */}
       {extractedDeal && (
         <DealsuitePreviewCard
           deal={extractedDeal}
           imagePreview={imagePreview}
           isSaving={isSaving}
+          notes={notes}
+          onNotesChange={setNotes}
           onUpdate={updateField}
           onSave={handleSave}
           onDiscard={() => setExtractedDeal(null)}
@@ -291,6 +350,8 @@ export const DealsuiteSyncPanel = () => {
           imagePreview={selectedDeal.image_url || null}
           isSaving={false}
           readOnly
+          notes={selectedDealNotes}
+          onNotesChange={setSelectedDealNotes}
           onUpdate={() => {}}
           onSave={() => {}}
           onDiscard={() => setSelectedDeal(null)}
@@ -317,7 +378,7 @@ export const DealsuiteSyncPanel = () => {
               {deals.map((deal) => {
                 const sectors = deal.sector?.split(',').map(s => s.trim()).filter(Boolean) || [];
                 return (
-                  <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setSelectedDeal(deal)}>
+                  <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => handleSelectDeal(deal)}>
                     {/* Thumbnail */}
                     {deal.image_url && (
                       <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted">
@@ -340,12 +401,12 @@ export const DealsuiteSyncPanel = () => {
                         {/* Revenue column */}
                         {(deal.revenue_min || deal.revenue_max) && (
                           <div className="flex-shrink-0 text-right">
-                            <p className="text-xs text-muted-foreground font-medium">Revenue</p>
+                            <p className="text-xs text-muted-foreground font-medium">Facturación</p>
                             {deal.revenue_min && (
-                              <p className="text-xs text-foreground">min. {formatCurrency(deal.revenue_min)}</p>
+                              <p className="text-xs text-foreground">mín. {formatCurrency(deal.revenue_min)}</p>
                             )}
                             {deal.revenue_max && (
-                              <p className="text-xs text-foreground">max. {formatCurrency(deal.revenue_max)}</p>
+                              <p className="text-xs text-foreground">máx. {formatCurrency(deal.revenue_max)}</p>
                             )}
                           </div>
                         )}
