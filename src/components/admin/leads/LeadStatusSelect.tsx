@@ -78,6 +78,7 @@ export function LeadStatusSelect({
       queryClient.invalidateQueries({ queryKey: ['lead-detail', `${leadType}_${leadId}`] });
       queryClient.invalidateQueries({ queryKey: ['unified-leads'] });
       queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-metrics-data'] });
       
       toast({
         title: "Estado actualizado",

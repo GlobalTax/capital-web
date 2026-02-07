@@ -76,6 +76,7 @@ export interface LeadMetricsData {
     wonLeads: number;
     lostLeads: number;
   };
+  conversionMetrics?: ConversionMetrics;
 }
 
 // Terminal states that end the funnel
@@ -95,6 +96,55 @@ export const WON_STATUS_KEYS = ['ganado'];
 
 // Discard states
 export const DISCARD_STATUS_KEYS = ['perdido', 'lead_perdido_curiosidad', 'mandato_propuesto', 'ya_advisor'];
+
+// ============= CONVERSION METRICS TYPES =============
+
+export interface ChannelConversionData {
+  channelName: string;
+  totalLeads: number;
+  contactedCount: number;
+  contactedRate: number;
+  qualifiedCount: number;
+  qualifiedRate: number;
+  advancedCount: number;
+  advancedRate: number;
+  wonCount: number;
+  wonRate: number;
+  lostCount: number;
+  lostRate: number;
+  funnelStages: { stage: string; count: number }[];
+}
+
+export interface FormConversionData {
+  formName: string;
+  totalLeads: number;
+  contactedCount: number;
+  contactedRate: number;
+  qualifiedCount: number;
+  qualifiedRate: number;
+  advancedCount: number;
+  advancedRate: number;
+  wonCount: number;
+  wonRate: number;
+  lostCount: number;
+  funnelStages: { stage: string; count: number }[];
+}
+
+export interface ChannelTimeSeriesPoint {
+  week: string;
+  channels: Record<string, { newLeads: number; qualifiedLeads: number }>;
+}
+
+export interface ConversionMetrics {
+  byChannel: ChannelConversionData[];
+  byForm: FormConversionData[];
+  channelTimeSeries: ChannelTimeSeriesPoint[];
+  conversionLevels: {
+    contactedMinPosition: number;
+    qualifiedMinPosition: number;
+    advancedMinPosition: number;
+  };
+}
 
 // Helper to determine lead type from origin
 export const getLeadTypeFromOrigin = (origin: string): LeadType => {
