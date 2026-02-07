@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +73,28 @@ export const DealsuiteSyncPanel = () => {
     maxFiles: 1,
     maxSize: 10 * 1024 * 1024, // 10MB
   });
+
+  // Paste from clipboard (e.g. Snipping Tool)
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (imagePreview) return; // Don't overwrite existing image
+      const item = Array.from(e.clipboardData?.items || []).find(i => i.type.startsWith('image/'));
+      if (!item) return;
+      const file = item.getAsFile();
+      if (!file) return;
+      e.preventDefault();
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        setImageBase64(result.split(',')[1]);
+        setExtractedDeal(null);
+      };
+      reader.readAsDataURL(file);
+    };
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [imagePreview]);
 
   const handleExtract = async () => {
     if (!imageBase64) return;
@@ -209,7 +231,7 @@ export const DealsuiteSyncPanel = () => {
               <input {...getInputProps()} />
               <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-sm font-medium text-foreground">
-                {isDragActive ? 'Suelta la imagen aquí...' : 'Arrastra una captura o haz clic para seleccionar'}
+                {isDragActive ? 'Suelta la imagen aquí...' : 'Arrastra, haz clic o pega (Ctrl+V) una captura'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">PNG, JPG o WebP (máx. 10MB)</p>
             </div>
