@@ -152,8 +152,18 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
     snapshotId: string | undefined,
     campaignId: string,
     field: string,
-    value: any
+    value: any,
+    source?: 'snapshot' | 'history'
   ) => {
+    if (source === 'history') {
+      // History data is read-only; create a real snapshot instead
+      await upsertSnapshotAsync({
+        campaign_id: campaignId,
+        snapshot_date: format(new Date(), 'yyyy-MM-dd'),
+        [field]: value
+      });
+      return;
+    }
     if (snapshotId) {
       await updateSnapshotCell({ snapshotId, field, value });
     } else {
@@ -204,6 +214,8 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
   ) => {
     const isFocused = isCellFocused(rowIndex, column.key);
     const snap = campaign.latest_snapshot;
+    const isHistorySource = snap?.source === 'history';
+    const snapshotEditable = !isHistorySource;
 
     switch (column.key) {
       // Campaign name (non-editable in table, use modal)
@@ -256,11 +268,11 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
           <SpreadsheetCell
             value={snap?.results}
             type="number"
-            editable
+            editable={snapshotEditable}
             isFocused={isFocused}
             onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
             onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
-            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'results', val)}
+            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'results', val, snap?.source)}
             className="text-right tabular-nums"
             placeholder="0"
           />
@@ -294,11 +306,11 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
           <SpreadsheetCell
             value={snap?.amount_spent}
             type="currency"
-            editable
+            editable={snapshotEditable}
             isFocused={isFocused}
             onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
             onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
-            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'amount_spent', val)}
+            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'amount_spent', val, snap?.source)}
             className="text-right tabular-nums"
           />
         );
@@ -309,11 +321,11 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
           <SpreadsheetCell
             value={snap?.daily_budget}
             type="currency"
-            editable
+            editable={snapshotEditable}
             isFocused={isFocused}
             onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
             onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
-            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'daily_budget', val)}
+            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'daily_budget', val, snap?.source)}
             className="text-right tabular-nums"
           />
         );
@@ -324,11 +336,11 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
           <SpreadsheetCell
             value={snap?.monthly_budget}
             type="currency"
-            editable
+            editable={snapshotEditable}
             isFocused={isFocused}
             onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
             onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
-            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'monthly_budget', val)}
+            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'monthly_budget', val, snap?.source)}
             className="text-right tabular-nums"
           />
         );
@@ -339,11 +351,11 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
           <SpreadsheetCell
             value={snap?.target_cpl}
             type="currency"
-            editable
+            editable={snapshotEditable}
             isFocused={isFocused}
             onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
             onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
-            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'target_cpl', val)}
+            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'target_cpl', val, snap?.source)}
             className="text-right tabular-nums"
           />
         );
@@ -355,11 +367,11 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
             value={snap?.internal_status || campaign.suggestedStatus}
             type="select"
             options={STATUS_OPTIONS}
-            editable
+            editable={snapshotEditable}
             isFocused={isFocused}
             onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
             onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
-            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'internal_status', val)}
+            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'internal_status', val, snap?.source)}
           />
         );
 
@@ -369,11 +381,11 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
           <SpreadsheetCell
             value={snap?.notes}
             type="text"
-            editable
+            editable={snapshotEditable}
             isFocused={isFocused}
             onFocus={() => focusCell({ rowIndex, columnKey: column.key })}
             onNavigate={(dir) => handleNavigate(rowIndex, column.key, dir)}
-            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'notes', val)}
+            onSave={(val) => handleSnapshotCellSave(snap?.id, campaign.id, 'notes', val, snap?.source)}
             placeholder="Añadir nota..."
           />
         );
