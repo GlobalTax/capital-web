@@ -19,6 +19,9 @@ import { StatusDistributionBlock } from './StatusDistributionBlock';
 import { ConversionFunnelBlock } from './ConversionFunnelBlock';
 import { CampaignQualityBlock } from './CampaignQualityBlock';
 import { TemporalEvolutionBlock } from './TemporalEvolutionBlock';
+import { ChannelConversionBlock } from './ChannelConversionBlock';
+import { FormConversionBlock } from './FormConversionBlock';
+import { ChannelEvolutionBlock } from './ChannelEvolutionBlock';
 
 type PeriodPreset = 'all' | 'week' | 'month' | 'quarter' | 'custom';
 
@@ -193,6 +196,30 @@ export const LeadMetricsDashboard: React.FC = () => {
       {/* Temporal Evolution */}
       <TemporalEvolutionBlock 
         data={metrics.temporalEvolution}
+        isLoading={isLoading}
+      />
+
+      <Separator />
+
+      {/* Channel Conversion */}
+      <ChannelConversionBlock
+        data={metrics.conversionMetrics?.byChannel || []}
+        isLoading={isLoading}
+      />
+
+      <Separator />
+
+      {/* Form Conversion */}
+      <FormConversionBlock
+        data={metrics.conversionMetrics?.byForm || []}
+        isLoading={isLoading}
+      />
+
+      <Separator />
+
+      {/* Channel Evolution */}
+      <ChannelEvolutionBlock
+        data={metrics.conversionMetrics?.channelTimeSeries || []}
         isLoading={isLoading}
       />
 

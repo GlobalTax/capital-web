@@ -437,6 +437,7 @@ export const useContactInlineUpdate = () => {
       if (field === 'lead_status_crm') {
         queryClient.invalidateQueries({ queryKey: ['contacts-v2'] });
         queryClient.invalidateQueries({ queryKey: ['prospects'] });
+        queryClient.invalidateQueries({ queryKey: ['lead-metrics-data'] });
         
         // Check if new status is a prospect stage for user feedback
         if (value) {

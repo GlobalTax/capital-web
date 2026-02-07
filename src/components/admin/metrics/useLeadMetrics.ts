@@ -5,12 +5,17 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useContactStatuses, ContactStatus } from '@/hooks/useContactStatuses';
+import { useLeadForms } from '@/hooks/useLeadForms';
 import { 
   LeadMetricsData, 
   StatusDistribution, 
   FunnelStage,
   CampaignQuality,
   TemporalDataPoint,
+  ConversionMetrics,
+  ChannelConversionData,
+  FormConversionData,
+  ChannelTimeSeriesPoint,
   TERMINAL_STATUS_KEYS,
   QUALIFIED_STATUS_KEYS,
   MEETING_STATUS_KEYS,
@@ -18,7 +23,7 @@ import {
   WON_STATUS_KEYS,
   DISCARD_STATUS_KEYS,
 } from './types';
-import { format, subDays, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, parseISO, startOfDay, endOfDay, startOfWeek } from 'date-fns';
 
 interface LeadRecord {
   id: string;
@@ -28,6 +33,8 @@ interface LeadRecord {
   lead_received_at?: string;
   campaign?: string;
   source?: string;
+  acquisition_channel_id?: string | null;
+  lead_form?: string | null;
 }
 
 interface UseLeadMetricsOptions {
@@ -37,9 +44,32 @@ interface UseLeadMetricsOptions {
   leadType?: string;
 }
 
+// Channel name normalization: group Meta variants together
+const normalizeChannelName = (name: string): string => {
+  const lower = name.toLowerCase();
+  if (lower.includes('meta')) return 'Meta Ads';
+  if (lower.includes('google')) return 'Google Ads';
+  return name;
+};
+
 export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
   const { statuses, isLoading: statusesLoading } = useContactStatuses();
+  const { displayNameMap } = useLeadForms();
   
+  // Fetch acquisition channels for name resolution
+  const { data: channels } = useQuery({
+    queryKey: ['acquisition-channels-map'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('acquisition_channels')
+        .select('id, name');
+      const map: Record<string, string> = {};
+      (data || []).forEach(c => { map[c.id] = c.name; });
+      return map;
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
   // Fetch all leads for metrics calculation
   const { data: leads, isLoading: leadsLoading, refetch } = useQuery({
     queryKey: ['lead-metrics-data', options.dateFrom?.toISOString(), options.dateTo?.toISOString()],
@@ -49,7 +79,7 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
       // Fetch from company_valuations with LIMIT to prevent timeout
       const { data: valuations, error: valError } = await supabase
         .from('company_valuations')
-        .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
+        .select('id, lead_status_crm, created_at, lead_received_at, lead_form, acquisition_channel_id')
         .is('is_deleted', false)
         .order('created_at', { ascending: false })
         .limit(5000);
@@ -66,13 +96,15 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
           created_at: v.created_at,
           lead_received_at: v.lead_received_at || undefined,
           source: v.lead_form || 'Valoración',
+          acquisition_channel_id: v.acquisition_channel_id,
+          lead_form: v.lead_form,
         })));
       }
       
       // Fetch from contact_leads with LIMIT
       const { data: contacts, error: contactsError } = await supabase
         .from('contact_leads')
-        .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
+        .select('id, lead_status_crm, created_at, lead_received_at, lead_form, acquisition_channel_id')
         .is('is_deleted', false)
         .order('created_at', { ascending: false })
         .limit(5000);
@@ -89,13 +121,15 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
           created_at: c.created_at,
           lead_received_at: c.lead_received_at || undefined,
           source: c.lead_form || 'Contacto',
+          acquisition_channel_id: c.acquisition_channel_id,
+          lead_form: c.lead_form,
         })));
       }
       
       // Fetch from acquisition_leads with LIMIT
       const { data: acquisitions, error: acqError } = await supabase
         .from('acquisition_leads')
-        .select('id, lead_status_crm, created_at, lead_received_at, lead_form')
+        .select('id, lead_status_crm, created_at, lead_received_at, lead_form, acquisition_channel_id')
         .is('is_deleted', false)
         .order('created_at', { ascending: false })
         .limit(5000);
@@ -112,6 +146,8 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
           created_at: a.created_at,
           lead_received_at: a.lead_received_at || undefined,
           source: a.lead_form || 'Compra',
+          acquisition_channel_id: a.acquisition_channel_id,
+          lead_form: a.lead_form,
         })));
       }
       
@@ -134,6 +170,7 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
           origin: 'collaborator',
           created_at: c.created_at,
           source: c.lead_form || 'Colaborador',
+          lead_form: c.lead_form,
         })));
       }
       
@@ -194,6 +231,7 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
         campaignQuality: [],
         temporalEvolution: [],
         totals: { totalLeads: 0, activeLeads: 0, wonLeads: 0, lostLeads: 0 },
+        conversionMetrics: { byChannel: [], byForm: [], channelTimeSeries: [], conversionLevels: { contactedMinPosition: 4, qualifiedMinPosition: 6, advancedMinPosition: 7 } },
       };
     }
 
@@ -228,7 +266,6 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
       const count = statusCounts.get(status.status_key) || 0;
       const isTerminal = TERMINAL_STATUS_KEYS.includes(status.status_key);
       
-      // For funnel, we track cumulative (leads that reached this stage or beyond)
       const leadsAtOrBeyond = sortedStatuses
         .slice(index)
         .reduce((sum, s) => sum + (statusCounts.get(s.status_key) || 0), 0);
@@ -248,7 +285,7 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
         position: status.position,
         isTerminal,
       };
-    }).filter(f => f.count > 0 || f.position <= 6); // Show first 6 stages even if empty
+    }).filter(f => f.count > 0 || f.position <= 6);
 
     // 3. Campaign Quality
     const campaignGroups = new Map<string, LeadRecord[]>();
@@ -278,7 +315,6 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
           WON_STATUS_KEYS.includes(l.lead_status_crm || '')
         ).length;
 
-        // Calculate average funnel depth
         const getDepth = (statusKey: string | null): number => {
           if (!statusKey) return 1;
           const status = statuses.find(s => s.status_key === statusKey);
@@ -297,7 +333,7 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
           avgConversionDepth: avgDepth,
         };
       })
-      .filter(c => c.totalLeads >= 3) // Only show campaigns with meaningful data
+      .filter(c => c.totalLeads >= 3)
       .sort((a, b) => b.totalLeads - a.totalLeads);
 
     // 4. Temporal Evolution (last 30 days)
@@ -314,7 +350,6 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
           const leadDate = format(parseISO(dateToCheck), 'yyyy-MM-dd');
           return leadDate === dateStr;
         } catch {
-          // Skip malformed dates without crashing
           return false;
         }
       });
@@ -333,15 +368,170 @@ export const useLeadMetrics = (options: UseLeadMetricsOptions = {}) => {
     const lostLeads = filteredLeads.filter(l => DISCARD_STATUS_KEYS.includes(l.lead_status_crm || '')).length;
     const activeLeads = totalLeads - wonLeads - lostLeads;
 
+    // ============= 6. CONVERSION METRICS (NEW) =============
+    const channelMap = channels || {};
+    
+    // Dynamic conversion levels from statuses positions
+    const contactedMinPosition = 4;
+    const qualifiedMinPosition = 6;
+    const advancedMinPosition = 7;
+    
+    // Build position lookup for statuses
+    const statusPositionMap = new Map<string, number>();
+    const terminalKeys = new Set(TERMINAL_STATUS_KEYS);
+    const discardKeys = new Set(DISCARD_STATUS_KEYS);
+    statuses.forEach(s => statusPositionMap.set(s.status_key, s.position));
+    
+    const getLeadPosition = (statusKey: string | null): number => {
+      if (!statusKey) return 1;
+      return statusPositionMap.get(statusKey) || 1;
+    };
+    
+    const isLostStatus = (statusKey: string | null): boolean => {
+      return statusKey ? discardKeys.has(statusKey) : false;
+    };
+
+    // Helper to build conversion data for a group of leads
+    const buildConversionData = (leads: LeadRecord[], name: string): ChannelConversionData => {
+      const total = leads.length;
+      const contacted = leads.filter(l => {
+        const pos = getLeadPosition(l.lead_status_crm);
+        return pos >= contactedMinPosition && !isLostStatus(l.lead_status_crm);
+      }).length;
+      const qualified = leads.filter(l => {
+        const pos = getLeadPosition(l.lead_status_crm);
+        return pos >= qualifiedMinPosition && !isLostStatus(l.lead_status_crm);
+      }).length;
+      const advanced = leads.filter(l => {
+        const pos = getLeadPosition(l.lead_status_crm);
+        return pos >= advancedMinPosition && !isLostStatus(l.lead_status_crm);
+      }).length;
+      const won = leads.filter(l => WON_STATUS_KEYS.includes(l.lead_status_crm || '')).length;
+      const lost = leads.filter(l => isLostStatus(l.lead_status_crm)).length;
+      
+      // Build funnel stages from sorted statuses
+      const funnelStages = sortedStatuses.map(s => ({
+        stage: s.label,
+        count: leads.filter(l => l.lead_status_crm === s.status_key).length,
+      })).filter(s => s.count > 0);
+      
+      return {
+        channelName: name,
+        totalLeads: total,
+        contactedCount: contacted,
+        contactedRate: total > 0 ? (contacted / total) * 100 : 0,
+        qualifiedCount: qualified,
+        qualifiedRate: total > 0 ? (qualified / total) * 100 : 0,
+        advancedCount: advanced,
+        advancedRate: total > 0 ? (advanced / total) * 100 : 0,
+        wonCount: won,
+        wonRate: total > 0 ? (won / total) * 100 : 0,
+        lostCount: lost,
+        lostRate: total > 0 ? (lost / total) * 100 : 0,
+        funnelStages,
+      };
+    };
+
+    // 6a. By Channel
+    const channelGroups = new Map<string, LeadRecord[]>();
+    filteredLeads.forEach(lead => {
+      let channelName = 'Sin canal';
+      if (lead.acquisition_channel_id && channelMap[lead.acquisition_channel_id]) {
+        channelName = normalizeChannelName(channelMap[lead.acquisition_channel_id]);
+      }
+      const existing = channelGroups.get(channelName) || [];
+      existing.push(lead);
+      channelGroups.set(channelName, existing);
+    });
+
+    const byChannel: ChannelConversionData[] = Array.from(channelGroups.entries())
+      .map(([name, groupLeads]) => buildConversionData(groupLeads, name))
+      .sort((a, b) => b.totalLeads - a.totalLeads);
+
+    // 6b. By Form
+    const formGroups = new Map<string, LeadRecord[]>();
+    filteredLeads.forEach(lead => {
+      const formId = lead.lead_form;
+      const formName = formId && displayNameMap[formId] ? displayNameMap[formId] : 'Sin formulario';
+      const existing = formGroups.get(formName) || [];
+      existing.push(lead);
+      formGroups.set(formName, existing);
+    });
+
+    const byForm: FormConversionData[] = Array.from(formGroups.entries())
+      .map(([name, groupLeads]) => {
+        const base = buildConversionData(groupLeads, name);
+        return {
+          formName: name,
+          totalLeads: base.totalLeads,
+          contactedCount: base.contactedCount,
+          contactedRate: base.contactedRate,
+          qualifiedCount: base.qualifiedCount,
+          qualifiedRate: base.qualifiedRate,
+          advancedCount: base.advancedCount,
+          advancedRate: base.advancedRate,
+          wonCount: base.wonCount,
+          wonRate: base.wonRate,
+          lostCount: base.lostCount,
+          funnelStages: base.funnelStages,
+        };
+      })
+      .sort((a, b) => b.totalLeads - a.totalLeads);
+
+    // 6c. Channel Time Series (weekly)
+    const weekMap = new Map<string, Map<string, { newLeads: number; qualifiedLeads: number }>>();
+    filteredLeads.forEach(lead => {
+      try {
+        const dateStr = lead.lead_received_at || lead.created_at;
+        if (!dateStr) return;
+        const date = parseISO(dateStr);
+        if (isNaN(date.getTime())) return;
+        const weekKey = format(startOfWeek(date, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        
+        let channelName = 'Sin canal';
+        if (lead.acquisition_channel_id && channelMap[lead.acquisition_channel_id]) {
+          channelName = normalizeChannelName(channelMap[lead.acquisition_channel_id]);
+        }
+        
+        if (!weekMap.has(weekKey)) weekMap.set(weekKey, new Map());
+        const weekChannels = weekMap.get(weekKey)!;
+        if (!weekChannels.has(channelName)) weekChannels.set(channelName, { newLeads: 0, qualifiedLeads: 0 });
+        const entry = weekChannels.get(channelName)!;
+        entry.newLeads++;
+        const pos = getLeadPosition(lead.lead_status_crm);
+        if (pos >= qualifiedMinPosition && !isLostStatus(lead.lead_status_crm)) {
+          entry.qualifiedLeads++;
+        }
+      } catch {
+        // skip malformed dates
+      }
+    });
+
+    const channelTimeSeries: ChannelTimeSeriesPoint[] = Array.from(weekMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12) // last 12 weeks
+      .map(([week, chMap]) => ({
+        week,
+        channels: Object.fromEntries(chMap),
+      }));
+
+    const conversionMetrics: ConversionMetrics = {
+      byChannel,
+      byForm,
+      channelTimeSeries,
+      conversionLevels: { contactedMinPosition, qualifiedMinPosition, advancedMinPosition },
+    };
+
     return {
       statusDistribution,
       funnel,
-      transitions: [], // TODO: Implement when we have state history
+      transitions: [],
       campaignQuality,
       temporalEvolution,
       totals: { totalLeads, activeLeads, wonLeads, lostLeads },
+      conversionMetrics,
     };
-  }, [filteredLeads, statuses]);
+  }, [filteredLeads, statuses, channels, displayNameMap]);
 
   return {
     metrics,
