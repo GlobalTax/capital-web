@@ -106,18 +106,18 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
           onCheckedChange={onSelectAll}
           className="h-3.5 w-3.5"
         />
-        <div className="flex-1 grid grid-cols-[2fr_1.5fr_90px_1fr_1fr_100px_100px_80px_80px_1fr_80px] gap-2 text-[11px] font-medium text-muted-foreground">
+        <div className="flex-1 grid grid-cols-[2fr_1fr_1.5fr_1fr_100px_80px_80px_80px_1fr_100px_90px] gap-2 text-[11px] font-medium text-muted-foreground">
           <span>Nombre</span>
-          <span>Empresa</span>
-          <span>Teléfono</span>
           <span>Estado</span>
+          <span>Empresa</span>
           <span>Canal</span>
           <span>Formulario</span>
-          <span>Sector</span>
           <span className="text-right">Facturación</span>
           <span className="text-right">EBITDA</span>
-          <span>Fecha</span>
           <span className="text-right">Valoración</span>
+          <span>Fecha</span>
+          <span>Sector</span>
+          <span>Teléfono</span>
         </div>
       </div>
 
