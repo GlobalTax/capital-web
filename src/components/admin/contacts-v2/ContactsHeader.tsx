@@ -13,6 +13,7 @@ import { BulkChannelSelect } from '../contacts/BulkChannelSelect';
 import { BulkLeadFormSelect } from '../contacts/BulkLeadFormSelect';
 import { BulkDateSelect } from '../contacts/BulkDateSelect';
 import { StatusesEditor } from '../contacts/StatusesEditor';
+import { LeadFormsEditor } from '../contacts/LeadFormsEditor';
 
 interface ContactsHeaderProps {
   activeTab: TabType;
@@ -75,6 +76,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
         </Tabs>
         
         <StatusesEditor />
+        <LeadFormsEditor />
       </div>
 
       {/* Bulk Actions */}
