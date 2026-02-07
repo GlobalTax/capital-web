@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useDealsuitDeals } from '@/hooks/useDealsuitDeals';
+import { useFavoriteDealIds, useToggleDealFavorite } from '@/hooks/useDealsuiteFavorites';
 import { supabase } from '@/integrations/supabase/client';
 import { useDropzone } from 'react-dropzone';
 import { 
@@ -12,7 +14,8 @@ import {
   ImagePlus, 
   Trash2, 
   MapPin,
-  Sparkles
+  Sparkles,
+  Star
 } from 'lucide-react';
 import { DealsuitePreviewCard } from './DealsuitePreviewCard';
 import { format } from 'date-fns';
@@ -49,8 +52,11 @@ export const DealsuiteSyncPanel = () => {
   const [selectedDeal, setSelectedDeal] = useState<ExtractedDeal | null>(null);
   const [notes, setNotes] = useState('');
   const [selectedDealNotes, setSelectedDealNotes] = useState('');
+  const [activeTab, setActiveTab] = useState('favorites');
   const { toast } = useToast();
-  const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(20);
+  const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(100);
+  const { data: favoriteIds } = useFavoriteDealIds();
+  const toggleFavorite = useToggleDealFavorite();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -358,81 +364,115 @@ export const DealsuiteSyncPanel = () => {
         />
       )}
 
-      {/* Existing Deals Table */}
+      {/* Existing Deals List */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Deals guardados</CardTitle>
-          <CardDescription>
-            {deals?.length || 0} deals en la base de datos
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Deals guardados</CardTitle>
+              <CardDescription>
+                {deals?.length || 0} deals en la base de datos
+              </CardDescription>
+            </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList>
+                <TabsTrigger value="favorites" className="gap-1.5">
+                  <Star className="h-3.5 w-3.5" /> Favoritos
+                </TabsTrigger>
+                <TabsTrigger value="all">Todos</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoadingDeals ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : !deals?.length ? (
-            <p className="text-center text-muted-foreground py-8">No hay deals guardados todavía.</p>
-          ) : (
-            <div className="space-y-0 divide-y divide-border">
-              {deals.map((deal) => {
-                const sectors = deal.sector?.split(',').map(s => s.trim()).filter(Boolean) || [];
-                return (
-                  <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => handleSelectDeal(deal)}>
-                    {/* Thumbnail */}
-                    {deal.image_url && (
-                      <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted">
-                        <img src={deal.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                      </div>
-                    )}
-                    {/* Main content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground mb-0.5">
-                            {deal.scraped_at
-                              ? format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es })
-                              : ''}
-                          </p>
-                          <h3 className="text-sm font-semibold text-foreground truncate">
-                            {deal.title || 'Sin título'}
-                          </h3>
+          ) : (() => {
+            const filteredDeals = activeTab === 'favorites'
+              ? (deals || []).filter(d => favoriteIds?.has(d.deal_id))
+              : (deals || []);
+
+            if (!filteredDeals.length) {
+              return (
+                <p className="text-center text-muted-foreground py-8">
+                  {activeTab === 'favorites' ? 'No tienes deals favoritos.' : 'No hay deals guardados todavía.'}
+                </p>
+              );
+            }
+
+            return (
+              <div className="space-y-0 divide-y divide-border">
+                {filteredDeals.map((deal) => {
+                  const sectors = deal.sector?.split(',').map(s => s.trim()).filter(Boolean) || [];
+                  const isFav = favoriteIds?.has(deal.deal_id) || false;
+                  return (
+                    <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer">
+                      {/* Favorite star */}
+                      <button
+                        className="flex-shrink-0 mt-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite.mutate({ dealId: deal.deal_id, isFavorite: isFav });
+                        }}
+                      >
+                        <Star className={`h-4 w-4 transition-colors ${isFav ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} />
+                      </button>
+                      {/* Thumbnail */}
+                      {deal.image_url && (
+                        <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted" onClick={() => handleSelectDeal(deal)}>
+                          <img src={deal.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         </div>
-                        {/* Revenue column */}
-                        {(deal.revenue_min || deal.revenue_max) && (
-                          <div className="flex-shrink-0 text-right">
-                            <p className="text-xs text-muted-foreground font-medium">Facturación</p>
-                            {deal.revenue_min && (
-                              <p className="text-xs text-foreground">mín. {formatCurrency(deal.revenue_min)}</p>
-                            )}
-                            {deal.revenue_max && (
-                              <p className="text-xs text-foreground">máx. {formatCurrency(deal.revenue_max)}</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      {deal.description && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{deal.description}</p>
                       )}
-                      <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        {(deal.country || deal.location) && (
-                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            {deal.location || deal.country}
-                          </span>
+                      {/* Main content */}
+                      <div className="flex-1 min-w-0" onClick={() => handleSelectDeal(deal)}>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground mb-0.5">
+                              {deal.scraped_at
+                                ? format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es })
+                                : ''}
+                            </p>
+                            <h3 className="text-sm font-semibold text-foreground truncate">
+                              {deal.title || 'Sin título'}
+                            </h3>
+                          </div>
+                          {(deal.revenue_min || deal.revenue_max) && (
+                            <div className="flex-shrink-0 text-right">
+                              <p className="text-xs text-muted-foreground font-medium">Facturación</p>
+                              {deal.revenue_min && (
+                                <p className="text-xs text-foreground">mín. {formatCurrency(deal.revenue_min)}</p>
+                              )}
+                              {deal.revenue_max && (
+                                <p className="text-xs text-foreground">máx. {formatCurrency(deal.revenue_max)}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {deal.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{deal.description}</p>
                         )}
-                        {sectors.map((s) => (
-                          <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">
-                            {s}
-                          </Badge>
-                        ))}
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          {(deal.country || deal.location) && (
+                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                              <MapPin className="h-3 w-3" />
+                              {deal.location || deal.country}
+                            </span>
+                          )}
+                          {sectors.map((s) => (
+                            <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">
+                              {s}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
     </div>

@@ -7216,6 +7216,27 @@ export type Database = {
         }
         Relationships: []
       }
+      dealsuite_favorites: {
+        Row: {
+          added_by: string
+          created_at: string | null
+          deal_id: string
+          id: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string | null
+          deal_id: string
+          id?: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string | null
+          deal_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       document_access_logs: {
         Row: {
           access_type: string
