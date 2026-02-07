@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
@@ -12,11 +11,11 @@ import {
   Loader2, 
   Upload, 
   ImagePlus, 
-  Save, 
   Trash2, 
   ExternalLink,
   Sparkles
 } from 'lucide-react';
+import { DealsuitePreviewCard } from './DealsuitePreviewCard';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -273,177 +272,16 @@ export const DealsuiteSyncPanel = () => {
         </CardContent>
       </Card>
 
-      {/* Extracted Data Preview */}
+      {/* Extracted Data Preview — Dealsuite style */}
       {extractedDeal && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Datos extraídos
-            </CardTitle>
-            <CardDescription>
-              Revisa y edita los datos antes de guardar. Los campos vacíos se pueden completar manualmente.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">Título</label>
-                <Input
-                  value={extractedDeal.title || ''}
-                  onChange={(e) => updateField('title', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Tipo de deal</label>
-                <Input
-                  value={extractedDeal.deal_type || ''}
-                  onChange={(e) => updateField('deal_type', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Sector</label>
-                <Input
-                  value={extractedDeal.sector || ''}
-                  onChange={(e) => updateField('sector', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">País</label>
-                <Input
-                  value={extractedDeal.country || ''}
-                  onChange={(e) => updateField('country', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Ubicación</label>
-                <Input
-                  value={extractedDeal.location || ''}
-                  onChange={(e) => updateField('location', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Revenue mín (€)</label>
-                <Input
-                  type="number"
-                  value={extractedDeal.revenue_min || ''}
-                  onChange={(e) => updateField('revenue_min', e.target.value ? Number(e.target.value) : null)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Revenue máx (€)</label>
-                <Input
-                  type="number"
-                  value={extractedDeal.revenue_max || ''}
-                  onChange={(e) => updateField('revenue_max', e.target.value ? Number(e.target.value) : null)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">EBITDA mín (€)</label>
-                <Input
-                  type="number"
-                  value={extractedDeal.ebitda_min || ''}
-                  onChange={(e) => updateField('ebitda_min', e.target.value ? Number(e.target.value) : null)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">EBITDA máx (€)</label>
-                <Input
-                  type="number"
-                  value={extractedDeal.ebitda_max || ''}
-                  onChange={(e) => updateField('ebitda_max', e.target.value ? Number(e.target.value) : null)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Stake ofrecido</label>
-                <Input
-                  value={extractedDeal.stake_offered || ''}
-                  onChange={(e) => updateField('stake_offered', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Tipo de clientes</label>
-                <Input
-                  value={extractedDeal.customer_types || ''}
-                  onChange={(e) => updateField('customer_types', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Referencia</label>
-                <Input
-                  value={extractedDeal.reference || ''}
-                  onChange={(e) => updateField('reference', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Advisor</label>
-                <Input
-                  value={extractedDeal.advisor || ''}
-                  onChange={(e) => updateField('advisor', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Contacto — Nombre</label>
-                <Input
-                  value={extractedDeal.contact_name || ''}
-                  onChange={(e) => updateField('contact_name', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Contacto — Email</label>
-                <Input
-                  value={extractedDeal.contact_email || ''}
-                  onChange={(e) => updateField('contact_email', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Contacto — Empresa</label>
-                <Input
-                  value={extractedDeal.contact_company || ''}
-                  onChange={(e) => updateField('contact_company', e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="text-xs font-medium text-muted-foreground">Descripción</label>
-                <textarea
-                  value={extractedDeal.description || ''}
-                  onChange={(e) => updateField('description', e.target.value)}
-                  rows={3}
-                  className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button onClick={handleSave} disabled={isSaving} className="flex-1">
-                {isSaving ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
-                ) : (
-                  <><Save className="h-4 w-4 mr-2" /> Guardar deal</>
-                )}
-              </Button>
-              <Button variant="outline" onClick={() => setExtractedDeal(null)}>
-                Descartar
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <DealsuitePreviewCard
+          deal={extractedDeal}
+          imagePreview={imagePreview}
+          isSaving={isSaving}
+          onUpdate={updateField}
+          onSave={handleSave}
+          onDiscard={() => setExtractedDeal(null)}
+        />
       )}
 
       {/* Existing Deals Table */}
