@@ -1,120 +1,119 @@
 
 
-# Plan: Sistema de Formularios/Campanas Configurable (como Estados)
+# Plan: Persistir Descripcion y Etiquetas en la Empresa (empresas)
 
 ## Diagnostico
 
-**Estado actual de la tabla `lead_forms`:**
+**Estado actual (por que "no persiste"):**
 
-| id | name | is_active | display_order |
-|----|------|-----------|---------------|
-| form_enero_2026_ventas | Formulario Enero 2026 - Ventas | true | 0 |
-| form_enero_2025_compra | Formulario Enero 2025 - Compra | true | 1 |
-| form_nov_2025_negocios | Formulario Noviembre 2025 - Negocios | true | 2 |
-| form_nov_2025_empresarios | Formulario Noviembre 2025 - Empresarios | true | 3 |
+El guardado funciona, pero guarda en la tabla del **lead** (`contact_leads.ai_company_summary`, `company_valuations.ai_company_summary`), no en la tabla de la **empresa** (`empresas`). Esto significa:
+- Si abres otro lead de la MISMA empresa, no aparece la descripcion
+- Si el lead no tiene `crm_empresa_id` vinculado, la descripcion queda huerfana
+- La tabla `empresas` no tiene campos para AI (no existe `activity_description` ni `sector_tags`)
 
-- Los leads guardan `lead_form` como FK a `lead_forms.id` -- esto NO se toca
-- La tabla ya tiene `name`, `is_active`, `display_order`, pero **NO tiene `display_name`**
-- El filtro actual en `ContactsFilters.tsx` esta hardcodeado con valores falsos (valoracion_empresa, contacto_comercial, etc.) que no coinciden con los IDs reales
-- `ContactRow.tsx` muestra `lead_form_name` (el `name` crudo de la tabla)
+**Datos clave:**
+- 142 de 186 contact_leads tienen `crm_empresa_id` vinculado a `empresas`
+- La tabla `empresas` tiene `descripcion` (generico) pero NO campos AI
+- El hook `useSaveContactClassification` guarda atomicamente en la tabla del lead (funciona correctamente para leads)
 
-## Cambios
+## Solucion
 
-### 1. Migracion SQL: Anadir `display_name` a `lead_forms`
+Doble persistencia: guardar en el lead (como hasta ahora) Y en la empresa vinculada. Si la empresa no tiene `crm_empresa_id`, solo guarda en el lead.
+
+---
+
+### 1. Migracion SQL: Anadir campos AI a `empresas`
 
 ```sql
-ALTER TABLE lead_forms ADD COLUMN display_name TEXT;
-
--- Mappings iniciales (sin tocar historico)
-UPDATE lead_forms SET display_name = 'Valoracion' WHERE id = 'form_nov_2025_negocios';
-UPDATE lead_forms SET display_name = 'Valoracion' WHERE id = 'form_nov_2025_empresarios';
-UPDATE lead_forms SET display_name = 'Ventas' WHERE id = 'form_enero_2026_ventas';
-UPDATE lead_forms SET display_name = 'Compras' WHERE id = 'form_enero_2025_compra';
+ALTER TABLE empresas ADD COLUMN ai_company_summary TEXT;
+ALTER TABLE empresas ADD COLUMN ai_company_summary_at TIMESTAMPTZ;
+ALTER TABLE empresas ADD COLUMN ai_sector_pe TEXT;
+ALTER TABLE empresas ADD COLUMN ai_sector_name TEXT;
+ALTER TABLE empresas ADD COLUMN ai_tags TEXT[];
+ALTER TABLE empresas ADD COLUMN ai_business_model_tags TEXT[];
+ALTER TABLE empresas ADD COLUMN ai_negative_tags TEXT[];
+ALTER TABLE empresas ADD COLUMN ai_classification_confidence INTEGER;
+ALTER TABLE empresas ADD COLUMN ai_classification_at TIMESTAMPTZ;
 ```
 
-Dos formularios distintos comparten `display_name = 'Valoracion'` pero mantienen su `id` y `name` originales intactos.
+Son exactamente los mismos campos que ya existen en `contact_leads` y `company_valuations`, usando los mismos tipos.
 
 ---
 
-### 2. Hook `useLeadForms.ts`: Exponer `display_name`
+### 2. Modificar `useSaveContactClassification.ts`
 
-- Anadir `display_name` al tipo `LeadForm`
-- Anadir helper `getUniqueDisplayNames()` que agrupa formularios por `display_name` y devuelve una lista deduplicada con los IDs agrupados (para que el filtro "Valoracion" filtre por los 2 IDs subyacentes)
+Despues del guardado exitoso en la tabla del lead, hacer un segundo update a `empresas` si existe `empresaId`:
 
----
+```text
+Flujo actual:
+  1. Construir updateData
+  2. UPDATE lead_table SET ... WHERE id = contactId
+  3. Return success
 
-### 3. Filtro de Formulario en `ContactsFilters.tsx`
-
-Reemplazar el dropdown hardcodeado (lineas 495-508) por uno dinamico usando `useLeadForms`:
-
-- Mostrar solo `display_name` unicos (sin duplicados)
-- Al seleccionar "Valoracion", filtrar por TODOS los `lead_form` IDs cuyo `display_name` sea "Valoracion"
-
-**Cambio en tipo `ContactFilters`**: `leadFormId` pasa de `string` a `string` (se mantiene), pero la logica de filtrado cambia para soportar multiples IDs.
-
----
-
-### 4. Logica de filtrado en `useContacts.ts`
-
-Cambiar linea 200:
-
-```typescript
-// Antes: filtra por un solo ID
-result = result.filter(c => c.lead_form === filters.leadFormId);
-
-// Despues: filtra por display_name, que puede agrupar multiples IDs
-// El leadFormId ahora es el display_name, y se resuelven los IDs via el hook
+Flujo nuevo:
+  1. Construir updateData
+  2. UPDATE lead_table SET ... WHERE id = contactId
+  3. SI empresaId proporcionado:
+     UPDATE empresas SET mismos campos WHERE id = empresaId
+     (error aqui = warning, no bloquea)
+  4. Return success
 ```
 
-Se pasara un array de IDs resueltos desde el filtro, o se usara un map display_name -> IDs.
+Cambios en la interfaz:
+- `SaveClassificationParams` recibe nuevo campo opcional `empresaId?: string`
+- Si viene `empresaId`, se propaga a `empresas`
+- Si falla el update a empresas (RLS, etc.), se muestra warning pero no se bloquea el guardado del lead
 
 ---
 
-### 5. `ContactRow.tsx`: Mostrar `display_name` en vez de `name`
+### 3. Modificar `ActivityClassificationBlock.tsx`
 
-Linea 123: cambiar para que muestre el `display_name` resuelto. Se hara via un lookup map que el componente padre pasa o un hook compartido.
-
----
-
-### 6. Panel de gestion de Formularios (UI Admin)
-
-Crear una pagina/componente similar a `StatusesEditor.tsx` para gestionar formularios:
-
-- Listar todos los formularios (activos e inactivos)
-- Editar `display_name` y `name`
-- Activar/desactivar (`is_active`)
-- Reordenar (`display_order`)
-- Crear nuevos formularios
-- Accesible desde la misma zona de configuracion que los estados
+- Recibir nueva prop `empresaId?: string`
+- Pasar `empresaId` al hook `saveClassification`
+- Al cargar el componente: si no hay `initialDescription` en el lead, intentar cargar desde `empresas` (fallback)
 
 ---
 
-## Archivos a Modificar/Crear
+### 4. Modificar `ContactDetailSheet.tsx`
+
+- Pasar `empresaId={contact.empresa_id}` a `ActivityClassificationBlock`
+- La prop `empresa_id` ya existe en `UnifiedContact` (se popula desde `crm_empresa_id`)
+
+---
+
+### 5. Fallback: Cargar desde empresa al abrir panel
+
+Cuando se abre el panel lateral:
+- Si el lead tiene `ai_company_summary` -> usarlo (prioridad)
+- Si el lead NO tiene `ai_company_summary` pero tiene `empresa_id` -> hacer query a `empresas` para cargar los datos
+- Esto asegura que si otro lead de la misma empresa ya genero la descripcion, se reutiliza
+
+Esto se implementa como un `useEffect` dentro de `ActivityClassificationBlock` que hace la query de fallback.
+
+---
+
+## Archivos a modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| SQL Migration | `ALTER TABLE lead_forms ADD COLUMN display_name TEXT` + UPDATEs iniciales |
-| `src/integrations/supabase/types.ts` | Regenerar (display_name en lead_forms) |
-| `src/hooks/useLeadForms.ts` | Anadir display_name al tipo, helper de agrupacion |
-| `src/components/admin/contacts-v2/ContactsFilters.tsx` | Dropdown dinamico con display_names unicos |
-| `src/components/admin/contacts-v2/hooks/useContacts.ts` | Filtrado por grupo de IDs |
-| `src/components/admin/contacts-v2/ContactRow.tsx` | Mostrar display_name |
-| `src/components/admin/contacts/LeadFormsEditor.tsx` | **NUEVO** - Panel CRUD de formularios |
+| SQL Migration | ADD COLUMN x9 campos AI en `empresas` |
+| `src/hooks/useSaveContactClassification.ts` | Aceptar `empresaId`, doble UPDATE (lead + empresa) |
+| `src/components/admin/contacts/ActivityClassificationBlock.tsx` | Prop `empresaId`, fallback de carga desde empresa |
+| `src/components/admin/contacts/ContactDetailSheet.tsx` | Pasar `empresaId={contact.empresa_id}` |
 
 ## Lo que NO se toca
 
-- Valores de `lead_form` en las tablas de leads (historico intacto)
-- Estructura de FK existentes
-- Logica de asignacion de formularios en bulk actions
-- Otras vistas (Pipeline, Stats, Detail Sheet)
+- Estructura de `contact_leads`, `company_valuations` (intacta)
+- Datos historicos de AI en leads (se mantienen)
+- Flujo de generacion de descripcion y tags (sin cambios)
+- Hooks `useCompanyActivityDescription` y `useSectorTagsGenerator` (sin cambios)
+- Logica de filtros, tabla, pipeline (sin cambios)
 
 ## Verificaciones post-implementacion
 
-1. Lead con form_nov_2025_negocios muestra "Valoracion"
-2. Lead con form_nov_2025_empresarios muestra "Valoracion"
-3. Filtro "Valoracion" devuelve ambos
-4. Lead form_enero_2026_ventas muestra "Ventas"
-5. Lead form_enero_2025_compra muestra "Compras"
-6. Se puede crear un nuevo formulario desde UI
-7. Se puede editar display_name sin afectar historico
+1. Lead CON empresa_id: generar descripcion -> guardar -> verificar que `empresas.ai_company_summary` se actualiza
+2. Lead SIN empresa_id: generar -> guardar -> funciona como antes (solo en lead)
+3. Abrir OTRO lead de la MISMA empresa -> descripcion aparece automaticamente (fallback desde empresa)
+4. Recargar pagina -> datos persisten
+5. Verificar en Supabase SQL: `SELECT ai_company_summary FROM empresas WHERE id = 'xxx'` muestra el valor
 
