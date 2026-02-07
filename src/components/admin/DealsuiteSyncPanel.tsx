@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { useDealsuitDeals } from '@/hooks/useDealsuitDeals';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +11,7 @@ import {
   Upload, 
   ImagePlus, 
   Trash2, 
-  ExternalLink,
+  MapPin,
   Sparkles
 } from 'lucide-react';
 import { DealsuitePreviewCard } from './DealsuitePreviewCard';
@@ -300,62 +299,63 @@ export const DealsuiteSyncPanel = () => {
           ) : !deals?.length ? (
             <p className="text-center text-muted-foreground py-8">No hay deals guardados todavía.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Sector</TableHead>
-                    <TableHead>País</TableHead>
-                    <TableHead>Revenue</TableHead>
-                    <TableHead>EBITDA</TableHead>
-                    <TableHead>Contacto</TableHead>
-                    <TableHead>Fecha</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {deals.map((deal) => (
-                    <TableRow key={deal.id}>
-                      <TableCell className="font-medium max-w-[250px] truncate">
-                        <div className="flex items-center gap-2">
-                          {deal.title || 'Sin título'}
-                          {deal.image_url && (
-                            <a href={deal.image_url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                            </a>
-                          )}
+            <div className="space-y-0 divide-y divide-border">
+              {deals.map((deal) => {
+                const sectors = deal.sector?.split(',').map(s => s.trim()).filter(Boolean) || [];
+                return (
+                  <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer">
+                    {/* Thumbnail */}
+                    {deal.image_url && (
+                      <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted">
+                        <img src={deal.image_url} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    {/* Main content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground mb-0.5">
+                            {deal.scraped_at
+                              ? format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es })
+                              : ''}
+                          </p>
+                          <h3 className="text-sm font-semibold text-foreground truncate">
+                            {deal.title || 'Sin título'}
+                          </h3>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {deal.sector ? (
-                          <Badge variant="secondary" className="text-xs truncate max-w-[150px]">
-                            {deal.sector}
+                        {/* Revenue column */}
+                        {(deal.revenue_min || deal.revenue_max) && (
+                          <div className="flex-shrink-0 text-right">
+                            <p className="text-xs text-muted-foreground font-medium">Revenue</p>
+                            {deal.revenue_min && (
+                              <p className="text-xs text-foreground">min. {formatCurrency(deal.revenue_min)}</p>
+                            )}
+                            {deal.revenue_max && (
+                              <p className="text-xs text-foreground">max. {formatCurrency(deal.revenue_max)}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {deal.description && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{deal.description}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        {(deal.country || deal.location) && (
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3" />
+                            {deal.location || deal.country}
+                          </span>
+                        )}
+                        {sectors.map((s) => (
+                          <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">
+                            {s}
                           </Badge>
-                        ) : '-'}
-                      </TableCell>
-                      <TableCell>{deal.country || '-'}</TableCell>
-                      <TableCell className="text-xs">
-                        {deal.revenue_min || deal.revenue_max 
-                          ? `${formatCurrency(deal.revenue_min)} - ${formatCurrency(deal.revenue_max)}`
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {deal.ebitda_min || deal.ebitda_max
-                          ? `${formatCurrency(deal.ebitda_min)} - ${formatCurrency(deal.ebitda_max)}`
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        {deal.contact_name || deal.advisor || '-'}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {deal.scraped_at
-                          ? format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es })
-                          : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
