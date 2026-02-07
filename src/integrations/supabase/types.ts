@@ -8202,6 +8202,15 @@ export type Database = {
       empresas: {
         Row: {
           actividades_destacadas: string[] | null
+          ai_business_model_tags: string[] | null
+          ai_classification_at: string | null
+          ai_classification_confidence: number | null
+          ai_company_summary: string | null
+          ai_company_summary_at: string | null
+          ai_negative_tags: string[] | null
+          ai_sector_name: string | null
+          ai_sector_pe: string | null
+          ai_tags: string[] | null
           alexa_ranking: number | null
           año_datos_financieros: number | null
           apollo_enriched_at: string | null
@@ -8257,6 +8266,15 @@ export type Database = {
         }
         Insert: {
           actividades_destacadas?: string[] | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           alexa_ranking?: number | null
           año_datos_financieros?: number | null
           apollo_enriched_at?: string | null
@@ -8312,6 +8330,15 @@ export type Database = {
         }
         Update: {
           actividades_destacadas?: string[] | null
+          ai_business_model_tags?: string[] | null
+          ai_classification_at?: string | null
+          ai_classification_confidence?: number | null
+          ai_company_summary?: string | null
+          ai_company_summary_at?: string | null
+          ai_negative_tags?: string[] | null
+          ai_sector_name?: string | null
+          ai_sector_pe?: string | null
+          ai_tags?: string[] | null
           alexa_ranking?: number | null
           año_datos_financieros?: number | null
           apollo_enriched_at?: string | null

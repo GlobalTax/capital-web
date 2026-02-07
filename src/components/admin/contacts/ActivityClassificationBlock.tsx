@@ -20,6 +20,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useSaveContactClassification, ClassificationData } from '@/hooks/useSaveContactClassification';
+import { supabase } from '@/integrations/supabase/client';
 import { SectorTagsResult, useSectorTagsGenerator } from '@/hooks/useSectorTagsGenerator';
 import { useCompanyActivityDescription } from '@/hooks/useCompanyActivityDescription';
 import { ContactOrigin } from '@/hooks/useUnifiedContacts';
@@ -32,6 +33,7 @@ interface ActivityClassificationBlockProps {
   origin: ContactOrigin;
   companyName?: string;
   cif?: string;
+  empresaId?: string;
   initialDescription?: string | null;
   initialSectorTags?: {
     ai_sector_pe?: string;
@@ -63,6 +65,7 @@ export const ActivityClassificationBlock: React.FC<ActivityClassificationBlockPr
   origin,
   companyName,
   cif,
+  empresaId,
   initialDescription,
   initialSectorTags,
   className,
@@ -96,7 +99,7 @@ export const ActivityClassificationBlock: React.FC<ActivityClassificationBlockPr
   // UI state
   const [tagsExpanded, setTagsExpanded] = useState(true);
 
-  // Initialize from DB data when contact changes
+  // Initialize from DB data when contact changes, with fallback from empresas
   useEffect(() => {
     const dbDescription = initialDescription || '';
     setCurrentDescription(dbDescription);
@@ -119,7 +122,36 @@ export const ActivityClassificationBlock: React.FC<ActivityClassificationBlockPr
     // Clear any generated state from previous contact
     clearGeneratedDescription();
     clearGeneratedTags();
-  }, [contactId, initialDescription, initialSectorTags]);
+
+    // Fallback: if lead has no AI data but has empresa_id, try loading from empresas
+    if (!initialDescription && !initialSectorTags?.ai_sector_pe && empresaId) {
+      supabase
+        .from('empresas')
+        .select('ai_company_summary, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence')
+        .eq('id', empresaId)
+        .single()
+        .then(({ data }) => {
+          if (data?.ai_company_summary) {
+            setCurrentDescription(data.ai_company_summary);
+            setSavedDescription(data.ai_company_summary);
+          }
+          if (data?.ai_sector_pe) {
+            const empresaTags: SectorTagsResult = {
+              sector_pe: data.ai_sector_pe,
+              sector_name_es: data.ai_sector_name || '',
+              sector_name_en: '',
+              confidence: data.ai_classification_confidence || 0,
+              tags: data.ai_tags || [],
+              negative_tags: data.ai_negative_tags || [],
+              business_model_tags: data.ai_business_model_tags || [],
+              reasoning: '',
+            };
+            setCurrentSectorTags(empresaTags);
+            setSavedSectorTags(empresaTags);
+          }
+        });
+    }
+  }, [contactId, initialDescription, initialSectorTags, empresaId]);
 
   // When AI generates new description, update current state
   useEffect(() => {
@@ -194,6 +226,7 @@ export const ActivityClassificationBlock: React.FC<ActivityClassificationBlockPr
       contactId,
       origin,
       data,
+      empresaId,
     });
 
     if (success) {
