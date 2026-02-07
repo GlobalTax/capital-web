@@ -18,14 +18,12 @@ import {
   Calendar,
   CalendarIcon,
   User,
-  TrendingUp,
   MessageSquare,
   CheckCircle2,
   Clock,
   FileText,
   Send,
   Archive,
-  Plus
 } from 'lucide-react';
 import { EditableCurrency } from '@/components/admin/shared/EditableCurrency';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
@@ -40,7 +38,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useBrevoSyncStatus } from '@/hooks/useBrevoSyncStatus';
-import { LeadToOperationConverter } from '@/features/operations-management/components/integrations';
+
 import { useBrevoEvents } from '@/hooks/useBrevoEvents';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CompanyLinkCard } from '@/components/admin/companies/CompanyLinkCard';
@@ -433,18 +431,6 @@ export default function LeadDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Botón "Nuevo Lead" */}
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/admin/contacts', { state: { openNewLead: true } })}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Lead
-          </Button>
-
-          {/* Botón "Convertir en Operación" */}
-          <LeadToOperationConverter lead={lead} />
-
           {/* Botón "Enviar a Brevo" */}
           <TooltipProvider>
             <Tooltip>
@@ -488,33 +474,6 @@ export default function LeadDetailPage() {
             Archivar
           </Button>
 
-          {/* Botón "Pasar a Fase 1" solo para valoraciones */}
-          {lead.origin === 'valuation' && lead.lead_status_crm !== 'calificado' && lead.lead_status_crm !== 'ganado' && (
-            <Button 
-              variant="default"
-              onClick={() => {
-                // Actualizar estado a 'calificado' (Fase 1)
-                supabase
-                  .from('company_valuations')
-                  .update({ 
-                    lead_status_crm: 'calificado',
-                    status_updated_at: new Date().toISOString()
-                  })
-                  .eq('id', lead.id)
-                  .then(() => {
-                    refetch();
-                    toast({
-                      title: "Lead pasado a Fase 1",
-                      description: "El lead ha sido calificado y está listo para ROD",
-                    });
-                  });
-              }}
-              disabled={lead.lead_status_crm === 'calificado'}
-            >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Pasar a Fase 1 (ROD)
-            </Button>
-          )}
         </div>
       </div>
 
