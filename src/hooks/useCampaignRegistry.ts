@@ -37,6 +37,8 @@ export interface CampaignSnapshot {
   // Calculated fields (added in frontend)
   cost_per_result?: number | null;
   cpl_variation?: number | null;
+  // Source flag: 'snapshot' = editable, 'history' = read-only from ads_costs_history
+  source?: 'snapshot' | 'history';
 }
 
 export interface CampaignWithSnapshot extends Campaign {
@@ -141,9 +143,59 @@ export const useCampaignRegistry = () => {
       const snapshotsByCompaign = new Map<string, CampaignSnapshot>();
       snapshotsData?.forEach(snap => {
         if (!snapshotsByCompaign.has(snap.campaign_id)) {
-          snapshotsByCompaign.set(snap.campaign_id, enrichSnapshot(snap as CampaignSnapshot));
+          snapshotsByCompaign.set(snap.campaign_id, enrichSnapshot({ ...snap, source: 'snapshot' } as CampaignSnapshot));
         }
       });
+
+      // Identify campaigns without snapshots that have an external_name
+      const campaignsWithoutSnapshot = campaignsData.filter(
+        c => !snapshotsByCompaign.has(c.id) && c.external_name
+      );
+
+      // Fallback: fetch latest record from ads_costs_history for campaigns without snapshot
+      if (campaignsWithoutSnapshot.length > 0) {
+        const externalNames = campaignsWithoutSnapshot.map(c => c.external_name).filter(Boolean) as string[];
+        
+        const { data: historyData } = await supabase
+          .from('ads_costs_history')
+          .select('campaign_name, spend, results, date, cost_per_result')
+          .in('campaign_name', externalNames)
+          .order('date', { ascending: false });
+
+        if (historyData && historyData.length > 0) {
+          // Group by campaign_name, keep only the latest
+          const latestByName = new Map<string, typeof historyData[0]>();
+          historyData.forEach(row => {
+            if (!latestByName.has(row.campaign_name)) {
+              latestByName.set(row.campaign_name, row);
+            }
+          });
+
+          // Map history data to CampaignSnapshot format
+          campaignsWithoutSnapshot.forEach(campaign => {
+            const historyRow = latestByName.get(campaign.external_name!);
+            if (historyRow) {
+              const fakeSnapshot: CampaignSnapshot = {
+                id: `history-${campaign.id}`,
+                campaign_id: campaign.id,
+                snapshot_date: historyRow.date,
+                results: historyRow.results || 0,
+                amount_spent: historyRow.spend || 0,
+                daily_budget: null,
+                monthly_budget: null,
+                target_cpl: null,
+                internal_status: null,
+                notes: null,
+                created_at: historyRow.date,
+                updated_at: historyRow.date,
+                cost_per_result: historyRow.cost_per_result || null,
+                source: 'history',
+              };
+              snapshotsByCompaign.set(campaign.id, enrichSnapshot(fakeSnapshot));
+            }
+          });
+        }
+      }
 
       return campaignsData.map(campaign => ({
         ...campaign,
