@@ -1,0 +1,1 @@
+ALTER TABLE public.dealsuite_empresas ADD COLUMN email TEXT, ADD COLUMN telefono TEXT;

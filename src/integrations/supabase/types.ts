@@ -7238,6 +7238,7 @@ export type Database = {
           created_at: string | null
           deal_ids: string[] | null
           descripcion: string | null
+          email: string | null
           enfoque_consultivo: string | null
           experiencia_ma: string[] | null
           experiencia_sector: string[] | null
@@ -7249,6 +7250,7 @@ export type Database = {
           sitio_web: string | null
           tamano_proyectos_max: number | null
           tamano_proyectos_min: number | null
+          telefono: string | null
           tipo_empresa: string | null
           ubicacion: string | null
           updated_at: string | null
@@ -7257,6 +7259,7 @@ export type Database = {
           created_at?: string | null
           deal_ids?: string[] | null
           descripcion?: string | null
+          email?: string | null
           enfoque_consultivo?: string | null
           experiencia_ma?: string[] | null
           experiencia_sector?: string[] | null
@@ -7268,6 +7271,7 @@ export type Database = {
           sitio_web?: string | null
           tamano_proyectos_max?: number | null
           tamano_proyectos_min?: number | null
+          telefono?: string | null
           tipo_empresa?: string | null
           ubicacion?: string | null
           updated_at?: string | null
@@ -7276,6 +7280,7 @@ export type Database = {
           created_at?: string | null
           deal_ids?: string[] | null
           descripcion?: string | null
+          email?: string | null
           enfoque_consultivo?: string | null
           experiencia_ma?: string[] | null
           experiencia_sector?: string[] | null
@@ -7287,6 +7292,7 @@ export type Database = {
           sitio_web?: string | null
           tamano_proyectos_max?: number | null
           tamano_proyectos_min?: number | null
+          telefono?: string | null
           tipo_empresa?: string | null
           ubicacion?: string | null
           updated_at?: string | null

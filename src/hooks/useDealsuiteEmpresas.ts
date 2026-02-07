@@ -16,6 +16,8 @@ export interface DealsuiteEmpresa {
   enfoque_consultivo: string | null;
   sitio_web: string | null;
   imagen_url: string | null;
+  email: string | null;
+  telefono: string | null;
   notas: string | null;
   deal_ids: string[];
   created_at: string;

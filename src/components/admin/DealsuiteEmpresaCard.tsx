@@ -153,6 +153,20 @@ export const DealsuiteEmpresaCard = ({ empresa, onBack, isNew, onCreated }: Prop
                   {empresa.parte_de && (
                     <p className="text-xs text-muted-foreground mt-1">Parte de: {empresa.parte_de}</p>
                   )}
+                  {(empresa.email || empresa.telefono) && (
+                    <div className="flex items-center gap-3 mt-1.5 text-sm flex-wrap">
+                      {empresa.email && (
+                        <a href={`mailto:${empresa.email}`} className="inline-flex items-center gap-1 text-primary hover:underline">
+                          <Mail className="h-3.5 w-3.5" /> {empresa.email}
+                        </a>
+                      )}
+                      {empresa.telefono && (
+                        <a href={`tel:${empresa.telefono}`} className="inline-flex items-center gap-1 text-muted-foreground hover:underline">
+                          <Phone className="h-3.5 w-3.5" /> {empresa.telefono}
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -185,6 +199,16 @@ export const DealsuiteEmpresaCard = ({ empresa, onBack, isNew, onCreated }: Prop
                 <div>
                   <Label>Enfoque consultivo</Label>
                   <Input value={form.enfoque_consultivo || ''} onChange={e => set('enfoque_consultivo', e.target.value)} placeholder="En venta, Para comprar..." />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Email</Label>
+                    <Input type="email" value={form.email || ''} onChange={e => set('email', e.target.value)} placeholder="contacto@empresa.com" />
+                  </div>
+                  <div>
+                    <Label>Teléfono</Label>
+                    <Input type="tel" value={form.telefono || ''} onChange={e => set('telefono', e.target.value)} placeholder="+34 600 000 000" />
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
