@@ -29,6 +29,7 @@ import { CampaignRegistryTable } from '@/components/admin/campaigns/CampaignRegi
 import { AnalyticsTabs } from '@/components/admin/campaigns/AnalyticsTabs';
 import { AdsCostsHistoryTable } from '@/components/admin/campaigns/AdsCostsHistoryTable';
 import { MetaAdsAnalyticsDashboard } from '@/components/admin/campaigns/MetaAdsAnalytics';
+import { GoogleAdsAnalyticsDashboard } from '@/components/admin/campaigns/GoogleAdsAnalytics';
 import { CampaignMappingPanel } from '@/components/admin/campaigns/CampaignMappingPanel';
 import { LeadMetricsDashboard } from '@/components/admin/metrics';
 
@@ -224,7 +225,7 @@ export const ContactsStatsPanel: React.FC = () => {
         <TabsContent value="google_ads" className="space-y-6 mt-4">
           <StatsErrorBoundary section="Google Ads">
             <Suspense fallback={<SectionLoading />}>
-              <AdsCostsHistoryTable platform="google_ads" />
+              <GoogleAdsAnalyticsDashboard />
             </Suspense>
           </StatsErrorBoundary>
         </TabsContent>
