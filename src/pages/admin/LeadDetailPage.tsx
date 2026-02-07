@@ -31,7 +31,7 @@ import { EditableCurrency } from '@/components/admin/shared/EditableCurrency';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { LeadTasksQuickView } from '@/features/admin/components/leads/LeadTasksQuickView';
+import { ActivityClassificationBlock } from '@/components/admin/contacts/ActivityClassificationBlock';
 import { LeadAssignmentSelect } from '@/components/admin/leads/LeadAssignmentSelect';
 import { LeadStatusSelect } from '@/components/admin/leads/LeadStatusSelect';
 import { LeadStatusBadge } from '@/components/admin/leads/LeadStatusBadge';
@@ -43,7 +43,6 @@ import { useBrevoSyncStatus } from '@/hooks/useBrevoSyncStatus';
 import { LeadToOperationConverter } from '@/features/operations-management/components/integrations';
 import { useBrevoEvents } from '@/hooks/useBrevoEvents';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { AICompanySummaryBlock } from '@/components/admin/leads/AICompanySummaryBlock';
 import { CompanyLinkCard } from '@/components/admin/companies/CompanyLinkCard';
 import PotentialBuyersCard from '@/components/admin/leads/PotentialBuyersCard';
 
@@ -366,14 +365,6 @@ export default function LeadDetailPage() {
     }
   };
 
-  const handleUseAISummaryInNotes = (summaryText: string) => {
-    setNotes(prev => prev ? `${prev}\n\n---\n\n📋 Resumen IA:\n${summaryText}` : `📋 Resumen IA:\n${summaryText}`);
-    toast({ 
-      title: '📝 Añadido a notas', 
-      description: 'El resumen se ha copiado a las notas internas. Recuerda guardar.' 
-    });
-  };
-
   // Handler para actualizar campos financieros inline
   const handleFinancialUpdate = async (field: string, value: number) => {
     if (!lead) return;
@@ -586,6 +577,33 @@ export default function LeadDetailPage() {
             onCompanyLinked={refetch}
           />
 
+          {/* Descripción de actividad + Etiquetas sectoriales (IA) */}
+          {lead.company && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Descripción y Clasificación de la Empresa</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ActivityClassificationBlock
+                  contactId={lead.id}
+                  origin={lead.origin}
+                  companyName={lead.company || lead.company_name}
+                  cif={lead.cif}
+                  empresaId={lead.empresa_id}
+                  initialDescription={lead.ai_company_summary}
+                  initialSectorTags={{
+                    ai_sector_pe: lead.ai_sector_pe,
+                    ai_sector_name: lead.ai_sector_name,
+                    ai_tags: lead.ai_tags,
+                    ai_business_model_tags: lead.ai_business_model_tags,
+                    ai_negative_tags: lead.ai_negative_tags,
+                    ai_classification_confidence: lead.ai_classification_confidence,
+                  }}
+                />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Compradores Potenciales */}
           <PotentialBuyersCard
             leadId={lead.id}
@@ -788,11 +806,6 @@ export default function LeadDetailPage() {
             </Card>
           )}
 
-          {/* Control de Fase 0 - Solo para valoraciones */}
-          {lead.origin === 'valuation' && (
-            <LeadTasksQuickView leadId={lead.id} leadType={lead.origin} />
-          )}
-
           {/* Notas internas */}
           <Card>
             <CardHeader>
@@ -816,23 +829,6 @@ export default function LeadDetailPage() {
               </Button>
             </CardContent>
           </Card>
-
-          {/* Resumen Automático de Empresa (IA) */}
-          <AICompanySummaryBlock
-            leadId={lead.id}
-            origin={lead.origin}
-            contactData={{
-              company_name: lead.company || lead.company_name || '',
-              website: lead.website,
-              email: lead.email,
-              phone: lead.phone,
-              cif: lead.cif,
-              country: lead.country || lead.location || 'España',
-            }}
-            existingSummary={lead.ai_company_summary}
-            existingSummaryAt={lead.ai_company_summary_at}
-            onUseInNotes={handleUseAISummaryInNotes}
-          />
         </div>
 
         {/* Columna lateral */}
