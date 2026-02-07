@@ -16,7 +16,8 @@ import {
   Shuffle,
   LayoutPanelTop,
   Activity,
-  PanelLeft
+  PanelLeft,
+  PauseCircle
 } from 'lucide-react';
 
 const AdminSettings: React.FC = () => {
@@ -52,6 +53,12 @@ const AdminSettings: React.FC = () => {
       description: 'Gestiona los canales para clasificar el origen de contactos (Meta, Google Ads, etc.)',
       icon: Megaphone,
       href: '/admin/settings/canales',
+    },
+    {
+      title: 'Motivos Deal Paused',
+      description: 'Gestiona los motivos para marcar deals como pausados',
+      icon: PauseCircle,
+      href: '/admin/settings/deal-paused-reasons',
     },
     {
       title: 'Destinatarios Email',
