@@ -1,15 +1,16 @@
 // ============= CONTACT ROW =============
 // Simplified contact row for the virtualized table
 
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Contact } from './types';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
 import { EditableDateCell } from '../shared/EditableDateCell';
+import { EditableSelect, SelectOption } from '../shared/EditableSelect';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
-import { LeadStatusBadge } from '../leads/LeadStatusBadge';
+import { useContactStatuses } from '@/hooks/useContactStatuses';
 
 interface ContactRowProps {
   contact: Contact;
@@ -53,6 +54,22 @@ const ContactRow: React.FC<ContactRowProps> = ({
   style,
 }) => {
   const { update: updateField } = useContactInlineUpdate();
+  const { activeStatuses } = useContactStatuses();
+
+  const statusOptions = useMemo((): SelectOption[] => {
+    const colorToCss: Record<string, string> = {
+      blue: '#3b82f6', purple: '#8b5cf6', green: '#22c55e', amber: '#f59e0b',
+      red: '#ef4444', cyan: '#06b6d4', pink: '#ec4899', orange: '#f97316',
+      emerald: '#10b981', indigo: '#6366f1', gray: '#6b7280', slate: '#64748b',
+      yellow: '#eab308', teal: '#14b8a6', lime: '#84cc16', rose: '#f43f5e',
+    };
+    return activeStatuses.map(s => ({
+      value: s.status_key,
+      label: s.label,
+      icon: <span className="text-xs">{s.icon}</span>,
+      color: colorToCss[s.color] || '#6b7280',
+    }));
+  }, [activeStatuses]);
   
   return (
     <div
@@ -95,13 +112,19 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.phone || '-'}
         </div>
 
-        {/* Status - using LeadStatusBadge for consistent labels from contact_statuses */}
-        <div>
-          {contact.lead_status_crm ? (
-            <LeadStatusBadge status={contact.lead_status_crm} showIcon={false} />
-          ) : (
-            <span className="text-muted-foreground/60">-</span>
-          )}
+        {/* Status - inline editable select */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableSelect
+            value={contact.lead_status_crm || null}
+            options={statusOptions}
+            onSave={async (newValue) => {
+              await updateField(contact.id, contact.origin, 'lead_status_crm', newValue);
+            }}
+            placeholder="Estado"
+            emptyText="—"
+            allowClear
+            displayClassName="h-6 text-[11px] px-1.5 min-w-[100px] [&>span]:max-w-[100px]"
+          />
         </div>
 
         {/* Channel - with color badge */}
