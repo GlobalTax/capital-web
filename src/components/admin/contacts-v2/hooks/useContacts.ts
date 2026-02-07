@@ -39,14 +39,25 @@ export const useContacts = () => {
     try {
       setIsLoading(true);
       
-      // Fetch prospect statuses to exclude
-      const { data: prospectStatuses } = await supabase
-        .from('contact_statuses')
-        .select('status_key')
-        .eq('is_prospect_stage', true)
-        .eq('is_active', true);
+      // Fetch prospect statuses and lead forms display_name map in parallel
+      const [{ data: prospectStatuses }, { data: leadFormsData }] = await Promise.all([
+        supabase
+          .from('contact_statuses')
+          .select('status_key')
+          .eq('is_prospect_stage', true)
+          .eq('is_active', true),
+        supabase
+          .from('lead_forms')
+          .select('id, name, display_name'),
+      ]);
       
       const prospectKeys = (prospectStatuses || []).map(s => s.status_key);
+      
+      // Build display_name lookup: form_id -> display_name
+      const formDisplayMap: Record<string, string> = {};
+      for (const f of (leadFormsData || [])) {
+        formDisplayMap[f.id] = f.display_name || f.name;
+      }
 
       // Parallel fetch all contact sources
       const [
@@ -84,11 +95,11 @@ export const useContacts = () => {
 
       // Transform to unified format
       const unified: Contact[] = [
-        ...(contactLeads || []).map(l => transformContact(l, 'contact')),
-        ...(valuationLeads || []).map(l => transformValuation(l)),
-        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator')),
-        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition')),
-        ...(advisorLeads || []).map(l => transformAdvisor(l)),
+        ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap)),
+        ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap)),
+        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap)),
+        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap)),
+        ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap)),
       ];
 
       // Filter out prospects
@@ -197,7 +208,14 @@ export const useContacts = () => {
     }
 
     if (filters.leadFormId) {
-      result = result.filter(c => c.lead_form === filters.leadFormId);
+      // leadFormId is now a display_name; resolve to all matching form IDs
+      result = result.filter(c => {
+        if (!c.lead_form) return false;
+        const formDisplayName = c.lead_form_name; // raw name from DB
+        // Check if display_name matches (will be resolved via displayNameMap in ContactRow)
+        // For filtering, we match against the lead_form_name or display_name
+        return c.lead_form_display_name === filters.leadFormId;
+      });
     }
 
     return result;
@@ -234,7 +252,7 @@ export const useContacts = () => {
 };
 
 // Transform helpers
-function transformContact(lead: any, origin: ContactOrigin): Contact {
+function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Record<string, string>): Contact {
   return {
     id: lead.id,
     origin,
@@ -254,6 +272,7 @@ function transformContact(lead: any, origin: ContactOrigin): Contact {
     acquisition_channel_name: lead.acquisition_channel?.name,
     lead_form: lead.lead_form,
     lead_form_name: lead.lead_form_ref?.name,
+    lead_form_display_name: lead.lead_form ? formDisplayMap[lead.lead_form] : undefined,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     email_opened: lead.email_opened,
@@ -262,7 +281,7 @@ function transformContact(lead: any, origin: ContactOrigin): Contact {
   };
 }
 
-function transformValuation(lead: any): Contact {
+function transformValuation(lead: any, formDisplayMap: Record<string, string>): Contact {
   return {
     id: lead.id,
     origin: 'valuation',
@@ -293,6 +312,7 @@ function transformValuation(lead: any): Contact {
     acquisition_channel_name: lead.acquisition_channel?.name,
     lead_form: lead.lead_form,
     lead_form_name: lead.lead_form_ref?.name,
+    lead_form_display_name: lead.lead_form ? formDisplayMap[lead.lead_form] : undefined,
     apollo_status: lead.apollo_status || 'none',
     apollo_candidates: lead.apollo_candidates,
     is_from_pro_valuation: lead.source_project?.includes('pro') || lead.referrer === 'Valoración Pro',
@@ -301,7 +321,7 @@ function transformValuation(lead: any): Contact {
   };
 }
 
-function transformAdvisor(lead: any): Contact {
+function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Contact {
   return {
     id: lead.id,
     origin: 'advisor',
@@ -323,6 +343,7 @@ function transformAdvisor(lead: any): Contact {
     acquisition_channel_name: lead.acquisition_channel?.name,
     lead_form: lead.lead_form,
     lead_form_name: lead.lead_form_ref?.name,
+    lead_form_display_name: lead.lead_form ? formDisplayMap[lead.lead_form] : undefined,
     priority: lead.ebitda && Number(lead.ebitda) > 50000 ? 'hot' : 'warm',
     is_hot_lead: lead.ebitda && Number(lead.ebitda) > 50000,
   };

@@ -118,9 +118,9 @@ const ContactRow: React.FC<ContactRowProps> = ({
           )}
         </div>
 
-        {/* Form */}
+        {/* Form - show display_name */}
         <div className="truncate text-muted-foreground text-[11px]">
-          {contact.lead_form_name || '-'}
+          {contact.lead_form_display_name || contact.lead_form_name || '-'}
         </div>
 
         {/* Sector */}

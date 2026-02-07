@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useContactStatuses, STATUS_COLOR_MAP } from '@/hooks/useContactStatuses';
+import { useLeadForms } from '@/hooks/useLeadForms';
 
 interface ContactsFiltersProps {
   filters: Filters;
@@ -85,6 +86,7 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
   const [isRevenueOpen, setIsRevenueOpen] = useState(false);
   const [isEbitdaOpen, setIsEbitdaOpen] = useState(false);
   const { activeStatuses } = useContactStatuses();
+  const { displayNameGroups } = useLeadForms();
 
   const hasActiveFilters = !!(
     filters.search ||
@@ -473,7 +475,7 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
           </PopoverContent>
         </Popover>
 
-        {/* Form Filter */}
+        {/* Form Filter - Dynamic from lead_forms.display_name */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
@@ -491,19 +493,13 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
               Todos
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
-            {/* Common form labels */}
-            {[
-              { value: 'valoracion_empresa', label: 'Valoración Empresa' },
-              { value: 'contacto_comercial', label: 'Contacto Comercial' },
-              { value: 'colaborador', label: 'Colaborador' },
-              { value: 'adquisicion', label: 'Adquisición' },
-            ].map(opt => (
+            {displayNameGroups.map(group => (
               <DropdownMenuCheckboxItem
-                key={opt.value}
-                checked={filters.leadFormId === opt.value}
-                onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: opt.value })}
+                key={group.displayName}
+                checked={filters.leadFormId === group.displayName}
+                onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: group.displayName })}
               >
-                {opt.label}
+                {group.displayName}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>

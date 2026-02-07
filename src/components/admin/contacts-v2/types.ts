@@ -66,6 +66,7 @@ export interface Contact {
   acquisition_channel_name?: string;
   lead_form?: string;
   lead_form_name?: string;
+  lead_form_display_name?: string;
 }
 
 export interface ContactFilters {
