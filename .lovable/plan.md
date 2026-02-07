@@ -1,91 +1,71 @@
 
 
-## Plan: UI de Gestion de Motivos de Deal Paused
+## Plan: Conectar datos de ads_costs_history con la tabla de Control de Costes
 
-### Resumen
+### Problema
 
-Crear una pagina de administracion en `/admin/settings/deal-paused-reasons` para gestionar el catalogo de motivos de Deal Paused. Seguira el mismo patron que `AcquisitionChannelsSettings.tsx`: tabla con acciones inline, dialog para crear/editar, y reordenamiento.
+La tabla "Registro de Campanas" (`CampaignRegistryTable`) busca snapshots en la tabla `campaign_cost_snapshots`, que esta vacia. Sin embargo, los datos reales de costes estan en `ads_costs_history` (321 registros con spend, results, campaign_name, etc.).
 
----
+Las campanas en `campaigns` tienen un campo `external_name` que coincide con `campaign_name` de `ads_costs_history`:
 
-### Paso 1: Crear la pagina `PausedReasonsSettingsPage.tsx`
+| campaigns.name | campaigns.external_name | ads_costs_history.campaign_name |
+|---|---|---|
+| Q4-API | Valoracion de empresas Q4 - API + navegador | Valoracion de empresas Q4 - API + navegador |
+| Valoracion | Generacion clientes potenciales (Valoracion) | Generacion clientes potenciales (Valoracion) |
+| Compra | Generacion clientes potenciales - Compra | Generacion clientes potenciales - Compra |
+| Venta | Generacion clientes potenciales - Venta | Generacion clientes potenciales - Venta |
 
-**Archivo nuevo**: `src/pages/admin/PausedReasonsSettingsPage.tsx`
+### Solucion
 
-Basado en el patron de `AcquisitionChannelsSettings.tsx`:
-
-**Estructura:**
-- Header con boton "Volver a Ajustes" y titulo "Motivos de Deal Paused"
-- Boton "+ Nuevo Motivo"
-- Tabla con columnas:
-  - **Orden** (icono `GripVertical` + numero)
-  - **Nombre** del motivo
-  - **Estado** (badge verde "Activo" / gris "Inactivo")
-  - **Acciones**: Editar (Pencil), Subir/Bajar orden (ArrowUp/ArrowDown), Toggle activo/inactivo (ToggleLeft)
-
-**Dialog crear/editar:**
-- Input de nombre (obligatorio)
-- Switch activo/inactivo
-- Input numerico de orden
-
-**Logica:**
-- No se permite borrar motivos (preservar historico); solo desactivar
-- Reordenar con botones arriba/abajo que intercambian `sort_order` entre items adyacentes
-- Al desactivar, el motivo no aparecera en el dropdown de `DealPausedDialog` pero los registros historicos mantienen la referencia
+Modificar el hook `useCampaignRegistry` para que, cuando una campana no tenga snapshot en `campaign_cost_snapshots`, busque el ultimo registro en `ads_costs_history` usando el `external_name` de la campana.
 
 ---
 
-### Paso 2: Crear hook `usePausedReasons.ts`
+### Paso 1: Modificar query principal en useCampaignRegistry.ts
 
-**Archivo nuevo**: `src/hooks/usePausedReasons.ts`
+En la funcion `queryFn` del query `campaigns_registry`:
 
-Funciones expuestas:
-- `reasons` - query de todos los motivos (activos e inactivos), ordenados por `sort_order`
-- `createReason(name)` - inserta con `sort_order` = max + 1
-- `updateReason(id, { name, is_active, sort_order })` - actualiza campos
-- `swapOrder(id1, id2)` - intercambia `sort_order` entre dos motivos
+1. Despues de obtener snapshots de `campaign_cost_snapshots`, identificar campanas sin snapshot
+2. Para esas campanas, buscar el registro mas reciente en `ads_costs_history` filtrando por `campaign_name = external_name`
+3. Mapear los campos de `ads_costs_history` (spend, results, date) al formato de `CampaignSnapshot` para que la tabla los muestre
 
-No incluye `deleteReason` para preservar historico.
+```text
+Flujo actual:
+campaigns --> campaign_cost_snapshots --> UI (vacio)
 
----
+Flujo propuesto:
+campaigns --> campaign_cost_snapshots --> si hay datos --> UI
+                                      --> si NO hay datos --> ads_costs_history (por external_name) --> UI
+```
 
-### Paso 3: Registrar ruta y lazy component
+### Paso 2: Mapeo de campos
 
-**Modificar**: `src/features/admin/components/LazyAdminComponents.tsx`
-- Anadir lazy import de `PausedReasonsSettingsPage`
+| ads_costs_history | CampaignSnapshot |
+|---|---|
+| spend | amount_spent |
+| results | results |
+| date | snapshot_date |
+| (spend/results) | cost_per_result (calculado) |
 
-**Modificar**: `src/features/admin/components/AdminRouter.tsx`
-- Anadir ruta: `<Route path="/settings/deal-paused-reasons" element={<LazyPausedReasonsSettings />} />`
+Los campos `daily_budget`, `monthly_budget`, `target_cpl`, `internal_status`, `notes` se mostraran como null ya que no existen en `ads_costs_history`.
 
----
+### Paso 3: Marcar datos como "solo lectura" desde historial
 
-### Paso 4: Anadir enlace en AdminSettings
-
-**Modificar**: `src/components/admin/AdminSettings.tsx`
-- Anadir entrada en `configLinks` con:
-  - Titulo: "Motivos Deal Paused"
-  - Descripcion: "Gestiona los motivos para marcar deals como pausados"
-  - Icono: `PauseCircle`
-  - href: `/admin/settings/deal-paused-reasons`
-
----
-
-### Archivos a crear/modificar
-
-| Archivo | Accion |
-|---------|--------|
-| `src/hooks/usePausedReasons.ts` | Nuevo - CRUD + reorder de paused_reasons |
-| `src/pages/admin/PausedReasonsSettingsPage.tsx` | Nuevo - pagina de gestion |
-| `src/features/admin/components/LazyAdminComponents.tsx` | Modificar - lazy import |
-| `src/features/admin/components/AdminRouter.tsx` | Modificar - nueva ruta |
-| `src/components/admin/AdminSettings.tsx` | Modificar - enlace en configLinks |
+Anadir un flag `source: 'snapshot' | 'history'` al tipo para que la tabla pueda distinguir entre datos editables (snapshots propios) y datos de referencia (importados de ads history). Los datos de `ads_costs_history` se mostraran pero no seran editables inline (solo los snapshots lo son).
 
 ---
 
-### Detalles tecnicos
+### Archivos a modificar
 
-- La tabla `paused_reasons` ya tiene RLS para SELECT, INSERT y UPDATE para usuarios autenticados
-- No se necesita migracion SQL; la tabla ya soporta `is_active`, `sort_order` y `name`
-- El hook `useDealsPaused` existente ya filtra por `is_active = true` al mostrar motivos en el dialog, por lo que desactivar un motivo aqui lo oculta automaticamente del flujo de pausar
-- Patron identico a `AcquisitionChannelsSettings` para consistencia visual
+| Archivo | Cambio |
+|---|---|
+| `src/hooks/useCampaignRegistry.ts` | Anadir fallback a `ads_costs_history` cuando no hay snapshot; anadir campo `source` al tipo |
+| `src/components/admin/campaigns/CampaignRegistryTable.tsx` | Respetar flag `source` para deshabilitar edicion en datos de historial |
+
+### Notas tecnicas
+
+- No se modifica la base de datos, solo logica de frontend
+- La query a `ads_costs_history` filtra por `campaign_name` usando el `external_name` de cada campana
+- Se mantiene la posibilidad de crear snapshots manuales que tendran prioridad sobre los datos importados
+- El rendimiento es bueno: solo se hace la query adicional si hay campanas sin snapshot
 
