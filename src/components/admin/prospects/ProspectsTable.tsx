@@ -4,7 +4,6 @@
  */
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -31,7 +30,7 @@ export const ProspectsTable: React.FC<ProspectsTableProps> = ({
   prospects,
   isLoading,
 }) => {
-  const navigate = useNavigate();
+  const CRM_BASE_URL = 'https://godeal.es';
   const { getStatusByKey } = useContactStatuses();
 
   const formatCurrency = (value: number | null) => {
@@ -46,7 +45,7 @@ export const ProspectsTable: React.FC<ProspectsTableProps> = ({
   };
 
   const handleOpenProfile = (empresaId: string) => {
-    navigate(`/admin/empresas/${empresaId}`);
+    window.open(`${CRM_BASE_URL}/empresas/${empresaId}`, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) {
