@@ -1,71 +1,84 @@
 
 
-## Plan: Conectar datos de ads_costs_history con la tabla de Control de Costes
+## Plan: Dealsuite por captura de imagen
 
-### Problema
+Reemplazar el sistema actual de scraping con cookies por un flujo simple: **subir captura de pantalla de un deal de Dealsuite y extraer los datos con IA (vision)**.
 
-La tabla "Registro de Campanas" (`CampaignRegistryTable`) busca snapshots en la tabla `campaign_cost_snapshots`, que esta vacia. Sin embargo, los datos reales de costes estan en `ads_costs_history` (321 registros con spend, results, campaign_name, etc.).
+### Flujo del usuario
 
-Las campanas en `campaigns` tienen un campo `external_name` que coincide con `campaign_name` de `ads_costs_history`:
+1. El usuario hace una captura de pantalla de un deal en Dealsuite (como la imagen que has compartido)
+2. Arrastra/sube la imagen en el panel de Dealsuite
+3. La IA analiza la imagen y extrae todos los campos visibles
+4. Los datos se guardan en la tabla `dealsuite_deals`
+5. El usuario puede revisar y editar antes de guardar
 
-| campaigns.name | campaigns.external_name | ads_costs_history.campaign_name |
-|---|---|---|
-| Q4-API | Valoracion de empresas Q4 - API + navegador | Valoracion de empresas Q4 - API + navegador |
-| Valoracion | Generacion clientes potenciales (Valoracion) | Generacion clientes potenciales (Valoracion) |
-| Compra | Generacion clientes potenciales - Compra | Generacion clientes potenciales - Compra |
-| Venta | Generacion clientes potenciales - Venta | Generacion clientes potenciales - Venta |
+### Campos a extraer de la imagen
 
-### Solucion
+De la captura que has compartido, se extraerian estos campos:
 
-Modificar el hook `useCampaignRegistry` para que, cuando una campana no tenga snapshot en `campaign_cost_snapshots`, busque el ultimo registro en `ads_costs_history` usando el `external_name` de la campana.
+| Campo | Ejemplo |
+|---|---|
+| title | Sustainability and Energy Efficiency Consulting Platform |
+| sector | Management Consulting, IT Consulting |
+| country/location | DACH, France, Spain |
+| revenue_min / revenue_max | 3.000.000 / 20.000.000 |
+| deal_type | Complete Sale (100%), Majority Stake (>50%) |
+| advisor | Eduardo Gonzalez-Gallarza, CDI Global Iberia |
+| description | Descripcion completa del deal |
+| published_at | Active 6 February 2026 |
+| reference | ESG |
+| customer_types | B2B |
+| contact_email | Eduardo.gonzalez-gallarza@cdiglobal.com |
 
----
+### Cambios en base de datos
 
-### Paso 1: Modificar query principal en useCampaignRegistry.ts
+Ampliar la tabla `dealsuite_deals` con nuevos campos para la informacion adicional visible en los deals:
 
-En la funcion `queryFn` del query `campaigns_registry`:
-
-1. Despues de obtener snapshots de `campaign_cost_snapshots`, identificar campanas sin snapshot
-2. Para esas campanas, buscar el registro mas reciente en `ads_costs_history` filtrando por `campaign_name = external_name`
-3. Mapear los campos de `ads_costs_history` (spend, results, date) al formato de `CampaignSnapshot` para que la tabla los muestre
-
-```text
-Flujo actual:
-campaigns --> campaign_cost_snapshots --> UI (vacio)
-
-Flujo propuesto:
-campaigns --> campaign_cost_snapshots --> si hay datos --> UI
-                                      --> si NO hay datos --> ads_costs_history (por external_name) --> UI
+```sql
+ALTER TABLE dealsuite_deals
+  ADD COLUMN IF NOT EXISTS stake_offered TEXT,
+  ADD COLUMN IF NOT EXISTS customer_types TEXT,
+  ADD COLUMN IF NOT EXISTS reference TEXT,
+  ADD COLUMN IF NOT EXISTS location TEXT,
+  ADD COLUMN IF NOT EXISTS contact_name TEXT,
+  ADD COLUMN IF NOT EXISTS contact_email TEXT,
+  ADD COLUMN IF NOT EXISTS contact_company TEXT,
+  ADD COLUMN IF NOT EXISTS image_url TEXT;
 ```
 
-### Paso 2: Mapeo de campos
+### Nueva Edge Function: `dealsuite-extract-image`
 
-| ads_costs_history | CampaignSnapshot |
+- Recibe la imagen en base64 desde el frontend
+- Sube la imagen a un bucket de Supabase Storage (`dealsuite-images`)
+- Llama a Lovable AI (Gemini 2.5 Flash, que soporta vision) con la imagen
+- Extrae los datos estructurados usando tool calling
+- Hace upsert en `dealsuite_deals`
+- Devuelve los datos extraidos para preview
+
+### UI: Nuevo panel en DealsuiteSyncPanel
+
+Reemplazar el formulario de cookie actual con:
+
+1. **Zona de drop/upload de imagen**: Drag & drop o click para subir captura
+2. **Preview de imagen**: Muestra la captura subida
+3. **Boton "Extraer datos"**: Llama a la edge function
+4. **Preview de datos extraidos**: Tabla editable con los campos extraidos antes de confirmar
+5. **Boton "Guardar deal"**: Confirma y guarda en BD
+6. Mantener la tabla de deals existentes abajo
+
+### Archivos a crear/modificar
+
+| Archivo | Accion |
 |---|---|
-| spend | amount_spent |
-| results | results |
-| date | snapshot_date |
-| (spend/results) | cost_per_result (calculado) |
-
-Los campos `daily_budget`, `monthly_budget`, `target_cpl`, `internal_status`, `notes` se mostraran como null ya que no existen en `ads_costs_history`.
-
-### Paso 3: Marcar datos como "solo lectura" desde historial
-
-Anadir un flag `source: 'snapshot' | 'history'` al tipo para que la tabla pueda distinguir entre datos editables (snapshots propios) y datos de referencia (importados de ads history). Los datos de `ads_costs_history` se mostraran pero no seran editables inline (solo los snapshots lo son).
-
----
-
-### Archivos a modificar
-
-| Archivo | Cambio |
-|---|---|
-| `src/hooks/useCampaignRegistry.ts` | Anadir fallback a `ads_costs_history` cuando no hay snapshot; anadir campo `source` al tipo |
-| `src/components/admin/campaigns/CampaignRegistryTable.tsx` | Respetar flag `source` para deshabilitar edicion en datos de historial |
+| `supabase/functions/dealsuite-extract-image/index.ts` | Crear: Edge function con vision AI |
+| `supabase/config.toml` | Anadir entrada para la nueva funcion |
+| `src/components/admin/DealsuiteSyncPanel.tsx` | Reescribir: Reemplazar formulario de cookie por upload de imagen + preview de datos |
+| `src/hooks/useDealsuitDeals.ts` | Actualizar: Anadir campos nuevos al tipo |
+| Migracion SQL | Ampliar tabla con columnas nuevas + crear bucket storage |
 
 ### Notas tecnicas
 
-- No se modifica la base de datos, solo logica de frontend
-- La query a `ads_costs_history` filtra por `campaign_name` usando el `external_name` de cada campana
-- Se mantiene la posibilidad de crear snapshots manuales que tendran prioridad sobre los datos importados
-- El rendimiento es bueno: solo se hace la query adicional si hay campanas sin snapshot
-
+- Se usa `google/gemini-2.5-flash` via Lovable AI Gateway (soporta imagenes y es rapido/barato)
+- La imagen se sube a Supabase Storage para tener referencia persistente
+- Se mantiene la tabla de deals existente y sus datos
+- El sistema antiguo de scraping con cookies se elimina del UI pero se puede mantener la edge function por si se necesita en el futuro
