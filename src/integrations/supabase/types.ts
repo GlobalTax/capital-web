@@ -7092,39 +7092,56 @@ export type Database = {
       }
       dealsuite_contacts: {
         Row: {
+          cargo: string | null
           created_at: string | null
           deal_ids: string[] | null
           email: string | null
           empresa: string | null
+          empresa_id: string | null
           id: string
+          imagen_url: string | null
           nombre: string
           notas: string | null
           telefono: string | null
           updated_at: string | null
         }
         Insert: {
+          cargo?: string | null
           created_at?: string | null
           deal_ids?: string[] | null
           email?: string | null
           empresa?: string | null
+          empresa_id?: string | null
           id?: string
+          imagen_url?: string | null
           nombre: string
           notas?: string | null
           telefono?: string | null
           updated_at?: string | null
         }
         Update: {
+          cargo?: string | null
           created_at?: string | null
           deal_ids?: string[] | null
           email?: string | null
           empresa?: string | null
+          empresa_id?: string | null
           id?: string
+          imagen_url?: string | null
           nombre?: string
           notas?: string | null
           telefono?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "dealsuite_contacts_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "dealsuite_empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dealsuite_deals: {
         Row: {
@@ -7212,6 +7229,66 @@ export type Database = {
           source_url?: string | null
           stake_offered?: string | null
           title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      dealsuite_empresas: {
+        Row: {
+          created_at: string | null
+          deal_ids: string[] | null
+          descripcion: string | null
+          enfoque_consultivo: string | null
+          experiencia_ma: string[] | null
+          experiencia_sector: string[] | null
+          id: string
+          imagen_url: string | null
+          nombre: string
+          notas: string | null
+          parte_de: string | null
+          sitio_web: string | null
+          tamano_proyectos_max: number | null
+          tamano_proyectos_min: number | null
+          tipo_empresa: string | null
+          ubicacion: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deal_ids?: string[] | null
+          descripcion?: string | null
+          enfoque_consultivo?: string | null
+          experiencia_ma?: string[] | null
+          experiencia_sector?: string[] | null
+          id?: string
+          imagen_url?: string | null
+          nombre: string
+          notas?: string | null
+          parte_de?: string | null
+          sitio_web?: string | null
+          tamano_proyectos_max?: number | null
+          tamano_proyectos_min?: number | null
+          tipo_empresa?: string | null
+          ubicacion?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deal_ids?: string[] | null
+          descripcion?: string | null
+          enfoque_consultivo?: string | null
+          experiencia_ma?: string[] | null
+          experiencia_sector?: string[] | null
+          id?: string
+          imagen_url?: string | null
+          nombre?: string
+          notas?: string | null
+          parte_de?: string | null
+          sitio_web?: string | null
+          tamano_proyectos_max?: number | null
+          tamano_proyectos_min?: number | null
+          tipo_empresa?: string | null
+          ubicacion?: string | null
           updated_at?: string | null
         }
         Relationships: []
