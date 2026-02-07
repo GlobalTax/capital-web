@@ -26,6 +26,7 @@ const DEFAULT_STATS: ContactStats = {
 
 export const useContacts = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [prospectKeys, setProspectKeys] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<ContactFilters>({ emailStatus: 'all' });
   const { toast } = useToast();
@@ -51,7 +52,8 @@ export const useContacts = () => {
           .select('id, name, display_name'),
       ]);
       
-      const prospectKeys = (prospectStatuses || []).map(s => s.status_key);
+      const pKeys = (prospectStatuses || []).map(s => s.status_key);
+      setProspectKeys(pKeys);
       
       // Build display_name lookup: form_id -> display_name
       const formDisplayMap: Record<string, string> = {};
@@ -102,15 +104,9 @@ export const useContacts = () => {
         ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap)),
       ];
 
-      // Filter out prospects
-      const filtered = prospectKeys.length > 0
-        ? unified.filter(c => !prospectKeys.includes(c.lead_status_crm || ''))
-        : unified;
-
-      // Sort by date
-      filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      setContacts(filtered);
+      // Store all contacts (prospect filtering moved to filteredContacts memo)
+      unified.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setContacts(unified);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast({ title: 'Error', description: 'Error al cargar contactos', variant: 'destructive' });
@@ -147,7 +143,12 @@ export const useContacts = () => {
 
   // Apply filters with useMemo
   const filteredContacts = useMemo(() => {
-    let result = [...contacts];
+    // Filter out prospects unless includeProspects toggle is on
+    let result = filters.includeProspects
+      ? [...contacts]
+      : prospectKeys.length > 0
+        ? contacts.filter(c => !prospectKeys.includes(c.lead_status_crm || ''))
+        : [...contacts];
 
     if (filters.search) {
       const search = filters.search.toLowerCase();
@@ -211,26 +212,32 @@ export const useContacts = () => {
     }
 
     return result;
-  }, [contacts, filters]);
+  }, [contacts, filters, prospectKeys]);
 
-  // Calculate stats
+  // Calculate stats based on visible contacts (respects prospect toggle)
   const stats = useMemo((): ContactStats => {
-    const byOrigin = contacts.reduce((acc, c) => {
+    const baseContacts = filters.includeProspects
+      ? contacts
+      : prospectKeys.length > 0
+        ? contacts.filter(c => !prospectKeys.includes(c.lead_status_crm || ''))
+        : contacts;
+
+    const byOrigin = baseContacts.reduce((acc, c) => {
       acc[c.origin] = (acc[c.origin] || 0) + 1;
       return acc;
     }, {} as Record<ContactOrigin, number>);
 
-    const uniqueEmails = new Set(contacts.map(c => c.email.toLowerCase()));
+    const uniqueEmails = new Set(baseContacts.map(c => c.email.toLowerCase()));
 
     return {
-      total: contacts.length,
+      total: baseContacts.length,
       uniqueContacts: uniqueEmails.size,
-      hot: contacts.filter(c => c.priority === 'hot').length,
-      qualified: contacts.filter(c => c.status === 'qualified' || c.status === 'opportunity').length,
+      hot: baseContacts.filter(c => c.priority === 'hot').length,
+      qualified: baseContacts.filter(c => c.status === 'qualified' || c.status === 'opportunity').length,
       byOrigin: { ...DEFAULT_STATS.byOrigin, ...byOrigin },
-      totalValuation: contacts.reduce((sum, c) => sum + (c.final_valuation || 0), 0),
+      totalValuation: baseContacts.reduce((sum, c) => sum + (c.final_valuation || 0), 0),
     };
-  }, [contacts]);
+  }, [contacts, filters.includeProspects, prospectKeys]);
 
   return {
     contacts: filteredContacts,

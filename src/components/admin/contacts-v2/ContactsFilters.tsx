@@ -83,7 +83,8 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
     filters.ebitdaMin ||
     filters.ebitdaMax ||
     filters.acquisitionChannelId ||
-    filters.leadFormId
+    filters.leadFormId ||
+    filters.includeProspects
   );
 
   const clearFilters = () => {
@@ -464,6 +465,20 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Include Prospects Toggle */}
+        <Button
+          variant={filters.includeProspects ? 'secondary' : 'outline'}
+          size="sm"
+          className={cn(
+            'h-7 text-xs gap-1',
+            filters.includeProspects && 'ring-1 ring-primary/30'
+          )}
+          onClick={() => onFiltersChange({ ...filters, includeProspects: !filters.includeProspects })}
+        >
+          <Target className="h-3 w-3" />
+          + Prospectos
+        </Button>
 
         {/* Clear Filters */}
         {hasActiveFilters && (

@@ -83,6 +83,7 @@ export interface ContactFilters {
   acquisitionChannelId?: string;
   leadFormId?: string;
   showUniqueContacts?: boolean;
+  includeProspects?: boolean;
 }
 
 export interface ContactStats {
