@@ -1,55 +1,76 @@
 
 
-## Plan: Abrir ficha de deal + arreglar imagen
+## Plan: Imagen ampliable, notas y base de datos de contactos
 
-Hay dos problemas:
+Tres mejoras solicitadas:
 
-1. **Las tarjetas de deals no se abren** porque tienen `cursor-pointer` en el estilo pero no tienen ningun `onClick` — al hacer clic no pasa nada.
-2. **La imagen no se ve** — la URL en la base de datos existe y el bucket es publico, pero hay que verificar que se renderiza correctamente.
+### 1. Imagen ampliable a pantalla completa
 
-### Solucion
+Actualmente la imagen del sidebar se muestra en un tamano fijo (`max-h-[200px]`). Se anadira un **Dialog/modal** que al hacer clic en la imagen la muestre a tamano completo.
 
-#### 1. Vista de detalle al hacer clic en un deal
+**Cambios en `DealsuitePreviewCard.tsx`:**
+- Importar `Dialog`, `DialogContent`, `DialogTrigger` de shadcn/ui
+- Envolver la imagen del sidebar en un `DialogTrigger` con `cursor-zoom-in`
+- El `DialogContent` mostrara la imagen a tamano completo (`max-w-4xl`, `max-h-[90vh]`, `object-contain`)
 
-Se anadira un estado `selectedDeal` al componente `DealsuiteSyncPanel`. Al hacer clic en una tarjeta del listado, se mostrara el componente `DealsuitePreviewCard` ya existente con los datos de ese deal (reutilizando la misma vista Dealsuite que ya funciona para datos extraidos).
+### 2. Seccion de notas en la ficha del deal
+
+Anadir un area de notas internas debajo de la descripcion en la ficha del deal. Las notas se guardaran en la columna `raw_data` (JSONB) del deal, usando una clave `notes` dentro de ese JSON, evitando crear una tabla separada para algo tan sencillo.
+
+**Cambios en `DealsuitePreviewCard.tsx`:**
+- Anadir una nueva seccion "Notas" debajo de "Descripcion" con un textarea
+- Nueva prop `notes` (string) y `onNotesChange` (callback)
 
 **Cambios en `DealsuiteSyncPanel.tsx`:**
-- Nuevo estado: `selectedDeal` (tipo `DealsuiteDeal | null`)
-- `onClick` en cada tarjeta del listado que establece `selectedDeal`
-- Renderizar `DealsuitePreviewCard` cuando `selectedDeal` tiene valor, pasando los datos del deal guardado
-- Boton "Cerrar" en lugar de "Guardar/Descartar" cuando se ve un deal existente (o permitir edicion y re-guardado)
+- Al guardar el deal, incluir las notas en `raw_data: { notes: "..." }`
+- Al abrir un deal existente, leer `deal.raw_data?.notes` y pasarlo como prop
 
-#### 2. Imagen visible en la ficha y en el listado
+### 3. Base de datos de contactos Dealsuite
 
-- En la tarjeta del listado: ya se renderiza `deal.image_url` pero se verificara que no hay problemas de carga (anadir fallback si la imagen falla)
-- En la ficha de detalle: usar `deal.image_url` como `imagePreview` para que se muestre en el sidebar del `DealsuitePreviewCard`
+Crear una nueva tabla `dealsuite_contacts` para almacenar los contactos extraidos de los deals, con deduplicacion por email.
 
-### Detalle tecnico
-
-```text
-Estado nuevo:
-  const [selectedDeal, setSelectedDeal] = useState<DealsuiteDeal | null>(null)
-
-En cada tarjeta:
-  onClick={() => setSelectedDeal(deal)}
-
-Renderizado condicional:
-  {selectedDeal && (
-    <DealsuitePreviewCard
-      deal={selectedDeal}
-      imagePreview={selectedDeal.image_url}
-      isSaving={false}
-      onUpdate={...}
-      onSave={...}
-      onDiscard={() => setSelectedDeal(null)}
-    />
-  )}
-
-Fallback de imagen en tarjetas:
-  <img ... onError={(e) => e.currentTarget.style.display = 'none'} />
+**Nueva tabla SQL:**
+```sql
+CREATE TABLE dealsuite_contacts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  nombre TEXT NOT NULL,
+  empresa TEXT,
+  email TEXT UNIQUE,
+  telefono TEXT,
+  deal_ids TEXT[] DEFAULT '{}',
+  notas TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
 ```
+
+**Logica de guardado:**
+- Al guardar un deal con `contact_name`/`contact_email`/`contact_company`, hacer un upsert automatico en `dealsuite_contacts`
+- Si el email ya existe, anadir el `deal_id` al array `deal_ids`
+
+### 4. Traduccion a castellano
+
+Cambiar todas las etiquetas en ingles del `DealsuitePreviewCard` a castellano:
+- "Details" -> "Detalles"
+- "Sector" -> "Sector" (igual)
+- "Country" -> "Pais"
+- "Location" -> "Ubicacion"
+- "Revenue" -> "Facturacion"
+- "Stake offered" -> "Participacion ofrecida"
+- "Customer types" -> "Tipo de clientes"
+- "Reference" -> "Referencia"
+- "Description" -> "Descripcion"
+- "Contact" -> "Contacto"
+- "Status" -> "Estado"
+- "Active" -> "Activo"
+- "Original screenshot" -> "Captura original"
+- "Name" -> "Nombre"
+- "Company" -> "Empresa"
+- Placeholders tambien en castellano
 
 ### Archivos a modificar
 
-- **`src/components/admin/DealsuiteSyncPanel.tsx`**: Anadir estado `selectedDeal`, onClick en tarjetas, renderizar preview card para deal seleccionado, fallback de imagen
-- **`src/components/admin/DealsuitePreviewCard.tsx`**: Pequeno ajuste para mostrar "Cerrar" en vez de "Guardar" cuando se usa en modo solo lectura (prop opcional `readOnly`)
+- **`DealsuitePreviewCard.tsx`**: Modal de imagen, seccion de notas, traduccion a castellano
+- **`DealsuiteSyncPanel.tsx`**: Logica de notas (leer/guardar en raw_data), upsert en dealsuite_contacts al guardar
+- **Migracion SQL**: Crear tabla `dealsuite_contacts` con RLS
+
