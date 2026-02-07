@@ -12,7 +12,7 @@ import { useDropzone } from 'react-dropzone';
 import { useQueryClient } from '@tanstack/react-query';
 import { 
   Loader2, Upload, ImagePlus, Trash2, MapPin,
-  Sparkles, Star, Building2, Users
+  Sparkles, Star, Building2, Users, Plus
 } from 'lucide-react';
 import { DealsuitePreviewCard } from './DealsuitePreviewCard';
 import { DealsuiteEmpresaCard } from './DealsuiteEmpresaCard';
@@ -159,6 +159,7 @@ export const DealsuiteSyncPanel = () => {
   const [selectedDealNotes, setSelectedDealNotes] = useState('');
   const [activeTab, setActiveTab] = useState('favorites');
   const [selectedEmpresa, setSelectedEmpresa] = useState<any>(null);
+  const [creatingEmpresa, setCreatingEmpresa] = useState(false);
   const { toast } = useToast();
   const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(100);
   const { data: favoriteIds } = useFavoriteDealIds();
@@ -315,7 +316,13 @@ export const DealsuiteSyncPanel = () => {
   };
 
   // Directorio: empresa detail view
-  if (activeTab === 'directorio' && selectedEmpresa) {
+  if (activeTab === 'directorio' && (selectedEmpresa || creatingEmpresa)) {
+    const emptyEmpresa: any = {
+      id: '', nombre: '', ubicacion: null, descripcion: null, tipo_empresa: null,
+      parte_de: null, experiencia_ma: [], experiencia_sector: [], tamano_proyectos_min: null,
+      tamano_proyectos_max: null, enfoque_consultivo: null, sitio_web: null, imagen_url: null,
+      notas: null, deal_ids: [], created_at: '', updated_at: '',
+    };
     return (
       <div className="space-y-6">
         <div>
@@ -324,7 +331,12 @@ export const DealsuiteSyncPanel = () => {
             Sube una captura de pantalla de un deal de Dealsuite y la IA extraerá los datos automáticamente.
           </p>
         </div>
-        <DealsuiteEmpresaCard empresa={selectedEmpresa} onBack={() => setSelectedEmpresa(null)} />
+        <DealsuiteEmpresaCard
+          empresa={selectedEmpresa || emptyEmpresa}
+          onBack={() => { setSelectedEmpresa(null); setCreatingEmpresa(false); }}
+          isNew={creatingEmpresa}
+          onCreated={() => setCreatingEmpresa(false)}
+        />
       </div>
     );
   }
@@ -431,17 +443,24 @@ export const DealsuiteSyncPanel = () => {
                   : `${deals?.length || 0} deals en la base de datos`}
               </CardDescription>
             </div>
-            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedEmpresa(null); }}>
-              <TabsList>
-                <TabsTrigger value="favorites" className="gap-1.5">
-                  <Star className="h-3.5 w-3.5" /> Favoritos
-                </TabsTrigger>
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="directorio" className="gap-1.5">
-                  <Building2 className="h-3.5 w-3.5" /> Directorio
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex items-center gap-2">
+              {activeTab === 'directorio' && (
+                <Button variant="outline" size="sm" onClick={() => setCreatingEmpresa(true)} className="gap-1.5">
+                  <Plus className="h-3.5 w-3.5" /> Nueva empresa
+                </Button>
+              )}
+              <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedEmpresa(null); }}>
+                <TabsList>
+                  <TabsTrigger value="favorites" className="gap-1.5">
+                    <Star className="h-3.5 w-3.5" /> Favoritos
+                  </TabsTrigger>
+                  <TabsTrigger value="all">Todos</TabsTrigger>
+                  <TabsTrigger value="directorio" className="gap-1.5">
+                    <Building2 className="h-3.5 w-3.5" /> Directorio
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
