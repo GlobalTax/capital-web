@@ -1,36 +1,58 @@
 
 
-## Plan: Soporte para pegar imagenes desde el portapapeles (Herramienta de Recortes)
+## Plan: Vista tipo Dealsuite para datos extraidos
 
-### Que se hara
+Redisenar la seccion de "Datos extraidos" para que tenga el mismo aspecto visual que la ficha de deal en Dealsuite, en lugar del formulario generico actual con inputs en grid.
 
-Anadir la capacidad de pegar imagenes directamente con **Ctrl+V** en la zona de upload del panel Dealsuite. Esto permite usar la Herramienta de Recortes de Windows (o cualquier captura al portapapeles) sin necesidad de guardar el archivo primero.
+### Layout propuesto (inspirado en Dealsuite)
 
-### Cambio unico: `src/components/admin/DealsuiteSyncPanel.tsx`
+La vista se dividira en dos columnas principales, imitando la estructura de la captura:
 
-1. **Listener de `paste`**: Anadir un `useEffect` que escuche el evento `paste` en el documento. Cuando el usuario pegue una imagen desde el portapapeles:
-   - Se lee el item de tipo `image/*` del `clipboardData`
-   - Se convierte a base64 con `FileReader`
-   - Se establece `imagePreview` e `imageBase64` (mismo flujo que el drag & drop actual)
+**Columna izquierda (2/3)**
+- **Titulo grande** del deal en la parte superior
+- **Badges de tipo**: Complete Sale, Majority Stake, etc.
+- **Seccion "Details"**: tabla de pares clave-valor con filas alternadas
+  - Sector | Management Consulting, IT Consulting
+  - Country | DACH, France, Spain
+  - Revenue | 3.000.000 - 20.000.000
+  - EBITDA | (si disponible)
+  - Stake offered | Complete Sale (100%), Majority Stake (>50%)
+  - Customer types | B2B
+  - Reference | ESG
+- **Seccion "Description"**: bloque de texto con la descripcion completa
+- Cada valor sera editable al hacer clic (inline editing)
 
-2. **Texto informativo**: Actualizar el texto de la zona de drop para indicar que tambien se puede pegar:
-   - De: *"Arrastra una captura o haz clic para seleccionar"*
-   - A: *"Arrastra, haz clic o pega (Ctrl+V) una captura"*
+**Columna derecha (1/3) — Sidebar**
+- **Tarjeta de contacto/advisor**: foto placeholder, nombre, empresa, email
+- **Estado**: badge "Active" con fecha de publicacion
+- **Imagen original**: thumbnail de la captura subida
+
+**Barra inferior**
+- Botones "Guardar deal" y "Descartar"
+
+### Cambios visuales clave
+
+| Elemento actual | Nuevo estilo Dealsuite |
+|---|---|
+| Grid de inputs con labels | Tabla de pares clave-valor con fondo alternado |
+| Todos los campos visibles siempre | Agrupados por secciones (Details, Description, Contact) |
+| Inputs estandar | Inline editing: texto plano que se convierte en input al clicar |
+| Layout de 2 columnas uniforme | Layout 2/3 + 1/3 sidebar como Dealsuite |
+| Sin jerarquia visual | Titulo destacado, badges de tipo de deal |
 
 ### Detalles tecnicos
 
-```text
-useEffect:
-  document.addEventListener('paste', handlePaste)
-  
-handlePaste(e: ClipboardEvent):
-  - Buscar item de tipo image/* en e.clipboardData.items
-  - Obtener el File con item.getAsFile()
-  - Leer con FileReader.readAsDataURL()
-  - Setear imagePreview + imageBase64
-  - Limpiar extractedDeal anterior
-```
+**Archivo a modificar**: `src/components/admin/DealsuiteSyncPanel.tsx`
 
-- Solo se activa cuando no hay imagen cargada (para evitar sobreescrituras accidentales)
-- Se limpia el listener en el cleanup del useEffect
-- No se necesitan cambios en la edge function ni en la base de datos
+Solo se modifica la seccion de renderizado de `extractedDeal` (lineas 277-446). El resto del componente (upload zone, tabla de deals, logica de estado) permanece igual.
+
+Elementos UI a utilizar:
+- `Badge` para tipos de deal, sector, estado
+- `Separator` para dividir secciones
+- Tailwind grid `grid-cols-3` para layout principal/sidebar
+- Clases `even:bg-muted/30` para filas alternadas en la tabla de detalles
+- `contentEditable` o toggle input/span para edicion inline
+- Avatar placeholder con icono de `User` para contacto
+
+No se necesitan cambios en la edge function, base de datos ni hooks.
+
