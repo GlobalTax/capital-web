@@ -1,321 +1,173 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { firecrawlApi } from '@/lib/api/firecrawl';
 import { useDealsuitDeals } from '@/hooks/useDealsuitDeals';
+import { supabase } from '@/integrations/supabase/client';
+import { useDropzone } from 'react-dropzone';
 import { 
   Loader2, 
-  CheckCircle2, 
-  XCircle, 
-  RefreshCw, 
-  TestTube, 
-  ChevronDown, 
-  ChevronRight,
-  HelpCircle,
-  Eye,
-  EyeOff,
-  Clock,
-  AlertCircle
+  Upload, 
+  ImagePlus, 
+  Save, 
+  Trash2, 
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-interface SyncResult {
-  success: boolean;
-  dry_run?: boolean;
-  preview?: string;
-  extracted?: number;
-  inserted?: number;
-  updated?: number;
-  error?: string;
-  message?: string;
-  hint?: string;
-  attempts?: number;
-  detected?: string[];
-  missing?: string[];
-  can_retry?: boolean;
-  data?: {
-    preview?: string;
-    extracted?: number;
-    inserted?: number;
-    updated?: number;
-    attempts?: number;
-  };
-}
-
-interface CookieStatus {
-  hasUser: boolean;
-  hasDstoken: boolean;
-  hasXsrf: boolean;
-  hasSession: boolean;
-  length: number;
-  isTruncated: boolean;
-  hasExtraQuotes: boolean;
-  hasInvalidChars: boolean;
-  cookieCount: number;
-  healthScore: number; // 0-100
-  issues: string[];
+interface ExtractedDeal {
+  title: string;
+  deal_type?: string | null;
+  sector?: string | null;
+  country?: string | null;
+  location?: string | null;
+  description?: string | null;
+  revenue_min?: number | null;
+  revenue_max?: number | null;
+  ebitda_min?: number | null;
+  ebitda_max?: number | null;
+  stake_offered?: string | null;
+  customer_types?: string | null;
+  reference?: string | null;
+  advisor?: string | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+  contact_company?: string | null;
+  published_at?: string | null;
+  image_url?: string | null;
 }
 
 export const DealsuiteSyncPanel = () => {
-  const [cookie, setCookie] = useState('');
-  const [showCookie, setShowCookie] = useState(false);
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [result, setResult] = useState<SyncResult | null>(null);
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [statusMessage, setStatusMessage] = useState('');
-  const [cookieStatus, setCookieStatus] = useState<CookieStatus | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [extractedDeal, setExtractedDeal] = useState<ExtractedDeal | null>(null);
   const { toast } = useToast();
   const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(20);
 
-  const isLoading = isTestingConnection || isSyncing;
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
+    if (!file) return;
 
-  // Clean and analyze cookie when it changes
-  const cleanCookie = (raw: string): string => {
-    let cleaned = raw.trim();
-    // Remove surrounding quotes (from console output)
-    if ((cleaned.startsWith("'") && cleaned.endsWith("'")) || 
-        (cleaned.startsWith('"') && cleaned.endsWith('"'))) {
-      cleaned = cleaned.slice(1, -1);
-    }
-    return cleaned;
-  };
-
-  const analyzeCookie = (cookieString: string): CookieStatus => {
-    const raw = cookieString;
-    const hasExtraQuotes = (raw.startsWith("'") || raw.startsWith('"')) && 
-                           (raw.endsWith("'") || raw.endsWith('"'));
-    const isTruncated = raw.includes('…') || raw.endsWith('...');
-    const hasInvalidChars = /[\n\r\t]/.test(raw);
-    const cleaned = cleanCookie(raw);
-    
-    const hasUser = cleaned.includes('user=');
-    const hasDstoken = cleaned.includes('dstoken=');
-    const hasXsrf = cleaned.includes('_xsrf=');
-    const hasSession = cleaned.includes('session=');
-    const cookieCount = (cleaned.match(/=/g) || []).length;
-    
-    // Calculate health score
-    const issues: string[] = [];
-    let healthScore = 100;
-    
-    // Critical issues (-40 each)
-    if (!hasUser) { issues.push('Falta cookie "user"'); healthScore -= 40; }
-    if (!hasDstoken) { issues.push('Falta cookie "dstoken"'); healthScore -= 40; }
-    
-    // Major issues (-20 each)
-    if (isTruncated) { issues.push('Cookie truncada (cortada)'); healthScore -= 20; }
-    if (hasInvalidChars) { issues.push('Contiene caracteres inválidos'); healthScore -= 20; }
-    
-    // Minor issues (-10 each)
-    if (hasExtraQuotes) { issues.push('Comillas extra (se eliminarán)'); healthScore -= 5; }
-    if (cleaned.length < 100) { issues.push('Cookie muy corta'); healthScore -= 10; }
-    if (cookieCount < 2) { issues.push('Pocas cookies detectadas'); healthScore -= 10; }
-    
-    // Ensure score is between 0-100
-    healthScore = Math.max(0, Math.min(100, healthScore));
-    
-    return {
-      hasUser,
-      hasDstoken,
-      hasXsrf,
-      hasSession,
-      length: cleaned.length,
-      isTruncated,
-      hasExtraQuotes,
-      hasInvalidChars,
-      cookieCount,
-      healthScore,
-      issues
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setImagePreview(result);
+      // Extract base64 without the data URI prefix
+      const base64 = result.split(',')[1];
+      setImageBase64(base64);
+      setExtractedDeal(null);
     };
-  };
+    reader.readAsDataURL(file);
+  }, []);
 
-  // Update cookie status when cookie changes
-  useEffect(() => {
-    if (cookie.trim()) {
-      setCookieStatus(analyzeCookie(cookie));
-    } else {
-      setCookieStatus(null);
-    }
-  }, [cookie]);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] },
+    maxFiles: 1,
+    maxSize: 10 * 1024 * 1024, // 10MB
+  });
 
-  // Timer for elapsed time
-  useEffect(() => {
-    if (isLoading) {
-      const startTime = Date.now();
-      timerRef.current = setInterval(() => {
-        setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
-      }, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+  const handleExtract = async () => {
+    if (!imageBase64) return;
+
+    setIsExtracting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dealsuite-extract-image', {
+        body: { image_base64: imageBase64 },
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.data) {
+        setExtractedDeal(data.data);
+        toast({ title: 'Datos extraídos', description: `Deal: ${data.data.title}` });
+      } else {
+        throw new Error(data?.error || 'No se pudieron extraer datos');
       }
-      setElapsedTime(0);
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [isLoading]);
-
-  // Update status message based on elapsed time - adjusted for increased timeouts
-  useEffect(() => {
-    if (!isLoading) {
-      setStatusMessage('');
-      return;
-    }
-
-    if (elapsedTime < 5) {
-      setStatusMessage('Iniciando conexión con Dealsuite...');
-    } else if (elapsedTime < 30) {
-      setStatusMessage('Esperando que la página cargue (intento 1/3, ~45s)...');
-    } else if (elapsedTime < 60) {
-      setStatusMessage('Renderizando contenido JavaScript pesado...');
-    } else if (elapsedTime < 90) {
-      setStatusMessage('Reintentando con más tiempo (intento 2/3, ~60s)...');
-    } else if (elapsedTime < 130) {
-      setStatusMessage('Último intento con tiempo máximo (intento 3/3, ~90s)...');
-    } else if (elapsedTime < 180) {
-      setStatusMessage('Procesando deals con IA...');
-    } else {
-      setStatusMessage('Finalizando... Esto puede tardar un poco más.');
-    }
-  }, [elapsedTime, isLoading]);
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-  };
-
-  const getErrorSuggestion = (error?: string, message?: string, hint?: string): string => {
-    if (hint) return hint;
-    
-    const fullError = `${error || ''} ${message || ''}`.toLowerCase();
-    
-    if (fullError.includes('invalid_cookie_format') || fullError.includes('faltan cookies')) {
-      return 'La cookie está incompleta. Asegúrate de copiar TODO el contenido de document.cookie. Las cookies críticas son "user" y "dstoken".';
-    }
-    if (fullError.includes('timeout') || fullError.includes('408') || fullError.includes('tardó')) {
-      return '⏱️ La página tardó demasiado. Sugerencias: 1) Intenta en horas de menor tráfico (madrugada/mañana temprano). 2) Verifica que tu sesión de Dealsuite sigue activa. 3) El segundo intento suele ser más rápido. Usa el botón "Reintentar" de abajo.';
-    }
-    if (fullError.includes('session') || fullError.includes('cookie') || fullError.includes('login') || fullError.includes('expirada')) {
-      return 'La cookie de sesión parece haber expirado o ser inválida. Ve a Dealsuite, inicia sesión de nuevo, y copia una cookie fresca.';
-    }
-    if (fullError.includes('rate_limit') || fullError.includes('429')) {
-      return 'Se ha excedido el límite de peticiones. Espera 5-10 minutos antes de reintentar.';
-    }
-    if (fullError.includes('captcha')) {
-      return 'Dealsuite está mostrando un captcha. Intenta de nuevo más tarde o accede manualmente a Dealsuite primero.';
-    }
-    if (fullError.includes('connection') || fullError.includes('network')) {
-      return 'Error de conexión. Verifica tu conexión a internet y que Dealsuite esté accesible.';
-    }
-    return 'Verifica la cookie de sesión e intenta de nuevo. Si el problema persiste, contacta a soporte.';
-  };
-
-  const handleTestConnection = async () => {
-    if (!cookie.trim()) {
+    } catch (err: any) {
+      console.error('Extract error:', err);
       toast({
-        title: 'Cookie requerida',
-        description: 'Por favor, pega la cookie de sesión de Dealsuite.',
+        title: 'Error al extraer',
+        description: err.message || 'No se pudieron extraer los datos de la imagen',
         variant: 'destructive',
       });
-      return;
+    } finally {
+      setIsExtracting(false);
     }
+  };
 
-    setIsTestingConnection(true);
-    setResult(null);
+  const handleSave = async () => {
+    if (!extractedDeal) return;
 
+    setIsSaving(true);
     try {
-      // Clean the cookie before sending
-      const cleanedCookie = cleanCookie(cookie.trim());
-      const response = await firecrawlApi.scrapeDealsuite(cleanedCookie, { dryRun: true });
-      setResult(response);
+      const dealId = extractedDeal.reference || `img-${Date.now()}`;
       
-      if (response.success) {
-        toast({
-          title: 'Conexión exitosa',
-          description: `La cookie es válida. Contenido recuperado en ${response.data?.attempts || 1} intento(s).`,
-        });
-      } else {
-        toast({
-          title: 'Error de conexión',
-          description: response.message || response.error || 'No se pudo validar la cookie.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error testing connection:', error);
+      const { error } = await supabase.from('dealsuite_deals').upsert(
+        {
+          deal_id: dealId,
+          title: extractedDeal.title,
+          deal_type: extractedDeal.deal_type,
+          sector: extractedDeal.sector,
+          country: extractedDeal.country,
+          location: extractedDeal.location,
+          description: extractedDeal.description,
+          revenue_min: extractedDeal.revenue_min,
+          revenue_max: extractedDeal.revenue_max,
+          ebitda_min: extractedDeal.ebitda_min,
+          ebitda_max: extractedDeal.ebitda_max,
+          stake_offered: extractedDeal.stake_offered,
+          customer_types: extractedDeal.customer_types,
+          reference: extractedDeal.reference,
+          advisor: extractedDeal.advisor,
+          contact_name: extractedDeal.contact_name,
+          contact_email: extractedDeal.contact_email,
+          contact_company: extractedDeal.contact_company,
+          published_at: extractedDeal.published_at,
+          image_url: extractedDeal.image_url,
+          scraped_at: new Date().toISOString(),
+        } as any,
+        { onConflict: 'deal_id' }
+      );
+
+      if (error) throw error;
+
+      toast({ title: 'Deal guardado', description: `"${extractedDeal.title}" guardado correctamente.` });
+      setExtractedDeal(null);
+      setImagePreview(null);
+      setImageBase64(null);
+      refetch();
+    } catch (err: any) {
+      console.error('Save error:', err);
       toast({
-        title: 'Error',
-        description: 'Error al probar la conexión. Verifica que Firecrawl esté configurado.',
+        title: 'Error al guardar',
+        description: err.message || 'No se pudo guardar el deal',
         variant: 'destructive',
       });
     } finally {
-      setIsTestingConnection(false);
+      setIsSaving(false);
     }
   };
 
-  const handleSync = async () => {
-    if (!cookie.trim()) {
-      toast({
-        title: 'Cookie requerida',
-        description: 'Por favor, pega la cookie de sesión de Dealsuite.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsSyncing(true);
-    setResult(null);
-
-    try {
-      // Clean the cookie before sending
-      const cleanedCookie = cleanCookie(cookie.trim());
-      const response = await firecrawlApi.scrapeDealsuite(cleanedCookie);
-      setResult(response);
-
-      if (response.success) {
-        const data = response.data || response;
-        toast({
-          title: 'Sincronización completada',
-          description: `${data.inserted || 0} nuevos, ${data.updated || 0} actualizados.`,
-        });
-        refetch();
-      } else {
-        toast({
-          title: 'Error de sincronización',
-          description: response.message || response.error || 'No se pudieron sincronizar los deals.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error syncing:', error);
-      toast({
-        title: 'Error',
-        description: 'Error al sincronizar. Verifica la configuración.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSyncing(false);
-    }
+  const handleClear = () => {
+    setImagePreview(null);
+    setImageBase64(null);
+    setExtractedDeal(null);
   };
 
-  const formatCurrency = (value: number | null) => {
+  const updateField = (field: keyof ExtractedDeal, value: string | number | null) => {
+    if (!extractedDeal) return;
+    setExtractedDeal({ ...extractedDeal, [field]: value });
+  };
+
+  const formatCurrency = (value: number | null | undefined) => {
     if (!value) return '-';
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
@@ -328,318 +180,257 @@ export const DealsuiteSyncPanel = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">Sincronización Dealsuite</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Dealsuite — Captura de Deals</h1>
         <p className="text-muted-foreground mt-1">
-          Extrae los deals del marketplace "Wanted" de Dealsuite usando tu cookie de sesión.
+          Sube una captura de pantalla de un deal de Dealsuite y la IA extraerá los datos automáticamente.
         </p>
       </div>
 
-      {/* Cookie Input Card */}
+      {/* Upload Card */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            Cookie de Sesión
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowInstructions(!showInstructions)}
-              className="h-6 w-6 p-0"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </Button>
+            <ImagePlus className="h-5 w-5" />
+            Subir captura de deal
           </CardTitle>
           <CardDescription>
-            Pega la cookie de sesión de Dealsuite para autenticarte.
+            Haz una captura de pantalla de un deal en Dealsuite y arrástrala aquí.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Instructions Collapsible */}
-          <Collapsible open={showInstructions} onOpenChange={setShowInstructions}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" size="sm" className="w-full justify-between">
-                <span>¿Cómo obtener la cookie?</span>
-                {showInstructions ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3">
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                <ol className="list-decimal list-inside space-y-1.5 text-muted-foreground">
-                  <li>Abre <strong>app.dealsuite.com</strong> en tu navegador y asegúrate de estar logueado</li>
-                  <li>Abre DevTools (F12 o Cmd+Option+I en Mac)</li>
-                  <li>Ve a la pestaña <strong>Console</strong></li>
-                  <li>Escribe <code className="bg-background px-1.5 py-0.5 rounded">document.cookie</code> y pulsa Enter</li>
-                  <li>Copia todo el texto resultante (empieza con <code>_xsrf=...</code>)</li>
-                  <li>Pega el resultado en el campo de abajo</li>
-                </ol>
-                <p className="text-xs text-muted-foreground mt-3 border-t pt-2">
-                  ⚠️ La cookie NO se guarda en ningún momento y solo se usa para esta sesión.
-                </p>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
-          {/* Cookie Textarea */}
-          <div className="relative">
-            <Textarea
-              placeholder="_xsrf=...; user=...; dstoken=..."
-              value={cookie}
-              onChange={(e) => setCookie(e.target.value)}
-              className={`min-h-[100px] font-mono text-xs pr-10 ${!showCookie ? 'text-security-disc' : ''}`}
-              style={!showCookie ? { WebkitTextSecurity: 'disc' } as React.CSSProperties : undefined}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 h-8 w-8 p-0"
-              onClick={() => setShowCookie(!showCookie)}
+          {!imagePreview ? (
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+                ${isDragActive 
+                  ? 'border-primary bg-primary/5' 
+                  : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50'}`}
             >
-              {showCookie ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
-          </div>
-
-          {/* Cookie Status Indicator - Enhanced */}
-          {cookieStatus && (
-            <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
-              {/* Health Score Bar */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium">Estado de la cookie</span>
-                  <span className={`font-bold ${
-                    cookieStatus.healthScore >= 80 ? 'text-green-600' :
-                    cookieStatus.healthScore >= 50 ? 'text-yellow-600' : 'text-destructive'
-                  }`}>
-                    {cookieStatus.healthScore >= 80 ? '✓ Lista para usar' :
-                     cookieStatus.healthScore >= 50 ? '⚠ Revisar problemas' : '✗ Cookie inválida'}
-                  </span>
-                </div>
-                <Progress 
-                  value={cookieStatus.healthScore} 
-                  className={`h-2 ${
-                    cookieStatus.healthScore >= 80 ? '[&>div]:bg-green-500' :
-                    cookieStatus.healthScore >= 50 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-destructive'
-                  }`}
-                />
-              </div>
-              
-              {/* Cookie Tokens Detected */}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground mr-1">Tokens:</span>
-                <Badge variant={cookieStatus.hasUser ? "default" : "destructive"} className="text-xs">
-                  {cookieStatus.hasUser ? '✓' : '✗'} user
-                </Badge>
-                <Badge variant={cookieStatus.hasDstoken ? "default" : "destructive"} className="text-xs">
-                  {cookieStatus.hasDstoken ? '✓' : '✗'} dstoken
-                </Badge>
-                <Badge variant={cookieStatus.hasXsrf ? "secondary" : "outline"} className="text-xs">
-                  {cookieStatus.hasXsrf ? '✓' : '○'} _xsrf
-                </Badge>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {cookieStatus.cookieCount} cookies • {cookieStatus.length} chars
-                </span>
-              </div>
-              
-              {/* Issues List */}
-              {cookieStatus.issues.length > 0 && (
-                <div className="space-y-2">
-                  {cookieStatus.issues.map((issue, idx) => (
-                    <Alert 
-                      key={idx} 
-                      variant={issue.includes('Falta') ? 'destructive' : 'default'}
-                      className="py-2"
-                    >
-                      <AlertCircle className="h-3 w-3" />
-                      <AlertDescription className="text-xs">{issue}</AlertDescription>
-                    </Alert>
-                  ))}
-                </div>
-              )}
-              
-              {/* Copy Instructions - Only show if critical cookies missing */}
-              {(!cookieStatus.hasUser || !cookieStatus.hasDstoken) && (
-                <div className="bg-background rounded p-3 border space-y-2">
-                  <p className="text-xs font-medium text-destructive">⚠️ Cómo copiar la cookie correctamente:</p>
-                  <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-                    <li>Abre DevTools (F12) en <strong>app.dealsuite.com</strong></li>
-                    <li>Ve a Console y escribe: <code className="bg-muted px-1 rounded">document.cookie</code></li>
-                    <li><strong>Importante:</strong> Haz clic derecho en el resultado</li>
-                    <li>Selecciona <strong>"Copy string contents"</strong> o <strong>"Copiar valor de cadena"</strong></li>
-                    <li>Pega aquí el contenido completo</li>
-                  </ol>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={handleTestConnection}
-              disabled={isLoading || !cookie.trim()}
-            >
-              {isTestingConnection ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <TestTube className="h-4 w-4 mr-2" />
-              )}
-              Probar Conexión
-            </Button>
-            <Button
-              onClick={handleSync}
-              disabled={isLoading || !cookie.trim()}
-            >
-              {isSyncing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4 mr-2" />
-              )}
-              Sincronizar Deals
-            </Button>
-          </div>
-
-          {/* Progress indicator while loading */}
-          {isLoading && (
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{statusMessage}</span>
-                <span className="font-mono text-muted-foreground flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {formatTime(elapsedTime)}
-                </span>
-              </div>
-              <Progress value={Math.min((elapsedTime / 200) * 100, 95)} className="h-2" />
-              <p className="text-xs text-muted-foreground text-center">
-                Este proceso puede tardar hasta 3-4 minutos. El sistema reintenta automáticamente con tiempos incrementales (45s → 60s → 90s).
+              <input {...getInputProps()} />
+              <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+              <p className="text-sm font-medium text-foreground">
+                {isDragActive ? 'Suelta la imagen aquí...' : 'Arrastra una captura o haz clic para seleccionar'}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">PNG, JPG o WebP (máx. 10MB)</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="relative rounded-lg overflow-hidden border bg-muted/30">
+                <img src={imagePreview} alt="Captura del deal" className="w-full max-h-[400px] object-contain" />
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={handleClear}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" /> Quitar
+                </Button>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleExtract}
+                  disabled={isExtracting}
+                  className="flex-1"
+                >
+                  {isExtracting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Extrayendo datos con IA...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Extraer datos con IA
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Result Card */}
-      {result && (
+      {/* Extracted Data Preview */}
+      {extractedDeal && (
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              {result.success ? (
-                <>
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  <span>{result.dry_run ? 'Conexión Válida' : 'Sincronización Exitosa'}</span>
-                  {(result.attempts || result.data?.attempts) && (result.attempts || result.data?.attempts) > 1 && (
-                    <Badge variant="secondary" className="ml-2">
-                      {result.attempts || result.data?.attempts} intentos
-                    </Badge>
-                  )}
-                </>
-              ) : (
-                <>
-                  <XCircle className="h-5 w-5 text-destructive" />
-                  <span>Error</span>
-                </>
-              )}
+              <Sparkles className="h-5 w-5 text-primary" />
+              Datos extraídos
             </CardTitle>
+            <CardDescription>
+              Revisa y edita los datos antes de guardar. Los campos vacíos se pueden completar manualmente.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            {result.success ? (
-              <div className="space-y-3">
-                {result.dry_run ? (
-                  <p className="text-sm text-muted-foreground">
-                    La cookie es válida. Puedes proceder a sincronizar los deals.
-                  </p>
-                ) : (
-                  <div className="flex gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">
-                        {result.data?.extracted || result.extracted || 0}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Extraídos</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">
-                        {result.data?.inserted || result.inserted || 0}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Nuevos</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {result.data?.updated || result.updated || 0}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Actualizados</div>
-                    </div>
-                  </div>
-                )}
-                {(result.preview || result.data?.preview) && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">Preview del contenido:</p>
-                    <pre className="bg-muted p-3 rounded text-xs overflow-auto max-h-40">
-                      {result.preview || result.data?.preview}
-                    </pre>
-                  </div>
-                )}
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="text-xs font-medium text-muted-foreground">Título</label>
+                <Input
+                  value={extractedDeal.title || ''}
+                  onChange={(e) => updateField('title', e.target.value)}
+                  className="mt-1"
+                />
               </div>
-            ) : (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error de sincronización</AlertTitle>
-                <AlertDescription className="space-y-3">
-                  <p>{result.message || result.error}</p>
-                  <p className="text-sm opacity-80">
-                    {getErrorSuggestion(result.error, result.message, result.hint)}
-                  </p>
-                  {/* Show detected/missing cookies if available */}
-                  {(result.detected || result.missing) && (
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-destructive/20">
-                      {result.detected?.map(c => (
-                        <Badge key={c} variant="secondary" className="text-xs">✓ {c}</Badge>
-                      ))}
-                      {result.missing?.map(c => (
-                        <Badge key={c} variant="destructive" className="text-xs">✗ {c}</Badge>
-                      ))}
-                    </div>
-                  )}
-                  {/* Retry button for timeout/connection errors */}
-                  {(result.can_retry || result.error?.includes('timeout') || result.error?.includes('connection')) && (
-                    <div className="pt-3 border-t border-destructive/20">
-                      <Button 
-                        onClick={handleSync}
-                        disabled={isLoading || !cookie.trim()}
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <RefreshCw className="h-4 w-4 mr-2" />
-                        Reintentar Sincronización
-                      </Button>
-                    </div>
-                  )}
-                  {/* Show content preview for debugging */}
-                  {result.preview && (
-                    <div className="mt-2 pt-2 border-t border-destructive/20">
-                      <p className="text-xs font-medium mb-1">Contenido devuelto (preview):</p>
-                      <pre className="bg-background/50 p-2 rounded text-xs overflow-auto max-h-24 text-destructive-foreground/70">
-                        {result.preview}
-                      </pre>
-                    </div>
-                  )}
-                </AlertDescription>
-              </Alert>
-            )}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Tipo de deal</label>
+                <Input
+                  value={extractedDeal.deal_type || ''}
+                  onChange={(e) => updateField('deal_type', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Sector</label>
+                <Input
+                  value={extractedDeal.sector || ''}
+                  onChange={(e) => updateField('sector', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">País</label>
+                <Input
+                  value={extractedDeal.country || ''}
+                  onChange={(e) => updateField('country', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Ubicación</label>
+                <Input
+                  value={extractedDeal.location || ''}
+                  onChange={(e) => updateField('location', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Revenue mín (€)</label>
+                <Input
+                  type="number"
+                  value={extractedDeal.revenue_min || ''}
+                  onChange={(e) => updateField('revenue_min', e.target.value ? Number(e.target.value) : null)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Revenue máx (€)</label>
+                <Input
+                  type="number"
+                  value={extractedDeal.revenue_max || ''}
+                  onChange={(e) => updateField('revenue_max', e.target.value ? Number(e.target.value) : null)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">EBITDA mín (€)</label>
+                <Input
+                  type="number"
+                  value={extractedDeal.ebitda_min || ''}
+                  onChange={(e) => updateField('ebitda_min', e.target.value ? Number(e.target.value) : null)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">EBITDA máx (€)</label>
+                <Input
+                  type="number"
+                  value={extractedDeal.ebitda_max || ''}
+                  onChange={(e) => updateField('ebitda_max', e.target.value ? Number(e.target.value) : null)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Stake ofrecido</label>
+                <Input
+                  value={extractedDeal.stake_offered || ''}
+                  onChange={(e) => updateField('stake_offered', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Tipo de clientes</label>
+                <Input
+                  value={extractedDeal.customer_types || ''}
+                  onChange={(e) => updateField('customer_types', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Referencia</label>
+                <Input
+                  value={extractedDeal.reference || ''}
+                  onChange={(e) => updateField('reference', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Advisor</label>
+                <Input
+                  value={extractedDeal.advisor || ''}
+                  onChange={(e) => updateField('advisor', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Contacto — Nombre</label>
+                <Input
+                  value={extractedDeal.contact_name || ''}
+                  onChange={(e) => updateField('contact_name', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Contacto — Email</label>
+                <Input
+                  value={extractedDeal.contact_email || ''}
+                  onChange={(e) => updateField('contact_email', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Contacto — Empresa</label>
+                <Input
+                  value={extractedDeal.contact_company || ''}
+                  onChange={(e) => updateField('contact_company', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs font-medium text-muted-foreground">Descripción</label>
+                <textarea
+                  value={extractedDeal.description || ''}
+                  onChange={(e) => updateField('description', e.target.value)}
+                  rows={3}
+                  className="mt-1 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button onClick={handleSave} disabled={isSaving} className="flex-1">
+                {isSaving ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+                ) : (
+                  <><Save className="h-4 w-4 mr-2" /> Guardar deal</>
+                )}
+              </Button>
+              <Button variant="outline" onClick={() => setExtractedDeal(null)}>
+                Descartar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Deals Table */}
+      {/* Existing Deals Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Deals Sincronizados</CardTitle>
-              <CardDescription>Últimos 20 deals extraídos de Dealsuite</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
+          <CardTitle className="text-lg">Deals guardados</CardTitle>
+          <CardDescription>
+            {deals?.length || 0} deals en la base de datos
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoadingDeals ? (
@@ -647,50 +438,59 @@ export const DealsuiteSyncPanel = () => {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : !deals?.length ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No hay deals sincronizados todavía.
-            </div>
+            <p className="text-center text-muted-foreground py-8">No hay deals guardados todavía.</p>
           ) : (
-            <div className="overflow-auto">
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Título</TableHead>
                     <TableHead>Sector</TableHead>
                     <TableHead>País</TableHead>
-                    <TableHead className="text-right">EBITDA</TableHead>
-                    <TableHead>Tipo</TableHead>
+                    <TableHead>Revenue</TableHead>
+                    <TableHead>EBITDA</TableHead>
+                    <TableHead>Contacto</TableHead>
                     <TableHead>Fecha</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {deals.map((deal) => (
                     <TableRow key={deal.id}>
-                      <TableCell className="font-medium max-w-[200px] truncate">
-                        {deal.title || '-'}
+                      <TableCell className="font-medium max-w-[250px] truncate">
+                        <div className="flex items-center gap-2">
+                          {deal.title || 'Sin título'}
+                          {deal.image_url && (
+                            <a href={deal.image_url} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                            </a>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        {deal.sector && (
-                          <Badge variant="secondary" className="text-xs">
+                        {deal.sector ? (
+                          <Badge variant="secondary" className="text-xs truncate max-w-[150px]">
                             {deal.sector}
                           </Badge>
-                        )}
+                        ) : '-'}
                       </TableCell>
-                      <TableCell className="text-sm">{deal.country || '-'}</TableCell>
-                      <TableCell className="text-right text-sm">
+                      <TableCell>{deal.country || '-'}</TableCell>
+                      <TableCell className="text-xs">
+                        {deal.revenue_min || deal.revenue_max 
+                          ? `${formatCurrency(deal.revenue_min)} - ${formatCurrency(deal.revenue_max)}`
+                          : '-'}
+                      </TableCell>
+                      <TableCell className="text-xs">
                         {deal.ebitda_min || deal.ebitda_max
                           ? `${formatCurrency(deal.ebitda_min)} - ${formatCurrency(deal.ebitda_max)}`
                           : '-'}
                       </TableCell>
-                      <TableCell>
-                        {deal.deal_type && (
-                          <Badge variant="outline" className="text-xs">
-                            {deal.deal_type}
-                          </Badge>
-                        )}
+                      <TableCell className="text-xs">
+                        {deal.contact_name || deal.advisor || '-'}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es })}
+                      <TableCell className="text-xs text-muted-foreground">
+                        {deal.scraped_at
+                          ? format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es })
+                          : '-'}
                       </TableCell>
                     </TableRow>
                   ))}

@@ -20,6 +20,15 @@ export interface DealsuiteDeal {
   created_at: string;
   updated_at: string;
   raw_data: Record<string, unknown> | null;
+  // New fields
+  stake_offered: string | null;
+  customer_types: string | null;
+  reference: string | null;
+  location: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_company: string | null;
+  image_url: string | null;
 }
 
 export const useDealsuitDeals = (limit = 50) => {

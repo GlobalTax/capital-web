@@ -281,3 +281,6 @@ verify_jwt = false
 
 [functions.dealsuite-scrape-wanted]
 verify_jwt = false
+
+[functions.dealsuite-extract-image]
+verify_jwt = false
