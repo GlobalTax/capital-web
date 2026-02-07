@@ -89,9 +89,9 @@ const ContactRow: React.FC<ContactRowProps> = ({
         />
       </div>
 
-      {/* Grid Content */}
-      <div className="flex-1 grid grid-cols-[2fr_1.5fr_90px_1fr_1fr_100px_100px_80px_80px_1fr_80px] gap-2 text-xs items-center min-w-0">
-        {/* Name + Email */}
+      {/* Grid Content - Order: Nombre, Estado, Empresa, Canal, Formulario, Facturación, EBITDA, Valoración, Fecha, Sector, Teléfono */}
+      <div className="flex-1 grid grid-cols-[2fr_1fr_1.5fr_1fr_100px_80px_80px_80px_1fr_100px_90px] gap-2 text-xs items-center min-w-0">
+        {/* 1. Name + Email */}
         <div className="flex items-center gap-1.5 min-w-0">
           <div onClick={(e) => e.stopPropagation()}>
             <LeadFavoriteButton leadId={contact.id} size="sm" />
@@ -102,17 +102,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
           </div>
         </div>
 
-        {/* Company */}
-        <div className="truncate text-muted-foreground">
-          {contact.empresa_nombre || contact.company || '-'}
-        </div>
-
-        {/* Phone */}
-        <div className="truncate text-muted-foreground text-[11px]">
-          {contact.phone || '-'}
-        </div>
-
-        {/* Status - inline editable select */}
+        {/* 2. Status - inline editable select */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableSelect
             value={contact.lead_status_crm || null}
@@ -127,7 +117,12 @@ const ContactRow: React.FC<ContactRowProps> = ({
           />
         </div>
 
-        {/* Channel - with color badge */}
+        {/* 3. Company */}
+        <div className="truncate text-muted-foreground">
+          {contact.empresa_nombre || contact.company || '-'}
+        </div>
+
+        {/* 4. Channel - with color badge */}
         <div>
           {contact.acquisition_channel_name ? (
             <Badge 
@@ -141,27 +136,27 @@ const ContactRow: React.FC<ContactRowProps> = ({
           )}
         </div>
 
-        {/* Form - show display_name */}
+        {/* 5. Form - show display_name */}
         <div className="truncate text-muted-foreground text-[11px]">
           {contact.lead_form_display_name || contact.lead_form_name || '-'}
         </div>
 
-        {/* Sector */}
-        <div className="truncate text-muted-foreground text-[11px]">
-          {contact.industry || contact.ai_sector_name || '-'}
-        </div>
-
-        {/* Revenue/Facturación */}
+        {/* 6. Revenue/Facturación */}
         <div className="text-right text-muted-foreground">
           {formatCurrency(contact.revenue || contact.empresa_facturacion)}
         </div>
 
-        {/* EBITDA */}
+        {/* 7. EBITDA */}
         <div className="text-right text-muted-foreground">
           {formatCurrency(contact.ebitda)}
         </div>
 
-        {/* Date */}
+        {/* 8. Valuation */}
+        <div className="text-right font-medium">
+          {formatCurrency(contact.final_valuation)}
+        </div>
+
+        {/* 9. Date */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableDateCell
             value={contact.lead_received_at || contact.created_at}
@@ -174,9 +169,14 @@ const ContactRow: React.FC<ContactRowProps> = ({
           />
         </div>
 
-        {/* Valuation */}
-        <div className="text-right font-medium">
-          {formatCurrency(contact.final_valuation)}
+        {/* 10. Sector */}
+        <div className="truncate text-muted-foreground text-[11px]">
+          {contact.industry || contact.ai_sector_name || '-'}
+        </div>
+
+        {/* 11. Phone */}
+        <div className="truncate text-muted-foreground text-[11px]">
+          {contact.phone || '-'}
         </div>
       </div>
     </div>
