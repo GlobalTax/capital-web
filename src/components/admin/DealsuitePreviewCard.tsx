@@ -33,6 +33,7 @@ interface DealsuitePreviewCardProps {
   deal: ExtractedDeal;
   imagePreview: string | null;
   isSaving: boolean;
+  readOnly?: boolean;
   onUpdate: (field: keyof ExtractedDeal, value: string | number | null) => void;
   onSave: () => void;
   onDiscard: () => void;
@@ -91,6 +92,7 @@ export const DealsuitePreviewCard = ({
   deal,
   imagePreview,
   isSaving,
+  readOnly = false,
   onUpdate,
   onSave,
   onDiscard,
@@ -307,16 +309,24 @@ export const DealsuitePreviewCard = ({
 
         {/* Bottom action bar */}
         <div className="border-t px-6 py-3 flex gap-2 bg-muted/10">
-          <Button onClick={onSave} disabled={isSaving} className="flex-1">
-            {isSaving ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
-            ) : (
-              <><Save className="h-4 w-4 mr-2" /> Guardar deal</>
-            )}
-          </Button>
-          <Button variant="outline" onClick={onDiscard}>
-            Descartar
-          </Button>
+          {readOnly ? (
+            <Button variant="outline" onClick={onDiscard} className="flex-1">
+              Cerrar
+            </Button>
+          ) : (
+            <>
+              <Button onClick={onSave} disabled={isSaving} className="flex-1">
+                {isSaving ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+                ) : (
+                  <><Save className="h-4 w-4 mr-2" /> Guardar deal</>
+                )}
+              </Button>
+              <Button variant="outline" onClick={onDiscard}>
+                Descartar
+              </Button>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

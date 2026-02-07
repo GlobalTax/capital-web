@@ -46,6 +46,7 @@ export const DealsuiteSyncPanel = () => {
   const [isExtracting, setIsExtracting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [extractedDeal, setExtractedDeal] = useState<ExtractedDeal | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<ExtractedDeal | null>(null);
   const { toast } = useToast();
   const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(20);
 
@@ -283,6 +284,19 @@ export const DealsuiteSyncPanel = () => {
         />
       )}
 
+      {/* Selected deal detail view */}
+      {selectedDeal && !extractedDeal && (
+        <DealsuitePreviewCard
+          deal={selectedDeal}
+          imagePreview={selectedDeal.image_url || null}
+          isSaving={false}
+          readOnly
+          onUpdate={() => {}}
+          onSave={() => {}}
+          onDiscard={() => setSelectedDeal(null)}
+        />
+      )}
+
       {/* Existing Deals Table */}
       <Card>
         <CardHeader>
@@ -303,11 +317,11 @@ export const DealsuiteSyncPanel = () => {
               {deals.map((deal) => {
                 const sectors = deal.sector?.split(',').map(s => s.trim()).filter(Boolean) || [];
                 return (
-                  <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer">
+                  <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setSelectedDeal(deal)}>
                     {/* Thumbnail */}
                     {deal.image_url && (
                       <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted">
-                        <img src={deal.image_url} alt="" className="w-full h-full object-cover" />
+                        <img src={deal.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                       </div>
                     )}
                     {/* Main content */}
