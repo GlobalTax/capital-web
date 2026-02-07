@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { DealsuitePreviewCard } from './DealsuitePreviewCard';
 import { DealsuiteEmpresaCard } from './DealsuiteEmpresaCard';
+import { DealsuiteFiltersSidebar, applyDealFilters, emptyFilters } from './DealsuiteFiltersSidebar';
+import type { DealsuiteFilters } from './DealsuiteFiltersSidebar';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -160,6 +162,7 @@ export const DealsuiteSyncPanel = () => {
   const [activeTab, setActiveTab] = useState('favorites');
   const [selectedEmpresa, setSelectedEmpresa] = useState<any>(null);
   const [creatingEmpresa, setCreatingEmpresa] = useState(false);
+  const [dealFilters, setDealFilters] = useState<DealsuiteFilters>(emptyFilters);
   const { toast } = useToast();
   const { data: deals, isLoading: isLoadingDeals, refetch } = useDealsuitDeals(100);
   const { data: favoriteIds } = useFavoriteDealIds();
@@ -510,76 +513,90 @@ export const DealsuiteSyncPanel = () => {
               </div>
             )
           ) : (
-            // Deals view (favorites/all)
+            // Deals view (favorites/all) with sidebar filters
             isLoadingDeals ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (() => {
-              const filteredDeals = activeTab === 'favorites'
+              const baseDeals = activeTab === 'favorites'
                 ? (deals || []).filter(d => favoriteIds?.has(d.deal_id))
                 : (deals || []);
-
-              if (!filteredDeals.length) {
-                return (
-                  <p className="text-center text-muted-foreground py-8">
-                    {activeTab === 'favorites' ? 'No tienes deals favoritos.' : 'No hay deals guardados todavía.'}
-                  </p>
-                );
-              }
+              const filteredDeals = applyDealFilters(baseDeals, dealFilters);
 
               return (
-                <div className="space-y-0 divide-y divide-border">
-                  {filteredDeals.map((deal) => {
-                    const sectors = deal.sector?.split(',').map(s => s.trim()).filter(Boolean) || [];
-                    const isFav = favoriteIds?.has(deal.deal_id) || false;
-                    return (
-                      <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer">
-                        <button
-                          className="flex-shrink-0 mt-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite.mutate({ dealId: deal.deal_id, isFavorite: isFav });
-                          }}
-                        >
-                          <Star className={`h-4 w-4 transition-colors ${isFav ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} />
-                        </button>
-                        {deal.image_url && (
-                          <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted" onClick={() => handleSelectDeal(deal)}>
-                            <img src={deal.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0" onClick={() => handleSelectDeal(deal)}>
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="min-w-0">
-                              <p className="text-xs text-muted-foreground mb-0.5">
-                                {deal.scraped_at ? format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es }) : ''}
-                              </p>
-                              <h3 className="text-sm font-semibold text-foreground truncate">{deal.title || 'Sin título'}</h3>
-                            </div>
-                            {(deal.revenue_min || deal.revenue_max) && (
-                              <div className="flex-shrink-0 text-right">
-                                <p className="text-xs text-muted-foreground font-medium">Facturación</p>
-                                {deal.revenue_min && <p className="text-xs text-foreground">mín. {formatCurrency(deal.revenue_min)}</p>}
-                                {deal.revenue_max && <p className="text-xs text-foreground">máx. {formatCurrency(deal.revenue_max)}</p>}
+                <div className="flex gap-4">
+                  {/* Sidebar filters */}
+                  <DealsuiteFiltersSidebar
+                    deals={baseDeals}
+                    filters={dealFilters}
+                    onChange={setDealFilters}
+                  />
+
+                  {/* Deal list */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {filteredDeals.length} deal{filteredDeals.length !== 1 ? 's' : ''}
+                    </p>
+                    {!filteredDeals.length ? (
+                      <p className="text-center text-muted-foreground py-8">
+                        {activeTab === 'favorites' ? 'No tienes deals favoritos.' : 'No hay deals que coincidan con los filtros.'}
+                      </p>
+                    ) : (
+                      <div className="space-y-0 divide-y divide-border">
+                        {filteredDeals.map((deal) => {
+                          const sectors = deal.sector?.split(',').map(s => s.trim()).filter(Boolean) || [];
+                          const isFav = favoriteIds?.has(deal.deal_id) || false;
+                          return (
+                            <div key={deal.id} className="flex gap-4 py-4 px-2 hover:bg-muted/30 transition-colors cursor-pointer">
+                              <button
+                                className="flex-shrink-0 mt-1"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleFavorite.mutate({ dealId: deal.deal_id, isFavorite: isFav });
+                                }}
+                              >
+                                <Star className={`h-4 w-4 transition-colors ${isFav ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground hover:text-yellow-400'}`} />
+                              </button>
+                              {deal.image_url && (
+                                <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted" onClick={() => handleSelectDeal(deal)}>
+                                  <img src={deal.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0" onClick={() => handleSelectDeal(deal)}>
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-muted-foreground mb-0.5">
+                                      {deal.scraped_at ? format(new Date(deal.scraped_at), 'dd MMM yyyy', { locale: es }) : ''}
+                                    </p>
+                                    <h3 className="text-sm font-semibold text-foreground truncate">{deal.title || 'Sin título'}</h3>
+                                  </div>
+                                  {(deal.revenue_min || deal.revenue_max) && (
+                                    <div className="flex-shrink-0 text-right">
+                                      <p className="text-xs text-muted-foreground font-medium">Ingresos</p>
+                                      {deal.revenue_min && <p className="text-xs text-foreground">mín. {formatCurrency(deal.revenue_min)}</p>}
+                                      {deal.revenue_max && <p className="text-xs text-foreground">máx. {formatCurrency(deal.revenue_max)}</p>}
+                                    </div>
+                                  )}
+                                </div>
+                                {deal.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{deal.description}</p>}
+                                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                  {(deal.country || deal.location) && (
+                                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                                      <MapPin className="h-3 w-3" /> {deal.location || deal.country}
+                                    </span>
+                                  )}
+                                  {sectors.map((s) => (
+                                    <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">{s}</Badge>
+                                  ))}
+                                </div>
                               </div>
-                            )}
-                          </div>
-                          {deal.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{deal.description}</p>}
-                          <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            {(deal.country || deal.location) && (
-                              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                                <MapPin className="h-3 w-3" /> {deal.location || deal.country}
-                              </span>
-                            )}
-                            {sectors.map((s) => (
-                              <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">{s}</Badge>
-                            ))}
-                          </div>
-                        </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
               );
             })()
