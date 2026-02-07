@@ -6808,6 +6808,77 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_paused_items: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          reactivated_at: string | null
+          reason_id: string
+          reminder_at: string | null
+          reminder_text: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          reactivated_at?: string | null
+          reason_id: string
+          reminder_at?: string | null
+          reminder_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          reactivated_at?: string | null
+          reason_id?: string
+          reminder_at?: string | null
+          reminder_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_paused_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_paused_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "deal_paused_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_con_actividad"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_paused_items_reason_id_fkey"
+            columns: ["reason_id"]
+            isOneToOne: false
+            referencedRelation: "paused_reasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deal_sheets: {
         Row: {
           created_at: string | null
@@ -14733,6 +14804,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      paused_reasons: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
       }
       pdf_download_logs: {
         Row: {

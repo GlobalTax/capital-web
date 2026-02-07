@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Select,
   SelectContent,
@@ -31,7 +32,15 @@ import {
   Calendar,
   Globe,
   Save,
+  FileText,
+  Search,
+  Scale,
+  PauseCircle,
+  Zap,
 } from 'lucide-react';
+import { useCreateServicio } from '@/hooks/useCreateServicio';
+import { useActivePause } from '@/hooks/useDealsPaused';
+import { DealPausedDialog } from '@/components/admin/companies/DealPausedDialog';
 import { Empresa, useEmpresas } from '@/hooks/useEmpresas';
 import { CompanyFormDialog } from '@/components/admin/companies/CompanyFormDialog';
 import { EmpresaFinancialsCard } from '@/components/admin/companies/EmpresaFinancialsCard';
@@ -51,6 +60,7 @@ export default function EmpresaDetailPage() {
   
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [isDealPausedOpen, setIsDealPausedOpen] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [descriptionValue, setDescriptionValue] = useState('');
   
@@ -75,6 +85,12 @@ export default function EmpresaDetailPage() {
 
   // Contactos count from hook
   const { contactos: empresaContactos } = useEmpresaContactos(id);
+
+  // Service creation hook
+  const { createServicio, isPending: isCreatingServicio } = useCreateServicio(id, empresa?.nombre);
+
+  // Active pause check
+  const { data: activePause } = useActivePause(id);
 
   // Update mutation for quick fields
   const updateMutation = useMutation({
@@ -300,6 +316,70 @@ export default function EmpresaDetailPage() {
 
         {/* Right Column - Sidebar */}
         <div className="space-y-4">
+          {/* Acciones Card */}
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-base font-medium flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Acciones
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => createServicio('operacion_ma')}
+                disabled={isCreatingServicio}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Crear Mandato
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => createServicio('valoracion')}
+                disabled={isCreatingServicio}
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Crear Valoración
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => createServicio('due_diligence')}
+                disabled={isCreatingServicio}
+              >
+                <Search className="h-4 w-4 mr-2" />
+                Crear Due Diligence
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => createServicio('asesoria')}
+                disabled={isCreatingServicio}
+              >
+                <Scale className="h-4 w-4 mr-2" />
+                Crear Legal
+              </Button>
+
+              <Separator className="my-2" />
+
+              <Button
+                variant={activePause ? 'secondary' : 'outline'}
+                size="sm"
+                className="w-full justify-start"
+                onClick={() => setIsDealPausedOpen(true)}
+              >
+                <PauseCircle className="h-4 w-4 mr-2" />
+                {activePause ? 'Deal Pausado ⏸️' : 'Marcar Deal Paused'}
+              </Button>
+            </CardContent>
+          </Card>
+
           {/* Status Card */}
           <Card>
             <CardHeader className="py-3">
@@ -444,6 +524,14 @@ export default function EmpresaDetailPage() {
         onOpenChange={setIsLinkDialogOpen}
         empresaId={empresa.id}
         onSuccess={handleLinkSuccess}
+      />
+
+      {/* Deal Paused Dialog */}
+      <DealPausedDialog
+        open={isDealPausedOpen}
+        onOpenChange={setIsDealPausedOpen}
+        companyId={empresa.id}
+        companyName={empresa.nombre}
       />
     </div>
   );

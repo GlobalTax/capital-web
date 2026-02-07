@@ -38,7 +38,8 @@ import {
   TestTube,
   Image,
   AlertCircle,
-  Lock
+  Lock,
+  PauseCircle
 } from 'lucide-react';
 
 export function RoleBasedSidebar() {
@@ -147,6 +148,12 @@ export function RoleBasedSidebar() {
           url: "/admin/statistics", 
           icon: BarChart3,
           visible: menuVisibility.statistics
+        },
+        { 
+          title: "Deals Paused", 
+          url: "/admin/deals-paused", 
+          icon: PauseCircle,
+          visible: true
         },
       ]
     },

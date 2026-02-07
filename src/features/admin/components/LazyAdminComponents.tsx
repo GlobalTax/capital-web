@@ -143,3 +143,6 @@ export const LazyCalculatorErrorsPage = lazy(() => import('@/pages/admin/Calcula
 
 // === DEALSUITE SYNC ===
 export const LazyDealsuitePage = lazy(() => import('@/pages/admin/DealsuitePage'));
+
+// === DEALS PAUSED ===
+export const LazyDealsPausedPage = lazy(() => import('@/pages/admin/DealsPausedPage'));
