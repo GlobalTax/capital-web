@@ -10009,6 +10009,7 @@ export type Database = {
           text_color: string | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           autoplay_duration?: number | null
@@ -10027,6 +10028,7 @@ export type Database = {
           text_color?: string | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           autoplay_duration?: number | null
@@ -10045,6 +10047,7 @@ export type Database = {
           text_color?: string | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
