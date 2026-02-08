@@ -196,7 +196,7 @@ const Hero: React.FC = () => {
                   alt={slide.title}
                   className="absolute inset-0 w-full h-full object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/40" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/85 to-white/60" />
               </>
             )}
           </motion.div>
@@ -224,13 +224,13 @@ const Hero: React.FC = () => {
 
                 {/* Service Pills */}
                 {!slide.isMosaic && !slide.videoUrl && servicePills.length > 0 && (
-                  <div className="mt-6 flex flex-wrap items-center gap-2">
+                  <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-1.5 sm:gap-2">
                     {servicePills.map((pill, i) => (
                       <React.Fragment key={pill.id}>
                         {i > 0 && <span className="text-muted-foreground/40 select-none">·</span>}
                         <Link
                           to={pill.url}
-                          className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                          className="inline-flex items-center px-2.5 py-1 text-xs sm:px-4 sm:py-1.5 sm:text-sm rounded-full font-medium text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
                         >
                           {pill.label}
                         </Link>
@@ -274,7 +274,7 @@ const Hero: React.FC = () => {
         </div>
 
         {/* Slide Indicators */}
-        <div className="absolute bottom-12 left-6 lg:left-12 flex items-center gap-3 z-20">
+        <div className="absolute bottom-6 sm:bottom-12 left-6 lg:left-12 flex items-center gap-3 z-20">
           {slides.map((_, index) => (
             <button
               key={index}
@@ -290,7 +290,7 @@ const Hero: React.FC = () => {
         </div>
 
         {/* Slide Counter */}
-        <div className="absolute bottom-12 right-6 lg:right-12 flex items-center gap-2 text-muted-foreground z-20">
+        <div className="absolute bottom-6 sm:bottom-12 right-6 lg:right-12 flex items-center gap-2 text-muted-foreground z-20">
           <span className="text-2xl font-light tabular-nums">
             {String(currentSlide + 1).padStart(2, '0')}
           </span>
