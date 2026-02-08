@@ -161,14 +161,14 @@ const Hero: React.FC = () => {
                 <div 
                   className="absolute inset-0 grid gap-[2px] overflow-hidden"
                   style={{ 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                    gridAutoRows: '120px'
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                    gridAutoRows: '75px'
                   }}
                 >
                   {(() => {
                     const photos = teamMembers.slice(0, 10);
                     const cells: typeof photos = [];
-                    const totalCells = 60;
+                    const totalCells = 80;
                     for (let i = 0; i < totalCells; i++) {
                       cells.push(photos[i % photos.length]);
                     }
@@ -177,7 +177,7 @@ const Hero: React.FC = () => {
                         <img
                           src={member.image_url || ''}
                           alt={member.name}
-                          className="w-full h-full object-cover object-top"
+                          className="w-full h-full object-cover object-center"
                           loading={i < 20 ? 'eager' : 'lazy'}
                         />
                       </div>
