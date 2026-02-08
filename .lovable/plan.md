@@ -1,29 +1,20 @@
 
 
-## Actualizar textos de la seccion "Nuestro Grupo"
+## Añadir enlace a nrro.es en el footer como empresa matriz
 
-### Cambios propuestos en `src/components/OurGroup.tsx`
+### Cambio
 
-**1. Descripcion principal (header)**
-- Actual: "Capittal forma parte del Grupo Navarro, un ecosistema integral de servicios profesionales. Dos marcas especializadas, un objetivo comun: maximizar el valor de tu operacion."
-- Nuevo: "Capittal es la division de M&A de Navarro Tax & Legal. Dos areas especializadas, un objetivo comun: maximizar el valor de tu operacion."
+Añadir una línea bajo el nombre "Capittal" en la sección de información de la empresa (columna izquierda del footer), indicando que es una división de Navarro Tax & Legal con enlace externo a nrro.es.
 
-**2. Empresa "Capittal"**
-- Subtitle actual: "Originacion & Valoracion"
-- Subtitle nuevo: "Division de M&A"
-- Descripcion actual: "Especialistas en identificacion de oportunidades, valoracion de empresas y estructuracion de operaciones de M&A."
-- Descripcion nueva: "Division especializada en fusiones y adquisiciones, valoracion de empresas y estructuracion de operaciones corporativas."
+### Detalle técnico
 
-**3. Empresa "Navarro Legal" -> "Navarro Tax & Legal"**
-- Titulo actual: "Navarro Legal"
-- Titulo nuevo: "Navarro Tax & Legal"
-- Subtitle actual: "Asesoramiento Legal & Fiscal"
-- Subtitle nuevo: "Asesoria Integral"
-- Descripcion actual: "Expertos en derecho mercantil y fiscal, especializados en operaciones de M&A y restructuraciones empresariales."
-- Descripcion nueva: "Firma de asesoria fiscal, contable, laboral y legal. La base del grupo desde la que nace Capittal como division especializada en M&A."
+En `src/components/ui/footer-section.tsx`, después del logo/nombre "Capittal" (línea 19), se añadirá un texto:
 
-### Sin cambios
-- Seccion "Ventajas de la Integracion" (se mantiene igual)
-- Seccion CTA (se mantiene igual)
-- Titulo "Grupo Navarro" (se mantiene igual)
+```
+División de M&A de Navarro Tax & Legal
+```
+
+Donde "Navarro Tax & Legal" será un enlace externo (`<a>`) apuntando a `https://nrro.es` con `target="_blank"` y `rel="noopener noreferrer"`.
+
+Se insertará entre el cierre del `<Link>` de Capittal (línea 20) y el párrafo de descripción (línea 22), con estilo `text-gray-400 text-xs` para que sea sutil y no compita visualmente con el nombre principal.
 
