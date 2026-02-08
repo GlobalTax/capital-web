@@ -1,66 +1,31 @@
 
 
-## Insertar equipo completo de nrro.es en Capittal
+## Reducir el tamano de las tarjetas del equipo
 
-### Contexto
-La pagina de equipo de nrro.es muestra 35 profesionales. Actualmente en la base de datos de Capittal solo hay 7. Hay que insertar los 28 miembros restantes y ajustar el componente para mostrar la nueva seccion "Servicios Globales".
+### Problema
+Las tarjetas de los miembros del equipo son demasiado grandes, especialmente con 35+ personas. Las imagenes con aspect-ratio `3/4` (socios) y `4/5` (miembros) y el padding generoso hacen que la pagina sea excesivamente larga.
 
-### 1. Insertar 28 nuevos miembros en la tabla `team_members`
+### Cambios propuestos en `src/components/Team.tsx`
 
-Se insertaran con los datos extraidos directamente de nrro.es: nombre, nivel (como position), email, imagen (URL de Supabase de nrro.es) y seccion mapeada a las divisiones de Capittal.
+**1. Socios (PartnerCard)**
+- Reducir aspect-ratio de `aspect-[3/4]` a `aspect-square` (1:1)
+- Reducir padding interior de `p-8` a `p-5`
+- Reducir tamano del nombre de `text-2xl` a `text-xl`
 
-**Mapeo de secciones nrro.es a Capittal:**
-- CONTABILIDAD / FISCALIDAD --> "Fiscal y Contable"
-- LABORAL --> "Laboral"  
-- M&A --> "M&A"
-- SERVICIOS GLOBALES / sin seccion --> "Servicios Globales"
+**2. Miembros regulares (TeamMemberCard)**
+- Reducir aspect-ratio de `aspect-[4/5]` a `aspect-square` (1:1)
+- Reducir padding interior de `p-6` a `p-4`
+- Reducir tamano del nombre de `text-xl` a `text-base`
+- Cambiar grid de 3 columnas a **4 columnas** en pantallas grandes (`lg:grid-cols-4`) para que las tarjetas sean mas compactas y quepan mas por fila
 
-**Miembros nuevos por division:**
+**3. Grids**
+- Socios: mantener 2 columnas pero reducir el `max-w` de `max-w-4xl` a `max-w-2xl` para que las cards de socios sean mas pequenas
+- Miembros regulares: cambiar de `lg:grid-cols-3` a `lg:grid-cols-4`
+- Reducir gap entre tarjetas de `gap-8` a `gap-5`
 
-**M&A** (3 nuevos, se suman a los 5 existentes = 8 total):
-- Marina Gonzalez (Asociado)
-- Julia Estelle (Junior)
-- Albert Tico (Master Scholar)
+**4. Iconos de fallback**
+- Reducir iconos placeholder de `w-24 h-24` / `w-20 h-20` a `w-16 h-16` / `w-12 h-12`
 
-**Fiscal y Contable** (11 nuevos):
-- Claudia Martin, Jose Maria, Maria Leon, Pepe Rico, Ana Ramirez, Rosa Rodriguez, Yolanda Pescador, Vasyl Lenko, Paula Cardenas, Clara Bellonch, Nil Moreno, Pol Fontclara
-
-**Laboral** (14 nuevos):
-- Joan Salvo, Magda Vidueira, Estel Borrell, Monica Castro, Raul Rubio, Adrian Munoz, Irene Velarde, Adrian Montero, Raquel Chica, Alejandro Brotons, Yasmina Aguilera, Eric Abellan, Laia Moll, Pilar D'Ambrosio
-
-**Servicios Globales** (8 nuevos):
-- Jordi Mayoral, Anabel Raso, Alberto Vicente, Gemma Zalacain, Pau Valls, Cinthia Sanchez, Aitana Lopez, Maria Ventin, Lucia Linares, Blanca Salvo
-
-Cada miembro se insertara con:
-- `name`: Nombre completo
-- `position`: Nivel (Senior, Asociado, Junior, Master Scholar)
-- `email`: Email de nrro.es
-- `image_url`: URL de la imagen alojada en el Supabase de nrro.es
-- `section`: La seccion mapeada (Fiscal y Contable, Laboral, M&A, Servicios Globales)
-- `is_active`: true
-- `display_order`: Asignado secuencialmente dentro de cada seccion
-
-### 2. Actualizar el componente `Team.tsx`
-
-Cambios minimos:
-- Anadir "Servicios Globales" al `SECTION_CONFIG` con icono apropiado (por ejemplo, `Globe` o `Users`) y orden 5
-- Importar el icono adicional necesario
-
-### 3. Resultado esperado
-
-La pagina de equipo mostrara aproximadamente 35 profesionales organizados en 6 secciones:
-- Socios (2)
-- Division M&A (8)
-- Division Fiscal y Contable (12)
-- Division Laboral (14)
-- Division Servicios Globales (10+)
-
-El contador del header mostrara "35+ profesionales" de forma dinamica.
-
-### Archivos afectados
-- Base de datos `team_members` -- INSERT de ~28 nuevos registros
-- `src/components/Team.tsx` -- Anadir seccion "Servicios Globales" al SECTION_CONFIG
-
-### Nota importante
-Las imagenes estan alojadas en el Supabase de nrro.es (dominio `zntotcpagkunvkwpubqu.supabase.co`). Si en el futuro esas URLs dejan de estar disponibles, habria que migrar las imagenes al storage de Capittal.
+### Archivo afectado
+- `src/components/Team.tsx`
 
