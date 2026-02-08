@@ -8833,6 +8833,78 @@ export type Database = {
         }
         Relationships: []
       }
+      executive_report_recipients: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
+      executive_reports: {
+        Row: {
+          created_at: string
+          email_sent: boolean
+          email_sent_at: string | null
+          generated_by: string | null
+          id: string
+          mandatos_snapshot: Json | null
+          metrics_snapshot: Json | null
+          period_end: string
+          period_start: string
+          recipients: string[] | null
+          recommendations: Json | null
+          report_date: string
+          summary_text: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_sent?: boolean
+          email_sent_at?: string | null
+          generated_by?: string | null
+          id?: string
+          mandatos_snapshot?: Json | null
+          metrics_snapshot?: Json | null
+          period_end: string
+          period_start: string
+          recipients?: string[] | null
+          recommendations?: Json | null
+          report_date: string
+          summary_text?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_sent?: boolean
+          email_sent_at?: string | null
+          generated_by?: string | null
+          id?: string
+          mandatos_snapshot?: Json | null
+          metrics_snapshot?: Json | null
+          period_end?: string
+          period_start?: string
+          recipients?: string[] | null
+          recommendations?: Json | null
+          report_date?: string
+          summary_text?: string | null
+        }
+        Relationships: []
+      }
       exit_readiness_questions: {
         Row: {
           created_at: string | null

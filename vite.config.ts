@@ -23,11 +23,12 @@ export default defineConfig(({ mode }) => {
       mode === 'development' && !disableHmr &&
       componentTagger(),
     ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+      dedupe: ["react", "react-dom", "react/jsx-runtime"],
     },
-  },
   build: {
     rollupOptions: {
       output: {
