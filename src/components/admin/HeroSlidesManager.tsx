@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { GripVertical, Plus, Pencil, Trash2, Image, Upload } from 'lucide-react';
+import { GripVertical, Plus, Pencil, Trash2, Image, Upload, Video } from 'lucide-react';
 
 interface HeroSlide {
   id: string;
@@ -22,6 +22,7 @@ interface HeroSlide {
   cta_secondary_text: string | null;
   cta_secondary_url: string | null;
   image_url: string | null;
+  video_url: string | null;
   display_order: number;
   is_active: boolean;
   autoplay_duration: number | null;
@@ -36,6 +37,7 @@ const emptySlide = {
   cta_secondary_text: 'Valorar mi empresa',
   cta_secondary_url: '/lp/calculadora-web',
   image_url: '',
+  video_url: '',
   is_active: true,
   autoplay_duration: 6000,
 };
@@ -48,6 +50,7 @@ const HeroSlidesManager: React.FC = () => {
   const [isNew, setIsNew] = useState(false);
   const [formData, setFormData] = useState(emptySlide);
   const [uploading, setUploading] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const { data: slides = [], isLoading } = useQuery({
     queryKey: ['hero_slides_admin'],
@@ -75,9 +78,10 @@ const HeroSlidesManager: React.FC = () => {
             cta_secondary_text: data.cta_secondary_text || null,
             cta_secondary_url: data.cta_secondary_url || null,
             image_url: data.image_url || null,
+            video_url: data.video_url || null,
             is_active: data.is_active,
             autoplay_duration: data.autoplay_duration,
-          })
+          } as any)
           .eq('id', data.id);
         if (error) throw error;
       } else {
@@ -93,10 +97,11 @@ const HeroSlidesManager: React.FC = () => {
             cta_secondary_text: data.cta_secondary_text || null,
             cta_secondary_url: data.cta_secondary_url || null,
             image_url: data.image_url || null,
+            video_url: data.video_url || null,
             is_active: data.is_active,
             autoplay_duration: data.autoplay_duration || 6000,
             display_order: maxOrder + 1,
-          });
+          } as any);
         if (error) throw error;
       }
     },
@@ -182,6 +187,38 @@ const HeroSlidesManager: React.FC = () => {
     }
   };
 
+  const handleUploadVideo = async (file: File) => {
+    if (!file.type.startsWith('video/')) {
+      toast({ title: 'Solo vídeos (MP4, WebM)', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ title: 'Máximo 50MB', variant: 'destructive' });
+      return;
+    }
+
+    setUploadingVideo(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const fileName = `hero_video_${Date.now()}.${ext}`;
+      const { data, error } = await supabase.storage
+        .from('hero-images')
+        .upload(fileName, file);
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from('hero-images')
+        .getPublicUrl(data.path);
+
+      setFormData(prev => ({ ...prev, video_url: urlData.publicUrl }));
+      toast({ title: 'Vídeo subido correctamente' });
+    } catch (err: any) {
+      toast({ title: 'Error subiendo vídeo', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const items = Array.from(slides);
@@ -203,6 +240,7 @@ const HeroSlidesManager: React.FC = () => {
       cta_secondary_text: slide.cta_secondary_text || '',
       cta_secondary_url: slide.cta_secondary_url || '',
       image_url: slide.image_url || '',
+      video_url: (slide as any).video_url || '',
       is_active: slide.is_active,
       autoplay_duration: slide.autoplay_duration || 6000,
     });
@@ -255,9 +293,11 @@ const HeroSlidesManager: React.FC = () => {
                           <GripVertical className="h-5 w-5 text-muted-foreground" />
                         </div>
 
-                        {/* Image preview */}
+                        {/* Media preview */}
                         <div className="w-24 h-16 rounded overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
-                          {slide.image_url ? (
+                          {(slide as any).video_url ? (
+                            <Video className="h-6 w-6 text-muted-foreground" />
+                          ) : slide.image_url ? (
                             <img src={slide.image_url} alt={slide.title} className="w-full h-full object-cover" />
                           ) : (
                             <Image className="h-6 w-6 text-muted-foreground" />
@@ -366,6 +406,40 @@ const HeroSlidesManager: React.FC = () => {
                     onChange={(e) => e.target.files?.[0] && handleUploadImage(e.target.files[0])}
                   />
                 </label>
+              </div>
+            </div>
+
+            <div>
+              <Label>Vídeo de fondo (opcional)</Label>
+              <p className="text-xs text-muted-foreground mb-2">Si se añade un vídeo, se usará como fondo en lugar de la imagen</p>
+              {formData.video_url && (
+                <video src={formData.video_url} controls muted className="w-full h-32 object-cover rounded mb-2" />
+              )}
+              <div className="flex gap-2">
+                <Input
+                  value={formData.video_url}
+                  onChange={(e) => setFormData(p => ({ ...p, video_url: e.target.value }))}
+                  placeholder="URL del vídeo (MP4/WebM) o sube uno"
+                  className="flex-1"
+                />
+                <label className="cursor-pointer">
+                  <Button variant="outline" size="icon" asChild disabled={uploadingVideo}>
+                    <span>
+                      <Upload className="h-4 w-4" />
+                    </span>
+                  </Button>
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleUploadVideo(e.target.files[0])}
+                  />
+                </label>
+                {formData.video_url && (
+                  <Button variant="outline" size="icon" onClick={() => setFormData(p => ({ ...p, video_url: '' }))}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                )}
               </div>
             </div>
 

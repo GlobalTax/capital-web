@@ -1,0 +1,1 @@
+ALTER TABLE hero_slides ADD COLUMN video_url TEXT;
