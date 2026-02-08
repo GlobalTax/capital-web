@@ -1,29 +1,62 @@
 
+## Plan: LinkedIn Newsletter Content Studio para Samuel Navarro
 
-## Plan: Añadir email y teléfono a la ficha de empresa
+Crear una nueva seccion dedicada en el admin para generar contenido de tu newsletter de LinkedIn, con tu voz y estilo exacto codificados en el sistema.
 
-La tabla `dealsuite_empresas` no tiene campos de email ni telefono. Se añadiran a nivel de base de datos y se hara editable en la ficha.
+### Que se va a construir
 
-### 1. Migracion SQL
+**1. Nueva Edge Function: `generate-linkedin-newsletter`**
 
-Añadir dos columnas a `dealsuite_empresas`:
-- `email TEXT` (nullable)
-- `telefono TEXT` (nullable)
+Una funcion backend dedicada que usa Lovable AI (Gemini) con un system prompt extenso que codifica tu voz:
+- Conversacional con autoridad
+- Anecdotas personales y casos reales
+- Datos concretos (facturacion, ROI, numeros)
+- Metaforas culturales inesperadas (Peret, Reyes Magos, Ironman)
+- Sin listas ni bullets excesivos en el cuerpo principal
+- Cierre con reflexion o CTA claro
 
-### 2. Actualizar tipo TypeScript
+La funcion tendra 3 modos:
+- **`ideation`**: Genera 5 ideas de contenido especificas (no genericas) basadas en tendencias M&A, tech legal, y tu angulo personal
+- **`draft`**: Genera un borrador completo de newsletter con tu voz
+- **`review`**: Recibe un borrador tuyo y da feedback brutal y honesto (estructura, engagement, CTA, datos)
 
-En `src/hooks/useDealsuiteEmpresas.ts`, añadir `email` y `telefono` a la interfaz `DealsuiteEmpresa`.
+**2. Nueva pagina: `LinkedInNewsletterStudio.tsx`**
 
-### 3. Actualizar la ficha de empresa
+Interfaz con 3 tabs:
 
-En `src/components/admin/DealsuiteEmpresaCard.tsx`:
+- **Ideas**: Boton para generar ideas. Muestra 5 ideas con titulo, angulo y hook. Boton para convertir idea en borrador.
+- **Escribir**: Editor de texto donde escribes o generas un borrador. Selector de tema/idea. Boton "Generar borrador con IA". Preview del resultado con formato LinkedIn.
+- **Revisar**: Pega un borrador tuyo. Boton "Feedback brutal". Muestra analisis con puntuacion (engagement, datos, CTA, voz) y sugerencias concretas.
 
-**Modo edicion**: Añadir dos inputs (email y telefono) en el formulario, junto a los campos existentes de sitio web/imagen.
+**3. Navegacion**
 
-**Modo lectura**: Mostrar email y telefono debajo de la info basica (ubicacion, tipo), con iconos de Mail y Phone y links clickables (mailto: y tel:).
+Anadir entrada en `navigationData.ts` dentro del grupo de contenido, con icono y badge "AI".
 
-### Archivos a modificar
+### Detalle tecnico
 
-- Migracion SQL (nueva)
-- `src/hooks/useDealsuiteEmpresas.ts` (interfaz DealsuiteEmpresa)
-- `src/components/admin/DealsuiteEmpresaCard.tsx` (formulario + vista lectura)
+**Edge Function** (`supabase/functions/generate-linkedin-newsletter/index.ts`):
+- Usa Lovable AI Gateway (`https://ai.gateway.lovable.dev/v1/chat/completions`)
+- Modelo: `google/gemini-3-flash-preview`
+- System prompt con tu perfil completo, ejemplos de tu estilo, y reglas de formato
+- 3 endpoints internos segun `mode`: ideation, draft, review
+- Manejo de errores 429/402
+
+**Hook** (`src/hooks/useLinkedInNewsletter.ts`):
+- Invoca la edge function via `supabase.functions.invoke`
+- Estado de loading por modo
+- Almacena historial de ideas y borradores en estado local
+
+**Pagina** (`src/pages/admin/LinkedInNewsletterStudio.tsx`):
+- Tabs: Ideas | Escribir | Revisar
+- Textarea para input del usuario
+- Renderizado markdown del output con `react-markdown`
+- Boton copiar al portapapeles para pegar directo en LinkedIn
+
+**Archivos a crear:**
+- `supabase/functions/generate-linkedin-newsletter/index.ts`
+- `src/hooks/useLinkedInNewsletter.ts`
+- `src/pages/admin/LinkedInNewsletterStudio.tsx`
+
+**Archivos a modificar:**
+- `src/components/admin/navigation/navigationData.ts` (nueva entrada)
+- `src/components/admin/AdminApp.tsx` (nueva ruta)
