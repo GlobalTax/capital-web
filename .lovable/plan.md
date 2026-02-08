@@ -1,48 +1,62 @@
 
 
-## Plan: Slug sin fricciones al crear posts
+## Plan: Slug sin fricciones en Job Posts
 
-### Problema detectado
+### Problema
 
-Los logs muestran que al publicar, el slug llega con texto sin procesar ("2026 El Gran Cambio de Ciclo en el M&A", "año_de_cambios") y la validacion lo rechaza porque solo acepta `a-z`, `0-9` y `-`. Ademas, el titulo aparece vacio en los intentos de publicacion.
+Al crear una oferta de trabajo, el slug se genera de forma basica (solo lowercase + replace espacios) sin:
+1. Eliminar acentos ni caracteres especiales como "&" o tildes
+2. Manejar duplicados - si ya existe un slug igual, falla con error 409 (unique constraint)
 
 ### Solucion
 
-Eliminar toda friccion aplicando auto-generacion y sanitizacion automatica del slug en todos los flujos.
+Modificar `src/hooks/useJobPosts.ts` para:
 
-### Cambios en `src/components/admin/blog/EnhancedBlogEditor.tsx`
+1. **Sanitizar el slug correctamente**: normalizar unicode (quitar acentos), eliminar caracteres no alfanumericos, colapsar guiones
+2. **Deduplicar automaticamente**: antes de insertar, consultar si el slug ya existe. Si existe, anadir un sufijo numerico (-2, -3, etc.)
 
-**1. Sanitizar el slug al editarlo manualmente**
+### Cambios en `src/hooks/useJobPosts.ts`
 
-Cuando el usuario escribe en el campo slug, pasar el texto por `generateSlug()` automaticamente para limpiar acentos, espacios y caracteres especiales.
+```text
+// Antes (lineas 39-42):
+const slug = jobPost.title
+  .toLowerCase()
+  .replace(/[^\w\s-]/g, '')
+  .replace(/\s+/g, '-');
 
-**2. Auto-generar slug antes de guardar/publicar si esta vacio**
-
-En `handleSave` y `handlePublish`, si el slug esta vacio pero hay titulo, generarlo automaticamente. Si el titulo tambien esta vacio, generar uno desde el contenido (primeras palabras).
-
-**3. Sanitizar slug siempre antes de guardar**
-
-Antes de enviar a la base de datos, pasar el slug por `generateSlug()` para asegurar que sea valido, sin importar como llego ahi.
-
-**4. Eliminar la validacion de slug como campo obligatorio independiente**
-
-El slug se generara automaticamente si falta, asi que nunca deberia ser un bloqueante.
+// Despues:
+1. Normalizar unicode (NFD) para quitar acentos
+2. Eliminar caracteres no alfanumericos excepto espacios y guiones
+3. Reemplazar espacios por guiones
+4. Colapsar guiones multiples
+5. Trim de guiones al inicio/final
+6. Consultar job_posts por slug LIKE 'base-slug%'
+7. Si hay duplicados, anadir sufijo -2, -3, etc.
+```
 
 ### Detalle tecnico
 
-```text
-handleSlugChange(newSlug):
-  ANTES: setFormData({ slug: newSlug })  // texto crudo
-  AHORA: setFormData({ slug: generateSlug(newSlug) })  // sanitizado
+La funcion de generacion de slug quedara asi:
 
-handlePublish / handleSave:
-  // Antes de validar, asegurar slug
-  if (!slug && title) slug = generateSlug(title)
-  if (!slug && content) slug = generateSlug(primeras 8 palabras del contenido)
-  slug = generateSlug(slug)  // sanitizar siempre
+```text
+generateJobSlug(title):
+  slug = title
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // acentos
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')  // solo alfanumericos
+    .replace(/\s+/g, '-')  // espacios a guiones
+    .replace(/-+/g, '-')   // colapsar guiones
+    .replace(/^-|-$/g, '') // trim guiones
+    || 'oferta-' + Date.now()  // fallback
+
+  // Deduplicacion
+  existingSlugs = SELECT slug FROM job_posts WHERE slug LIKE 'slug%'
+  if slug in existingSlugs:
+    counter = 2
+    while 'slug-counter' in existingSlugs: counter++
+    slug = 'slug-counter'
 ```
 
-### Archivos a modificar
+### Archivo a modificar
 
-- `src/components/admin/blog/EnhancedBlogEditor.tsx` (sanitizar slug en input, auto-generar antes de guardar, eliminar slug de validacion bloqueante)
-
+- `src/hooks/useJobPosts.ts` (mutation createJobPost, lineas 36-56)
