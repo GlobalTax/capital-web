@@ -1,35 +1,34 @@
 
-## Ajustar la foto del equipo en el Hero
+
+## Centrar mejor el video en el Hero
 
 ### Problema
 
-Cuando se sube una foto como fondo de un slide del Hero, se renderiza con `background-image` en CSS y `bg-cover`. Esto puede causar problemas de ajuste dependiendo de las dimensiones de la imagen y del viewport. Ademas, la animacion de escala de framer-motion (`scale: 1.1`) puede empeorar el recorte.
+El video del Hero tiene `object-cover` aplicado correctamente, pero dos factores pueden afectar el centrado:
+
+1. **Animacion de escala**: El contenedor `motion.div` arranca con `scale: 1.1`, lo que amplifica un 10% el video al entrar. Esto puede desplazar visualmente el punto focal.
+2. **`object-position`**: Por defecto es `center center`, pero dependiendo del contenido del video, puede ser mas adecuado ajustarlo.
 
 ### Solucion
 
-Cambiar el renderizado de imagenes de fondo de `background-image` (CSS) a un elemento `<img>` con `object-cover`, igual que ya se hace con los videos. Esto da un comportamiento mas fiable y consistente.
+Anadir `object-position: center center` de forma explicita al video (y a la imagen) para garantizar el centrado, y reducir ligeramente la escala de la animacion de entrada para minimizar el efecto de recorte.
 
 ### Cambios
 
 **Archivo**: `src/components/Hero.tsx`
 
-**Lineas 184-189** - Reemplazar el bloque de imagen de fondo:
+1. **Video (linea 154)**: Anadir `object-center` a las clases del `<video>`:
+   - De: `className="absolute inset-0 w-full h-full object-cover"`
+   - A: `className="absolute inset-0 w-full h-full object-cover object-center"`
 
-Antes:
-```tsx
-<div
-  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-  style={{ backgroundImage: `url(${slide.image})` }}
-/>
-```
+2. **Imagen (linea ~188)**: Anadir `object-center` al `<img>` recien cambiado:
+   - De: `className="absolute inset-0 w-full h-full object-cover"`
+   - A: `className="absolute inset-0 w-full h-full object-cover object-center"`
 
-Despues:
-```tsx
-<img
-  src={slide.image}
-  alt={slide.title}
-  className="absolute inset-0 w-full h-full object-cover"
-/>
-```
+3. **Animacion de escala (linea 139)**: Reducir la escala inicial de `1.1` a `1.03` para que el zoom sea mas sutil y no recorte tanto:
+   - De: `initial={{ opacity: 0, scale: 1.1 }}`
+   - A: `initial={{ opacity: 0, scale: 1.03 }}`
+   - Y en exit (linea 141): de `scale: 1.05` a `scale: 1.02`
 
-Este cambio usa la misma tecnica que ya se aplica al fondo de video (linea 154), garantizando que la imagen siempre cubra todo el hero sin deformarse ni dejar espacios vacios.
+Estos cambios son minimos y mejoran el centrado visual tanto del video como de las imagenes.
+
