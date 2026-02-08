@@ -248,6 +248,12 @@ export const sidebarSections: SidebarSection[] = [
         icon: Palette,
         description: "Tarjetas de servicios de la home"
       },
+      { 
+        title: "La Firma", 
+        url: "/admin/la-firma", 
+        icon: Building2,
+        description: "Foto y contenido de la sección La Firma"
+      },
     ]
   },
   {
