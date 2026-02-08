@@ -1,52 +1,94 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { supabase } from '@/integrations/supabase/client';
 import heroSlide1 from '@/assets/test/hero-slide-1.jpg';
 import heroSlide2 from '@/assets/test/hero-slide-2.jpg';
 import heroSlide3 from '@/assets/test/hero-slide-3.jpg';
 
-interface Slide {
+interface SlideData {
   image: string;
-  titleKey: string;
-  subtitleKey: string;
-  titleFallback: string;
-  subtitleFallback: string;
+  title: string;
+  subtitle: string;
+  ctaPrimaryText: string;
+  ctaPrimaryUrl: string;
+  ctaSecondaryText: string;
+  ctaSecondaryUrl: string;
 }
 
-const slides: Slide[] = [
+const fallbackSlides: SlideData[] = [
   {
     image: heroSlide1,
-    titleKey: 'hero.slide1.title',
-    subtitleKey: 'hero.slide1.subtitle',
-    titleFallback: 'Especialistas en\ncompraventa de empresas',
-    subtitleFallback: 'Maximizamos el valor de tu empresa con un equipo multidisciplinar de más de 60 profesionales.',
+    title: 'Especialistas en\ncompraventa de empresas',
+    subtitle: 'Maximizamos el valor de tu empresa con un equipo multidisciplinar de más de 60 profesionales.',
+    ctaPrimaryText: 'Contactar',
+    ctaPrimaryUrl: '#contacto',
+    ctaSecondaryText: 'Valorar mi empresa',
+    ctaSecondaryUrl: '/lp/calculadora-web',
   },
   {
     image: heroSlide2,
-    titleKey: 'hero.slide2.title',
-    subtitleKey: 'hero.slide2.subtitle',
-    titleFallback: 'Presencia nacional\ne internacional',
-    subtitleFallback: 'Operamos en los principales mercados con una red global de contactos cualificados.',
+    title: 'Presencia nacional\ne internacional',
+    subtitle: 'Operamos en los principales mercados con una red global de contactos cualificados.',
+    ctaPrimaryText: 'Contactar',
+    ctaPrimaryUrl: '#contacto',
+    ctaSecondaryText: 'Valorar mi empresa',
+    ctaSecondaryUrl: '/lp/calculadora-web',
   },
   {
     image: heroSlide3,
-    titleKey: 'hero.slide3.title',
-    subtitleKey: 'hero.slide3.subtitle',
-    titleFallback: 'Asesoramiento\npersonalizado',
-    subtitleFallback: 'Cada operación es única. Adaptamos nuestra metodología a tus objetivos específicos.',
+    title: 'Asesoramiento\npersonalizado',
+    subtitle: 'Cada operación es única. Adaptamos nuestra metodología a tus objetivos específicos.',
+    ctaPrimaryText: 'Contactar',
+    ctaPrimaryUrl: '#contacto',
+    ctaSecondaryText: 'Valorar mi empresa',
+    ctaSecondaryUrl: '/lp/calculadora-web',
   },
 ];
+
+const useHeroSlides = () => {
+  return useQuery({
+    queryKey: ['hero_slides'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('hero_slides')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
 
 const Hero: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const { t } = useI18n();
+  const { data: dbSlides } = useHeroSlides();
+
+  const slides: SlideData[] = React.useMemo(() => {
+    if (!dbSlides || dbSlides.length === 0) return fallbackSlides;
+
+    return dbSlides.map((s, i) => ({
+      image: s.image_url || fallbackSlides[i]?.image || fallbackSlides[0].image,
+      title: s.title || fallbackSlides[i]?.title || '',
+      subtitle: s.subtitle || s.description || fallbackSlides[i]?.subtitle || '',
+      ctaPrimaryText: s.cta_primary_text || 'Contactar',
+      ctaPrimaryUrl: s.cta_primary_url || '#contacto',
+      ctaSecondaryText: s.cta_secondary_text || 'Valorar mi empresa',
+      ctaSecondaryUrl: s.cta_secondary_url || '/lp/calculadora-web',
+    }));
+  }, [dbSlides]);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -56,19 +98,21 @@ const Hero: React.FC = () => {
 
   useEffect(() => {
     if (!isAutoPlaying) return;
-    const timer = setInterval(nextSlide, 6000);
+    const duration = dbSlides?.[currentSlide]?.autoplay_duration || 6000;
+    const timer = setInterval(nextSlide, duration);
     return () => clearInterval(timer);
-  }, [isAutoPlaying, nextSlide]);
+  }, [isAutoPlaying, nextSlide, currentSlide, dbSlides]);
 
-  const getTitle = (slide: Slide) => {
-    const translated = t(slide.titleKey);
-    return translated === slide.titleKey ? slide.titleFallback : translated;
-  };
+  // Reset currentSlide if slides change
+  useEffect(() => {
+    if (currentSlide >= slides.length) setCurrentSlide(0);
+  }, [slides.length, currentSlide]);
 
-  const getSubtitle = (slide: Slide) => {
-    const translated = t(slide.subtitleKey);
-    return translated === slide.subtitleKey ? slide.subtitleFallback : translated;
-  };
+  const slide = slides[currentSlide];
+  if (!slide) return null;
+
+  const isExternal = (url: string) => url.startsWith('http');
+  const isAnchor = (url: string) => url.startsWith('#');
 
   return (
     <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
@@ -85,9 +129,9 @@ const Hero: React.FC = () => {
           >
             <div
               className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${slides[currentSlide].image})` }}
+              style={{ backgroundImage: `url(${slide.image})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
           </motion.div>
         </AnimatePresence>
 
@@ -104,28 +148,40 @@ const Hero: React.FC = () => {
                 className="max-w-2xl"
               >
                 <h1 className="font-serif text-foreground font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line">
-                  {getTitle(slides[currentSlide])}
+                  {slide.title}
                 </h1>
 
                 <p className="text-muted-foreground text-lg md:text-xl mt-8 max-w-lg leading-relaxed">
-                  {getSubtitle(slides[currentSlide])}
+                  {slide.subtitle}
                 </p>
 
                 <div className="mt-10 flex flex-col sm:flex-row gap-4">
-                  <a
-                    href="#contacto"
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
-                  >
-                    {t('hero.cta.contact') === 'hero.cta.contact' ? 'Contactar' : t('hero.cta.contact')}
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </a>
+                  {isAnchor(slide.ctaPrimaryUrl) ? (
+                    <a
+                      href={slide.ctaPrimaryUrl}
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
+                    >
+                      {slide.ctaPrimaryText}
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <Link
+                      to={slide.ctaPrimaryUrl}
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
+                    >
+                      {slide.ctaPrimaryText}
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </Link>
+                  )}
                   <Link
-                    to="/lp/calculadora-web"
+                    to={slide.ctaSecondaryUrl}
                     className="inline-flex items-center gap-3 px-8 py-4 border border-foreground/20 text-foreground text-sm font-medium tracking-wide hover:bg-foreground/5 transition-colors"
                   >
-                    {t('hero.cta.valuate') === 'hero.cta.valuate' ? 'Valorar mi empresa' : t('hero.cta.valuate')}
+                    {slide.ctaSecondaryText}
                   </Link>
                 </div>
               </motion.div>

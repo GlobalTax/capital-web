@@ -236,6 +236,12 @@ export const sidebarSections: SidebarSection[] = [
         icon: Megaphone,
         description: "Gestión de banners del sitio"
       },
+      { 
+        title: "Hero Slides", 
+        url: "/admin/hero-slides", 
+        icon: Image,
+        description: "Imágenes y textos del hero principal"
+      },
     ]
   },
   {
