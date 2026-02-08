@@ -25,6 +25,7 @@ const SECTION_CONFIG: Record<string, { label: string; subtitle: string; icon: Re
   'Fiscal y Contable': { label: 'División Fiscal y Contable', subtitle: 'Planificación fiscal y asesoría contable', icon: Calculator, order: 2 },
   'Laboral': { label: 'División Laboral', subtitle: 'Asesoría laboral y relaciones laborales', icon: Users, order: 3 },
   'Legal': { label: 'División Legal', subtitle: 'Asesoría jurídica y mercantil', icon: Scale, order: 4 },
+  'Servicios Globales': { label: 'Servicios Globales', subtitle: 'Soporte integral y gestión corporativa', icon: Users, order: 5 },
 };
 
 // Partner card — larger, more prominent
