@@ -1,62 +1,48 @@
 
-## Plan: LinkedIn Newsletter Content Studio para Samuel Navarro
 
-Crear una nueva seccion dedicada en el admin para generar contenido de tu newsletter de LinkedIn, con tu voz y estilo exacto codificados en el sistema.
+## Plan: Slug sin fricciones al crear posts
 
-### Que se va a construir
+### Problema detectado
 
-**1. Nueva Edge Function: `generate-linkedin-newsletter`**
+Los logs muestran que al publicar, el slug llega con texto sin procesar ("2026 El Gran Cambio de Ciclo en el M&A", "año_de_cambios") y la validacion lo rechaza porque solo acepta `a-z`, `0-9` y `-`. Ademas, el titulo aparece vacio en los intentos de publicacion.
 
-Una funcion backend dedicada que usa Lovable AI (Gemini) con un system prompt extenso que codifica tu voz:
-- Conversacional con autoridad
-- Anecdotas personales y casos reales
-- Datos concretos (facturacion, ROI, numeros)
-- Metaforas culturales inesperadas (Peret, Reyes Magos, Ironman)
-- Sin listas ni bullets excesivos en el cuerpo principal
-- Cierre con reflexion o CTA claro
+### Solucion
 
-La funcion tendra 3 modos:
-- **`ideation`**: Genera 5 ideas de contenido especificas (no genericas) basadas en tendencias M&A, tech legal, y tu angulo personal
-- **`draft`**: Genera un borrador completo de newsletter con tu voz
-- **`review`**: Recibe un borrador tuyo y da feedback brutal y honesto (estructura, engagement, CTA, datos)
+Eliminar toda friccion aplicando auto-generacion y sanitizacion automatica del slug en todos los flujos.
 
-**2. Nueva pagina: `LinkedInNewsletterStudio.tsx`**
+### Cambios en `src/components/admin/blog/EnhancedBlogEditor.tsx`
 
-Interfaz con 3 tabs:
+**1. Sanitizar el slug al editarlo manualmente**
 
-- **Ideas**: Boton para generar ideas. Muestra 5 ideas con titulo, angulo y hook. Boton para convertir idea en borrador.
-- **Escribir**: Editor de texto donde escribes o generas un borrador. Selector de tema/idea. Boton "Generar borrador con IA". Preview del resultado con formato LinkedIn.
-- **Revisar**: Pega un borrador tuyo. Boton "Feedback brutal". Muestra analisis con puntuacion (engagement, datos, CTA, voz) y sugerencias concretas.
+Cuando el usuario escribe en el campo slug, pasar el texto por `generateSlug()` automaticamente para limpiar acentos, espacios y caracteres especiales.
 
-**3. Navegacion**
+**2. Auto-generar slug antes de guardar/publicar si esta vacio**
 
-Anadir entrada en `navigationData.ts` dentro del grupo de contenido, con icono y badge "AI".
+En `handleSave` y `handlePublish`, si el slug esta vacio pero hay titulo, generarlo automaticamente. Si el titulo tambien esta vacio, generar uno desde el contenido (primeras palabras).
+
+**3. Sanitizar slug siempre antes de guardar**
+
+Antes de enviar a la base de datos, pasar el slug por `generateSlug()` para asegurar que sea valido, sin importar como llego ahi.
+
+**4. Eliminar la validacion de slug como campo obligatorio independiente**
+
+El slug se generara automaticamente si falta, asi que nunca deberia ser un bloqueante.
 
 ### Detalle tecnico
 
-**Edge Function** (`supabase/functions/generate-linkedin-newsletter/index.ts`):
-- Usa Lovable AI Gateway (`https://ai.gateway.lovable.dev/v1/chat/completions`)
-- Modelo: `google/gemini-3-flash-preview`
-- System prompt con tu perfil completo, ejemplos de tu estilo, y reglas de formato
-- 3 endpoints internos segun `mode`: ideation, draft, review
-- Manejo de errores 429/402
+```text
+handleSlugChange(newSlug):
+  ANTES: setFormData({ slug: newSlug })  // texto crudo
+  AHORA: setFormData({ slug: generateSlug(newSlug) })  // sanitizado
 
-**Hook** (`src/hooks/useLinkedInNewsletter.ts`):
-- Invoca la edge function via `supabase.functions.invoke`
-- Estado de loading por modo
-- Almacena historial de ideas y borradores en estado local
+handlePublish / handleSave:
+  // Antes de validar, asegurar slug
+  if (!slug && title) slug = generateSlug(title)
+  if (!slug && content) slug = generateSlug(primeras 8 palabras del contenido)
+  slug = generateSlug(slug)  // sanitizar siempre
+```
 
-**Pagina** (`src/pages/admin/LinkedInNewsletterStudio.tsx`):
-- Tabs: Ideas | Escribir | Revisar
-- Textarea para input del usuario
-- Renderizado markdown del output con `react-markdown`
-- Boton copiar al portapapeles para pegar directo en LinkedIn
+### Archivos a modificar
 
-**Archivos a crear:**
-- `supabase/functions/generate-linkedin-newsletter/index.ts`
-- `src/hooks/useLinkedInNewsletter.ts`
-- `src/pages/admin/LinkedInNewsletterStudio.tsx`
+- `src/components/admin/blog/EnhancedBlogEditor.tsx` (sanitizar slug en input, auto-generar antes de guardar, eliminar slug de validacion bloqueante)
 
-**Archivos a modificar:**
-- `src/components/admin/navigation/navigationData.ts` (nueva entrada)
-- `src/components/admin/AdminApp.tsx` (nueva ruta)
