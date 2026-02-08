@@ -79,11 +79,36 @@ const useHeroSlides = () => {
   });
 };
 
+interface ServicePill {
+  id: string;
+  label: string;
+  url: string;
+  display_order: number;
+  is_active: boolean;
+}
+
+const useServicePills = () => {
+  return useQuery({
+    queryKey: ['hero_service_pills'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('hero_service_pills')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      if (error) throw error;
+      return (data || []) as ServicePill[];
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
 const Hero: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const { t } = useI18n();
   const { data: dbSlides } = useHeroSlides();
+  const { data: servicePills = [] } = useServicePills();
   const { teamMembers } = useTeamMembers();
 
   const slides: SlideData[] = React.useMemo(() => {
@@ -198,28 +223,19 @@ const Hero: React.FC = () => {
                 </p>
 
                 {/* Service Pills */}
-                {!slide.isMosaic && !slide.videoUrl && (
+                {!slide.isMosaic && !slide.videoUrl && servicePills.length > 0 && (
                   <div className="mt-6 flex flex-wrap items-center gap-2">
-                    <Link
-                      to="/venta-empresas"
-                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
-                    >
-                      Venta de empresas
-                    </Link>
-                    <span className="text-muted-foreground/40 select-none">·</span>
-                    <Link
-                      to="/mandatos-compra"
-                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
-                    >
-                      Mandatos de compra
-                    </Link>
-                    <span className="text-muted-foreground/40 select-none">·</span>
-                    <Link
-                      to="/servicios/valoraciones"
-                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
-                    >
-                      Valoración & Due Diligence
-                    </Link>
+                    {servicePills.map((pill, i) => (
+                      <React.Fragment key={pill.id}>
+                        {i > 0 && <span className="text-muted-foreground/40 select-none">·</span>}
+                        <Link
+                          to={pill.url}
+                          className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                        >
+                          {pill.label}
+                        </Link>
+                      </React.Fragment>
+                    ))}
                   </div>
                 )}
 

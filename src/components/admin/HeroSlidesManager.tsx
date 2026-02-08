@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import HeroServicePillsManager from './HeroServicePillsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -504,6 +505,11 @@ const HeroSlidesManager: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Service Pills Section */}
+      <div className="mt-10 pt-8 border-t">
+        <HeroServicePillsManager />
+      </div>
     </div>
   );
 };
