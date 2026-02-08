@@ -155,7 +155,31 @@ const Hero: React.FC = () => {
                   {slide.subtitle}
                 </p>
 
-                <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                {/* Service Pills */}
+                <div className="mt-6 flex flex-wrap items-center gap-2">
+                  <Link
+                    to="/venta-empresas"
+                    className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                  >
+                    Venta de empresas
+                  </Link>
+                  <span className="text-muted-foreground/40 select-none">·</span>
+                  <Link
+                    to="/mandatos-compra"
+                    className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                  >
+                    Mandatos de compra
+                  </Link>
+                  <span className="text-muted-foreground/40 select-none">·</span>
+                  <Link
+                    to="/servicios/valoraciones"
+                    className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                  >
+                    Valoración & Due Diligence
+                  </Link>
+                </div>
+
+                <div className="mt-8 flex flex-col sm:flex-row gap-4">
                   {isAnchor(slide.ctaPrimaryUrl) ? (
                     <a
                       href={slide.ctaPrimaryUrl}
