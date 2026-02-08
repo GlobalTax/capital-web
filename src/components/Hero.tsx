@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import heroSlide1 from '@/assets/test/hero-slide-1.jpg';
 import heroSlide2 from '@/assets/test/hero-slide-2.jpg';
 import heroSlide3 from '@/assets/test/hero-slide-3.jpg';
@@ -71,6 +73,7 @@ const Hero: React.FC = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const { t } = useI18n();
   const { data: dbSlides } = useHeroSlides();
+  const { teamMembers } = useTeamMembers();
 
   const slides: SlideData[] = React.useMemo(() => {
     if (!dbSlides || dbSlides.length === 0) return fallbackSlides;
@@ -178,6 +181,28 @@ const Hero: React.FC = () => {
                     Valoración & Due Diligence
                   </Link>
                 </div>
+
+                {/* Team Avatar Stack */}
+                {teamMembers.length > 0 && (
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="flex -space-x-3 overflow-hidden">
+                      {teamMembers.slice(0, 8).map((member) => (
+                        <Avatar
+                          key={member.id}
+                          className="inline-block h-10 w-10 ring-2 ring-white"
+                        >
+                          <AvatarImage src={member.image_url || ''} alt={member.name} />
+                          <AvatarFallback className="text-xs font-medium bg-muted">
+                            {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium text-foreground/70">
+                      +60 profesionales a tu servicio
+                    </span>
+                  </div>
+                )}
 
                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
                   {isAnchor(slide.ctaPrimaryUrl) ? (
