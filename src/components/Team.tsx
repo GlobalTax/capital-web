@@ -34,7 +34,7 @@ const PartnerCard = ({ member }: { member: TeamMember }) => {
 
   return (
     <div className="bg-card rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 ease-out border border-border group">
-      <div className="relative overflow-hidden bg-muted aspect-[3/4]">
+      <div className="relative overflow-hidden bg-muted aspect-square">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
@@ -45,13 +45,13 @@ const PartnerCard = ({ member }: { member: TeamMember }) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
-            <Users className="w-24 h-24 text-muted-foreground/40" />
+            <Users className="w-16 h-16 text-muted-foreground/40" />
           </div>
         )}
       </div>
-      <div className="p-8 space-y-4">
+      <div className="p-5 space-y-4">
         <div className="text-center">
-          <h3 className="text-2xl font-serif text-foreground mb-1">{member.name}</h3>
+          <h3 className="text-xl font-serif text-foreground mb-1">{member.name}</h3>
           {member.position && (
             <p className="text-primary text-sm font-semibold uppercase tracking-wider">{member.position}</p>
           )}
@@ -87,7 +87,7 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
 
   return (
     <div className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ease-out border border-border group">
-      <div className="relative overflow-hidden bg-muted aspect-[4/5]">
+      <div className="relative overflow-hidden bg-muted aspect-square">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
@@ -98,13 +98,13 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
-            <Users className="w-20 h-20 text-muted-foreground/40" />
+            <Users className="w-12 h-12 text-muted-foreground/40" />
           </div>
         )}
       </div>
-      <div className="p-6 space-y-4">
+      <div className="p-4 space-y-3">
         <div className="text-center">
-          <h3 className="text-xl font-normal text-foreground mb-1">{member.name}</h3>
+          <h3 className="text-base font-normal text-foreground mb-1">{member.name}</h3>
           {member.position && (
             <p className="text-muted-foreground text-sm font-medium">{member.position}</p>
           )}
@@ -268,14 +268,14 @@ const Team = () => {
 
                     {isPartners ? (
                       /* Partners: larger cards, 2 columns max */
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl mx-auto">
                         {members.map(member => (
                           <PartnerCard key={member.id} member={member} />
                         ))}
                       </div>
                     ) : (
                       /* Regular team: 3 columns */
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                         {members.map(member => (
                           <TeamMemberCard key={member.id} member={member} />
                         ))}
