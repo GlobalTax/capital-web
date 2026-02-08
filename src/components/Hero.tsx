@@ -136,9 +136,9 @@ const Hero: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0, scale: 1.1 }}
+            initial={{ opacity: 0, scale: 1.03 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
+            exit={{ opacity: 0, scale: 1.02 }}
             transition={{ duration: 1.2, ease: 'easeInOut' }}
             className="absolute inset-0"
           >
@@ -151,7 +151,7 @@ const Hero: React.FC = () => {
                   muted
                   loop
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/50 to-foreground/30" />
               </>
@@ -185,7 +185,7 @@ const Hero: React.FC = () => {
                 <img
                   src={slide.image}
                   alt={slide.title}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
               </>
