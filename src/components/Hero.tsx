@@ -204,11 +204,11 @@ const Hero: React.FC = () => {
                 transition={{ duration: 0.8, ease: 'easeOut' }}
                 className="max-w-2xl"
               >
-                <h1 className={`font-serif font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line ${slide.isMosaic || slide.videoUrl ? 'text-background' : 'text-foreground'}`}>
+                <h1 className={`font-serif font-bold leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line ${slide.isMosaic || slide.videoUrl ? 'text-background' : 'text-foreground'}`}>
                   {slide.title}
                 </h1>
 
-                <p className={`text-lg md:text-xl mt-8 max-w-lg leading-relaxed ${slide.isMosaic || slide.videoUrl ? 'text-background/80' : 'text-muted-foreground'}`}>
+                <p className={`text-lg md:text-xl mt-8 max-w-lg leading-relaxed font-bold ${slide.isMosaic || slide.videoUrl ? 'text-background/80' : 'text-muted-foreground'}`}>
                   {slide.subtitle}
                 </p>
 
@@ -217,21 +217,21 @@ const Hero: React.FC = () => {
                   <div className="mt-6 flex flex-wrap items-center gap-2">
                     <Link
                       to="/venta-empresas"
-                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
                     >
                       Venta de empresas
                     </Link>
                     <span className="text-muted-foreground/40 select-none">·</span>
                     <Link
                       to="/mandatos-compra"
-                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
                     >
                       Mandatos de compra
                     </Link>
                     <span className="text-muted-foreground/40 select-none">·</span>
                     <Link
                       to="/servicios/valoraciones"
-                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
                     >
                       Valoración & Due Diligence
                     </Link>
@@ -242,7 +242,7 @@ const Hero: React.FC = () => {
                   {isAnchor(slide.ctaPrimaryUrl) ? (
                     <a
                       href={slide.ctaPrimaryUrl}
-                      className={`inline-flex items-center gap-3 px-8 py-4 text-sm font-medium tracking-wide transition-colors ${slide.isMosaic || slide.videoUrl ? 'bg-background text-foreground hover:bg-background/90' : 'bg-foreground text-background hover:bg-foreground/90'}`}
+                      className={`inline-flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-wide transition-colors ${slide.isMosaic || slide.videoUrl ? 'bg-background text-foreground hover:bg-background/90' : 'bg-foreground text-background hover:bg-foreground/90'}`}
                     >
                       {slide.ctaPrimaryText}
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,7 +252,7 @@ const Hero: React.FC = () => {
                   ) : (
                     <Link
                       to={slide.ctaPrimaryUrl}
-                      className={`inline-flex items-center gap-3 px-8 py-4 text-sm font-medium tracking-wide transition-colors ${slide.isMosaic || slide.videoUrl ? 'bg-background text-foreground hover:bg-background/90' : 'bg-foreground text-background hover:bg-foreground/90'}`}
+                      className={`inline-flex items-center gap-3 px-8 py-4 text-sm font-bold tracking-wide transition-colors ${slide.isMosaic || slide.videoUrl ? 'bg-background text-foreground hover:bg-background/90' : 'bg-foreground text-background hover:bg-foreground/90'}`}
                     >
                       {slide.ctaPrimaryText}
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -262,7 +262,7 @@ const Hero: React.FC = () => {
                   )}
                   <Link
                     to={slide.ctaSecondaryUrl}
-                    className={`inline-flex items-center gap-3 px-8 py-4 border text-sm font-medium tracking-wide transition-colors ${slide.isMosaic || slide.videoUrl ? 'border-background/30 text-background hover:bg-background/10' : 'border-foreground/20 text-foreground hover:bg-foreground/5'}`}
+                    className={`inline-flex items-center gap-3 px-8 py-4 border text-sm font-bold tracking-wide transition-colors ${slide.isMosaic || slide.videoUrl ? 'border-background/30 text-background hover:bg-background/10' : 'border-foreground/20 text-foreground hover:bg-foreground/5'}`}
                   >
                     {slide.ctaSecondaryText}
                   </Link>
