@@ -1,31 +1,21 @@
 
 
-## Reducir el tamano de las tarjetas del equipo
+## Corregir fotos cortadas por el pelo
 
 ### Problema
-Las tarjetas de los miembros del equipo son demasiado grandes, especialmente con 35+ personas. Las imagenes con aspect-ratio `3/4` (socios) y `4/5` (miembros) y el padding generoso hacen que la pagina sea excesivamente larga.
+Las imagenes usan `object-cover` con posicion centrada por defecto, lo que recorta la parte superior de las fotos (cabeza/pelo) al ajustarlas al aspect-ratio cuadrado.
 
-### Cambios propuestos en `src/components/Team.tsx`
+### Solucion
+Anadir `object-top` a las imagenes de ambos tipos de tarjeta (PartnerCard y TeamMemberCard). Esto ancla la imagen a la parte superior del contenedor, asegurando que la cabeza siempre sea visible y el recorte se haga por la parte inferior (cuerpo), que es menos importante visualmente.
 
-**1. Socios (PartnerCard)**
-- Reducir aspect-ratio de `aspect-[3/4]` a `aspect-square` (1:1)
-- Reducir padding interior de `p-8` a `p-5`
-- Reducir tamano del nombre de `text-2xl` a `text-xl`
+### Cambios en `src/components/Team.tsx`
 
-**2. Miembros regulares (TeamMemberCard)**
-- Reducir aspect-ratio de `aspect-[4/5]` a `aspect-square` (1:1)
-- Reducir padding interior de `p-6` a `p-4`
-- Reducir tamano del nombre de `text-xl` a `text-base`
-- Cambiar grid de 3 columnas a **4 columnas** en pantallas grandes (`lg:grid-cols-4`) para que las tarjetas sean mas compactas y quepan mas por fila
+**Linea 42 (PartnerCard):**
+- Cambiar `object-cover` a `object-cover object-top`
 
-**3. Grids**
-- Socios: mantener 2 columnas pero reducir el `max-w` de `max-w-4xl` a `max-w-2xl` para que las cards de socios sean mas pequenas
-- Miembros regulares: cambiar de `lg:grid-cols-3` a `lg:grid-cols-4`
-- Reducir gap entre tarjetas de `gap-8` a `gap-5`
-
-**4. Iconos de fallback**
-- Reducir iconos placeholder de `w-24 h-24` / `w-20 h-20` a `w-16 h-16` / `w-12 h-12`
+**Linea 95 (TeamMemberCard):**
+- Cambiar `object-cover` a `object-cover object-top`
 
 ### Archivo afectado
-- `src/components/Team.tsx`
+- `src/components/Team.tsx` (2 lineas modificadas)
 
