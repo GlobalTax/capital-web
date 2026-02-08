@@ -1,62 +1,32 @@
 
 
-## Plan: Slug sin fricciones en Job Posts
+## Plan: Corregir el parser de ofertas de trabajo (pegar y autocompletar)
 
 ### Problema
 
-Al crear una oferta de trabajo, el slug se genera de forma basica (solo lowercase + replace espacios) sin:
-1. Eliminar acentos ni caracteres especiales como "&" o tildes
-2. Manejar duplicados - si ya existe un slug igual, falla con error 409 (unique constraint)
+Cuando pegas una oferta de trabajo y pulsas "Analizar y Completar", la IA procesa correctamente el texto (devuelve 200 OK y muestra el toast "Oferta analizada"), pero los campos del formulario no se rellenan.
+
+La causa esta en la edge function `generate-job-offer-ai`. El tipo `parse` cae en la rama generica (`else`) que envuelve la respuesta como `{ content: "...json string..." }` en lugar de parsear el JSON como hace el tipo `full`. Asi que `JobPasteParser` recibe `result.content` (un string JSON) en vez de `result.title`, `result.requirements`, etc., y todas las comprobaciones `if (result.title)` fallan silenciosamente.
 
 ### Solucion
 
-Modificar `src/hooks/useJobPosts.ts` para:
+Modificar la edge function para que el tipo `parse` parsee el JSON de la respuesta de la IA, igual que hace el tipo `full`.
 
-1. **Sanitizar el slug correctamente**: normalizar unicode (quitar acentos), eliminar caracteres no alfanumericos, colapsar guiones
-2. **Deduplicar automaticamente**: antes de insertar, consultar si el slug ya existe. Si existe, anadir un sufijo numerico (-2, -3, etc.)
+### Cambio en `supabase/functions/generate-job-offer-ai/index.ts`
 
-### Cambios en `src/hooks/useJobPosts.ts`
+Lineas 243-252: Cambiar la logica de procesamiento para incluir `parse` junto con `full`:
 
 ```text
-// Antes (lineas 39-42):
-const slug = jobPost.title
-  .toLowerCase()
-  .replace(/[^\w\s-]/g, '')
-  .replace(/\s+/g, '-');
+// Antes (linea 243):
+} else if (type === 'full') {
 
 // Despues:
-1. Normalizar unicode (NFD) para quitar acentos
-2. Eliminar caracteres no alfanumericos excepto espacios y guiones
-3. Reemplazar espacios por guiones
-4. Colapsar guiones multiples
-5. Trim de guiones al inicio/final
-6. Consultar job_posts por slug LIKE 'base-slug%'
-7. Si hay duplicados, anadir sufijo -2, -3, etc.
+} else if (type === 'full' || type === 'parse') {
 ```
 
-### Detalle tecnico
-
-La funcion de generacion de slug quedara asi:
-
-```text
-generateJobSlug(title):
-  slug = title
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // acentos
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')  // solo alfanumericos
-    .replace(/\s+/g, '-')  // espacios a guiones
-    .replace(/-+/g, '-')   // colapsar guiones
-    .replace(/^-|-$/g, '') // trim guiones
-    || 'oferta-' + Date.now()  // fallback
-
-  // Deduplicacion
-  existingSlugs = SELECT slug FROM job_posts WHERE slug LIKE 'slug%'
-  if slug in existingSlugs:
-    counter = 2
-    while 'slug-counter' in existingSlugs: counter++
-    slug = 'slug-counter'
-```
+Esto hace que la respuesta del tipo `parse` pase por `JSON.parse(generatedContent)` y devuelva los campos directamente en el objeto, en lugar de envolverlos como string dentro de `content`.
 
 ### Archivo a modificar
 
-- `src/hooks/useJobPosts.ts` (mutation createJobPost, lineas 36-56)
+- `supabase/functions/generate-job-offer-ai/index.ts` (linea 243, anadir `|| type === 'parse'`)
+
