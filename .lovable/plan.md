@@ -1,20 +1,35 @@
 
 
-## Añadir enlace a nrro.es en el footer como empresa matriz
+## Añadir traducciones faltantes en el footer
 
-### Cambio
+### Problema
+El footer usa las claves `footer.link.construccion`, `footer.link.seguridad`, `footer.link.medioAmbiente`, `footer.link.alimentacion` y `footer.link.logistica`, pero estas no existen en el diccionario de traducciones (`dictionaries.ts`). Esto hace que se muestren las claves en crudo en vez del texto traducido.
 
-Añadir una línea bajo el nombre "Capittal" en la sección de información de la empresa (columna izquierda del footer), indicando que es una división de Navarro Tax & Legal con enlace externo a nrro.es.
+### Cambios en `src/shared/i18n/dictionaries.ts`
 
-### Detalle técnico
+Añadir las 5 claves faltantes en los 3 idiomas:
 
-En `src/components/ui/footer-section.tsx`, después del logo/nombre "Capittal" (línea 19), se añadirá un texto:
+**Español (ES)** -- tras la línea 324 (`footer.link.industrial`):
+- `'footer.link.construccion': 'Construcción'`
+- `'footer.link.seguridad': 'Seguridad'`
+- `'footer.link.medioAmbiente': 'Medio Ambiente'`
+- `'footer.link.alimentacion': 'Alimentación'`
+- `'footer.link.logistica': 'Logística'`
 
-```
-División de M&A de Navarro Tax & Legal
-```
+**Catalán (CA)** -- tras `footer.link.industrial` en la sección catalana:
+- `'footer.link.construccion': 'Construcció'`
+- `'footer.link.seguridad': 'Seguretat'`
+- `'footer.link.medioAmbiente': 'Medi Ambient'`
+- `'footer.link.alimentacion': 'Alimentació'`
+- `'footer.link.logistica': 'Logística'`
 
-Donde "Navarro Tax & Legal" será un enlace externo (`<a>`) apuntando a `https://nrro.es` con `target="_blank"` y `rel="noopener noreferrer"`.
+**Inglés (EN)** -- tras `footer.link.industrial` en la sección inglesa:
+- `'footer.link.construccion': 'Construction'`
+- `'footer.link.seguridad': 'Security'`
+- `'footer.link.medioAmbiente': 'Environment'`
+- `'footer.link.alimentacion': 'Food & Beverage'`
+- `'footer.link.logistica': 'Logistics'`
 
-Se insertará entre el cierre del `<Link>` de Capittal (línea 20) y el párrafo de descripción (línea 22), con estilo `text-gray-400 text-xs` para que sea sutil y no compita visualmente con el nombre principal.
+### Archivos afectados
+- `src/shared/i18n/dictionaries.ts` (3 bloques de idioma)
 
