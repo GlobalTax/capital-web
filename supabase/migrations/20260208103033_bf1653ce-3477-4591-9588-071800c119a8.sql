@@ -1,0 +1,1 @@
+UPDATE public.topbar_group_companies SET name = 'Navarro Tax & Legal' WHERE name = 'nrro.es';
