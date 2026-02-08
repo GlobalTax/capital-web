@@ -5,13 +5,13 @@ const OurGroup = () => {
   const groupServices = [
     {
       title: "Capittal",
-      subtitle: "Originación & Valoración",
-      description: "Especialistas en identificación de oportunidades, valoración de empresas y estructuración de operaciones de M&A."
+      subtitle: "División de M&A",
+      description: "División especializada en fusiones y adquisiciones, valoración de empresas y estructuración de operaciones corporativas."
     },
     {
-      title: "Navarro Legal",
-      subtitle: "Asesoramiento Legal & Fiscal", 
-      description: "Expertos en derecho mercantil y fiscal, especializados en operaciones de M&A y restructuraciones empresariales."
+      title: "Navarro Tax & Legal",
+      subtitle: "Asesoría Integral", 
+      description: "Firma de asesoría fiscal, contable, laboral y legal. La base del grupo desde la que nace Capittal como división especializada en M&A."
     }
   ];
 
@@ -24,8 +24,8 @@ const OurGroup = () => {
             Grupo Navarro
           </h2>
           <p className="text-xl text-foreground max-w-3xl mx-auto leading-relaxed">
-            Capittal forma parte del Grupo Navarro, un ecosistema integral de servicios profesionales. 
-            Dos marcas especializadas, un objetivo común: maximizar el valor de tu operación.
+            Capittal es la división de M&A de Navarro Tax & Legal. 
+            Dos áreas especializadas, un objetivo común: maximizar el valor de tu operación.
           </p>
         </div>
 
