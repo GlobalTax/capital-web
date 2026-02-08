@@ -1,82 +1,44 @@
 
 
-## Anadir seccion "La Firma" y "Areas de Practica" a la Home
+## Reemplazar el Hero por un diseño institucional con slider
 
-### Objetivo
-Incorporar dos nuevas secciones al estilo institucional de Norgestion para reforzar la imagen profesional de la home.
+### Problema
+El hero actual muestra un "dashboard" con operaciones activas, sectores y porcentajes de crecimiento, lo que transmite imagen de marketplace o plataforma SaaS en lugar de una firma de asesoramiento M&A de alta gama.
 
----
-
-### 1. Seccion "La Firma" (nueva)
-
-Bloque institucional con layout 50/50 (imagen + texto) inspirado en el `AboutSection` del prototipo `/test/nuevo-diseno`. Incluye:
-
-- **Subtitulo superior**: "La Firma" en tracking ancho y uppercase (estilo sutil)
-- **Titulo serif**: "Confianza y experiencia desde 2008"
-- **Imagen**: Reutilizar `about-firm.jpg` del directorio de assets
-- **Texto descriptivo**: Parrafos sobre la historia, mision y diferenciacion de Capittal
-- **Valores destacados**: Confidencialidad e Independencia con borde lateral
-- **CTA**: Enlace a la pagina del equipo
-- **Animaciones**: Entrada con framer-motion al hacer scroll
-
-**Ubicacion en la home**: Justo despues de `SocialProofCompact` y antes de `SearchFundsCTA`.
+### Solucion
+Reemplazar el hero actual por el componente **HeroSliderSection** ya prototipado en `/test/nuevo-diseno`, adaptandolo al sistema i18n y a las rutas de produccion. Este hero usa imagenes a pantalla completa con transiciones suaves, tipografia serif elegante y un CTA limpio, alineado con la identidad institucional de Norgestion y firmas similares.
 
 ---
 
-### 2. Seccion "Areas de Practica" (nueva)
+### Diseno del nuevo Hero
 
-Cards grandes con imagen de fondo al estilo de `ServicesSectionWithImages` del prototipo. Grid 2x2 con:
-
-- **4 servicios principales**: Venta de empresas, Valoracion, Due Diligence, Planificacion fiscal
-- **Diseno**: Imagen de fondo a pantalla completa dentro de la card, gradient overlay oscuro, titulo en blanco
-- **Hover**: Zoom en imagen + descripcion que aparece con fade
-- **Enlace "Saber mas"**: Con flecha animada
-- **CTA inferior**: "Contactar" con separador superior
-- **Animaciones**: Stagger children con framer-motion
-- **Imagenes**: Reutilizar las imagenes del directorio `src/assets/test/`
-
-**Ubicacion en la home**: Reemplazar el componente `Services` actual, que usa cards con texto plano, por este nuevo diseno mas visual e institucional.
-
----
+- **Slider de 3 imagenes** a pantalla completa con transicion cada 6 segundos
+- **Gradient overlay** blanco desde la izquierda para legibilidad del texto
+- **Titulo serif grande** (Playfair Display) con mensajes rotativos
+- **Subtitulo** descriptivo debajo del titulo
+- **CTA unico**: Boton "Contactar" con flecha
+- **Indicadores de slide**: Lineas horizontales en la esquina inferior izquierda
+- **Contador**: "01/03" en la esquina inferior derecha
+- **Indicador de scroll**: Animacion sutil centrada en la parte inferior
+- **Imagenes existentes**: Reutiliza `hero-slide-1.jpg`, `hero-slide-2.jpg`, `hero-slide-3.jpg`
 
 ### Cambios en archivos
 
-**Archivo nuevo**: `src/components/home/LaFirmaSection.tsx`
-- Componente basado en `AboutSection` del prototipo, adaptado al sistema i18n existente
-- Usa `useCountAnimation` para estadisticas (ya disponible)
-- Importa `about-firm.jpg`
+**Archivo modificado**: `src/components/Hero.tsx`
+- Reemplazar completamente el contenido actual (dashboard card + badges flotantes)
+- Nuevo componente basado en `HeroSliderSection` del prototipo
+- Mantener soporte i18n con el hook `useI18n()` para los textos
+- Conservar `ErrorBoundary` como wrapper
+- Mantener el CTA apuntando a `/lp/calculadora-web` (valorar empresa) ademas de uno de contacto
+- Adaptar los slides con mensajes institucionales: compraventa de empresas, presencia nacional, asesoramiento personalizado
 
-**Archivo nuevo**: `src/components/home/PracticeAreasSection.tsx`
-- Componente basado en `ServicesSectionWithImages` del prototipo
-- Grid 2x2 con cards de imagen de fondo
-- Importa las imagenes de servicios existentes
-
-**Archivo modificado**: `src/pages/Index.tsx`
-- Importar `LaFirmaSection` y `PracticeAreasSection`
-- Insertar `LaFirmaSection` despues de `SocialProofCompact`
-- Reemplazar `<Services />` por `<PracticeAreasSection />`
-
----
-
-### Orden final de secciones en la Home
-
-```text
-1. Hero
-2. SocialProofCompact
-3. LaFirmaSection          <-- NUEVA
-4. SearchFundsCTA
-5. PracticeAreasSection    <-- REEMPLAZA Services
-6. EcosistemaIntegral
-7. CaseStudiesCompact
-8. MANewsSection
-9. WhyChooseCapittal
-10. Contact
-```
+**Sin archivos nuevos**: Se modifica el componente existente, manteniendo el mismo export default.
 
 ### Detalles tecnicos
 
-- Ambos componentes usan `framer-motion` para animaciones de entrada (ya instalado)
-- Se reutilizan imagenes existentes en `src/assets/test/` sin necesidad de nuevos assets
-- Se mantiene soporte i18n: se crearan claves de traduccion con fallback en espanol hardcoded inicialmente
-- Tipografia: `font-serif` para titulos principales (Playfair Display), `font-sans` para cuerpo
+- Usa `framer-motion` (AnimatePresence) para transiciones entre slides (ya instalado)
+- Tipografia `font-serif` para el titulo principal (Playfair Display via Tailwind config)
+- Autoplay cada 6 segundos con pausa al interactuar manualmente
+- Las imagenes de los slides ya existen en `src/assets/test/`
+- Se eliminan los badges flotantes ("M&A Leaders", "Profesional"), la dashboard card y las stats duplicadas (que ahora estan en LaFirmaSection)
 
