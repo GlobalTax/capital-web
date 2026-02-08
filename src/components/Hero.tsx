@@ -218,7 +218,7 @@ const Hero: React.FC = () => {
                   {slide.title}
                 </h1>
 
-                <p className={`text-lg md:text-xl mt-8 max-w-lg leading-relaxed ${slide.isMosaic || slide.videoUrl ? 'text-background/80' : 'text-muted-foreground'}`}>
+                <p className={`text-lg md:text-xl mt-8 max-w-lg leading-relaxed ${slide.isMosaic || slide.videoUrl ? 'text-background/80' : 'text-foreground'}`}>
                   {slide.subtitle}
                 </p>
 
