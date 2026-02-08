@@ -1,64 +1,66 @@
 
 
-## Transmitir sensacion de equipo grande y multidisciplinar
+## Insertar equipo completo de nrro.es en Capittal
 
-### Objetivo
-Redisenar la pagina de equipo para que el visitante perciba un equipo amplio, estructurado y multidisciplinar, combinando los miembros actuales de Capittal con el equipo de Navarro Tax and Legal, y organizandolos por divisiones con indicadores de escala.
+### Contexto
+La pagina de equipo de nrro.es muestra 35 profesionales. Actualmente en la base de datos de Capittal solo hay 7. Hay que insertar los 28 miembros restantes y ajustar el componente para mostrar la nueva seccion "Servicios Globales".
 
-### Cambios propuestos
+### 1. Insertar 28 nuevos miembros en la tabla `team_members`
 
-**1. Ampliar la base de datos con miembros de Navarro Tax and Legal**
+Se insertaran con los datos extraidos directamente de nrro.es: nombre, nivel (como position), email, imagen (URL de Supabase de nrro.es) y seccion mapeada a las divisiones de Capittal.
 
-Anadir nuevos miembros del equipo en la tabla `team_members` con secciones diferenciadas:
+**Mapeo de secciones nrro.es a Capittal:**
+- CONTABILIDAD / FISCALIDAD --> "Fiscal y Contable"
+- LABORAL --> "Laboral"  
+- M&A --> "M&A"
+- SERVICIOS GLOBALES / sin seccion --> "Servicios Globales"
 
-- **Seccion "Socios"**: Los socios principales (Lluis Montanya, Samuel L. Navarro) se mueven a esta seccion destacada
-- **Seccion "M&A"**: El resto del equipo actual de Capittal (Aleix Miro, Marc Tico, Oriol Iglesias, Marc Canet, Marcel Padros)
-- **Seccion "Fiscal y Contable"**: Nuevos miembros del equipo de Navarro Tax and Legal (se necesitara que proporciones nombres, cargos y fotos)
-- **Seccion "Laboral"**: Miembros del area laboral de Navarro Tax and Legal
-- **Seccion "Legal"**: Miembros del area juridica
+**Miembros nuevos por division:**
 
-Se actualizara el campo `section` de los miembros existentes y se insertaran los nuevos.
+**M&A** (3 nuevos, se suman a los 5 existentes = 8 total):
+- Marina Gonzalez (Asociado)
+- Julia Estelle (Junior)
+- Albert Tico (Master Scholar)
 
-**2. Redisenar el componente Team.tsx**
+**Fiscal y Contable** (11 nuevos):
+- Claudia Martin, Jose Maria, Maria Leon, Pepe Rico, Ana Ramirez, Rosa Rodriguez, Yolanda Pescador, Vasyl Lenko, Paula Cardenas, Clara Bellonch, Nil Moreno, Pol Fontclara
 
-Cambios visuales y estructurales:
+**Laboral** (14 nuevos):
+- Joan Salvo, Magda Vidueira, Estel Borrell, Monica Castro, Raul Rubio, Adrian Munoz, Irene Velarde, Adrian Montero, Raquel Chica, Alejandro Brotons, Yasmina Aguilera, Eric Abellan, Laia Moll, Pilar D'Ambrosio
 
-- **Header renovado**: Titulo "Nuestro Equipo" con subtitulo que mencione "Un equipo multidisciplinar de +20 profesionales del Grupo Navarro" (el numero se calculara dinamicamente segun los miembros en la DB)
-- **Contador animado**: Mostrar el numero total de profesionales de forma prominente, similar al estilo de Norgestion ("Un grupo de X profesionales")
-- **Organizacion por secciones**: Mostrar el equipo agrupado por division con cabeceras claras:
-  - Socios (cards mas grandes, destacados)
-  - Division M&A (Capittal)
-  - Division Fiscal y Contable
-  - Division Laboral
-  - Division Legal
-- **Cards diferenciadas para socios**: Los socios tendran un tamano mayor y un diseno mas destacado (similar al estilo de Norgestion donde el Presidente aparece primero y mas grande)
-- **Estadisticas del grupo**: Actualizar los contadores del header para reflejar el grupo completo
+**Servicios Globales** (8 nuevos):
+- Jordi Mayoral, Anabel Raso, Alberto Vicente, Gemma Zalacain, Pau Valls, Cinthia Sanchez, Aitana Lopez, Maria Ventin, Lucia Linares, Blanca Salvo
 
-**3. Actualizar las estadisticas del header**
+Cada miembro se insertara con:
+- `name`: Nombre completo
+- `position`: Nivel (Senior, Asociado, Junior, Master Scholar)
+- `email`: Email de nrro.es
+- `image_url`: URL de la imagen alojada en el Supabase de nrro.es
+- `section`: La seccion mapeada (Fiscal y Contable, Laboral, M&A, Servicios Globales)
+- `is_active`: true
+- `display_order`: Asignado secuencialmente dentro de cada seccion
 
-Cambiar las stats actuales para que reflejen el grupo:
-- "25+ Anos Experiencia" (se mantiene)
-- Nuevo: "X+ Profesionales" (numero dinamico basado en la DB)
-- "100+ Transacciones" (se mantiene)
-- Sustituir "98,7% Tasa Exito" por "3 Divisiones" o similar para reforzar la multidisciplinariedad
+### 2. Actualizar el componente `Team.tsx`
 
-**4. Anadir banner del grupo bajo el equipo**
+Cambios minimos:
+- Anadir "Servicios Globales" al `SECTION_CONFIG` con icono apropiado (por ejemplo, `Globe` o `Users`) y orden 5
+- Importar el icono adicional necesario
 
-Despues de las secciones de equipo, anadir un bloque que diga:
-"Capittal es la division de M&A de Navarro Tax and Legal. Juntos ofrecemos un servicio integral: financiero, fiscal, laboral y legal."
-Con enlace a nrro.es.
+### 3. Resultado esperado
+
+La pagina de equipo mostrara aproximadamente 35 profesionales organizados en 6 secciones:
+- Socios (2)
+- Division M&A (8)
+- Division Fiscal y Contable (12)
+- Division Laboral (14)
+- Division Servicios Globales (10+)
+
+El contador del header mostrara "35+ profesionales" de forma dinamica.
 
 ### Archivos afectados
+- Base de datos `team_members` -- INSERT de ~28 nuevos registros
+- `src/components/Team.tsx` -- Anadir seccion "Servicios Globales" al SECTION_CONFIG
 
-- `src/components/Team.tsx` -- Rediseno del componente con secciones, cards diferenciadas para socios, contador dinamico y banner del grupo
-- Base de datos `team_members` -- Actualizar secciones de los miembros existentes e insertar nuevos miembros de Navarro Tax and Legal
-
-### Prerequisito importante
-
-Para anadir miembros reales de Navarro Tax and Legal, necesitare que proporciones:
-- Nombres y cargos de los profesionales a incluir
-- Fotos (URLs o archivos)
-- A que division pertenecen (Fiscal, Laboral, Legal)
-
-Si prefieres avanzar sin esos datos todavia, puedo hacer el rediseno estructural con los 7 miembros actuales reorganizados en secciones (Socios / Equipo M&A) y dejar las secciones de Navarro Tax and Legal preparadas para cuando tengas los datos.
+### Nota importante
+Las imagenes estan alojadas en el Supabase de nrro.es (dominio `zntotcpagkunvkwpubqu.supabase.co`). Si en el futuro esas URLs dejan de estar disponibles, habria que migrar las imagenes al storage de Capittal.
 
