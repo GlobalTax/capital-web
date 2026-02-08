@@ -1,32 +1,39 @@
 
 
-## Corregir el mosaico de equipo para que las fotos no se vean aumentadas
+## Crear un mosaico de equipo bien proporcionado
 
-### Problema
+### Problema actual
 
-El grid del mosaico usa `absolute inset-0` (ocupa toda la pantalla), pero las celdas con `aspect-square` hacen que el grid se desborde verticalmente. Las fotos siguen viendose muy recortadas porque cada celda ocupa un area enorme del viewport.
-
-El enfoque actual intenta llenar toda la pantalla con pocas celdas, lo que hace que cada foto sea enorme y `object-cover` recorte excesivamente.
+El mosaico usa un grid CSS con `absolute inset-0` que ocupa toda la pantalla (100vh). Con 24 celdas en 6 columnas (4 filas), cada celda mide aproximadamente 250x250px, lo que sigue siendo grande y hace que `object-cover` recorte mucho las fotos. El problema de fondo es que pocas celdas dividen un espacio enorme.
 
 ### Solucion
 
-Cambiar la estrategia del grid para que las celdas NO usen `aspect-square` (que causa overflow) y en su lugar usar `auto-rows` con un tamano fijo para que el grid se distribuya uniformemente dentro del contenedor sin desbordarse. Ademas, aumentar el numero de celdas y columnas para que cada foto sea mas pequena y se vea completa.
+Crear un mosaico mas denso con mas filas y columnas, usando tamanios fijos pequenos para las celdas. En lugar de dejar que CSS divida el viewport, usaremos un grid con celdas de tamano fijo (ej. 120x120px) que se repite y se centra, cubriendo todo el fondo. Asi cada foto sera pequena y se vera completa.
 
 ### Cambios
 
 **Archivo**: `src/components/Hero.tsx`
 
-1. **Linea 161** - Cambiar el grid a mas columnas y usar `auto-rows` para distribuir uniformemente en el contenedor:
-   - De: `className="absolute inset-0 grid grid-cols-3 sm:grid-cols-4 gap-[2px]"`
-   - A: `className="absolute inset-0 grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 auto-rows-fr gap-[2px]"`
+1. **Cambiar el grid del mosaico** (linea 161) para usar columnas con tamano fijo que se repiten automaticamente para llenar el espacio:
+   - De: `grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 auto-rows-fr`
+   - A: `grid gap-[2px]` con estilo inline `gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))'` y `gridAutoRows: '120px'`
+   - Esto crea celdas de ~120px que se repiten para llenar toda la pantalla
 
-2. **Linea 165** - Volver a mas celdas para que cada una sea mas pequena:
-   - De: `const totalCells = 12;`
-   - A: `const totalCells = 24;`
+2. **Aumentar el numero de celdas** (linea 165) para cubrir toda la pantalla con celdas pequenas:
+   - De: `const totalCells = 24`
+   - A: Calcular dinamicamente: `const totalCells = 60` (suficiente para cubrir una pantalla grande con celdas de 120px)
 
-3. **Linea 170** - Quitar `aspect-square` (causa overflow) y dejar que `auto-rows-fr` controle la altura:
-   - De: `className="relative overflow-hidden aspect-square"`
-   - A: `className="relative overflow-hidden"`
+3. **Aplicar `object-cover` con `object-position: top`** (linea 174) para que las fotos muestren la parte superior (caras):
+   - De: `className="w-full h-full object-cover"`
+   - A: `className="w-full h-full object-cover object-top"`
 
-La clave es `auto-rows-fr`: divide la altura disponible del contenedor en filas iguales, evitando que las celdas se agranden mas alla de lo que permite el viewport. Con 24 celdas en 6 columnas = 4 filas, cada foto sera 1/6 del ancho y 1/4 de la altura, mostrando mucho mas de cada imagen.
+4. **Anadir `overflow-hidden`** al contenedor del grid para que las celdas extra que no caben se oculten sin scroll.
+
+### Resultado esperado
+
+- Celdas de ~120px x 120px (mucho mas pequenas que antes)
+- Aproximadamente 10-16 columnas y 5-8 filas segun el tamano de pantalla
+- Las 20 fotos del equipo se repiten para llenar todo el fondo
+- Cada foto se ve a un tamano natural, mostrando la cara completa
+- El overlay oscuro sigue encima para legibilidad del texto
 
