@@ -1,56 +1,39 @@
 
 
-## Corregir color y hacer editable la seccion "Areas de practica"
+## Cambiar todos los titulos de la home a negro
 
-### 1. Corregir texto gris a negro
+### Problema
 
-El texto "para tu empresa" en la linea 77 de `PracticeAreasSection.tsx` usa `text-muted-foreground` (gris). Se cambiara a `text-foreground` (negro) para cumplir el estandar tipografico.
+Varias secciones de la pagina principal usan `text-muted-foreground` (gris) en titulos, subtitulos y etiquetas de seccion. Segun el estandar tipografico, deben usar negro (`text-foreground`).
 
-### 2. Crear tabla en base de datos para las tarjetas de servicios
+### Cambios por archivo
 
-Se creara una tabla `practice_area_cards` con los campos necesarios para gestionar cada tarjeta:
+**1. `src/components/home/LaFirmaSection.tsx`**
 
-```text
-practice_area_cards
-- id (UUID, PK)
-- title (TEXT) - ej: "Venta de empresas"
-- description (TEXT) - texto que aparece al hover
-- image_url (TEXT) - URL de la imagen
-- href (TEXT) - enlace de destino
-- display_order (INTEGER) - orden de aparicion
-- is_active (BOOLEAN, default true)
-- created_at / updated_at (TIMESTAMPS)
-```
+| Linea | Elemento | De | A |
+|-------|----------|-----|-----|
+| 34 | Etiquetas de stats ("Valor asesorado", etc.) | `text-muted-foreground` | `text-foreground/70` |
+| 53 | Etiqueta de seccion "La Firma" | `text-muted-foreground/60` | `text-foreground/60` |
+| 59 | Subtitulo "desde 2008" dentro del h2 | `text-muted-foreground` | `text-foreground` |
+| 90 | Parrafo descriptivo principal | `text-muted-foreground` | `text-foreground/80` |
+| 93 | Segundo parrafo descriptivo | `text-muted-foreground/80` | `text-foreground/70` |
+| 101 | Texto "Maxima discrecion..." | `text-muted-foreground` | `text-foreground/70` |
+| 105 | Texto "Asesoramiento objetivo..." | `text-muted-foreground` | `text-foreground/70` |
 
-Las imagenes se subiran al bucket `hero-images` existente (reutilizandolo).
+**2. `src/components/home/PracticeAreasSection.tsx`**
 
-### 3. Crear administrador en el panel
+| Linea | Elemento | De | A |
+|-------|----------|-----|-----|
+| 103 | Etiqueta de seccion "Areas de practica" | `text-muted-foreground/60` | `text-foreground/60` |
+| 172 | Texto CTA "Necesitas asesoramiento..." | `text-muted-foreground` | `text-foreground/80` |
 
-Un nuevo componente `PracticeAreasManager.tsx` en `/admin/practice-areas` que permita:
-- Ver las 4 tarjetas actuales
-- Editar titulo, descripcion, enlace e imagen de cada una
-- Subir nuevas fotos
-- Reordenar con drag-and-drop
-- Activar/desactivar tarjetas
+**3. `src/components/home/MANewsSection.tsx`**
 
-Se anadira al sidebar del admin bajo "GESTIONAR DATOS" junto a "Hero Slides".
+| Linea | Elemento | De | A |
+|-------|----------|-----|-----|
+| 94 | Subtitulo "Mantente informado..." | `text-muted-foreground` | `text-foreground/70` |
 
-### 4. Hacer dinamico el componente publico
+### Nota
 
-`PracticeAreasSection.tsx` pasara de datos hardcodeados a cargar desde Supabase con React Query, mostrando solo las tarjetas activas ordenadas por `display_order`.
-
-### Seccion tecnica
-
-**Archivos a modificar:**
-- `src/components/home/PracticeAreasSection.tsx` - Color del texto + carga dinamica desde DB
-- `src/features/admin/config/sidebar-config.ts` - Anadir entrada "Areas de Practica"
-- `src/features/admin/components/AdminRouter.tsx` - Anadir ruta `/admin/practice-areas`
-
-**Archivos a crear:**
-- `src/components/admin/PracticeAreasManager.tsx` - Panel de gestion CRUD
-
-**Migracion SQL:**
-- Crear tabla `practice_area_cards` con RLS
-- Insertar los 4 registros iniciales con las imagenes actuales
-- Politica SELECT publica, INSERT/UPDATE/DELETE solo admin
+Los textos de cuerpo pequeno dentro de tarjetas (excerpts de noticias, fechas, fuentes) y los elementos de UI del admin se mantienen en gris ya que son informacion secundaria, no titulos. Solo se cambian los titulos, subtitulos y textos destacados de las secciones publicas de la home.
 
