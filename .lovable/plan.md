@@ -1,39 +1,69 @@
 
 
-## Cambiar todos los titulos de la home a negro
+## Hacer editable la seccion "La Firma" desde el admin
 
-### Problema
+### Objetivo
 
-Varias secciones de la pagina principal usan `text-muted-foreground` (gris) en titulos, subtitulos y etiquetas de seccion. Segun el estandar tipografico, deben usar negro (`text-foreground`).
+Crear una seccion en el panel de administracion (`/admin/la-firma`) para gestionar la foto del equipo y todo el contenido textual de la seccion "La Firma" de la home.
 
-### Cambios por archivo
+### 1. Crear tabla en base de datos
 
-**1. `src/components/home/LaFirmaSection.tsx`**
+Una tabla `la_firma_content` tipo "singleton" (un solo registro) con todos los campos editables:
 
-| Linea | Elemento | De | A |
-|-------|----------|-----|-----|
-| 34 | Etiquetas de stats ("Valor asesorado", etc.) | `text-muted-foreground` | `text-foreground/70` |
-| 53 | Etiqueta de seccion "La Firma" | `text-muted-foreground/60` | `text-foreground/60` |
-| 59 | Subtitulo "desde 2008" dentro del h2 | `text-muted-foreground` | `text-foreground` |
-| 90 | Parrafo descriptivo principal | `text-muted-foreground` | `text-foreground/80` |
-| 93 | Segundo parrafo descriptivo | `text-muted-foreground/80` | `text-foreground/70` |
-| 101 | Texto "Maxima discrecion..." | `text-muted-foreground` | `text-foreground/70` |
-| 105 | Texto "Asesoramiento objetivo..." | `text-muted-foreground` | `text-foreground/70` |
+```text
+la_firma_content
+- id (UUID, PK)
+- section_label (TEXT) - "La Firma"
+- heading_line1 (TEXT) - "Confianza y experiencia"
+- heading_line2 (TEXT) - "desde 2008"
+- image_url (TEXT) - URL de la foto del equipo
+- image_alt (TEXT) - Texto alternativo de la imagen
+- paragraph1 (TEXT) - Primer parrafo descriptivo
+- paragraph2 (TEXT) - Segundo parrafo descriptivo
+- value1_title (TEXT) - "Confidencialidad"
+- value1_text (TEXT) - "Maxima discrecion..."
+- value2_title (TEXT) - "Independencia"
+- value2_text (TEXT) - "Asesoramiento objetivo..."
+- cta_text (TEXT) - "Conocer al equipo"
+- cta_url (TEXT) - "/equipo"
+- stat1_value (INT), stat1_suffix (TEXT), stat1_prefix (TEXT), stat1_label (TEXT)
+- stat2_value (INT), stat2_suffix (TEXT), stat2_prefix (TEXT), stat2_label (TEXT)
+- stat3_value (INT), stat3_suffix (TEXT), stat3_prefix (TEXT), stat3_label (TEXT)
+- stat4_value (INT), stat4_suffix (TEXT), stat4_prefix (TEXT), stat4_label (TEXT)
+- updated_at (TIMESTAMP)
+```
 
-**2. `src/components/home/PracticeAreasSection.tsx`**
+Se insertara un registro inicial con los valores actuales hardcodeados. La imagen se subira al bucket `hero-images`.
 
-| Linea | Elemento | De | A |
-|-------|----------|-----|-----|
-| 103 | Etiqueta de seccion "Areas de practica" | `text-muted-foreground/60` | `text-foreground/60` |
-| 172 | Texto CTA "Necesitas asesoramiento..." | `text-muted-foreground` | `text-foreground/80` |
+### 2. Crear administrador
 
-**3. `src/components/home/MANewsSection.tsx`**
+Nuevo componente `LaFirmaManager.tsx` en `/admin/la-firma` con:
+- Campo de subida de imagen para la foto del equipo
+- Campos de texto para titulos, parrafos, valores y CTA
+- Campos numericos para las 4 estadisticas (valor, sufijo, prefijo, etiqueta)
+- Boton "Guardar cambios" que actualiza el registro singleton
+- Vista previa de la imagen actual
 
-| Linea | Elemento | De | A |
-|-------|----------|-----|-----|
-| 94 | Subtitulo "Mantente informado..." | `text-muted-foreground` | `text-foreground/70` |
+### 3. Hacer dinamico el componente publico
 
-### Nota
+`LaFirmaSection.tsx` cargara datos desde la tabla `la_firma_content` con React Query, manteniendo los valores actuales como fallback si no hay datos en la base.
 
-Los textos de cuerpo pequeno dentro de tarjetas (excerpts de noticias, fechas, fuentes) y los elementos de UI del admin se mantienen en gris ya que son informacion secundaria, no titulos. Solo se cambian los titulos, subtitulos y textos destacados de las secciones publicas de la home.
+### 4. Integrar en sidebar y rutas
+
+Anadir "La Firma" al sidebar bajo "GESTIONAR DATOS" y registrar la ruta en `AdminRouter.tsx`.
+
+### Seccion tecnica
+
+**Archivos a crear:**
+- `src/components/admin/LaFirmaManager.tsx` - Panel de gestion
+
+**Archivos a modificar:**
+- `src/components/home/LaFirmaSection.tsx` - Carga dinamica desde DB
+- `src/features/admin/config/sidebar-config.ts` - Entrada "La Firma"
+- `src/features/admin/components/AdminRouter.tsx` - Ruta `/admin/la-firma`
+- `src/features/admin/components/LazyAdminComponents.tsx` - Lazy import
+
+**Migracion SQL:**
+- Crear tabla `la_firma_content` con RLS (SELECT publico, UPDATE solo admin)
+- Insertar registro inicial con contenido actual
 
