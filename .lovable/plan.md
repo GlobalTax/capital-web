@@ -1,36 +1,42 @@
 
 
-## Adaptar el mosaico a imagenes panoramicas (1920x600)
+## Usar la imagen panoramica como fondo completo (sin mosaico)
 
 ### Problema
 
-Las imagenes del equipo tienen un formato panoramico de 1920x600 (ratio ~3.2:1), pero las celdas del mosaico son cuadradas (120x120px). Esto hace que `object-cover` recorte la mayor parte de la imagen para encajarla en un cuadrado, mostrando solo una franja pequena.
+Las imagenes del equipo son panoramicas (1920x600), disenadas para verse como un banner completo. Intentar cortarlas en celdas pequenas de un grid siempre resulta en fotos irreconocibles, porque cada celda solo muestra un fragmento diminuto de una imagen enorme.
 
 ### Solucion
 
-Cambiar las celdas del grid de cuadradas a rectangulares horizontales, con un ratio similar al de las imagenes. Asi `object-cover` apenas necesitara recortar.
+Cambiar la estrategia del mosaico: en lugar de dividir las fotos en un grid de celdas, mostrar una sola imagen panoramica del equipo como fondo completo (igual que los otros slides del hero usan una imagen de fondo). Si hay varias fotos de equipo, se pueden rotar/ciclar.
 
 ### Cambios
 
 **Archivo**: `src/components/Hero.tsx`
 
-1. **Cambiar las proporciones de las celdas** del grid inline style:
-   - De: `gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))'` y `gridAutoRows: '120px'`
-   - A: `gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))'` y `gridAutoRows: '75px'`
-   - Esto crea celdas de ~240x75px (ratio ~3.2:1), que se ajustan al formato panoramico de las fotos
+1. **Reemplazar el bloque del mosaico** (lineas 158-188) por una imagen de fondo simple:
+   - Tomar la primera foto del equipo (`teamMembers[0].image_url`)
+   - Mostrarla como `<img>` con `absolute inset-0 w-full h-full object-cover object-center` (exactamente como hacen los otros slides)
+   - Mantener el overlay oscuro encima para legibilidad del texto
 
-2. **Cambiar `object-top` a `object-center`** en las imagenes:
-   - De: `className="w-full h-full object-cover object-top"`
-   - A: `className="w-full h-full object-cover object-center"`
-   - Con celdas panoramicas ya no hay que forzar mostrar la parte superior
-
-3. **Aumentar `totalCells` a 80** para cubrir toda la pantalla con celdas mas estrechas (mas filas necesarias):
-   - De: `const totalCells = 60`
-   - A: `const totalCells = 80`
+2. **Codigo resultante** (reemplaza lineas 158-188):
+```tsx
+) : slide.isMosaic && teamMembers.length > 0 ? (
+  <>
+    <img
+      src={teamMembers[0].image_url || ''}
+      alt="Equipo"
+      className="absolute inset-0 w-full h-full object-cover object-center"
+    />
+    <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/40" />
+  </>
+)
+```
 
 ### Resultado esperado
 
-- Celdas de ~240x75px que se ajustan al formato panoramico de las fotos
-- Las caras y cuerpos se veran completos sin recorte excesivo
-- Aproximadamente 6-8 columnas y 8-10 filas segun el tamano de pantalla
-- El mosaico cubre todo el fondo de forma uniforme
+- La imagen panoramica 1920x600 se muestra completa como fondo del hero
+- Se ve exactamente como los otros slides (imagen + overlay + texto encima)
+- Sin recorte excesivo: `object-cover` ajusta proporcionalmente
+- Mucho mas simple y efectivo que el grid de celdas
+
