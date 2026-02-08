@@ -9991,6 +9991,33 @@ export type Database = {
           },
         ]
       }
+      hero_service_pills: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: string
+          is_active: boolean | null
+          label: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          label: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean | null
+          label?: string
+          url?: string
+        }
+        Relationships: []
+      }
       hero_slides: {
         Row: {
           autoplay_duration: number | null
