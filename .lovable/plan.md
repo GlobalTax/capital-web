@@ -1,20 +1,35 @@
 
+## Ajustar la foto del equipo en el Hero
 
-## Revertir negrita y usar color negro como estandar tipografico
+### Problema
 
-### Que se hara
+Cuando se sube una foto como fondo de un slide del Hero, se renderiza con `background-image` en CSS y `bg-cover`. Esto puede causar problemas de ajuste dependiendo de las dimensiones de la imagen y del viewport. Ademas, la animacion de escala de framer-motion (`scale: 1.1`) puede empeorar el recorte.
 
-Eliminar todas las clases `font-bold` anadidas recientemente en el Hero y restaurar los pesos tipograficos originales (`font-normal`, `font-medium`). El estandar del proyecto es que la tipografia sea de **color negro** (no peso bold).
+### Solucion
+
+Cambiar el renderizado de imagenes de fondo de `background-image` (CSS) a un elemento `<img>` con `object-cover`, igual que ya se hace con los videos. Esto da un comportamiento mas fiable y consistente.
 
 ### Cambios
 
 **Archivo**: `src/components/Hero.tsx`
 
-1. **Titulo (h1, linea 207)**: Cambiar `font-bold` a `font-normal` (como estaba originalmente). El color `text-foreground` (negro) ya esta aplicado.
-2. **Subtitulo (p, linea 211)**: Quitar `font-bold`. Mantener el color que ya tiene.
-3. **Service Pills (lineas 220, 227, 234)**: Cambiar `font-bold` a `font-medium` (peso original). El color `text-foreground/80` ya es oscuro/negro.
-4. **CTAs primario (lineas 245, 255)**: Cambiar `font-bold` a `font-medium` (peso original).
-5. **CTA secundario (linea 265)**: Cambiar `font-bold` a `font-medium` (peso original).
+**Lineas 184-189** - Reemplazar el bloque de imagen de fondo:
 
-Son cambios puntuales de clases Tailwind, revirtiendo el peso bold y manteniendo los colores oscuros/negros existentes.
+Antes:
+```tsx
+<div
+  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+  style={{ backgroundImage: `url(${slide.image})` }}
+/>
+```
 
+Despues:
+```tsx
+<img
+  src={slide.image}
+  alt={slide.title}
+  className="absolute inset-0 w-full h-full object-cover"
+/>
+```
+
+Este cambio usa la misma tecnica que ya se aplica al fondo de video (linea 154), garantizando que la imagen siempre cubra todo el hero sin deformarse ni dejar espacios vacios.
