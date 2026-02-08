@@ -1,44 +1,61 @@
 
 
-## Reemplazar el Hero por un diseño institucional con slider
+## Conectar el Hero a la base de datos y reducir el blanco
 
-### Problema
-El hero actual muestra un "dashboard" con operaciones activas, sectores y porcentajes de crecimiento, lo que transmite imagen de marketplace o plataforma SaaS en lugar de una firma de asesoramiento M&A de alta gama.
+### Problema actual
+1. Las imagenes del hero estan hardcodeadas en el codigo (imports estaticos de JPG) y no se pueden cambiar sin tocar codigo.
+2. El gradient overlay `from-white/90 via-white/70 to-transparent` es demasiado blanco y tapa las imagenes.
 
 ### Solucion
-Reemplazar el hero actual por el componente **HeroSliderSection** ya prototipado en `/test/nuevo-diseno`, adaptandolo al sistema i18n y a las rutas de produccion. Este hero usa imagenes a pantalla completa con transiciones suaves, tipografia serif elegante y un CTA limpio, alineado con la identidad institucional de Norgestion y firmas similares.
+
+#### 1. Conectar el Hero a la tabla `hero_slides` de Supabase
+
+Ya existe una tabla `hero_slides` con campos perfectos: `image_url`, `title`, `subtitle`, `cta_primary_text`, `cta_primary_url`, `cta_secondary_text`, `cta_secondary_url`, `is_active`, `display_order`, `background_color`, `text_color`.
+
+**Cambios en `src/components/Hero.tsx`**:
+- Hacer fetch de los slides desde Supabase (`hero_slides` donde `is_active = true`, ordenados por `display_order`)
+- Usar las imagenes estaticas actuales como fallback si no hay datos en la BD
+- Mostrar `title`, `subtitle` y CTAs desde la base de datos
+- Respetar `text_color` y `background_color` si estan definidos
+
+#### 2. Reducir la opacidad del overlay blanco
+
+Cambiar el gradient para que las imagenes se vean mas:
+- De: `from-white/90 via-white/70 to-transparent`
+- A: `from-white/70 via-white/40 to-transparent`
+
+Esto mantiene la legibilidad del texto pero deja que las imagenes respiren mas.
+
+#### 3. Panel admin para gestionar slides
+
+**Archivo nuevo: `src/components/admin/HeroSlidesManager.tsx`**
+
+Componente de administracion con:
+- Lista de slides existentes con preview de imagen
+- Formulario para editar/crear slides: titulo, subtitulo, URL de imagen, CTAs, orden, activo/inactivo
+- Subida de imagenes al storage de Supabase
+- Drag & drop para reordenar (usando `@hello-pangea/dnd` ya instalado)
+- Toggle de activo/inactivo
+
+**Integracion en el panel admin existente** (se buscara la ruta admin correspondiente para anadir el enlace).
+
+#### 4. Actualizar datos en Supabase
+
+Insertar/actualizar los 3 slides actuales en la tabla `hero_slides` con las URLs de imagen correspondientes (subidas al storage de Supabase o mantenidas como assets estaticos inicialmente).
 
 ---
 
-### Diseno del nuevo Hero
+### Archivos a modificar/crear
 
-- **Slider de 3 imagenes** a pantalla completa con transicion cada 6 segundos
-- **Gradient overlay** blanco desde la izquierda para legibilidad del texto
-- **Titulo serif grande** (Playfair Display) con mensajes rotativos
-- **Subtitulo** descriptivo debajo del titulo
-- **CTA unico**: Boton "Contactar" con flecha
-- **Indicadores de slide**: Lineas horizontales en la esquina inferior izquierda
-- **Contador**: "01/03" en la esquina inferior derecha
-- **Indicador de scroll**: Animacion sutil centrada en la parte inferior
-- **Imagenes existentes**: Reutiliza `hero-slide-1.jpg`, `hero-slide-2.jpg`, `hero-slide-3.jpg`
-
-### Cambios en archivos
-
-**Archivo modificado**: `src/components/Hero.tsx`
-- Reemplazar completamente el contenido actual (dashboard card + badges flotantes)
-- Nuevo componente basado en `HeroSliderSection` del prototipo
-- Mantener soporte i18n con el hook `useI18n()` para los textos
-- Conservar `ErrorBoundary` como wrapper
-- Mantener el CTA apuntando a `/lp/calculadora-web` (valorar empresa) ademas de uno de contacto
-- Adaptar los slides con mensajes institucionales: compraventa de empresas, presencia nacional, asesoramiento personalizado
-
-**Sin archivos nuevos**: Se modifica el componente existente, manteniendo el mismo export default.
+| Archivo | Accion |
+|---------|--------|
+| `src/components/Hero.tsx` | Modificar: fetch desde Supabase, fallback a estaticos, overlay menos blanco |
+| `src/components/admin/HeroSlidesManager.tsx` | Crear: panel de gestion de slides |
+| Integracion admin (ruta existente) | Modificar: anadir enlace/tab al gestor de slides |
 
 ### Detalles tecnicos
 
-- Usa `framer-motion` (AnimatePresence) para transiciones entre slides (ya instalado)
-- Tipografia `font-serif` para el titulo principal (Playfair Display via Tailwind config)
-- Autoplay cada 6 segundos con pausa al interactuar manualmente
-- Las imagenes de los slides ya existen en `src/assets/test/`
-- Se eliminan los badges flotantes ("M&A Leaders", "Profesional"), la dashboard card y las stats duplicadas (que ahora estan en LaFirmaSection)
-
+- Se usara `@tanstack/react-query` para el fetch de slides (patron existente en el proyecto)
+- Subida de imagenes via Supabase Storage (bucket publico para hero images)
+- Fallback graceful: si la BD no devuelve slides o falla, se muestran los 3 slides estaticos actuales
+- El overlay reducido usa `from-white/70 via-white/40 to-transparent` para menos blancura manteniendo legibilidad
