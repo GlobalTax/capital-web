@@ -89,7 +89,8 @@ import {
   LazyCalculatorErrorsPage,
   LazyDealsuitePage,
   LazyDealsPausedPage,
-  LazyPausedReasonsSettings
+  LazyPausedReasonsSettings,
+  LazyLaFirmaManager
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -278,6 +279,9 @@ const AdminRouter = () => {
           {/* Deals Paused */}
           <Route path="/deals-paused" element={<LazyDealsPausedPage />} />
           <Route path="/settings/deal-paused-reasons" element={<LazyPausedReasonsSettings />} />
+          
+          {/* La Firma */}
+          <Route path="/la-firma" element={<LazyLaFirmaManager />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />

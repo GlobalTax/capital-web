@@ -147,3 +147,6 @@ export const LazyDealsuitePage = lazy(() => import('@/pages/admin/DealsuitePage'
 // === DEALS PAUSED ===
 export const LazyDealsPausedPage = lazy(() => import('@/pages/admin/DealsPausedPage'));
 export const LazyPausedReasonsSettings = lazy(() => import('@/pages/admin/PausedReasonsSettingsPage'));
+
+// === LA FIRMA ===
+export const LazyLaFirmaManager = lazy(() => import('@/components/admin/LaFirmaManager'));

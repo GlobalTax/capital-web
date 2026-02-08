@@ -11387,6 +11387,108 @@ export type Database = {
         }
         Relationships: []
       }
+      la_firma_content: {
+        Row: {
+          cta_text: string
+          cta_url: string
+          heading_line1: string
+          heading_line2: string
+          id: string
+          image_alt: string | null
+          image_url: string | null
+          paragraph1: string
+          paragraph2: string
+          section_label: string
+          stat1_label: string
+          stat1_prefix: string | null
+          stat1_suffix: string
+          stat1_value: number
+          stat2_label: string
+          stat2_prefix: string | null
+          stat2_suffix: string
+          stat2_value: number
+          stat3_label: string
+          stat3_prefix: string | null
+          stat3_suffix: string
+          stat3_value: number
+          stat4_label: string
+          stat4_prefix: string | null
+          stat4_suffix: string
+          stat4_value: number
+          updated_at: string
+          value1_text: string
+          value1_title: string
+          value2_text: string
+          value2_title: string
+        }
+        Insert: {
+          cta_text?: string
+          cta_url?: string
+          heading_line1?: string
+          heading_line2?: string
+          id?: string
+          image_alt?: string | null
+          image_url?: string | null
+          paragraph1?: string
+          paragraph2?: string
+          section_label?: string
+          stat1_label?: string
+          stat1_prefix?: string | null
+          stat1_suffix?: string
+          stat1_value?: number
+          stat2_label?: string
+          stat2_prefix?: string | null
+          stat2_suffix?: string
+          stat2_value?: number
+          stat3_label?: string
+          stat3_prefix?: string | null
+          stat3_suffix?: string
+          stat3_value?: number
+          stat4_label?: string
+          stat4_prefix?: string | null
+          stat4_suffix?: string
+          stat4_value?: number
+          updated_at?: string
+          value1_text?: string
+          value1_title?: string
+          value2_text?: string
+          value2_title?: string
+        }
+        Update: {
+          cta_text?: string
+          cta_url?: string
+          heading_line1?: string
+          heading_line2?: string
+          id?: string
+          image_alt?: string | null
+          image_url?: string | null
+          paragraph1?: string
+          paragraph2?: string
+          section_label?: string
+          stat1_label?: string
+          stat1_prefix?: string | null
+          stat1_suffix?: string
+          stat1_value?: number
+          stat2_label?: string
+          stat2_prefix?: string | null
+          stat2_suffix?: string
+          stat2_value?: number
+          stat3_label?: string
+          stat3_prefix?: string | null
+          stat3_suffix?: string
+          stat3_value?: number
+          stat4_label?: string
+          stat4_prefix?: string | null
+          stat4_suffix?: string
+          stat4_value?: number
+          updated_at?: string
+          value1_text?: string
+          value1_title?: string
+          value2_text?: string
+          value2_title?: string
+        }
+        Relationships: []
+      }
       landing_page_conversions: {
         Row: {
           attribution_data: Json | null
