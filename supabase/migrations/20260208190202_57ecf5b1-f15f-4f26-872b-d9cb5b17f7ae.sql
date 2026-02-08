@@ -1,0 +1,2 @@
+INSERT INTO sidebar_items (title, url, icon, description, section_id, is_active, position)
+VALUES ('Hero Slides', '/admin/hero-slides', 'Image', 'Imágenes y textos del hero principal', '977b2721-6351-4714-b58c-8a5c5aa7d7d9', true, 8);
