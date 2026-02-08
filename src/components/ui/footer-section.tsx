@@ -18,6 +18,12 @@ export function Footerdemo() {
               <Link to="/" className="text-2xl font-normal text-white">
                 Capittal
               </Link>
+              <p className="text-gray-400 text-xs mt-1">
+                División de M&A de{' '}
+                <a href="https://nrro.es" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
+                  Navarro Tax &amp; Legal
+                </a>
+              </p>
             </div>
             <p className="text-gray-300 mb-4 max-w-md text-sm">
               {t('footer.company.description')}
