@@ -242,6 +242,12 @@ export const sidebarSections: SidebarSection[] = [
         icon: Image,
         description: "Imágenes y textos del hero principal"
       },
+      { 
+        title: "Áreas de Práctica", 
+        url: "/admin/practice-areas", 
+        icon: Palette,
+        description: "Tarjetas de servicios de la home"
+      },
     ]
   },
   {

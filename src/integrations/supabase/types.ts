@@ -15924,6 +15924,42 @@ export type Database = {
           },
         ]
       }
+      practice_area_cards: {
+        Row: {
+          created_at: string
+          description: string
+          display_order: number
+          href: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          display_order?: number
+          href: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          display_order?: number
+          href?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       presentation_assets: {
         Row: {
           created_at: string | null

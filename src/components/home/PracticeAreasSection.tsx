@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import serviceVenta from '@/assets/test/service-venta.jpg';
 import serviceValoracion from '@/assets/test/service-valoracion.jpg';
 import serviceDueDiligence from '@/assets/test/service-due-diligence.jpg';
@@ -12,7 +14,7 @@ interface Service {
   href: string;
 }
 
-const services: Service[] = [
+const fallbackServices: Service[] = [
   {
     image: serviceVenta,
     title: 'Venta de empresas',
@@ -39,6 +41,13 @@ const services: Service[] = [
   },
 ];
 
+const fallbackImageMap: Record<string, string> = {
+  'Venta de empresas': serviceVenta,
+  'Valoración de empresas': serviceValoracion,
+  'Due Diligence': serviceDueDiligence,
+  'Planificación fiscal': serviceFiscal,
+};
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -57,6 +66,29 @@ const cardVariants = {
 };
 
 const PracticeAreasSection: React.FC = () => {
+  const { data: dbCards } = useQuery({
+    queryKey: ['practice-area-cards-public'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('practice_area_cards')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const services: Service[] = dbCards && dbCards.length > 0
+    ? dbCards.map(card => ({
+        image: card.image_url || fallbackImageMap[card.title] || serviceVenta,
+        title: card.title,
+        description: card.description,
+        href: card.href,
+      }))
+    : fallbackServices;
+
   return (
     <section id="servicios" className="py-24 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
@@ -74,7 +106,7 @@ const PracticeAreasSection: React.FC = () => {
           <h2 className="font-serif text-foreground text-4xl md:text-5xl lg:text-6xl leading-tight">
             Soluciones integrales
             <br />
-            <span className="text-muted-foreground">para tu empresa</span>
+            <span className="text-foreground">para tu empresa</span>
           </h2>
         </motion.div>
 
