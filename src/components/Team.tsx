@@ -39,7 +39,7 @@ const PartnerCard = ({ member }: { member: TeamMember }) => {
           <img
             src={member.image_url}
             alt={`${member.name} - ${member.position || 'Socio'}`}
-            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
             onError={() => setImageError(true)}
             loading="lazy"
           />
@@ -92,7 +92,7 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
           <img
             src={member.image_url}
             alt={`${member.name} - ${member.position || 'Miembro del equipo'}`}
-            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
             onError={() => setImageError(true)}
             loading="lazy"
           />
