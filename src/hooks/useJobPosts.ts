@@ -35,11 +35,29 @@ export const useJobPosts = (filters?: { status?: string; category_id?: string })
 
   const createJobPost = useMutation({
     mutationFn: async (jobPost: JobPostFormData) => {
-      // Generate slug from title
-      const slug = jobPost.title
+      // Generate sanitized slug from title
+      let baseSlug = jobPost.title
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
         .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-');
+        .replace(/[^a-z0-9\s-]/g, '') // only alphanumeric, spaces, hyphens
+        .replace(/\s+/g, '-') // spaces to hyphens
+        .replace(/-+/g, '-') // collapse multiple hyphens
+        .replace(/^-|-$/g, '') // trim hyphens
+        || `oferta-${Date.now()}`; // fallback
+
+      // Deduplicate: check for existing slugs
+      const { data: existing } = await supabase
+        .from('job_posts')
+        .select('slug')
+        .like('slug', `${baseSlug}%`);
+
+      const existingSlugs = new Set((existing || []).map(r => r.slug));
+      let slug = baseSlug;
+      if (existingSlugs.has(slug)) {
+        let counter = 2;
+        while (existingSlugs.has(`${baseSlug}-${counter}`)) counter++;
+        slug = `${baseSlug}-${counter}`;
+      }
 
       const { data, error } = await supabase
         .from('job_posts')
