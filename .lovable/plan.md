@@ -1,44 +1,45 @@
 
 
-## Añadir pills/links de servicios al Hero
+## Montaje de fotos del equipo en el Hero
 
-### Qué se hará
+### Que se hara
 
-Añadir una fila de **pills (badges clicables)** debajo del subtítulo y encima de los CTAs en el Hero, con los enlaces:
+Anadir un **avatar stack** (fotos del equipo superpuestas) en el lado derecho del Hero, debajo o junto al contenido actual. Se usaran las fotos reales de los 10 miembros del equipo desde la tabla `team_members`.
 
-- **Venta de empresas** → `/venta-empresas`
-- **Mandatos de compra** → `/mandatos-compra` (o la ruta correspondiente)
-- **Valoración & Due Diligence** → `/servicios/valoraciones`
+### Diseno visual
 
-### Diseño visual
+Un grupo de avatares circulares superpuestos (overlapping), estilo "avatar stack", con:
+- Fotos circulares de ~48px (desktop) / ~36px (movil)
+- Superpuestas con `-ml-3` (margen negativo) para solaparse
+- Borde blanco de 2px alrededor de cada foto (`ring-2 ring-white`)
+- Un texto acompanante: **"+60 profesionales a tu servicio"**
+- Ubicado debajo de los Service Pills y encima de los CTAs
 
-Las pills serán botones con estilo de etiqueta (pill/chip), separados por un punto medio (`·`), con:
-- Borde sutil (`border-foreground/20`)
-- Fondo semi-transparente (`bg-white/60 backdrop-blur-sm`)
-- Hover con fondo más sólido
-- Tamaño de texto pequeño (`text-sm`)
-- Esquinas redondeadas (`rounded-full`)
-- Separados visualmente por un `·` decorativo en color muted
-
-### Ubicación en el layout
+### Layout resultante
 
 ```text
-[Título serif grande]
-[Subtítulo descriptivo]
-[Pill 1] · [Pill 2] · [Pill 3]    <-- NUEVO
+[Titulo serif grande]
+[Subtitulo descriptivo]
+[Pill 1] · [Pill 2] · [Pill 3]
+[Avatar stack: 8 fotos solapadas] + "60 profesionales"   <-- NUEVO
 [CTA Contactar] [CTA Valorar]
 ```
 
-### Archivo a modificar
+### Detalle tecnico
 
-**`src/components/Hero.tsx`** (líneas ~154-158 aprox.)
+**Archivo a modificar**: `src/components/Hero.tsx`
 
-Se insertará un bloque nuevo entre el párrafo del subtítulo y el div de CTAs, con 3 `Link` de React Router estilizados como pills.
+1. Importar `useTeamMembers` desde `@/hooks/useTeamMembers`
+2. Importar `Avatar`, `AvatarImage`, `AvatarFallback` desde `@/components/ui/avatar`
+3. En el componente, llamar al hook para obtener las fotos
+4. Insertar entre los Service Pills (linea 180) y los CTAs (linea 182) un nuevo bloque:
+   - Un `div` con `flex items-center gap-3`
+   - Dentro, un `div` con `flex -space-x-3` que renderiza los primeros 8 avatares
+   - Cada avatar usa el componente `Avatar` con tamano `h-10 w-10` y `ring-2 ring-white`
+   - Al final, un `span` con el texto "+60 profesionales"
+5. Si no hay fotos cargadas, no se muestra nada (render condicional)
 
-### Detalle técnico
+### Datos
 
-- Usa `Link` de `react-router-dom` (ya importado)
-- Estilo Tailwind inline, sin componente nuevo
-- Los pills son estáticos (no vienen de BD), ya que representan la propuesta de valor fija de la firma
-- Responsive: en móvil se apilarán o harán wrap con `flex-wrap`
+Se mostraran los primeros 8 miembros (de los 10 disponibles) para mantener el stack compacto. Las fotos ya estan almacenadas en Supabase Storage y se cargan via URL.
 
