@@ -240,7 +240,7 @@ Responde SOLO con el JSON válido, sin explicaciones.`;
           };
         }
       }
-    } else if (type === 'full') {
+    } else if (type === 'full' || type === 'parse') {
       try {
         result = JSON.parse(generatedContent);
       } catch (e) {
