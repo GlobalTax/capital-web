@@ -171,7 +171,7 @@ const Hero: React.FC = () => {
                   alt={slide.title}
                   className="absolute inset-0 w-full h-full object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/70 to-white/20" />
               </>
             )}
           </motion.div>
