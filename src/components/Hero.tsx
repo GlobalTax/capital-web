@@ -158,11 +158,17 @@ const Hero: React.FC = () => {
             ) : slide.isMosaic && teamMembers.length > 0 ? (
               <>
                 {/* Team Photo Mosaic Background */}
-                <div className="absolute inset-0 grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 auto-rows-fr gap-[2px]">
+                <div 
+                  className="absolute inset-0 grid gap-[2px] overflow-hidden"
+                  style={{ 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                    gridAutoRows: '120px'
+                  }}
+                >
                   {(() => {
                     const photos = teamMembers.slice(0, 10);
                     const cells: typeof photos = [];
-                    const totalCells = 24;
+                    const totalCells = 60;
                     for (let i = 0; i < totalCells; i++) {
                       cells.push(photos[i % photos.length]);
                     }
@@ -171,8 +177,8 @@ const Hero: React.FC = () => {
                         <img
                           src={member.image_url || ''}
                           alt={member.name}
-                          className="w-full h-full object-cover"
-                          loading={i < 12 ? 'eager' : 'lazy'}
+                          className="w-full h-full object-cover object-top"
+                          loading={i < 20 ? 'eager' : 'lazy'}
                         />
                       </div>
                     ));
