@@ -31,7 +31,7 @@ const StatCounter: React.FC<StatItem & { delay: number }> = ({
       <div className="text-foreground text-4xl md:text-5xl lg:text-6xl font-light tracking-tight">
         {prefix}{count}{suffix}
       </div>
-      <div className="text-muted-foreground text-sm mt-2 tracking-wide uppercase">
+      <div className="text-foreground/70 text-sm mt-2 tracking-wide uppercase">
         {label}
       </div>
     </div>
@@ -50,13 +50,13 @@ const LaFirmaSection: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <span className="text-muted-foreground/60 text-sm tracking-[0.2em] uppercase block mb-4">
+          <span className="text-foreground/60 text-sm tracking-[0.2em] uppercase block mb-4">
             La Firma
           </span>
           <h2 className="font-serif text-foreground text-4xl md:text-5xl lg:text-6xl leading-tight">
             Confianza y experiencia
             <br />
-            <span className="text-muted-foreground">desde 2008</span>
+            <span className="text-foreground">desde 2008</span>
           </h2>
         </motion.div>
 
@@ -87,10 +87,10 @@ const LaFirmaSection: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <p className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-6">
+            <p className="text-foreground/80 text-lg md:text-xl leading-relaxed mb-6">
               Desde 2008, acompañamos a empresarios en los momentos más importantes de sus trayectorias empresariales. Nuestra misión es maximizar el valor de cada operación con un enfoque personalizado y resultados medibles.
             </p>
-            <p className="text-muted-foreground/80 text-base leading-relaxed mb-8">
+            <p className="text-foreground/70 text-base leading-relaxed mb-8">
               Combinamos experiencia sectorial, metodología probada y una red global de más de 2.000 contactos cualificados. Cada proyecto es único y recibe la dedicación de un equipo multidisciplinar comprometido con tu éxito.
             </p>
 
@@ -98,11 +98,11 @@ const LaFirmaSection: React.FC = () => {
             <div className="grid grid-cols-2 gap-6 mb-10">
               <div className="border-l-2 border-border pl-4">
                 <h4 className="text-foreground font-medium mb-1">Confidencialidad</h4>
-                <p className="text-muted-foreground text-sm">Máxima discreción en cada operación</p>
+                <p className="text-foreground/70 text-sm">Máxima discreción en cada operación</p>
               </div>
               <div className="border-l-2 border-border pl-4">
                 <h4 className="text-foreground font-medium mb-1">Independencia</h4>
-                <p className="text-muted-foreground text-sm">Asesoramiento objetivo y transparente</p>
+                <p className="text-foreground/70 text-sm">Asesoramiento objetivo y transparente</p>
               </div>
             </div>
 

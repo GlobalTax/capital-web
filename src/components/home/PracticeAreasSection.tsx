@@ -100,7 +100,7 @@ const PracticeAreasSection: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="mb-16 md:mb-20"
         >
-          <span className="text-muted-foreground/60 text-sm tracking-[0.2em] uppercase mb-4 block">
+          <span className="text-foreground/60 text-sm tracking-[0.2em] uppercase mb-4 block">
             Áreas de práctica
           </span>
           <h2 className="font-serif text-foreground text-4xl md:text-5xl lg:text-6xl leading-tight">
@@ -169,7 +169,7 @@ const PracticeAreasSection: React.FC = () => {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="mt-16 md:mt-20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-12 border-t border-border"
         >
-          <p className="text-muted-foreground text-lg max-w-md">
+          <p className="text-foreground/80 text-lg max-w-md">
             ¿Necesitas asesoramiento personalizado para tu operación?
           </p>
           <a

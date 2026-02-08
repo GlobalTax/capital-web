@@ -91,7 +91,7 @@ export const MANewsSection: React.FC = () => {
           <h2 className="text-3xl font-normal text-foreground mb-4">
             Últimas Noticias del Sector
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-foreground/70 max-w-2xl mx-auto">
             Mantente informado sobre las principales operaciones de fusiones y adquisiciones en España
           </p>
         </div>
