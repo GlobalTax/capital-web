@@ -6,7 +6,6 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import heroSlide1 from '@/assets/test/hero-slide-1.jpg';
 import heroSlide2 from '@/assets/test/hero-slide-2.jpg';
 import heroSlide3 from '@/assets/test/hero-slide-3.jpg';
@@ -139,6 +138,7 @@ const Hero: React.FC = () => {
         </AnimatePresence>
 
         {/* Content */}
+        {/* Content */}
         <div className="relative z-10 h-full flex flex-col justify-center">
           <div className="max-w-7xl mx-auto w-full px-6 lg:px-12">
             <AnimatePresence mode="wait">
@@ -148,91 +148,107 @@ const Hero: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="max-w-2xl"
+                className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
               >
-                <h1 className="font-serif text-foreground font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line">
-                  {slide.title}
-                </h1>
+                {/* Left Column - Text Content */}
+                <div className="max-w-xl">
+                  <h1 className="font-serif text-foreground font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line">
+                    {slide.title}
+                  </h1>
 
-                <p className="text-muted-foreground text-lg md:text-xl mt-8 max-w-lg leading-relaxed">
-                  {slide.subtitle}
-                </p>
+                  <p className="text-muted-foreground text-lg md:text-xl mt-8 max-w-lg leading-relaxed">
+                    {slide.subtitle}
+                  </p>
 
-                {/* Service Pills */}
-                <div className="mt-6 flex flex-wrap items-center gap-2">
-                  <Link
-                    to="/venta-empresas"
-                    className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
-                  >
-                    Venta de empresas
-                  </Link>
-                  <span className="text-muted-foreground/40 select-none">·</span>
-                  <Link
-                    to="/mandatos-compra"
-                    className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
-                  >
-                    Mandatos de compra
-                  </Link>
-                  <span className="text-muted-foreground/40 select-none">·</span>
-                  <Link
-                    to="/servicios/valoraciones"
-                    className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
-                  >
-                    Valoración & Due Diligence
-                  </Link>
+                  {/* Service Pills */}
+                  <div className="mt-6 flex flex-wrap items-center gap-2">
+                    <Link
+                      to="/venta-empresas"
+                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                    >
+                      Venta de empresas
+                    </Link>
+                    <span className="text-muted-foreground/40 select-none">·</span>
+                    <Link
+                      to="/mandatos-compra"
+                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                    >
+                      Mandatos de compra
+                    </Link>
+                    <span className="text-muted-foreground/40 select-none">·</span>
+                    <Link
+                      to="/servicios/valoraciones"
+                      className="inline-flex items-center px-4 py-1.5 rounded-full text-sm text-foreground/80 bg-white/60 backdrop-blur-sm border border-foreground/20 hover:bg-white/90 transition-colors"
+                    >
+                      Valoración & Due Diligence
+                    </Link>
+                  </div>
+
+                  <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                    {isAnchor(slide.ctaPrimaryUrl) ? (
+                      <a
+                        href={slide.ctaPrimaryUrl}
+                        className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
+                      >
+                        {slide.ctaPrimaryText}
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <Link
+                        to={slide.ctaPrimaryUrl}
+                        className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
+                      >
+                        {slide.ctaPrimaryText}
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                    )}
+                    <Link
+                      to={slide.ctaSecondaryUrl}
+                      className="inline-flex items-center gap-3 px-8 py-4 border border-foreground/20 text-foreground text-sm font-medium tracking-wide hover:bg-foreground/5 transition-colors"
+                    >
+                      {slide.ctaSecondaryText}
+                    </Link>
+                  </div>
                 </div>
 
-                {/* Team Avatar Stack */}
+                {/* Right Column - Team Photo Mosaic */}
                 {teamMembers.length > 0 && (
-                  <div className="mt-6 flex items-center gap-3">
-                    <div className="flex -space-x-3 overflow-hidden">
-                      {teamMembers.slice(0, 8).map((member) => (
-                        <Avatar
-                          key={member.id}
-                          className="inline-block h-10 w-10 ring-2 ring-white"
-                        >
-                          <AvatarImage src={member.image_url || ''} alt={member.name} />
-                          <AvatarFallback className="text-xs font-medium bg-muted">
-                            {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                      ))}
+                  <div className="hidden lg:block">
+                    <div className="relative rounded-xl overflow-hidden shadow-2xl">
+                      <div className="grid grid-cols-4 gap-[2px]">
+                        {teamMembers.slice(0, 10).map((member) => (
+                          <div key={member.id} className="aspect-square relative overflow-hidden">
+                            <img
+                              src={member.image_url || ''}
+                              alt={member.name}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-foreground/5 hover:bg-transparent transition-colors duration-300" />
+                          </div>
+                        ))}
+                        {/* Logo/brand cell */}
+                        <div className="aspect-square bg-foreground flex items-center justify-center p-3">
+                          <span className="text-background text-[10px] font-semibold tracking-wider uppercase text-center leading-tight">
+                            Capittal
+                          </span>
+                        </div>
+                        {/* +60 professionals cell */}
+                        <div className="aspect-square bg-foreground/90 flex items-center justify-center p-3">
+                          <span className="text-background text-[10px] font-medium text-center leading-tight">
+                            +60<br />profesionales
+                          </span>
+                        </div>
+                      </div>
+                      {/* Subtle gradient overlay on edges */}
+                      <div className="absolute inset-0 rounded-xl ring-1 ring-foreground/10 pointer-events-none" />
                     </div>
-                    <span className="text-sm font-medium text-foreground/70">
-                      +60 profesionales a tu servicio
-                    </span>
                   </div>
                 )}
-
-                <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                  {isAnchor(slide.ctaPrimaryUrl) ? (
-                    <a
-                      href={slide.ctaPrimaryUrl}
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
-                    >
-                      {slide.ctaPrimaryText}
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </a>
-                  ) : (
-                    <Link
-                      to={slide.ctaPrimaryUrl}
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
-                    >
-                      {slide.ctaPrimaryText}
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                  )}
-                  <Link
-                    to={slide.ctaSecondaryUrl}
-                    className="inline-flex items-center gap-3 px-8 py-4 border border-foreground/20 text-foreground text-sm font-medium tracking-wide hover:bg-foreground/5 transition-colors"
-                  >
-                    {slide.ctaSecondaryText}
-                  </Link>
-                </div>
               </motion.div>
             </AnimatePresence>
           </div>
