@@ -18,6 +18,7 @@ interface SlideData {
   ctaPrimaryUrl: string;
   ctaSecondaryText: string;
   ctaSecondaryUrl: string;
+  isMosaic?: boolean;
 }
 
 const fallbackSlides: SlideData[] = [
@@ -29,6 +30,16 @@ const fallbackSlides: SlideData[] = [
     ctaPrimaryUrl: '#contacto',
     ctaSecondaryText: 'Valorar mi empresa',
     ctaSecondaryUrl: '/lp/calculadora-web',
+  },
+  {
+    image: '',
+    title: 'Un equipo de\n+60 profesionales',
+    subtitle: 'Asesores especializados en M&A, fiscalidad, due diligence y valoración de empresas.',
+    ctaPrimaryText: 'Conocer al equipo',
+    ctaPrimaryUrl: '/nosotros',
+    ctaSecondaryText: 'Valorar mi empresa',
+    ctaSecondaryUrl: '/lp/calculadora-web',
+    isMosaic: true,
   },
   {
     image: heroSlide2,
@@ -119,7 +130,7 @@ const Hero: React.FC = () => {
   return (
     <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
       <section className="relative h-screen overflow-hidden">
-        {/* Background Images */}
+        {/* Background */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
@@ -129,15 +140,44 @@ const Hero: React.FC = () => {
             transition={{ duration: 1.2, ease: 'easeInOut' }}
             className="absolute inset-0"
           >
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${slide.image})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
+            {slide.isMosaic && teamMembers.length > 0 ? (
+              <>
+                {/* Team Photo Mosaic Background */}
+                <div className="absolute inset-0 grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-[2px]">
+                  {(() => {
+                    const photos = teamMembers.slice(0, 10);
+                    // Repeat photos to fill the grid
+                    const cells: typeof photos = [];
+                    const totalCells = 24;
+                    for (let i = 0; i < totalCells; i++) {
+                      cells.push(photos[i % photos.length]);
+                    }
+                    return cells.map((member, i) => (
+                      <div key={`${member.id}-${i}`} className="relative overflow-hidden">
+                        <img
+                          src={member.image_url || ''}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          loading={i < 12 ? 'eager' : 'lazy'}
+                        />
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/40" />
+              </>
+            ) : (
+              <>
+                <div
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{ backgroundImage: `url(${slide.image})` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
+              </>
+            )}
           </motion.div>
         </AnimatePresence>
 
-        {/* Content */}
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col justify-center">
           <div className="max-w-7xl mx-auto w-full px-6 lg:px-12">
@@ -148,19 +188,18 @@ const Hero: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+                className="max-w-2xl"
               >
-                {/* Left Column - Text Content */}
-                <div className="max-w-xl">
-                  <h1 className="font-serif text-foreground font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line">
-                    {slide.title}
-                  </h1>
+                <h1 className={`font-serif font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line ${slide.isMosaic ? 'text-background' : 'text-foreground'}`}>
+                  {slide.title}
+                </h1>
 
-                  <p className="text-muted-foreground text-lg md:text-xl mt-8 max-w-lg leading-relaxed">
-                    {slide.subtitle}
-                  </p>
+                <p className={`text-lg md:text-xl mt-8 max-w-lg leading-relaxed ${slide.isMosaic ? 'text-background/80' : 'text-muted-foreground'}`}>
+                  {slide.subtitle}
+                </p>
 
-                  {/* Service Pills */}
+                {/* Service Pills */}
+                {!slide.isMosaic && (
                   <div className="mt-6 flex flex-wrap items-center gap-2">
                     <Link
                       to="/venta-empresas"
@@ -183,72 +222,37 @@ const Hero: React.FC = () => {
                       Valoración & Due Diligence
                     </Link>
                   </div>
-
-                  <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                    {isAnchor(slide.ctaPrimaryUrl) ? (
-                      <a
-                        href={slide.ctaPrimaryUrl}
-                        className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
-                      >
-                        {slide.ctaPrimaryText}
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </a>
-                    ) : (
-                      <Link
-                        to={slide.ctaPrimaryUrl}
-                        className="inline-flex items-center gap-3 px-8 py-4 bg-foreground text-background text-sm font-medium tracking-wide hover:bg-foreground/90 transition-colors"
-                      >
-                        {slide.ctaPrimaryText}
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </Link>
-                    )}
-                    <Link
-                      to={slide.ctaSecondaryUrl}
-                      className="inline-flex items-center gap-3 px-8 py-4 border border-foreground/20 text-foreground text-sm font-medium tracking-wide hover:bg-foreground/5 transition-colors"
-                    >
-                      {slide.ctaSecondaryText}
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Right Column - Team Photo Mosaic */}
-                {teamMembers.length > 0 && (
-                  <div className="hidden lg:block">
-                    <div className="relative rounded-xl overflow-hidden shadow-2xl">
-                      <div className="grid grid-cols-4 gap-[2px]">
-                        {teamMembers.slice(0, 10).map((member) => (
-                          <div key={member.id} className="aspect-square relative overflow-hidden">
-                            <img
-                              src={member.image_url || ''}
-                              alt={member.name}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-foreground/5 hover:bg-transparent transition-colors duration-300" />
-                          </div>
-                        ))}
-                        {/* Logo/brand cell */}
-                        <div className="aspect-square bg-foreground flex items-center justify-center p-3">
-                          <span className="text-background text-[10px] font-semibold tracking-wider uppercase text-center leading-tight">
-                            Capittal
-                          </span>
-                        </div>
-                        {/* +60 professionals cell */}
-                        <div className="aspect-square bg-foreground/90 flex items-center justify-center p-3">
-                          <span className="text-background text-[10px] font-medium text-center leading-tight">
-                            +60<br />profesionales
-                          </span>
-                        </div>
-                      </div>
-                      {/* Subtle gradient overlay on edges */}
-                      <div className="absolute inset-0 rounded-xl ring-1 ring-foreground/10 pointer-events-none" />
-                    </div>
-                  </div>
                 )}
+
+                <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                  {isAnchor(slide.ctaPrimaryUrl) ? (
+                    <a
+                      href={slide.ctaPrimaryUrl}
+                      className={`inline-flex items-center gap-3 px-8 py-4 text-sm font-medium tracking-wide transition-colors ${slide.isMosaic ? 'bg-background text-foreground hover:bg-background/90' : 'bg-foreground text-background hover:bg-foreground/90'}`}
+                    >
+                      {slide.ctaPrimaryText}
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <Link
+                      to={slide.ctaPrimaryUrl}
+                      className={`inline-flex items-center gap-3 px-8 py-4 text-sm font-medium tracking-wide transition-colors ${slide.isMosaic ? 'bg-background text-foreground hover:bg-background/90' : 'bg-foreground text-background hover:bg-foreground/90'}`}
+                    >
+                      {slide.ctaPrimaryText}
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </Link>
+                  )}
+                  <Link
+                    to={slide.ctaSecondaryUrl}
+                    className={`inline-flex items-center gap-3 px-8 py-4 border text-sm font-medium tracking-wide transition-colors ${slide.isMosaic ? 'border-background/30 text-background hover:bg-background/10' : 'border-foreground/20 text-foreground hover:bg-foreground/5'}`}
+                  >
+                    {slide.ctaSecondaryText}
+                  </Link>
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>
