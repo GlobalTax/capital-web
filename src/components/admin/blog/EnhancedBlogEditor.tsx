@@ -134,10 +134,26 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
     }));
   };
 
-  // Handle manual slug changes - mark as manually edited
+  // Handle manual slug changes - sanitize automatically
   const handleSlugChange = (newSlug: string) => {
     setSlugManuallyEdited(true);
-    setFormData(prev => ({ ...prev, slug: newSlug }));
+    setFormData(prev => ({ ...prev, slug: generateSlug(newSlug) }));
+  };
+
+  // Ensure slug exists before any save operation
+  const ensureSlug = (data: typeof formData): typeof formData => {
+    let slug = data.slug?.trim() ? generateSlug(data.slug) : '';
+    if (!slug && data.title?.trim()) {
+      slug = generateSlug(data.title);
+    }
+    if (!slug && data.content?.trim()) {
+      const text = data.content.replace(/<[^>]*>/g, '').trim();
+      slug = generateSlug(text.split(/\s+/).slice(0, 8).join(' '));
+    }
+    if (!slug) {
+      slug = `post-${Date.now()}`;
+    }
+    return { ...data, slug };
   };
 
   const handleTagsChange = (tagsString: string) => {
@@ -158,7 +174,7 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
     setSaving(true);
     try {
       const postData = {
-        ...formData,
+        ...ensureSlug(formData),
         published_at: formData.is_published ? new Date().toISOString() : null,
       };
 
@@ -209,7 +225,8 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
   const handlePublish = async () => {
     console.log("🚀 STARTING PUBLISH PROCESS");
     
-    const publishData = { ...formData, is_published: true, published_at: new Date().toISOString() };
+    const withSlug = ensureSlug({ ...formData, is_published: true });
+    const publishData = { ...withSlug, published_at: new Date().toISOString() };
     
     console.log("🚀 PUBLISHING POST:", {
       title: publishData.title,
@@ -219,7 +236,7 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
       postId: post?.id
     });
 
-    // Simplified validation - only check essential fields
+    // Simplified validation - only check essential fields (slug auto-generated)
     const validationErrors = [];
     
     if (!publishData.title?.trim()) {
@@ -230,9 +247,6 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
     }
     if (!publishData.category?.trim()) {
       validationErrors.push("categoría");
-    }
-    if (!publishData.slug?.trim()) {
-      validationErrors.push("slug");
     }
 
     if (validationErrors.length > 0) {
