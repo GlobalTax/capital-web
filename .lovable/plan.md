@@ -1,38 +1,32 @@
 
 
-## Mejorar el ajuste del mosaico de equipo en el Hero
+## Corregir el mosaico de equipo para que las fotos no se vean aumentadas
 
 ### Problema
 
-El mosaico de fotos del equipo se ve con las imagenes muy aumentadas/recortadas porque:
+El grid del mosaico usa `absolute inset-0` (ocupa toda la pantalla), pero las celdas con `aspect-square` hacen que el grid se desborde verticalmente. Las fotos siguen viendose muy recortadas porque cada celda ocupa un area enorme del viewport.
 
-1. Las celdas del grid no tienen una altura fija ni aspect-ratio definido, asi que las fotos se distorsionan segun el viewport.
-2. Con 24 celdas en un grid de 6 columnas (4 filas), cada celda es muy estrecha y alta, lo que hace que `object-cover` recorte mucho las fotos (se ven solo las caras ampliadas).
-3. No hay un `aspect-ratio` en las celdas para mantener proporciones equilibradas.
+El enfoque actual intenta llenar toda la pantalla con pocas celdas, lo que hace que cada foto sea enorme y `object-cover` recorte excesivamente.
 
 ### Solucion
 
-Ajustar el grid del mosaico para que las fotos se vean mejor proporcionadas:
-
-1. **Anadir `aspect-square`** a cada celda del grid para que sean cuadradas y las fotos no se recorten excesivamente.
-2. **Reducir el numero de celdas** de 24 a 12 (menos fotos, mas grandes y mejor visibles).
-3. **Ajustar columnas**: usar un grid de 4 columnas (3 filas) para que cada foto tenga mas espacio.
+Cambiar la estrategia del grid para que las celdas NO usen `aspect-square` (que causa overflow) y en su lugar usar `auto-rows` con un tamano fijo para que el grid se distribuya uniformemente dentro del contenedor sin desbordarse. Ademas, aumentar el numero de celdas y columnas para que cada foto sea mas pequena y se vea completa.
 
 ### Cambios
 
 **Archivo**: `src/components/Hero.tsx`
 
-1. **Linea 161** - Simplificar el grid a 3-4 columnas constantes:
-   - De: `className="absolute inset-0 grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-[2px]"`
-   - A: `className="absolute inset-0 grid grid-cols-3 sm:grid-cols-4 gap-[2px]"`
+1. **Linea 161** - Cambiar el grid a mas columnas y usar `auto-rows` para distribuir uniformemente en el contenedor:
+   - De: `className="absolute inset-0 grid grid-cols-3 sm:grid-cols-4 gap-[2px]"`
+   - A: `className="absolute inset-0 grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 auto-rows-fr gap-[2px]"`
 
-2. **Linea 165** - Reducir celdas totales de 24 a 12:
-   - De: `const totalCells = 24;`
-   - A: `const totalCells = 12;`
+2. **Linea 165** - Volver a mas celdas para que cada una sea mas pequena:
+   - De: `const totalCells = 12;`
+   - A: `const totalCells = 24;`
 
-3. **Linea 170** - Anadir `aspect-square` a cada celda para mantener proporciones:
-   - De: `<div key={...} className="relative overflow-hidden">`
-   - A: `<div key={...} className="relative overflow-hidden aspect-square">`
+3. **Linea 170** - Quitar `aspect-square` (causa overflow) y dejar que `auto-rows-fr` controle la altura:
+   - De: `className="relative overflow-hidden aspect-square"`
+   - A: `className="relative overflow-hidden"`
 
-Con estos cambios, las fotos del equipo se veran con un tamano mas natural, sin el efecto de "zoom excesivo" que se aprecia en la captura.
+La clave es `auto-rows-fr`: divide la altura disponible del contenedor en filas iguales, evitando que las celdas se agranden mas alla de lo que permite el viewport. Con 24 celdas en 6 columnas = 4 filas, cada foto sera 1/6 del ancho y 1/4 de la altura, mostrando mucho mas de cada imagen.
 
