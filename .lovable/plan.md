@@ -1,52 +1,31 @@
 
 
-## Fix: Importacion de Google Ads falla por tipo de datos
+## Fix: Eliminar imagen local fallback de La Firma
 
-### Causa raiz
+### Problema
 
-La columna `conversions` en la tabla `ads_costs_history` es de tipo `integer`, pero el CSV de Google Ads contiene valores decimales como `61.67` y `50.33`. Postgres rechaza el INSERT/UPSERT al intentar almacenar un float en una columna integer, lo que genera el error generico "Error al importar".
+El componente `LaFirmaSection.tsx` importa un archivo local `about-firm.jpg` (linea 6) que se usa como fallback cuando `image_url` de la base de datos es null. Aunque la BD ya tiene una imagen configurada, el import local sigue empaquetado en el bundle y puede causar confision o mostrar brevemente la imagen incorrecta durante el render inicial.
 
 ### Solucion
 
-**1. Migracion SQL: Cambiar `conversions` de `integer` a `numeric`**
+1. **Eliminar el import local** de `about-firm.jpg` (linea 6)
+2. **Cambiar el fallback** en linea 82: si `image_url` de la BD es null, simplemente no mostrar imagen (o mostrar un placeholder gris) en lugar de cargar una imagen local empaquetada
+3. **Eliminar el archivo** `src/assets/test/about-firm.jpg` del proyecto para reducir el tamano del bundle
 
-```text
-ALTER TABLE ads_costs_history ALTER COLUMN conversions TYPE numeric USING conversions::numeric;
-```
+### Cambios en `LaFirmaSection.tsx`
 
-Esto permite almacenar valores decimales sin perder los datos existentes (los enteros son compatibles con numeric).
+- Eliminar linea 6: `import aboutFirmImage from '@/assets/test/about-firm.jpg';`
+- Linea 82: cambiar `const imageSource = c.image_url || aboutFirmImage;` por `const imageSource = c.image_url || '';`
+- Linea 103-105: envolver la imagen en un condicional para que solo se renderice si hay URL
 
-**2. Mejora del feedback de errores en `useGoogleAdsImport.ts`**
+### Resultado
 
-En la funcion `importData`, el catch actual muestra un mensaje generico. Cambiar para incluir el detalle del error de Supabase/Postgres:
+La seccion siempre mostrara la imagen configurada desde el admin (`/admin/la-firma`). Si no hay imagen en la BD, se mostrara el area gris del contenedor sin imagen rota.
 
-| Linea | Cambio |
-|-------|--------|
-| 367 | Extraer `err.message`, `err.details`, `err.hint` del error de Supabase y mostrarlos en el toast |
+### Seccion tecnica
 
-**3. Refresh automatico de graficas**
+**Archivo a modificar:**
+- `src/components/home/LaFirmaSection.tsx` - Eliminar import local y usar solo imagen de BD
 
-En la funcion `importData`, anadir invalidaciones adicionales de queries para que las graficas se actualicen al importar:
-
-| Query key a invalidar | Proposito |
-|----------------------|-----------|
-| `ads-costs-history` (general) | Tabla principal de costes |
-| `google-ads-stats` | Dashboard de Google Ads |
-| `unified-costs` | Vista unificada de costes |
-| `campaign-registry` | Registro de campanas |
-
-**4. Redondear conversions en el parseo como medida defensiva**
-
-Aunque la columna se cambie a numeric, anadir `Math.round()` en el campo `conversions` del batch de upsert como proteccion adicional (el campo `results` ya guarda el valor decimal exacto).
-
-### Archivos afectados
-
-- **Migracion SQL**: Cambiar tipo de columna `conversions`
-- **`src/hooks/useGoogleAdsImport.ts`**: Mejorar mensajes de error y refresh de queries
-
-### Lo que NO se toca
-
-- Import de Meta: sin cambios
-- Preview del modal: funciona correctamente, no se modifica
-- `GoogleAdsImportModal.tsx`: sin cambios necesarios
-
+**Archivo a eliminar (opcional):**
+- `src/assets/test/about-firm.jpg` - Ya no se necesita
