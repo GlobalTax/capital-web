@@ -45,7 +45,7 @@ const StatCounter: React.FC<StatItem & { delay: number }> = ({ value, suffix, pr
 };
 
 const LaFirmaSection: React.FC = () => {
-  const { data: dbContent } = useQuery({
+  const { data: dbContent, isLoading } = useQuery({
     queryKey: ['la-firma-content'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -60,6 +60,25 @@ const LaFirmaSection: React.FC = () => {
   });
 
   const c = dbContent || defaultContent;
+
+  if (isLoading) {
+    return (
+      <section id="la-firma" className="py-24 md:py-32 bg-background">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 animate-pulse">
+          <div className="h-6 w-24 bg-muted rounded mb-4" />
+          <div className="h-12 w-96 max-w-full bg-muted rounded mb-16" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+            <div className="aspect-[4/3] bg-muted rounded" />
+            <div className="space-y-4">
+              <div className="h-4 bg-muted rounded w-full" />
+              <div className="h-4 bg-muted rounded w-5/6" />
+              <div className="h-4 bg-muted rounded w-4/6" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
   const imageSource = c.image_url || aboutFirmImage;
 
   const stats: StatItem[] = [

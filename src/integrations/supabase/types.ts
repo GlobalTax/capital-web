@@ -2637,48 +2637,60 @@ export type Database = {
       buyer_matches: {
         Row: {
           buyer_id: string
+          contacted_at: string | null
           created_at: string | null
           dismissed_reason: string | null
           fit_dimensions: Json | null
           generated_at: string | null
           generated_by: string | null
           id: string
+          last_interaction_at: string | null
           mandato_id: string
           match_reasoning: string | null
           match_score: number
+          nda_sent_at: string | null
           recommended_approach: string | null
           risk_factors: string[] | null
           status: string
+          teaser_sent_at: string | null
         }
         Insert: {
           buyer_id: string
+          contacted_at?: string | null
           created_at?: string | null
           dismissed_reason?: string | null
           fit_dimensions?: Json | null
           generated_at?: string | null
           generated_by?: string | null
           id?: string
+          last_interaction_at?: string | null
           mandato_id: string
           match_reasoning?: string | null
           match_score: number
+          nda_sent_at?: string | null
           recommended_approach?: string | null
           risk_factors?: string[] | null
           status?: string
+          teaser_sent_at?: string | null
         }
         Update: {
           buyer_id?: string
+          contacted_at?: string | null
           created_at?: string | null
           dismissed_reason?: string | null
           fit_dimensions?: Json | null
           generated_at?: string | null
           generated_by?: string | null
           id?: string
+          last_interaction_at?: string | null
           mandato_id?: string
           match_reasoning?: string | null
           match_score?: number
+          nda_sent_at?: string | null
           recommended_approach?: string | null
           risk_factors?: string[] | null
           status?: string
+          teaser_sent_at?: string | null
         }
         Relationships: [
           {
@@ -2729,6 +2741,111 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_mandate_pipeline"
             referencedColumns: ["mandato_id"]
+          },
+        ]
+      }
+      buyer_outreach: {
+        Row: {
+          buyer_id: string
+          channel: string
+          created_at: string
+          created_by: string | null
+          id: string
+          mandato_id: string
+          match_id: string
+          message_preview: string | null
+          notes: string | null
+          outreach_type: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          buyer_id: string
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mandato_id: string
+          match_id: string
+          message_preview?: string | null
+          notes?: string | null
+          outreach_type?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          channel?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mandato_id?: string
+          match_id?: string
+          message_preview?: string | null
+          notes?: string | null
+          outreach_type?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_outreach_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_buyers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_outreach_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "buyer_outreach_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_outreach_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "buyer_outreach_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_outreach_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_outreach_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "vw_mandate_pipeline"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "buyer_outreach_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "buyer_matches"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -20277,6 +20394,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_confidentiality_agreements: {
+        Row: {
+          accepted_at: string
+          agreement_version: number
+          id: string
+          ip_address: unknown
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          agreement_version?: number
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          agreement_version?: number
+          id?: string
+          ip_address?: unknown
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_dashboard_layouts: {
         Row: {
           created_at: string
@@ -22302,6 +22446,10 @@ export type Database = {
           target_user_id: string
         }
         Returns: Json
+      }
+      has_accepted_confidentiality: {
+        Args: { version_required?: number }
+        Returns: boolean
       }
       has_rh_role: {
         Args: {
