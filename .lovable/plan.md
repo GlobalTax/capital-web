@@ -1,31 +1,40 @@
 
 
-## Fix: Eliminar imagen local fallback de La Firma
+## Fix: Video del Hero no se ve bien en movil
 
 ### Problema
 
-El componente `LaFirmaSection.tsx` importa un archivo local `about-firm.jpg` (linea 6) que se usa como fallback cuando `image_url` de la base de datos es null. Aunque la BD ya tiene una imagen configurada, el import local sigue empaquetado en el bundle y puede causar confision o mostrar brevemente la imagen incorrecta durante el render inicial.
+El Hero usa `h-screen` para la altura, lo cual es problematico en movil (especialmente iOS Safari) porque la barra de direcciones cambia dinamicamente el viewport height. Esto causa que el video se recorte mal, se vea con escalado incorrecto, o deje espacios en blanco.
 
-### Solucion
+### Cambios en `src/components/Hero.tsx`
 
-1. **Eliminar el import local** de `about-firm.jpg` (linea 6)
-2. **Cambiar el fallback** en linea 82: si `image_url` de la BD es null, simplemente no mostrar imagen (o mostrar un placeholder gris) en lugar de cargar una imagen local empaquetada
-3. **Eliminar el archivo** `src/assets/test/about-firm.jpg` del proyecto para reducir el tamano del bundle
+**1. Reemplazar `h-screen` por `h-dvh` (dynamic viewport height)**
 
-### Cambios en `LaFirmaSection.tsx`
+La clase `h-screen` equivale a `100vh`, que en iOS Safari incluye el area detras de la barra de direcciones. `h-dvh` usa `100dvh` que se ajusta dinamicamente al viewport visible real. Tailwind CSS ya soporta `h-dvh`.
 
-- Eliminar linea 6: `import aboutFirmImage from '@/assets/test/about-firm.jpg';`
-- Linea 82: cambiar `const imageSource = c.image_url || aboutFirmImage;` por `const imageSource = c.image_url || '';`
-- Linea 103-105: envolver la imagen en un condicional para que solo se renderice si hay URL
+- Linea 159: Cambiar `h-screen` por `min-h-dvh` en el `<section>`
 
-### Resultado
+**2. Asegurar que el video cargue correctamente en movil**
 
-La seccion siempre mostrara la imagen configurada desde el admin (`/admin/la-firma`). Si no hay imagen en la BD, se mostrara el area gris del contenedor sin imagen rota.
+Agregar atributos adicionales al elemento `<video>` para mejorar compatibilidad movil:
 
-### Seccion tecnica
+- Linea 173-180: Anadir `preload="auto"` y `webkit-playsinline` para mejor soporte en iOS Safari antiguo
+- Anadir handler `onCanPlay` para asegurar que el video se muestre correctamente
 
-**Archivo a modificar:**
-- `src/components/home/LaFirmaSection.tsx` - Eliminar import local y usar solo imagen de BD
+**3. Ajustar overlays para mejor legibilidad en movil**
 
-**Archivo a eliminar (opcional):**
-- `src/assets/test/about-firm.jpg` - Ya no se necesita
+Segun el estandar definido en el proyecto, los overlays en movil deben ser mas opacos para garantizar contraste:
+
+- Linea 181: El overlay del video usa clases genericas. Anadir variantes responsive: en desktop `from-foreground/70` y en movil `from-foreground/80` para mejor legibilidad del texto sobre el video
+
+### Resumen de cambios
+
+| Linea | Antes | Despues |
+|-------|-------|---------|
+| 159 | `h-screen` | `min-h-dvh` |
+| 173-180 | `<video>` basico | `<video>` con `preload="auto"` y atributos iOS |
+| 181 | overlay fijo | overlay responsive (mas opaco en movil) |
+
+### Archivo afectado
+
+- `src/components/Hero.tsx`
