@@ -1,40 +1,77 @@
 
 
-## Fix: Video del Hero no se ve bien en movil
+## Fix: Leads con Valoracion PRO no muestran datos de compania en el listado
 
-### Problema
+### Diagnostico
 
-El Hero usa `h-screen` para la altura, lo cual es problematico en movil (especialmente iOS Safari) porque la barra de direcciones cambia dinamicamente el viewport height. Esto causa que el video se recorte mal, se vea con escalado incorrecto, o deje espacios en blanco.
+El hook `useUnifiedContacts.tsx` YA hace un fetch de `professional_valuations` (linea 267) y crea un mapa por `linked_lead_id` (linea 276). Sin embargo, el query solo trae campos parciales y el mapeo de contact_leads no aplica fallback para todos los campos necesarios:
 
-### Cambios en `src/components/Hero.tsx`
+| Campo en tabla | Se trae en query? | Se mapea? | Se muestra en tabla? |
+|---|---|---|---|
+| `client_company` (nombre empresa) | NO | NO | Columna vacia |
+| `financial_years->0->>'revenue'` (facturacion) | NO | NO | Columna vacia |
+| `normalized_ebitda` | SI | SI | OK |
+| `valuation_central` | SI | SI (como `final_valuation`) | OK |
+| `sector` | SI | SI (como `industry`) | OK |
 
-**1. Reemplazar `h-screen` por `h-dvh` (dynamic viewport height)**
+Ademas, el mapeo actual (lineas 331-334) asigna los datos PRO directamente sin hacer fallback con los datos propios del contact_lead, lo cual podria sobreescribir datos existentes.
 
-La clase `h-screen` equivale a `100vh`, que en iOS Safari incluye el area detras de la barra de direcciones. `h-dvh` usa `100dvh` que se ajusta dinamicamente al viewport visible real. Tailwind CSS ya soporta `h-dvh`.
+### Solucion
 
-- Linea 159: Cambiar `h-screen` por `min-h-dvh` en el `<section>`
+Modificar unicamente `src/hooks/useUnifiedContacts.tsx`:
 
-**2. Asegurar que el video cargue correctamente en movil**
+**1. Ampliar el SELECT de professional_valuations (linea 269)**
 
-Agregar atributos adicionales al elemento `<video>` para mejorar compatibilidad movil:
+Anadir `client_company` y `financial_years` al select:
 
-- Linea 173-180: Anadir `preload="auto"` y `webkit-playsinline` para mejor soporte en iOS Safari antiguo
-- Anadir handler `onCanPlay` para asegurar que el video se muestre correctamente
+```
+.select('linked_lead_id, valuation_central, valuation_low, valuation_high, normalized_ebitda, sector, client_company, financial_years')
+```
 
-**3. Ajustar overlays para mejor legibilidad en movil**
+**2. Actualizar el tipo del mapa (linea 281)**
 
-Segun el estandar definido en el proyecto, los overlays en movil deben ser mas opacos para garantizar contraste:
+Anadir `client_company` y `financial_years` al tipo del record.
 
-- Linea 181: El overlay del video usa clases genericas. Anadir variantes responsive: en desktop `from-foreground/70` y en movil `from-foreground/80` para mejor legibilidad del texto sobre el video
+**3. Corregir el mapeo de contact_leads (lineas 296-347)**
 
-### Resumen de cambios
+Aplicar fallback (COALESCE en JS) para que los datos propios del lead tengan prioridad y PRO sea el fallback:
 
-| Linea | Antes | Despues |
-|-------|-------|---------|
-| 159 | `h-screen` | `min-h-dvh` |
-| 173-180 | `<video>` basico | `<video>` con `preload="auto"` y atributos iOS |
-| 181 | overlay fijo | overlay responsive (mas opaco en movil) |
+```typescript
+// Nombre empresa: prioridad lead.company, fallback PRO
+company: lead.company || proValuation?.client_company || undefined,
+
+// Revenue: extraer del JSONB financial_years del PRO (no existe en contact_leads)
+revenue: proValuation?.financial_years?.[0]?.revenue 
+  ? Number(proValuation.financial_years[0].revenue) 
+  : undefined,
+
+// EBITDA: fallback a PRO
+ebitda: proValuation?.normalized_ebitda != null 
+  ? Number(proValuation.normalized_ebitda) 
+  : undefined,
+
+// Valoracion: fallback a PRO
+final_valuation: proValuation?.valuation_central != null 
+  ? Number(proValuation.valuation_central) 
+  : undefined,
+
+// Sector: prioridad lead, fallback PRO
+industry: proValuation?.sector || undefined,
+```
+
+### Lo que NO se toca
+
+- Filtros, estados, canal, formulario, paginacion: sin cambios
+- Queries de company_valuations, collaborator_applications, etc.: sin cambios
+- Componentes UI de la tabla: sin cambios
+- Base de datos: sin migraciones
+
+### Validacion
+
+- Caso A (lead con valoracion normal): no cambia nada (son `company_valuations`, query separado)
+- Caso B (lead solo con PRO vinculado): ahora mostrara empresa, facturacion, EBITDA, valoracion y sector
+- Caso C (lead con datos propios + PRO): datos del lead tienen prioridad, PRO como fallback
 
 ### Archivo afectado
 
-- `src/components/Hero.tsx`
+- `src/hooks/useUnifiedContacts.tsx` - Ampliar query y mapeo de professional_valuations
