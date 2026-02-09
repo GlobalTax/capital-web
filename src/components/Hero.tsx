@@ -156,7 +156,7 @@ const Hero: React.FC = () => {
 
   return (
     <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
-      <section className="relative h-screen overflow-hidden">
+      <section className="relative min-h-dvh overflow-hidden">
         {/* Background */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -176,9 +176,12 @@ const Hero: React.FC = () => {
                   muted
                   loop
                   playsInline
+                  preload="auto"
+                  // @ts-ignore
+                  webkit-playsinline="true"
                   className="absolute inset-0 w-full h-full object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/50 to-foreground/30" />
+                <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-foreground/30 md:from-foreground/70" />
               </>
             ) : slide.isMosaic && teamMembers.length > 0 ? (
               <>
