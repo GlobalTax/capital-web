@@ -156,7 +156,7 @@ const Hero: React.FC = () => {
 
   return (
     <ErrorBoundary fallback={<div className="min-h-screen flex items-center justify-center bg-background"><p>Error cargando la sección principal</p></div>}>
-      <section className="relative min-h-dvh overflow-hidden">
+      <section className="relative min-h-dvh overflow-hidden flex flex-col">
         {/* Background */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -206,7 +206,7 @@ const Hero: React.FC = () => {
         </AnimatePresence>
 
         {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-center">
+        <div className="relative z-10 flex-1 flex flex-col justify-center">
           <div className="max-w-7xl mx-auto w-full px-6 lg:px-12">
             <AnimatePresence mode="wait">
               <motion.div
