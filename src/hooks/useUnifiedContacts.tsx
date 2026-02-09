@@ -266,7 +266,7 @@ export const useUnifiedContacts = () => {
       // 🔥 NEW: Fetch professional_valuations linked to contact_leads
       const { data: proValuations, error: proValuationsError } = await supabase
         .from('professional_valuations')
-        .select('linked_lead_id, valuation_central, valuation_low, valuation_high, normalized_ebitda, sector')
+        .select('linked_lead_id, valuation_central, valuation_low, valuation_high, normalized_ebitda, sector, client_company, financial_years')
         .eq('linked_lead_type', 'contact')
         .not('linked_lead_id', 'is', null);
 
@@ -278,7 +278,7 @@ export const useUnifiedContacts = () => {
           acc[pv.linked_lead_id] = pv;
         }
         return acc;
-      }, {} as Record<string, { valuation_central: number | null; valuation_low: number | null; valuation_high: number | null; normalized_ebitda: number | null; sector: string | null }>);
+      }, {} as Record<string, { valuation_central: number | null; valuation_low: number | null; valuation_high: number | null; normalized_ebitda: number | null; sector: string | null; client_company: string | null; financial_years: any }>);
 
       // Transform and unify data
       const unifiedData: UnifiedContact[] = [
@@ -293,7 +293,7 @@ export const useUnifiedContacts = () => {
             name: lead.full_name,
             email: lead.email,
             phone: lead.phone,
-            company: lead.company,
+            company: lead.company || proValuation?.client_company || undefined,
             created_at: lead.created_at,
             status: lead.status,
             company_size: lead.company_size,
@@ -328,8 +328,9 @@ export const useUnifiedContacts = () => {
             // 🔥 NEW: Lead Form (Formulario de origen)
             lead_form: lead.lead_form,
             lead_form_name: (lead.lead_form_ref as any)?.name || null,
-            // 🔥 NEW: Datos de Valoración Pro vinculada
+            // 🔥 NEW: Datos de Valoración Pro vinculada (fallback)
             final_valuation: proValuation?.valuation_central != null ? Number(proValuation.valuation_central) : undefined,
+            revenue: proValuation?.financial_years?.[0]?.revenue != null ? Number(proValuation.financial_years[0].revenue) : undefined,
             ebitda: proValuation?.normalized_ebitda != null ? Number(proValuation.normalized_ebitda) : undefined,
             industry: proValuation?.sector || undefined,
             // 🔥 NEW: Business registration date
