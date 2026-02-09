@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
-import aboutFirmImage from '@/assets/test/about-firm.jpg';
+
 
 interface StatItem {
   value: number;
@@ -71,11 +71,6 @@ const AboutSection: React.FC = () => {
             className="relative"
           >
             <div className="aspect-[4/3] overflow-hidden bg-slate-100">
-              <img
-                src={aboutFirmImage}
-                alt="Equipo Capittal en reunión"
-                className="w-full h-full object-cover"
-              />
             </div>
             {/* Decorative element */}
             <div className="absolute -bottom-6 -right-6 w-32 h-32 border border-slate-200 -z-10 hidden lg:block" />
