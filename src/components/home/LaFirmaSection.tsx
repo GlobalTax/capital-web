@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useCountAnimation } from '@/hooks/useCountAnimation';
-import aboutFirmImage from '@/assets/test/about-firm.jpg';
+
 
 interface StatItem {
   value: number;
@@ -79,7 +79,7 @@ const LaFirmaSection: React.FC = () => {
       </section>
     );
   }
-  const imageSource = c.image_url || aboutFirmImage;
+  const imageSource = c.image_url || '';
 
   const stats: StatItem[] = [
     { value: c.stat1_value, suffix: c.stat1_suffix, prefix: c.stat1_prefix || '', label: c.stat1_label },
@@ -101,7 +101,7 @@ const LaFirmaSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="relative">
             <div className="aspect-[4/3] overflow-hidden bg-muted">
-              <img src={imageSource} alt={c.image_alt || ''} className="w-full h-full object-cover" />
+              {imageSource && <img src={imageSource} alt={c.image_alt || ''} className="w-full h-full object-cover" />}
             </div>
             <div className="absolute -bottom-6 -right-6 w-32 h-32 border border-border -z-10 hidden lg:block" />
           </motion.div>
