@@ -1,0 +1,1 @@
+ALTER TABLE ads_costs_history ALTER COLUMN conversions TYPE numeric USING conversions::numeric;

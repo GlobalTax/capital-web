@@ -340,7 +340,7 @@ export const useGoogleAdsImport = () => {
           spend: row.spend,
           currency: 'EUR',
           clicks: row.clicks ?? 0,
-          conversions: row.conversions ?? 0,
+          conversions: Math.round(row.conversions ?? 0),
           results: row.results,
           cost_per_result: row.cost_per_result,
           cpm: row.cpm,
@@ -359,13 +359,19 @@ export const useGoogleAdsImport = () => {
         totalUpserted += batch.length;
       }
 
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['ads-costs-history', 'google_ads'] });
+      // Invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: ['ads-costs-history'] });
+      queryClient.invalidateQueries({ queryKey: ['google-ads-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['unified-costs'] });
+      queryClient.invalidateQueries({ queryKey: ['campaign-registry'] });
+      queryClient.invalidateQueries({ queryKey: ['marketing_metrics_unified'] });
 
       toast.success(`${totalUpserted} registros de Google Ads importados correctamente`);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al importar';
-      toast.error(msg);
+    } catch (err: any) {
+      const detail = err?.message || err?.details || 'Error desconocido';
+      const hint = err?.hint ? ` (${err.hint})` : '';
+      console.error('Google Ads import error:', err);
+      toast.error(`Error al importar: ${detail}${hint}`);
       throw err;
     } finally {
       setIsImporting(false);
