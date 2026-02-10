@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 
 type TrackingEvent = 'impression' | 'click';
 
@@ -26,7 +27,7 @@ export const useBannerTracking = ({ bannerId, enabled = true }: TrackingOptions)
     try {
       // Call the edge function to track the event
       const response = await fetch(
-        `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/banners_list/banners/${bannerId}/track?path=${encodeURIComponent(location.pathname)}`,
+        `${SUPABASE_CONFIG.url}/functions/v1/banners_list/banners/${bannerId}/track?path=${encodeURIComponent(location.pathname)}`,
         {
           method: 'POST',
           headers: {

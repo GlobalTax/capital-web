@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 
 export interface Banner {
   id: string;
@@ -65,7 +66,7 @@ interface BannersResponse {
   totalPages: number;
 }
 
-const BANNERS_API_BASE = 'https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/banners_list';
+const BANNERS_API_BASE = `${SUPABASE_CONFIG.url}/functions/v1/banners_list`;
 
 const getAuthHeaders = async () => {
   const { data: { session } } = await supabase.auth.getSession();

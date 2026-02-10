@@ -27,6 +27,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     enableContactTracking = true
   } = options;
 
+  // Must be called at top level (Rules of Hooks)
+  const { overrideState } = useEmergencyOverride();
+
   // Enhanced circuit breaker state with degraded mode and exponential backoff
   const [circuitState, setCircuitState] = useState<{
     isOpen: boolean;
@@ -56,11 +59,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
   }, []);
 
   const shouldAllowRequest = useCallback((urgency: 'low' | 'medium' | 'high' = 'medium') => {
-    const { overrideState } = useEmergencyOverride();
-    
-    // Emergency override check
-    if (overrideState.circuitBreakerDisabled && 
-        overrideState.expiresAt && 
+    // Emergency override check (overrideState comes from top-level hook call)
+    if (overrideState.circuitBreakerDisabled &&
+        overrideState.expiresAt &&
         Date.now() < overrideState.expiresAt) {
       logger.info('Circuit breaker bypassed via emergency override', {
         reason: overrideState.reason,
@@ -93,7 +94,7 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
     }
     
     return false;
-  }, [circuitState, getBackoffTime]);
+  }, [circuitState, getBackoffTime, overrideState]);
 
   const recordSuccess = useCallback(() => {
     setCircuitState(prev => {

@@ -101,10 +101,7 @@ serve(async (req) => {
     
     // Return error response within timeout
     return new Response(
-      JSON.stringify({ 
-        error: 'Processing failed', 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      }),
+      JSON.stringify({ error: 'Processing failed' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

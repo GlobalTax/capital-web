@@ -260,7 +260,7 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
       .then(({ error }) => {
         if (error) console.error('Error linking valuation:', error);
         else console.log('✅ Valuation linked to session:', valuationId);
-      });
+      }).catch(() => { /* silent fail in tracking context */ });
   }, []);
 
   // Setup inicial

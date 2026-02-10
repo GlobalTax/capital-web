@@ -6,6 +6,7 @@
  */
 
 import { securityManager } from '@/core/security/SecurityManager';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 
 // ============= HONEYPOT UTILITIES =============
 
@@ -195,7 +196,7 @@ export function enforceCSP(): void {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://fwhqtzkkvnjkazhaficj.supabase.co wss://fwhqtzkkvnjkazhaficj.supabase.co https://www.google-analytics.com https://connect.facebook.net",
+    `connect-src 'self' ${SUPABASE_CONFIG.url} ${SUPABASE_CONFIG.url.replace('https://', 'wss://')} https://www.google-analytics.com https://connect.facebook.net`,
     "frame-src 'self' https://www.google.com https://consent.cookiebot.com",
     "object-src 'none'",
     "base-uri 'self'"

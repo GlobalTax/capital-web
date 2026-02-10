@@ -94,13 +94,10 @@ serve(async (req) => {
     console.error('Error processing security event:', error);
     
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        message: error.message 
-      }),
-      { 
+      JSON.stringify({ error: 'Internal server error' }),
+      {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }

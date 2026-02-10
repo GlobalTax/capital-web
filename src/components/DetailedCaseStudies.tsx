@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Target, TrendingUp, Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 
 interface CaseStudyDetailProps {
   title: string;
@@ -110,7 +111,7 @@ const DetailedCaseStudies = () => {
         "Venta en menos de 8 meses", 
         "Laboratorio líder en Barcelona"
       ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756723321543_ka4ryq.png",
+      logoUrl: `${SUPABASE_CONFIG.url}/storage/v1/object/public/case-studies-images/case-studies/logos/1756723321543_ka4ryq.png`,
       isValueConfidential: true
     },
     {
@@ -123,7 +124,7 @@ const DetailedCaseStudies = () => {
         "Comprador Internacional", 
         "Asesoramiento 360º"
       ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756722616293_r2k55.png",
+      logoUrl: `${SUPABASE_CONFIG.url}/storage/v1/object/public/case-studies-images/case-studies/logos/1756722616293_r2k55.png`,
       valueAmount: 12,
       valueCurrency: "€",
       isValueConfidential: false
@@ -138,7 +139,7 @@ const DetailedCaseStudies = () => {
         "Desarrollo de proyecto Build-Up",
         "Intermediación y Due Diligence"
       ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756723130999_g0395m.png", 
+      logoUrl: `${SUPABASE_CONFIG.url}/storage/v1/object/public/case-studies-images/case-studies/logos/1756723130999_g0395m.png`, 
       isValueConfidential: true
     }
   ];

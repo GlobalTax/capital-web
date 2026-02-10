@@ -39,6 +39,12 @@ serve(async (req) => {
       return pixelResponse;
     }
 
+    // Validate message ID format to prevent enumeration attacks
+    if (messageId.length > 200 || !/^[\w\-.<>@]+$/.test(messageId)) {
+      console.warn("email-open: invalid mid format");
+      return pixelResponse;
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
     const supabase = createClient(supabaseUrl, serviceKey);

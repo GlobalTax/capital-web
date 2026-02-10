@@ -55,6 +55,15 @@ serve(async (req) => {
   }
 
   try {
+    // Auth: require Authorization header (service role for cron, or valid JWT)
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -109,33 +118,46 @@ serve(async (req) => {
     result.processed = valuations.length;
     console.log(`Found ${valuations.length} valuations to process`);
 
-    // Pre-fetch ALL existing contacts (more reliable than .in() with large arrays)
-    const { data: existingContacts, error: contactsError } = await supabase
-      .from('contactos')
-      .select('id, email');
+    // Pre-fetch existing contacts only for emails we need (avoid loading entire table)
+    const valuationEmails = [...new Set(
+      valuations.filter(v => v.email).map(v => v.email!.toLowerCase().trim())
+    )];
+    const valuationCompanies = [...new Set(
+      valuations.filter(v => v.company_name).map(v => v.company_name!.toLowerCase().trim())
+    )];
 
-    if (contactsError) {
-      console.error('Error fetching contacts:', contactsError);
+    const contactsByEmail = new Map<string, string>();
+    // Fetch in batches of 100 to avoid query size limits
+    for (let i = 0; i < valuationEmails.length; i += 100) {
+      const batch = valuationEmails.slice(i, i + 100);
+      const { data: contacts, error: contactsError } = await supabase
+        .from('contactos')
+        .select('id, email')
+        .in('email', batch);
+      if (contactsError) {
+        console.error('Error fetching contacts batch:', contactsError);
+      }
+      (contacts || []).forEach(c => {
+        if (c.email) contactsByEmail.set(c.email.toLowerCase().trim(), c.id);
+      });
     }
+    console.log(`Loaded ${contactsByEmail.size} matching contacts`);
 
-    const contactsByEmail = new Map(
-      (existingContacts || []).map(c => [c.email?.toLowerCase().trim(), c.id])
-    );
-    console.log(`Loaded ${contactsByEmail.size} existing contacts`);
-
-    // Pre-fetch ALL existing empresas
-    const { data: existingEmpresas, error: empresasError } = await supabase
-      .from('empresas')
-      .select('id, nombre');
-
-    if (empresasError) {
-      console.error('Error fetching empresas:', empresasError);
+    const empresasByName = new Map<string, string>();
+    for (let i = 0; i < valuationCompanies.length; i += 100) {
+      const batch = valuationCompanies.slice(i, i + 100);
+      const { data: empresas, error: empresasError } = await supabase
+        .from('empresas')
+        .select('id, nombre')
+        .in('nombre', batch);
+      if (empresasError) {
+        console.error('Error fetching empresas batch:', empresasError);
+      }
+      (empresas || []).forEach(e => {
+        if (e.nombre) empresasByName.set(e.nombre.toLowerCase().trim(), e.id);
+      });
     }
-
-    const empresasByName = new Map(
-      (existingEmpresas || []).map(e => [e.nombre?.toLowerCase().trim(), e.id])
-    );
-    console.log(`Loaded ${empresasByName.size} existing empresas`);
+    console.log(`Loaded ${empresasByName.size} matching empresas`);
 
     // Process each valuation
     for (const valuation of valuations) {

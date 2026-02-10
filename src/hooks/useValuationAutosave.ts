@@ -425,7 +425,7 @@ export const useValuationAutosave = () => {
         } else if (user) {
           console.log('Step updated for authenticated user:', user.email);
         }
-      });
+      }).catch(() => { /* silent fail in autosave context */ });
     }
   }, [state.uniqueToken, state.startTime, state.timeSpent, user]);
 

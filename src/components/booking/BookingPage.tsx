@@ -5,6 +5,7 @@ import { BookingCalendar } from './BookingCalendar';
 import { BookingTimeSlots } from './BookingTimeSlots';
 import { BookingConfirmation } from './BookingConfirmation';
 import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 import { Button } from '@/components/ui/button';
 import { Loader2, Calendar, Shield, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -13,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 const CapittalLogo = () => (
   <div className="flex items-center gap-2">
     <img 
-      src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" 
+      src={`${SUPABASE_CONFIG.url}/storage/v1/object/public/public-assets/logotipo.svg`} 
       alt="Capittal" 
       className="h-8"
     />
