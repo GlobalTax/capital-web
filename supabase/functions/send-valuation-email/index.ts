@@ -191,6 +191,19 @@ const euros = (n?: number | null, locale: string = "es-ES") =>
 const pct = (n?: number | null) =>
   typeof n === "number" && !isNaN(n) ? `${n.toFixed(2)}%` : "-";
 
+// =====================================================
+// HTML ESCAPE - Prevent XSS in email templates
+// =====================================================
+const escapeHtml = (str: string | number | null | undefined): string => {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 const sanitizeForFilename = (input: string): string => {
   try {
     let s = (input || '')
@@ -321,15 +334,15 @@ const handler = async (req: Request): Promise<Response> => {
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
     const locale = localeMap[lang || 'es'] || 'es-ES';
 
-    const internalRecipients = [
-      "samuel@capittal.es",
-      "marcc@capittal.es",
-      "oriol@capittal.es",
-      "marc@capittal.es",
-      "marcel@capittal.es",
-      "lluis@capittal.es",
-      "albert@capittal.es"
-    ];
+    const recipientsEnv = Deno.env.get('INTERNAL_NOTIFICATION_EMAILS');
+    const internalRecipients: string[] = recipientsEnv
+      ? recipientsEnv.split(',').map(e => e.trim()).filter(Boolean)
+      : [];
+
+    if (internalRecipients.length === 0) {
+      log('error', 'NO_INTERNAL_RECIPIENTS', { reason: 'INTERNAL_NOTIFICATION_EMAILS env var not set or empty' });
+      throw new Error('No internal recipients configured. Set INTERNAL_NOTIFICATION_EMAILS env var.');
+    }
 
     const leadEmail = companyData.email?.trim() || recipientEmail?.trim();
 
@@ -366,13 +379,16 @@ const handler = async (req: Request): Promise<Response> => {
       ? LEAD_SOURCE_LABELS[payload.leadSource] || payload.leadSource 
       : 'No especificado';
 
+    const safeCompanyName = (companyData.companyName || 'Capittal').replace(/[<>"]/g, '');
     const subject = isManualEntry
-      ? `[ENTRADA MANUAL] Nueva valoración recibida - ${companyData.companyName || "Capittal"}`
-      : isAdvisorCalculation 
-        ? `Nueva valoración de asesoría - ${companyData.companyName || "Capittal"}`
-        : `Nueva valoración recibida - ${companyData.companyName || "Capittal"}`;
+      ? `[ENTRADA MANUAL] Nueva valoración recibida - ${safeCompanyName}`
+      : isAdvisorCalculation
+        ? `Nueva valoración de asesoría - ${safeCompanyName}`
+        : `Nueva valoración recibida - ${safeCompanyName}`;
     
     const fromName = isManualEntry ? 'Capittal (Manual)' : 'Capittal';
+    const defaultSenderEmail = Deno.env.get('SENDER_EMAIL') || 'samuel@capittal.es';
+    const unsubscribeEmail = Deno.env.get('UNSUBSCRIBE_EMAIL') || defaultSenderEmail;
 
     // =====================================================
     // CREATE OUTBOX ENTRY BEFORE SENDING
@@ -415,12 +431,12 @@ const handler = async (req: Request): Promise<Response> => {
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
               <tr>
                 <td style="padding:4px 0; color:#92400e; font-weight:600; font-family:Arial,sans-serif; width:140px;">Canal de origen:</td>
-                <td style="padding:4px 0; color:#78350f; font-weight:700; font-family:Arial,sans-serif;">${leadSourceLabel}</td>
+                <td style="padding:4px 0; color:#78350f; font-weight:700; font-family:Arial,sans-serif;">${escapeHtml(leadSourceLabel)}</td>
               </tr>
               ${payload.leadSourceDetail ? `
               <tr>
                 <td style="padding:4px 0; color:#92400e; font-weight:600; font-family:Arial,sans-serif; width:140px;">Detalle:</td>
-                <td style="padding:4px 0; color:#78350f; font-family:Arial,sans-serif;">${payload.leadSourceDetail}</td>
+                <td style="padding:4px 0; color:#78350f; font-family:Arial,sans-serif;">${escapeHtml(payload.leadSourceDetail)}</td>
               </tr>
               ` : ''}
             </table>
@@ -438,25 +454,25 @@ const handler = async (req: Request): Promise<Response> => {
 
           <h2 style="margin:16px 0 8px; color:#111827; font-size:16px;">Datos de contacto</h2>
           <table style="width:100%; border-collapse:collapse;">
-            <tr><td style="padding:6px 0; color:#374151;">Nombre</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.contactName || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Empresa</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.companyName || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">CIF</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.cif || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Email</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.email || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Teléfono</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.phone || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Nombre</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.contactName) || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Empresa</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.companyName) || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">CIF</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.cif) || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Email</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.email) || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Teléfono</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.phone) || "-"}</td></tr>
           </table>
 
           <h2 style="margin:16px 0 8px; color:#111827; font-size:16px;">Información de la empresa</h2>
           <table style="width:100%; border-collapse:collapse;">
-            <tr><td style="padding:6px 0; color:#374151;">Sector</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.industry || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Años de actividad</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.yearsOfOperation ?? "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Empleados</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.employeeRange || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Sector</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.industry) || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Años de actividad</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.yearsOfOperation) ?? "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Empleados</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.employeeRange) || "-"}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Ingresos</td><td style="padding:6px 0; color:#111827; font-weight:600;">${euros(companyData.revenue, locale)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">EBITDA</td><td style="padding:6px 0; color:#111827; font-weight:600;">${euros(companyData.ebitda, locale)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Margen Neto</td><td style="padding:6px 0; color:#111827; font-weight:600;">${pct(companyData.netProfitMargin)}</td></tr>
             <tr><td style="padding:6px 0; color:#374151;">Crec. anual</td><td style="padding:6px 0; color:#111827; font-weight:600;">${pct(companyData.growthRate)}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Ubicación</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.location || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Participación</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.ownershipParticipation || "-"}</td></tr>
-            <tr><td style="padding:6px 0; color:#374151;">Ventaja competitiva</td><td style="padding:6px 0; color:#111827; font-weight:600;">${companyData.competitiveAdvantage || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Ubicación</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.location) || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Participación</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.ownershipParticipation) || "-"}</td></tr>
+            <tr><td style="padding:6px 0; color:#374151;">Ventaja competitiva</td><td style="padding:6px 0; color:#111827; font-weight:600;">${escapeHtml(companyData.competitiveAdvantage) || "-"}</td></tr>
           </table>
 
           <h2 style="margin:16px 0 8px; color:#111827; font-size:16px;">Resultado de la valoración</h2>
@@ -554,15 +570,15 @@ const handler = async (req: Request): Promise<Response> => {
     
     try {
       emailResponse = await resend.emails.send({
-        from: `${fromName} <samuel@capittal.es>`,
+        from: `${fromName} <${defaultSenderEmail}>`,
         to: internalRecipients,
         subject,
         html: htmlInternal,
         text: internalText,
-        reply_to: leadEmail || "samuel@capittal.es",
-        headers: { 
-          "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+        reply_to: leadEmail || defaultSenderEmail,
+        headers: {
+          "List-Unsubscribe": `<mailto:${unsubscribeEmail}?subject=unsubscribe>, <https://capittal.es/unsubscribe>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
         },
       });
       log('info', 'INTERNAL_EMAIL_SENT', { messageId: emailResponse?.data?.id });
@@ -574,10 +590,10 @@ const handler = async (req: Request): Promise<Response> => {
         subject: `${subject} (pruebas)`,
         html: `${htmlInternal}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
-        reply_to: leadEmail || "samuel@capittal.es",
-        headers: { 
-          "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
-          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+        reply_to: leadEmail || defaultSenderEmail,
+        headers: {
+          "List-Unsubscribe": `<mailto:${unsubscribeEmail}?subject=unsubscribe>, <https://capittal.es/unsubscribe>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
         },
       });
     }
@@ -585,11 +601,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Send client email
     if (companyData.email) {
       const userSubject = subjectOverride || `Valoración · PDF, escenarios y calculadora fiscal`;
-      const saludo = companyData.contactName ? `Hola ${companyData.contactName},` : 'Hola,';
-      const sector = companyData.industry || 'su sector';
-      const nombre = sender?.nombre || 'Equipo Capittal';
-      const cargo = sender?.cargo || 'M&A';
-      const firma = sender?.firma || 'Capittal · Carrer Ausias March, 36 Principal · P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid';
+      const saludoName = escapeHtml(companyData.contactName);
+      const saludo = saludoName ? `Hola ${saludoName},` : 'Hola,';
+      const sector = escapeHtml(companyData.industry) || 'su sector';
+      const nombre = escapeHtml(sender?.nombre) || 'Equipo Capittal';
+      const cargo = escapeHtml(sender?.cargo) || 'M&amp;A';
+      const firma = escapeHtml(sender?.firma) || 'Capittal &middot; Carrer Ausias March, 36 Principal &middot; P.&ordm; de la Castellana, 11, B - A, Chamber&iacute;, 28046 Madrid';
 
       const pdfUrlFinal = (enlaces && enlaces.pdfUrl) || pdfPublicUrl || '';
       const enlacesUtiles = [
@@ -607,7 +624,7 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background:#f8fafc;">
           <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:32px; color:#111827;">
             <p style="margin:0 0 16px; font-size:16px;">${saludo}</p>
-            <p style="margin:0 0 16px; line-height:1.6;">Le escribimos desde el equipo de Capittal. Gracias por completar el formulario de valoración de <strong>${companyData.companyName || ''}</strong>.</p>
+            <p style="margin:0 0 16px; line-height:1.6;">Le escribimos desde el equipo de Capittal. Gracias por completar el formulario de valoración de <strong>${escapeHtml(companyData.companyName) || ''}</strong>.</p>
             <p style="margin:0 0 16px; line-height:1.6;">Su PDF ya se ha generado y pudo descargarlo en la pantalla de confirmación. Por si lo necesita de nuevo, puede volver a descargarlo desde el enlace más abajo.</p>
 
             <div style="background:#f3f4f6; border-radius:8px; padding:20px; margin:20px 0;">
@@ -654,15 +671,15 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         await resend.emails.send({
-          from: "Capittal <samuel@capittal.es>",
+          from: `Capittal <${defaultSenderEmail}>`,
           to: [companyData.email],
           subject: userSubject,
           html: userHtml,
           text: userText,
-          reply_to: "samuel@capittal.es",
-          headers: { 
-            "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
-            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+          reply_to: defaultSenderEmail,
+          headers: {
+            "List-Unsubscribe": `<mailto:${unsubscribeEmail}?subject=unsubscribe>, <https://capittal.es/unsubscribe>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
           },
         });
         log('info', 'CLIENT_EMAIL_SENT', { recipient: companyData.email });
@@ -674,10 +691,10 @@ const handler = async (req: Request): Promise<Response> => {
           subject: `${userSubject} (pruebas)`,
           html: `${userHtml}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
           text: userText,
-          reply_to: "samuel@capittal.es",
-          headers: { 
-            "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
-            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
+          reply_to: defaultSenderEmail,
+          headers: {
+            "List-Unsubscribe": `<mailto:${unsubscribeEmail}?subject=unsubscribe>, <https://capittal.es/unsubscribe>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
           },
         });
       }

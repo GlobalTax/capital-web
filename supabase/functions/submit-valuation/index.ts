@@ -71,6 +71,15 @@ function getIp(req: Request): string | null {
   return hdr.split(",")[0].trim();
 }
 
+async function hashIP(ip: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(ip + (Deno.env.get('IP_HASH_SALT') || 'valuation-salt'));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
 // ✅ SECURE: Genera token criptográficamente seguro compatible con VARCHAR(32)
 // Usamos 24 bytes (192 bits) que produce exactamente 32 caracteres en base64url
 function generateSecureToken(): string {
@@ -133,6 +142,31 @@ Deno.serve(async (req) => {
     const ip = getIp(req);
     const ua = req.headers.get("user-agent") || null;
 
+    // ============= RATE LIMITING =============
+    if (ip) {
+      const ipHash = await hashIP(ip);
+      const { data: canProceed, error: rlError } = await supabase.rpc('check_rate_limit_enhanced', {
+        p_identifier: ipHash,
+        p_category: 'valuation_submission',
+        p_max_requests: 5,
+        p_window_minutes: 60
+      });
+
+      if (rlError) {
+        console.warn('⚠️ Rate limit check failed (non-blocking):', rlError.message);
+      } else if (canProceed === false) {
+        console.warn('🚫 Rate limit exceeded for IP hash:', ipHash.substring(0, 12) + '...');
+        clearTimeout(timeout);
+        return new Response(
+          JSON.stringify({
+            error: 'rate_limit',
+            message: 'Has alcanzado el límite de solicitudes. Inténtalo más tarde.'
+          }),
+          { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    }
+
     // ✅ SECURE: Generar token criptográficamente seguro
     const token = generateSecureToken();
     const tokenHash = await hashToken(token);
@@ -158,7 +192,7 @@ Deno.serve(async (req) => {
     if (error) {
       console.error("Insert error:", error);
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: 'Error al guardar la valoración. Inténtelo de nuevo.' }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
@@ -192,9 +226,8 @@ Deno.serve(async (req) => {
     console.error("Stack trace:", err?.stack);
     clearTimeout(timeout);
     return new Response(
-      JSON.stringify({ 
-        error: err?.message || "Unexpected error",
-        timestamp: new Date().toISOString()
+      JSON.stringify({
+        error: 'Error inesperado. Inténtelo de nuevo.'
       }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );

@@ -66,9 +66,40 @@ const BREVO_ATTRIBUTE_MAP: Record<string, string> = {
   'TELEFONO': 'telefono',
 };
 
+// ============= WEBHOOK SIGNATURE VERIFICATION =============
+
+async function verifyWebhookSignature(
+  body: string,
+  signatureHeader: string | null,
+  secret: string
+): Promise<boolean> {
+  if (!signatureHeader) return false;
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const expectedHex = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  // Constant-time comparison
+  if (expectedHex.length !== signatureHeader.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < expectedHex.length; i++) {
+    mismatch |= expectedHex.charCodeAt(i) ^ signatureHeader.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
 serve(async (req) => {
   const startTime = Date.now();
-  
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -88,8 +119,27 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // ============= VERIFY WEBHOOK SIGNATURE =============
+    const webhookSecret = Deno.env.get('BREVO_WEBHOOK_SECRET');
+    const rawBody = await req.text();
+
+    if (webhookSecret) {
+      const signature = req.headers.get('x-brevo-signature') || req.headers.get('x-sib-signature');
+      const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
+
+      if (!isValid) {
+        console.warn('⚠️ [brevo-webhook-handler] Invalid webhook signature - rejecting request');
+        return new Response(
+          JSON.stringify({ error: 'Invalid webhook signature' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      console.warn('⚠️ [brevo-webhook-handler] BREVO_WEBHOOK_SECRET not set - signature verification skipped');
+    }
+
     // Brevo puede enviar un array de eventos o un evento individual
-    const body = await req.json();
+    const body = JSON.parse(rawBody);
     const events: BrevoWebhookEvent[] = Array.isArray(body) ? body : [body];
 
     console.log(`📥 [brevo-webhook-handler] Received ${events.length} event(s)`);
