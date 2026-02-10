@@ -33,6 +33,8 @@ interface QuestionData {
   recommendation_if_low: string;
 }
 
+const defaultSenderEmail = Deno.env.get('SENDER_EMAIL') || 'samuel@capittal.es';
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -220,9 +222,8 @@ INSTRUCCIONES IMPORTANTES:
         const emailHtml = generateEmailHtml(testData as TestData, reportContent, levelLabel);
         
         const { error: emailError } = await resend.emails.send({
-          from: 'Capittal <samuel@capittal.es>',
+          from: `Capittal <${defaultSenderEmail}>`,
           to: [testData.email],
-          cc: ['lluis@capittal.es'],
           subject: `Tu Informe Exit-Ready - ${testData.company_name || 'Capittal'}`,
           html: emailHtml,
         });

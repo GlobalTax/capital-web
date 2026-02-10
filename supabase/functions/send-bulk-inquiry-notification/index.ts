@@ -8,15 +8,10 @@ const corsHeaders = {
 };
 
 // Equipo completo que recibe notificaciones
-const ADMIN_EMAILS = [
-  'samuel@capittal.es',
-  'marcc@capittal.es',
-  'oriol@capittal.es',
-  'marc@capittal.es',
-  'marcel@capittal.es',
-  'lluis@capittal.es',
-  'albert@capittal.es',
-];
+const recipientsEnv = Deno.env.get('INTERNAL_NOTIFICATION_EMAILS');
+const ADMIN_EMAILS: string[] = recipientsEnv
+  ? recipientsEnv.split(',').map(e => e.trim()).filter(Boolean)
+  : [];
 
 interface Operation {
   id: string;

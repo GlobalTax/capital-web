@@ -8,6 +8,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
+const defaultSenderEmail = Deno.env.get('SENDER_EMAIL') || 'samuel@capittal.es';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL') as string;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string;
@@ -126,14 +127,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "Capittal <samuel@capittal.es>",
+      from: `Capittal <${defaultSenderEmail}>`,
       to: [email],
       subject,
       html: htmlWithTracking,
       text: textEmail,
-      reply_to: "samuel@capittal.es",
+      reply_to: defaultSenderEmail,
       headers: {
-        "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>",
+        "List-Unsubscribe": `<mailto:${defaultSenderEmail}?subject=unsubscribe>`,
       },
     });
 

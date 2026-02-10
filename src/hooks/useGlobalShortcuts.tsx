@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface ShortcutConfig {
@@ -14,6 +14,7 @@ interface ShortcutConfig {
 export function useGlobalShortcuts() {
   const navigate = useNavigate();
   const location = useLocation();
+  const gTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const shortcuts: ShortcutConfig[] = [
     // Navigation shortcuts (g + key)
@@ -62,8 +63,9 @@ export function useGlobalShortcuts() {
     // Track G key press for navigation shortcuts
     if (event.key === 'g' && !event.metaKey && !event.ctrlKey) {
       (window as any).__gKeyPressed = true;
-      // Reset after 1 second
-      setTimeout(() => {
+      // Reset after 1 second, clearing any previous timer
+      clearTimeout(gTimerRef.current);
+      gTimerRef.current = setTimeout(() => {
         (window as any).__gKeyPressed = false;
       }, 1000);
     }
@@ -71,7 +73,10 @@ export function useGlobalShortcuts() {
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(gTimerRef.current);
+    };
   }, [handleKeyDown]);
 
   return { shortcuts };

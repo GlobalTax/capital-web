@@ -105,8 +105,8 @@ Deno.serve(async (req) => {
       console.error('Firecrawl error:', scrapeData);
       return new Response(
         JSON.stringify({ 
-          success: false, 
-          error: `Failed to scrape website: ${scrapeData.error || 'Unknown error'}` 
+          success: false,
+          error: 'Error interno del servidor.'
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

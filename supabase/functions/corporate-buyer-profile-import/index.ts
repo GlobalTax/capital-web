@@ -326,7 +326,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Profile import error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message || 'Error interno del servidor' }),
+      JSON.stringify({ success: false, error: 'Error interno del servidor.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

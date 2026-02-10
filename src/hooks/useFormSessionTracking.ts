@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 
 interface SessionTrackingOptions {
   formType?: string;
@@ -144,7 +145,8 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
         .eq('session_id', sessionDataRef.current.sessionId)
         .then(({ error }) => {
           if (error) console.error('Error updating interaction:', error);
-        });
+        })
+        .catch(() => { /* silent fail in tracking context */ });
     }
   }, []);
 
@@ -177,7 +179,8 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
         .eq('session_id', sessionDataRef.current.sessionId)
         .then(({ error }) => {
           if (error) console.error('Error updating exit intent:', error);
-        });
+        })
+        .catch(() => { /* silent fail in tracking context */ });
 
       onExitIntent?.();
     }
@@ -199,7 +202,8 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
       .eq('session_id', sessionDataRef.current.sessionId)
       .then(({ error }) => {
         if (error) console.error('Error updating session:', error);
-      });
+      })
+      .catch(() => { /* silent fail in tracking context */ });
   }, []);
 
   // Finalizar sesión (beforeunload)
@@ -216,10 +220,9 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
       exit_type: 'close_tab'
     };
 
-    // Use centralized Supabase config - get URL and key from the client
-    // Note: We need to use raw fetch with keepalive for beforeunload reliability
-    const supabaseUrl = 'https://fwhqtzkkvnjkazhaficj.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I';
+    // Use centralized Supabase config for raw fetch with keepalive (beforeunload reliability)
+    const supabaseUrl = SUPABASE_CONFIG.url;
+    const supabaseKey = SUPABASE_CONFIG.anonKey;
     
     const url = `${supabaseUrl}/rest/v1/form_sessions?session_id=eq.${sessionDataRef.current.sessionId}`;
     

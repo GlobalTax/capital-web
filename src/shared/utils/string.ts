@@ -30,11 +30,18 @@ export const truncate = (text: string, maxLength: number): string => {
  */
 export const highlightText = (text: string, query: string): string => {
   if (!query || !text) return text;
-  
+
+  // HTML-escape text first to prevent XSS via dangerouslySetInnerHTML
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
   // Escape regex special characters to prevent ReDoS
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const regex = new RegExp(`(${escapedQuery})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
+  return escaped.replace(regex, '<mark>$1</mark>');
 };
 
 /**

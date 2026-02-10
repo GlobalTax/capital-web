@@ -22,15 +22,10 @@ interface BookingNotificationRequest {
 }
 
 // Team recipients for CC
-const TEAM_RECIPIENTS = [
-  "samuel@capittal.es",
-  "marcc@capittal.es",
-  "oriol@capittal.es",
-  "marc@capittal.es",
-  "marcel@capittal.es",
-  "lluis@capittal.es",
-  "albert@capittal.es"
-];
+const recipientsEnv = Deno.env.get('INTERNAL_NOTIFICATION_EMAILS');
+const TEAM_RECIPIENTS: string[] = recipientsEnv
+  ? recipientsEnv.split(',').map(e => e.trim()).filter(Boolean)
+  : [];
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("[send-booking-notification] Function called");

@@ -548,9 +548,8 @@ serve(async (req) => {
     console.error('❌ Error in sync-to-brevo:', error);
     
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.stack 
+      JSON.stringify({
+        error: 'Error interno del servidor.'
       }),
       {
         status: 500,

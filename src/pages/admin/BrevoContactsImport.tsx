@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_CONFIG } from '@/config/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -76,11 +77,11 @@ export default function BrevoContactsImport() {
       
       // Use fetch since invoke doesn't support query params well
       const response = await fetch(
-        `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-list-contacts?action=lists`,
+        `${SUPABASE_CONFIG.url}/functions/v1/brevo-list-contacts?action=lists`,
         {
           headers: {
             'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I',
+            'apikey': SUPABASE_CONFIG.anonKey,
           },
         }
       );
@@ -96,11 +97,11 @@ export default function BrevoContactsImport() {
     queryKey: ['brevo-stats'],
     queryFn: async () => {
       const response = await fetch(
-        `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-list-contacts?action=stats`,
+        `${SUPABASE_CONFIG.url}/functions/v1/brevo-list-contacts?action=stats`,
         {
           headers: {
             'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I',
+            'apikey': SUPABASE_CONFIG.anonKey,
           },
         }
       );
@@ -115,7 +116,7 @@ export default function BrevoContactsImport() {
   const { data: contactsData, isLoading: isLoadingContacts, refetch: refetchContacts } = useQuery({
     queryKey: ['brevo-contacts', offset, selectedListId],
     queryFn: async () => {
-      let url = `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-list-contacts?action=list&limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+      let url = `${SUPABASE_CONFIG.url}/functions/v1/brevo-list-contacts?action=list&limit=${ITEMS_PER_PAGE}&offset=${offset}`;
       
       if (selectedListId && selectedListId !== 'all') {
         url += `&listId=${selectedListId}`;
@@ -124,7 +125,7 @@ export default function BrevoContactsImport() {
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I',
+          'apikey': SUPABASE_CONFIG.anonKey,
         },
       });
       
@@ -138,11 +139,11 @@ export default function BrevoContactsImport() {
   const searchMutation = useMutation({
     mutationFn: async (email: string) => {
       const response = await fetch(
-        `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-list-contacts?action=search&email=${encodeURIComponent(email)}`,
+        `${SUPABASE_CONFIG.url}/functions/v1/brevo-list-contacts?action=search&email=${encodeURIComponent(email)}`,
         {
           headers: {
             'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I',
+            'apikey': SUPABASE_CONFIG.anonKey,
           },
         }
       );
@@ -168,12 +169,12 @@ export default function BrevoContactsImport() {
       const batchId = crypto.randomUUID();
       
       const response = await fetch(
-        `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-list-contacts?action=import`,
+        `${SUPABASE_CONFIG.url}/functions/v1/brevo-list-contacts?action=import`,
         {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I',
+            'apikey': SUPABASE_CONFIG.anonKey,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ contacts, batchId }),
@@ -203,7 +204,7 @@ export default function BrevoContactsImport() {
     try {
       while (true) {
         // Fetch batch
-        let url = `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-list-contacts?action=list&limit=${batchSize}&offset=${currentOffset}`;
+        let url = `${SUPABASE_CONFIG.url}/functions/v1/brevo-list-contacts?action=list&limit=${batchSize}&offset=${currentOffset}`;
         if (selectedListId && selectedListId !== 'all') {
           url += `&listId=${selectedListId}`;
         }
@@ -211,7 +212,7 @@ export default function BrevoContactsImport() {
         const response = await fetch(url, {
           headers: {
             'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I',
+            'apikey': SUPABASE_CONFIG.anonKey,
           },
         });
 
@@ -222,12 +223,12 @@ export default function BrevoContactsImport() {
 
         // Import batch
         const importResponse = await fetch(
-          `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/brevo-list-contacts?action=import`,
+          `${SUPABASE_CONFIG.url}/functions/v1/brevo-list-contacts?action=import`,
           {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I',
+              'apikey': SUPABASE_CONFIG.anonKey,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ contacts: data.contacts, batchId: crypto.randomUUID() }),

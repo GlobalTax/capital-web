@@ -43,37 +43,30 @@ export class TrackingConfigService {
         return JSON.parse(stored);
       }
       
-      // Return default configuration with all tracking IDs
-      return {
-        enableHeatmaps: true,
-        enableSessionRecording: false,
-        enableLeadTracking: true,
-        enableCMP: true,
-        enableBrevoTracking: true,
-        googleAnalyticsId: 'G-Z97ZB4YKPF',
-        googleTagManagerId: 'GTM-N35CP3R9',
-        facebookPixelId: '381068095046019',
-        cookiebotId: 'c5f326c2-c1a3-48af-89ee-2113cd3c0399',
-        brevoClientKey: 'roxikmpb0134fjx0zxc6vti5',
-      };
+      // Return default configuration using environment variables
+      return TrackingConfigService.getDefaultConfig();
     } catch (error) {
       console.error('Error loading tracking configuration:', error);
-      return {
-        enableHeatmaps: true,
-        enableSessionRecording: false,
-        enableLeadTracking: true,
-        enableCMP: true,
-        enableBrevoTracking: true,
-        googleAnalyticsId: 'G-Z97ZB4YKPF',
-        googleTagManagerId: 'GTM-N35CP3R9',
-        facebookPixelId: '381068095046019',
-        cookiebotId: 'c5f326c2-c1a3-48af-89ee-2113cd3c0399',
-        brevoClientKey: 'roxikmpb0134fjx0zxc6vti5',
-      };
+      return TrackingConfigService.getDefaultConfig();
     }
   }
   
-  // Validate configuration
+  // Default configuration sourced from environment variables
+  private static getDefaultConfig(): TrackingConfiguration {
+    return {
+      enableHeatmaps: true,
+      enableSessionRecording: false,
+      enableLeadTracking: true,
+      enableCMP: true,
+      enableBrevoTracking: true,
+      googleAnalyticsId: import.meta.env.VITE_GA_ID || '',
+      googleTagManagerId: import.meta.env.VITE_GTM_ID || '',
+      facebookPixelId: import.meta.env.VITE_FB_PIXEL_ID || '',
+      cookiebotId: import.meta.env.VITE_COOKIEBOT_ID || '',
+      brevoClientKey: import.meta.env.VITE_BREVO_CLIENT_KEY || '',
+    };
+  }
+
   // Helper method to check if tracking should be enabled based on domain
   static shouldEnableTracking(): boolean {
     const domain = window.location.hostname;

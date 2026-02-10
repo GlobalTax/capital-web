@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const defaultSenderEmail = Deno.env.get('SENDER_EMAIL') || 'samuel@capittal.es';
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -22,15 +23,10 @@ interface FormNotificationRequest {
 }
 
 // Equipo completo que recibe notificaciones de formularios
-const ADMIN_EMAILS = [
-  'samuel@capittal.es',
-  'marcc@capittal.es',
-  'oriol@capittal.es',
-  'marc@capittal.es',
-  'marcel@capittal.es',
-  'lluis@capittal.es',
-  'albert@capittal.es',
-];
+const recipientsEnv = Deno.env.get('INTERNAL_NOTIFICATION_EMAILS');
+const ADMIN_EMAILS: string[] = recipientsEnv
+  ? recipientsEnv.split(',').map(e => e.trim()).filter(Boolean)
+  : [];
 
 // Helper functions for formatting
 const getPageOriginLabel = (pageOrigin: string | undefined): string => {
@@ -1113,20 +1109,19 @@ const handler = async (req: Request): Promise<Response> => {
       const isCampaignValuation = formType === 'campaign_valuation';
       
       // BCC interno para control de calidad (copia oculta al equipo)
-      const CONFIRMATION_BCC_EMAILS = [
-        'samuel@capittal.es',
-        'lluis@capittal.es',
-        'oriol@capittal.es'
-      ];
+      const bccEnv = Deno.env.get('INTERNAL_NOTIFICATION_EMAILS');
+      const CONFIRMATION_BCC_EMAILS: string[] = bccEnv
+        ? bccEnv.split(',').map(e => e.trim()).filter(Boolean)
+        : [];
       
       const result = await resend.emails.send({
-        from: isCampaignValuation 
-          ? "Samuel Navarro - Capittal <samuel@capittal.es>"
+        from: isCampaignValuation
+          ? `Samuel Navarro - Capittal <${defaultSenderEmail}>`
           : "Capittal <info@capittal.es>",
         to: [email],
         bcc: CONFIRMATION_BCC_EMAILS, // Copia oculta al equipo interno
-        cc: isCampaignValuation ? ["lluis@capittal.es"] : undefined,
-        reply_to: isCampaignValuation ? "samuel@capittal.es" : undefined,
+        cc: isCampaignValuation ? [defaultSenderEmail] : undefined,
+        reply_to: isCampaignValuation ? defaultSenderEmail : undefined,
         subject: userTemplate.subject,
         html: userTemplate.html,
       });

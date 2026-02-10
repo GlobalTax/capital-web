@@ -295,9 +295,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in link-valuations-crm:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message,
-      details: error.toString()
+    return new Response(JSON.stringify({
+      error: 'Error interno del servidor.'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

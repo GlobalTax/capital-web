@@ -207,9 +207,8 @@ Deno.serve(async (req) => {
     console.error("Stack trace:", err?.stack);
     clearTimeout(timeout);
     return new Response(
-      JSON.stringify({ 
-        error: err?.message || "Unexpected error",
-        timestamp: new Date().toISOString()
+      JSON.stringify({
+        error: 'Error interno del servidor.'
       }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
