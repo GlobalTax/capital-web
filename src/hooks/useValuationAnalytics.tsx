@@ -63,7 +63,12 @@ export const useValuationAnalytics = (dateRange: { start: Date; end: Date } = {
       }
 
       // Parse the JSON response - data is already parsed by Supabase
-      const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+      let parsedData;
+      if (typeof data === 'string') {
+        try { parsedData = JSON.parse(data); } catch { throw new Error('Invalid JSON in analytics response'); }
+      } else {
+        parsedData = data;
+      }
       console.log('[ValuationAnalytics] Data fetched successfully');
       return parsedData as unknown as ValuationAnalyticsData;
     },

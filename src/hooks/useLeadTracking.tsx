@@ -150,7 +150,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
   const getOrCreateVisitorId = useCallback(() => {
     let visitorId = localStorage.getItem('capittal_visitor_id');
     if (!visitorId) {
-      visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const vBytes = new Uint8Array(6);
+      crypto.getRandomValues(vBytes);
+      visitorId = `visitor_${Date.now()}_${Array.from(vBytes).map(b => b.toString(36)).join('').substring(0, 9)}`;
       localStorage.setItem('capittal_visitor_id', visitorId);
     }
     return visitorId;
@@ -159,7 +161,9 @@ export const useLeadTracking = (options: TrackingOptions = {}) => {
   const getOrCreateSessionId = useCallback(() => {
     let sessionId = sessionStorage.getItem('capittal_session_id');
     if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const sBytes = new Uint8Array(6);
+      crypto.getRandomValues(sBytes);
+      sessionId = `session_${Date.now()}_${Array.from(sBytes).map(b => b.toString(36)).join('').substring(0, 9)}`;
       sessionStorage.setItem('capittal_session_id', sessionId);
     }
     return sessionId;

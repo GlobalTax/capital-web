@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Clear auth-related cookies
       document.cookie.split(";").forEach(cookie => {
         const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+        const name = eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
         if (name.includes('auth') || name.includes('supabase') || name.includes('session')) {
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;

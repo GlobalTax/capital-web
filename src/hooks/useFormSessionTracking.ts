@@ -31,7 +31,9 @@ export const useFormSessionTracking = (options: SessionTrackingOptions = {}) => 
 
   // Generar ID de sesión único
   const generateSessionId = useCallback(() => {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    return `session_${Date.now()}_${Array.from(bytes).map(b => b.toString(36)).join('').substring(0, 9)}`;
   }, []);
 
   // Obtener datos del navegador
