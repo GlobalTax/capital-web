@@ -99,6 +99,8 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
   }, []);
 
   const handleForceNavigate = (path: string) => {
+    // Only allow relative paths starting with / to prevent open redirects
+    if (!path.startsWith('/')) return;
     console.log(`🚀 Force navigating to: ${path}`);
     window.location.href = path;
   };

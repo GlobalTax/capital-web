@@ -432,7 +432,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Error in fetch-ma-news:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: 'Error interno del servidor.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

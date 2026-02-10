@@ -83,9 +83,9 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in extract-financial-data:', error)
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message 
+      JSON.stringify({
+        success: false,
+        error: 'Error interno del servidor.'
       }),
       {
         status: 500,

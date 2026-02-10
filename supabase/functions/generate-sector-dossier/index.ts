@@ -405,7 +405,7 @@ Usa datos concretos cuando los tengas, pero infiere con criterio de experto cuan
     return new Response(
       JSON.stringify({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Error interno del servidor.'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
