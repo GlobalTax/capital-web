@@ -61,13 +61,15 @@ export const useContacts = () => {
         formDisplayMap[f.id] = f.display_name || f.name;
       }
 
-      // Parallel fetch all contact sources
+      // Parallel fetch all contact sources (including legacy tables)
       const [
         { data: contactLeads },
         { data: valuationLeads },
         { data: collaboratorLeads },
         { data: acquisitionLeads },
         { data: advisorLeads },
+        { data: sellLeads },
+        { data: generalContactLeads },
       ] = await Promise.all([
         supabase
           .from('contact_leads')
@@ -93,7 +95,20 @@ export const useContacts = () => {
           .from('advisor_valuations')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
+        supabase
+          .from('sell_leads')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('general_contact_leads')
+          .select('*')
+          .order('created_at', { ascending: false }),
       ]);
+
+      // Collect emails already in contact_leads to avoid duplicating legacy records
+      const contactLeadEmails = new Set(
+        (contactLeads || []).map((l: any) => l.email?.toLowerCase())
+      );
 
       // Transform to unified format
       const unified: Contact[] = [
@@ -102,6 +117,13 @@ export const useContacts = () => {
         ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap)),
         ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap)),
         ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap)),
+        // Legacy tables - only include if not already in contact_leads
+        ...(sellLeads || [])
+          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
+          .map((l: any) => transformLegacyLead(l, 'sell_lead', formDisplayMap)),
+        ...(generalContactLeads || [])
+          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
+          .map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
       ];
 
       // Store all contacts (prospect filtering moved to filteredContacts memo)
@@ -354,4 +376,25 @@ function determinePriority(lead: any): 'hot' | 'warm' | 'cold' {
   if (lead.status === 'qualified' || lead.status === 'opportunity') return 'hot';
   if (lead.email_sent) return 'warm';
   return 'cold';
+}
+
+// Transform legacy sell_leads and general_contact_leads
+function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact', formDisplayMap: Record<string, string>): Contact {
+  return {
+    id: lead.id,
+    origin: 'general' as ContactOrigin,
+    name: lead.full_name || '',
+    email: lead.email,
+    phone: lead.phone,
+    company: lead.company || '',
+    created_at: lead.created_at,
+    lead_received_at: lead.created_at,
+    status: lead.status || 'new',
+    lead_status_crm: lead.lead_status_crm || null,
+    email_sent: lead.email_sent,
+    email_sent_at: lead.email_sent_at,
+    email_opened: lead.email_opened,
+    priority: lead.email_opened ? 'hot' : lead.email_sent ? 'warm' : 'cold',
+    is_hot_lead: lead.email_opened || false,
+  };
 }
