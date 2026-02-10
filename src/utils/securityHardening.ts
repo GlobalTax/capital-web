@@ -191,12 +191,12 @@ export function enforceCSP(): void {
   meta.httpEquiv = 'Content-Security-Policy';
   meta.content = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://connect.facebook.net https://cdn-st.adsmurai.com https://consent.cookiebot.com",
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://cdn-st.adsmurai.com https://consent.cookiebot.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://fwhqtzkkvnjkazhaficj.supabase.co wss://fwhqtzkkvnjkazhaficj.supabase.co https://www.google-analytics.com",
-    "frame-src 'self' https://www.google.com",
+    "connect-src 'self' https://fwhqtzkkvnjkazhaficj.supabase.co wss://fwhqtzkkvnjkazhaficj.supabase.co https://www.google-analytics.com https://connect.facebook.net",
+    "frame-src 'self' https://www.google.com https://consent.cookiebot.com",
     "object-src 'none'",
     "base-uri 'self'"
   ].join('; ');

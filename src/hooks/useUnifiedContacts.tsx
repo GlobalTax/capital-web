@@ -203,73 +203,73 @@ export const useUnifiedContacts = () => {
       const prospectStatusKeys = (prospectStatuses || []).map(s => s.status_key);
       console.log('[useUnifiedContacts] Prospect status keys to exclude:', prospectStatusKeys);
       
-      // Fetch contact_leads with linked empresa, acquisition channel, lead form, and AI classification fields (exclude soft deleted)
-      const { data: contactLeads, error: contactError } = await supabase
-        .from('contact_leads')
-        .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
-        .is('is_deleted', false)
-        .order('created_at', { ascending: false });
+      // Fetch all lead sources in parallel for better performance
+      const [
+        contactResult,
+        valuationResult,
+        collaboratorResult,
+        generalResult,
+        acquisitionResult,
+        companyAcquisitionResult,
+        advisorResult,
+        proValuationsResult,
+      ] = await Promise.all([
+        supabase
+          .from('contact_leads')
+          .select('*, lead_status_crm, assigned_to, empresa_id, acquisition_channel_id, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+          .is('is_deleted', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('company_valuations')
+          .select('*, lead_status_crm, assigned_to, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
+          .is('is_deleted', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('collaborator_applications')
+          .select('*, lead_status_crm, assigned_to, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+          .is('is_deleted', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('general_contact_leads')
+          .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+          .is('is_deleted', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('acquisition_leads')
+          .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+          .is('is_deleted', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('company_acquisition_inquiries')
+          .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+          .is('is_deleted', false)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('advisor_valuations')
+          .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('professional_valuations')
+          .select('linked_lead_id, valuation_central, valuation_low, valuation_high, normalized_ebitda, sector, client_company, financial_years')
+          .eq('linked_lead_type', 'contact')
+          .not('linked_lead_id', 'is', null),
+      ]);
+
+      const { data: contactLeads, error: contactError } = contactResult;
+      const { data: valuationLeads, error: valuationError } = valuationResult;
+      const { data: collaboratorLeads, error: collaboratorError } = collaboratorResult;
+      const { data: generalLeads } = generalResult;
+      const { data: acquisitionLeads, error: acquisitionError } = acquisitionResult;
+      const { data: companyAcquisitionLeads, error: companyAcquisitionError } = companyAcquisitionResult;
+      const { data: advisorLeads, error: advisorError } = advisorResult;
+      const { data: proValuations, error: proValuationsError } = proValuationsResult;
 
       if (contactError) throw contactError;
-
-      // Fetch company_valuations (exclude soft deleted) - include Apollo fields, lead form, AI classification, and empresa data
-      const { data: valuationLeads, error: valuationError } = await supabase
-        .from('company_valuations')
-        .select('*, lead_status_crm, assigned_to, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, empresas:empresa_id(id, nombre, facturacion), acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name), apollo_status, apollo_error, apollo_org_id, apollo_last_enriched_at, apollo_org_data, apollo_candidates')
-        .is('is_deleted', false)
-        .order('created_at', { ascending: false });
-
       if (valuationError) throw valuationError;
-
-      // Fetch collaborator_applications (exclude soft deleted)
-      const { data: collaboratorLeads, error: collaboratorError } = await supabase
-        .from('collaborator_applications')
-        .select('*, lead_status_crm, assigned_to, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
-        .is('is_deleted', false)
-        .order('created_at', { ascending: false });
-
       if (collaboratorError) throw collaboratorError;
-
-      // Fetch general_contact_leads (if exists, exclude soft deleted)
-      const { data: generalLeads, error: generalError } = await supabase
-        .from('general_contact_leads')
-        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
-        .is('is_deleted', false)
-        .order('created_at', { ascending: false });
-
-      // Fetch acquisition_leads (exclude soft deleted)
-      const { data: acquisitionLeads, error: acquisitionError } = await supabase
-        .from('acquisition_leads')
-        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
-        .is('is_deleted', false)
-        .order('created_at', { ascending: false });
-
       if (acquisitionError) throw acquisitionError;
-
-      // Fetch company_acquisition_inquiries (exclude soft deleted)
-      const { data: companyAcquisitionLeads, error: companyAcquisitionError } = await supabase
-        .from('company_acquisition_inquiries')
-        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
-        .is('is_deleted', false)
-        .order('created_at', { ascending: false });
-
       if (companyAcquisitionError) throw companyAcquisitionError;
-
-      // Fetch advisor_valuations
-      const { data: advisorLeads, error: advisorError } = await supabase
-        .from('advisor_valuations')
-        .select('*, lead_form, ai_company_summary, ai_company_summary_at, ai_sector_pe, ai_sector_name, ai_tags, ai_business_model_tags, ai_negative_tags, ai_classification_confidence, ai_classification_at, acquisition_channel:acquisition_channel_id(id, name, category), lead_form_ref:lead_form(id, name)')
-        .order('created_at', { ascending: false });
-
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
-
-      // 🔥 NEW: Fetch professional_valuations linked to contact_leads
-      const { data: proValuations, error: proValuationsError } = await supabase
-        .from('professional_valuations')
-        .select('linked_lead_id, valuation_central, valuation_low, valuation_high, normalized_ebitda, sector, client_company, financial_years')
-        .eq('linked_lead_type', 'contact')
-        .not('linked_lead_id', 'is', null);
-
       if (proValuationsError) console.error('Error fetching professional valuations:', proValuationsError);
 
       // Create map of professional valuations by linked_lead_id

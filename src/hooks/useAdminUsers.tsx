@@ -441,7 +441,9 @@ if (edgeFunctionError) {
       ];
 
       for (const member of teamMembers) {
-        const password = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-8).toUpperCase();
+        const bytes = crypto.getRandomValues(new Uint8Array(20));
+        const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const password = Array.from(bytes, b => charset[b % charset.length]).join('');
         await createUser({ ...member, password });
       }
 

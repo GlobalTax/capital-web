@@ -32,12 +32,15 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        // ⚡ OPTIMIZACIÓN: Todas las librerías en vendor para evitar circular dependencies
         manualChunks: (id) => {
-          // Todo node_modules va a vendor (react-quill, @react-pdf, recharts, etc.)
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
+          if (!id.includes('node_modules')) return;
+          if (id.includes('react-dom') || id.includes('react/') || id.includes('react-router') || id.includes('scheduler')) return 'react-core';
+          if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'charts';
+          if (id.includes('react-pdf') || id.includes('jspdf') || id.includes('html2canvas')) return 'pdf';
+          if (id.includes('xlsx')) return 'xlsx';
+          if (id.includes('framer-motion')) return 'animation';
+          if (id.includes('@radix-ui') || id.includes('@tanstack')) return 'ui-libs';
+          return 'vendor';
         }
       }
     },

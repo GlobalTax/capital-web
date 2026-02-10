@@ -130,11 +130,18 @@ const Hero: React.FC = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   }, [slides.length]);
 
+  const resumeTimerRef = React.useRef<ReturnType<typeof setTimeout>>();
+
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
     setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+    clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => setIsAutoPlaying(true), 10000);
   };
+
+  React.useEffect(() => {
+    return () => clearTimeout(resumeTimerRef.current);
+  }, []);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
