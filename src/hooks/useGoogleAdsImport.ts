@@ -340,7 +340,7 @@ export const useGoogleAdsImport = () => {
           spend: row.spend,
           currency: 'EUR',
           clicks: row.clicks ?? 0,
-          conversions: Math.round(row.conversions ?? 0),
+          conversions: row.conversions ?? 0,
           results: row.results,
           cost_per_result: row.cost_per_result,
           cpm: row.cpm,
@@ -367,11 +367,12 @@ export const useGoogleAdsImport = () => {
       queryClient.invalidateQueries({ queryKey: ['marketing_metrics_unified'] });
 
       toast.success(`${totalUpserted} registros de Google Ads importados correctamente`);
-    } catch (err: any) {
-      const detail = err?.message || err?.details || 'Error desconocido';
-      const hint = err?.hint ? ` (${err.hint})` : '';
+    } catch (err: unknown) {
+      const supaErr = err as { message?: string; details?: string; hint?: string };
+      const detail = supaErr?.message || 'Error desconocido';
+      const extra = [supaErr?.details, supaErr?.hint].filter(Boolean).join(' - ');
       console.error('Google Ads import error:', err);
-      toast.error(`Error al importar: ${detail}${hint}`);
+      toast.error(`Error al importar: ${detail}${extra ? ` (${extra})` : ''}`);
       throw err;
     } finally {
       setIsImporting(false);
