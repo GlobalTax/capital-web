@@ -263,8 +263,9 @@ export const dataAccessService = {
 
   // === UTILITIES ===
   generateToken(): string {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes).map(b => b.toString(36).padStart(2, '0')).join('').substring(0, 26);
   },
 
   async getIPAddress(): Promise<string | null> {

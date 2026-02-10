@@ -31,14 +31,14 @@ serve(async (req: Request) => {
       });
     }
 
-    console.log(`[${requestId}] API key found, length: ${apiKey.length}`);
+    console.log(`[${requestId}] API key configured`);
 
     // 2. Inicializar Resend
     const resend = new Resend(apiKey);
 
     // 3. Enviar email de prueba
     const testEmail = recipientEmail || "samuel@capittal.es";
-    console.log(`[${requestId}] Sending test email to: ${testEmail}`);
+    console.log(`[${requestId}] Sending test email`);
 
     const emailResponse = await resend.emails.send({
       from: "Capittal Test <samuel@capittal.es>",

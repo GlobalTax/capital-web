@@ -96,9 +96,12 @@ serve(async (req) => {
       );
     }
 
-    // Generate new unique token using standard method
-    const generateToken = () => Math.random().toString(36).substring(2, 15) + 
-                                Math.random().toString(36).substring(2, 15);
+    // Generate new unique token using cryptographically secure method
+    const generateToken = () => {
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes).map(b => b.toString(36).padStart(2, '0')).join('').substring(0, 26);
+    };
     const token = generateToken();
 
     // Prepare the duplicated valuation data

@@ -196,7 +196,9 @@ export const useValuationAutosave = () => {
       };
 
       // Crear registro usando update-valuation con uniqueToken generado
-      const tempToken = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const rndBytes = new Uint8Array(6);
+      crypto.getRandomValues(rndBytes);
+      const tempToken = `temp_${Date.now()}_${Array.from(rndBytes).map(b => b.toString(36)).join('').substring(0, 9)}`;
       console.log('🎫 [AUTOSAVE] Token temporal generado:', tempToken.substring(0, 12) + '...');
       
       // Use authenticated session if user is logged in

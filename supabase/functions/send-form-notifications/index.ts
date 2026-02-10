@@ -1061,8 +1061,8 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { submissionId, formType, email, fullName, formData }: FormNotificationRequest = await req.json();
 
-    console.log(`Processing form notification: ${formType} - ${email}`);
-    console.log(`FormData received:`, JSON.stringify(formData, null, 2));
+    console.log(`Processing form notification: ${formType} for submission`);
+    console.log(`FormData keys received:`, Object.keys(formData || {}));
 
     // Obtener plantillas para administradores y usuario
     const adminTemplate = getEmailTemplate(formType, { 
@@ -1102,7 +1102,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Enviar email de confirmación al usuario
-    console.log(`Enviando email de confirmación a ${email}...`);
+    console.log('Enviando email de confirmación al usuario...');
     let userResult;
     try {
       // Configuración especial para campaign_valuation
@@ -1126,10 +1126,10 @@ const handler = async (req: Request): Promise<Response> => {
         html: userTemplate.html,
       });
       userResult = { status: 'fulfilled', value: result };
-      console.log(`✅ Email de confirmación enviado a ${email} (BCC: ${CONFIRMATION_BCC_EMAILS.join(', ')})${isCampaignValuation ? ' (CC: lluis@capittal.es)' : ''}`);
+      console.log(`✅ Email de confirmación enviado (BCC: ${CONFIRMATION_BCC_EMAILS.length} destinatarios)${isCampaignValuation ? ' (con CC)' : ''}`);
     } catch (error) {
       userResult = { status: 'rejected', reason: error };
-      console.error(`❌ Error enviando confirmación a ${email}:`, error);
+      console.error('❌ Error enviando confirmación:', error);
     }
 
     const allAdminSuccessful = adminEmailResults.every(result => result.status === 'fulfilled');
@@ -1157,9 +1157,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (userEmailSuccessful) {
-      console.log(`User confirmation email sent successfully to ${email} for submission ${submissionId}`);
+      console.log(`User confirmation email sent successfully for submission ${submissionId}`);
     } else {
-      console.error(`User confirmation email failed for ${email}:`, userResult.status === 'rejected' ? userResult.reason : 'Unknown error');
+      console.error(`User confirmation email failed for submission ${submissionId}:`, userResult.status === 'rejected' ? userResult.reason : 'Unknown error');
     }
 
     return new Response(

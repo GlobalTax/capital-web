@@ -28,8 +28,9 @@ export const usePreventiveSave = (options: PreventiveSaveOptions = {}) => {
    * Generate a unique token for the valuation
    */
   const generateToken = useCallback(() => {
-    return Math.random().toString(36).substring(2, 15) + 
-           Math.random().toString(36).substring(2, 15);
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes).map(b => b.toString(36).padStart(2, '0')).join('').substring(0, 26);
   }, []);
 
   /**

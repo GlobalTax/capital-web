@@ -34,10 +34,11 @@ export const CreateUser: React.FC = () => {
 
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+    const randomValues = new Uint32Array(16);
+    crypto.getRandomValues(randomValues);
     let password = '';
-    // Generate 16 character password for enhanced security
     for (let i = 0; i < 16; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
+      password += chars.charAt(randomValues[i] % chars.length);
     }
     setFormData(prev => ({ ...prev, password }));
   };

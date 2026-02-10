@@ -264,7 +264,9 @@ class SecurityMonitor {
   }
 
   private generateEventId(): string {
-    return `sec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    return `sec_${Date.now()}_${Array.from(bytes).map(b => b.toString(36)).join('').substring(0, 9)}`;
   }
 }
 
