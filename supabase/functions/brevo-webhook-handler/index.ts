@@ -177,7 +177,17 @@ serve(async (req) => {
         // Manejar eventos especiales de contacto
         if (event === 'contact_updated' && webhookEvent.content) {
           // Procesar actualización de atributos desde Brevo
-          attributesReceived = webhookEvent.content.reduce((acc, item) => ({ ...acc, ...item }), {});
+          attributesReceived = webhookEvent.content.reduce((acc: Record<string, any>, item: any) => {
+            if (item && typeof item === 'object' && !Array.isArray(item)) {
+              // Prevent prototype pollution: skip dangerous keys
+              for (const [key, value] of Object.entries(item)) {
+                if (key !== '__proto__' && key !== 'constructor' && key !== 'prototype') {
+                  acc[key] = value;
+                }
+              }
+            }
+            return acc;
+          }, Object.create(null));
           
           // Mapear atributos de Brevo a campos locales
           for (const [brevoAttr, localField] of Object.entries(BREVO_ATTRIBUTE_MAP)) {

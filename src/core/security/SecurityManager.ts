@@ -81,7 +81,7 @@ export class SecurityManager {
   // ============= XSS PROTECTION =============
   detectXSSAttempt(input: string): boolean {
     const xssPatterns = [
-      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      /<script\b[\s\S]*?<\/script>/gi,
       /<iframe\b/gi,
       /<object\b/gi,
       /<embed\b/gi,
@@ -189,7 +189,7 @@ export class SecurityManager {
 
     // Remover scripts si está habilitado
     if (options.stripScripts !== false) {
-      sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      sanitized = sanitized.replace(/<script\b[\s\S]*?<\/script>/gi, '');
     }
 
     // Limitar longitud

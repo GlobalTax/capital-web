@@ -133,7 +133,7 @@ export const detectXSSAttempt = (input: string): boolean => {
   }
 
   const xssPatterns = [
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    /<script\b[\s\S]*?<\/script>/gi,
     /javascript:/gi,
     /on\w+\s*=/gi,
     /<iframe/gi,
