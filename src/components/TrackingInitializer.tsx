@@ -218,40 +218,36 @@ export const TrackingInitializer = () => {
         const checkCookiebot = setInterval(() => {
           if ((window as any).Cookiebot) {
             clearInterval(checkCookiebot);
-            
+
             const cookiebot = (window as any).Cookiebot;
-            
+
             // Actualizar consentimiento inicial si ya existe
             if (cookiebot.consent) {
               updateConsentFromCookiebot(cookiebot);
-              
-              // ❌ DESACTIVADO: Facebook Pixel cargado desde GTM
-              // if (cookiebot.consent?.marketing) {
-              //   loadMetaPixel();
-              // }
             }
-            
-            // Escuchar cambios de consentimiento
-            window.addEventListener('CookiebotOnAccept', () => {
-              updateConsentFromCookiebot(cookiebot);
-              
-              // ❌ DESACTIVADO: Facebook Pixel cargado desde GTM
-              // if (cookiebot.consent?.marketing) {
-              //   loadMetaPixel();
-              // }
-            });
-            
-            window.addEventListener('CookiebotOnDecline', () => {
-              updateConsentFromCookiebot(cookiebot);
-            });
+
+            // Escuchar cambios de consentimiento (con referencias para cleanup)
+            const handleAccept = () => updateConsentFromCookiebot(cookiebot);
+            const handleDecline = () => updateConsentFromCookiebot(cookiebot);
+            window.addEventListener('CookiebotOnAccept', handleAccept);
+            window.addEventListener('CookiebotOnDecline', handleDecline);
+
+            // Guardar referencias para cleanup en unmount
+            (window as any).__cookiebotCleanup = () => {
+              window.removeEventListener('CookiebotOnAccept', handleAccept);
+              window.removeEventListener('CookiebotOnDecline', handleDecline);
+            };
           }
         }, 100);
-        
+
         // Timeout después de 5 segundos
-        setTimeout(() => clearInterval(checkCookiebot), 5000);
-      } else {
-        // ❌ DESACTIVADO: Facebook Pixel cargado desde GTM
-        // loadMetaPixel();
+        const cookiebotTimeout = setTimeout(() => clearInterval(checkCookiebot), 5000);
+
+        // Guardar para cleanup
+        (window as any).__cookiebotIntervalCleanup = () => {
+          clearInterval(checkCookiebot);
+          clearTimeout(cookiebotTimeout);
+        };
       }
 
       // ========== LINKEDIN INSIGHT TAG ==========
@@ -327,6 +323,13 @@ export const TrackingInitializer = () => {
 
     // Ejecutar inicialización
     initializeTracking().catch(() => {});
+
+    return () => {
+      (window as any).__cookiebotCleanup?.();
+      (window as any).__cookiebotIntervalCleanup?.();
+      delete (window as any).__cookiebotCleanup;
+      delete (window as any).__cookiebotIntervalCleanup;
+    };
   }, [isStorageBlocked, canUseLocalStorage]);
 
   return null;

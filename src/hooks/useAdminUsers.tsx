@@ -186,18 +186,12 @@ if (edgeFunctionError) {
       if (emailError) {
         console.error('⚠️ Failed to send credentials email:', emailError);
         
-        // Mostrar contraseña temporal si falla el email
-        const pwdPreview = `${data.temporary_password.substring(0, 4)}...${data.temporary_password.substring(data.temporary_password.length - 4)}`;
-        
         toast({
-          title: "⚠️ Usuario creado pero email no enviado",
-          description: `${userData.full_name} ha sido creado con éxito. Contraseña temporal: ${pwdPreview} (Ver consola para contraseña completa)`,
+          title: "Usuario creado pero email no enviado",
+          description: `${userData.full_name} ha sido creado. Reintenta el envío de credenciales desde el panel.`,
           variant: "destructive",
           duration: 15000
         });
-        
-        console.warn('🔑 CONTRASEÑA TEMPORAL COMPLETA:', data.temporary_password);
-        console.warn('📋 Email del usuario:', userData.email);
       } else {
         console.log('✅ Credentials email sent successfully to:', userData.email);
       }
@@ -356,8 +350,10 @@ if (edgeFunctionError) {
         throw new Error('No hay sesión activa. Por favor, inicia sesión nuevamente.');
       }
 
-      // Generate temporary password
-      const temporaryPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-8).toUpperCase();
+      // Generate temporary password with cryptographically secure random
+      const pwdBytes = crypto.getRandomValues(new Uint8Array(20));
+      const pwdCharset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const temporaryPassword = Array.from(pwdBytes, b => pwdCharset[b % pwdCharset.length]).join('');
       
       const { error } = await supabase.functions.invoke('send-user-credentials', {
         headers: {

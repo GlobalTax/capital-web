@@ -112,8 +112,7 @@ export async function sendUserCredentials(userId: string, userData: { email: str
 }
 
 function generateSecurePassword(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
-  let pwd = 'Aa1!';
-  for (let i = 0; i < 16; i++) pwd += chars[Math.floor(Math.random() * chars.length)];
-  return pwd.split('').sort(() => Math.random() - 0.5).join('');
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  const bytes = crypto.getRandomValues(new Uint8Array(20));
+  return Array.from(bytes, b => chars[b % chars.length]).join('');
 }
