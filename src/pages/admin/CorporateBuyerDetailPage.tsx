@@ -83,7 +83,7 @@ const formatCurrency = (value: number | null) => {
 const CorporateBuyerDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const isNew = id === 'new';
+  const isNew = !id || id === 'new';
 
   const { data: buyer, isLoading } = useCorporateBuyer(isNew ? undefined : id);
   const { data: contacts = [] } = useCorporateContacts(isNew ? undefined : id);
