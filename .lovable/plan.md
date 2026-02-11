@@ -1,127 +1,58 @@
 
-## Plan: Tests Automaticos Completos para Formularios y Calculadora
 
-### Estado Actual
+## Fix: "Comprador no encontrado" en /admin/corporate-buyers/new
 
-Ya existen 2 archivos de test con 34 tests pasando:
-- `validation.engine.test.ts` - 24 tests (email, phone, CIF, financials, steps, business logic)
-- `questions.config.test.ts` - 10 tests (Typeform config structure)
+### Causa raiz
 
-Faltan tests para: formularios de UI (BasicInfoForm, FinancialDataForm, CharacteristicsForm), AdvisorStepperForm, TypeformCalculator, motor de calculo, schemas Zod, utilidades de formateo, y formularios de contacto/venta.
+Un bug de **una sola linea** en `CorporateBuyerDetailPage.tsx`.
 
-### Archivos de test a crear (8 nuevos)
+La ruta `/corporate-buyers/new` no tiene parametro `:id` (es una ruta fija, no dinamica). Entonces `useParams()` devuelve `id = undefined`. La linea 86 compara:
 
-**1. `src/features/valuation/utils/__tests__/calculation.engine.test.ts`**
-Tests del motor de calculo puro (sin UI):
-- Valoracion base con multiplo fijo 5.75x EBITDA
-- Rango de valoracion: min (5.5x) y max (6.0x)
-- Escenarios: conservador (0.8x), base (1.0x), optimista (1.2x)
-- Calculo fiscal: ganancia patrimonial, tipos impositivos
-- Reducciones fiscales: reinversion, renta vitalicia, edad
-- Recomendaciones generadas segun escenarios
-- Edge cases: EBITDA cero, sin datos fiscales
+```typescript
+const isNew = id === 'new'; // undefined === 'new' → false
+```
 
-**2. `src/utils/__tests__/numberFormatting.test.ts`**
-Tests de utilidades de formateo numerico:
-- `formatNumberWithDots`: 1000000 a "1.000.000"
-- `parseNumberWithDots`: "1.000.000" a 1000000
-- Edge cases: 0, string vacio, caracteres no numericos
+Como `isNew` es `false`, el componente intenta cargar un buyer con `id = undefined`, no encuentra nada, y muestra "Comprador no encontrado".
 
-**3. `src/schemas/__tests__/contactFormSchema.test.ts`**
-Tests de validacion Zod del formulario de contacto:
-- Campos requeridos (fullName, company, email, serviceType)
-- Validacion de email (formatos validos/invalidos)
-- Validacion de telefono espanol (formatos +34, 0034, solo digitos)
-- Honeypot: campo `website` debe ser vacio
-- Campos opcionales (message, investmentBudget, etc.)
-- Schema de operaciones (operationId UUID obligatorio)
-- Funcion `validateRequiredFields`
-- Funcion `getFieldErrors` extrae errores por campo
+### Solucion
 
-**4. `src/schemas/__tests__/formSchemas.test.ts`**
-Tests de todos los schemas Zod de formularios:
-- `newsletterSchema`: email requerido y valido
-- `ventaEmpresasSchema`: nombre, email, phone, empresa, facturacion obligatorios; CIF opcional; EBITDA formato espanol
-- `compraEmpresasSchema`: campos requeridos vs opcionales
-- `collaboratorSchema`: profesion requerida, experiencia opcional
-- `professionalValuationSchema`: rango de facturacion requerido
+Cambiar la linea 86 de `CorporateBuyerDetailPage.tsx`:
 
-**5. `src/schemas/__tests__/campaignValuationSchema.test.ts`**
-Tests del schema de valoracion de campana:
-- CIF formato estricto (regex: letra + 7 digitos + alfanum)
-- Revenue/EBITDA como numeros positivos
-- Honeypot `website` debe ser vacio
-- Email y CIF obligatorios
+```typescript
+// ANTES (bug):
+const isNew = id === 'new';
 
-**6. `src/components/valuation/forms/__tests__/BasicInfoForm.test.tsx`**
-Tests de renderizado del formulario de informacion basica:
-- Renderiza todos los campos: contactName, companyName, email, phone, CIF, industry, activityDescription, location, employeeRange
-- Campo de contactName acepta texto y llama a updateField
-- Checkbox de WhatsApp se renderiza y responde a clicks
-- Seccion de sector muestra 15 industrias
+// DESPUES (fix):
+const isNew = !id || id === 'new';
+```
 
-**7. `src/components/valuation/forms/__tests__/FinancialDataForm.test.tsx`**
-Tests del formulario financiero:
-- Renderiza campos de revenue y EBITDA
-- Checkbox de ajustes muestra/oculta campo adjustmentAmount
-- Caja informativa con tips se renderiza
+Con esto, cuando `id` es `undefined` (ruta `/new` sin param) O cuando es literalmente `'new'`, el componente entra en modo creacion y muestra el formulario.
 
-**8. `src/components/valuation/forms/__tests__/CharacteristicsForm.test.tsx`**
-Tests del formulario de caracteristicas:
-- Renderiza campos de ubicacion, participacion, ventaja competitiva
-- Selector de participacion tiene 3 opciones (alta, media, baja)
-- Caja informativa verde se renderiza
+### Archivos afectados
 
-### Archivos existentes a modificar
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/admin/CorporateBuyerDetailPage.tsx` | Linea 86: cambiar `id === 'new'` a `!id \|\| id === 'new'` |
 
-**`src/test/mocks.ts`**
-Anadir mocks adicionales para:
-- `sonner` (toast)
-- `@/hooks/use-toast` (useToast)
-- `framer-motion` (AnimatePresence, motion)
-- `@/utils/getIPAddress` (mock para tests de AdvisorStepper)
+### Lo que NO se toca
+
+- Rutas en AdminRouter.tsx (ya estan correctas)
+- Hook `useCreateCorporateBuyer` (ya funciona, tiene manejo robusto de errores RLS)
+- Formulario `CorporateBuyerForm` (ya esta completo con validacion Zod, profile importer, etc.)
+- RLS policies (ya existen INSERT/UPDATE/SELECT/DELETE para authenticated + admin role)
+- Import modal (ya existe `CorporateBuyersImportModal` funcional)
+- Ningun otro modulo (Search Funds, contacts, etc.)
+
+### Verificacion
+
+Todo lo demas ya esta implementado correctamente:
+- Formulario completo con Zod validation, profile importer, sectores, financials
+- Hook `useCreateCorporateBuyer` con dedupe (error 23505), RLS error handling, y cache invalidation
+- RLS policies para INSERT (admin role), SELECT, UPDATE, DELETE
+- Import modal con Excel/CSV
+- Redireccion post-creacion a `/admin/corporate-buyers/{id}`
 
 ### Seccion tecnica
 
-**Dependencias de mock para formularios UI:**
-Los 3 formularios (BasicInfo, Financial, Characteristics) usan `useI18n` y componentes de Radix UI. Los tests usaran:
-- Mock de `useI18n` ya existente (devuelve la key)
-- Renderizado real de componentes shadcn/ui (Input, Label, Checkbox funcionan en jsdom)
-- Para Select de Radix UI: se testara que el componente se renderiza sin interaccion compleja de portal
+El fix es minimo y quirurgico: solo cambia la condicion de deteccion de modo "nuevo" para cubrir el caso en que `id` es `undefined` (ruta sin parametro). No hay riesgo de efectos colaterales porque `!id` solo es `true` cuando no hay parametro en la URL, que es exactamente el caso de `/corporate-buyers/new`.
 
-**Patron de test para schemas Zod:**
-```typescript
-// Test de schema puro - sin necesidad de mocks
-it('accepts valid data', () => {
-  const result = schema.safeParse(validData);
-  expect(result.success).toBe(true);
-});
-it('rejects invalid email', () => {
-  const result = schema.safeParse({ ...validData, email: 'invalid' });
-  expect(result.success).toBe(false);
-});
-```
-
-**Patron de test para formularios UI:**
-```typescript
-// Requiere mocks de i18n + renderizado con RTL
-vi.mock('@/shared/i18n/I18nProvider', () => ({
-  useI18n: () => ({ t: (key: string) => key, lang: 'es', setLang: vi.fn(), managed: false }),
-}));
-
-it('renders contact name field', () => {
-  render(<BasicInfoForm companyData={mockData} updateField={mockUpdateField} />);
-  expect(screen.getByLabelText('label.contactName')).toBeInTheDocument();
-});
-```
-
-**Cobertura total estimada tras implementacion:**
-- Validation engine: ~90% (ya existente)
-- Calculation engine: ~85% (nuevo)
-- Schemas Zod: ~95% (nuevo, logica pura)
-- Number formatting: ~100% (nuevo, logica pura)
-- BasicInfoForm: ~75% (nuevo)
-- FinancialDataForm: ~75% (nuevo)
-- CharacteristicsForm: ~75% (nuevo)
-
-**Total: ~60 tests nuevos + 34 existentes = ~94 tests**
