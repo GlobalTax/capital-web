@@ -1,118 +1,127 @@
 
+## Plan: Tests Automaticos Completos para Formularios y Calculadora
 
-## Fix: Formularios Capittal no registran Leads en Gestion de Leads
+### Estado Actual
 
-### Problema diagnosticado
+Ya existen 2 archivos de test con 34 tests pasando:
+- `validation.engine.test.ts` - 24 tests (email, phone, CIF, financials, steps, business logic)
+- `questions.config.test.ts` - 10 tests (Typeform config structure)
 
-El flujo actual tiene dos problemas criticos:
+Faltan tests para: formularios de UI (BasicInfoForm, FinancialDataForm, CharacteristicsForm), AdvisorStepperForm, TypeformCalculator, motor de calculo, schemas Zod, utilidades de formateo, y formularios de contacto/venta.
 
-1. **Tablas fragmentadas e invisibles**: Los formularios insertan datos en `sell_leads` (43 registros), `general_contact_leads` (21 registros) e `investor_leads` (39 registros), pero `/admin/contacts` solo consulta `contact_leads`, `company_valuations`, `collaborator_applications`, `acquisition_leads` y `advisor_valuations`. Resultado: **103+ leads invisibles**.
+### Archivos de test a crear (8 nuevos)
 
-2. **`send-form-notifications` solo envia emails**: Esta Edge Function recibe los datos del formulario pero NO crea/actualiza ningún lead en la base de datos. Solo envia emails con un link generico `https://capittal.es/admin/crm` que no apunta a ningun lead especifico.
+**1. `src/features/valuation/utils/__tests__/calculation.engine.test.ts`**
+Tests del motor de calculo puro (sin UI):
+- Valoracion base con multiplo fijo 5.75x EBITDA
+- Rango de valoracion: min (5.5x) y max (6.0x)
+- Escenarios: conservador (0.8x), base (1.0x), optimista (1.2x)
+- Calculo fiscal: ganancia patrimonial, tipos impositivos
+- Reducciones fiscales: reinversion, renta vitalicia, edad
+- Recomendaciones generadas segun escenarios
+- Edge cases: EBITDA cero, sin datos fiscales
 
-3. **Sin deduplicacion**: Si el mismo contacto envia multiples formularios, se crean registros duplicados sin vincular.
+**2. `src/utils/__tests__/numberFormatting.test.ts`**
+Tests de utilidades de formateo numerico:
+- `formatNumberWithDots`: 1000000 a "1.000.000"
+- `parseNumberWithDots`: "1.000.000" a 1000000
+- Edge cases: 0, string vacio, caracteres no numericos
 
-### Solucion (2 partes)
+**3. `src/schemas/__tests__/contactFormSchema.test.ts`**
+Tests de validacion Zod del formulario de contacto:
+- Campos requeridos (fullName, company, email, serviceType)
+- Validacion de email (formatos validos/invalidos)
+- Validacion de telefono espanol (formatos +34, 0034, solo digitos)
+- Honeypot: campo `website` debe ser vacio
+- Campos opcionales (message, investmentBudget, etc.)
+- Schema de operaciones (operationId UUID obligatorio)
+- Funcion `validateRequiredFields`
+- Funcion `getFieldErrors` extrae errores por campo
 
-#### Parte 1: Edge Function `send-form-notifications` - Crear Lead antes de enviar email
+**4. `src/schemas/__tests__/formSchemas.test.ts`**
+Tests de todos los schemas Zod de formularios:
+- `newsletterSchema`: email requerido y valido
+- `ventaEmpresasSchema`: nombre, email, phone, empresa, facturacion obligatorios; CIF opcional; EBITDA formato espanol
+- `compraEmpresasSchema`: campos requeridos vs opcionales
+- `collaboratorSchema`: profesion requerida, experiencia opcional
+- `professionalValuationSchema`: rango de facturacion requerido
 
-Modificar la Edge Function para que, antes de enviar los emails:
+**5. `src/schemas/__tests__/campaignValuationSchema.test.ts`**
+Tests del schema de valoracion de campana:
+- CIF formato estricto (regex: letra + 7 digitos + alfanum)
+- Revenue/EBITDA como numeros positivos
+- Honeypot `website` debe ser vacio
+- Email y CIF obligatorios
 
-1. **Deduplica por email** (normalizado a minusculas): busca si ya existe un `contact_leads` con ese email
-2. Si existe: actualiza campos (empresa, telefono, mensaje) y registra un evento en `lead_activities`
-3. Si no existe:
-   - Upsert empresa en `empresas` (por nombre, creando si no existe)
-   - Upsert contacto en `contactos` (por email, creando si no existe)
-   - Inserta nuevo `contact_leads` con `empresa_id`, `lead_status_crm = 'nuevo'`, `canal`, `formulario`, datos financieros
-4. Genera `leadId` real y lo usa en el link "Ver en CRM": `https://capittal.es/admin/contacts/${leadId}`
-5. Si la creacion de lead falla: loguea el error completo pero **sigue enviando el email** (con link generico como fallback)
-6. Datos financieros negativos (facturacion/EBITDA < 0): se guardan como NULL con nota en el campo `message` indicando el valor original
+**6. `src/components/valuation/forms/__tests__/BasicInfoForm.test.tsx`**
+Tests de renderizado del formulario de informacion basica:
+- Renderiza todos los campos: contactName, companyName, email, phone, CIF, industry, activityDescription, location, employeeRange
+- Campo de contactName acepta texto y llama a updateField
+- Checkbox de WhatsApp se renderiza y responde a clicks
+- Seccion de sector muestra 15 industrias
 
-Flujo:
+**7. `src/components/valuation/forms/__tests__/FinancialDataForm.test.tsx`**
+Tests del formulario financiero:
+- Renderiza campos de revenue y EBITDA
+- Checkbox de ajustes muestra/oculta campo adjustmentAmount
+- Caja informativa con tips se renderiza
 
-```text
-Form submission llega
-    |
-    v
-[Dedupe: buscar contact_leads por email]
-    |
-    +--> Existe? --> UPDATE + lead_activity "nueva solicitud"
-    |
-    +--> No existe? --> upsert empresas --> upsert contactos --> INSERT contact_leads
-    |
-    v
-[leadId confirmado]
-    |
-    v
-[Enviar emails con link: /admin/contacts/{leadId}]
-    |
-    v
-[Respuesta OK]
-```
+**8. `src/components/valuation/forms/__tests__/CharacteristicsForm.test.tsx`**
+Tests del formulario de caracteristicas:
+- Renderiza campos de ubicacion, participacion, ventaja competitiva
+- Selector de participacion tiene 3 opciones (alta, media, baja)
+- Caja informativa verde se renderiza
 
-#### Parte 2: Incluir `sell_leads` y `general_contact_leads` en el listado
+### Archivos existentes a modificar
 
-Anadir estas dos tablas al fetch paralelo en `useContacts.ts` (hook de contacts-v2) para que los 64 leads historicos sean visibles inmediatamente. Se anadiran con `origin: 'general'` y se transformaran con el mismo patron que los demas.
+**`src/test/mocks.ts`**
+Anadir mocks adicionales para:
+- `sonner` (toast)
+- `@/hooks/use-toast` (useToast)
+- `framer-motion` (AnimatePresence, motion)
+- `@/utils/getIPAddress` (mock para tests de AdvisorStepper)
 
-**Nota sobre la memoria de proteccion**: Este cambio en `useContacts.ts` es minimo y aditivo (solo anade 2 queries mas al `Promise.all` y 2 `map()` al array `unified`). No modifica la logica existente de estados, filtros ni inline editing.
+### Seccion tecnica
 
-### Archivos afectados
+**Dependencias de mock para formularios UI:**
+Los 3 formularios (BasicInfo, Financial, Characteristics) usan `useI18n` y componentes de Radix UI. Los tests usaran:
+- Mock de `useI18n` ya existente (devuelve la key)
+- Renderizado real de componentes shadcn/ui (Input, Label, Checkbox funcionan en jsdom)
+- Para Select de Radix UI: se testara que el componente se renderiza sin interaccion compleja de portal
 
-| Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/send-form-notifications/index.ts` | Anadir logica de upsert lead/empresa/contacto antes de enviar emails. Actualizar link "Ver en CRM" con leadId real |
-| `src/components/admin/contacts-v2/hooks/useContacts.ts` | Anadir fetch de `sell_leads` y `general_contact_leads` al Promise.all. Anadir transformadores |
-
-### Detalles tecnicos
-
-**Deduplicacion en la Edge Function:**
+**Patron de test para schemas Zod:**
 ```typescript
-// 1. Buscar lead existente por email
-const { data: existingLead } = await supabase
-  .from('contact_leads')
-  .select('id')
-  .eq('email', email.toLowerCase())
-  .limit(1)
-  .maybeSingle();
-
-if (existingLead) {
-  // Update + actividad
-  await supabase.from('contact_leads').update({ ... }).eq('id', existingLead.id);
-  await supabase.from('lead_activities').insert({ lead_id: existingLead.id, ... });
-  leadId = existingLead.id;
-} else {
-  // Upsert empresa, contacto, insert lead
-  const { data: newLead } = await supabase.from('contact_leads').insert({ ... }).select('id').single();
-  leadId = newLead.id;
-}
+// Test de schema puro - sin necesidad de mocks
+it('accepts valid data', () => {
+  const result = schema.safeParse(validData);
+  expect(result.success).toBe(true);
+});
+it('rejects invalid email', () => {
+  const result = schema.safeParse({ ...validData, email: 'invalid' });
+  expect(result.success).toBe(false);
+});
 ```
 
-**Mapeo de formType a campos de contact_leads:**
-
-| formType | canal | service_type | notas |
-|----------|-------|-------------|-------|
-| contact / general_contact | "web" | del formulario | mensaje |
-| sell_lead | "web" | "vender" | mensaje |
-| operation_contact | "marketplace" | "comprar" | operacion + mensaje |
-| campaign_valuation | "campaña" | "valoracion" | CIF + financials |
-| lead_magnet_download | "lead_magnet" | null | lead_magnet_id |
-
-**Datos financieros negativos:**
-- Si `revenue < 0` o `ebitda < 0`: se guardan como `NULL` en los campos numericos
-- El valor original se anade al campo `message`: "Facturacion introducida: -500€ (valor sospechoso)"
-
-**Visibilidad historica (useContacts.ts):**
+**Patron de test para formularios UI:**
 ```typescript
-// Anadir al Promise.all existente:
-supabase.from('sell_leads').select('*').order('created_at', { ascending: false }),
-supabase.from('general_contact_leads').select('*').order('created_at', { ascending: false }),
+// Requiere mocks de i18n + renderizado con RTL
+vi.mock('@/shared/i18n/I18nProvider', () => ({
+  useI18n: () => ({ t: (key: string) => key, lang: 'es', setLang: vi.fn(), managed: false }),
+}));
+
+it('renders contact name field', () => {
+  render(<BasicInfoForm companyData={mockData} updateField={mockUpdateField} />);
+  expect(screen.getByLabelText('label.contactName')).toBeInTheDocument();
+});
 ```
 
-### Criterios de aceptacion
+**Cobertura total estimada tras implementacion:**
+- Validation engine: ~90% (ya existente)
+- Calculation engine: ~85% (nuevo)
+- Schemas Zod: ~95% (nuevo, logica pura)
+- Number formatting: ~100% (nuevo, logica pura)
+- BasicInfoForm: ~75% (nuevo)
+- FinancialDataForm: ~75% (nuevo)
+- CharacteristicsForm: ~75% (nuevo)
 
-1. Cada submission de formulario crea/actualiza un lead visible en `/admin/contacts`
-2. No hay duplicados: mismo email = mismo lead actualizado
-3. "Ver en CRM" del email apunta al lead real
-4. Los 64 leads historicos en `sell_leads` + `general_contact_leads` aparecen en el listado
-5. Si falla la creacion de lead, el email se envia igualmente (con link generico)
-6. No se modifican estados, filtros ni logica de inline editing existente
+**Total: ~60 tests nuevos + 34 existentes = ~94 tests**
