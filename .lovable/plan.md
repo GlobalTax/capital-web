@@ -1,20 +1,17 @@
 
 
-## Ajuste de fotos del equipo
+## Correccion del encuadre de fotos del equipo
 
-### Problema
-Las tarjetas del equipo usan `aspect-square` con `object-top`, lo que corta los rostros en algunas fotos donde la persona no esta alineada exactamente en la parte superior de la imagen.
+### Problema actual
+La clase CSS `object-[center_20%]` esta cortando la parte superior de las cabezas. El 20% posiciona el punto focal demasiado arriba, lo que hace que el recorte del aspect-ratio 3:4 pierda la parte superior del rostro en muchas fotos.
 
 ### Solucion
 
 **Archivo:** `src/components/Team.tsx`
 
-Cambios en `PartnerCard` y `TeamMemberCard`:
+Cambiar `object-[center_20%]` por `object-[center_30%]` en ambos componentes (`PartnerCard` linea 42 y `TeamMemberCard` linea 95).
 
-1. Cambiar `object-top` por `object-[20%]` en ambos componentes de imagen -- esto centra el encuadre ligeramente por debajo del borde superior, capturando mejor los rostros sin importar la composicion original de la foto
-2. Cambiar `aspect-square` por `aspect-[3/4]` para dar mas altura vertical a las tarjetas y mostrar mas del cuerpo, reduciendo el recorte agresivo del cuadrado
-
-Esto afecta las lineas 42 y 95 (clase de la imagen) y las lineas 37 y 90 (contenedor con aspect ratio).
+El valor 30% desplaza el punto focal un poco mas abajo, dando mas espacio por encima de la cabeza y evitando el corte de frentes y cabello. Es un ajuste conservador que funciona bien con fotos de retrato profesional donde la persona esta centrada o ligeramente por encima del centro.
 
 ### Resultado esperado
-Fotos con mas espacio vertical (proporcion 3:4 en vez de 1:1), con el punto focal centrado en la zona del rostro/pecho, sin cortar cabezas.
+Las fotos muestran la cabeza completa con algo de aire por encima, sin cortar frentes ni pelo.
