@@ -2,15 +2,17 @@
 // PASO 4: Múltiplos y Valoración
 // =============================================
 
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { ProfessionalValuationData, ValuationCalculationResult } from '@/types/professionalValuation';
 import { formatCurrencyEUR, formatNumber } from '@/utils/professionalValuationCalculation';
-import { BarChart3, TrendingUp, Info, AlertTriangle, Settings2 } from 'lucide-react';
+import { BarChart3, TrendingUp, Info, AlertTriangle, Settings2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MultiplesStepProps {
@@ -420,6 +422,14 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
         </CardContent>
       </Card>
 
+      {/* Matriz de sensibilidad */}
+      {calculatedValues?.sensitivityMatrix && (
+        <SensitivityMatrixCard 
+          sensitivityMatrix={calculatedValues.sensitivityMatrix}
+          multipleUsed={multipleUsed}
+        />
+      )}
+
       {/* Nota informativa */}
       <div className="flex gap-2 p-4 bg-muted/50 rounded-lg text-sm text-muted-foreground">
         <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -429,5 +439,84 @@ export function MultiplesStep({ data, calculatedValues, updateField }: Multiples
         </p>
       </div>
     </div>
+  );
+}
+
+function SensitivityMatrixCard({ sensitivityMatrix, multipleUsed }: { 
+  sensitivityMatrix: ValuationCalculationResult['sensitivityMatrix'];
+  multipleUsed: number;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Find closest multiple index
+  const closestMultipleIndex = sensitivityMatrix.multiples.reduce(
+    (closest, m, i) => 
+      Math.abs(m - multipleUsed) < Math.abs(sensitivityMatrix.multiples[closest] - multipleUsed) ? i : closest,
+    0
+  );
+
+  return (
+    <Card>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <button className="w-full">
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <CardTitle className="text-base flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Análisis de Sensibilidad
+                </span>
+                <ChevronDown className={cn(
+                  "w-4 h-4 transition-transform",
+                  isOpen && "rotate-180"
+                )} />
+              </CardTitle>
+            </CardHeader>
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">EBITDA</th>
+                    {sensitivityMatrix.multiples.map((m, i) => (
+                      <th key={m} className={cn(
+                        "text-center p-2",
+                        i === closestMultipleIndex && "bg-primary/10 text-primary"
+                      )}>
+                        {formatNumber(m, 1)}x
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sensitivityMatrix.rows.map((row) => (
+                    <tr key={row.label} className={cn(
+                      'border-b',
+                      row.label === 'Base' && 'bg-primary/5 font-medium'
+                    )}>
+                      <td className="p-2">{row.label}</td>
+                      {row.cells.map((cell, i) => (
+                        <td
+                          key={i}
+                          className={cn(
+                            'text-center p-2',
+                            row.label === 'Base' && i === closestMultipleIndex && 'bg-primary/10 font-bold text-primary'
+                          )}
+                        >
+                          {formatCurrencyEUR(cell.valuation)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+    </Card>
   );
 }
