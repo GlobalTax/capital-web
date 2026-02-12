@@ -151,6 +151,7 @@ export const AdminSidebar: React.FC = () => {
       'tracking-config': 'trackingConfig',
       'valuation-analytics': 'valuationAnalytics',
       'valoraciones-pro': 'valoracionesPro',
+      'campanas-valoracion': 'valoracionesPro',
       'cr-directory': 'dashboard', // Capital Riesgo - visible para admins
       'sf-directory': 'dashboard', // Search Funds - visible para admins
       'sf-apollo-import': 'dashboard',
