@@ -1,58 +1,117 @@
 
 
-## Fix: "Comprador no encontrado" en /admin/corporate-buyers/new
+## Plan: 6 Mejoras UX para Valoraciones Pro
 
-### Causa raiz
+### 1. Inputs financieros con formato de miles visual
 
-Un bug de **una sola linea** en `CorporateBuyerDetailPage.tsx`.
+**Archivo a modificar:** `src/components/admin/professional-valuations/steps/FinancialDataStep.tsx`
 
-La ruta `/corporate-buyers/new` no tiene parametro `:id` (es una ruta fija, no dinamica). Entonces `useParams()` devuelve `id = undefined`. La linea 86 compara:
+Reutilizar el componente `CurrencyInput` que ya existe en `src/components/ui/currency-input.tsx`. Este componente ya hace exactamente lo pedido: muestra separador de miles, gestiona estado local de texto vs numero, y pasa el valor numerico puro al `onChange`.
 
-```typescript
-const isNew = id === 'new'; // undefined === 'new' → false
-```
+Cambios:
+- Importar `CurrencyInput` de `@/components/ui/currency-input`
+- Reemplazar los `<Input type="number">` de Facturacion (linea 137-146) y EBITDA (linea 166-175) por `<CurrencyInput>`
+- Adaptar el `onChange`: en vez de `parseFloat(e.target.value)`, pasar directamente el valor numerico que devuelve `CurrencyInput`
+- Eliminar los `<p>` con `formatCurrencyEUR` debajo de cada input, ya que el propio `CurrencyInput` muestra el formato
 
-Como `isNew` es `false`, el componente intenta cargar un buyer con `id = undefined`, no encuentra nada, y muestra "Comprador no encontrado".
+### 2. Indicador visual de completitud en el stepper
 
-### Solucion
+**Archivo a modificar:** `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`
 
-Cambiar la linea 86 de `CorporateBuyerDetailPage.tsx`:
+Cambios en el bloque del stepper (lineas 376-418):
+- Importar `CheckCircle2` de lucide-react (ya esta importado pero no usado en el stepper)
+- En el circulo de pasos completados (`isCompleted`): reemplazar `<Icon>` por `<CheckCircle2>` 
+- En pasos no activos y no completados: si `isStepValid(step.id)` es true, anadir un dot verde (div absoluto 8x8px) en esquina superior derecha del circulo, y borde punteado verde
+- Debajo del titulo de cada paso (no activo): mostrar texto "Completo" en verde si `isStepValid(step.id)`, o "Pendiente" en gris si no
 
-```typescript
-// ANTES (bug):
-const isNew = id === 'new';
+### 3. Matriz de sensibilidad en el paso de Multiplos
 
-// DESPUES (fix):
-const isNew = !id || id === 'new';
-```
+**Archivo a modificar:** `src/components/admin/professional-valuations/steps/MultiplesStep.tsx`
 
-Con esto, cuando `id` es `undefined` (ruta `/new` sin param) O cuando es literalmente `'new'`, el componente entra en modo creacion y muestra el formulario.
+Cambios (despues del bloque "Resultado de la Valoracion", linea ~420):
+- Importar `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` de `@/components/ui/collapsible`
+- Importar `ChevronDown` de lucide-react
+- Anadir un bloque condicional: si `calculatedValues?.sensitivityMatrix` existe, renderizar un `<Card>` con `<Collapsible>` (defaultOpen=false)
+- El trigger muestra "Analisis de Sensibilidad" con icono de chevron que rota
+- El contenido replica la tabla de `PreviewStep.tsx` (lineas 171-202), con la logica de resaltar la celda correspondiente al multiplo seleccionado actual
+- Para resaltar: comparar cada multiplo de la matriz con `multipleUsed` y marcar el mas cercano con `bg-primary/10 font-bold`
 
-### Archivos afectados
+### 4. Modo edicion rapida (Sheet lateral)
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/pages/admin/CorporateBuyerDetailPage.tsx` | Linea 86: cambiar `id === 'new'` a `!id \|\| id === 'new'` |
+**Archivo nuevo:** `src/components/admin/professional-valuations/QuickEditSheet.tsx`
+**Archivo a modificar:** `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`
 
-### Lo que NO se toca
+Nuevo componente `QuickEditSheet`:
+- Props: `open`, `onOpenChange`, `data: ProfessionalValuationData`, `calculatedValues`, `updateField`, `onSave`, `onGeneratePdf`, `isSaving`, `isGenerating`
+- Usa `Sheet` de shadcn (side="right", className ancho ~50%)
+- Contenido:
+  - EBITDA normalizado (solo lectura, formateado)
+  - Slider + Input del multiplo EBITDA (misma logica que MultiplesStep)
+  - Resultado: valoracion baja/central/alta (recalculado con `normalizedEbitda * multipleUsed`)
+  - Textareas de Fortalezas y Debilidades
+  - Botones: "Guardar" (llama onSave), "Generar PDF" (llama onGeneratePdf), "Cerrar"
 
-- Rutas en AdminRouter.tsx (ya estan correctas)
-- Hook `useCreateCorporateBuyer` (ya funciona, tiene manejo robusto de errores RLS)
-- Formulario `CorporateBuyerForm` (ya esta completo con validacion Zod, profile importer, etc.)
-- RLS policies (ya existen INSERT/UPDATE/SELECT/DELETE para authenticated + admin role)
-- Import modal (ya existe `CorporateBuyersImportModal` funcional)
-- Ningun otro modulo (Search Funds, contacts, etc.)
+Cambios en `ProfessionalValuationForm.tsx`:
+- Estado `quickEditOpen` (boolean)
+- Boton "Edicion rapida" en la barra de navegacion inferior, visible solo si `initialData?.id` existe
+- Renderizar `<QuickEditSheet>` pasando props necesarios
 
-### Verificacion
+### 5. Tabla estructurada en Comparables
 
-Todo lo demas ya esta implementado correctamente:
-- Formulario completo con Zod validation, profile importer, sectores, financials
-- Hook `useCreateCorporateBuyer` con dedupe (error 23505), RLS error handling, y cache invalidation
-- RLS policies para INSERT (admin role), SELECT, UPDATE, DELETE
-- Import modal con Excel/CSV
-- Redireccion post-creacion a `/admin/corporate-buyers/{id}`
+**Archivo a modificar:** `src/components/admin/professional-valuations/steps/ComparableOperationsStep.tsx`
+
+Cambios:
+- Anadir estado `showTable` (boolean, default false)
+- Anadir un toggle al inicio: "Modo tabla" / "Solo texto libre" usando `Switch`
+- Cuando `showTable` es true, renderizar una tabla editable ENCIMA del texto libre:
+  - Columnas: Empresa (text), Sector (text), Valor operacion (CurrencyInput), Multiplo EBITDA (number step 0.1), Ano (number)
+  - Cada fila tiene boton Trash2 para eliminar
+  - Boton "+ Anadir operacion" que crea una fila nueva con `id: crypto.randomUUID()`, `isManual: true`
+  - Los datos se leen/escriben en `data.comparableOperations` via `updateField('comparableOperations', [...])`
+- El texto libre y boton IA se mantienen debajo, sin cambios
+
+Tipo `ComparableOperation` ya existe con los campos necesarios: `id`, `companyName`, `sector`, `valuationAmount`, `ebitdaMultiple`, `year`, `dealType`, `isManual`.
+
+### 6. Vista previa del PDF en Sheet lateral
+
+**Archivo nuevo:** `src/components/admin/professional-valuations/PdfPreviewPanel.tsx`
+**Archivo a modificar:** `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`
+
+Nuevo componente `PdfPreviewPanel`:
+- Props: `open`, `onOpenChange`, `data: ProfessionalValuationData`
+- Usa `Sheet` (side="right", ancho ~50%)
+- Al abrirse (o al pulsar "Actualizar preview"):
+  - Muestra spinner (estado `isRendering`)
+  - Importa dinamicamente `ProfessionalValuationPDF` de `@/components/pdf/ProfessionalValuationPDF.tsx`
+  - Genera blob con `pdf(<ProfessionalValuationPDF data={data} />).toBlob()`
+  - Muestra el blob en `<iframe src={URL.createObjectURL(blob)}>`
+  - Boton "Actualizar preview" para regenerar
+  - Boton "Descargar" que crea un link temporal y descarga el PDF
+
+Cambios en `ProfessionalValuationForm.tsx`:
+- Estado `pdfPreviewOpen` (boolean)
+- Boton "Vista previa PDF" con icono `Eye` en la barra de navegacion inferior, visible en cualquier paso
+- Renderizar `<PdfPreviewPanel>` pasando `dataWithCalculations`
 
 ### Seccion tecnica
 
-El fix es minimo y quirurgico: solo cambia la condicion de deteccion de modo "nuevo" para cubrir el caso en que `id` es `undefined` (ruta sin parametro). No hay riesgo de efectos colaterales porque `!id` solo es `true` cuando no hay parametro en la URL, que es exactamente el caso de `/corporate-buyers/new`.
+**Dependencias**: Todas ya instaladas (`@react-pdf/renderer`, `@radix-ui/react-collapsible`, Radix Sheet via vaul, lucide-react).
+
+**Archivos nuevos (2)**:
+- `src/components/admin/professional-valuations/QuickEditSheet.tsx`
+- `src/components/admin/professional-valuations/PdfPreviewPanel.tsx`
+
+**Archivos modificados (4)**:
+- `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx` (stepper + barra navegacion + estados para sheets)
+- `src/components/admin/professional-valuations/steps/FinancialDataStep.tsx` (CurrencyInput)
+- `src/components/admin/professional-valuations/steps/MultiplesStep.tsx` (matriz sensibilidad)
+- `src/components/admin/professional-valuations/steps/ComparableOperationsStep.tsx` (tabla estructurada)
+
+**Archivos NO tocados**:
+- `src/utils/professionalValuationCalculation.ts`
+- `src/types/professionalValuation.ts`
+- `src/components/pdf/ProfessionalValuationPDF.tsx`
+- `src/components/ui/currency-input.tsx` (se reutiliza tal cual)
+
+**Riesgo principal**: La generacion del PDF con `@react-pdf/renderer` en el navegador puede ser lenta para documentos grandes. Se mitiga generando solo bajo demanda (al abrir el panel o pulsar "Actualizar").
 
