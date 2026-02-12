@@ -18,7 +18,9 @@ import {
   Settings2,
   BarChart3,
   TrendingUp,
-  Eye
+  Eye,
+  CheckCircle2,
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -37,6 +39,8 @@ import { NormalizationStep } from './steps/NormalizationStep';
 import { MultiplesStep, isMultipleOutOfRange, isMultipleJustificationValid } from './steps/MultiplesStep';
 import { ComparableOperationsStep } from './steps/ComparableOperationsStep';
 import { PreviewStep } from './steps/PreviewStep';
+import { QuickEditSheet } from './QuickEditSheet';
+import { PdfPreviewPanel } from './PdfPreviewPanel';
 
 import { EmailRecipientSelector } from './EmailRecipientSelector';
 
@@ -120,6 +124,8 @@ export function ProfessionalValuationForm({
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [quickEditOpen, setQuickEditOpen] = useState(false);
+  const [pdfPreviewOpen, setPdfPreviewOpen] = useState(false);
 
   // Calcular valores derivados
   const calculatedValues = useMemo(() => {
@@ -147,18 +153,15 @@ export function ProfessionalValuationForm({
     }
   }, [calculatedValues, data.ebitdaMultipleUsed]);
 
-  // Actualizar datos cuando cambian los cálculos - garantizar valores por defecto y preservar datos de DB
+  // Actualizar datos cuando cambian los cálculos
   const dataWithCalculations = useMemo((): ProfessionalValuationData => {
     const baseData = { ...data };
     
-    // Asegurar valores por defecto para campos críticos
     if (!baseData.ebitdaMultipleUsed || baseData.ebitdaMultipleUsed <= 0) {
-      baseData.ebitdaMultipleUsed = 6; // Valor por defecto
+      baseData.ebitdaMultipleUsed = 6;
     }
     
-    // Si no hay cálculos, retornar los datos existentes (pueden venir de la DB)
     if (!calculatedValues) {
-      console.log('[ProfessionalValuationForm] No calculatedValues, usando baseData existente');
       return baseData;
     }
     
@@ -168,7 +171,6 @@ export function ProfessionalValuationForm({
       normalizedEbitda: calculatedValues.normalizedEbitda,
       ebitdaMultipleLow: baseData.ebitdaMultipleLow ?? calculatedValues.multipleLow,
       ebitdaMultipleHigh: baseData.ebitdaMultipleHigh ?? calculatedValues.multipleHigh,
-      // Usar valores calculados, pero mantener los existentes de DB si los calculados son 0
       valuationLow: calculatedValues.valuationLow || baseData.valuationLow,
       valuationHigh: calculatedValues.valuationHigh || baseData.valuationHigh,
       valuationCentral: calculatedValues.valuationCentral || baseData.valuationCentral,
@@ -220,7 +222,7 @@ export function ProfessionalValuationForm({
     }));
   }, []);
 
-  // Validar paso actual - con fallback a calculatedValues
+  // Validar paso actual
   const isStepValid = useCallback((step: number): boolean => {
     switch (step) {
       case 1:
@@ -228,28 +230,19 @@ export function ProfessionalValuationForm({
       case 2:
         return data.financialYears.some(fy => fy.ebitda > 0);
       case 3:
-        return true; // Ajustes son opcionales
+        return true;
       case 4: {
-        // Validar con múltiple del usuario o del cálculo automático
         const hasMultiple = data.ebitdaMultipleUsed && data.ebitdaMultipleUsed > 0;
         const hasCalculatedMultiple = calculatedValues?.multipleUsed && calculatedValues.multipleUsed > 0;
         const hasValidMultiple = !!(data.sector && (hasMultiple || hasCalculatedMultiple));
         
-        // Si hay valores calculados, verificar si el múltiplo está fuera de rango
         if (hasValidMultiple && calculatedValues) {
           const multipleUsed = data.ebitdaMultipleUsed || 0;
-          
-          // CORRECCION: Usar valores efectivos (personalizados si existen, sino del sector)
           const effectiveLow = data.ebitdaMultipleLow ?? calculatedValues.multipleLow;
           const effectiveHigh = data.ebitdaMultipleHigh ?? calculatedValues.multipleHigh;
           
-          const isOutOfRange = isMultipleOutOfRange(
-            multipleUsed, 
-            effectiveLow, 
-            effectiveHigh
-          );
+          const isOutOfRange = isMultipleOutOfRange(multipleUsed, effectiveLow, effectiveHigh);
           
-          // Si está fuera de rango del efectivo, exigir justificación de al menos 20 caracteres
           if (isOutOfRange) {
             return isMultipleJustificationValid(data.multipleJustification);
           }
@@ -267,12 +260,10 @@ export function ProfessionalValuationForm({
   // Navegación con auto-guardado
   const goNext = async () => {
     if (currentStep < STEPS.length && isStepValid(currentStep)) {
-      // Auto-guardar como borrador antes de cambiar de paso
       try {
         await onSave(dataWithCalculations, true);
       } catch (error) {
         console.error('[ProfessionalValuationForm] Auto-save error on next:', error);
-        // Continuar aunque falle el guardado
       }
       setCurrentStep(prev => prev + 1);
     }
@@ -280,12 +271,10 @@ export function ProfessionalValuationForm({
 
   const goPrev = async () => {
     if (currentStep > 1) {
-      // Auto-guardar como borrador antes de cambiar de paso
       try {
         await onSave(dataWithCalculations, true);
       } catch (error) {
         console.error('[ProfessionalValuationForm] Auto-save error on prev:', error);
-        // Continuar aunque falle el guardado
       }
       setCurrentStep(prev => prev - 1);
     }
@@ -293,7 +282,6 @@ export function ProfessionalValuationForm({
 
   const goToStep = async (step: number) => {
     if (step >= 1 && step <= STEPS.length) {
-      // Auto-guardar como borrador antes de cambiar de paso
       try {
         await onSave(dataWithCalculations, true);
       } catch (error) {
@@ -303,18 +291,11 @@ export function ProfessionalValuationForm({
     }
   };
 
-  // Guardar con try-catch y logging
+  // Guardar
   const handleSave = async (isDraft: boolean = true) => {
-    console.log('[ProfessionalValuationForm] handleSave called, isDraft:', isDraft);
-    console.log('[ProfessionalValuationForm] dataWithCalculations:', {
-      clientCompany: dataWithCalculations.clientCompany,
-      valuationCentral: dataWithCalculations.valuationCentral,
-      ebitdaMultipleUsed: dataWithCalculations.ebitdaMultipleUsed,
-    });
     setIsSaving(true);
     try {
       await onSave(dataWithCalculations, isDraft);
-      console.log('[ProfessionalValuationForm] Save completed successfully');
     } catch (error) {
       console.error('[ProfessionalValuationForm] Save error:', error);
       throw error;
@@ -323,18 +304,12 @@ export function ProfessionalValuationForm({
     }
   };
 
-  // Generar PDF con try-catch y logging
+  // Generar PDF
   const handleGeneratePdf = async () => {
-    console.log('[ProfessionalValuationForm] handleGeneratePdf called');
-    console.log('[ProfessionalValuationForm] valuationCentral:', dataWithCalculations.valuationCentral);
-    if (!onGeneratePdf) {
-      console.warn('[ProfessionalValuationForm] onGeneratePdf is not defined');
-      return;
-    }
+    if (!onGeneratePdf) return;
     setIsGenerating(true);
     try {
       await onGeneratePdf(dataWithCalculations);
-      console.log('[ProfessionalValuationForm] PDF generated successfully');
     } catch (error) {
       console.error('[ProfessionalValuationForm] PDF error:', error);
     } finally {
@@ -342,22 +317,12 @@ export function ProfessionalValuationForm({
     }
   };
 
-  // Enviar email con try-catch y logging
+  // Enviar email
   const handleSendEmail = async () => {
-    console.log('[ProfessionalValuationForm] handleSendEmail called');
-    console.log('[ProfessionalValuationForm] clientEmail:', data.clientEmail);
-    if (!onSendEmail) {
-      console.warn('[ProfessionalValuationForm] onSendEmail is not defined');
-      return;
-    }
-    if (!data.clientEmail) {
-      console.warn('[ProfessionalValuationForm] No clientEmail provided');
-      return;
-    }
+    if (!onSendEmail || !data.clientEmail) return;
     setIsSending(true);
     try {
       await onSendEmail(dataWithCalculations, data.clientEmail);
-      console.log('[ProfessionalValuationForm] Email sent successfully');
     } catch (error) {
       console.error('[ProfessionalValuationForm] Email error:', error);
     } finally {
@@ -378,6 +343,7 @@ export function ProfessionalValuationForm({
               const isActive = currentStep === step.id;
               const isCompleted = currentStep > step.id;
               const isClickable = step.id <= currentStep || isStepValid(step.id - 1);
+              const isValid = isStepValid(step.id);
 
               return (
                 <div key={step.id} className="flex items-center">
@@ -389,15 +355,26 @@ export function ProfessionalValuationForm({
                       isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
                     )}
                   >
-                    <div
-                      className={cn(
-                        'w-10 h-10 rounded-full flex items-center justify-center transition-colors',
-                        isActive && 'bg-primary text-primary-foreground',
-                        isCompleted && 'bg-green-500 text-white',
-                        !isActive && !isCompleted && 'bg-muted text-muted-foreground'
+                    <div className="relative">
+                      <div
+                        className={cn(
+                          'w-10 h-10 rounded-full flex items-center justify-center transition-colors',
+                          isActive && 'bg-primary text-primary-foreground',
+                          isCompleted && 'bg-green-500 text-white',
+                          !isActive && !isCompleted && isValid && 'bg-muted text-muted-foreground border-2 border-dashed border-green-400',
+                          !isActive && !isCompleted && !isValid && 'bg-muted text-muted-foreground'
+                        )}
+                      >
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-5 h-5" />
+                        ) : (
+                          <Icon className="w-5 h-5" />
+                        )}
+                      </div>
+                      {/* Green dot for valid pending steps */}
+                      {!isActive && !isCompleted && isValid && (
+                        <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
                       )}
-                    >
-                      <Icon className="w-5 h-5" />
                     </div>
                     <span className={cn(
                       'text-xs font-medium',
@@ -406,6 +383,15 @@ export function ProfessionalValuationForm({
                     )}>
                       {step.title}
                     </span>
+                    {/* Status text for non-active steps */}
+                    {!isActive && (
+                      <span className={cn(
+                        'text-[10px]',
+                        (isCompleted || isValid) ? 'text-green-600' : 'text-muted-foreground'
+                      )}>
+                        {(isCompleted || isValid) ? 'Completo' : 'Pendiente'}
+                      </span>
+                    )}
                   </button>
                   {index < STEPS.length - 1 && (
                     <div className={cn(
@@ -477,7 +463,7 @@ export function ProfessionalValuationForm({
             />
           )}
 
-          {/* Selector de destinatarios - Solo visible en el último paso */}
+          {/* Selector de destinatarios */}
           {currentStep === 6 && onSendEmail && data.clientEmail && onRecipientsChange && (
             <div className="mt-6 pt-6 border-t">
               <EmailRecipientSelector
@@ -501,6 +487,28 @@ export function ProfessionalValuationForm({
         </Button>
 
         <div className="flex items-center gap-2">
+          {/* Vista previa PDF - siempre visible */}
+          <Button
+            variant="outline"
+            onClick={() => setPdfPreviewOpen(true)}
+            disabled={isLoading}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Vista previa PDF
+          </Button>
+
+          {/* Edición rápida - solo para valoraciones existentes */}
+          {initialData?.id && (
+            <Button
+              variant="outline"
+              onClick={() => setQuickEditOpen(true)}
+              disabled={isLoading}
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Edición rápida
+            </Button>
+          )}
+
           <Button
             variant="outline"
             onClick={() => handleSave(true)}
@@ -543,6 +551,24 @@ export function ProfessionalValuationForm({
           )}
         </div>
       </div>
+
+      {/* Sheets */}
+      <QuickEditSheet
+        open={quickEditOpen}
+        onOpenChange={setQuickEditOpen}
+        data={dataWithCalculations}
+        calculatedValues={calculatedValues}
+        updateField={updateField}
+        onSave={handleSave}
+        onGeneratePdf={onGeneratePdf ? handleGeneratePdf : undefined}
+        isSaving={isSaving}
+        isGenerating={isGenerating}
+      />
+      <PdfPreviewPanel
+        open={pdfPreviewOpen}
+        onOpenChange={setPdfPreviewOpen}
+        data={dataWithCalculations}
+      />
     </div>
   );
 }

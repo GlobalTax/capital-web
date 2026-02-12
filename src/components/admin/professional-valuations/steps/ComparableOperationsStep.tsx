@@ -1,16 +1,18 @@
 // =============================================
-// PASO: Operaciones Comparables (TEXTO LIBRE + IA)
+// PASO: Operaciones Comparables (TEXTO LIBRE + IA + TABLA)
 // Información de mercado para el PDF
 // =============================================
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Sparkles, FileText, Eye, Edit3, Loader2, Info } from 'lucide-react';
-import { ProfessionalValuationData } from '@/types/professionalValuation';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { Sparkles, FileText, Eye, Edit3, Loader2, Info, Trash2, Plus, Table2 } from 'lucide-react';
+import { ProfessionalValuationData, ComparableOperation } from '@/types/professionalValuation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -25,6 +27,33 @@ interface ComparableOperationsStepProps {
 export function ComparableOperationsStep({ data, updateField }: ComparableOperationsStepProps) {
   const [isRewriting, setIsRewriting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showTable, setShowTable] = useState(() => (data.comparableOperations?.length ?? 0) > 0);
+
+  const operations = data.comparableOperations || [];
+
+  const addOperation = () => {
+    const newOp: ComparableOperation = {
+      id: crypto.randomUUID(),
+      companyName: '',
+      sector: data.sector || '',
+      valuationAmount: null,
+      ebitdaMultiple: null,
+      year: new Date().getFullYear(),
+      dealType: null,
+      isManual: true,
+    };
+    updateField('comparableOperations', [...operations, newOp]);
+  };
+
+  const removeOperation = (id: string) => {
+    updateField('comparableOperations', operations.filter(op => op.id !== id));
+  };
+
+  const updateOperation = (id: string, updates: Partial<ComparableOperation>) => {
+    updateField('comparableOperations', operations.map(op =>
+      op.id === id ? { ...op, ...updates } : op
+    ));
+  };
 
   const handleRewriteWithAI = async () => {
     if (!data.comparablesRawText || data.comparablesRawText.trim().length < 50) {
@@ -86,7 +115,105 @@ export function ComparableOperationsStep({ data, updateField }: ComparableOperat
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Toggle modo tabla */}
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Table2 className="w-4 h-4 text-muted-foreground" />
+              <Label htmlFor="table-mode" className="text-sm cursor-pointer">
+                Modo tabla estructurada
+              </Label>
+            </div>
+            <Switch
+              id="table-mode"
+              checked={showTable}
+              onCheckedChange={setShowTable}
+            />
+          </div>
+
+          {/* Tabla estructurada */}
+          {showTable && (
+            <div className="space-y-3">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2 min-w-[140px]">Empresa</th>
+                      <th className="text-left p-2 min-w-[120px]">Sector</th>
+                      <th className="text-left p-2 min-w-[130px]">Valor (€)</th>
+                      <th className="text-left p-2 min-w-[90px]">Múltiplo</th>
+                      <th className="text-left p-2 min-w-[80px]">Año</th>
+                      <th className="p-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {operations.map((op) => (
+                      <tr key={op.id} className="border-b">
+                        <td className="p-1">
+                          <Input
+                            value={op.companyName || ''}
+                            onChange={(e) => updateOperation(op.id, { companyName: e.target.value })}
+                            placeholder="Empresa"
+                            className="h-9"
+                          />
+                        </td>
+                        <td className="p-1">
+                          <Input
+                            value={op.sector || ''}
+                            onChange={(e) => updateOperation(op.id, { sector: e.target.value })}
+                            placeholder="Sector"
+                            className="h-9"
+                          />
+                        </td>
+                        <td className="p-1">
+                          <CurrencyInput
+                            value={op.valuationAmount || 0}
+                            onChange={(value) => updateOperation(op.id, { valuationAmount: value || null })}
+                            placeholder="0"
+                            className="h-9"
+                          />
+                        </td>
+                        <td className="p-1">
+                          <Input
+                            type="number"
+                            value={op.ebitdaMultiple ?? ''}
+                            onChange={(e) => updateOperation(op.id, { ebitdaMultiple: parseFloat(e.target.value) || null })}
+                            placeholder="0.0"
+                            step={0.1}
+                            className="h-9"
+                          />
+                        </td>
+                        <td className="p-1">
+                          <Input
+                            type="number"
+                            value={op.year ?? ''}
+                            onChange={(e) => updateOperation(op.id, { year: parseInt(e.target.value) || null })}
+                            placeholder="2024"
+                            className="h-9"
+                          />
+                        </td>
+                        <td className="p-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9"
+                            onClick={() => removeOperation(op.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <Button variant="outline" size="sm" onClick={addOperation}>
+                <Plus className="h-4 w-4 mr-2" />
+                Añadir operación
+              </Button>
+            </div>
+          )}
+
           {/* Texto original */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">
