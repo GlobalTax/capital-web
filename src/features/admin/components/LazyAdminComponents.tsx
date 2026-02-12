@@ -150,3 +150,7 @@ export const LazyPausedReasonsSettings = lazy(() => import('@/pages/admin/Paused
 
 // === LA FIRMA ===
 export const LazyLaFirmaManager = lazy(() => import('@/components/admin/LaFirmaManager'));
+
+// === CAMPAÑAS OUTBOUND ===
+export const LazyCampanasValoracion = lazy(() => import('@/pages/admin/CampanasValoracion'));
+export const LazyCampanaValoracionForm = lazy(() => import('@/pages/admin/CampanaValoracionForm'));
