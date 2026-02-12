@@ -315,6 +315,12 @@ export const sidebarSections: SidebarSection[] = [
         description: "Sistema de valoración profesional"
       },
       { 
+        title: "Campañas Outbound",
+        url: "/admin/campanas-valoracion", 
+        icon: Megaphone,
+        description: "Campañas masivas de valoración por sector"
+      },
+      { 
         title: "Pipeline de Leads",
         url: "/admin/leads-pipeline", 
         icon: Kanban,
