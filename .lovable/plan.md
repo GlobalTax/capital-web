@@ -1,17 +1,27 @@
 
 
-## Correccion del encuadre de fotos del equipo
+## Añadir "Campañas Outbound" al sidebar del admin
 
-### Problema actual
-La clase CSS `object-[center_20%]` esta cortando la parte superior de las cabezas. El 20% posiciona el punto focal demasiado arriba, lo que hace que el recorte del aspect-ratio 3:4 pierda la parte superior del rostro en muchas fotos.
+### Problema
+La entrada "Campañas Outbound" se insertó en la tabla `sidebar_items` de la base de datos, pero el sidebar del admin usa la configuración estática en `src/features/admin/config/sidebar-config.ts`. Por eso no aparece en el menú lateral.
 
-### Solucion
+### Solución
 
-**Archivo:** `src/components/Team.tsx`
+**Archivo:** `src/features/admin/config/sidebar-config.ts`
 
-Cambiar `object-[center_20%]` por `object-[center_30%]` en ambos componentes (`PartnerCard` linea 42 y `TeamMemberCard` linea 95).
+1. Añadir un nuevo item en la sección "ANALIZAR LEADS" (junto a "Valoraciones Pro", que es el contexto lógico más cercano):
+   - title: "Campañas Outbound"
+   - url: "/admin/campanas-valoracion"
+   - icon: Megaphone (ya importado)
+   - description: "Campañas masivas de valoración por sector"
 
-El valor 30% desplaza el punto focal un poco mas abajo, dando mas espacio por encima de la cabeza y evitando el corte de frentes y cabello. Es un ajuste conservador que funciona bien con fotos de retrato profesional donde la persona esta centrada o ligeramente por encima del centro.
+**Archivo:** `src/components/admin/sidebar/AdminSidebar.tsx`
 
-### Resultado esperado
-Las fotos muestran la cabeza completa con algo de aire por encima, sin cortar frentes ni pelo.
+2. Añadir el mapeo de permisos en `routePermissionMap` para la ruta `campanas-valoracion`, asociándola al permiso `valoracionesPro` (mismo grupo funcional):
+   ```
+   'campanas-valoracion': 'valoracionesPro',
+   ```
+
+### Resultado
+El enlace "Campañas Outbound" aparecerá visible en el sidebar del admin dentro de la sección "ANALIZAR LEADS", accesible para super_admin y usuarios con permiso de valoraciones.
+
