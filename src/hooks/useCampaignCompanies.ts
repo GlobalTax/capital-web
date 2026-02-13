@@ -4,6 +4,12 @@ import { toast } from 'sonner';
 
 const QUERY_KEY = 'valuation-campaign-companies';
 
+export interface FinancialYearData {
+  year: number;
+  revenue: number;
+  ebitda: number;
+}
+
 export interface CampaignCompany {
   id: string;
   campaign_id: string;
@@ -16,6 +22,7 @@ export interface CampaignCompany {
   revenue: number | null;
   ebitda: number;
   financial_year: number;
+  financial_years_data: FinancialYearData[] | null;
   ai_strengths: string | null;
   ai_weaknesses: string | null;
   ai_context: string | null;
