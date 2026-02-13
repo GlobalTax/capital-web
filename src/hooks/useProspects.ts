@@ -152,7 +152,6 @@ export const useProspects = (filters?: ProspectFilters) => {
           )
         `)
         .in('lead_status_crm', prospectStatusKeys)
-        .not('empresa_id', 'is', null)
         .eq('is_deleted', false)
         .order('updated_at', { ascending: false });
 
@@ -181,7 +180,6 @@ export const useProspects = (filters?: ProspectFilters) => {
           )
         `)
         .in('lead_status_crm', prospectStatusKeys)
-        .not('empresa_id', 'is', null)
         .eq('is_deleted', false)
         .order('updated_at', { ascending: false });
 
@@ -195,26 +193,22 @@ export const useProspects = (filters?: ProspectFilters) => {
       // Process valuation leads
       (valuationLeads || []).forEach((lead: any) => {
         const empresa = lead.empresas;
-        if (!empresa) return;
-
-        const empresaId = empresa.id;
+        const groupKey = empresa ? empresa.id : `val-${lead.id}`;
         
-        if (empresaMap.has(empresaId)) {
-          // Add contact to existing empresa
-          const existing = empresaMap.get(empresaId)!;
+        if (empresaMap.has(groupKey)) {
+          const existing = empresaMap.get(groupKey)!;
           existing.contacts.push({
             name: lead.contact_name || 'Sin nombre',
             email: lead.email || '',
           });
         } else {
-          // Create new prospect entry
-          empresaMap.set(empresaId, {
+          empresaMap.set(groupKey, {
             id: lead.id,
-            empresa_id: empresaId,
-            empresa_nombre: empresa.nombre || 'Sin nombre',
-            empresa_sector: empresa.sector,
-            empresa_ubicacion: empresa.ubicacion,
-            empresa_facturacion: empresa.facturacion,
+            empresa_id: groupKey,
+            empresa_nombre: empresa?.nombre || 'Sin empresa',
+            empresa_sector: empresa?.sector || null,
+            empresa_ubicacion: empresa?.ubicacion || null,
+            empresa_facturacion: empresa?.facturacion || null,
             contact_name: lead.contact_name || 'Sin nombre',
             contact_email: lead.email || '',
             lead_status_crm: lead.lead_status_crm,
@@ -234,26 +228,22 @@ export const useProspects = (filters?: ProspectFilters) => {
       // Process contact leads
       (contactLeads || []).forEach((lead: any) => {
         const empresa = lead.empresas;
-        if (!empresa) return;
-
-        const empresaId = empresa.id;
+        const groupKey = empresa ? empresa.id : `lead-${lead.id}`;
         
-        if (empresaMap.has(empresaId)) {
-          // Add contact to existing empresa
-          const existing = empresaMap.get(empresaId)!;
+        if (empresaMap.has(groupKey)) {
+          const existing = empresaMap.get(groupKey)!;
           existing.contacts.push({
             name: lead.full_name || 'Sin nombre',
             email: lead.email || '',
           });
         } else {
-          // Create new prospect entry
-          empresaMap.set(empresaId, {
+          empresaMap.set(groupKey, {
             id: lead.id,
-            empresa_id: empresaId,
-            empresa_nombre: empresa.nombre || 'Sin nombre',
-            empresa_sector: empresa.sector,
-            empresa_ubicacion: empresa.ubicacion,
-            empresa_facturacion: empresa.facturacion,
+            empresa_id: groupKey,
+            empresa_nombre: empresa?.nombre || lead.company || 'Sin empresa',
+            empresa_sector: empresa?.sector || null,
+            empresa_ubicacion: empresa?.ubicacion || null,
+            empresa_facturacion: empresa?.facturacion || null,
             contact_name: lead.full_name || 'Sin nombre',
             contact_email: lead.email || '',
             lead_status_crm: lead.lead_status_crm,
