@@ -1,27 +1,23 @@
 
+## Boton "Descargar plantilla Excel" en CompaniesStep
 
-## Añadir "Campañas Outbound" al sidebar del admin
+### Cambio
 
-### Problema
-La entrada "Campañas Outbound" se insertó en la tabla `sidebar_items` de la base de datos, pero el sidebar del admin usa la configuración estática en `src/features/admin/config/sidebar-config.ts`. Por eso no aparece en el menú lateral.
+**Archivo:** `src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`
 
-### Solución
+1. Añadir una funcion `downloadTemplate` que usa la libreria `xlsx` (ya importada) para generar un archivo `.xlsx` en memoria con:
+   - Cabeceras: Empresa, Contacto, Email, Telefono, CIF, Facturacion, EBITDA, Año
+   - Fila ejemplo 1: "Empresa Ejemplo S.L.", "Juan Garcia", "juan@ejemplo.com", "+34 612 345 678", "B12345678", 5000000, 800000, 2024
+   - Fila ejemplo 2: "Industrias Demo S.A.", "Ana Lopez", "ana@demo.com", "+34 698 765 432", "A87654321", 12000000, 2500000, 2024
+   - Anchos de columna ajustados para legibilidad
 
-**Archivo:** `src/features/admin/config/sidebar-config.ts`
+2. Añadir un boton `Download` (icono de lucide) junto al titulo "Importar Excel" en el CardHeader, con texto "Descargar plantilla". Se usa `variant="outline" size="sm"`.
 
-1. Añadir un nuevo item en la sección "ANALIZAR LEADS" (junto a "Valoraciones Pro", que es el contexto lógico más cercano):
-   - title: "Campañas Outbound"
-   - url: "/admin/campanas-valoracion"
-   - icon: Megaphone (ya importado)
-   - description: "Campañas masivas de valoración por sector"
+3. La descarga se dispara con `XLSX.writeFile()` generando `plantilla_campana_valoracion.xlsx`.
 
-**Archivo:** `src/components/admin/sidebar/AdminSidebar.tsx`
+### Ubicacion del boton
 
-2. Añadir el mapeo de permisos en `routePermissionMap` para la ruta `campanas-valoracion`, asociándola al permiso `valoracionesPro` (mismo grupo funcional):
-   ```
-   'campanas-valoracion': 'valoracionesPro',
-   ```
+Dentro del `<CardHeader>` de la seccion "Importar Excel" (linea 115), se convierte el `CardTitle` en un flex container con el boton a la derecha, manteniendo el estilo actual.
 
-### Resultado
-El enlace "Campañas Outbound" aparecerá visible en el sidebar del admin dentro de la sección "ANALIZAR LEADS", accesible para super_admin y usuarios con permiso de valoraciones.
-
+### Sin dependencias nuevas
+Se usa `xlsx` y `lucide-react` que ya estan importados.
