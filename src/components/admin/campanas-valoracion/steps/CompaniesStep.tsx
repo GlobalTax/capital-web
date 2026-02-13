@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar } from 'lucide-react';
-import { useCampaignCompanies, CampaignCompanyInsert, FinancialYearData } from '@/hooks/useCampaignCompanies';
+import { Progress } from '@/components/ui/progress';
+import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2 } from 'lucide-react';
+import { useCampaignCompanies, CampaignCompanyInsert, CampaignCompany, FinancialYearData } from '@/hooks/useCampaignCompanies';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 
 const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
@@ -56,7 +58,68 @@ export function CompaniesStep({ campaignId, financialYears }: Props) {
   const [YEAR_1, YEAR_2, YEAR_3] = years;
   const COLUMN_MAP = buildColumnMap(years);
 
-  const { companies, stats, addCompany, bulkAddCompanies, deleteCompany, isAdding, isBulkAdding, isDeleting } = useCampaignCompanies(campaignId);
+  const { companies, stats, addCompany, bulkAddCompanies, updateCompany, deleteCompany, isAdding, isBulkAdding, isDeleting } = useCampaignCompanies(campaignId);
+
+  // AI Enrichment state
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 });
+
+  const companiesNeedingEnrich = companies.filter(
+    c => !c.client_email || !c.client_name || !c.client_phone || !c.client_cif
+  );
+
+  const handleEnrichWithAI = async () => {
+    if (companiesNeedingEnrich.length === 0) return;
+    setIsEnriching(true);
+    const total = companiesNeedingEnrich.length;
+    setEnrichProgress({ current: 0, total });
+    let enrichedCount = 0;
+
+    // Process in batches of 3
+    const BATCH_SIZE = 3;
+    for (let i = 0; i < total; i += BATCH_SIZE) {
+      const batch = companiesNeedingEnrich.slice(i, i + BATCH_SIZE);
+
+      try {
+        const { data, error } = await (supabase.functions as any).invoke('enrich-campaign-companies-data', {
+          body: {
+            companies: batch.map(c => ({
+              id: c.id,
+              client_company: c.client_company,
+              client_cif: c.client_cif,
+              client_name: c.client_name,
+              client_email: c.client_email,
+              client_phone: c.client_phone,
+            })),
+          },
+        });
+
+        if (error) {
+          console.error('Enrich error:', error);
+          toast.error('Error en enriquecimiento: ' + error.message);
+          break;
+        }
+
+        if (data?.results) {
+          for (const result of data.results) {
+            if (result.found && Object.keys(result.data).length > 0) {
+              await updateCompany({ id: result.id, data: result.data });
+              enrichedCount++;
+            }
+          }
+        }
+      } catch (e: any) {
+        console.error('Enrich exception:', e);
+        toast.error('Error inesperado en enriquecimiento');
+        break;
+      }
+
+      setEnrichProgress({ current: Math.min(i + BATCH_SIZE, total), total });
+    }
+
+    setIsEnriching(false);
+    toast.success(`Enriquecimiento completado: ${enrichedCount} de ${total} empresas actualizadas`);
+  };
 
   // Manual form state
   const [manual, setManual] = useState({
@@ -319,11 +382,30 @@ export function CompaniesStep({ campaignId, financialYears }: Props) {
         <CardHeader>
           <CardTitle className="text-base flex items-center justify-between">
             <span>Empresas ({stats.total})</span>
-            <div className="flex gap-2 text-xs font-normal">
+            <div className="flex gap-2 items-center text-xs font-normal">
               <Badge variant="outline">{stats.withEmail} con email</Badge>
               {stats.withoutEbitda > 0 && <Badge variant="destructive">{stats.withoutEbitda} sin EBITDA</Badge>}
+              {companiesNeedingEnrich.length > 0 && companies.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEnrichWithAI}
+                  disabled={isEnriching}
+                  className="ml-2"
+                >
+                  {isEnriching ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1" />
+                  )}
+                  {isEnriching ? `Enriqueciendo ${enrichProgress.current}/${enrichProgress.total}` : `Enriquecer con IA (${companiesNeedingEnrich.length})`}
+                </Button>
+              )}
             </div>
           </CardTitle>
+          {isEnriching && (
+            <Progress value={(enrichProgress.current / enrichProgress.total) * 100} className="h-2 mt-2" />
+          )}
         </CardHeader>
         <CardContent className="p-0">
           {companies.length === 0 ? (
