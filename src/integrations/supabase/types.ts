@@ -20593,6 +20593,7 @@ export type Database = {
           id: string
           multiple_used: number | null
           normalized_ebitda: number | null
+          pdf_url: string | null
           professional_valuation_id: string | null
           revenue: number | null
           source: string | null
@@ -20622,6 +20623,7 @@ export type Database = {
           id?: string
           multiple_used?: number | null
           normalized_ebitda?: number | null
+          pdf_url?: string | null
           professional_valuation_id?: string | null
           revenue?: number | null
           source?: string | null
@@ -20651,6 +20653,7 @@ export type Database = {
           id?: string
           multiple_used?: number | null
           normalized_ebitda?: number | null
+          pdf_url?: string | null
           professional_valuation_id?: string | null
           revenue?: number | null
           source?: string | null
