@@ -40,6 +40,7 @@ export default function CampanaValoracionForm() {
     use_custom_advisor: false,
     lead_source: 'Outbound',
     service_type: 'vender',
+    financial_years: [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3],
   });
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export default function CampanaValoracionForm() {
           <CampaignConfigStep data={campaignData} updateField={updateField} />
         )}
         {currentStep === 2 && campaignId && (
-          <CompaniesStep campaignId={campaignId} />
+          <CompaniesStep campaignId={campaignId} financialYears={campaignData.financial_years || [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3]} />
         )}
         {currentStep === 3 && campaignId && (
           <ReviewCalculateStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />

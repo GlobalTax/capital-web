@@ -133,6 +133,31 @@ export function CampaignConfigStep({ data, updateField }: Props) {
             <Switch checked={data.include_comparables || false} onCheckedChange={v => updateField('include_comparables', v)} />
             <Label>Incluir comparables en PDF</Label>
           </div>
+
+          {/* Años financieros */}
+          <div className="space-y-2">
+            <Label className="font-medium">Años financieros</Label>
+            <p className="text-xs text-muted-foreground">Define los 3 años de datos financieros que se pedirán a las empresas</p>
+            <div className="grid grid-cols-3 gap-3">
+              {[0, 1, 2].map(idx => {
+                const years = data.financial_years || [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
+                return (
+                  <div key={idx} className="space-y-1">
+                    <Label className="text-xs">Año {idx + 1}</Label>
+                    <Input
+                      type="number"
+                      value={years[idx] ?? ''}
+                      onChange={e => {
+                        const newYears = [...years];
+                        newYears[idx] = parseInt(e.target.value) || 0;
+                        updateField('financial_years', newYears as any);
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </CardContent>
       </Card>
 

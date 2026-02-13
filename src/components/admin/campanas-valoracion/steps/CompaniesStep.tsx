@@ -12,13 +12,10 @@ import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 
-const currentYear = new Date().getFullYear();
-const YEAR_1 = currentYear - 1; // 2025
-const YEAR_2 = currentYear - 2; // 2024
-const YEAR_3 = currentYear - 3; // 2023
+const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
 
 // Build dynamic column map with year-specific headers
-function buildColumnMap(): Record<string, string> {
+function buildColumnMap(years: number[]): Record<string, string> {
   const base: Record<string, string> = {
     'empresa': 'client_company', 'company': 'client_company', 'razón social': 'client_company',
     'razon social': 'client_company', 'nombre empresa': 'client_company',
@@ -33,27 +30,32 @@ function buildColumnMap(): Record<string, string> {
   };
 
   // Year-specific mappings
-  for (const [yr, suffix] of [[YEAR_1, ''], [YEAR_2, '_year_2'], [YEAR_3, '_year_3']] as [number, string][]) {
+  const suffixes = ['', '_year_2', '_year_3'];
+  years.forEach((yr, i) => {
+    const suffix = suffixes[i] || `_year_${i + 1}`;
     base[`facturacion ${yr}`] = `revenue${suffix}`;
     base[`facturación ${yr}`] = `revenue${suffix}`;
     base[`revenue ${yr}`] = `revenue${suffix}`;
     base[`ventas ${yr}`] = `revenue${suffix}`;
     base[`ingresos ${yr}`] = `revenue${suffix}`;
     base[`ebitda ${yr}`] = `ebitda${suffix}`;
-  }
+  });
 
   return base;
 }
 
-const COLUMN_MAP = buildColumnMap();
-
 interface Props {
   campaignId: string;
+  financialYears?: number[];
 }
 
 const emptyYearRow = (year: number) => ({ year, revenue: '', ebitda: '' });
 
-export function CompaniesStep({ campaignId }: Props) {
+export function CompaniesStep({ campaignId, financialYears }: Props) {
+  const years = financialYears && financialYears.length === 3 ? financialYears : DEFAULT_YEARS;
+  const [YEAR_1, YEAR_2, YEAR_3] = years;
+  const COLUMN_MAP = buildColumnMap(years);
+
   const { companies, stats, addCompany, bulkAddCompanies, deleteCompany, isAdding, isBulkAdding, isDeleting } = useCampaignCompanies(campaignId);
 
   // Manual form state

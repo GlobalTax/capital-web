@@ -20687,6 +20687,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           custom_multiple: number | null
+          financial_years: number[] | null
           id: string
           include_comparables: boolean | null
           lead_source: string | null
@@ -20717,6 +20718,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           custom_multiple?: number | null
+          financial_years?: number[] | null
           id?: string
           include_comparables?: boolean | null
           lead_source?: string | null
@@ -20747,6 +20749,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           custom_multiple?: number | null
+          financial_years?: number[] | null
           id?: string
           include_comparables?: boolean | null
           lead_source?: string | null
