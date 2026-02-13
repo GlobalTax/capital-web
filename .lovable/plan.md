@@ -1,57 +1,108 @@
 
 
-## Problema Identificado
+## Plan: 10 Mejoras al Modulo de Campanas de Valoracion Outbound
 
-La query de Prospectos en `useProspects.ts` tiene un filtro que **excluye contactos sin empresa vinculada**:
-
-```text
-.not('empresa_id', 'is', null)  // Lineas 155 y 184
-```
-
-### Datos actuales en la base de datos:
-
-| Tabla | Con estado prospecto | Con empresa vinculada | Visibles en Prospectos |
-|-------|---------------------|-----------------------|------------------------|
-| contact_leads | 28 | 5 | 5 |
-| company_valuations | 5 | 5 | 5 |
-| **Total** | **33** | **10** | **10** |
-
-**23 contactos con estado "Reunion Programada" no aparecen porque no tienen empresa vinculada.**
+Este es un conjunto extenso de mejoras. Para evitar romper funcionalidad existente, se implementaran en orden de dependencia.
 
 ---
 
-## Solucion Propuesta
+### Fase 1: Cambios pequenos e independientes (bajo riesgo)
 
-Eliminar el filtro `.not('empresa_id', 'is', null)` en ambas queries (contact_leads y company_valuations) dentro de `useProspects.ts`, y adaptar el mapeo para manejar contactos sin empresa.
+#### MEJORA 1: Firma del asesor en CampaignConfigStep
+- Anadir una nueva Card "Firma del Informe" despues de la card "IA y CRM"
+- Toggle `use_custom_advisor` con Switch
+- 4 inputs condicionales: `advisor_name`, `advisor_email`, `advisor_phone`, `advisor_role`
+- **Archivo**: `steps/CampaignConfigStep.tsx`
 
-### Cambios en `src/hooks/useProspects.ts`
+#### MEJORA 8: Formato de moneda en inputs financieros
+- Reutilizar el componente `CurrencyInput` existente en `src/components/ui/currency-input.tsx`
+- Reemplazar los `<Input type="number">` de Facturacion y EBITDA en el formulario manual de CompaniesStep
+- Adaptar el estado local `manualYears` para trabajar con valores numericos en vez de strings
+- **Archivo**: `steps/CompaniesStep.tsx`
 
-1. **Eliminar linea 155**: `.not('empresa_id', 'is', null)` de la query de `company_valuations`
-2. **Eliminar linea 184**: `.not('empresa_id', 'is', null)` de la query de `contact_leads`
-3. **Adaptar el mapeo** (lineas 192-271): Actualmente agrupa por `empresa_id`. Los contactos sin empresa se agruparan por su propio `id` como key unica, usando el nombre de la empresa del campo `company`/`company_name` del lead como fallback.
+#### MEJORA 7: Links a valoraciones en ProcessSendStep
+- Hacer clickable la columna "Empresa" cuando existe `professional_valuation_id`
+- Usar `useNavigate` para navegar a `/admin/valoraciones-pro/{id}`
+- **Archivo**: `steps/ProcessSendStep.tsx`
 
-### Detalle tecnico del mapeo adaptado
+#### MEJORA 9: Seguridad del edge function
+- Anadir verificacion de auth header despues del check OPTIONS
+- Sanitizar errores en el catch final (devolver mensaje generico, mantener console.error)
+- Envolver `req.json()` en try-catch para cuerpos malformados
+- **Archivo**: `supabase/functions/enrich-campaign-company/index.ts`
 
-```text
-Logica actual:
-  empresaMap.set(empresaId, ...)  // Solo funciona si empresaId existe
+#### MEJORA 10: Grafico de distribucion en CampaignSummaryStep
+- Usar `recharts` (BarChart horizontal) para mostrar distribucion por rangos de valoracion
+- Rangos: <500K, 500K-1M, 1M-2M, 2M-5M, 5M-10M, >10M
+- Solo visible si hay al menos 1 empresa con valoracion
+- **Archivo**: `steps/CampaignSummaryStep.tsx`
 
-Logica nueva:
-  const groupKey = empresa ? empresa.id : `lead-${lead.id}`;
-  // Si no hay empresa vinculada, usar datos del propio lead
-  empresa_nombre = empresa?.nombre || lead.company_name || lead.company || 'Sin empresa';
-```
+---
 
-### Sin cambios en
+### Fase 2: Mejoras de complejidad media
 
-- `useContacts.ts` — el usuario confirmo que funciona bien, no se toca
-- `ProspectsPage.tsx` — la tabla ya recibe los datos correctamente
-- `ProspectsTable.tsx` — solo renderiza lo que recibe
-- Realtime subscriptions — ya estan correctamente configuradas para ambas tablas
+#### MEJORA 2: Guardar/cargar plantilla de sector
+- Dos botones inline debajo del selector de sector: "Guardar como plantilla" y "Cargar plantilla"
+- Persistencia en `localStorage` bajo key `campaign-sector-templates`
+- La plantilla incluye todos los campos de configuracion (multiplos, textos, advisor, etc.)
+- Toast informativo al cambiar de sector si existe plantilla guardada
+- Confirmacion antes de cargar para evitar sobrescritura accidental
+- **Archivo**: `steps/CampaignConfigStep.tsx`
 
-### Resultado esperado
+#### MEJORA 4: Editar empresas existentes
+- Boton Pencil junto al Trash2 en cada fila de la tabla de empresas
+- Dialog modal con formulario pre-rellenado (mismos campos que entrada manual)
+- Llamar a `updateCompany` del hook existente al guardar
+- **Archivo**: `steps/CompaniesStep.tsx`
 
-- Los 33 contactos con estado "Reunion Programada" o "PSH Enviada" apareceran en `/admin/prospectos`
-- Actualizacion en tiempo real via las suscripciones Realtime existentes
-- La vista de Contactos no se modifica en absoluto
+#### MEJORA 6: Panel de detalle por empresa (Sheet)
+- Click en fila de ReviewCalculateStep abre Sheet lateral derecho
+- Muestra datos de la empresa, Slider para override de multiplo individual
+- Recalculo en tiempo real con `calculateProfessionalValuation`
+- Textareas editables para fortalezas/debilidades (si ai_enriched)
+- Boton "Enriquecer esta empresa con IA" individual
+- Boton "Excluir del lote" (status: excluded)
+- **Archivo**: `steps/ReviewCalculateStep.tsx`
+
+---
+
+### Fase 3: Mejoras complejas
+
+#### MEJORA 5: Checkboxes de seleccion en ReviewCalculateStep
+- Columna de checkbox al inicio de la tabla con Select All/Deselect All en header
+- Estado local `selectedIds: Set<string>` inicializado con todos los IDs
+- Botones de accion rapida: "Seleccionar todo", "Deseleccionar todo", "Excluir sin EBITDA", "Excluir sin email"
+- Las acciones de Calcular y Enriquecer solo aplican a empresas seleccionadas
+- Al excluir, actualizar status a `excluded` via `updateCompany`
+- **Archivo**: `steps/ReviewCalculateStep.tsx`
+
+#### MEJORA 3: Preview del Excel antes de importar
+- Al soltar Excel, guardar filas parseadas en estado local `previewRows` en vez de importar directo
+- Tabla de preview con cabeceras mostrando mapeo automatico (badge verde) o sin mapear (badge amarillo)
+- Select dropdown en cada cabecera para override manual del mapeo
+- Stats cards: Total (azul), Validas (verde), Sin email (amarillo), Invalidas (rojo), Duplicadas (naranja)
+- Filas invalidas resaltadas en rojo, sin email en amarillo
+- Mostrar solo primeras 10 filas con indicador "y N mas..."
+- Botones "Importar N filas validas" y "Cancelar"
+- Deteccion de duplicados por CIF o nombre de empresa vs empresas existentes
+- **Archivo**: `steps/CompaniesStep.tsx`
+
+---
+
+### Resumen tecnico
+
+| Mejora | Archivo(s) | Complejidad | Dependencias nuevas |
+|--------|-----------|-------------|-------------------|
+| 1. Firma asesor | CampaignConfigStep.tsx | Baja | Ninguna |
+| 2. Plantilla sector | CampaignConfigStep.tsx | Media | Ninguna |
+| 3. Preview Excel | CompaniesStep.tsx | Alta | Ninguna |
+| 4. Editar empresa | CompaniesStep.tsx | Media | Ninguna |
+| 5. Checkboxes | ReviewCalculateStep.tsx | Media | Ninguna |
+| 6. Sheet detalle | ReviewCalculateStep.tsx | Alta | Ninguna |
+| 7. Links valoracion | ProcessSendStep.tsx | Baja | Ninguna |
+| 8. Formato moneda | CompaniesStep.tsx | Baja | Ninguna (reutiliza CurrencyInput existente) |
+| 9. Seguridad edge fn | enrich-campaign-company/index.ts | Baja | Ninguna |
+| 10. Grafico resumen | CampaignSummaryStep.tsx | Media | Ninguna (recharts ya instalado) |
+
+Todas las dependencias necesarias ya estan instaladas. No se crearan archivos nuevos excepto posibles subcomponentes si CompaniesStep o ReviewCalculateStep crecen demasiado.
 
