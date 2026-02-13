@@ -36,6 +36,7 @@ export interface CampaignCompany {
   status: string;
   error_message: string | null;
   professional_valuation_id: string | null;
+  pdf_url: string | null;
   source: string;
   excel_row_number: number | null;
 }

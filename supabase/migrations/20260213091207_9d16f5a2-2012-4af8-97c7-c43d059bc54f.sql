@@ -1,0 +1,1 @@
+ALTER TABLE public.valuation_campaign_companies ADD COLUMN pdf_url TEXT;
