@@ -137,25 +137,29 @@ export function CampaignConfigStep({ data, updateField }: Props) {
           {/* Años financieros */}
           <div className="space-y-2">
             <Label className="font-medium">Años financieros</Label>
-            <p className="text-xs text-muted-foreground">Define los 3 años de datos financieros que se pedirán a las empresas</p>
+            <p className="text-xs text-muted-foreground">Indica el último ejercicio depositado en el Registro Mercantil. Los demás años se calculan automáticamente.</p>
             <div className="grid grid-cols-3 gap-3">
-              {[0, 1, 2].map(idx => {
+              {(() => {
                 const years = data.financial_years || [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
-                return (
+                const labels = ['Último año disponible', 'Año anterior', 'Dos años antes'];
+                return labels.map((label, idx) => (
                   <div key={idx} className="space-y-1">
-                    <Label className="text-xs">Año {idx + 1}</Label>
-                    <Input
-                      type="number"
-                      value={years[idx] ?? ''}
-                      onChange={e => {
-                        const newYears = [...years];
-                        newYears[idx] = parseInt(e.target.value) || 0;
-                        updateField('financial_years', newYears as any);
-                      }}
-                    />
+                    <Label className="text-xs">{label}</Label>
+                    {idx === 0 ? (
+                      <Input
+                        type="number"
+                        value={years[0] ?? ''}
+                        onChange={e => {
+                          const base = parseInt(e.target.value) || 0;
+                          updateField('financial_years', [base, base - 1, base - 2] as any);
+                        }}
+                      />
+                    ) : (
+                      <Input type="number" value={years[idx] ?? ''} disabled className="opacity-60" />
+                    )}
                   </div>
-                );
-              })}
+                ));
+              })()}
             </div>
           </div>
         </CardContent>
