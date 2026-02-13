@@ -101,8 +101,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       try {
         const pdfData = mapToPdfData(c, campaign);
         pdfBase64 = await generatePdfBase64(pdfData, campaign);
-      } catch (pdfErr) {
-        console.warn('PDF generation failed for', c.client_company, pdfErr);
+      } catch (pdfErr: any) {
+        console.error('[CAMPAIGN PDF ERROR]', c.client_company, pdfErr?.message || pdfErr);
+        toast.error(`PDF falló para ${c.client_company}: ${pdfErr?.message || 'Error desconocido'}. El email se enviará sin adjunto.`);
         // Continue without PDF (decoupling protocol)
       }
 
