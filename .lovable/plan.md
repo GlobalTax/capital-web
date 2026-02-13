@@ -1,74 +1,60 @@
 
 
-## Soporte para 3 anos financieros en Campanas Outbound
+## Parametrizar los anos financieros en la configuracion de campana
 
-### Contexto
-La calculadora profesional (`/admin/valoraciones-pro`) pide datos financieros de 3 anos (facturacion + EBITDA por ano). Actualmente, las campanas outbound solo guardan 1 ano (`revenue`, `ebitda`, `financial_year`). Esto limita la calidad de las valoraciones generadas.
+### Resumen
+Anadir un campo `financial_years` (array de numeros) a la campana para que el usuario defina en el Paso 1 que anos financieros quiere utilizar (ej: 2025, 2024, 2023). Actualmente estan hardcodeados como `currentYear - 1, -2, -3`.
 
-### Cambios necesarios
+### Cambios
 
-#### 1. Base de datos: nueva columna JSONB
-Anadir una columna `financial_years_data` de tipo JSONB a la tabla `valuation_campaign_companies` para almacenar los 3 anos, siguiendo el mismo formato que usa `professional_valuations`:
+#### 1. Base de datos: nueva columna
+Crear migracion para anadir `financial_years` a `valuation_campaigns`:
 
 ```sql
-ALTER TABLE valuation_campaign_companies 
-ADD COLUMN financial_years_data JSONB DEFAULT '[]';
+ALTER TABLE valuation_campaigns 
+ADD COLUMN financial_years INTEGER[] DEFAULT ARRAY[2025, 2024, 2023];
 ```
 
-Se mantienen las columnas `revenue`, `ebitda`, `financial_year` existentes como datos del ano principal (compatibilidad).
+#### 2. Tipo TypeScript (`useCampaigns.ts`)
+Anadir `financial_years: number[] | null` a la interfaz `ValuationCampaign`.
 
-#### 2. Plantilla Excel actualizada
-Cambiar las columnas de la plantilla descargable:
+#### 3. Paso 1 - CampaignConfigStep
+Anadir una seccion "Anos financieros" dentro de la tarjeta "Plantilla de Valoracion" con:
+- 3 campos numericos (Ano 1, Ano 2, Ano 3) pre-rellenados con los valores por defecto (2025, 2024, 2023)
+- El usuario puede cambiar cualquiera de los anos
+- Se guardan como array en `financial_years`
 
-**Antes:** Empresa, Contacto, Email, Telefono, CIF, Facturacion, EBITDA, Ano
+#### 4. Paso 2 - CompaniesStep
+- Recibir `financial_years` como prop (desde `CampanaValoracionForm`)
+- Reemplazar las constantes `YEAR_1`, `YEAR_2`, `YEAR_3` por los valores de la prop
+- La plantilla Excel usara los anos configurados en la campana
+- El formulario manual mostrara los anos configurados
+- El `COLUMN_MAP` se construira dinamicamente con esos anos
 
-**Despues:** Empresa, Contacto, Email, Telefono, CIF, Facturacion 2024, EBITDA 2024, Facturacion 2023, EBITDA 2023, Facturacion 2022, EBITDA 2022
+#### 5. Formulario principal (CampanaValoracionForm.tsx)
+- Pasar `campaignData.financial_years` como prop a `CompaniesStep`:
+  ```
+  <CompaniesStep campaignId={campaignId} financialYears={campaignData.financial_years || [2025, 2024, 2023]} />
+  ```
 
-(Los anos se calculan dinamicamente: ano actual - 1, -2, -3)
-
-#### 3. Mapeo de columnas Excel (COLUMN_MAP)
-Ampliar el `COLUMN_MAP` en `CompaniesStep.tsx` para reconocer las nuevas cabeceras con ano:
-- `facturacion 2024` / `revenue 2024` -> revenue (ano 1)
-- `ebitda 2024` -> ebitda (ano 1)
-- `facturacion 2023` / `revenue 2023` -> revenue_year_2
-- `ebitda 2023` -> ebitda_year_2
-- Etc.
-
-#### 4. Logica de importacion Excel
-Actualizar `onDrop` para construir el array `financial_years_data` a partir de las columnas mapeadas y guardarlo junto con los datos de cada empresa.
-
-#### 5. Formulario manual
-Ampliar el formulario manual para incluir 3 filas de ano (similar a la calculadora pro), con campos Ano / Facturacion / EBITDA para cada uno.
-
-#### 6. ProcessSendStep: pasar los 3 anos
-Actualizar la linea que construye `financialYears` (actualmente linea 50):
-
-**Antes:**
-```
-financialYears: [{ year: c.financial_year, revenue: c.revenue, ebitda: c.ebitda }]
-```
-
-**Despues:**
-```
-financialYears: c.financial_years_data?.length 
-  ? c.financial_years_data 
-  : [{ year: c.financial_year, revenue: c.revenue, ebitda: c.ebitda }]
-```
-
-#### 7. Tabla de empresas
-Mostrar en la tabla del paso 2 una indicacion de cuantos anos de datos tiene cada empresa (ej: "3 anos" o "1 ano").
+#### 6. Inicializacion por defecto
+En `CampanaValoracionForm`, anadir `financial_years: [currentYear - 1, currentYear - 2, currentYear - 3]` al estado inicial de `campaignData`.
 
 ### Archivos afectados
 
 | Archivo | Cambio |
 |---------|--------|
-| `supabase/migrations/` (nueva) | Migracion: columna `financial_years_data` |
-| `src/integrations/supabase/types.ts` | Se regenera tras migracion |
-| `src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx` | Template, COLUMN_MAP, onDrop, formulario manual, tabla |
-| `src/hooks/useCampaignCompanies.ts` | Tipo actualizado si es necesario |
-| `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` | Pasar array de 3 anos |
+| Nueva migracion SQL | Columna `financial_years INTEGER[]` |
+| `src/integrations/supabase/types.ts` | Se regenera |
+| `src/hooks/useCampaigns.ts` | Anadir `financial_years` al tipo |
+| `src/pages/admin/CampanaValoracionForm.tsx` | Valor por defecto + pasar prop |
+| `src/components/admin/campanas-valoracion/steps/CampaignConfigStep.tsx` | UI para seleccionar los 3 anos |
+| `src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx` | Recibir prop y usar anos dinamicos |
 
-### Compatibilidad
-- Las campanas existentes con 1 solo ano seguiran funcionando (fallback a `revenue`/`ebitda`/`financial_year`)
-- La plantilla nueva es retrocompatible: si alguien sube un Excel con 1 solo ano, funciona igualmente
+### Detalles tecnicos
+
+- `buildColumnMap` pasara a recibir `[year1, year2, year3]` como parametro en lugar de usar constantes globales
+- `emptyYearRow` seguira igual pero se llamara con los anos de la prop
+- La plantilla Excel generara cabeceras con los anos correctos de la campana
+- Compatibilidad: campanas existentes sin `financial_years` usaran el fallback `[2025, 2024, 2023]`
 
