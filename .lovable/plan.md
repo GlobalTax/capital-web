@@ -1,58 +1,76 @@
 
 
-## Generar y almacenar PDFs en las campañas outbound
+## Enriquecer datos de empresas con IA en el paso de importacion
 
-### Problema actual
-El flujo de campañas envía emails con los datos de valoración en HTML, pero **no genera ningún PDF**. No hay forma de acceder ni descargar el informe PDF de cada empresa de la campaña.
+### Objetivo
+Anadir un boton de enriquecimiento con IA en el paso de importacion de empresas (`CompaniesStep`) que, dado el nombre de la empresa y su CIF/dominio, busque y complete automaticamente los datos que faltan: email de contacto, nombre del contacto, telefono y CIF.
 
-### Solucion
-Añadir generación de PDF con `@react-pdf/renderer` (usando el componente `ProfessionalValuationPDF` ya existente) durante el envío, subirlo a Supabase Storage, y guardar la URL en `valuation_campaign_companies` para acceso posterior.
+### Como funciona
+
+1. Tras importar empresas (Excel o manual), muchas filas tendran campos vacios (email, telefono, contacto).
+2. Un boton "Enriquecer con IA" aparecera sobre la tabla de empresas cuando haya registros con datos incompletos.
+3. Al pulsarlo, se invocara una nueva Edge Function que, para cada empresa:
+   - Usa Firecrawl Search para buscar informacion publica de la empresa (web, LinkedIn, directorios)
+   - Usa Lovable AI (Gemini) para extraer datos estructurados del resultado: email general, persona de contacto, telefono, CIF si falta
+4. Los campos completados se actualizan en `valuation_campaign_companies` y se reflejan en la tabla.
 
 ### Cambios
 
-#### 1. Base de datos: nueva columna `pdf_url`
-Migración para añadir la columna donde se guardará la URL del PDF generado:
-```sql
-ALTER TABLE valuation_campaign_companies ADD COLUMN pdf_url TEXT;
-```
+#### 1. Nueva Edge Function: `enrich-campaign-companies-data`
 
-#### 2. ProcessSendStep.tsx - Generar PDF antes de enviar
-Para cada empresa, antes de llamar al edge function:
-- Importar dinámicamente `@react-pdf/renderer` y `ProfessionalValuationPDF`
-- Mapear los datos de la empresa de campaña al formato `ProfessionalValuationData`
-- Generar el blob PDF en el cliente
-- Convertir a base64
-- Enviarlo como `pdfBase64` al edge function (que ya lo sube a Storage y lo adjunta al email)
-- Guardar la `pdfUrl` devuelta por el edge function en `valuation_campaign_companies`
-
-#### 3. ProcessSendStep.tsx - Botón de descarga en la tabla de resultados
-Añadir una columna "PDF" a la tabla de resultados con un icono/botón de descarga que abre la URL almacenada en `pdf_url`.
-
-### Flujo resultante
+Recibe un array de empresas con campos incompletos. Para cada una:
 
 ```
-Por cada empresa:
-1. Generar PDF en cliente (ProfessionalValuationPDF)
-2. Convertir a base64
-3. Enviar al edge function con pdfBase64
-4. Edge function sube a Storage + adjunta al email
-5. Guardar pdf_url en valuation_campaign_companies
-6. Usuario puede descargar desde la tabla de resultados
+1. Buscar en Firecrawl: "{empresa} {cif} contacto email site:.es"
+2. Enviar resultados a Gemini con tool calling para extraer:
+   - contact_name (persona de contacto, director general o similar)
+   - contact_email (email profesional)
+   - contact_phone (telefono)
+   - cif (si no lo tenia)
+3. Devolver los datos encontrados
+```
+
+Patron similar a `cr-people-enrich` pero enfocado en datos de contacto empresarial.
+
+#### 2. CompaniesStep.tsx - Boton y logica de enriquecimiento
+
+- Nuevo boton "Enriquecer con IA" con icono `Sparkles` en la cabecera de la tabla
+- Badge indicando cuantas empresas tienen datos incompletos
+- Estado de progreso durante el enriquecimiento (X de Y completadas)
+- Actualizacion en tiempo real de la tabla conforme se completan
+
+#### 3. Hook o logica inline
+
+- Iterar empresas con datos faltantes
+- Llamar al edge function en lotes de 3-5 para no saturar
+- Actualizar cada registro en `valuation_campaign_companies` con los datos encontrados
+- Mostrar resumen al finalizar (X enriquecidas, Y sin resultados)
+
+### Flujo del usuario
+
+```
+1. Importa Excel con empresas (muchas sin email/contacto)
+2. Ve badge: "12 empresas sin email"
+3. Pulsa "Enriquecer con IA"
+4. Barra de progreso: "Procesando 3/12..."
+5. La tabla se actualiza en tiempo real
+6. Resumen: "8 enriquecidas, 4 sin resultados"
 ```
 
 ### Archivos afectados
 
 | Archivo | Cambio |
 |---------|--------|
-| Nueva migración SQL | Columna `pdf_url TEXT` en `valuation_campaign_companies` |
-| `src/integrations/supabase/types.ts` | Se regenera |
-| `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` | Generación PDF + envío base64 + columna descarga |
+| `supabase/functions/enrich-campaign-companies-data/index.ts` | Nueva Edge Function |
+| `supabase/config.toml` | Registrar nueva funcion |
+| `src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx` | Boton + logica de enriquecimiento |
 
 ### Detalles tecnicos
 
-- Se reutiliza `ProfessionalValuationPDF` (1171 líneas) sin duplicar código
-- La generación se hace con dynamic import para no cargar `@react-pdf/renderer` en el bundle principal
-- El edge function ya tiene toda la lógica de subida a Storage (líneas 578-601) y attachment (líneas 607-610), solo necesita recibir `pdfBase64`
-- Se añade un delay adicional mínimo entre empresas para no saturar la generación de PDFs
-- Fallback: si la generación de PDF falla, el email se envía igualmente sin adjunto (siguiendo el protocolo de decoupling existente)
+- Usa Firecrawl Search (2 creditos por busqueda) siguiendo el patron de `cr-people-enrich`
+- Usa Lovable AI con tool calling para extraccion estructurada, siguiendo el patron de `enrich-campaign-company`
+- Procesamiento secuencial con delay de 1.5s entre empresas para evitar rate limits
+- Fallback: si Firecrawl falla, intenta solo con IA usando el nombre de la empresa
+- Solo procesa empresas que tengan al menos un campo vacio (email, contacto, telefono o CIF)
+- Los campos que ya tienen valor NO se sobreescriben
 
