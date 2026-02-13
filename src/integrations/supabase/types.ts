@@ -20589,6 +20589,7 @@ export type Database = {
           error_message: string | null
           excel_row_number: number | null
           financial_year: number | null
+          financial_years_data: Json | null
           id: string
           multiple_used: number | null
           normalized_ebitda: number | null
@@ -20617,6 +20618,7 @@ export type Database = {
           error_message?: string | null
           excel_row_number?: number | null
           financial_year?: number | null
+          financial_years_data?: Json | null
           id?: string
           multiple_used?: number | null
           normalized_ebitda?: number | null
@@ -20645,6 +20647,7 @@ export type Database = {
           error_message?: string | null
           excel_row_number?: number | null
           financial_year?: number | null
+          financial_years_data?: Json | null
           id?: string
           multiple_used?: number | null
           normalized_ebitda?: number | null

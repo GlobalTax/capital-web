@@ -47,7 +47,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           clientPhone: c.client_phone || undefined,
           clientCif: c.client_cif || undefined,
           sector: campaign.sector,
-          financialYears: [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }],
+          financialYears: c.financial_years_data?.length 
+            ? c.financial_years_data 
+            : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }],
           normalizationAdjustments: [],
           normalizedEbitda: c.normalized_ebitda || c.ebitda,
           ebitdaMultipleUsed: c.multiple_used || undefined,
