@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   campaignId: string;
@@ -77,6 +78,7 @@ async function generatePdfBase64(data: ProfessionalValuationData, campaign: Valu
 }
 
 export function ProcessSendStep({ campaignId, campaign }: Props) {
+  const navigate = useNavigate();
   const { companies, refetch } = useCampaignCompanies(campaignId);
   const { updateCampaign } = useCampaigns();
   const [sendingProgress, setSendingProgress] = useState({ active: false, current: 0, total: 0, name: '', phase: '' });
@@ -227,7 +229,16 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             <TableBody>
               {companies.map(c => (
                 <TableRow key={c.id}>
-                  <TableCell className="font-medium">{c.client_company}</TableCell>
+                  <TableCell className="font-medium">
+                    {c.professional_valuation_id ? (
+                      <span
+                        className="text-primary hover:underline cursor-pointer"
+                        onClick={() => navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}
+                      >
+                        {c.client_company}
+                      </span>
+                    ) : c.client_company}
+                  </TableCell>
                   <TableCell className="text-sm">{c.client_email || '—'}</TableCell>
                   <TableCell className="text-right">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
                   <TableCell className="text-center">

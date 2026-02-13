@@ -7,11 +7,31 @@ import { Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign } from '
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useMemo } from 'react';
 
 interface Props {
   campaignId: string;
   campaign: ValuationCampaign;
 }
+
+const VALUATION_RANGES = [
+  { label: '< 500K€', min: 0, max: 500000 },
+  { label: '500K€ - 1M€', min: 500000, max: 1000000 },
+  { label: '1M€ - 2M€', min: 1000000, max: 2000000 },
+  { label: '2M€ - 5M€', min: 2000000, max: 5000000 },
+  { label: '5M€ - 10M€', min: 5000000, max: 10000000 },
+  { label: '> 10M€', min: 10000000, max: Infinity },
+];
+
+const CHART_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--primary) / 0.85)',
+  'hsl(var(--primary) / 0.7)',
+  'hsl(var(--primary) / 0.55)',
+  'hsl(var(--primary) / 0.4)',
+  'hsl(var(--primary) / 0.25)',
+];
 
 export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
@@ -22,6 +42,18 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const failedCount = companies.filter(c => c.status === 'failed').length;
   const successRate = stats.total > 0 ? ((sentCount / stats.total) * 100).toFixed(0) : '0';
   const avgValuation = createdCount > 0 ? stats.totalValuation / createdCount : 0;
+
+  const distributionData = useMemo(() => {
+    const companiesWithValuation = companies.filter(c => c.valuation_central && c.valuation_central > 0);
+    if (companiesWithValuation.length === 0) return [];
+
+    return VALUATION_RANGES.map(range => ({
+      name: range.label,
+      count: companiesWithValuation.filter(c => c.valuation_central! >= range.min && c.valuation_central! < range.max).length,
+    })).filter(d => d.count > 0 || true); // Show all ranges
+  }, [companies]);
+
+  const hasDistribution = distributionData.some(d => d.count > 0);
 
   return (
     <div className="space-y-6">
@@ -70,6 +102,27 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Distribution Chart */}
+      {hasDistribution && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Distribución de Valoraciones</CardTitle></CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={distributionData} layout="vertical" margin={{ left: 20, right: 20 }}>
+                <XAxis type="number" allowDecimals={false} />
+                <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 12 }} />
+                <Tooltip formatter={(value: number) => [`${value} empresas`, 'Cantidad']} />
+                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                  {distributionData.map((_, index) => (
+                    <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Summary Table */}
       <Card>
