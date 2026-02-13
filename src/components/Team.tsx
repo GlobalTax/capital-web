@@ -34,12 +34,12 @@ const PartnerCard = ({ member }: { member: TeamMember }) => {
 
   return (
     <div className="bg-card rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 ease-out border border-border group">
-      <div className="relative overflow-hidden bg-muted aspect-square">
+      <div className="relative overflow-hidden bg-muted aspect-[3/4]">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
             alt={`${member.name} - ${member.position || 'Socio'}`}
-            className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="w-full h-full object-cover object-[center_30%] grayscale group-hover:grayscale-0 transition-all duration-500"
             onError={() => setImageError(true)}
             loading="lazy"
           />
@@ -87,12 +87,12 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
 
   return (
     <div className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ease-out border border-border group">
-      <div className="relative overflow-hidden bg-muted aspect-square">
+      <div className="relative overflow-hidden bg-muted aspect-[3/4]">
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
             alt={`${member.name} - ${member.position || 'Miembro del equipo'}`}
-            className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
+            className="w-full h-full object-cover object-[center_30%] grayscale group-hover:grayscale-0 transition-all duration-500"
             onError={() => setImageError(true)}
             loading="lazy"
           />

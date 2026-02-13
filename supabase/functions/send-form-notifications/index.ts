@@ -698,7 +698,7 @@ const getEmailTemplate = (formType: string, data: any) => {
           pageOriginLabel || 'Formulario de Contacto',
           contentHtml,
           pageOriginLabel || 'Web',
-          'https://capittal.es/admin/crm',
+          data._crmLink || 'https://capittal.es/admin/crm',
           'Ver en CRM',
           utmData
         )
@@ -719,7 +719,7 @@ const getEmailTemplate = (formType: string, data: any) => {
           pageOriginLabel || 'LP Venta Empresas',
           contentHtml,
           pageOriginLabel || 'LP Venta Empresas',
-          'https://capittal.es/admin/crm',
+          data._crmLink || 'https://capittal.es/admin/crm',
           'Ver en CRM',
           utmData
         )
@@ -783,7 +783,7 @@ const getEmailTemplate = (formType: string, data: any) => {
           'Lead Magnet',
           contentHtml,
           'Lead Magnet',
-          'https://capittal.es/admin/crm',
+          data._crmLink || 'https://capittal.es/admin/crm',
           'Ver en CRM',
           utmData
         )
@@ -820,7 +820,7 @@ const getEmailTemplate = (formType: string, data: any) => {
           'Programa de Colaboradores',
           contentHtml,
           'Colaboradores',
-          'https://capittal.es/admin/crm',
+          data._crmLink || 'https://capittal.es/admin/crm',
           'Ver en CRM',
           utmData
         )
@@ -940,7 +940,7 @@ const getEmailTemplate = (formType: string, data: any) => {
           'Campaña Cierre de Año 2025',
           contentHtml,
           'valoracion_cierre_2025',
-          'https://capittal.es/admin/crm',
+          data._crmLink || 'https://capittal.es/admin/crm',
           'Ver en CRM',
           { source: data.utmSource, medium: data.utmMedium, campaign: data.utmCampaign }
         )
@@ -1039,13 +1039,267 @@ const getEmailTemplate = (formType: string, data: any) => {
             </div>
           `,
           'Web',
-          'https://capittal.es/admin/crm',
+          data._crmLink || 'https://capittal.es/admin/crm',
           'Ver en CRM',
           utmData
         )
       };
   }
 };
+
+// ============= LEAD UPSERT LOGIC =============
+// Creates or updates a lead in contact_leads before sending emails
+
+interface LeadUpsertResult {
+  leadId: string | null;
+  error?: string;
+}
+
+function mapFormTypeToChannel(formType: string): string {
+  const map: Record<string, string> = {
+    contact: 'web',
+    general_contact: 'web',
+    sell_lead: 'web',
+    operation_contact: 'marketplace',
+    operation_inquiry: 'marketplace',
+    campaign_valuation: 'campaña',
+    lead_magnet_download: 'lead_magnet',
+    exit_readiness_test: 'web',
+    collaborator: 'web',
+    calendar: 'web',
+  };
+  return map[formType] || 'web';
+}
+
+function mapFormTypeToServiceType(formType: string, formData: any): string | null {
+  const validServiceTypes = ['venta_empresas', 'due_diligence', 'valoraciones', 'asesoramiento_legal', 'planificacion_fiscal', 'reestructuraciones'];
+  
+  switch (formType) {
+    case 'sell_lead':
+      return 'venta_empresas';
+    case 'campaign_valuation':
+      return 'valoraciones';
+    case 'contact':
+    case 'general_contact': {
+      // Try to map the serviceType from formData to enum
+      const st = formData?.serviceType?.toLowerCase()?.replace(/\s+/g, '_');
+      if (st && validServiceTypes.includes(st)) return st;
+      if (formData?.serviceType?.includes('venta') || formData?.serviceType?.includes('Venta')) return 'venta_empresas';
+      if (formData?.serviceType?.includes('valoraci') || formData?.serviceType?.includes('Valoraci')) return 'valoraciones';
+      return null;
+    }
+    default:
+      return null;
+  }
+}
+
+async function upsertLeadFromForm(
+  email: string,
+  fullName: string,
+  formType: string,
+  formData: any
+): Promise<LeadUpsertResult> {
+  try {
+    const normalizedEmail = email.toLowerCase().trim();
+    const company = formData.company || formData.companyName || '';
+    const phone = formData.phone || null;
+    const cif = formData.cif || null;
+    const channel = mapFormTypeToChannel(formType);
+    const serviceType = mapFormTypeToServiceType(formType, formData);
+
+    // Handle potentially negative financial data
+    let revenue: number | null = null;
+    let ebitda: number | null = null;
+    let financialNotes = '';
+
+    const rawRevenue = formData.revenue || formData.annualRevenue;
+    if (rawRevenue !== undefined && rawRevenue !== null) {
+      const numRevenue = typeof rawRevenue === 'string' ? parseFloat(rawRevenue.replace(/[^\d.-]/g, '')) : Number(rawRevenue);
+      if (!isNaN(numRevenue)) {
+        if (numRevenue < 0) {
+          financialNotes += `Facturación introducida: ${numRevenue}€ (valor sospechoso). `;
+        } else {
+          revenue = numRevenue;
+        }
+      }
+    }
+
+    const rawEbitda = formData.ebitda;
+    if (rawEbitda !== undefined && rawEbitda !== null) {
+      const numEbitda = typeof rawEbitda === 'string' ? parseFloat(rawEbitda.replace(/[^\d.-]/g, '')) : Number(rawEbitda);
+      if (!isNaN(numEbitda)) {
+        if (numEbitda < 0) {
+          financialNotes += `EBITDA introducido: ${numEbitda}€ (valor sospechoso). `;
+        } else {
+          ebitda = numEbitda;
+        }
+      }
+    }
+
+    // Build message/notes
+    const messageParts: string[] = [];
+    if (formData.message) messageParts.push(formData.message);
+    if (financialNotes) messageParts.push(`[Datos sospechosos] ${financialNotes.trim()}`);
+    if (formData.operationId) messageParts.push(`Operación: ${formData.operationId}`);
+    if (formData.lead_magnet_id) messageParts.push(`Lead Magnet: ${formData.lead_magnet_id}`);
+    const fullMessage = messageParts.join(' | ') || null;
+
+    // 1. Deduplicate by email
+    const { data: existingLead } = await supabase
+      .from('contact_leads')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingLead) {
+      // UPDATE existing lead
+      const updatePayload: Record<string, any> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (company) updatePayload.company = company;
+      if (phone) updatePayload.phone = phone;
+      if (cif) updatePayload.cif = cif;
+
+      await supabase
+        .from('contact_leads')
+        .update(updatePayload)
+        .eq('id', existingLead.id);
+
+      // Add activity
+      await supabase
+        .from('lead_activities')
+        .insert({
+          lead_id: existingLead.id,
+          lead_type: 'contact_leads',
+          activity_type: 'form_submission',
+          description: `Nueva solicitud (${formType}) desde ${channel}`,
+          metadata: {
+            formType,
+            channel,
+            message: fullMessage,
+            revenue,
+            ebitda,
+            page_origin: formData.page_origin,
+          },
+        });
+
+      console.log(`[upsertLead] Updated existing lead ${existingLead.id} for ${normalizedEmail}`);
+      return { leadId: existingLead.id };
+    }
+
+    // 2. New lead - upsert empresa
+    let empresaId: string | null = null;
+    if (company) {
+      const { data: existingEmpresa } = await supabase
+        .from('empresas')
+        .select('id')
+        .ilike('nombre', company.trim())
+        .limit(1)
+        .maybeSingle();
+
+      if (existingEmpresa) {
+        empresaId = existingEmpresa.id;
+      } else {
+        const { data: newEmpresa } = await supabase
+          .from('empresas')
+          .insert({
+            nombre: company.trim(),
+            cif: cif || null,
+            facturacion: revenue,
+          })
+          .select('id')
+          .single();
+        empresaId = newEmpresa?.id || null;
+      }
+    }
+
+    // 3. Upsert contacto
+    let contactoId: string | null = null;
+    const { data: existingContacto } = await supabase
+      .from('contactos')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingContacto) {
+      contactoId = existingContacto.id;
+    } else {
+      const nameParts = fullName.trim().split(' ');
+      const nombre = nameParts[0] || '';
+      const apellidos = nameParts.slice(1).join(' ') || null;
+
+      const { data: newContacto } = await supabase
+        .from('contactos')
+        .insert({
+          nombre,
+          apellidos,
+          email: normalizedEmail,
+          telefono: phone,
+          empresa_principal_id: empresaId,
+        })
+        .select('id')
+        .single();
+      contactoId = newContacto?.id || null;
+    }
+
+    // 4. Insert contact_lead
+    const insertPayload: Record<string, any> = {
+      full_name: fullName,
+      email: normalizedEmail,
+      company: company || 'No especificada',
+      phone,
+      status: 'new',
+      lead_status_crm: 'nuevo',
+      empresa_id: empresaId,
+      crm_contacto_id: contactoId,
+      lead_received_at: new Date().toISOString(),
+      lead_entry_date: new Date().toISOString(),
+    };
+
+    if (serviceType) insertPayload.service_type = serviceType;
+    if (cif) insertPayload.cif = cif;
+    if (fullMessage) insertPayload.notes = fullMessage;
+
+    const { data: newLead, error: insertError } = await supabase
+      .from('contact_leads')
+      .insert(insertPayload)
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error(`[upsertLead] Insert failed:`, insertError);
+      return { leadId: null, error: insertError.message };
+    }
+
+    // Add activity for new lead
+    if (newLead) {
+      await supabase
+        .from('lead_activities')
+        .insert({
+          lead_id: newLead.id,
+          lead_type: 'contact_leads',
+          activity_type: 'form_submission',
+          description: `Lead creado desde formulario (${formType})`,
+          metadata: {
+            formType,
+            channel,
+            message: fullMessage,
+            revenue,
+            ebitda,
+            page_origin: formData.page_origin,
+          },
+        });
+    }
+
+    console.log(`[upsertLead] Created new lead ${newLead?.id} for ${normalizedEmail}`);
+    return { leadId: newLead?.id || null };
+  } catch (err: any) {
+    console.error(`[upsertLead] Unexpected error:`, err);
+    return { leadId: null, error: err.message };
+  }
+}
 
 // Helper para respetar rate limit de Resend (2 emails/segundo)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -1064,11 +1318,31 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Processing form notification: ${formType} for submission`);
     console.log(`FormData keys received:`, Object.keys(formData || {}));
 
-    // Obtener plantillas para administradores y usuario
+    // ====== STEP 1: Upsert lead BEFORE sending emails ======
+    let leadId: string | null = null;
+    const skipLeadCreation = ['newsletter', 'calendar'].includes(formType);
+    
+    if (!skipLeadCreation) {
+      const leadResult = await upsertLeadFromForm(email, fullName, formType, formData);
+      leadId = leadResult.leadId;
+      if (leadResult.error) {
+        console.error(`[handler] Lead upsert failed (will continue with email): ${leadResult.error}`);
+      } else {
+        console.log(`[handler] Lead upserted successfully: ${leadId}`);
+      }
+    }
+
+    // Build CRM link with real leadId
+    const crmLink = leadId
+      ? `https://capittal.es/admin/contacts/${leadId}`
+      : 'https://capittal.es/admin/crm';
+
+    // ====== STEP 2: Generate email templates ======
     const adminTemplate = getEmailTemplate(formType, { 
       email, 
       fullName, 
-      ...formData 
+      ...formData,
+      _crmLink: crmLink,
     });
 
     const userTemplate = getUserConfirmationTemplate(formType, {

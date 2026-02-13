@@ -5,6 +5,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { FinancialYear } from '@/types/professionalValuation';
 import { formatCurrencyEUR, calculateEbitdaMargin, calculateCAGR } from '@/utils/professionalValuationCalculation';
 import { TrendingUp, TrendingDown, Minus, Euro, Percent } from 'lucide-react';
@@ -134,21 +135,15 @@ export function FinancialDataStep({ financialYears, updateFinancialYear }: Finan
                       </td>
                       {sortedYears.map((fy) => (
                         <td key={`revenue-${fy.year}`} className="py-3 px-2">
-                          <Input
-                            type="number"
-                            value={fy.revenue || ''}
-                            onChange={(e) => updateFinancialYear(
+                          <CurrencyInput
+                            value={fy.revenue || 0}
+                            onChange={(value) => updateFinancialYear(
                               fy.originalIndex,
-                              { revenue: parseFloat(e.target.value) || 0 }
+                              { revenue: value }
                             )}
                             placeholder="0"
                             className="text-right"
                           />
-                          {fy.revenue > 0 && (
-                            <p className="text-xs text-muted-foreground text-right mt-1">
-                              {formatCurrencyEUR(fy.revenue)}
-                            </p>
-                          )}
                         </td>
                       ))}
                     </tr>
@@ -163,21 +158,15 @@ export function FinancialDataStep({ financialYears, updateFinancialYear }: Finan
                       </td>
                       {sortedYears.map((fy) => (
                         <td key={`ebitda-${fy.year}`} className="py-3 px-2">
-                          <Input
-                            type="number"
-                            value={fy.ebitda || ''}
-                            onChange={(e) => updateFinancialYear(
+                          <CurrencyInput
+                            value={fy.ebitda || 0}
+                            onChange={(value) => updateFinancialYear(
                               fy.originalIndex,
-                              { ebitda: parseFloat(e.target.value) || 0 }
+                              { ebitda: value }
                             )}
                             placeholder="0"
                             className="text-right border-primary/50"
                           />
-                          {fy.ebitda > 0 && (
-                            <p className="text-xs text-primary text-right mt-1 font-medium">
-                              {formatCurrencyEUR(fy.ebitda)}
-                            </p>
-                          )}
                         </td>
                       ))}
                     </tr>

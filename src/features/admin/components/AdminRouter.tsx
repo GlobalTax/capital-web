@@ -90,7 +90,9 @@ import {
   LazyDealsuitePage,
   LazyDealsPausedPage,
   LazyPausedReasonsSettings,
-  LazyLaFirmaManager
+  LazyLaFirmaManager,
+  LazyCampanasValoracion,
+  LazyCampanaValoracionForm,
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -282,6 +284,11 @@ const AdminRouter = () => {
           
           {/* La Firma */}
           <Route path="/la-firma" element={<LazyLaFirmaManager />} />
+          
+          {/* Campañas Outbound */}
+          <Route path="/campanas-valoracion" element={<LazyCampanasValoracion />} />
+          <Route path="/campanas-valoracion/nueva" element={<LazyCampanaValoracionForm />} />
+          <Route path="/campanas-valoracion/:id" element={<LazyCampanaValoracionForm />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />

@@ -20571,6 +20571,201 @@ export type Database = {
         }
         Relationships: []
       }
+      valuation_campaign_companies: {
+        Row: {
+          ai_context: string | null
+          ai_enriched: boolean | null
+          ai_strengths: string | null
+          ai_weaknesses: string | null
+          campaign_id: string
+          client_cif: string | null
+          client_company: string
+          client_email: string | null
+          client_name: string | null
+          client_phone: string | null
+          created_at: string
+          custom_multiple: number | null
+          ebitda: number
+          error_message: string | null
+          excel_row_number: number | null
+          financial_year: number | null
+          id: string
+          multiple_used: number | null
+          normalized_ebitda: number | null
+          professional_valuation_id: string | null
+          revenue: number | null
+          source: string | null
+          status: string | null
+          valuation_central: number | null
+          valuation_high: number | null
+          valuation_low: number | null
+        }
+        Insert: {
+          ai_context?: string | null
+          ai_enriched?: boolean | null
+          ai_strengths?: string | null
+          ai_weaknesses?: string | null
+          campaign_id: string
+          client_cif?: string | null
+          client_company: string
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          created_at?: string
+          custom_multiple?: number | null
+          ebitda: number
+          error_message?: string | null
+          excel_row_number?: number | null
+          financial_year?: number | null
+          id?: string
+          multiple_used?: number | null
+          normalized_ebitda?: number | null
+          professional_valuation_id?: string | null
+          revenue?: number | null
+          source?: string | null
+          status?: string | null
+          valuation_central?: number | null
+          valuation_high?: number | null
+          valuation_low?: number | null
+        }
+        Update: {
+          ai_context?: string | null
+          ai_enriched?: boolean | null
+          ai_strengths?: string | null
+          ai_weaknesses?: string | null
+          campaign_id?: string
+          client_cif?: string | null
+          client_company?: string
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
+          created_at?: string
+          custom_multiple?: number | null
+          ebitda?: number
+          error_message?: string | null
+          excel_row_number?: number | null
+          financial_year?: number | null
+          id?: string
+          multiple_used?: number | null
+          normalized_ebitda?: number | null
+          professional_valuation_id?: string | null
+          revenue?: number | null
+          source?: string | null
+          status?: string | null
+          valuation_central?: number | null
+          valuation_high?: number | null
+          valuation_low?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_campaign_companies_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "valuation_campaign_companies_professional_valuation_id_fkey"
+            columns: ["professional_valuation_id"]
+            isOneToOne: false
+            referencedRelation: "professional_valuations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      valuation_campaigns: {
+        Row: {
+          advisor_email: string | null
+          advisor_name: string | null
+          advisor_phone: string | null
+          advisor_role: string | null
+          ai_personalize: boolean | null
+          comparables_text: string | null
+          created_at: string
+          created_by: string | null
+          custom_multiple: number | null
+          id: string
+          include_comparables: boolean | null
+          lead_source: string | null
+          multiple_high: number | null
+          multiple_low: number | null
+          name: string
+          sector: string
+          service_type: string | null
+          status: string | null
+          strengths_template: string | null
+          total_companies: number | null
+          total_created: number | null
+          total_errors: number | null
+          total_sent: number | null
+          total_valuation: number | null
+          updated_at: string
+          use_custom_advisor: boolean | null
+          valuation_context: string | null
+          weaknesses_template: string | null
+        }
+        Insert: {
+          advisor_email?: string | null
+          advisor_name?: string | null
+          advisor_phone?: string | null
+          advisor_role?: string | null
+          ai_personalize?: boolean | null
+          comparables_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_multiple?: number | null
+          id?: string
+          include_comparables?: boolean | null
+          lead_source?: string | null
+          multiple_high?: number | null
+          multiple_low?: number | null
+          name: string
+          sector: string
+          service_type?: string | null
+          status?: string | null
+          strengths_template?: string | null
+          total_companies?: number | null
+          total_created?: number | null
+          total_errors?: number | null
+          total_sent?: number | null
+          total_valuation?: number | null
+          updated_at?: string
+          use_custom_advisor?: boolean | null
+          valuation_context?: string | null
+          weaknesses_template?: string | null
+        }
+        Update: {
+          advisor_email?: string | null
+          advisor_name?: string | null
+          advisor_phone?: string | null
+          advisor_role?: string | null
+          ai_personalize?: boolean | null
+          comparables_text?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_multiple?: number | null
+          id?: string
+          include_comparables?: boolean | null
+          lead_source?: string | null
+          multiple_high?: number | null
+          multiple_low?: number | null
+          name?: string
+          sector?: string
+          service_type?: string | null
+          status?: string | null
+          strengths_template?: string | null
+          total_companies?: number | null
+          total_created?: number | null
+          total_errors?: number | null
+          total_sent?: number | null
+          total_valuation?: number | null
+          updated_at?: string
+          use_custom_advisor?: boolean | null
+          valuation_context?: string | null
+          weaknesses_template?: string | null
+        }
+        Relationships: []
+      }
       valuation_share_tokens: {
         Row: {
           created_at: string | null
@@ -22609,6 +22804,26 @@ export type Database = {
           updated_at: string
         }[]
       }
+      search_contactos_paginated: {
+        Args: { p_page?: number; p_page_size?: number; search_query: string }
+        Returns: {
+          apellidos: string
+          avatar: string
+          cargo: string
+          created_at: string
+          email: string
+          empresa_cif: string
+          empresa_nombre: string
+          empresa_principal_id: string
+          id: string
+          linkedin: string
+          nombre: string
+          notas: string
+          telefono: string
+          total_count: number
+          updated_at: string
+        }[]
+      }
       search_news_articles: {
         Args: {
           filter_category?: string
@@ -22662,8 +22877,14 @@ export type Database = {
           website_url: string
         }[]
       }
-      sync_template_additions: { Args: { p_tipo: string }; Returns: Json }
-      sync_template_full_reset: { Args: { p_tipo: string }; Returns: Json }
+      sync_template_additions: {
+        Args: { p_tipo_operacion: string }
+        Returns: Json
+      }
+      sync_template_full_reset: {
+        Args: { p_tipo_operacion: string }
+        Returns: Json
+      }
       sync_valuations_to_contactos: {
         Args: never
         Returns: {
