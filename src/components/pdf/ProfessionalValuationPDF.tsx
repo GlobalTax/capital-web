@@ -2,28 +2,37 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import { ProfessionalValuationData, NormalizationAdjustment, FinancialYear } from '@/types/professionalValuation';
 
-// Registrar fuentes
-Font.register({
-  family: 'Plus Jakarta Sans',
-  fonts: [
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Light.ttf',
-      fontWeight: 300,
-    },
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Regular.ttf',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Medium.ttf',
-      fontWeight: 500,
-    },
-    {
-      src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Bold.ttf',
-      fontWeight: 700,
-    },
-  ],
-});
+// Registrar fuentes con fallback robusto
+const PDF_FONT_FAMILY = 'Plus Jakarta Sans';
+
+try {
+  Font.register({
+    family: PDF_FONT_FAMILY,
+    fonts: [
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Light.ttf',
+        fontWeight: 300,
+      },
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Regular.ttf',
+        fontWeight: 400,
+      },
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Medium.ttf',
+        fontWeight: 500,
+      },
+      {
+        src: 'https://raw.githubusercontent.com/tokotype/PlusJakartaSans/master/fonts/ttf/PlusJakartaSans-Bold.ttf',
+        fontWeight: 700,
+      },
+    ],
+  });
+} catch (fontError) {
+  console.error('[PDF] Font registration failed, using Helvetica fallback:', fontError);
+}
+
+// Hyphenation callback to prevent crashes on unknown words
+Font.registerHyphenationCallback((word) => [word]);
 
 const styles = StyleSheet.create({
   page: {
