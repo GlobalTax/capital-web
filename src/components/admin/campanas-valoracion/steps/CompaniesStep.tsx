@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle } from 'lucide-react';
+import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompanyInsert } from '@/hooks/useCampaignCompanies';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
@@ -108,11 +108,33 @@ export function CompaniesStep({ campaignId }: Props) {
     maxFiles: 1,
   });
 
+  const downloadTemplate = () => {
+    const data = [
+      { Empresa: 'Empresa Ejemplo S.L.', Contacto: 'Juan Garcia', Email: 'juan@ejemplo.com', Telefono: '+34 612 345 678', CIF: 'B12345678', Facturacion: 5000000, EBITDA: 800000, Año: 2024 },
+      { Empresa: 'Industrias Demo S.A.', Contacto: 'Ana Lopez', Email: 'ana@demo.com', Telefono: '+34 698 765 432', CIF: 'A87654321', Facturacion: 12000000, EBITDA: 2500000, Año: 2024 },
+    ];
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [
+      { wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 },
+      { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 8 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
+    XLSX.writeFile(wb, 'plantilla_campana_valoracion.xlsx');
+  };
+
   return (
     <div className="space-y-6">
       {/* Excel Upload */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><FileSpreadsheet className="h-4 w-4" />Importar Excel</CardTitle></CardHeader>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2"><FileSpreadsheet className="h-4 w-4" />Importar Excel</CardTitle>
+            <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); downloadTemplate(); }}>
+              <Download className="h-4 w-4 mr-1" />Descargar plantilla
+            </Button>
+          </div>
+        </CardHeader>
         <CardContent>
           <div
             {...getRootProps()}
