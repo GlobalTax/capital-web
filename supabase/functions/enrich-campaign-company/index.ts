@@ -10,7 +10,26 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth verification
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(
+      JSON.stringify({ error: 'No autorizado' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Cuerpo de la petición inválido' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const {
       companyName,
       sector,
@@ -21,7 +40,7 @@ serve(async (req) => {
       campaignStrengthsTemplate,
       campaignWeaknessesTemplate,
       campaignContextTemplate,
-    } = await req.json();
+    } = body;
 
     console.log('[enrich-campaign-company] Empresa:', companyName, '| Sector:', sector);
 
@@ -152,7 +171,7 @@ Genera fortalezas, debilidades y contexto personalizados para esta empresa.`;
   } catch (error) {
     console.error('[enrich-campaign-company] Error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Error desconocido' }),
+      JSON.stringify({ error: 'Error interno del servidor.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

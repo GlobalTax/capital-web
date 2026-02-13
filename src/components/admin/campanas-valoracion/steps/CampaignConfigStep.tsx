@@ -5,12 +5,41 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Save, Download } from 'lucide-react';
 import { VALUATION_SECTORS } from '@/types/professionalValuation';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+const TEMPLATES_KEY = 'campaign-sector-templates';
+
+interface SectorTemplate {
+  custom_multiple?: number | null;
+  multiple_low?: number | null;
+  multiple_high?: number | null;
+  valuation_context?: string;
+  strengths_template?: string;
+  weaknesses_template?: string;
+  comparables_text?: string;
+  include_comparables?: boolean;
+  advisor_name?: string;
+  advisor_email?: string;
+  advisor_phone?: string;
+  advisor_role?: string;
+  use_custom_advisor?: boolean;
+  lead_source?: string;
+  service_type?: string;
+  ai_personalize?: boolean;
+}
+
+function getSavedTemplates(): Record<string, SectorTemplate> {
+  try {
+    return JSON.parse(localStorage.getItem(TEMPLATES_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
 
 interface Props {
   data: Partial<ValuationCampaign>;
@@ -19,6 +48,71 @@ interface Props {
 
 export function CampaignConfigStep({ data, updateField }: Props) {
   const [generatingComparables, setGeneratingComparables] = useState(false);
+  const [hasTemplateForSector, setHasTemplateForSector] = useState(false);
+
+  // Check if template exists when sector changes
+  useEffect(() => {
+    if (data.sector) {
+      const templates = getSavedTemplates();
+      const exists = !!templates[data.sector];
+      setHasTemplateForSector(exists);
+      if (exists) {
+        toast.info(`Hay una plantilla guardada para ${data.sector}. Pulsa 'Cargar plantilla' para usarla.`);
+      }
+    }
+  }, [data.sector]);
+
+  const handleSaveTemplate = useCallback(() => {
+    if (!data.sector) {
+      toast.error('Selecciona un sector primero');
+      return;
+    }
+    const templates = getSavedTemplates();
+    const template: SectorTemplate = {
+      custom_multiple: data.custom_multiple,
+      multiple_low: data.multiple_low,
+      multiple_high: data.multiple_high,
+      valuation_context: data.valuation_context || '',
+      strengths_template: data.strengths_template || '',
+      weaknesses_template: data.weaknesses_template || '',
+      comparables_text: data.comparables_text || '',
+      include_comparables: data.include_comparables || false,
+      advisor_name: data.advisor_name || '',
+      advisor_email: data.advisor_email || '',
+      advisor_phone: data.advisor_phone || '',
+      advisor_role: data.advisor_role || '',
+      use_custom_advisor: data.use_custom_advisor || false,
+      lead_source: data.lead_source || '',
+      service_type: data.service_type || '',
+      ai_personalize: data.ai_personalize || false,
+    };
+    templates[data.sector] = template;
+    localStorage.setItem(TEMPLATES_KEY, JSON.stringify(templates));
+    setHasTemplateForSector(true);
+    toast.success(`Plantilla guardada para ${data.sector}`);
+  }, [data]);
+
+  const handleLoadTemplate = useCallback(() => {
+    if (!data.sector) return;
+    const templates = getSavedTemplates();
+    const template = templates[data.sector];
+    if (!template) return;
+
+    if (!confirm('Se sobrescribirán los valores actuales. ¿Continuar?')) return;
+
+    const fields: (keyof SectorTemplate)[] = [
+      'custom_multiple', 'multiple_low', 'multiple_high', 'valuation_context',
+      'strengths_template', 'weaknesses_template', 'comparables_text', 'include_comparables',
+      'advisor_name', 'advisor_email', 'advisor_phone', 'advisor_role',
+      'use_custom_advisor', 'lead_source', 'service_type', 'ai_personalize',
+    ];
+    for (const key of fields) {
+      if (template[key] !== undefined) {
+        updateField(key as any, template[key] as any);
+      }
+    }
+    toast.success('Plantilla cargada');
+  }, [data.sector, updateField]);
 
   const handleGenerateComparables = async () => {
     if (!data.sector) {
@@ -71,6 +165,16 @@ export function CampaignConfigStep({ data, updateField }: Props) {
                   ))}
                 </SelectContent>
               </Select>
+              <div className="flex gap-2 mt-1">
+                <Button variant="outline" size="sm" onClick={handleSaveTemplate} disabled={!data.sector}>
+                  <Save className="h-3 w-3 mr-1" />Guardar como plantilla
+                </Button>
+                {hasTemplateForSector && (
+                  <Button variant="outline" size="sm" onClick={handleLoadTemplate}>
+                    <Download className="h-3 w-3 mr-1" />Cargar plantilla
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -190,6 +294,39 @@ export function CampaignConfigStep({ data, updateField }: Props) {
               </Select>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Firma del Informe */}
+      <Card>
+        <CardHeader><CardTitle className="text-base">Firma del Informe</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Switch checked={data.use_custom_advisor || false} onCheckedChange={v => updateField('use_custom_advisor', v)} />
+            <Label>Usar firma personalizada</Label>
+          </div>
+          {!data.use_custom_advisor ? (
+            <p className="text-sm text-muted-foreground">Se usará la firma global configurada en el sistema.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Nombre del asesor</Label>
+                <Input placeholder="Nombre completo" value={data.advisor_name || ''} onChange={e => updateField('advisor_name', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input type="email" placeholder="asesor@capittal.es" value={data.advisor_email || ''} onChange={e => updateField('advisor_email', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Teléfono</Label>
+                <Input placeholder="+34 600 000 000" value={data.advisor_phone || ''} onChange={e => updateField('advisor_phone', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Cargo</Label>
+                <Input placeholder="Director de M&A" value={data.advisor_role || ''} onChange={e => updateField('advisor_role', e.target.value)} />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
