@@ -4,17 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarIcon, Sparkles, Loader2, Plus, Wand2, Check, X } from 'lucide-react';
+import { Sparkles, Loader2, Plus, Wand2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { type ContentCalendarItem, type ContentChannel } from '@/hooks/useContentCalendar';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 const CHANNEL_CONFIG: Record<string, { label: string; emoji: string }> = {
@@ -52,9 +49,6 @@ interface SmartPlannerSectionProps {
 
 const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalendar }) => {
   const [topicsText, setTopicsText] = useState('');
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [frequency, setFrequency] = useState('3');
-  const [preferredChannels, setPreferredChannels] = useState('all');
   const [isGenerating, setIsGenerating] = useState(false);
   const [planItems, setPlanItems] = useState<PlanItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,9 +68,6 @@ const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalend
         body: {
           mode: 'smart_plan',
           topics,
-          start_date: format(startDate, 'yyyy-MM-dd'),
-          frequency: parseInt(frequency),
-          preferred_channels: preferredChannels,
         },
       });
 
@@ -167,58 +158,10 @@ const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalend
             className="min-h-[140px] font-mono text-sm"
           />
 
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Fecha inicio</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-[160px] justify-start text-left font-normal">
-                    <CalendarIcon className="h-3.5 w-3.5 mr-2" />
-                    {format(startDate, 'dd MMM yyyy', { locale: es })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={d => d && setStartDate(d)}
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Frecuencia</label>
-              <Select value={frequency} onValueChange={setFrequency}>
-                <SelectTrigger className="h-9 w-[160px] text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2">2 posts/semana</SelectItem>
-                  <SelectItem value="3">3 posts/semana</SelectItem>
-                  <SelectItem value="5">5 posts/semana</SelectItem>
-                  <SelectItem value="7">Diario</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Canales preferidos</label>
-              <Select value={preferredChannels} onValueChange={setPreferredChannels}>
-                <SelectTrigger className="h-9 w-[180px] text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los canales</SelectItem>
-                  {Object.entries(CHANNEL_CONFIG).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v.emoji} {v.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button onClick={handleGenerate} disabled={isGenerating || topicCount === 0} className="h-9">
-              {isGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              Generar Plan ({topicCount} {topicCount === 1 ? 'tema' : 'temas'})
-            </Button>
-          </div>
+          <Button onClick={handleGenerate} disabled={isGenerating || topicCount === 0} className="h-9">
+            {isGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+            Generar Plan ({topicCount} {topicCount === 1 ? 'tema' : 'temas'})
+          </Button>
         </CardContent>
       </Card>
 
