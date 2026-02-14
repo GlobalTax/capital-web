@@ -11,6 +11,7 @@ import AIContentEngine from './AIContentEngine';
 import ContentDashboard from './ContentDashboard';
 import ContentItemDialog from './ContentItemDialog';
 import { useContentCalendar, type ContentCalendarItem } from '@/hooks/useContentCalendar';
+import { toast } from 'sonner';
 
 const ContentCalendarManager = () => {
   const { items, isLoading, createItem, updateItem, deleteItem } = useContentCalendar();
@@ -44,10 +45,11 @@ const ContentCalendarManager = () => {
   };
 
   const handleSave = (data: Partial<ContentCalendarItem>) => {
+    const errorHandler = { onError: (e: Error) => toast.error(e.message || 'Error al guardar') };
     if (editingItem) {
-      updateItem.mutate({ id: editingItem.id, ...data });
+      updateItem.mutate({ id: editingItem.id, ...data }, errorHandler);
     } else {
-      createItem.mutate(data);
+      createItem.mutate(data, errorHandler);
     }
     setDialogOpen(false);
   };
@@ -68,7 +70,7 @@ const ContentCalendarManager = () => {
   };
 
   const handleAddFromAI = (data: Partial<ContentCalendarItem>) => {
-    createItem.mutate(data);
+    createItem.mutate(data, { onError: (e: Error) => toast.error(e.message || 'Error al crear contenido') });
   };
 
   const stats = useMemo(() => ({

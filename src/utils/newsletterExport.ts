@@ -65,7 +65,7 @@ const extractImagesFromHtml = (html: string): { src: string; filename: string }[
   
   while ((match = imgRegex.exec(html)) !== null) {
     const src = match[1];
-    if (src.startsWith('http')) {
+    if (src.startsWith('http://') || src.startsWith('https://')) {
       const extension = src.split('.').pop()?.split('?')[0] || 'png';
       images.push({
         src,

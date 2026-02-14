@@ -55,7 +55,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ items, isLoading, onCreate,
     items.forEach(item => {
       const date = item.scheduled_date || item.published_date;
       if (date) {
-        const key = date;
+        const key = format(new Date(date), 'yyyy-MM-dd');
         if (!map[key]) map[key] = [];
         map[key].push(item);
       }

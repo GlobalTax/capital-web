@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,19 +50,22 @@ const KanbanView: React.FC<KanbanViewProps> = ({ items, onEdit, onUpdateStatus }
     }
   };
 
-  const columnItems = (status: ContentCalendarItem['status']) =>
-    items
-      .filter(i => i.status === status)
-      .sort((a, b) => {
-        const prio = { urgent: 0, high: 1, medium: 2, low: 3 };
-        return (prio[a.priority] ?? 2) - (prio[b.priority] ?? 2);
-      });
+  const itemsByStatus = useMemo(() => {
+    const prio: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+    const map: Record<string, ContentCalendarItem[]> = {};
+    COLUMNS.forEach(col => {
+      map[col.id] = items
+        .filter(i => i.status === col.id)
+        .sort((a, b) => (prio[a.priority] ?? 2) - (prio[b.priority] ?? 2));
+    });
+    return map;
+  }, [items]);
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex gap-3 overflow-x-auto pb-4 min-h-[600px]">
         {COLUMNS.map(col => {
-          const colItems = columnItems(col.id);
+          const colItems = itemsByStatus[col.id] || [];
           return (
             <div key={col.id} className="flex-shrink-0 w-[280px]">
               <div className={cn('rounded-t-lg border-t-4 bg-muted/30 px-3 py-2 flex items-center justify-between', col.color)}>
