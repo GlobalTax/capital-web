@@ -80,6 +80,7 @@ const ListView: React.FC<ListViewProps> = ({ items, isLoading, onCreate, onEdit,
   };
 
   const bulkDelete = () => {
+    if (!window.confirm(`¿Eliminar ${selected.size} elementos? Esta acción no se puede deshacer.`)) return;
     selected.forEach(id => onDelete(id));
     setSelected(new Set());
   };

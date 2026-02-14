@@ -489,16 +489,6 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
       };
 
     case 'campaign_valuation': {
-      console.log(`[campaign_valuation USER] Data for template:`, JSON.stringify({
-        email: data.email,
-        cif: data.cif,
-        phone: data.phone,
-        revenue: data.revenue,
-        ebitda: data.ebitda,
-        revenueFormatted: formatCurrency(data.revenue),
-        ebitdaFormatted: formatCurrency(data.ebitda)
-      }, null, 2));
-      
       const contentHtml = `
         <div style="margin-bottom: 24px;">
           <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -1188,7 +1178,7 @@ async function upsertLeadFromForm(
           },
         });
 
-      console.log(`[upsertLead] Updated existing lead ${existingLead.id} for ${normalizedEmail}`);
+      console.log(`[upsertLead] Updated existing lead ${existingLead.id}`);
       return { leadId: existingLead.id };
     }
 
@@ -1297,7 +1287,7 @@ async function upsertLeadFromForm(
         });
     }
 
-    console.log(`[upsertLead] Created new lead ${newLead?.id} for ${normalizedEmail}`);
+    console.log(`[upsertLead] Created new lead ${newLead?.id}`);
     return { leadId: newLead?.id || null };
   } catch (err: any) {
     console.error(`[upsertLead] Unexpected error:`, err);
@@ -1319,8 +1309,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { submissionId, formType, email, fullName, formData }: FormNotificationRequest = await req.json();
 
-    console.log(`Processing form notification: ${formType} - ${email}`);
-    console.log(`FormData received:`, JSON.stringify(formData, null, 2));
+    console.log(`Processing form notification: ${formType}`);
 
     // ====== STEP 1: Upsert lead BEFORE sending emails ======
     let leadId: string | null = null;
@@ -1380,7 +1369,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Enviar email de confirmación al usuario
-    console.log(`Enviando email de confirmación a ${email}...`);
+    console.log(`Enviando email de confirmación al usuario...`);
     let userResult;
     try {
       // Configuración especial para campaign_valuation
@@ -1405,7 +1394,7 @@ const handler = async (req: Request): Promise<Response> => {
         html: userTemplate.html,
       });
       userResult = { status: 'fulfilled', value: result };
-      console.log(`✅ Email de confirmación enviado a ${email} (BCC: ${CONFIRMATION_BCC_EMAILS.join(', ')})${isCampaignValuation ? ' (CC: lluis@capittal.es)' : ''}`);
+      console.log(`✅ Email de confirmación enviado al usuario`);
     } catch (error) {
       userResult = { status: 'rejected', reason: error };
       console.error(`❌ Error enviando confirmación a ${email}:`, error);
