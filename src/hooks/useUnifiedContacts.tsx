@@ -330,7 +330,12 @@ export const useUnifiedContacts = () => {
             lead_form_name: (lead.lead_form_ref as any)?.name || null,
             // 🔥 NEW: Datos de Valoración Pro vinculada (fallback)
             final_valuation: proValuation?.valuation_central != null ? Number(proValuation.valuation_central) : undefined,
-            revenue: proValuation?.financial_years?.[0]?.revenue != null ? Number(proValuation.financial_years[0].revenue) : undefined,
+            revenue: (() => {
+              const fy = proValuation?.financial_years;
+              if (!Array.isArray(fy) || fy.length === 0) return undefined;
+              const sorted = [...fy].sort((a: any, b: any) => (b.year ?? 0) - (a.year ?? 0));
+              return sorted[0]?.revenue != null ? Number(sorted[0].revenue) : undefined;
+            })(),
             ebitda: proValuation?.normalized_ebitda != null ? Number(proValuation.normalized_ebitda) : undefined,
             industry: proValuation?.sector || undefined,
             // 🔥 NEW: Business registration date

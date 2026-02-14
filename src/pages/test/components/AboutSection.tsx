@@ -70,7 +70,8 @@ const AboutSection: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="relative"
           >
-            <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+            <div className="aspect-[4/3] overflow-hidden bg-slate-100 flex items-center justify-center">
+              <span className="text-slate-400 text-sm tracking-wide uppercase">Capittal</span>
             </div>
             {/* Decorative element */}
             <div className="absolute -bottom-6 -right-6 w-32 h-32 border border-slate-200 -z-10 hidden lg:block" />
