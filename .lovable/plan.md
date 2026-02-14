@@ -1,19 +1,28 @@
 
-## Agregar "Calendario de Contenido" al Sidebar del Admin
 
-### Cambio
-Insertar un nuevo registro en la tabla `sidebar_items` dentro de la seccion "CREAR CONTENIDO" (id: `b2c3f379-c3b6-4492-91d7-44649aeac3d9`).
+## Corregir error de build en Edge Function
 
-### Detalles
-- **Titulo**: Calendario Editorial
-- **URL**: `/admin/content-calendar`
-- **Icono**: `Calendar` (Lucide)
-- **Badge**: `NEW`
-- **Posicion**: 1 (segundo lugar, justo despues de "AI Content Studio")
-- Los demas items de la seccion se desplazaran una posicion hacia abajo
+### Estado del Sidebar
+El enlace "Calendario Editorial" **ya existe** en la seccion "CREAR CONTENIDO" con:
+- Posicion: 1 (justo despues de "AI Content Studio")
+- URL: `/admin/content-calendar`
+- Icono y badge configurados
 
-### Implementacion
-1. Ejecutar un `INSERT` en `sidebar_items` con los datos del nuevo enlace
-2. Actualizar las posiciones de los items existentes (posiciones 1-5 pasan a 2-6) para mantener el orden correcto
+No se necesitan cambios en el sidebar.
 
-No requiere cambios en archivos de codigo, ya que el sidebar se carga dinamicamente desde la base de datos.
+### Error de Build a Corregir
+La edge function `check-calculator-errors` tiene un error de importacion con el paquete `resend`. El import actual usa `npm:resend@2.0.0` que no es compatible con el entorno Deno del proyecto.
+
+**Archivo**: `supabase/functions/check-calculator-errors/index.ts` (linea 3)
+
+**Cambio**:
+```typescript
+// Antes:
+import { Resend } from "npm:resend@2.0.0";
+
+// Despues:
+import { Resend } from "https://esm.sh/resend@2.0.0";
+```
+
+Esto cambia el import de `npm:` (que requiere configuracion adicional en Deno) a `esm.sh` (CDN compatible con Deno, consistente con el patron usado para `@supabase/supabase-js` en la misma funcion).
+
