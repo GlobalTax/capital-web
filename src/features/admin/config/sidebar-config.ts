@@ -38,7 +38,8 @@ import {
   ShoppingCart,
   PanelLeft,
   Landmark,
-  RefreshCw
+  RefreshCw,
+  Calendar
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -67,6 +68,12 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin", 
         icon: LayoutDashboard,
         description: "Dashboard principal"
+      },
+      { 
+        title: "Calendario Editorial", 
+        url: "/admin/content-calendar", 
+        icon: Calendar,
+        description: "Calendario de contenido editorial"
       },
       { 
         title: "Valoraciones & Recovery", 
@@ -117,6 +124,12 @@ export const sidebarSections: SidebarSection[] = [
     title: "✨ CREAR CONTENIDO",
     description: "Herramientas de creación",
     items: [
+      { 
+        title: "Calendario Editorial", 
+        url: "/admin/content-calendar", 
+        icon: Calendar,
+        description: "Planificación editorial"
+      },
       { 
         title: "Content Studio", 
         url: "/admin/content-studio", 
