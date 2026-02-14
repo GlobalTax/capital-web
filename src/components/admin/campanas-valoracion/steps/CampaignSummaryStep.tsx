@@ -50,7 +50,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     return VALUATION_RANGES.map(range => ({
       name: range.label,
       count: companiesWithValuation.filter(c => c.valuation_central! >= range.min && c.valuation_central! < range.max).length,
-    })).filter(d => d.count > 0 || true); // Show all ranges
+    }));
   }, [companies]);
 
   const hasDistribution = distributionData.some(d => d.count > 0);
