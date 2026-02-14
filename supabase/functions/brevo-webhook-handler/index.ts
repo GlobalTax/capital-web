@@ -83,6 +83,19 @@ serve(async (req) => {
   }
 
   try {
+    // Validate webhook secret (configure BREVO_WEBHOOK_SECRET in Supabase secrets)
+    const webhookSecret = Deno.env.get('BREVO_WEBHOOK_SECRET');
+    if (webhookSecret) {
+      const receivedKey = req.headers.get('x-brevo-secret') || req.headers.get('x-sib-secret');
+      if (receivedKey !== webhookSecret) {
+        console.error('❌ Invalid webhook secret');
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

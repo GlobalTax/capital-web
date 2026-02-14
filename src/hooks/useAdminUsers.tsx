@@ -186,18 +186,13 @@ if (edgeFunctionError) {
       if (emailError) {
         console.error('⚠️ Failed to send credentials email:', emailError);
         
-        // Mostrar contraseña temporal si falla el email
-        const pwdPreview = `${data.temporary_password.substring(0, 4)}...${data.temporary_password.substring(data.temporary_password.length - 4)}`;
-        
+        // Mostrar aviso si falla el email - NO exponer contraseña en consola
         toast({
           title: "⚠️ Usuario creado pero email no enviado",
-          description: `${userData.full_name} ha sido creado con éxito. Contraseña temporal: ${pwdPreview} (Ver consola para contraseña completa)`,
+          description: `${userData.full_name} ha sido creado con éxito. Por favor, reenvía el email de credenciales desde el panel de administración.`,
           variant: "destructive",
           duration: 15000
         });
-        
-        console.warn('🔑 CONTRASEÑA TEMPORAL COMPLETA:', data.temporary_password);
-        console.warn('📋 Email del usuario:', userData.email);
       } else {
         console.log('✅ Credentials email sent successfully to:', userData.email);
       }
