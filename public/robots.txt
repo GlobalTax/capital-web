@@ -36,5 +36,8 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-# Referencia al sitemap
+# Referencia al sitemap dinámico (edge function)
+Sitemap: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap
+
+# Sitemap estático como fallback
 Sitemap: https://capittal.es/sitemap.xml
