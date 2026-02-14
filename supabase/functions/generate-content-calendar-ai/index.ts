@@ -81,6 +81,41 @@ const SYSTEM_PROMPT_SEO = `Eres un experto en SEO para contenido de M&A y Privat
 
 Devuelve JSON: { "meta_title": "", "meta_description": "", "target_keywords": [] }`;
 
+const SYSTEM_PROMPT_SMART_PLAN = `Eres un estratega de contenidos experto en Private Equity y M&A para Capittal (España). Recibes una lista de temas y debes crear un plan editorial completo y optimizado.
+
+REGLAS DE PLANIFICACIÓN:
+- LinkedIn empresa: máximo 3 posts/semana, mejores días martes-jueves
+- LinkedIn personal: 2-3 posts/semana, mejores días lunes/miércoles/viernes
+- Blog: 1-2 artículos/mes, publicar martes o miércoles
+- Newsletter: quincenal o mensual, enviar martes o jueves
+- NUNCA programar más de 1 contenido por canal por día
+- Alternar formatos (carrusel, texto largo, dato destacado) para variedad
+- Priorizar temas temporales/urgentes antes en el calendario
+
+SELECCIÓN DE CANAL:
+- Dato impactante / estadística → LinkedIn empresa (data_highlight o infographic)
+- Reflexión personal / lección → LinkedIn personal (opinion o storytelling)
+- Guía larga / contenido evergreen → Blog (article)
+- Resumen ejecutivo / curación → Newsletter (newsletter_edition)
+- Caso de éxito / proceso → LinkedIn personal (storytelling) o Blog
+- Carrusel visual / lista → LinkedIn empresa (carousel)
+- Educativo / explicativo → LinkedIn empresa (long_text)
+
+Para cada tema genera:
+- title: título optimizado y atractivo
+- channel: linkedin_company | linkedin_personal | blog | newsletter
+- content_type: linkedin_post | carousel | article | newsletter_edition | sector_brief
+- linkedin_format: carousel | long_text | infographic | opinion | storytelling | data_highlight (solo si LinkedIn)
+- target_audience: sellers | buyers | advisors
+- priority: low | medium | high | urgent
+- category: categoría temática
+- notes: brief de 2-3 líneas con enfoque y ángulo
+- key_data: dato cuantitativo clave (si aplica)
+- target_keywords: 3-5 keywords SEO
+- scheduled_date: fecha YYYY-MM-DD según las reglas de planificación
+
+Distribuye las fechas de forma inteligente respetando la frecuencia solicitada y las reglas de cada canal.`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -90,7 +125,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { mode, sector_context, item_data, channel_filter } = await req.json();
+    const { mode, sector_context, item_data, channel_filter, topics, start_date, frequency, preferred_channels } = await req.json();
 
     let systemPrompt: string;
     let userPrompt: string;
@@ -116,6 +151,20 @@ serve(async (req) => {
     } else if (mode === "optimize_seo") {
       systemPrompt = SYSTEM_PROMPT_SEO;
       userPrompt = `Optimiza el SEO para este contenido:\n\n- Título: ${item_data.title}\n- Canal: ${item_data.channel || 'blog'}\n- Categoría: ${item_data.category || 'M&A'}\n- Notas: ${item_data.notes || ''}\n- Contenido actual: ${(item_data.ai_generated_content || '').substring(0, 2000)}`;
+      useToolCalling = true;
+
+    } else if (mode === "smart_plan") {
+      if (!topics || !Array.isArray(topics) || topics.length === 0) {
+        throw new Error("Se requiere al menos un tema");
+      }
+      systemPrompt = SYSTEM_PROMPT_SMART_PLAN;
+      const startDateStr = start_date || new Date().toISOString().split('T')[0];
+      const freq = frequency || 3;
+      const channels = preferred_channels && preferred_channels !== 'all'
+        ? `Canales preferidos: ${preferred_channels}. Puedes usar otros si es más apropiado para el tema.`
+        : "Usa todos los canales disponibles según lo que mejor se adapte a cada tema.";
+
+      userPrompt = `TEMAS A PLANIFICAR (${topics.length} temas):\n${topics.map((t: string, i: number) => `${i + 1}. ${t}`).join('\n')}\n\nCONFIGURACIÓN:\n- Fecha de inicio: ${startDateStr}\n- Frecuencia deseada: ${freq} publicaciones por semana\n- ${channels}\n\nGenera un plan editorial completo para cada tema con fechas optimizadas.`;
       useToolCalling = true;
 
     } else {
@@ -188,6 +237,43 @@ serve(async (req) => {
           },
         }];
         body.tool_choice = { type: "function", function: { name: "return_seo_data" } };
+      } else if (mode === "smart_plan") {
+        body.tools = [{
+          type: "function",
+          function: {
+            name: "return_editorial_plan",
+            description: "Return the complete editorial plan with scheduled dates",
+            parameters: {
+              type: "object",
+              properties: {
+                plan: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string" },
+                      channel: { type: "string", enum: ["linkedin_company", "linkedin_personal", "blog", "newsletter"] },
+                      content_type: { type: "string", enum: ["linkedin_post", "carousel", "article", "newsletter_edition", "sector_brief"] },
+                      linkedin_format: { type: "string", enum: ["carousel", "long_text", "infographic", "opinion", "storytelling", "data_highlight"] },
+                      target_audience: { type: "string", enum: ["sellers", "buyers", "advisors"] },
+                      priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
+                      category: { type: "string" },
+                      notes: { type: "string" },
+                      key_data: { type: "string" },
+                      target_keywords: { type: "array", items: { type: "string" } },
+                      scheduled_date: { type: "string", description: "YYYY-MM-DD format" },
+                    },
+                    required: ["title", "channel", "content_type", "priority", "category", "notes", "scheduled_date"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ["plan"],
+              additionalProperties: false,
+            },
+          },
+        }];
+        body.tool_choice = { type: "function", function: { name: "return_editorial_plan" } };
       }
     }
 
