@@ -102,8 +102,8 @@ const ContentItemDialog: React.FC<ContentItemDialogProps> = ({ open, onOpenChang
     setIsGeneratingDraft(true);
     try {
       const data = await callAI('generate_draft');
-      setValue('ai_generated_content', data.result.content);
-      setValue('ai_generation_metadata', data.metadata);
+      setValue('ai_generated_content', data?.result?.content || '');
+      setValue('ai_generation_metadata', data?.metadata || null);
       setActiveTab('content');
       toast.success('Borrador generado');
     } catch (e: any) {
@@ -117,9 +117,9 @@ const ContentItemDialog: React.FC<ContentItemDialogProps> = ({ open, onOpenChang
     setIsOptimizingSEO(true);
     try {
       const data = await callAI('optimize_seo');
-      setValue('meta_title', data.result.meta_title);
-      setValue('meta_description', data.result.meta_description);
-      setValue('target_keywords', data.result.target_keywords);
+      setValue('meta_title', data?.result?.meta_title || '');
+      setValue('meta_description', data?.result?.meta_description || '');
+      setValue('target_keywords', Array.isArray(data?.result?.target_keywords) ? data.result.target_keywords : []);
       setActiveTab('seo');
       toast.success('SEO optimizado');
     } catch (e: any) {
