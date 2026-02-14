@@ -1,45 +1,40 @@
 
 
-## Smart Planner Simplificado: Solo Temas, la IA Decide Todo
+## Smart Planner: De Ideas Amplias a Plan Editorial Completo
 
-### Objetivo
+### Problema actual
 
-Eliminar todos los campos de configuracion (fecha inicio, frecuencia, canales preferidos) del Smart Planner. El usuario solo pega sus temas y pulsa un boton. La IA decide automaticamente las fechas optimas, frecuencia, canales y todo lo demas.
+El Smart Planner espera temas concretos (uno por linea), pero tu quieres poder escribir ideas amplias como *"Vamos a disenar una campana de articulos sobre consolidacion en el sector de la Certificacion"* y que la IA descomponga esa idea en multiples piezas de contenido organizadas.
+
+### Solucion
+
+Cambiar el Smart Planner para que acepte **ideas libres** (una o varias) en lugar de temas individuales. La IA recibe esas ideas y genera ella misma los temas concretos, titulos, fechas, canales y todo lo demas.
 
 ---
 
 ### Cambios
 
-**1. Simplificar `SmartPlannerSection.tsx`**
+**1. Actualizar UI (`SmartPlannerSection.tsx`)**
 
-- Eliminar los estados `startDate`, `frequency`, `preferredChannels` y todos sus controles (date picker, selects)
-- Dejar solo el textarea y el boton "Generar Plan"
-- En la llamada a la Edge Function, enviar solo `topics` y `start_date: hoy` sin frecuencia ni canales preferidos
-- Resultado: interfaz ultra-limpia con solo 2 elementos: textarea + boton
+- Cambiar el placeholder del textarea para reflejar que acepta ideas amplias, no solo temas sueltos
+- Cambiar el label y textos de ayuda: "Describe tus ideas" en vez de "Escribe un tema por linea"
+- Enviar el texto completo como un unico string (`idea`) en vez de un array de topics linea por linea
+- Actualizar el contador para mostrar "idea(s)" en vez de "tema(s)"
 
-**2. Actualizar Edge Function `generate-content-calendar-ai`**
+**2. Actualizar Edge Function (`generate-content-calendar-ai`)**
 
-- En el modo `smart_plan`, hacer que la frecuencia y canales sean decididos por la IA, no parametros del usuario
-- Actualizar el system prompt para que la IA:
-  - Calcule la frecuencia optima segun el numero de temas (pocos temas = mas espaciados, muchos = mas frecuentes)
-  - Decida la fecha de inicio a partir de manana
-  - Distribuya automaticamente entre canales segun el tipo de contenido
-  - No dependa de ningun parametro de configuracion del usuario
-
----
-
-### Resultado final
-
-El flujo sera:
-1. Pegas temas (uno por linea)
-2. Pulsas "Generar Plan"
-3. La IA devuelve la tabla completa con todo decidido
-4. Revisas, editas si quieres, y cargas al calendario
+- Actualizar `SYSTEM_PROMPT_SMART_PLAN` para instruir a la IA a:
+  - Interpretar ideas amplias y conceptuales (ej: "campana sobre consolidacion dental")
+  - Descomponer cada idea en 5-10 piezas de contenido concretas
+  - Crear una narrativa coherente entre las piezas (secuencia logica)
+  - Decidir cuantos contenidos generar segun la amplitud de la idea
+- Cambiar el parametro de entrada: aceptar `idea` (string libre) ademas de `topics` (retrocompatible)
+- Actualizar el user prompt para pasar el texto tal cual lo escribe el usuario
 
 ### Archivos a modificar
 
 | Archivo | Cambio |
 |---|---|
-| `src/components/admin/content-calendar/SmartPlannerSection.tsx` | Eliminar controles de fecha/frecuencia/canales, simplificar UI |
-| `supabase/functions/generate-content-calendar-ai/index.ts` | Hacer frecuencia y canales autonomos en modo smart_plan |
+| `src/components/admin/content-calendar/SmartPlannerSection.tsx` | Adaptar textarea, placeholder, envio de datos como idea libre |
+| `supabase/functions/generate-content-calendar-ai/index.ts` | Actualizar prompt y parametros para aceptar ideas amplias |
 
