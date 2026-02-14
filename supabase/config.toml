@@ -285,6 +285,9 @@ verify_jwt = false
 [functions.dealsuite-extract-image]
 verify_jwt = false
 
+[functions.blog-ssr]
+verify_jwt = false
+
 [functions.enrich-campaign-company]
 verify_jwt = false
 
