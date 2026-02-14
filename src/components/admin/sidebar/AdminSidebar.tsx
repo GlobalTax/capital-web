@@ -161,6 +161,7 @@ export const AdminSidebar: React.FC = () => {
       'sf-matches': 'dashboard',
       'fund-intelligence': 'dashboard',
       'cr-apollo-import': 'dashboard',
+      'sector-intelligence': 'dashboard',
     };
 
     const permissionKey = routePermissionMap[route];

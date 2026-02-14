@@ -189,6 +189,12 @@ export const sidebarSections: SidebarSection[] = [
         description: "Análisis competitivo por sector con IA"
       },
       { 
+        title: "Intel PE Sectorial", 
+        url: "/admin/sector-intelligence", 
+        icon: BarChart3,
+        description: "Base de datos PE por subsector (Excel)"
+      },
+      { 
         title: "Market Reports", 
         url: "/admin/market-reports", 
         icon: FileText,

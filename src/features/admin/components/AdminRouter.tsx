@@ -111,6 +111,7 @@ const LazyProspectsPage = React.lazy(() => import('@/pages/admin/ProspectsPage')
 const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisitorsPage'));
 const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPage'));
 const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
+const LazySectorIntelligencePage = React.lazy(() => import('@/pages/admin/SectorIntelligencePage'));
 
 // Presentation Engine
 const LazyPresentationsListPage = React.lazy(() => import('@/features/presentations/pages/PresentationsListPage'));
@@ -171,6 +172,7 @@ const AdminRouter = () => {
           <Route path="/sector-reports" element={<LazySectorReportsGenerator />} />
           <Route path="/sector-dossiers" element={<LazySectorDossierStudio />} />
           <Route path="/sectors" element={<LazySectorsPage />} />
+          <Route path="/sector-intelligence" element={<LazySectorIntelligencePage />} />
           <Route path="/case-studies" element={<LazyCaseStudiesManager />} />
           <Route path="/landing-pages" element={<LazyLandingPagesPage />} />
           <Route path="/landing-pages-unified" element={<LazyUnifiedLandingPagesPage />} />
