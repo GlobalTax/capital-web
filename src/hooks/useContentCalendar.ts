@@ -2,6 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export type ContentChannel = 'linkedin_company' | 'linkedin_personal' | 'blog' | 'newsletter' | 'crm_internal';
+export type LinkedInFormat = 'carousel' | 'long_text' | 'infographic' | 'opinion' | 'storytelling' | 'data_highlight';
+export type TargetAudience = 'sellers' | 'buyers' | 'advisors' | 'internal';
+
 export interface ContentCalendarItem {
   id: string;
   title: string;
@@ -20,7 +24,13 @@ export interface ContentCalendarItem {
   pe_sector_id: string | null;
   blog_post_id: string | null;
   estimated_reading_time: number | null;
-  content_type: 'article' | 'guide' | 'case_study' | 'report' | 'infographic' | 'newsletter';
+  content_type: 'article' | 'guide' | 'case_study' | 'report' | 'infographic' | 'newsletter' | 'linkedin_post' | 'carousel' | 'newsletter_edition' | 'sector_brief' | 'crm_sheet';
+  channel: ContentChannel;
+  linkedin_format: LinkedInFormat | null;
+  ai_generated_content: string | null;
+  ai_generation_metadata: Record<string, any> | null;
+  target_audience: TargetAudience;
+  key_data: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;

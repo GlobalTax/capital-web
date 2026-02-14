@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, LayoutList, Lightbulb, Database } from 'lucide-react';
+import { CalendarDays, LayoutList, Lightbulb, Database, Sparkles, BarChart3 } from 'lucide-react';
 import CalendarView from './CalendarView';
 import ListView from './ListView';
 import IdeaBankView from './IdeaBankView';
 import PESectorBrowser from './PESectorBrowser';
+import AIContentEngine from './AIContentEngine';
+import ContentDashboard from './ContentDashboard';
 import ContentItemDialog from './ContentItemDialog';
 import { useContentCalendar, type ContentCalendarItem } from '@/hooks/useContentCalendar';
 
@@ -50,6 +52,10 @@ const ContentCalendarManager = () => {
     });
   };
 
+  const handleAddFromAI = (data: Partial<ContentCalendarItem>) => {
+    createItem.mutate(data);
+  };
+
   const stats = useMemo(() => ({
     ideas: items.filter(i => i.status === 'idea').length,
     drafts: items.filter(i => i.status === 'draft').length,
@@ -67,7 +73,7 @@ const ContentCalendarManager = () => {
             Calendario de Contenido
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Planifica, organiza y gestiona tu pipeline de contenido
+            Planifica, organiza y gestiona tu pipeline de contenido con IA
           </p>
         </div>
         <div className="flex gap-2 text-xs">
@@ -85,8 +91,14 @@ const ContentCalendarManager = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="calendar" className="space-y-4">
+      <Tabs defaultValue="ai" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="ai" className="gap-1.5">
+            <Sparkles className="h-4 w-4" /> IA Engine
+          </TabsTrigger>
+          <TabsTrigger value="dashboard" className="gap-1.5">
+            <BarChart3 className="h-4 w-4" /> Dashboard
+          </TabsTrigger>
           <TabsTrigger value="calendar" className="gap-1.5">
             <CalendarDays className="h-4 w-4" /> Calendario
           </TabsTrigger>
@@ -100,6 +112,14 @@ const ContentCalendarManager = () => {
             <Database className="h-4 w-4" /> Sectores PE
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="ai">
+          <AIContentEngine onAddToCalendar={handleAddFromAI} />
+        </TabsContent>
+
+        <TabsContent value="dashboard">
+          <ContentDashboard items={items} />
+        </TabsContent>
 
         <TabsContent value="calendar">
           <CalendarView
