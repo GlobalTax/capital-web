@@ -1,40 +1,57 @@
 
 
-## Smart Planner: De Ideas Amplias a Plan Editorial Completo
+## Panel de Inteligencia PE Sectorial -- Reproduccion del Excel en Admin
 
-### Problema actual
+### Objetivo
+Crear un panel completo en `/admin/sector-intelligence` que reproduzca fielmente el Excel de sectores PE, con vista tipo tabla/spreadsheet y capacidad de edicion CRUD completa.
 
-El Smart Planner espera temas concretos (uno por linea), pero tu quieres poder escribir ideas amplias como *"Vamos a disenar una campana de articulos sobre consolidacion en el sector de la Certificacion"* y que la IA descomponga esa idea en multiples piezas de contenido organizadas.
+### Datos actuales vs Excel
 
-### Solucion
+La tabla `pe_sector_intelligence` ya existe con 43 registros pero tiene 3 columnas vacias que el Excel si tiene:
+- `quantitative_data`: Datos cuantitativos clave (vacio en todos los registros)
+- `active_pe_firms`: Firmas PE activas con plataformas (vacio)
+- `platforms_operations`: Plataformas y operaciones concretas (vacio)
 
-Cambiar el Smart Planner para que acepte **ideas libres** (una o varias) en lugar de temas individuales. La IA recibe esas ideas y genera ella misma los temas concretos, titulos, fechas, canales y todo lo demas.
+### Cambios planificados
+
+**1. Actualizar datos existentes en la BD**
+- Rellenar las 3 columnas vacias con los datos completos del Excel para los 43 registros existentes
+- Verificar que no falten subsectores del Excel (el Excel tiene ~50+ filas, la BD tiene 43)
+- Insertar los subsectores que falten
+
+**2. Crear pagina de admin `/admin/sector-intelligence`**
+- Nueva ruta en AdminRouter
+- Vista principal con tabla expandible que muestre las 9 columnas del Excel:
+  - Subsector | Vertical | Tesis PE | Datos cuantitativos | Firmas PE | Plataformas | Multiplos | Fase | Geografia
+- Agrupacion por sector (SALUD, CONSTRUCCION, etc.) con headers de seccion coloreados
+- Filas expandibles: al hacer clic se despliega el detalle completo (firmas PE, plataformas, datos cuantitativos son textos muy largos)
+- Filtros: busqueda libre, filtro por sector, filtro por fase de consolidacion
+- Badges de color por fase de consolidacion (reutilizando el sistema de colores de PESectorBrowser)
+
+**3. CRUD completo**
+- **Editar**: modal o panel lateral para editar cualquier campo de un subsector
+- **Crear**: boton para anadir nuevos subsectores con formulario completo
+- **Eliminar**: con confirmacion
+- **Activar/Desactivar**: toggle de is_active
+
+**4. Registrar ruta en AdminRouter y sidebar**
+- Anadir la ruta `/sector-intelligence` al AdminRouter
+- Anadir enlace en la navegacion lateral del admin
 
 ---
 
-### Cambios
-
-**1. Actualizar UI (`SmartPlannerSection.tsx`)**
-
-- Cambiar el placeholder del textarea para reflejar que acepta ideas amplias, no solo temas sueltos
-- Cambiar el label y textos de ayuda: "Describe tus ideas" en vez de "Escribe un tema por linea"
-- Enviar el texto completo como un unico string (`idea`) en vez de un array de topics linea por linea
-- Actualizar el contador para mostrar "idea(s)" en vez de "tema(s)"
-
-**2. Actualizar Edge Function (`generate-content-calendar-ai`)**
-
-- Actualizar `SYSTEM_PROMPT_SMART_PLAN` para instruir a la IA a:
-  - Interpretar ideas amplias y conceptuales (ej: "campana sobre consolidacion dental")
-  - Descomponer cada idea en 5-10 piezas de contenido concretas
-  - Crear una narrativa coherente entre las piezas (secuencia logica)
-  - Decidir cuantos contenidos generar segun la amplitud de la idea
-- Cambiar el parametro de entrada: aceptar `idea` (string libre) ademas de `topics` (retrocompatible)
-- Actualizar el user prompt para pasar el texto tal cual lo escribe el usuario
-
-### Archivos a modificar
+### Detalles tecnicos
 
 | Archivo | Cambio |
 |---|---|
-| `src/components/admin/content-calendar/SmartPlannerSection.tsx` | Adaptar textarea, placeholder, envio de datos como idea libre |
-| `supabase/functions/generate-content-calendar-ai/index.ts` | Actualizar prompt y parametros para aceptar ideas amplias |
+| `supabase` (INSERT datos) | Actualizar los 43 registros con quantitative_data, active_pe_firms, platforms_operations del Excel. Insertar subsectores faltantes |
+| `src/pages/admin/SectorIntelligencePage.tsx` | Nueva pagina con tabla expandible, filtros y CRUD |
+| `src/components/admin/sector-intelligence/SectorTable.tsx` | Tabla principal con filas agrupadas por sector y expandibles |
+| `src/components/admin/sector-intelligence/SectorEditDialog.tsx` | Modal de edicion/creacion de subsector |
+| `src/hooks/useSectorIntelligence.ts` | Hook con queries y mutations CRUD sobre pe_sector_intelligence |
+| `src/features/admin/components/AdminRouter.tsx` | Anadir ruta /sector-intelligence |
+| `src/features/admin/components/AdminLayout.tsx` | Anadir enlace en sidebar |
+
+### Resultado
+Un panel tipo spreadsheet donde puedes ver toda la inteligencia PE sectorial como en el Excel, pero con capacidad de editar, anadir y eliminar datos directamente desde el admin.
 
