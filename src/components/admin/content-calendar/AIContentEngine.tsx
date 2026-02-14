@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePESectorIntelligence, type PESectorIntelligence, type ContentCalendarItem, type ContentChannel } from '@/hooks/useContentCalendar';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import SmartPlannerSection from './SmartPlannerSection';
 
 const CHANNEL_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
   linkedin_company: { label: 'LinkedIn Empresa', emoji: '🏢', color: 'bg-blue-100 text-blue-700' },
@@ -146,6 +147,9 @@ const AIContentEngine: React.FC<AIContentEngineProps> = ({ onAddToCalendar }) =>
 
   return (
     <div className="space-y-6">
+      {/* Smart Planner */}
+      <SmartPlannerSection onAddToCalendar={onAddToCalendar} />
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border-dashed border-2 border-primary/20 hover:border-primary/40 transition-colors">
