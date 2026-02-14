@@ -290,3 +290,6 @@ verify_jwt = false
 
 [functions.enrich-campaign-companies-data]
 verify_jwt = false
+
+[functions.generate-sitemap]
+verify_jwt = false
