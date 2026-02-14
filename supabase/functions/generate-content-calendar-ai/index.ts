@@ -81,9 +81,10 @@ const SYSTEM_PROMPT_SEO = `Eres un experto en SEO para contenido de M&A y Privat
 
 Devuelve JSON: { "meta_title": "", "meta_description": "", "target_keywords": [] }`;
 
-const SYSTEM_PROMPT_SMART_PLAN = `Eres un estratega de contenidos experto en Private Equity y M&A para Capittal (España). Recibes una lista de temas y debes crear un plan editorial completo y optimizado.
+const SYSTEM_PROMPT_SMART_PLAN = `Eres un estratega de contenidos experto en Private Equity y M&A para Capittal (España). Recibes una lista de temas y TÚ decides TODO: fechas, frecuencia, canales y formato. El usuario solo aporta los temas.
 
 REGLAS DE PLANIFICACIÓN:
+- La fecha de inicio es MAÑANA (el día siguiente a la fecha actual proporcionada)
 - LinkedIn empresa: máximo 3 posts/semana, mejores días martes-jueves
 - LinkedIn personal: 2-3 posts/semana, mejores días lunes/miércoles/viernes
 - Blog: 1-2 artículos/mes, publicar martes o miércoles
@@ -92,7 +93,13 @@ REGLAS DE PLANIFICACIÓN:
 - Alternar formatos (carrusel, texto largo, dato destacado) para variedad
 - Priorizar temas temporales/urgentes antes en el calendario
 
-SELECCIÓN DE CANAL:
+CÁLCULO DE FRECUENCIA (tú decides):
+- 1-3 temas: 2 publicaciones/semana, espaciadas
+- 4-6 temas: 3 publicaciones/semana
+- 7-10 temas: 4-5 publicaciones/semana
+- Más de 10: 5-7 publicaciones/semana, distribuidas en varias semanas
+
+SELECCIÓN DE CANAL (tú decides según el tema):
 - Dato impactante / estadística → LinkedIn empresa (data_highlight o infographic)
 - Reflexión personal / lección → LinkedIn personal (opinion o storytelling)
 - Guía larga / contenido evergreen → Blog (article)
@@ -114,7 +121,7 @@ Para cada tema genera:
 - target_keywords: 3-5 keywords SEO
 - scheduled_date: fecha YYYY-MM-DD según las reglas de planificación
 
-Distribuye las fechas de forma inteligente respetando la frecuencia solicitada y las reglas de cada canal.`;
+Distribuye las fechas de forma inteligente. NO necesitas que el usuario te diga frecuencia ni canales, tú eres el estratega.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -158,13 +165,9 @@ serve(async (req) => {
         throw new Error("Se requiere al menos un tema");
       }
       systemPrompt = SYSTEM_PROMPT_SMART_PLAN;
-      const startDateStr = start_date || new Date().toISOString().split('T')[0];
-      const freq = frequency || 3;
-      const channels = preferred_channels && preferred_channels !== 'all'
-        ? `Canales preferidos: ${preferred_channels}. Puedes usar otros si es más apropiado para el tema.`
-        : "Usa todos los canales disponibles según lo que mejor se adapte a cada tema.";
+      const today = new Date().toISOString().split('T')[0];
 
-      userPrompt = `TEMAS A PLANIFICAR (${topics.length} temas):\n${topics.map((t: string, i: number) => `${i + 1}. ${t}`).join('\n')}\n\nCONFIGURACIÓN:\n- Fecha de inicio: ${startDateStr}\n- Frecuencia deseada: ${freq} publicaciones por semana\n- ${channels}\n\nGenera un plan editorial completo para cada tema con fechas optimizadas.`;
+      userPrompt = `FECHA ACTUAL: ${today}\n\nTEMAS A PLANIFICAR (${topics.length} temas):\n${topics.map((t: string, i: number) => `${i + 1}. ${t}`).join('\n')}\n\nGenera un plan editorial completo. Tú decides las fechas óptimas (empezando desde mañana), la frecuencia ideal según el número de temas, y el canal más apropiado para cada uno.`;
       useToolCalling = true;
 
     } else {
