@@ -154,3 +154,6 @@ export const LazyLaFirmaManager = lazy(() => import('@/components/admin/LaFirmaM
 // === CAMPAÑAS OUTBOUND ===
 export const LazyCampanasValoracion = lazy(() => import('@/pages/admin/CampanasValoracion'));
 export const LazyCampanaValoracionForm = lazy(() => import('@/pages/admin/CampanaValoracionForm'));
+
+// === CONTENT CALENDAR ===
+export const LazyContentCalendarPage = lazy(() => import('@/pages/admin/ContentCalendarPage'));
