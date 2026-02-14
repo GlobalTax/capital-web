@@ -35,25 +35,11 @@ export const useBlogFilters = (posts: BlogPost[]) => {
 
   // Filtrado y ordenado de posts
   const filteredPosts: BlogPost[] = useMemo(() => {
-    console.log('🔍 DEBUG useBlogFilters - Input:', { 
-      postsCount: posts?.length || 0, 
-      filters,
-      samplePost: posts?.[0] ? {
-        title: posts[0].title,
-        category: posts[0].category,
-        is_published: posts[0].is_published,
-        is_featured: posts[0].is_featured
-      } : null
-    });
-
     if (!posts || posts.length === 0) {
-      console.log('❌ No posts provided to filter');
       return [];
     }
 
-    // Verificar que todos los posts estén publicados
     const publishedPosts = posts.filter(post => post.is_published);
-    console.log('📊 Published posts:', publishedPosts.length, 'of', posts.length);
 
     let filtered = publishedPosts.filter(post => {
       // Filtro de búsqueda
@@ -82,8 +68,6 @@ export const useBlogFilters = (posts: BlogPost[]) => {
 
       return true;
     });
-
-    console.log('✅ After filtering:', filtered.length, 'posts');
 
     // Ordenar posts
     filtered.sort((a, b) => {
@@ -124,13 +108,6 @@ export const useBlogFilters = (posts: BlogPost[]) => {
   
   // Para la grid, mostrar todos excepto el primer destacado (que va arriba)
   const gridPosts = filteredPosts.slice(1); // Todos menos el primero
-
-  console.log('🎯 Final separation:', {
-    total: filteredPosts.length,
-    featured: featuredPosts.length,
-    regular: regularPosts.length,
-    gridPosts: gridPosts.length
-  });
 
   // Funciones para actualizar filtros
   const updateFilter = (key: keyof BlogFilters, value: string) => {

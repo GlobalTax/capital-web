@@ -73,15 +73,22 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
   // Simple markdown parser para contenido básico
   const parseMarkdown = (content: string) => {
-    return content
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    const html = content
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-      .replace(/\*(.*)\*/gim, '<em>$1</em>')
-      .replace(/\n\n/gim, '</p><p>')
-      .replace(/\n/gim, '<br>')
-      .replace(/^(.*)$/gim, '<p>$1</p>');
+      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+      .replace(/\n\n/gim, '\n</p>\n<p>\n')
+      .replace(/\n/gim, '<br>');
+    // Envolver solo líneas que no son ya tags de bloque
+    return html.split('<br>').map(line => {
+      const trimmed = line.trim();
+      if (!trimmed || /^<(h[1-6]|p|\/p|ul|ol|li|div|blockquote|hr|table|pre)/i.test(trimmed)) {
+        return trimmed;
+      }
+      return `<p>${trimmed}</p>`;
+    }).join('\n');
   };
 
   // Añadir IDs a los headings del HTML para navegación
@@ -141,7 +148,7 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
 
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text;
-    return text.substr(0, maxLength).trim() + '...';
+    return text.slice(0, maxLength).trim() + '...';
   };
 
   return (
