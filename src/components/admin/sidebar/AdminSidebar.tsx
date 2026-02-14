@@ -152,6 +152,7 @@ export const AdminSidebar: React.FC = () => {
       'valuation-analytics': 'valuationAnalytics',
       'valoraciones-pro': 'valoracionesPro',
       'campanas-valoracion': 'valoracionesPro',
+      'content-calendar': 'dashboard', // Calendario Editorial
       'cr-directory': 'dashboard', // Capital Riesgo - visible para admins
       'sf-directory': 'dashboard', // Search Funds - visible para admins
       'sf-apollo-import': 'dashboard',
