@@ -48,17 +48,15 @@ interface SmartPlannerSectionProps {
 }
 
 const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalendar }) => {
-  const [topicsText, setTopicsText] = useState('');
+  const [ideaText, setIdeaText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [planItems, setPlanItems] = useState<PlanItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const topicCount = topicsText.trim().split('\n').filter(l => l.trim()).length;
-
   const handleGenerate = async () => {
-    const topics = topicsText.trim().split('\n').filter(l => l.trim()).map(l => l.trim());
-    if (topics.length === 0) {
-      toast.error('Escribe al menos un tema');
+    const idea = ideaText.trim();
+    if (!idea) {
+      toast.error('Describe al menos una idea');
       return;
     }
 
@@ -67,7 +65,7 @@ const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalend
       const { data, error } = await supabase.functions.invoke('generate-content-calendar-ai', {
         body: {
           mode: 'smart_plan',
-          topics,
+          idea,
         },
       });
 
@@ -131,7 +129,7 @@ const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalend
       }
       toast.success(`${selected.length} contenidos cargados al calendario`);
       setPlanItems([]);
-      setTopicsText('');
+      setIdeaText('');
     } catch (e: any) {
       toast.error('Error cargando contenidos');
     } finally {
@@ -148,19 +146,19 @@ const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalend
           <div className="flex items-center gap-2">
             <Wand2 className="h-5 w-5 text-primary" />
             <h3 className="font-semibold">Smart Planner</h3>
-            <span className="text-xs text-muted-foreground">Pega temas y la IA crea tu plan editorial completo</span>
+            <span className="text-xs text-muted-foreground">Describe tus ideas y la IA crea tu plan editorial completo</span>
           </div>
 
           <Textarea
-            placeholder={"Escribe un tema por línea, por ejemplo:\n\nConsolidación dental en España\nQué busca un fondo en tu empresa\nCaso de éxito asesoría fiscal\nMúltiplos EBITDA por sector 2026\nPor qué los fondos compran clínicas veterinarias"}
-            value={topicsText}
-            onChange={e => setTopicsText(e.target.value)}
-            className="min-h-[140px] font-mono text-sm"
+            placeholder={"Describe tus ideas de contenido, por ejemplo:\n\nVamos a diseñar una campaña de artículos sobre consolidación en el sector de la Certificación\n\nQuiero una serie sobre qué buscan los fondos al comprar empresas de servicios profesionales\n\nCrear contenido educativo sobre múltiplos de valoración para empresarios que quieren vender"}
+            value={ideaText}
+            onChange={e => setIdeaText(e.target.value)}
+            className="min-h-[140px] text-sm"
           />
 
-          <Button onClick={handleGenerate} disabled={isGenerating || topicCount === 0} className="h-9">
+          <Button onClick={handleGenerate} disabled={isGenerating || !ideaText.trim()} className="h-9">
             {isGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-            Generar Plan ({topicCount} {topicCount === 1 ? 'tema' : 'temas'})
+            Generar Plan
           </Button>
         </CardContent>
       </Card>

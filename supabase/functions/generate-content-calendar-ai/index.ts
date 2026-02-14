@@ -81,7 +81,13 @@ const SYSTEM_PROMPT_SEO = `Eres un experto en SEO para contenido de M&A y Privat
 
 Devuelve JSON: { "meta_title": "", "meta_description": "", "target_keywords": [] }`;
 
-const SYSTEM_PROMPT_SMART_PLAN = `Eres un estratega de contenidos experto en Private Equity y M&A para Capittal (España). Recibes una lista de temas y TÚ decides TODO: fechas, frecuencia, canales y formato. El usuario solo aporta los temas.
+const SYSTEM_PROMPT_SMART_PLAN = `Eres un estratega de contenidos experto en Private Equity y M&A para Capittal (España). Recibes IDEAS AMPLIAS o conceptuales del usuario y TÚ las descompones en un plan editorial completo con piezas de contenido concretas.
+
+TU ROL:
+- Interpretar ideas amplias (ej: "campaña sobre consolidación en certificación") y descomponerlas en 5-10 piezas de contenido específicas
+- Crear una narrativa coherente: las piezas deben seguir una secuencia lógica (de lo general a lo específico, o cronológica)
+- Decidir autónomamente fechas, canales, formatos y frecuencia
+- Si el usuario da varias ideas, generar contenidos para TODAS ellas
 
 REGLAS DE PLANIFICACIÓN:
 - La fecha de inicio es MAÑANA (el día siguiente a la fecha actual proporcionada)
@@ -93,13 +99,13 @@ REGLAS DE PLANIFICACIÓN:
 - Alternar formatos (carrusel, texto largo, dato destacado) para variedad
 - Priorizar temas temporales/urgentes antes en el calendario
 
-CÁLCULO DE FRECUENCIA (tú decides):
-- 1-3 temas: 2 publicaciones/semana, espaciadas
-- 4-6 temas: 3 publicaciones/semana
-- 7-10 temas: 4-5 publicaciones/semana
-- Más de 10: 5-7 publicaciones/semana, distribuidas en varias semanas
+DESCOMPOSICIÓN DE IDEAS:
+- Idea simple (1 concepto) → 5-7 piezas de contenido
+- Idea amplia (campaña completa) → 8-12 piezas de contenido
+- Múltiples ideas → 5-8 piezas por idea
+- Cada pieza debe aportar un ángulo diferente: dato, opinión, caso práctico, guía, tendencia, etc.
 
-SELECCIÓN DE CANAL (tú decides según el tema):
+SELECCIÓN DE CANAL (tú decides según el contenido):
 - Dato impactante / estadística → LinkedIn empresa (data_highlight o infographic)
 - Reflexión personal / lección → LinkedIn personal (opinion o storytelling)
 - Guía larga / contenido evergreen → Blog (article)
@@ -108,7 +114,7 @@ SELECCIÓN DE CANAL (tú decides según el tema):
 - Carrusel visual / lista → LinkedIn empresa (carousel)
 - Educativo / explicativo → LinkedIn empresa (long_text)
 
-Para cada tema genera:
+Para cada pieza genera:
 - title: título optimizado y atractivo
 - channel: linkedin_company | linkedin_personal | blog | newsletter
 - content_type: linkedin_post | carousel | article | newsletter_edition | sector_brief
@@ -148,7 +154,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { mode, sector_context, item_data, channel_filter, topics, start_date, frequency, preferred_channels } = await req.json();
+    const { mode, sector_context, item_data, channel_filter, topics, idea, start_date, frequency, preferred_channels } = await req.json();
 
     let systemPrompt: string;
     let userPrompt: string;
@@ -177,13 +183,15 @@ serve(async (req) => {
       useToolCalling = true;
 
     } else if (mode === "smart_plan") {
-      if (!topics || !Array.isArray(topics) || topics.length === 0) {
-        throw new Error("Se requiere al menos un tema");
+      // Accept either 'idea' (free-form string) or 'topics' (array) for backward compat
+      const userIdea = idea || (topics && Array.isArray(topics) ? topics.join('\n') : null);
+      if (!userIdea) {
+        throw new Error("Se requiere al menos una idea o tema");
       }
       systemPrompt = SYSTEM_PROMPT_SMART_PLAN;
       const today = new Date().toISOString().split('T')[0];
 
-      userPrompt = `FECHA ACTUAL: ${today}\n\nTEMAS A PLANIFICAR (${topics.length} temas):\n${topics.map((t: string, i: number) => `${i + 1}. ${t}`).join('\n')}\n\nGenera un plan editorial completo. Tú decides las fechas óptimas (empezando desde mañana), la frecuencia ideal según el número de temas, y el canal más apropiado para cada uno.`;
+      userPrompt = `FECHA ACTUAL: ${today}\n\nIDEAS DEL USUARIO:\n${userIdea}\n\nDescompón estas ideas en piezas de contenido concretas y genera un plan editorial completo. Tú decides las fechas óptimas (empezando desde mañana), la frecuencia ideal, y el canal más apropiado para cada pieza.`;
       useToolCalling = true;
 
     } else {
