@@ -5623,6 +5623,93 @@ export type Database = {
           },
         ]
       }
+      content_calendar: {
+        Row: {
+          assigned_to: string | null
+          blog_post_id: string | null
+          category: string | null
+          content_type: string | null
+          created_at: string
+          created_by: string | null
+          estimated_reading_time: number | null
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          notes: string | null
+          pe_sector_id: string | null
+          priority: string | null
+          published_date: string | null
+          scheduled_date: string | null
+          slug: string | null
+          status: string
+          tags: string[] | null
+          target_keywords: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          blog_post_id?: string | null
+          category?: string | null
+          content_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_reading_time?: number | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          notes?: string | null
+          pe_sector_id?: string | null
+          priority?: string | null
+          published_date?: string | null
+          scheduled_date?: string | null
+          slug?: string | null
+          status?: string
+          tags?: string[] | null
+          target_keywords?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          blog_post_id?: string | null
+          category?: string | null
+          content_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          estimated_reading_time?: number | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          notes?: string | null
+          pe_sector_id?: string | null
+          priority?: string | null
+          published_date?: string | null
+          scheduled_date?: string | null
+          slug?: string | null
+          status?: string
+          tags?: string[] | null
+          target_keywords?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_calendar_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_calendar_pe_sector_id_fkey"
+            columns: ["pe_sector_id"]
+            isOneToOne: false
+            referencedRelation: "pe_sector_intelligence"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corporate_buyers: {
         Row: {
           buyer_type: string | null
@@ -15826,6 +15913,60 @@ export type Database = {
           role?: string
           updated_at?: string
           website?: string
+        }
+        Relationships: []
+      }
+      pe_sector_intelligence: {
+        Row: {
+          active_pe_firms: string | null
+          consolidation_phase: string | null
+          created_at: string
+          geography: string | null
+          id: string
+          is_active: boolean | null
+          multiples_valuations: string | null
+          pe_thesis: string | null
+          platforms_operations: string | null
+          quantitative_data: string | null
+          sector: string
+          subsector: string
+          tags: string[] | null
+          updated_at: string
+          vertical: string | null
+        }
+        Insert: {
+          active_pe_firms?: string | null
+          consolidation_phase?: string | null
+          created_at?: string
+          geography?: string | null
+          id?: string
+          is_active?: boolean | null
+          multiples_valuations?: string | null
+          pe_thesis?: string | null
+          platforms_operations?: string | null
+          quantitative_data?: string | null
+          sector: string
+          subsector: string
+          tags?: string[] | null
+          updated_at?: string
+          vertical?: string | null
+        }
+        Update: {
+          active_pe_firms?: string | null
+          consolidation_phase?: string | null
+          created_at?: string
+          geography?: string | null
+          id?: string
+          is_active?: boolean | null
+          multiples_valuations?: string | null
+          pe_thesis?: string | null
+          platforms_operations?: string | null
+          quantitative_data?: string | null
+          sector?: string
+          subsector?: string
+          tags?: string[] | null
+          updated_at?: string
+          vertical?: string | null
         }
         Relationships: []
       }
