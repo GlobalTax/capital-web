@@ -16,6 +16,14 @@ const STATUS_COLORS: Record<string, string> = {
   archived: 'bg-gray-100 border-gray-300 text-gray-500',
 };
 
+const CHANNEL_INDICATOR: Record<string, string> = {
+  linkedin_company: '🏢',
+  linkedin_personal: '👤',
+  blog: '📝',
+  newsletter: '📧',
+  crm_internal: '🔒',
+};
+
 const PRIORITY_DOT: Record<string, string> = {
   urgent: 'bg-red-500',
   high: 'bg-orange-500',
@@ -107,7 +115,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ items, isLoading, onCreate,
                       onClick={(e) => { e.stopPropagation(); onEdit(item); }}
                       title={item.title}
                     >
-                      <span className={cn('inline-block w-1.5 h-1.5 rounded-full mr-1', PRIORITY_DOT[item.priority])} />
+                      <span className={cn('inline-block w-1.5 h-1.5 rounded-full mr-0.5', PRIORITY_DOT[item.priority])} />
+                      <span className="mr-0.5">{CHANNEL_INDICATOR[(item as any).channel] || '📝'}</span>
                       {item.title}
                     </div>
                   ))}
