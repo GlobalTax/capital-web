@@ -177,7 +177,11 @@ export const useBlogPosts = (publishedOnly: boolean = false) => {
       if (postData.reading_time !== undefined) updateData.reading_time = postData.reading_time;
       if (postData.is_published !== undefined) {
         updateData.is_published = postData.is_published;
-        updateData.published_at = postData.is_published ? new Date().toISOString() : null;
+        if (postData.published_at !== undefined) {
+          updateData.published_at = postData.published_at;
+        } else {
+          updateData.published_at = postData.is_published ? new Date().toISOString() : null;
+        }
       }
       if (postData.is_featured !== undefined) updateData.is_featured = postData.is_featured;
       if (postData.meta_title !== undefined) updateData.meta_title = postData.meta_title;

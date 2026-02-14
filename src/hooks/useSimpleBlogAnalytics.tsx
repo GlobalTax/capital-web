@@ -19,7 +19,7 @@ export const useSimpleBlogAnalytics = () => {
   const getSessionId = (): string => {
     let sessionId = sessionStorage.getItem('blog_session_id');
     if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       sessionStorage.setItem('blog_session_id', sessionId);
     }
     return sessionId;
@@ -29,7 +29,7 @@ export const useSimpleBlogAnalytics = () => {
   const getVisitorId = (): string => {
     let visitorId = localStorage.getItem('blog_visitor_id');
     if (!visitorId) {
-      visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      visitorId = `visitor_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       localStorage.setItem('blog_visitor_id', visitorId);
     }
     return visitorId;
@@ -50,7 +50,7 @@ export const useSimpleBlogAnalytics = () => {
 
   // Registrar vista de post - SIMPLIFICADO
   const trackPostView = async (postId: string, postSlug: string) => {
-    if (hasTrackedView.current) return;
+    if (hasTrackedView.current || !postId || !postSlug) return;
     
     try {
       // Solo insertar registro básico
@@ -162,6 +162,9 @@ export const useSimpleBlogAnalytics = () => {
   // Hook para trackear scroll - SIMPLIFICADO
   const useScrollTracking = (postId: string, postSlug: string) => {
     useEffect(() => {
+      // No trackear si el post aún no está cargado
+      if (!postId || !postSlug) return;
+
       let scrollTimeout: NodeJS.Timeout;
 
       const handleScroll = () => {

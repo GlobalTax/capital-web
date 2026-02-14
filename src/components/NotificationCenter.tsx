@@ -115,14 +115,6 @@ export const NotificationCenter = ({ className }: NotificationCenterProps) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Exponer función global para agregar notificaciones
-  useEffect(() => {
-    (window as any).addNotification = addNotification;
-    return () => {
-      delete (window as any).addNotification;
-    };
-  }, []);
-
   return (
     <>
       {/* Trigger Button */}

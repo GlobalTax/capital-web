@@ -13,14 +13,12 @@ import '@/utils/blogEmergencyFix';
 import { Link } from 'react-router-dom';
 
 const Blog = () => {
-  const { posts, isLoading } = useBlogPosts(true); // Solo posts publicados
-  console.log('🏠 Blog component - Posts received:', posts?.length || 0, posts?.map(p => ({ title: p.title, is_published: p.is_published, is_featured: p.is_featured })));
+  const { posts, isLoading } = useBlogPosts(true);
   
   const {
     filters,
-    featuredPosts,
-    regularPosts,
-    gridPosts, // Nuevo: para mostrar todos los posts menos el primero
+    filteredPosts,
+    gridPosts,
     categories,
     tags,
     updateFilter,
@@ -29,9 +27,9 @@ const Blog = () => {
     hasActiveFilters,
     totalResults
   } = useBlogFilters(posts || []);
-  
-  // El artículo principal será el primero de todos los posts (destacado o no)
-  const featuredArticle = (posts && posts.length > 0) ? posts[0] : null;
+
+  // El artículo destacado es el primero de los filtrados (gridPosts ya excluye este)
+  const featuredArticle = filteredPosts.length > 0 ? filteredPosts[0] : null;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -43,7 +41,7 @@ const Blog = () => {
 
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text;
-    return text.substr(0, maxLength).trim() + '...';
+    return text.slice(0, maxLength).trim() + '...';
   };
 
   if (isLoading) {

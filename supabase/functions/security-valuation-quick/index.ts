@@ -29,11 +29,6 @@ interface SecurityValuationRequest {
   referrer?: string;
 }
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-);
-
 // Helper function to parse client IP from headers
 const parseClientIP = (req: Request): string | null => {
   const forwardedFor = req.headers.get('x-forwarded-for');
@@ -75,9 +70,30 @@ const handler = async (req: Request): Promise<Response> => {
     });
   }
 
+  // Validate JWT
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(
+      JSON.stringify({ error: 'No autorizado' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Token inválido o expirado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const requestData: SecurityValuationRequest = await req.json();
-    
+
     console.log('Processing security valuation request for:', requestData.company_name);
 
     // Get client IP with proper parsing

@@ -110,12 +110,20 @@ export function useCampaignCompanies(campaignId: string | undefined) {
 
   const bulkUpdateMutation = useMutation({
     mutationFn: async (updates: { id: string; data: Partial<CampaignCompany> }[]) => {
-      for (const u of updates) {
-        const { error } = await (supabase as any)
-          .from('valuation_campaign_companies')
-          .update(u.data)
-          .eq('id', u.id);
-        if (error) throw error;
+      // Procesar en lotes de 20 en paralelo para evitar saturar Supabase
+      const BATCH_SIZE = 20;
+      for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+        const batch = updates.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(
+          batch.map(u =>
+            (supabase as any)
+              .from('valuation_campaign_companies')
+              .update(u.data)
+              .eq('id', u.id)
+          )
+        );
+        const failed = results.find(r => r.error);
+        if (failed?.error) throw failed.error;
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),

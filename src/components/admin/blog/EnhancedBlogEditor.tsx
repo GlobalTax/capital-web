@@ -175,7 +175,7 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
     try {
       const postData = {
         ...ensureSlug(formData),
-        published_at: formData.is_published ? new Date().toISOString() : null,
+        published_at: formData.is_published ? (post?.published_at || new Date().toISOString()) : null,
       };
 
       console.log("💾 Saving blog post:", {

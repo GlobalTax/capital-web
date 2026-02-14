@@ -82,8 +82,11 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
       const updates: { id: string; data: Partial<CampaignCompany> }[] = [];
 
       for (const c of pending) {
+        const financialYears = c.financial_years_data?.length
+          ? c.financial_years_data
+          : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }];
         const result = calculateProfessionalValuation(
-          [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }],
+          financialYears,
           [],
           campaign.sector,
           c.custom_multiple || campaign.custom_multiple || undefined
@@ -187,8 +190,11 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
   const detailValuation = useMemo(() => {
     if (!detailCompany) return null;
+    const financialYears = detailCompany.financial_years_data?.length
+      ? detailCompany.financial_years_data
+      : [{ year: detailCompany.financial_year, revenue: detailCompany.revenue || 0, ebitda: detailCompany.ebitda }];
     return calculateProfessionalValuation(
-      [{ year: detailCompany.financial_year, revenue: detailCompany.revenue || 0, ebitda: detailCompany.ebitda }],
+      financialYears,
       [],
       campaign.sector,
       detailMultiple
