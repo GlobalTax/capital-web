@@ -99,8 +99,9 @@ const AIContentEngine: React.FC<AIContentEngineProps> = ({ onAddToCalendar }) =>
         return;
       }
 
-      setGeneratedIdeas(data.result.ideas || []);
-      toast.success(`${data.result.ideas?.length || 0} ideas generadas`);
+      const ideas = Array.isArray(data?.result?.ideas) ? data.result.ideas : [];
+      setGeneratedIdeas(ideas);
+      toast.success(`${ideas.length} ideas generadas`);
     } catch (e: any) {
       toast.error(e.message || 'Error generando ideas');
     } finally {
@@ -113,7 +114,6 @@ const AIContentEngine: React.FC<AIContentEngineProps> = ({ onAddToCalendar }) =>
     try {
       for (const idea of INITIAL_IDEAS) {
         onAddToCalendar(idea);
-        await new Promise(r => setTimeout(r, 100));
       }
       toast.success(`${INITIAL_IDEAS.length} ideas del plan inicial cargadas`);
     } catch (e: any) {

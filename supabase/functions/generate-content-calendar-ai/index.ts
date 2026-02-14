@@ -6,8 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SUPABASE_URL = "https://fwhqtzkkvnjkazhaficj.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
 const SYSTEM_PROMPT_IDEAS = `Eres un estratega de contenidos experto en Private Equity y M&A para el mercado español. Trabajas para Capittal, una firma de asesoramiento en valoración y venta de empresas.
 
@@ -122,6 +122,22 @@ serve(async (req) => {
   }
 
   try {
+    // Validate JWT
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "No autorizado" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const supabaseAuth = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Token inválido o expirado" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -308,9 +324,28 @@ serve(async (req) => {
     if (useToolCalling) {
       const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
       if (toolCall?.function?.arguments) {
-        result = JSON.parse(toolCall.function.arguments);
+        try {
+          result = JSON.parse(toolCall.function.arguments);
+        } catch (parseErr) {
+          console.error("Failed to parse AI response:", toolCall.function.arguments);
+          throw new Error("La IA devolvió un formato inválido. Inténtalo de nuevo.");
+        }
       } else {
         throw new Error("No tool call response from AI");
+      }
+      // Validate structure based on mode
+      if (mode === "generate_ideas" && !Array.isArray(result?.ideas)) {
+        result = { ideas: [] };
+      }
+      if (mode === "smart_plan" && !Array.isArray(result?.plan)) {
+        result = { plan: [] };
+      }
+      if (mode === "optimize_seo") {
+        result = {
+          meta_title: result?.meta_title || "",
+          meta_description: result?.meta_description || "",
+          target_keywords: Array.isArray(result?.target_keywords) ? result.target_keywords : [],
+        };
       }
     } else {
       // Draft mode: return the text content directly

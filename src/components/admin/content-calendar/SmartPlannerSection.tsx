@@ -121,22 +121,22 @@ const SmartPlannerSection: React.FC<SmartPlannerSectionProps> = ({ onAddToCalend
 
     setIsLoading(true);
     try {
-      for (const item of selected) {
-        onAddToCalendar({
-          title: item.title,
-          channel: item.channel as ContentChannel,
-          content_type: item.content_type as any,
-          linkedin_format: item.linkedin_format as any || null,
-          target_audience: (item.target_audience || 'sellers') as any,
-          priority: item.priority as any,
-          category: item.category,
-          notes: item.notes,
-          key_data: item.key_data || null,
-          target_keywords: item.target_keywords || [],
-          scheduled_date: item.scheduled_date,
-          status: 'idea',
-        });
-        await new Promise(r => setTimeout(r, 80));
+      const itemsToAdd = selected.map(item => ({
+        title: item.title,
+        channel: item.channel as ContentChannel,
+        content_type: item.content_type as any,
+        linkedin_format: item.linkedin_format as any || null,
+        target_audience: (item.target_audience || 'sellers') as any,
+        priority: item.priority as any,
+        category: item.category,
+        notes: item.notes,
+        key_data: item.key_data || null,
+        target_keywords: item.target_keywords || [],
+        scheduled_date: item.scheduled_date,
+        status: 'idea' as const,
+      }));
+      for (const item of itemsToAdd) {
+        onAddToCalendar(item);
       }
       toast.success(`${selected.length} contenidos cargados al calendario`);
       setPlanItems([]);
