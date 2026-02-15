@@ -193,7 +193,7 @@ export const AppRoutes = () => {
         
         <Route path="/equipo" element={<Equipo />} />
         <Route path="/equip" element={<Equipo />} />
-        <Route path="/team" element={<Equipo />} />
+        <Route path="/team" element={<Navigate to="/equipo" replace />} />
         
         <Route path="/nosotros" element={<Navigate to="/por-que-elegirnos" replace />} />
         <Route path="/de-looper-a-capittal" element={<DeLooperACapittal />} />
