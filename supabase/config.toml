@@ -299,3 +299,6 @@ verify_jwt = false
 
 [functions.generate-content-calendar-ai]
 verify_jwt = false
+
+[functions.pages-ssr]
+verify_jwt = false
