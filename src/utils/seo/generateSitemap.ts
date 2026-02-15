@@ -11,298 +11,162 @@ interface SitemapURL {
   }[];
 }
 
-// Rutas estáticas con soporte multilingüe
-const staticRoutes: SitemapURL[] = [
-  // === HOME ===
-  {
-    loc: 'https://capittal.es/',
-    changefreq: 'weekly',
-    priority: 1.0,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/' },
-      { lang: 'ca', href: 'https://capittal.es/ca' },
-      { lang: 'en', href: 'https://capittal.es/en' },
-      { lang: 'x-default', href: 'https://capittal.es/' }
-    ]
-  },
-  
-  // === MAIN PAGES ===
-  {
-    loc: 'https://capittal.es/venta-empresas',
-    changefreq: 'weekly',
-    priority: 0.9,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/venta-empresas' },
-      { lang: 'ca', href: 'https://capittal.es/venda-empreses' },
-      { lang: 'en', href: 'https://capittal.es/sell-companies' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/compra-empresas',
-    changefreq: 'weekly',
-    priority: 0.9,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/compra-empresas' },
-      { lang: 'ca', href: 'https://capittal.es/compra-empreses' },
-      { lang: 'en', href: 'https://capittal.es/buy-companies' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/contacto',
-    changefreq: 'monthly',
-    priority: 0.9,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/contacto' },
-      { lang: 'ca', href: 'https://capittal.es/contacte' },
-      { lang: 'en', href: 'https://capittal.es/contact' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/por-que-elegirnos',
-    changefreq: 'monthly',
-    priority: 0.8,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/por-que-elegirnos' },
-      { lang: 'ca', href: 'https://capittal.es/per-que-triar-nos' },
-      { lang: 'en', href: 'https://capittal.es/why-choose-us' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/equipo',
-    changefreq: 'monthly',
-    priority: 0.7,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/equipo' },
-      { lang: 'ca', href: 'https://capittal.es/equip' },
-      { lang: 'en', href: 'https://capittal.es/team' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/casos-exito',
-    changefreq: 'monthly',
-    priority: 0.8,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/casos-exito' },
-      { lang: 'ca', href: 'https://capittal.es/casos-exit' },
-      { lang: 'en', href: 'https://capittal.es/success-stories' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/programa-colaboradores',
-    changefreq: 'monthly',
-    priority: 0.7,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/programa-colaboradores' },
-      { lang: 'ca', href: 'https://capittal.es/programa-col-laboradors' },
-      { lang: 'en', href: 'https://capittal.es/collaborators-program' }
-    ]
-  },
-  
-  // === LANDING PAGES - Alta Prioridad ===
-  {
-    loc: 'https://capittal.es/lp/calculadora',
-    changefreq: 'weekly',
-    priority: 0.95
-  },
-  {
-    loc: 'https://capittal.es/lp/calculadora-fiscal',
-    changefreq: 'weekly',
-    priority: 0.95
-  },
-  {
-    loc: 'https://capittal.es/lp/calculadora-asesores',
-    changefreq: 'weekly',
-    priority: 0.95
-  },
-  {
-    loc: 'https://capittal.es/lp/venta-empresas',
-    changefreq: 'monthly',
-    priority: 0.9
-  },
-  {
-    loc: 'https://capittal.es/lp/suiteloop',
-    changefreq: 'monthly',
-    priority: 0.85
-  },
-  
-  // === SERVICIOS ===
-  {
-    loc: 'https://capittal.es/servicios/valoraciones',
-    changefreq: 'monthly',
-    priority: 0.9,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/servicios/valoraciones' },
-      { lang: 'ca', href: 'https://capittal.es/serveis/valoracions' },
-      { lang: 'en', href: 'https://capittal.es/services/valuations' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/servicios/venta-empresas',
-    changefreq: 'monthly',
-    priority: 0.9,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/servicios/venta-empresas' },
-      { lang: 'ca', href: 'https://capittal.es/serveis/venda-empreses' },
-      { lang: 'en', href: 'https://capittal.es/services/sell-companies' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/servicios/due-diligence',
-    changefreq: 'monthly',
-    priority: 0.85,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/servicios/due-diligence' },
-      { lang: 'ca', href: 'https://capittal.es/serveis/due-diligence' },
-      { lang: 'en', href: 'https://capittal.es/services/due-diligence' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/servicios/asesoramiento-legal',
-    changefreq: 'monthly',
-    priority: 0.85,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/servicios/asesoramiento-legal' },
-      { lang: 'ca', href: 'https://capittal.es/serveis/assessorament-legal' },
-      { lang: 'en', href: 'https://capittal.es/services/legal-advisory' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/servicios/reestructuraciones',
-    changefreq: 'monthly',
-    priority: 0.8,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/servicios/reestructuraciones' },
-      { lang: 'ca', href: 'https://capittal.es/serveis/reestructuracions' },
-      { lang: 'en', href: 'https://capittal.es/services/restructuring' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/servicios/planificacion-fiscal',
-    changefreq: 'monthly',
-    priority: 0.8,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/servicios/planificacion-fiscal' },
-      { lang: 'ca', href: 'https://capittal.es/serveis/planificacio-fiscal' },
-      { lang: 'en', href: 'https://capittal.es/services/tax-planning' }
-    ]
-  },
-  
-  // === SECTORES ===
-  {
-    loc: 'https://capittal.es/sectores/tecnologia',
-    changefreq: 'monthly',
-    priority: 0.75,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/sectores/tecnologia' },
-      { lang: 'ca', href: 'https://capittal.es/sectors/tecnologia' },
-      { lang: 'en', href: 'https://capittal.es/sectors/technology' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/sectores/healthcare',
-    changefreq: 'monthly',
-    priority: 0.75,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/sectores/healthcare' },
-      { lang: 'ca', href: 'https://capittal.es/sectors/salut' },
-      { lang: 'en', href: 'https://capittal.es/sectors/healthcare' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/sectores/industrial',
-    changefreq: 'monthly',
-    priority: 0.75,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/sectores/industrial' },
-      { lang: 'ca', href: 'https://capittal.es/sectors/industrial' },
-      { lang: 'en', href: 'https://capittal.es/sectors/industrial' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/sectores/retail-consumer',
-    changefreq: 'monthly',
-    priority: 0.75,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/sectores/retail-consumer' },
-      { lang: 'ca', href: 'https://capittal.es/sectors/retail-consum' },
-      { lang: 'en', href: 'https://capittal.es/sectors/retail-consumer' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/sectores/energia',
-    changefreq: 'monthly',
-    priority: 0.75,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/sectores/energia' },
-      { lang: 'ca', href: 'https://capittal.es/sectors/energia' },
-      { lang: 'en', href: 'https://capittal.es/sectors/energy' }
-    ]
-  },
-  
-  // === RECURSOS ===
-  {
-    loc: 'https://capittal.es/recursos/blog',
-    changefreq: 'weekly',
-    priority: 0.8
-  },
-  {
-    loc: 'https://capittal.es/recursos/case-studies',
-    changefreq: 'monthly',
-    priority: 0.75
-  },
-  
-  // === LEGAL ===
-  {
-    loc: 'https://capittal.es/politica-privacidad',
-    changefreq: 'yearly',
-    priority: 0.3
-  },
-  {
-    loc: 'https://capittal.es/terminos-uso',
-    changefreq: 'yearly',
-    priority: 0.3
-  },
-  {
-    loc: 'https://capittal.es/cookies',
-    changefreq: 'yearly',
-    priority: 0.3
-  }
+// ─── Multilingual route map: es -> { ca, en } ───
+// Must stay in sync with generate-sitemap edge function
+const HREFLANG_MAP: Record<string, { ca?: string; en?: string }> = {
+  '/': { ca: '/ca', en: '/en' },
+  '/venta-empresas': { ca: '/venda-empreses', en: '/sell-companies' },
+  '/compra-empresas': { ca: '/compra-empreses', en: '/buy-companies' },
+  '/contacto': { ca: '/contacte', en: '/contact' },
+  '/por-que-elegirnos': { ca: '/per-que-triar-nos', en: '/why-choose-us' },
+  '/equipo': { ca: '/equip', en: '/team' },
+  '/casos-exito': { ca: '/casos-exit', en: '/success-stories' },
+  '/programa-colaboradores': { ca: '/programa-col-laboradors', en: '/collaborators-program' },
+  '/servicios/valoraciones': { ca: '/serveis/valoracions', en: '/services/valuations' },
+  '/servicios/venta-empresas': { ca: '/serveis/venda-empreses', en: '/services/sell-companies' },
+  '/servicios/due-diligence': { ca: '/serveis/due-diligence', en: '/services/due-diligence' },
+  '/servicios/asesoramiento-legal': { ca: '/serveis/assessorament-legal', en: '/services/legal-advisory' },
+  '/servicios/reestructuraciones': { ca: '/serveis/reestructuracions', en: '/services/restructuring' },
+  '/servicios/planificacion-fiscal': { ca: '/serveis/planificacio-fiscal', en: '/services/tax-planning' },
+  '/sectores/tecnologia': { ca: '/sectors/tecnologia', en: '/sectors/technology' },
+  '/sectores/healthcare': { ca: '/sectors/salut', en: '/sectors/healthcare' },
+  '/sectores/seguridad': { ca: '/sectors/seguretat', en: '/sectors/security' },
+  '/sectores/industrial': { ca: '/sectors/industrial' },
+  '/sectores/retail-consumer': { ca: '/sectors/retail-consum' },
+  '/sectores/energia': { ca: '/sectors/energia', en: '/sectors/energy' },
+  '/sectores/construccion': { ca: '/sectors/construccio' },
+  '/sectores/logistica': { ca: '/sectors/logistica' },
+  '/sectores/alimentacion': { ca: '/sectors/alimentacio' },
+  '/sectores/medio-ambiente': { ca: '/sectors/medi-ambient' },
+};
+
+const BASE = 'https://capittal.es';
+
+// Static routes - synced with generate-sitemap edge function
+interface RouteEntry {
+  path: string;
+  changefreq: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+  priority: number;
+}
+
+const staticRoutes: RouteEntry[] = [
+  // Core pages
+  { path: '/', changefreq: 'weekly', priority: 1.0 },
+  { path: '/venta-empresas', changefreq: 'weekly', priority: 0.9 },
+  { path: '/compra-empresas', changefreq: 'weekly', priority: 0.9 },
+  { path: '/contacto', changefreq: 'monthly', priority: 0.9 },
+  { path: '/por-que-elegirnos', changefreq: 'monthly', priority: 0.8 },
+  { path: '/equipo', changefreq: 'monthly', priority: 0.7 },
+  { path: '/casos-exito', changefreq: 'monthly', priority: 0.8 },
+  { path: '/programa-colaboradores', changefreq: 'monthly', priority: 0.7 },
+  { path: '/de-looper-a-capittal', changefreq: 'yearly', priority: 0.5 },
+
+  // Landing pages
+  { path: '/lp/calculadora', changefreq: 'weekly', priority: 0.95 },
+  { path: '/lp/calculadora-fiscal', changefreq: 'weekly', priority: 0.95 },
+  { path: '/lp/calculadora-asesores', changefreq: 'weekly', priority: 0.95 },
+  { path: '/lp/venta-empresas', changefreq: 'monthly', priority: 0.9 },
+  { path: '/lp/suiteloop', changefreq: 'monthly', priority: 0.85 },
+
+  // Servicios (ES)
+  { path: '/servicios/valoraciones', changefreq: 'monthly', priority: 0.9 },
+  { path: '/servicios/venta-empresas', changefreq: 'monthly', priority: 0.9 },
+  { path: '/servicios/due-diligence', changefreq: 'monthly', priority: 0.85 },
+  { path: '/servicios/asesoramiento-legal', changefreq: 'monthly', priority: 0.85 },
+  { path: '/servicios/reestructuraciones', changefreq: 'monthly', priority: 0.8 },
+  { path: '/servicios/planificacion-fiscal', changefreq: 'monthly', priority: 0.8 },
+
+  // Sectores
+  { path: '/sectores/seguridad', changefreq: 'monthly', priority: 0.8 },
+  { path: '/sectores/tecnologia', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/healthcare', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/industrial', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/retail-consumer', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/energia', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/construccion', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/logistica', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/alimentacion', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/medio-ambiente', changefreq: 'monthly', priority: 0.75 },
+
+  // Recursos
+  { path: '/recursos/blog', changefreq: 'weekly', priority: 0.8 },
+  { path: '/recursos/noticias', changefreq: 'daily', priority: 0.75 },
+  { path: '/recursos/case-studies', changefreq: 'monthly', priority: 0.75 },
+
+  // English standalone
+  { path: '/sell-companies', changefreq: 'monthly', priority: 0.7 },
+  { path: '/buy-companies', changefreq: 'monthly', priority: 0.7 },
+  { path: '/team', changefreq: 'monthly', priority: 0.6 },
+  { path: '/contact', changefreq: 'monthly', priority: 0.6 },
+  { path: '/why-choose-us', changefreq: 'monthly', priority: 0.6 },
+  { path: '/success-stories', changefreq: 'monthly', priority: 0.6 },
+  { path: '/collaborators-program', changefreq: 'monthly', priority: 0.5 },
+
+  // Catalan standalone
+  { path: '/venda-empreses', changefreq: 'monthly', priority: 0.7 },
+  { path: '/compra-empreses', changefreq: 'monthly', priority: 0.7 },
+  { path: '/equip', changefreq: 'monthly', priority: 0.6 },
+  { path: '/contacte', changefreq: 'monthly', priority: 0.6 },
+  { path: '/per-que-triar-nos', changefreq: 'monthly', priority: 0.6 },
+  { path: '/casos-exit', changefreq: 'monthly', priority: 0.6 },
+
+  // Catalan services
+  { path: '/serveis/valoracions', changefreq: 'monthly', priority: 0.7 },
+  { path: '/serveis/venda-empreses', changefreq: 'monthly', priority: 0.7 },
+  { path: '/serveis/due-diligence', changefreq: 'monthly', priority: 0.65 },
+  { path: '/serveis/assessorament-legal', changefreq: 'monthly', priority: 0.65 },
+  { path: '/serveis/reestructuracions', changefreq: 'monthly', priority: 0.6 },
+  { path: '/serveis/planificacio-fiscal', changefreq: 'monthly', priority: 0.6 },
+
+  // English services
+  { path: '/services/valuations', changefreq: 'monthly', priority: 0.7 },
+  { path: '/services/sell-companies', changefreq: 'monthly', priority: 0.7 },
+  { path: '/services/due-diligence', changefreq: 'monthly', priority: 0.65 },
+  { path: '/services/legal-advisory', changefreq: 'monthly', priority: 0.65 },
+  { path: '/services/restructuring', changefreq: 'monthly', priority: 0.6 },
+  { path: '/services/tax-planning', changefreq: 'monthly', priority: 0.6 },
+
+  // Legal
+  { path: '/politica-privacidad', changefreq: 'yearly', priority: 0.3 },
+  { path: '/terminos-uso', changefreq: 'yearly', priority: 0.3 },
+  { path: '/cookies', changefreq: 'yearly', priority: 0.3 },
 ];
 
-const generateUrlEntry = (url: SitemapURL): string => {
-  const { loc, lastmod, changefreq, priority, alternates } = url;
-  const today = new Date().toISOString().split('T')[0];
-  
+// Build reverse map for hreflang lookup
+const PATH_TO_GROUP: Record<string, { es: string; ca?: string; en?: string }> = {};
+for (const [esPath, variants] of Object.entries(HREFLANG_MAP)) {
+  const group = { es: esPath, ...variants };
+  PATH_TO_GROUP[esPath] = group;
+  if (variants.ca) PATH_TO_GROUP[variants.ca] = group;
+  if (variants.en) PATH_TO_GROUP[variants.en] = group;
+}
+
+const generateUrlEntry = (route: RouteEntry, today: string): string => {
+  const loc = `${BASE}${route.path}`;
+  const group = PATH_TO_GROUP[route.path];
+
   let entry = `  <url>\n    <loc>${loc}</loc>`;
-  
-  if (lastmod) {
-    entry += `\n    <lastmod>${lastmod}</lastmod>`;
-  } else {
-    entry += `\n    <lastmod>${today}</lastmod>`;
+  entry += `\n    <lastmod>${today}</lastmod>`;
+  entry += `\n    <changefreq>${route.changefreq}</changefreq>`;
+  entry += `\n    <priority>${route.priority}</priority>`;
+
+  if (group) {
+    entry += `\n    <xhtml:link rel="alternate" hreflang="es" href="${BASE}${group.es}" />`;
+    if (group.ca) entry += `\n    <xhtml:link rel="alternate" hreflang="ca" href="${BASE}${group.ca}" />`;
+    if (group.en) entry += `\n    <xhtml:link rel="alternate" hreflang="en" href="${BASE}${group.en}" />`;
+    if (group.es === '/') {
+      entry += `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/" />`;
+    }
   }
-  
-  if (changefreq) {
-    entry += `\n    <changefreq>${changefreq}</changefreq>`;
-  }
-  
-  if (priority !== undefined) {
-    entry += `\n    <priority>${priority}</priority>`;
-  }
-  
-  // Añadir hreflang alternates si existen
-  if (alternates && alternates.length > 0) {
-    alternates.forEach(alt => {
-      entry += `\n    <xhtml:link rel="alternate" hreflang="${alt.lang}" href="${alt.href}" />`;
-    });
-  }
-  
+
   entry += `\n  </url>`;
-  
   return entry;
 };
 
 export const generateFullSitemap = async (): Promise<string> => {
   try {
+    const today = new Date().toISOString().split('T')[0];
+
     // Obtener blog posts dinámicos
     const { data: posts, error } = await supabase
       .from('blog_posts')
@@ -314,24 +178,20 @@ export const generateFullSitemap = async (): Promise<string> => {
       console.error('Error fetching blog posts for sitemap:', error);
     }
     
-    // Generar URLs de blog
-    const blogUrls: SitemapURL[] = posts?.map(post => ({
-      loc: `https://capittal.es/blog/${post.slug}`,
-      lastmod: new Date(post.updated_at).toISOString().split('T')[0],
-      changefreq: 'monthly' as const,
-      priority: 0.7
-    })) || [];
-    
-    // Combinar rutas estáticas y dinámicas
-    const allUrls = [...staticRoutes, ...blogUrls];
-    
-    // Generar XML
-    const urlEntries = allUrls.map(generateUrlEntry).join('\n');
+    // Static entries
+    const staticEntries = staticRoutes.map(r => generateUrlEntry(r, today)).join('\n');
+
+    // Blog entries
+    const blogEntries = posts?.map(post => {
+      const lastmod = new Date(post.updated_at).toISOString().split('T')[0];
+      return `  <url>\n    <loc>${BASE}/blog/${post.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
+    }).join('\n') || '';
     
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-${urlEntries}
+${staticEntries}
+${blogEntries}
 </urlset>`;
     
     return sitemap;
