@@ -209,16 +209,6 @@ const staticRoutes: SitemapURL[] = [
     ]
   },
   {
-    loc: 'https://capittal.es/sectores/financial-services',
-    changefreq: 'monthly',
-    priority: 0.75,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/sectores/financial-services' },
-      { lang: 'ca', href: 'https://capittal.es/sectors/serveis-financers' },
-      { lang: 'en', href: 'https://capittal.es/sectors/financial-services' }
-    ]
-  },
-  {
     loc: 'https://capittal.es/sectores/industrial',
     changefreq: 'monthly',
     priority: 0.75,
@@ -246,16 +236,6 @@ const staticRoutes: SitemapURL[] = [
       { lang: 'es', href: 'https://capittal.es/sectores/energia' },
       { lang: 'ca', href: 'https://capittal.es/sectors/energia' },
       { lang: 'en', href: 'https://capittal.es/sectors/energy' }
-    ]
-  },
-  {
-    loc: 'https://capittal.es/sectores/inmobiliario',
-    changefreq: 'monthly',
-    priority: 0.75,
-    alternates: [
-      { lang: 'es', href: 'https://capittal.es/sectores/inmobiliario' },
-      { lang: 'ca', href: 'https://capittal.es/sectors/immobiliari' },
-      { lang: 'en', href: 'https://capittal.es/sectors/real-estate' }
     ]
   },
   

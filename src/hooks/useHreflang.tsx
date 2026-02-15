@@ -79,9 +79,6 @@ const routeMap: Record<string, HreflangRoute> = {
   '/sectors/salut': { es: '/sectores/healthcare', ca: '/sectors/salut', en: '/sectors/healthcare' },
   '/sectors/healthcare': { es: '/sectores/healthcare', ca: '/sectors/salut', en: '/sectors/healthcare' },
   
-  '/sectores/financial-services': { es: '/sectores/financial-services', ca: '/sectors/serveis-financers', en: '/sectors/financial-services' },
-  '/sectors/serveis-financers': { es: '/sectores/financial-services', ca: '/sectors/serveis-financers', en: '/sectors/financial-services' },
-  '/sectors/financial-services': { es: '/sectores/financial-services', ca: '/sectors/serveis-financers', en: '/sectors/financial-services' },
   
   '/sectores/industrial': { es: '/sectores/industrial', ca: '/sectors/industrial', en: '/sectors/industrial' },
   '/sectors/industrial': { es: '/sectores/industrial', ca: '/sectors/industrial', en: '/sectors/industrial' },
@@ -94,9 +91,6 @@ const routeMap: Record<string, HreflangRoute> = {
   '/sectors/energia': { es: '/sectores/energia', ca: '/sectors/energia', en: '/sectors/energy' },
   '/sectors/energy': { es: '/sectores/energia', ca: '/sectors/energia', en: '/sectors/energy' },
   
-  '/sectores/inmobiliario': { es: '/sectores/inmobiliario', ca: '/sectors/immobiliari', en: '/sectors/real-estate' },
-  '/sectors/immobiliari': { es: '/sectores/inmobiliario', ca: '/sectors/immobiliari', en: '/sectors/real-estate' },
-  '/sectors/real-estate': { es: '/sectores/inmobiliario', ca: '/sectors/immobiliari', en: '/sectors/real-estate' },
   
   // === LANDING PAGES ===
   '/lp/calculadora': { es: '/lp/calculadora', ca: '/lp/calculadora', en: '/lp/calculadora' },

@@ -656,6 +656,38 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 };
 
+// ─── Multilingual aliases (point to same PageData as the Spanish canonical) ───
+const PATH_ALIASES: Record<string, string> = {
+  "/serveis/valoracions": "/servicios/valoraciones",
+  "/serveis/venda-empreses": "/servicios/venta-empresas",
+  "/serveis/due-diligence": "/servicios/due-diligence",
+  "/serveis/assessorament-legal": "/servicios/asesoramiento-legal",
+  "/serveis/reestructuracions": "/servicios/reestructuraciones",
+  "/serveis/planificacio-fiscal": "/servicios/planificacion-fiscal",
+  "/services/valuations": "/servicios/valoraciones",
+  "/services/sell-companies": "/servicios/venta-empresas",
+  "/services/due-diligence": "/servicios/due-diligence",
+  "/services/legal-advisory": "/servicios/asesoramiento-legal",
+  "/services/restructuring": "/servicios/reestructuraciones",
+  "/services/tax-planning": "/servicios/planificacion-fiscal",
+  "/sectors/tecnologia": "/sectores/tecnologia",
+  "/sectors/salut": "/sectores/healthcare",
+  "/sectors/industrial": "/sectores/industrial",
+  "/sectors/retail-consum": "/sectores/retail-consumer",
+  "/sectors/energia": "/sectores/energia",
+  "/sectors/seguretat": "/sectores/seguridad",
+  "/sectors/construccio": "/sectores/construccion",
+  "/sectors/alimentacio": "/sectores/alimentacion",
+  "/sectors/logistica": "/sectores/logistica",
+  "/sectors/medi-ambient": "/sectores/medio-ambiente",
+  "/sectors/technology": "/sectores/tecnologia",
+  "/sectors/healthcare": "/sectores/healthcare",
+  "/sectors/retail-consumer": "/sectores/retail-consumer",
+  "/sectors/energy": "/sectores/energia",
+  "/sectors/security": "/sectores/seguridad",
+  "/partners-program": "/programa-colaboradores",
+};
+
 // ─── Build full HTML ───
 function buildPageHtml(path: string, page: PageData): string {
   const hreflangTags = page.hreflang
@@ -768,7 +800,9 @@ Deno.serve(async (req) => {
       path = path.slice(0, -1);
     }
 
-    const page = PAGES_DATA[path];
+    // Resolve aliases for multilingual paths
+    const resolvedPath = PATH_ALIASES[path] || path;
+    const page = PAGES_DATA[resolvedPath];
 
     if (!page) {
       // List available pages for debugging

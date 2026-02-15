@@ -238,7 +238,7 @@ export const AppRoutes = () => {
         {/* === BOOKING ROUTES === */}
         <Route path="/book/:token" element={<BookingPage />} />
         
-        {/* === SERVICE ROUTES === */}
+        {/* === SERVICE ROUTES (Spanish) === */}
         <Route path="/servicios/valoraciones" element={<Valoraciones />} />
         <Route path="/servicios/venta-empresas" element={<VentaEmpresasServicio />} />
         <Route path="/servicios/due-diligence" element={<DueDiligence />} />
@@ -249,7 +249,23 @@ export const AppRoutes = () => {
         <Route path="/servicios/search-funds" element={<SearchFunds />} />
         <Route path="/search-funds" element={<SearchFunds />} />
         
-        {/* === SECTOR ROUTES === */}
+        {/* === SERVICE ROUTES (Catalan) === */}
+        <Route path="/serveis/valoracions" element={<Valoraciones />} />
+        <Route path="/serveis/venda-empreses" element={<VentaEmpresasServicio />} />
+        <Route path="/serveis/due-diligence" element={<DueDiligence />} />
+        <Route path="/serveis/assessorament-legal" element={<AsesoramientoLegal />} />
+        <Route path="/serveis/reestructuracions" element={<Reestructuraciones />} />
+        <Route path="/serveis/planificacio-fiscal" element={<PlanificacionFiscal />} />
+        
+        {/* === SERVICE ROUTES (English) === */}
+        <Route path="/services/valuations" element={<Valoraciones />} />
+        <Route path="/services/sell-companies" element={<VentaEmpresasServicio />} />
+        <Route path="/services/due-diligence" element={<DueDiligence />} />
+        <Route path="/services/legal-advisory" element={<AsesoramientoLegal />} />
+        <Route path="/services/restructuring" element={<Reestructuraciones />} />
+        <Route path="/services/tax-planning" element={<PlanificacionFiscal />} />
+        
+        {/* === SECTOR ROUTES (Spanish) === */}
         <Route path="/sectores/tecnologia" element={<Tecnologia />} />
         <Route path="/sectores/healthcare" element={<Healthcare />} />
         <Route path="/sectores/industrial" element={<Industrial />} />
@@ -260,6 +276,39 @@ export const AppRoutes = () => {
         <Route path="/sectores/alimentacion" element={<Alimentacion />} />
         <Route path="/sectores/logistica" element={<Logistica />} />
         <Route path="/sectores/medio-ambiente" element={<MedioAmbiente />} />
+        
+        {/* === SECTOR ROUTES (Catalan) === */}
+        <Route path="/sectors/tecnologia" element={<Tecnologia />} />
+        <Route path="/sectors/salut" element={<Healthcare />} />
+        <Route path="/sectors/industrial" element={<Industrial />} />
+        <Route path="/sectors/retail-consum" element={<RetailConsumer />} />
+        <Route path="/sectors/energia" element={<Energia />} />
+        <Route path="/sectors/seguretat" element={<Seguridad />} />
+        <Route path="/sectors/construccio" element={<Construccion />} />
+        <Route path="/sectors/alimentacio" element={<Alimentacion />} />
+        <Route path="/sectors/logistica" element={<Logistica />} />
+        <Route path="/sectors/medi-ambient" element={<MedioAmbiente />} />
+        
+        {/* === SECTOR ROUTES (English) === */}
+        <Route path="/sectors/technology" element={<Tecnologia />} />
+        <Route path="/sectors/healthcare" element={<Healthcare />} />
+        <Route path="/sectors/retail-consumer" element={<RetailConsumer />} />
+        <Route path="/sectors/energy" element={<Energia />} />
+        <Route path="/sectors/security" element={<Seguridad />} />
+        
+        {/* === PHANTOM SECTOR REDIRECTS === */}
+        <Route path="/sectores/financial-services" element={<Navigate to="/oportunidades" replace />} />
+        <Route path="/sectores/inmobiliario" element={<Navigate to="/oportunidades" replace />} />
+        <Route path="/sectors/serveis-financers" element={<Navigate to="/oportunidades" replace />} />
+        <Route path="/sectors/immobiliari" element={<Navigate to="/oportunidades" replace />} />
+        <Route path="/sectors/real-estate" element={<Navigate to="/oportunidades" replace />} />
+        <Route path="/sectors/financial-services" element={<Navigate to="/oportunidades" replace />} />
+        
+        {/* === OPERATION DETAIL REDIRECT === */}
+        <Route path="/operaciones/:id" element={<Navigate to="/oportunidades" replace />} />
+        
+        {/* === PARTNERS PROGRAM (English) === */}
+        <Route path="/partners-program" element={<ProgramaColaboradores />} />
         
         {/* === JOB POSTS ROUTES === */}
         <Route path="/oportunidades/empleo" element={<JobsPage />} />
