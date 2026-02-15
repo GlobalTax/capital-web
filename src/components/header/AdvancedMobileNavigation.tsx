@@ -154,6 +154,12 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
             </Link>
           )}
           
+          <Link to="/lp/calculadora" onClick={closeMenu}>
+            <Button variant="outline" className="w-full">
+              Valora tu empresa
+            </Button>
+          </Link>
+
           <Link to="/contacto" onClick={closeMenu}>
             <Button className="capittal-button w-full">
               Contacto
