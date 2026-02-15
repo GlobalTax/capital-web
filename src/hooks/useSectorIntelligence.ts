@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -75,13 +76,13 @@ export const useSectorIntelligence = () => {
   });
 
   // Group by sector
-  const grouped = rows.reduce((acc, row) => {
+  const grouped = useMemo(() => rows.reduce((acc, row) => {
     if (!acc[row.sector]) acc[row.sector] = [];
     acc[row.sector].push(row);
     return acc;
-  }, {} as Record<string, SectorIntelligenceRow[]>);
+  }, {} as Record<string, SectorIntelligenceRow[]>), [rows]);
 
-  const sectors = Object.keys(grouped).sort();
+  const sectors = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
   return { rows, grouped, sectors, isLoading, updateRow, createRow, deleteRow };
 };

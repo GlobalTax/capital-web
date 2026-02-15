@@ -24,8 +24,9 @@ export const SectorEditDialog: React.FC<Props> = ({ open, onOpenChange, row, onS
   }, [row]);
 
   const handleSave = () => {
-    if (!form.sector || !form.subsector) return;
-    onSave(form);
+    const trimmed = { ...form, sector: form.sector?.trim(), subsector: form.subsector?.trim() };
+    if (!trimmed.sector || !trimmed.subsector) return;
+    onSave(trimmed);
     onOpenChange(false);
   };
 

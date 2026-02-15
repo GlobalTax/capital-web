@@ -90,10 +90,15 @@ const ContentCalendarManager = () => {
   , [items]);
 
   const handleAutoScheduleConfirm = (updates: { id: string; scheduled_date: string }[]) => {
-    updates.forEach(u => {
+    let ok = 0;
+    const total = updates.length;
+    updates.forEach((u, idx) => {
       updateItem.mutate(
         { id: u.id, scheduled_date: u.scheduled_date, status: 'scheduled' },
-        { onError: (e: Error) => toast.error(e.message || 'Error al programar') }
+        {
+          onSuccess: () => { ok++; if (idx === total - 1) toast.success(`${ok}/${total} items programados`); },
+          onError: (e: Error) => toast.error(e.message || 'Error al programar'),
+        }
       );
     });
   };
