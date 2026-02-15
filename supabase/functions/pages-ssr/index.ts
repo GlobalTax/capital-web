@@ -1083,6 +1083,22 @@ Deno.serve(async (req) => {
       path = path.slice(0, -1);
     }
 
+    // 301 redirects for deprecated/renamed paths
+    const REDIRECTS_301: Record<string, string> = {
+      "/home": "/",
+      "/compra-empreses": "/compra-empresas",
+    };
+    if (REDIRECTS_301[path]) {
+      return new Response(null, {
+        status: 301,
+        headers: {
+          ...corsHeaders,
+          "Location": `https://capittal.es${REDIRECTS_301[path]}`,
+          "Cache-Control": "public, max-age=31536000, immutable",
+        },
+      });
+    }
+
     // Resolve aliases for multilingual paths
     const resolvedPath = PATH_ALIASES[path] || path;
     let page = PAGES_DATA[resolvedPath];

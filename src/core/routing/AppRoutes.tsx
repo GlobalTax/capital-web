@@ -144,7 +144,7 @@ export const AppRoutes = () => {
         <Route path="/ca" element={<Index />} />
         <Route path="/inici" element={<Index />} />
         <Route path="/en" element={<Index />} />
-        <Route path="/home" element={<Index />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/admin/login" element={<AdminLoginNew />} />
         <Route path="/admin/login-new" element={<AdminLoginNew />} />
@@ -165,7 +165,7 @@ export const AppRoutes = () => {
         <Route path="/sell-companies" element={<VentaEmpresas />} />
         
         <Route path="/compra-empresas" element={<CompraEmpresas />} />
-        <Route path="/compra-empreses" element={<CompraEmpresas />} />
+        <Route path="/compra-empreses" element={<Navigate to="/compra-empresas" replace />} />
         <Route path="/buy-companies" element={<CompraEmpresas />} />
         
         <Route path="/oportunidades" element={<Oportunidades />} />
