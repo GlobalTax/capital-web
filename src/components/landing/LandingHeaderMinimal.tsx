@@ -1,5 +1,6 @@
 // ============= Landing Header Minimal (sin enlaces) =============
 import React from 'react';
+import { CAPITTAL_LOGO_SVG, CAPITTAL_LOGO_ALT } from '@/config/brand';
 
 const LandingHeaderMinimal: React.FC = () => {
   return (
@@ -8,7 +9,7 @@ const LandingHeaderMinimal: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo sin navegación */}
           <div className="flex-shrink-0" aria-label="Capittal - Logo">
-            <img src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" alt="Capittal - Especialistas en M&A" className="h-8" width={120} height={32} />
+            <img src={CAPITTAL_LOGO_SVG} alt={CAPITTAL_LOGO_ALT} className="h-8" width={120} height={32} />
           </div>
           {/* Elementos de acción eliminados para la landing */}
         </div>
