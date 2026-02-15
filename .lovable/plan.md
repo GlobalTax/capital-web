@@ -1,82 +1,41 @@
 
 
-## Optimizar robots.txt y unificar sitemaps
+## Sincronizar hreflang de sectores en generate-sitemap
 
-### Contexto
+### Estado actual
 
-El robots.txt actual es mas completo y correcto que la version simplificada sugerida. La version simple (`Disallow: /api/`) no cubre rutas internas que Google ya esta rastreando (`/operaciones/`, `/_vite/`, `/auth/`).
+Todas las paginas solicitadas ya estan presentes en ambos sitemaps con las prioridades correctas (o superiores). El blog se actualiza automaticamente via consulta a Supabase.
 
-Sin embargo, hay dos problemas reales que resolver:
+### Problema detectado
 
-### Problema 1: Doble Sitemap en robots.txt
+El `HREFLANG_MAP` de la Edge Function `generate-sitemap` no incluye los sectores, pero el sitemap estatico (`public/sitemap.xml`) si tiene hreflang para ellos. Esto crea una discrepancia que afectaria si se usa el sitemap dinamico como fuente principal.
 
-Actualmente robots.txt apunta a dos sitemaps diferentes:
-- `Sitemap: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap` (dinamico, sin hreflang)
-- `Sitemap: https://capittal.es/sitemap.xml` (estatico, con hreflang)
+### Cambio propuesto
 
-Google puede recibir datos contradictorios de ambos. Solucion: mantener solo uno.
+Anadir los sectores al `HREFLANG_MAP` en `supabase/functions/generate-sitemap/index.ts`:
 
-### Problema 2: generate-sitemap sin hreflang
-
-El sitemap dinamico no incluye etiquetas `xhtml:link hreflang`, lo que impide que Google asocie correctamente las variantes multilingues (ES/CA/EN) cuando usa esa fuente.
-
-### Cambios propuestos
-
-#### 1. Simplificar robots.txt (quitar lineas innecesarias, un solo sitemap)
-
-```
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
-Disallow: /_vite/
-Disallow: /__vite/
-Disallow: /ws/
-
-Sitemap: https://capittal.es/sitemap.xml
+```text
+/sectores/tecnologia -> ca: /sectors/tecnologia, en: /sectors/technology
+/sectores/healthcare -> ca: /sectors/salut, en: /sectors/healthcare
+/sectores/seguridad -> ca: /sectors/seguretat, en: /sectors/security
+/sectores/industrial -> ca: /sectors/industrial
+/sectores/retail-consumer -> ca: /sectors/retail-consum
+/sectores/energia -> ca: /sectors/energia, en: /sectors/energy
+/sectores/construccion -> ca: /sectors/construccio
+/sectores/logistica -> ca: /sectors/logistica
+/sectores/alimentacion -> ca: /sectors/alimentacio
+/sectores/medio-ambiente -> ca: /sectors/medi-ambient
 ```
 
-Cambios respecto al actual:
-- Eliminar reglas redundantes `Allow: /*.css$` etc. (no necesarias)
-- Eliminar secciones de bots especificos (Googlebot, Bingbot, etc.) que solo repiten `Allow: /` ya cubierto por `User-agent: *`
-- Mantener un unico Sitemap apuntando al estatico (el que tiene hreflang)
-- Eliminar la referencia al sitemap de la Edge Function (evitar duplicidad)
-
-#### 2. Anadir hreflang al generate-sitemap Edge Function
-
-Para que el sitemap dinamico sea equivalente al estatico en calidad SEO, anadir las etiquetas hreflang. Esto incluye:
-
-- Definir un mapa de rutas multilingues (ES -> CA, EN) como constante
-- Para cada ruta que tenga variantes, generar las etiquetas `xhtml:link`
-- Anadir el namespace `xmlns:xhtml` al XML
-- Mantener las entradas de blog sin hreflang (solo existen en espanol)
-
-Esto permite que en el futuro se pueda cambiar el Sitemap en robots.txt al dinamico sin perder informacion.
-
-#### 3. Sincronizar sitemap.xml estatico
-
-Verificar que el archivo estatico incluya las paginas legales (ya presentes) y que no haya discrepancias con la Edge Function.
-
-### Archivos a modificar
+### Archivo a modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `public/robots.txt` | Simplificar: un sitemap, eliminar reglas redundantes |
-| `supabase/functions/generate-sitemap/index.ts` | Anadir hreflang a todas las rutas multilingues |
+| `supabase/functions/generate-sitemap/index.ts` | Anadir 10 entradas de sectores al `HREFLANG_MAP` (lineas 12-27) |
 
-### Detalle tecnico: Estructura hreflang en generate-sitemap
+### Detalle tecnico
 
-Se creara un mapa de equivalencias multilingues:
+Se amplia el objeto `HREFLANG_MAP` con las 10 rutas de sectores. Cada entrada incluye la variante catalana y, cuando existe, la inglesa. El `PATH_TO_GROUP` reverse map se recalcula automaticamente, por lo que las entradas en `staticRoutes` que ya existen para sectores (lineas 72-81) generaran automaticamente las etiquetas `xhtml:link` correspondientes.
 
-```text
-/venta-empresas -> ca: /venda-empreses, en: /sell-companies
-/compra-empresas -> ca: /compra-empreses, en: /buy-companies
-/equipo -> ca: /equip, en: /team
-... (todas las rutas con variantes)
-```
-
-Para cada URL que tenga entrada en este mapa, el XML generado incluira las etiquetas `xhtml:link rel="alternate" hreflang="..."` correspondientes, identicas a las del sitemap.xml estatico.
+No se necesitan cambios en `staticRoutes` ni en `public/sitemap.xml` ni en `robots.txt`.
 
