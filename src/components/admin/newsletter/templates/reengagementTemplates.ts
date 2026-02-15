@@ -1,6 +1,8 @@
 // Re-engagement email templates for Brevo
 // Uses Brevo variables: {{contact.FIRSTNAME}}, {{contact.COMPANY}}, {{contact.SECTOR}}, {{contact.VALUATION}}
 
+import { CAPITTAL_LOGO_SVG } from '@/config/brand';
+
 export type ReengagementType = 'abandoned' | 'reactivation' | 'value_added' | 'revaluation' | 'nurturing';
 
 export interface ReengagementConfig {
@@ -94,7 +96,7 @@ const baseStyles = `
 
 const generateHeader = () => `
   <div class="header">
-    <img src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" alt="Capittal" style="height: 32px;" />
+    <img src="${CAPITTAL_LOGO_SVG}" alt="Capittal" style="height: 32px;" />
   </div>
 `;
 

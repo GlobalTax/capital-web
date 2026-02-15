@@ -4,6 +4,7 @@ import { Menu, X, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/shared/i18n/I18nProvider';
+import { CAPITTAL_LOGO_SVG, CAPITTAL_LOGO_ALT } from '@/config/brand';
 import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 import AdvancedDesktopNavigation from './header/AdvancedDesktopNavigation';
 import AdvancedMobileNavigation from './header/AdvancedMobileNavigation';
@@ -20,7 +21,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to={getLocalizedUrl('home', lang)} className="flex flex-col">
-              <img src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" alt="Capittal - Especialistas en M&A" className="h-8" width={120} height={32} />
+              <img src={CAPITTAL_LOGO_SVG} alt={CAPITTAL_LOGO_ALT} className="h-8" width={120} height={32} />
             </Link>
           </div>
 

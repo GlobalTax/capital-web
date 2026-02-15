@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database, Json } from '@/integrations/supabase/types';
+import { CAPITTAL_LOGO_SVG } from '@/config/brand';
 
 type DbSlideLayout = Database['public']['Tables']['presentation_slides']['Row']['layout'];
 
@@ -42,7 +43,7 @@ const CAPITTAL_FIRM_DECK_SLIDES: DemoSlideConfig[] = [
         'Parte del ecosistema Grupo Navarro',
         'Más de 70 profesionales especializados'
       ],
-      logo_url: 'https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg',
+      logo_url: CAPITTAL_LOGO_SVG,
       tagline: 'M&A Advisory'
     },
     approval_status: 'approved',
@@ -224,7 +225,7 @@ const CAPITTAL_FIRM_DECK_SLIDES: DemoSlideConfig[] = [
       cta_text: 'Solicitar reunión',
       cta_url: 'https://capittal.es/contacto',
       disclaimer: 'Primera consulta sin compromiso',
-      logo_url: 'https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg'
+      logo_url: CAPITTAL_LOGO_SVG
     },
     approval_status: 'approved',
     is_locked: true

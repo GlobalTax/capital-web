@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database, Json } from '@/integrations/supabase/types';
+import { CAPITTAL_LOGO_SVG } from '@/config/brand';
 
 type DbSlideLayout = Database['public']['Tables']['presentation_slides']['Row']['layout'];
 
@@ -37,7 +38,7 @@ const CAPITTAL_ONE_PAGER_SLIDES: OnePagerSlideConfig[] = [
       
       // Header section
       header: {
-        logo_url: 'https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg',
+        logo_url: CAPITTAL_LOGO_SVG,
         tagline: 'Maximizamos el valor de tu empresa',
         subtitle: 'Parte del ecosistema Grupo Navarro'
       },

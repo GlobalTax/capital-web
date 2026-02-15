@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { CAPITTAL_LOGO_SVG, CAPITTAL_LOGO_ALT } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -124,8 +125,8 @@ const LeadMagnetLandingPage = ({ leadMagnet }: LeadMagnetLandingPageProps) => {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <img 
-              src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" 
-              alt="Capittal - Especialistas en M&A"
+              src={CAPITTAL_LOGO_SVG} 
+              alt={CAPITTAL_LOGO_ALT}
               className="h-8"
               width={120}
               height={32}

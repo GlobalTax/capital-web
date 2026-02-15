@@ -8,13 +8,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Calendar, Shield, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { CAPITTAL_LOGO_SVG, CAPITTAL_LOGO_ALT } from '@/config/brand';
 
 // Capittal logo component
 const CapittalLogo = () => (
   <div className="flex items-center gap-2">
     <img 
-      src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" 
-      alt="Capittal - Especialistas en M&A"
+      src={CAPITTAL_LOGO_SVG} 
+      alt={CAPITTAL_LOGO_ALT}
       className="h-8"
       width={120}
       height={32}
