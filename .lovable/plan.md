@@ -1,46 +1,32 @@
 
 
-## Asegurar el logo de Capittal en todos los headers
+## Restaurar el logo de Capittal en toda la web
 
 ### Problema
-Los headers (`Header.tsx` y `LandingHeaderMinimal.tsx`) muestran solo texto "Capittal" en lugar de la imagen del logotipo real. El logo SVG existe en Supabase Storage y ya se usa en otros componentes como `BookingPage`.
-
-Adicionalmente, el badge "Edit in Lovable" puede estar apareciendo en la esquina -- esto se desactiva manualmente desde Project Settings.
+El logo no se muestra porque la URL de Supabase Storage devuelve 404. El usuario ha subido dos versiones PNG del logotipo.
 
 ### Cambios
 
-**1. `LandingHeaderMinimal.tsx`** -- Reemplazar el texto por la imagen del logo
-- Cambiar el `<span>Capittal</span>` por un `<img>` apuntando al SVG de Supabase Storage
-- URL: `https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg`
-- Mantener fallback con `alt="Capittal"` y dimensiones explícitas (`h-8`)
+**1. Copiar el logo al repositorio**
+- Copiar `user-uploads://Logo_Capittal.png` a `src/assets/logotipo.png` (version principal, alta resolucion)
+- Copiar `user-uploads://Logo_Capittal_450x450.png` a `src/assets/logotipo-small.png` (version compacta para headers)
 
-**2. `Header.tsx`** -- Hacer lo mismo en el header principal
-- Reemplazar `<span className="text-2xl font-bold text-black">Capittal</span>` por la imagen del logo
-- Mantener el `<Link>` envolvente para navegación
+**2. Actualizar `src/config/brand.ts`**
+- Reemplazar la URL de Supabase por un import local del PNG
+- Exportar la imagen importada como constante
 
-**3. `LeadMagnetLandingPage.tsx`** -- Ya usa una imagen (`.png`), se puede unificar al SVG por consistencia (opcional)
+```ts
+import logotipo from '@/assets/logotipo.png';
 
-### Detalle tecnico
-
-```
-Logo SVG: https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg
-
-Componentes a modificar:
-- src/components/landing/LandingHeaderMinimal.tsx (linea 11)
-- src/components/Header.tsx (linea 23)
+export const CAPITTAL_LOGO_SVG = logotipo;
+export const CAPITTAL_LOGO_ALT = 'Capittal - Especialistas en M&A';
 ```
 
-Ambos cambios son identicos: sustituir el `<span>` de texto por:
-```html
-<img 
-  src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg"
-  alt="Capittal - Especialistas en M&A"
-  className="h-8"
-  width={120}
-  height={32}
-/>
-```
+**3. Actualizar templates de email HTML** (`reengagementTemplates.ts`, `send-corporate-email`)
+- Estas plantillas usan la URL directa en strings HTML (no imports de React), por lo que no pueden usar imports de assets locales
+- Se mantendran con un fallback de texto "Capittal" en negrita, ya que los emails necesitan URLs publicas absolutas y la de Supabase no funciona
 
-### Sobre el badge de Lovable
-El badge "Edit in Lovable" que aparece en la esquina se desactiva desde **Project Settings** (icono de engranaje) activando la opcion **"Hide 'Lovable' Badge"**. Esto no requiere cambios de codigo.
+### Resultado
+- Todos los componentes React (Header, LandingHeaderMinimal, BookingPage, LeadMagnetLandingPage, presentaciones) mostraran el logo automaticamente via `brand.ts`
+- Los emails usaran texto estilizado como fallback seguro
 
