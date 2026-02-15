@@ -20,21 +20,40 @@ function safeJsonLd(str: string): string {
   return str.replace(/</g, "\\u003c");
 }
 
-// ─── Organization JSON-LD (shared) ───
+// ─── Organization JSON-LD (shared, injected on ALL pages) ───
 const ORG_JSONLD = {
+  "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Capittal",
-  url: "https://capittal.es",
-  logo: "https://capittal.es/lovable-uploads/capittal-logo.png",
-  sameAs: ["https://www.linkedin.com/company/capittal/"],
-  address: {
+  "name": "Capittal Transacciones",
+  "legalName": "Capittal Transacciones S.L.",
+  "url": "https://capittal.es",
+  "logo": "https://capittal.es/logo.png",
+  "description": "Firma de asesoramiento en M&A, valoraciones y due diligence especializada en el sector seguridad",
+  "address": {
     "@type": "PostalAddress",
-    streetAddress: "Gran Vía 617, Principal",
-    addressLocality: "Barcelona",
-    postalCode: "08007",
-    addressCountry: "ES",
+    "streetAddress": "Ausiàs March 36, Principal",
+    "addressLocality": "Barcelona",
+    "postalCode": "08010",
+    "addressCountry": "ES",
   },
+  "sameAs": ["https://www.linkedin.com/company/capittal-transacciones"],
 };
+
+// ─── Helper: build FAQPage schema ───
+function buildFAQPageSchema(faqs: Array<{ question: string; answer: string }>): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(f => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": f.answer,
+      },
+    })),
+  };
+}
 
 interface PageData {
   title: string;
@@ -81,7 +100,7 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales. Barcelona.",
         image: "https://capittal.es/og-image.png",
-        telephone: "+34 93 000 00 00",
+        telephone: "+34695717490",
         address: ORG_JSONLD.address,
         areaServed: { "@type": "Country", name: "España" },
         serviceType: [
@@ -89,6 +108,7 @@ const PAGES_DATA: Record<string, PageData> = {
           "Valoración de Empresas",
           "Due Diligence",
           "Planificación Fiscal",
+          "Mergers and Acquisitions Advisory",
         ],
       },
     ],
@@ -122,8 +142,16 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Asesoramiento profesional integral en la venta de empresas. Búsqueda activa de compradores, valoración, negociación y cierre.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Asesoramiento en venta de empresas",
+        serviceType: ["Asesoramiento en venta de empresas", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cuánto tiempo tarda el proceso de venta?", answer: "El proceso completo suele durar entre 6 y 12 meses, dependiendo de la complejidad de la empresa, las condiciones del mercado y la disponibilidad de compradores cualificados." },
+        { question: "¿Cuáles son vuestros honorarios?", answer: "Trabajamos con una estructura basada en resultados, cobrando un porcentaje del precio final de venta que varía entre el 3% y el 8% dependiendo del tamaño y complejidad de la operación." },
+        { question: "¿Cómo se mantiene la confidencialidad?", answer: "Utilizamos acuerdos de confidencialidad (NDAs) con todos los potenciales compradores, creamos memorandos anónimos inicialmente, y solo revelamos la identidad de tu empresa tras confirmar el interés serio y la capacidad financiera del comprador." },
+        { question: "¿Qué documentación necesito preparar?", answer: "Necesitarás estados financieros de los últimos 3-5 años, información detallada sobre clientes y contratos principales, estructura organizativa, activos principales, y cualquier documentación legal relevante." },
+        { question: "¿Puedo seguir dirigiendo la empresa durante el proceso?", answer: "Absolutamente. Es esencial que mantengas el foco en el negocio durante el proceso de venta. Nosotros nos encargamos de la mayor parte del trabajo." },
+        { question: "¿Qué sucede con mis empleados?", answer: "La retención del equipo es crucial para el éxito de la venta. Trabajamos con compradores que valoran el capital humano y buscamos estructuras que incentiven la continuidad del equipo clave." },
+      ]),
     ],
     content: `
       <h1>Venta de Empresas - Asesoramiento Profesional</h1>
@@ -152,8 +180,16 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Informes de valoración profesional utilizando múltiplos sectoriales, DCF y metodologías reconocidas internacionalmente.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Valoración de empresas",
+        serviceType: ["Valoración de empresas", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cuál es la diferencia entre una valoración gratuita y una profesional?", answer: "La valoración gratuita es una estimación orientativa basada en múltiplos sectoriales y datos básicos de la empresa. La valoración profesional incluye análisis detallado con múltiples metodologías, due diligence, proyecciones personalizadas y un informe certificado." },
+        { question: "¿Cuándo necesito una valoración certificada?", answer: "Una valoración certificada es necesaria para operaciones de M&A, reestructuraciones societarias, herencias, divorcios, entrada/salida de socios, ampliaciones de capital, procesos judiciales, fusiones, escisiones, y para cumplir con normativas contables o fiscales específicas." },
+        { question: "¿Qué metodología es más adecuada para mi empresa?", answer: "Depende del sector, tamaño, rentabilidad y propósito de la valoración. Empresas estables con historial: DCF. Sectores con comparables: Múltiplos. Holdings o asset-heavy: Patrimonial. Recomendamos un enfoque multimetodológico." },
+        { question: "¿Cuánto cuesta una valoración profesional?", answer: "El coste varía según la complejidad, tamaño de la empresa y urgencia. Típicamente entre €3,000-€15,000 para PYMES, y €10,000-€50,000+ para empresas grandes." },
+        { question: "¿Cuánto tiempo dura el proceso?", answer: "Una valoración estándar toma 4-6 semanas desde el inicio hasta la entrega del informe final. Procesos urgentes pueden completarse en 2-3 semanas." },
+        { question: "¿Puedo usar la valoración para vender mi empresa?", answer: "Absolutamente. Nuestras valoraciones están diseñadas para soportar procesos de venta y proporcionan la base técnica para negociaciones." },
+      ]),
     ],
     content: `
       <h1>Valoración de Empresas Profesional</h1>
@@ -182,8 +218,16 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Servicios de due diligence financiera, fiscal y legal para operaciones de M&A en España.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Due Diligence",
+        serviceType: ["Due Diligence", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cuál es la diferencia entre Buy-Side y Vendor Due Diligence?", answer: "El Buy-Side Due Diligence lo realiza el comprador para evaluar riesgos antes de la adquisición, mientras que el Vendor Due Diligence lo encarga el vendedor para preparar la venta, identificar problemas previos y maximizar el valor de la transacción." },
+        { question: "¿Cuándo es recomendable realizar un Vendor Due Diligence?", answer: "Es ideal cuando planeas vender tu empresa en 6-12 meses. Permite identificar y resolver problemas con antelación, optimizar la valoración, preparar documentación completa y acelerar el proceso de venta." },
+        { question: "¿Qué áreas cubre el proceso de due diligence?", answer: "Nuestro due diligence cubre análisis financiero, legal, comercial, operativo y estratégico." },
+        { question: "¿Cuánto tiempo requiere un due diligence completo?", answer: "El proceso típico toma entre 6-8 semanas, dependiendo del tamaño y complejidad de la empresa. El Vendor DD puede ser más rápido (4-6 semanas)." },
+        { question: "¿Cómo un Vendor Due Diligence mejora el precio de venta?", answer: "Al identificar y resolver problemas previos, presentar información transparente y completa, reducimos las contingencias del comprador y creamos confianza que se traduce en mejor valoración." },
+        { question: "¿Cómo garantizan la confidencialidad del proceso?", answer: "Todos nuestros profesionales firman acuerdos de confidencialidad estrictos. Mantenemos protocolos de seguridad de información robustos y limitamos el acceso solo al equipo necesario." },
+      ]),
     ],
     content: `
       <h1>Due Diligence Financiera y Fiscal</h1>
@@ -212,8 +256,15 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Asesoramiento en reestructuraciones financieras y empresariales, refinanciación de deuda y turnaround.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Reestructuración empresarial",
+        serviceType: ["Reestructuración empresarial", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cuándo es necesaria una reestructuración empresarial?", answer: "Una reestructuración es necesaria cuando la empresa presenta pérdidas recurrentes, problemas de flujo de caja, alta carga de deuda, pérdida de competitividad, o cuando enfrenta cambios significativos en su mercado." },
+        { question: "¿Qué tipos de reestructuración realizan?", answer: "Realizamos reestructuraciones operativas (optimización de procesos, reducción de costes), financieras (renegociación de deuda, inyección de capital), y estratégicas (reposicionamiento, diversificación, desinversiones)." },
+        { question: "¿Cuánto tiempo toma una reestructuración completa?", answer: "El diagnóstico y plan toman 4-7 semanas, la implementación 6-12 meses, y el seguimiento es continuo hasta la estabilización completa de la empresa." },
+        { question: "¿Cómo gestionan la continuidad del negocio durante el proceso?", answer: "Priorizamos la continuidad operativa mediante planes detallados que minimizan la disrupción. Trabajamos en fases y mantenemos la comunicación con stakeholders clave." },
+        { question: "¿Cuál es la tasa de éxito de sus reestructuraciones?", answer: "Nuestra tasa de éxito es del 87%, medida por empresas que logran estabilidad financiera y operativa sostenible." },
+      ]),
     ],
     content: `
       <h1>Reestructuración Empresarial</h1>
@@ -240,8 +291,16 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Planificación fiscal especializada para operaciones de M&A. Optimización del impacto tributario en compraventa de empresas.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Planificación fiscal",
+        serviceType: ["Planificación fiscal", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cuánto puedo ahorrar con planificación fiscal?", answer: "El ahorro depende de múltiples factores. En promedio, nuestros clientes ahorran un 23% en su carga fiscal, llegando hasta un 50% en casos complejos con estructuras internacionales." },
+        { question: "¿Es legal la planificación fiscal que realizáis?", answer: "Absolutamente. Todas nuestras estrategias están basadas en normativa vigente, interpretaciones de la AEAT y jurisprudencia consolidada." },
+        { question: "¿Cuándo debe iniciarse la planificación fiscal?", answer: "Idealmente, 6-12 meses antes de la operación. La planificación anticipada permite implementar estrategias más sofisticadas y efectivas." },
+        { question: "¿Qué diferencia vuestra planificación de la de otros?", answer: "Nuestro equipo combina experiencia en M&A con expertise fiscal especializado. Contamos con abogados fiscalistas senior, expertos en M&A y experiencia directa en más de 200 operaciones." },
+        { question: "¿Cómo se estructura el coste del servicio?", answer: "Ofrecemos diferentes modalidades: tarifa fija para análisis estándar, porcentaje del ahorro generado para casos complejos, o una combinación de ambas. El análisis inicial siempre es gratuito." },
+        { question: "¿Qué garantías ofrecéis sobre las estrategias fiscales?", answer: "Ofrecemos garantía de cumplimiento normativo al 100%. En caso de discrepancia con Hacienda, nos hacemos cargo de la defensa." },
+      ]),
     ],
     content: `
       <h1>Planificación Fiscal en Operaciones de M&A</h1>
@@ -268,8 +327,15 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Asesoramiento legal integral en operaciones de M&A: contratos, negociación, due diligence legal y cierre.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Asesoramiento legal M&A",
+        serviceType: ["Asesoramiento legal M&A", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Qué documentos legales son imprescindibles en una compraventa de empresas?", answer: "Los documentos esenciales incluyen: Letter of Intent (LOI), Share Purchase Agreement (SPA) o Asset Purchase Agreement (APA), Disclosure Letter, Transition Services Agreement (TSA), y documentos de garantías." },
+        { question: "¿Qué riesgos se identifican en una due diligence legal?", answer: "Identificamos contingencias laborales, disputas comerciales, incumplimientos contractuales, problemas de propiedad intelectual, pasivos fiscales ocultos, problemas regulatorios sectoriales, litigios pendientes y cuestiones de compliance." },
+        { question: "¿Cómo se estructura un earn-out en un contrato de compraventa?", answer: "El earn-out se estructura definiendo métricas objetivas (EBITDA, facturación, clientes), periodos de medición (2-3 años), umbrales mínimos y máximos, mecanismos de cálculo detallados, y cláusulas de protección." },
+        { question: "¿Qué pasa si surgen contingencias tras el cierre?", answer: "Se activan las garantías contractuales: el vendedor responde según las warranty & indemnity clauses, se ejecutan las escrow accounts si las hay, y se aplican los caps y baskets acordados." },
+        { question: "¿Cómo se coordina el asesoramiento legal con el proceso de valoración?", answer: "La coordinación es total: Capittal maneja la valoración y negociación comercial mientras el equipo legal gestiona todos los aspectos legales. Ambos equipos trabajan en paralelo con comunicación constante." },
+      ]),
     ],
     content: `
       <h1>Asesoramiento Legal en Fusiones y Adquisiciones</h1>
@@ -297,8 +363,15 @@ const PAGES_DATA: Record<string, PageData> = {
         description:
           "Asesoramiento especializado en fusiones y adquisiciones para empresas de seguridad privada, alarmas, vigilancia y servicios auxiliares en España y Europa.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector seguridad",
+        serviceType: ["M&A sector seguridad", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una empresa de seguridad privada?", answer: "Las empresas de seguridad se valoran principalmente por múltiplo de EBITDA (5-9x según subsector). Los factores clave son: recurrencia de contratos, concentración de clientes, margen operativo y licencias/habilitaciones." },
+        { question: "¿Qué diferencia hay entre valorar vigilancia vs seguridad electrónica?", answer: "La seguridad electrónica (alarmas, CCTV) cotiza a múltiplos superiores (7-9x) por mayor recurrencia, márgenes y escalabilidad. La vigilancia tradicional (5-7x) es más intensiva en personal." },
+        { question: "¿Quién compra empresas de seguridad en España?", answer: "Los principales compradores son: grandes operadores (Prosegur, Securitas, Grupo Control), fondos de private equity armando plataformas de consolidación, y competidores regionales buscando escala." },
+        { question: "¿Cuánto tiempo lleva vender una empresa de seguridad?", answer: "El proceso típico es de 6-9 meses. La due diligence se centra en contratos, personal habilitado, licencias y cumplimiento normativo." },
+        { question: "¿Qué impacto tiene la regulación en la valoración?", answer: "El sector está muy regulado (Ley de Seguridad Privada). Las licencias, habilitaciones de personal y certificaciones son activos valiosos que impactan positivamente en la valoración." },
+      ]),
     ],
     content: `
       <h1>Especialistas en M&A del Sector Seguridad</h1>
@@ -330,8 +403,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento especializado en fusiones y adquisiciones del sector tecnológico. Valoración, due diligence y negociación de operaciones tech.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector tecnología",
+        serviceType: ["M&A sector tecnología", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una empresa SaaS en 2025?", answer: "Las empresas SaaS se valoran principalmente por múltiplo de ARR (Annual Recurring Revenue), típicamente entre 4-8x en 2025. Los factores clave son: crecimiento YoY, Net Revenue Retention, márgenes brutos y eficiencia de CAC payback." },
+        { question: "¿Qué múltiplos se pagan por startups tech en España?", answer: "Los múltiplos varían: SaaS B2B con buen crecimiento obtiene 5-8x ARR, FinTech regulado 6-10x, ciberseguridad 8-12x, y AI/deep tech puede alcanzar 10-20x por el valor de la IP." },
+        { question: "¿Cuál es el estado del mercado tech español en 2025?", answer: "España se posiciona en el Top 5 europeo. La inversión VC alcanzó €2.9B en 2024 (+60% vs 2023), con más de 300 operaciones públicas." },
+        { question: "¿Es necesario tener beneficios para vender una empresa tech?", answer: "No necesariamente. En tech, los compradores priorizan crecimiento, retención y potencial de mercado sobre rentabilidad actual. Sin embargo, la eficiencia (rule of 40) es cada vez más valorada." },
+        { question: "¿Qué tipo de compradores buscan empresas tech españolas?", answer: "El mercado español atrae a grupos de software europeos y americanos en expansión, fondos de private equity con estrategias de buy & build, corporates buscando adquisiciones de producto/talento, y fondos especializados en ciberseguridad e IA." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Tecnológico</h1>
@@ -359,8 +439,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Expertos en transacciones del sector industrial. Asesoramiento integral en valoración, compraventa y reestructuración de empresas industriales.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector industrial",
+        serviceType: ["M&A sector industrial", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una empresa industrial?", answer: "Las empresas industriales se valoran principalmente por múltiplo de EBITDA (5-8x según subsector), pero también consideramos el valor de activos fijos (maquinaria, naves), contratos con clientes, eficiencia operativa y potencial de mejora." },
+        { question: "¿Qué tipo de compradores buscan empresas industriales en España?", answer: "El mercado atrae a grupos industriales europeos (alemanes, franceses, italianos), fondos de private equity especializados en buy & build, y competidores nacionales en consolidación." },
+        { question: "¿Cuánto vale la maquinaria en la valoración?", answer: "La maquinaria se valora a valor de mercado (no contable), considerando estado, antigüedad y vida útil. Suele representar el 20-40% del enterprise value." },
+        { question: "¿Qué documentación necesito para vender mi empresa industrial?", answer: "Necesitarás: estados financieros de 3-5 años, inventario detallado de activos, contratos principales, licencias y certificaciones (ISO, medioambiente), organigramas, y documentación de propiedad industrial." },
+        { question: "¿Cómo afecta la ubicación al valor de una empresa industrial?", answer: "La ubicación es crítica: acceso a infraestructuras (puertos, autovías), disponibilidad de mano de obra cualificada, costes laborales regionales. Empresas en polígonos bien conectados pueden alcanzar primas del 10-20%." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Industrial</h1>
@@ -386,8 +473,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento en M&A del sector healthcare y salud: clínicas, laboratorios, farma y medtech.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector healthcare",
+        serviceType: ["M&A sector healthcare", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Qué múltiplos de valoración se utilizan en el sector healthcare?", answer: "Los múltiplos varían según subsector: clínicas dentales 8-10x EBITDA, oftalmología 9-12x por alta recurrencia, laboratorios dentales 6-8x, y residencias geriátricas €15-18K por cama en ubicaciones prime." },
+        { question: "¿Qué papel juega el Private Equity en el sector salud español?", answer: "El PE es el motor de consolidación del sector. Alantra PE ha creado la mayor plataforma de laboratorios dentales con ~20 adquisiciones. Miura vendió Terrats a Avista por €250M." },
+        { question: "¿Cómo afecta la regulación a la venta de una empresa sanitaria?", answer: "Las operaciones en healthcare requieren due diligence regulatoria específica: verificación de licencias sanitarias, cumplimiento RGPD sanitario, acreditaciones y autorizaciones autonómicas." },
+        { question: "¿Qué tipos de compradores están activos en el sector salud español?", answer: "Fondos especializados en healthcare, grupos de consolidación europeos en dental y oftalmología, aseguradoras con integración vertical (Sanitas, Adeslas), y family offices buscando activos resilientes." },
+        { question: "¿Cuánto tiempo lleva vender una clínica o empresa sanitaria?", answer: "El proceso típico dura entre 6-12 meses dependiendo de la complejidad regulatoria y el tamaño. Clínicas especializadas con documentación ordenada pueden cerrar en 4-6 meses." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Healthcare y Salud</h1>
@@ -413,8 +507,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento en M&A del sector energético: renovables, eficiencia energética y utilities.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector energía",
+        serviceType: ["M&A sector energía", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una planta solar o eólica en 2025?", answer: "Las plantas renovables se valoran principalmente por DCF considerando producción esperada, precios de energía y PPAs existentes. Los múltiplos de referencia son 10-14x EBITDA para activos con PPA a largo plazo." },
+        { question: "¿Qué diferencia hay entre valorar un proyecto en desarrollo vs en operación?", answer: "Los proyectos en desarrollo se valoran por MW de capacidad, típicamente €50-150k/MW según fase. Los activos en operación se valoran por DCF con datos reales. El descuento por riesgo de desarrollo es del 40-60%." },
+        { question: "¿Qué fondos están comprando renovables en España en 2024-2025?", answer: "El mercado atrae a fondos de infraestructuras (Blackrock, Brookfield, Macquarie), fondos de pensiones con mandatos ESG, utilities en expansión, y oil majors diversificando." },
+        { question: "¿Cómo afecta el tipo de contrato PPA a la valoración?", answer: "Los PPAs corporativos a largo plazo (10-15 años) con contrapartes investment grade pueden añadir 1-2 puntos de múltiplo EBITDA. Un activo 100% merchant puede valorarse 20-30% por debajo de uno con PPA." },
+        { question: "¿Cuánto tiempo lleva vender un activo renovable?", answer: "El proceso típico es de 6-10 meses para un portfolio en operación. La due diligence técnica es intensiva. Un data room bien preparado puede acelerar 2-3 meses el proceso." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Energía y Renovables</h1>
@@ -440,8 +541,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento en M&A del sector construcción e inmobiliario en España.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector construcción",
+        serviceType: ["M&A sector construcción", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una empresa constructora?", answer: "Las constructoras se valoran principalmente por múltiplo de EBITDA (5-8x) ajustado por la calidad de la cartera de obra. Factores clave: backlog de proyectos, márgenes históricos, concentración de clientes, maquinaria en propiedad." },
+        { question: "¿Qué diferencia hay entre valorar obra civil vs rehabilitación?", answer: "La rehabilitación puede cotizar a múltiplos ligeramente superiores (6-8x) por el impulso de fondos europeos y mayor recurrencia. La obra civil pública (5-7x) tiene flujos más predecibles pero márgenes ajustados." },
+        { question: "¿Quién compra empresas de construcción en España?", answer: "Los principales compradores son: grupos constructores medianos buscando capacidades o geografía, fondos de private equity, y empresas de instalaciones diversificando." },
+        { question: "¿Cómo afectan las garantías de obra a la valoración?", answer: "Las garantías de obra pendientes se descuentan del precio. Se analiza el histórico de siniestralidad y las provisiones existentes." },
+        { question: "¿Cuánto tiempo lleva vender una constructora?", answer: "El proceso típico es de 6-10 meses. La due diligence es intensiva: análisis de proyectos en curso, márgenes reales, garantías y litigios." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Construcción e Inmobiliario</h1>
@@ -465,8 +573,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento en M&A del sector logística y transporte: carretera, almacenamiento, última milla.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector logística",
+        serviceType: ["M&A sector logística", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una empresa de transporte?", answer: "Las empresas de transporte se valoran por múltiplo de EBITDA (4-8x) ajustado por calidad de flota y contratos. Factores clave: antigüedad media de flota, proporción propia vs subcontratada, concentración de clientes." },
+        { question: "¿Qué diferencia hay entre transporte y operador logístico?", answer: "Los operadores logísticos 3PL cotizan a múltiplos superiores (6-8x) por mayor recurrencia, servicios de valor añadido y contratos a largo plazo. El transporte puro (4-6x) es más intensivo en activos." },
+        { question: "¿Quién compra empresas de logística en España?", answer: "Los principales compradores son: grandes operadores logísticos (XPO, SEUR, Logista), fondos de private equity, y competidores regionales. Hay especial interés en última milla y operadores con tecnología avanzada." },
+        { question: "¿Cómo afecta la flota a la valoración?", answer: "La flota es un activo clave. Se valora: antigüedad media (ideal <5 años), proporción Euro 6 y vehículos eléctricos, financiación pendiente, y programa de renovación. Una flota moderna puede añadir 0,5-1x al múltiplo." },
+        { question: "¿Cuánto tiempo lleva vender una empresa logística?", answer: "El proceso típico es de 6-9 meses. La due diligence incluye análisis de contratos, flota, conductores y cumplimiento normativo." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Logística y Transporte</h1>
@@ -490,8 +605,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento en M&A del sector medio ambiente: gestión de residuos, reciclaje y economía circular.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector medio ambiente",
+        serviceType: ["M&A sector medio ambiente", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una empresa de gestión de residuos?", answer: "Las empresas de residuos se valoran por múltiplo de EBITDA (7-11x) según calidad de contratos y activos. Concesiones con +10 años de duración obtienen primas significativas." },
+        { question: "¿Qué diferencia hay entre residuos urbanos e industriales?", answer: "Los residuos urbanos con concesiones públicas cotizan a múltiplos superiores (8-11x) por flujos predecibles. Los residuos industriales (6-9x) tienen menor visibilidad pero mayores márgenes por especialización." },
+        { question: "¿Quién compra empresas de medio ambiente?", answer: "Los principales compradores son: utilities (Urbaser, FCC, Ferrovial), fondos de infraestructuras con mandatos ESG, y operadores europeos buscando presencia en España." },
+        { question: "¿Cómo afectan los pasivos ambientales?", answer: "Los pasivos ambientales son críticos en la due diligence. Se realizan auditorías ambientales específicas y se negocian garantías. Empresas con buen historial obtienen mejores valoraciones." },
+        { question: "¿Cuánto tiempo lleva vender una empresa de residuos?", answer: "El proceso típico es de 8-12 meses por complejidad de due diligence ambiental y técnica." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Medio Ambiente</h1>
@@ -515,8 +637,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento en M&A del sector retail y consumo: distribución, franquicias y e-commerce.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector retail",
+        serviceType: ["M&A sector retail", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una marca de consumo?", answer: "Las marcas de consumo se valoran por múltiplo de EBITDA (6-12x según categoría) o ingresos para marcas en crecimiento. Factores clave: brand equity, márgenes, canales de distribución, recurrencia de compra y potencial de expansión." },
+        { question: "¿Qué múltiplos se pagan en e-commerce?", answer: "Los múltiplos varían: 1-2x ingresos para retailers con márgenes bajos, 2-4x para marcas propias con buenos márgenes, y hasta 6-8x EBITDA para plataformas con recurrencia alta." },
+        { question: "¿Qué tipo de compradores están activos en retail & consumer?", answer: "Grupos de retail y moda internacionales, fondos de private equity especializados en consumer, holdings de marcas, y corporate ventures de grandes retailers." },
+        { question: "¿Cómo afecta el canal de venta a la valoración?", answer: "Las ventas DTC (direct-to-consumer) se valoran más que wholesale porque ofrecen mejores márgenes, datos de cliente y control de marca. Un modelo omnicanal equilibrado suele maximizar valor." },
+        { question: "¿Es importante la sostenibilidad para la valoración?", answer: "Cada vez más. Las marcas con propuesta ESG auténtica obtienen primas de valoración del 10-20% y atraen a más compradores estratégicos." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Retail y Consumo</h1>
@@ -540,8 +669,15 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Asesoramiento en M&A del sector alimentario y agroalimentario en España.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "M&A sector alimentación",
+        serviceType: ["M&A sector alimentación", "Mergers and Acquisitions Advisory"],
       },
+      buildFAQPageSchema([
+        { question: "¿Cómo se valora una empresa alimentaria?", answer: "Las empresas alimentarias se valoran por múltiplo de EBITDA (6-10x) según marca, canal y capacidad exportadora. Productos premium y DOP obtienen múltiplos superiores." },
+        { question: "¿Qué diferencia hay entre producción y distribución?", answer: "Los fabricantes con marca propia cotizan a múltiplos superiores (6-9x). Los distribuidores (5-7x) se valoran por red logística, cartera de clientes y contratos recurrentes." },
+        { question: "¿Quién compra empresas alimentarias en España?", answer: "Multinacionales alimentarias buscando productos españoles, fondos de private equity armando plataformas, y grupos familiares españoles consolidando. Hay especial interés en aceite, vino, conservas y gourmet." },
+        { question: "¿Cómo afectan las certificaciones a la valoración?", answer: "Las certificaciones (IFS, BRC, ecológico, DOP, IGP) son muy valoradas. Una empresa con certificaciones completas puede obtener 0,5-1x adicional de múltiplo." },
+        { question: "¿Cuánto tiempo lleva vender una empresa alimentaria?", answer: "El proceso típico es de 6-10 meses. La due diligence incluye análisis de certificaciones, contratos con distribuidores, calidad de producto y cadena de suministro." },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Alimentación y Agroalimentario</h1>
@@ -579,6 +715,11 @@ const PAGES_DATA: Record<string, PageData> = {
           addressLocality: "Barcelona",
           postalCode: "08010",
           addressCountry: "ES",
+        },
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: 41.3935,
+          longitude: 2.1753,
         },
         areaServed: { "@type": "Country", name: "España" },
         description: "Firma líder en asesoramiento de fusiones y adquisiciones con sede en Barcelona. Especialistas en sector seguridad.",
@@ -680,17 +821,11 @@ const PAGES_DATA: Record<string, PageData> = {
   "/programa-colaboradores": {
     title: "Programa de Colaboradores | Red de Partners | Capittal",
     description:
-      "Únase al programa de colaboradores de Capittal. Red de asesores, consultores y profesionales que refieren operaciones de M&A y reciben compensación.",
+      "Únase al programa de colaboradores de Capittal. Refiera operaciones de M&A y reciba comisiones de éxito. Red de asesores, abogados y consultores.",
     keywords:
-      "programa colaboradores M&A, partners M&A, referidos venta empresa, red asesores Capittal",
+      "programa colaboradores M&A, referir operaciones, comisiones M&A, partnership asesores, red partners",
     canonical: "https://capittal.es/programa-colaboradores",
     ogType: "website",
-    hreflang: {
-      es: "https://capittal.es/programa-colaboradores",
-      ca: "https://capittal.es/programa-col·laboradors",
-      en: "https://capittal.es/collaborators-program",
-      "x-default": "https://capittal.es/programa-colaboradores",
-    },
     structuredData: [
       {
         "@context": "https://schema.org",
@@ -733,7 +868,7 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "¿Quieres vender tu empresa? Capittal te acompaña en todo el proceso: valoración, búsqueda de comprador, negociación y cierre. Máxima confidencialidad.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Venta de empresas",
+        serviceType: ["Venta de empresas", "Mergers and Acquisitions Advisory"],
       },
     ],
     content: `
@@ -766,7 +901,7 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Identificamos y evaluamos oportunidades de adquisición alineadas con tu estrategia de crecimiento. Especialistas en sector seguridad y servicios auxiliares.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Compra de empresas",
+        serviceType: ["Compra de empresas", "Mergers and Acquisitions Advisory"],
       },
     ],
     content: `
@@ -846,7 +981,7 @@ const PAGES_DATA: Record<string, PageData> = {
         provider: ORG_JSONLD,
         description: "Servicio de asesoramiento en venta de empresas. Máximo precio garantizado.",
         areaServed: { "@type": "Country", name: "España" },
-        serviceType: "Venta de empresas",
+        serviceType: ["Venta de empresas", "Mergers and Acquisitions Advisory"],
       },
     ],
     content: `
@@ -856,6 +991,69 @@ const PAGES_DATA: Record<string, PageData> = {
       <p>Consulta gratuita en 48 horas, proceso 100% confidencial, red de más de 500 compradores cualificados, equipo con experiencia en banca de inversión de primer nivel y resultados demostrables.</p>
       <h2>Proceso Sencillo</h2>
       <p>1. Valoración gratuita de su empresa. 2. Preparación del memorando informativo confidencial. 3. Contacto con compradores cualificados. 4. Negociación y cierre al mejor precio.</p>
+    `,
+  },
+
+  // ─── LP CALCULADORAS ───
+  "/lp/calculadora": {
+    title: "Calculadora de Valoración de Empresas Gratuita | Capittal",
+    description:
+      "Calcula el valor de tu empresa gratis con nuestra calculadora de valoración. Múltiplos sectoriales actualizados, resultado inmediato y confidencial.",
+    keywords:
+      "calculadora valoración empresas, valorar empresa gratis, cuánto vale mi empresa, calculadora EBITDA",
+    canonical: "https://capittal.es/lp/calculadora",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "Calculadora de Valoración de Empresas - Capittal",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "EUR",
+        },
+        provider: ORG_JSONLD,
+      },
+    ],
+    content: `
+      <h1>Calculadora de Valoración de Empresas</h1>
+      <p>Utiliza nuestra calculadora gratuita para obtener una estimación del valor de tu empresa. Basada en múltiplos sectoriales actualizados y metodologías reconocidas internacionalmente.</p>
+      <h2>¿Cómo funciona?</h2>
+      <p>Introduce los datos básicos de tu empresa (facturación, EBITDA, sector) y obtén una estimación de valoración inmediata. El proceso es 100% confidencial y gratuito.</p>
+    `,
+  },
+
+  "/lp/calculadora-fiscal": {
+    title: "Calculadora de Impacto Fiscal en Venta de Empresas | Capittal",
+    description:
+      "Calcula el impacto fiscal de la venta de tu empresa. Estima impuestos, plusvalías y opciones de optimización fiscal gratuita.",
+    keywords:
+      "calculadora fiscal venta empresa, impuestos venta empresa, plusvalía venta negocio, impacto fiscal M&A",
+    canonical: "https://capittal.es/lp/calculadora-fiscal",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "Calculadora de Impacto Fiscal en Venta de Empresas - Capittal",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "EUR",
+        },
+        provider: ORG_JSONLD,
+      },
+    ],
+    content: `
+      <h1>Calculadora de Impacto Fiscal</h1>
+      <p>Estima el impacto fiscal de la venta de tu empresa. Calcula impuestos sobre plusvalías, opciones de diferimiento y estrategias de optimización fiscal.</p>
+      <h2>¿Cómo funciona?</h2>
+      <p>Introduce los datos de la operación y obtén una estimación del impacto fiscal. Incluye recomendaciones de planificación fiscal personalizadas.</p>
     `,
   },
 
@@ -879,7 +1077,7 @@ const PAGES_DATA: Record<string, PageData> = {
       <h1>Política de Privacidad</h1>
       <p>En Capittal nos comprometemos con la protección de sus datos personales conforme al Reglamento General de Protección de Datos (RGPD) y la Ley Orgánica de Protección de Datos (LOPDGDD).</p>
       <h2>Responsable del Tratamiento</h2>
-      <p>Capittal Transacciones S.L., con domicilio en Gran Vía 617, Principal, 08007 Barcelona, España.</p>
+      <p>Capittal Transacciones S.L., con domicilio en Ausiàs March 36, Principal, 08010 Barcelona, España.</p>
       <h2>Derechos del Interesado</h2>
       <p>Puede ejercer sus derechos de acceso, rectificación, supresión, portabilidad, limitación y oposición al tratamiento de sus datos personales contactando con nosotros.</p>
     `,
@@ -986,7 +1184,6 @@ const PATH_ALIASES: Record<string, string> = {
   "/sectors/retail-consumer": "/sectores/retail-consumer",
   "/sectors/energy": "/sectores/energia",
   "/sectors/security": "/sectores/seguridad",
-  "/partners-program": "/programa-colaboradores",
   "/programa-col·laboradors": "/programa-colaboradores",
   "/programa-col-laboradors": "/programa-colaboradores",
 };
@@ -1002,12 +1199,16 @@ function buildPageHtml(path: string, page: PageData): string {
         .join("\n  ")
     : "";
 
+  // Page-specific structured data
   const jsonLdScripts = page.structuredData
     .map(
       (sd) =>
         `<script type="application/ld+json">${safeJsonLd(JSON.stringify(sd))}</script>`
     )
     .join("\n  ");
+
+  // Global Organization schema (injected on ALL pages)
+  const orgJsonLdScript = `<script type="application/ld+json">${safeJsonLd(JSON.stringify(ORG_JSONLD))}</script>`;
 
   const spaUrl = `https://capittal.es${path === "/" ? "" : path}`;
 
@@ -1033,6 +1234,7 @@ function buildPageHtml(path: string, page: PageData): string {
   <meta name="twitter:title" content="${escapeHtml(page.title)}">
   <meta name="twitter:description" content="${escapeHtml(page.description)}">
   <meta name="twitter:image" content="https://capittal.es/og-image.png">
+  ${orgJsonLdScript}
   ${jsonLdScripts}
   <meta http-equiv="refresh" content="3;url=${spaUrl}">
   <style>
