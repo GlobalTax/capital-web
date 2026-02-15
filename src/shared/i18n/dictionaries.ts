@@ -36,8 +36,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Footer (obsolete keys removed - use footer.company.* instead)
     
     // Home SEO
-    'home.seo.title': 'Capittal - Especialistas en M&A, Valoraciones y Due Diligence en España',
-    'home.seo.description': 'Capittal es tu socio estratégico en fusiones y adquisiciones. Más de 200 operaciones exitosas en M&A, valoraciones empresariales, due diligence y reestructuraciones en España.',
+    'home.seo.title': 'Capittal | Asesores M&A Especializados en el Sector Seguridad - Barcelona',
+    'home.seo.description': 'Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales. Barcelona.',
     'home.seo.keywords': 'M&A España, fusiones y adquisiciones, valoración de empresas, due diligence, venta de empresas',
     
     // Hero
@@ -201,8 +201,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'contact.description.compra': 'Déjanos tus datos y te contactaremos para entender tus objetivos de inversión.',
     
     // Venta Empresas Page
-    'ventaEmpresas.seo.title': 'Venta de Empresas - Asesoramiento Profesional | Capittal',
-    'ventaEmpresas.seo.description': 'Servicios profesionales de venta de empresas. Asesoramiento integral, valoración experta y acompañamiento completo en el proceso de compraventa empresarial.',
+    'ventaEmpresas.seo.title': 'Venta de Empresas | Asesoramiento M&A Profesional - Capittal',
+    'ventaEmpresas.seo.description': '¿Quieres vender tu empresa? Capittal te acompaña en todo el proceso: valoración, búsqueda de comprador, negociación y cierre. Máxima confidencialidad.',
     'ventaEmpresas.seo.keywords': 'venta empresas, asesoramiento empresarial, valoración empresas, compraventa empresarial, M&A España',
     'ventaEmpresas.hero.badge': '+200 empresas vendidas exitosamente',
     'ventaEmpresas.hero.title': 'Vende tu empresa al',
@@ -258,8 +258,8 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'ventaEmpresas.faq.subtitle': 'Resolvemos las dudas más comunes sobre el proceso de venta de empresas',
     
     // Compra Empresas Page
-    'compraEmpresas.seo.title': 'Compra de Empresas - Oportunidades de Adquisición | Capittal',
-    'compraEmpresas.seo.description': 'Accede a oportunidades exclusivas de compra de empresas. Asesoramiento profesional en adquisiciones estratégicas y crecimiento empresarial por M&A en España.',
+    'compraEmpresas.seo.title': 'Compra de Empresas | Asesoría Buy-Side M&A - Capittal',
+    'compraEmpresas.seo.description': 'Identificamos y evaluamos oportunidades de adquisición alineadas con tu estrategia de crecimiento. Especialistas en sector seguridad y servicios auxiliares.',
     'compraEmpresas.seo.keywords': 'compra empresas España, adquisiciones empresariales, oportunidades M&A, inversión empresarial',
     
     // Compra Empresas Hero
