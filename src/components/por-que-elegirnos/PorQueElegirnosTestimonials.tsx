@@ -184,8 +184,12 @@ const PorQueElegirnosTestimonials = () => {
                     {testimonial.client_photo_url && (
                       <img 
                         src={testimonial.client_photo_url} 
-                        alt={testimonial.client_name}
+                        alt={`Foto de ${testimonial.client_name}`}
                         className="w-12 h-12 rounded-full object-cover mr-4"
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}

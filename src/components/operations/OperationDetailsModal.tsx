@@ -84,8 +84,12 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
             {operation.logo_url ? (
               <img 
                 src={operation.logo_url} 
-                alt={`${operation.company_name} logo`}
+                alt={`Logo de ${operation.company_name}`}
                 className="w-16 h-16 rounded-lg object-contain bg-muted p-2"
+                width={64}
+                height={64}
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">

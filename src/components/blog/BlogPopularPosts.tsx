@@ -174,6 +174,10 @@ const BlogPopularPosts = ({
                         src={post.blog_posts.featured_image_url}
                         alt={post.blog_posts.title}
                         className="w-full h-full object-cover rounded"
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   )}

@@ -242,6 +242,11 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
               src={post.featured_image_url}
               alt={post.title}
               className="w-full max-h-96 object-cover rounded-lg"
+              width={960}
+              height={384}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
           </div>
         )}
