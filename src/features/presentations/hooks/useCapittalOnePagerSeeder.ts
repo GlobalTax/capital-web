@@ -37,7 +37,7 @@ const CAPITTAL_ONE_PAGER_SLIDES: OnePagerSlideConfig[] = [
       
       // Header section
       header: {
-        logo_url: '/lovable-uploads/capittal-logo.png',
+        logo_url: 'https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg',
         tagline: 'Maximizamos el valor de tu empresa',
         subtitle: 'Parte del ecosistema Grupo Navarro'
       },

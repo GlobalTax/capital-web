@@ -94,7 +94,7 @@ const baseStyles = `
 
 const generateHeader = () => `
   <div class="header">
-    <h1 class="logo">CAPITTAL</h1>
+    <img src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" alt="Capittal" style="height: 32px;" />
   </div>
 `;
 

@@ -42,7 +42,7 @@ const CAPITTAL_FIRM_DECK_SLIDES: DemoSlideConfig[] = [
         'Parte del ecosistema Grupo Navarro',
         'Más de 70 profesionales especializados'
       ],
-      logo_url: '/lovable-uploads/capittal-logo.png',
+      logo_url: 'https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg',
       tagline: 'M&A Advisory'
     },
     approval_status: 'approved',
@@ -224,7 +224,7 @@ const CAPITTAL_FIRM_DECK_SLIDES: DemoSlideConfig[] = [
       cta_text: 'Solicitar reunión',
       cta_url: 'https://capittal.es/contacto',
       disclaimer: 'Primera consulta sin compromiso',
-      logo_url: '/lovable-uploads/capittal-logo.png'
+      logo_url: 'https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg'
     },
     approval_status: 'approved',
     is_locked: true

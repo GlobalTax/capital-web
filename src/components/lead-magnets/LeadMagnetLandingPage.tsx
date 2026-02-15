@@ -124,15 +124,12 @@ const LeadMagnetLandingPage = ({ leadMagnet }: LeadMagnetLandingPageProps) => {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <img 
-              src="/lovable-uploads/dfc75c41-289d-4bfd-963f-7838a1a06225.png" 
-              alt="Capittal - Firma de asesoramiento en M&A"
+              src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" 
+              alt="Capittal - Especialistas en M&A"
               className="h-8"
               width={120}
               height={32}
-              loading="eager"
-              decoding="async"
             />
-            <span className="text-lg font-semibold text-gray-900">Capittal</span>
           </div>
         </div>
       </div>
