@@ -1,81 +1,82 @@
 
 
-## Independent Indexing for English and Catalan Pages
+## Optimizar robots.txt y unificar sitemaps
 
-### Problem
-Every page component hardcodes the canonical URL to the Spanish version (e.g., `canonical="https://capittal.es/equipo"`). When Google crawls `/team`, it sees `canonical -> /equipo` and correctly treats it as "Alternate page with proper canonical tag" -- meaning `/team` is never indexed independently. This affects 8 URLs reported in GSC.
+### Contexto
 
-### Solution
-Make each page set its canonical URL to its **own path** (not the Spanish one). Google will then see `/team`, `/equip`, and `/equipo` as three independent pages linked via `hreflang`, each indexable in its respective language search results.
+El robots.txt actual es mas completo y correcto que la version simplificada sugerida. La version simple (`Disallow: /api/`) no cubre rutas internas que Google ya esta rastreando (`/operaciones/`, `/_vite/`, `/auth/`).
 
-### What Changes
+Sin embargo, hay dos problemas reales que resolver:
 
-**Core principle**: `canonical` must always match the current URL path, never point to another language variant. Hreflang tags (already correctly configured) tell Google about the language relationship.
+### Problema 1: Doble Sitemap en robots.txt
 
-#### 1. Update ~17 page components
+Actualmente robots.txt apunta a dos sitemaps diferentes:
+- `Sitemap: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap` (dinamico, sin hreflang)
+- `Sitemap: https://capittal.es/sitemap.xml` (estatico, con hreflang)
 
-For every page that has multilingual routes, change the hardcoded canonical to use the current path dynamically.
+Google puede recibir datos contradictorios de ambos. Solucion: mantener solo uno.
 
-Before:
-```tsx
-<SEOHead canonical="https://capittal.es/equipo" ... />
+### Problema 2: generate-sitemap sin hreflang
+
+El sitemap dinamico no incluye etiquetas `xhtml:link hreflang`, lo que impide que Google asocie correctamente las variantes multilingues (ES/CA/EN) cuando usa esa fuente.
+
+### Cambios propuestos
+
+#### 1. Simplificar robots.txt (quitar lineas innecesarias, un solo sitemap)
+
+```
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+Disallow: /api/private/
+Disallow: /operaciones/
+Disallow: /_vite/
+Disallow: /__vite/
+Disallow: /ws/
+
+Sitemap: https://capittal.es/sitemap.xml
 ```
 
-After:
-```tsx
-const location = useLocation();
-// ...
-<SEOHead canonical={`https://capittal.es${location.pathname}`} ... />
+Cambios respecto al actual:
+- Eliminar reglas redundantes `Allow: /*.css$` etc. (no necesarias)
+- Eliminar secciones de bots especificos (Googlebot, Bingbot, etc.) que solo repiten `Allow: /` ya cubierto por `User-agent: *`
+- Mantener un unico Sitemap apuntando al estatico (el que tiene hreflang)
+- Eliminar la referencia al sitemap de la Edge Function (evitar duplicidad)
+
+#### 2. Anadir hreflang al generate-sitemap Edge Function
+
+Para que el sitemap dinamico sea equivalente al estatico en calidad SEO, anadir las etiquetas hreflang. Esto incluye:
+
+- Definir un mapa de rutas multilingues (ES -> CA, EN) como constante
+- Para cada ruta que tenga variantes, generar las etiquetas `xhtml:link`
+- Anadir el namespace `xmlns:xhtml` al XML
+- Mantener las entradas de blog sin hreflang (solo existen en espanol)
+
+Esto permite que en el futuro se pueda cambiar el Sitemap en robots.txt al dinamico sin perder informacion.
+
+#### 3. Sincronizar sitemap.xml estatico
+
+Verificar que el archivo estatico incluya las paginas legales (ya presentes) y que no haya discrepancias con la Edge Function.
+
+### Archivos a modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| `public/robots.txt` | Simplificar: un sitemap, eliminar reglas redundantes |
+| `supabase/functions/generate-sitemap/index.ts` | Anadir hreflang a todas las rutas multilingues |
+
+### Detalle tecnico: Estructura hreflang en generate-sitemap
+
+Se creara un mapa de equivalencias multilingues:
+
+```text
+/venta-empresas -> ca: /venda-empreses, en: /sell-companies
+/compra-empresas -> ca: /compra-empreses, en: /buy-companies
+/equipo -> ca: /equip, en: /team
+... (todas las rutas con variantes)
 ```
 
-**Pages to update:**
-- `src/pages/Equipo.tsx`
-- `src/pages/CasosExito.tsx`
-- `src/pages/por-que-elegirnos/index.tsx` (or equivalent)
-- `src/pages/CompraEmpresas.tsx`
-- `src/pages/VentaEmpresas.tsx`
-- `src/pages/Contacto.tsx`
-- `src/pages/ProgramaColaboradores.tsx`
-- `src/pages/DeLooperACapittal.tsx`
-- `src/pages/servicios/Valoraciones.tsx`
-- `src/pages/servicios/VentaEmpresas.tsx` (service page)
-- `src/pages/servicios/DueDiligence.tsx`
-- `src/pages/servicios/AsesoramientoLegal.tsx`
-- `src/pages/servicios/Reestructuraciones.tsx`
-- `src/pages/servicios/PlanificacionFiscal.tsx`
-- `src/pages/sectores/Tecnologia.tsx` (and all other sector pages)
-- `src/pages/TerminosUso.tsx`
-- `src/pages/LandingCalculator.tsx` (for `?lang=en` variant)
-
-Most of these already import `useLocation` or `useHreflang` (which provides path awareness), so the change is minimal per file.
-
-#### 2. Update `useHreflang` hook
-
-The hook already sets canonical correctly to `currentPath` (line 145), but `SEOHead` overwrites it afterward because both manipulate the same DOM element. Fix: ensure `SEOHead`'s canonical and `useHreflang`'s canonical are consistent. Since we're fixing the source (the `canonical` prop), no change needed in the hook itself.
-
-#### 3. Update `pages-ssr` Edge Function
-
-Add unique entries for the English and Catalan paths in `PAGES_DATA` (or expand the alias system) so crawlers receive the correct canonical for each language variant. Currently, aliases map to Spanish data which has the Spanish canonical.
-
-For each alias, override the canonical and hreflang in the served HTML:
-- `/team` serves `canonical: https://capittal.es/team` with hreflang pointing to `/equipo` (es), `/equip` (ca), `/team` (en)
-- `/equip` serves `canonical: https://capittal.es/equip` with same hreflang set
-
-#### 4. Update `public/sitemap.xml`
-
-Ensure English and Catalan URLs are listed with their own `<loc>` entries (not just as `xhtml:link` alternates of Spanish pages). Each variant should appear as a standalone `<url>` block with its own canonical loc.
-
-### Files to modify
-
-| File | Change |
-|------|--------|
-| ~17 page components (listed above) | Replace hardcoded `canonical` with dynamic `location.pathname` |
-| `supabase/functions/pages-ssr/index.ts` | Serve unique canonical per language path instead of always Spanish |
-| `public/sitemap.xml` | Add standalone entries for EN/CA URLs |
-
-### Expected Result
-- Google indexes `/team`, `/equip`, and `/equipo` as 3 separate pages
-- Each appears in search results for its respective language
-- Hreflang tags (already correct) link them as language variants
-- The 8 "Alternate page with proper canonical" warnings in GSC resolve
+Para cada URL que tenga entrada en este mapa, el XML generado incluira las etiquetas `xhtml:link rel="alternate" hreflang="..."` correspondientes, identicas a las del sitemap.xml estatico.
 
