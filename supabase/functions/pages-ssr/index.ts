@@ -50,9 +50,9 @@ interface PageData {
 // ─── Static pages map ───
 const PAGES_DATA: Record<string, PageData> = {
   "/": {
-    title: "Capittal - Especialistas en M&A, Valoraciones y Due Diligence",
+    title: "Capittal | Asesores M&A Especializados en el Sector Seguridad - Barcelona",
     description:
-      "Capittal es su socio estratégico en operaciones de fusiones y adquisiciones, due diligence, valoraciones empresariales y planificación fiscal en España. Máxima confidencialidad.",
+      "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales. Barcelona.",
     keywords:
       "M&A España, fusiones y adquisiciones, valoración de empresas, due diligence, asesoría financiera, compraventa empresas",
     canonical: "https://capittal.es/",
@@ -70,7 +70,7 @@ const PAGES_DATA: Record<string, PageData> = {
         name: "Capittal",
         url: "https://capittal.es",
         description:
-          "Especialistas en fusiones y adquisiciones, valoraciones empresariales y due diligence en España.",
+          "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales. Barcelona.",
         publisher: ORG_JSONLD,
       },
       {
@@ -79,7 +79,7 @@ const PAGES_DATA: Record<string, PageData> = {
         name: "Capittal Transacciones",
         url: "https://capittal.es",
         description:
-          "Asesoramiento profesional en M&A, valoraciones, due diligence y planificación fiscal.",
+          "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales. Barcelona.",
         image: "https://capittal.es/og-image.png",
         telephone: "+34 93 000 00 00",
         address: ORG_JSONLD.address,
@@ -313,9 +313,9 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 
   "/sectores/tecnologia": {
-    title: "M&A Sector Tecnología | Tech M&A España | Capittal",
+    title: "M&A Sector Tecnología | Valoración de Empresas Tech - Capittal",
     description:
-      "Asesoramiento en fusiones y adquisiciones de empresas tecnológicas en España. SaaS, software, ciberseguridad, IT services y startups tech.",
+      "Asesoramiento especializado en fusiones y adquisiciones del sector tecnológico. Valoración, due diligence y negociación de operaciones tech.",
     keywords:
       "M&A tecnología, venta empresa tecnológica, compra startup tech, fusiones IT España, valoración SaaS",
     canonical: "https://capittal.es/sectores/tecnologia",
@@ -326,7 +326,7 @@ const PAGES_DATA: Record<string, PageData> = {
         "@type": "Service",
         name: "M&A Sector Tecnología",
         provider: ORG_JSONLD,
-        description: "Asesoramiento en M&A de empresas tecnológicas: SaaS, software, IT services y ciberseguridad.",
+        description: "Asesoramiento especializado en fusiones y adquisiciones del sector tecnológico. Valoración, due diligence y negociación de operaciones tech.",
         areaServed: { "@type": "Country", name: "España" },
         serviceType: "M&A sector tecnología",
       },
@@ -342,9 +342,9 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 
   "/sectores/industrial": {
-    title: "M&A Sector Industrial | Fusiones y Adquisiciones Industria | Capittal",
+    title: "M&A Sector Industrial | Compraventa de Empresas Industriales - Capittal",
     description:
-      "Asesoramiento en M&A del sector industrial en España. Fabricación, manufactura, ingeniería, mantenimiento industrial y servicios auxiliares.",
+      "Expertos en transacciones del sector industrial. Asesoramiento integral en valoración, compraventa y reestructuración de empresas industriales.",
     keywords:
       "M&A industrial, venta empresa industrial, compra fábrica, fusiones industria España, valoración empresa industrial",
     canonical: "https://capittal.es/sectores/industrial",
@@ -355,7 +355,7 @@ const PAGES_DATA: Record<string, PageData> = {
         "@type": "Service",
         name: "M&A Sector Industrial",
         provider: ORG_JSONLD,
-        description: "Asesoramiento en M&A del sector industrial: fabricación, manufactura, ingeniería y servicios industriales.",
+        description: "Expertos en transacciones del sector industrial. Asesoramiento integral en valoración, compraventa y reestructuración de empresas industriales.",
         areaServed: { "@type": "Country", name: "España" },
         serviceType: "M&A sector industrial",
       },
@@ -579,9 +579,9 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 
   "/equipo": {
-    title: "Nuestro Equipo | Profesionales M&A | Capittal",
+    title: "Nuestro Equipo | +70 Profesionales en M&A - Capittal Transacciones",
     description:
-      "Conozca al equipo de Capittal: profesionales con experiencia en banca de inversión, consultoría estratégica y M&A. Formación en ESADE, Deloitte y PwC.",
+      "Conoce al equipo de Capittal: profesionales con experiencia en Deloitte, ESADE y las principales firmas de corporate finance de España.",
     keywords:
       "equipo Capittal, profesionales M&A, asesores financieros Barcelona, equipo fusiones adquisiciones",
     canonical: "https://capittal.es/equipo",
@@ -592,7 +592,7 @@ const PAGES_DATA: Record<string, PageData> = {
         "@type": "AboutPage",
         name: "Equipo Capittal",
         url: "https://capittal.es/equipo",
-        description: "Equipo de profesionales de Capittal especializados en M&A, valoraciones y due diligence.",
+        description: "Conoce al equipo de Capittal: profesionales con experiencia en Deloitte, ESADE y las principales firmas de corporate finance de España.",
         mainEntity: ORG_JSONLD,
       },
     ],
@@ -692,9 +692,9 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 
   "/venta-empresas": {
-    title: "Vender mi Empresa | Proceso de Venta | Capittal",
+    title: "Venta de Empresas | Asesoramiento M&A Profesional - Capittal",
     description:
-      "¿Quiere vender su empresa? Capittal le asesora en todo el proceso: valoración, búsqueda de compradores, negociación y cierre. Máxima confidencialidad.",
+      "¿Quieres vender tu empresa? Capittal te acompaña en todo el proceso: valoración, búsqueda de comprador, negociación y cierre. Máxima confidencialidad.",
     keywords:
       "vender mi empresa, quiero vender empresa, venta de negocio, cómo vender empresa, asesor venta empresa",
     canonical: "https://capittal.es/venta-empresas",
@@ -711,7 +711,7 @@ const PAGES_DATA: Record<string, PageData> = {
         "@type": "Service",
         name: "Venta de Empresas",
         provider: ORG_JSONLD,
-        description: "Asesoramiento integral en la venta de empresas. Maximice el valor con Capittal.",
+        description: "¿Quieres vender tu empresa? Capittal te acompaña en todo el proceso: valoración, búsqueda de comprador, negociación y cierre. Máxima confidencialidad.",
         areaServed: { "@type": "Country", name: "España" },
         serviceType: "Venta de empresas",
       },
@@ -725,9 +725,9 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 
   "/compra-empresas": {
-    title: "Comprar una Empresa | Buy-Side M&A | Capittal",
+    title: "Compra de Empresas | Asesoría Buy-Side M&A - Capittal",
     description:
-      "¿Busca adquirir una empresa? Capittal le ayuda a identificar oportunidades, valorar targets y cerrar la adquisición con las mejores condiciones.",
+      "Identificamos y evaluamos oportunidades de adquisición alineadas con tu estrategia de crecimiento. Especialistas en sector seguridad y servicios auxiliares.",
     keywords:
       "comprar empresa, adquirir negocio, buy-side M&A, búsqueda empresas comprar, adquisición empresa",
     canonical: "https://capittal.es/compra-empresas",
@@ -744,7 +744,7 @@ const PAGES_DATA: Record<string, PageData> = {
         "@type": "Service",
         name: "Compra de Empresas",
         provider: ORG_JSONLD,
-        description: "Asesoramiento buy-side en adquisición de empresas. Identificación de targets y due diligence.",
+        description: "Identificamos y evaluamos oportunidades de adquisición alineadas con tu estrategia de crecimiento. Especialistas en sector seguridad y servicios auxiliares.",
         areaServed: { "@type": "Country", name: "España" },
         serviceType: "Compra de empresas",
       },
