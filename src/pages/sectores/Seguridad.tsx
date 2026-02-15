@@ -174,7 +174,7 @@ const Seguridad = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24 md:pt-[104px]">
       <SEOHead 
         title="M&A Sector Seguridad | Fusiones y Adquisiciones Seguridad Privada - Capittal"
         description="Capittal es la firma líder en M&A del sector seguridad en España. Asesoramos en compraventa de empresas de seguridad privada, alarmas, vigilancia y servicios auxiliares."
