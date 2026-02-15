@@ -161,11 +161,11 @@ const Hero: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0 }}
+            initial={currentSlide === 0 ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: 'easeInOut' }}
-            className="absolute inset-0"
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            className="absolute inset-0 will-change-transform"
           >
             {slide.videoUrl ? (
               <>
@@ -195,9 +195,13 @@ const Hero: React.FC = () => {
             ) : (
               <>
                 <img
-                  src={slide.image}
+                  src={currentSlide === 0 ? '/hero-slide-1.jpg' : slide.image}
                   alt={slide.title}
                   className="absolute inset-0 w-full h-full object-cover object-center"
+                  width={1920}
+                  height={1080}
+                  fetchPriority={currentSlide === 0 ? 'high' : 'auto'}
+                  loading={currentSlide === 0 ? 'eager' : 'lazy'}
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/85 to-white/60" />
               </>
@@ -211,10 +215,10 @@ const Hero: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide}
-                initial={{ opacity: 0, y: 40 }}
+                initial={currentSlide === 0 ? false : { opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
                 className="max-w-2xl"
               >
                 <h1 className={`font-serif font-normal leading-[1.05] tracking-tight text-4xl sm:text-5xl md:text-6xl lg:text-7xl whitespace-pre-line ${slide.isMosaic || slide.videoUrl ? 'text-background' : 'text-foreground'}`}>

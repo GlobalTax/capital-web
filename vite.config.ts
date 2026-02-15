@@ -32,10 +32,16 @@ export default defineConfig(({ mode }) => {
   build: {
     rollupOptions: {
       output: {
-        // ⚡ OPTIMIZACIÓN: Todas las librerías en vendor para evitar circular dependencies
+        // ⚡ OPTIMIZACIÓN: Chunks especializados para reducir JS inicial
         manualChunks: (id) => {
-          // Todo node_modules va a vendor (react-quill, @react-pdf, recharts, etc.)
           if (id.includes('node_modules')) {
+            if (id.includes('framer-motion')) return 'framer';
+            if (id.includes('@react-pdf') || id.includes('jspdf')) return 'pdf';
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+            if (id.includes('react-quill') || id.includes('quill')) return 'editor';
+            if (id.includes('xlsx') || id.includes('html2canvas')) return 'export';
+            if (id.includes('@supabase')) return 'supabase';
+            if (id.includes('react-dom')) return 'react-dom';
             return 'vendor';
           }
         }
