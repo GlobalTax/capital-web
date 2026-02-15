@@ -1,48 +1,43 @@
 
 
-## Correccion del error critico: pagina en blanco
+## Corregir imagen del Hero: eliminar hardcode del primer slide
 
-### Problema identificado
+### Problema
 
-El error `Uncaught ReferenceError: Cannot access 'w' before initialization` en `charts-CwGLX5rB.js` es causado por la configuracion de `manualChunks` en `vite.config.ts` (linea 36-47).
+En `src/components/Hero.tsx` (linea 202), hay una condicion hardcodeada que fuerza la primera diapositiva a usar siempre `/hero-slide-1.jpg`, ignorando la imagen configurada en la base de datos:
 
-Recharts y las librerias d3 tienen dependencias circulares internas. Cuando Vite/Rollup las fuerza en un chunk separado (`charts`), el orden de inicializacion de variables se rompe, causando un error de "Temporal Dead Zone" (TDZ) que impide que toda la aplicacion arranque.
+```text
+src={currentSlide === 0 ? '/hero-slide-1.jpg' : slide.image}
+```
 
-El catch-all `return 'vendor'` en linea 46 agrava el problema al crear dependencias cruzadas entre chunks.
+La base de datos tiene configurada una imagen diferente para el slide 1:
+`https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/hero-images/hero_1770583284440.jpg`
+
+Esto tambien causa el warning del navegador: "The resource /hero-slide-1.jpg was preloaded but not used".
 
 ### Solucion
 
-Simplificar la configuracion de `manualChunks` eliminando las entradas problematicas:
+**Archivo: `src/components/Hero.tsx`**
 
-**Archivo: `vite.config.ts`**
-
-Cambiar la funcion `manualChunks` para:
-1. Eliminar el chunk `charts` (recharts + d3)
-2. Eliminar el catch-all `vendor`
-3. Mantener solo chunks seguros que no tienen dependencias circulares (pdf, editor, export)
-
+Cambiar la linea 202 de:
 ```text
-manualChunks: (id) => {
-  if (id.includes('node_modules')) {
-    if (id.includes('@react-pdf') || id.includes('jspdf')) return 'pdf';
-    if (id.includes('react-quill') || id.includes('quill')) return 'editor';
-    if (id.includes('xlsx') || id.includes('html2canvas')) return 'export';
-    if (id.includes('@supabase')) return 'supabase';
-  }
-  // Sin return = Rollup decide automaticamente (evita conflictos circulares)
-}
+src={currentSlide === 0 ? '/hero-slide-1.jpg' : slide.image}
 ```
+
+A simplemente:
+```text
+src={slide.image}
+```
+
+Esto hara que todas las diapositivas usen la imagen configurada desde el admin (`hero_slides.image_url`), que es el comportamiento esperado del sistema dinamico.
 
 ### Impacto
 
-- Corrige la pagina en blanco inmediatamente
-- La aplicacion carga sin errores de inicializacion
-- Rollup gestiona automaticamente el splitting de recharts, d3, framer-motion y react-dom, evitando conflictos de dependencias circulares
-- Los chunks de PDF, editor, export y supabase se mantienen separados (son seguros porque no tienen dependencias circulares)
-
-### Archivo a modificar
+- El Hero mostrara la imagen correcta configurada desde el panel de administracion
+- Se elimina el warning de preload en consola
+- El sistema de gestion de Hero Slides funciona como fue disenado originalmente
 
 | Archivo | Cambio |
 |---|---|
-| `vite.config.ts` | Simplificar manualChunks eliminando chunks problematicos (charts, framer, react-dom, vendor) |
+| `src/components/Hero.tsx` | Linea 202: eliminar condicion hardcodeada, usar `slide.image` directamente |
 
