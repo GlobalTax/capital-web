@@ -177,49 +177,45 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/healthcare" />
   </url>
   <url>
-    <loc>https://capittal.es/sectores/financial-services</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://capittal.es/sectores/seguridad</loc>
+    <lastmod>2026-02-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/financial-services" />
-    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/serveis-financers" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/financial-services" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/seguridad" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/seguretat" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/security" />
   </url>
   <url>
-    <loc>https://capittal.es/sectores/industrial</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://capittal.es/sectores/construccion</loc>
+    <lastmod>2026-02-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/industrial" />
-    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/industrial" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/industrial" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/construccion" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/construccio" />
   </url>
   <url>
-    <loc>https://capittal.es/sectores/retail-consumer</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://capittal.es/sectores/alimentacion</loc>
+    <lastmod>2026-02-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/retail-consumer" />
-    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/retail-consum" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/retail-consumer" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/alimentacion" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/alimentacio" />
   </url>
   <url>
-    <loc>https://capittal.es/sectores/energia</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://capittal.es/sectores/logistica</loc>
+    <lastmod>2026-02-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/energia" />
-    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/energia" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/energy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/logistica" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/logistica" />
   </url>
   <url>
-    <loc>https://capittal.es/sectores/inmobiliario</loc>
-    <lastmod>2026-02-14</lastmod>
+    <loc>https://capittal.es/sectores/medio-ambiente</loc>
+    <lastmod>2026-02-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/inmobiliario" />
-    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/immobiliari" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/real-estate" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/medio-ambiente" />
+    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/medi-ambient" />
   </url>
   <url>
     <loc>https://capittal.es/recursos/blog</loc>
