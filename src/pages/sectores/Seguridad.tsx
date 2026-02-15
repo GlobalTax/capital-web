@@ -457,6 +457,25 @@ const Seguridad = () => {
         accentColor="slate"
       />
       
+      {/* Simulador CTA */}
+      <section className="py-16 md:py-20 bg-muted/30">
+        <div className="container mx-auto px-4 max-w-3xl text-center">
+          <span className="inline-block text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted px-3 py-1 rounded-full mb-4">Nuevo</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+            Simulador de operación para seguridad privada
+          </h2>
+          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+            Calcula el valor estimado de tu empresa y simula la estructura de deal con parámetros reales del mercado español.
+          </p>
+          <Link to="/lp/simulador-seguridad">
+            <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90 text-base px-8 py-6">
+              Acceder al simulador
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </Link>
+        </div>
+      </section>
+
       {/* 6. CTA Final */}
       <section className="py-20 md:py-28 bg-slate-900">
         <div className="container mx-auto px-4 max-w-3xl text-center">

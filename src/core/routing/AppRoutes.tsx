@@ -63,6 +63,7 @@ const LandingOpenDeals = lazy(() => import('@/pages/LandingOpenDeals'));
 const LandingOportunidadesMeta = lazy(() => import('@/pages/LandingOportunidadesMeta'));
 const LandingRODLinkedIn = lazy(() => import('@/pages/LandingRODLinkedIn'));
 import SecurityCalculator from '@/pages/SecurityCalculator';
+const LandingSimuladorSeguridad = lazy(() => import('@/pages/LandingSimuladorSeguridad'));
 
 // === SERVICE PAGES ===
 import Valoraciones from '@/pages/servicios/Valoraciones';
@@ -235,6 +236,8 @@ export const AppRoutes = () => {
         <Route path="/accountex-2025" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/seguridad/calculadora" element={<SecurityCalculator />} />
         <Route path="/seguridad/calculadora/*" element={<SecurityCalculator />} />
+        <Route path="/lp/simulador-seguridad" element={<LandingSimuladorSeguridad />} />
+        <Route path="/lp/simulador-seguridad/*" element={<LandingSimuladorSeguridad />} />
         
         {/* === BOOKING ROUTES === */}
         <Route path="/book/:token" element={<BookingPage />} />
