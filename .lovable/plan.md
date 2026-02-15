@@ -1,114 +1,81 @@
 
 
-## Fix: Missing Routes Causing "Not Indexed" in Google Search Console
+## Independent Indexing for English and Catalan Pages
 
 ### Problem
-Google Search Console shows ~30 URLs discovered but not indexed. Cross-referencing with `AppRoutes.tsx` reveals these URLs have **no route handlers**, so Google gets blank pages or 404s. The URLs come from three sources:
-1. `useHreflang` hook generates alternate-language URLs that don't resolve
-2. `sitemap.xml` / `generate-sitemap` lists URLs without matching routes
-3. `SectorOperationsGrid` links to `/operaciones/:id` which has no route
-
-### Root Cause Categories
-
-| Category | Count | Examples |
-|----------|-------|---------|
-| Missing Catalan service routes (`/serveis/*`) | 5 | `/serveis/reestructuracions`, `/serveis/assessorament-legal`, `/serveis/due-diligence`, `/serveis/planificacio-fiscal`, `/serveis/venda-empreses` |
-| Missing English service routes (`/services/*`) | 5 | `/services/legal-advisory`, `/services/sell-companies`, `/services/valuations`, `/services/tax-planning`, `/services/due-diligence` |
-| Missing Catalan/English sector routes (`/sectors/*`) | 10 | `/sectors/healthcare`, `/sectors/salut`, `/sectors/energy`, `/sectors/technology`, `/sectors/retail-consumer`, `/sectors/industrial`, etc. |
-| Non-existent sector pages | 3 | `/sectores/financial-services`, `/sectores/inmobiliario` (no React component exists) |
-| Missing `/operaciones/:id` route | 5 | UUID-based operation detail pages linked from sector grids |
-| Missing `/partners-program` English route | 1 | English version of programa-colaboradores |
+Every page component hardcodes the canonical URL to the Spanish version (e.g., `canonical="https://capittal.es/equipo"`). When Google crawls `/team`, it sees `canonical -> /equipo` and correctly treats it as "Alternate page with proper canonical tag" -- meaning `/team` is never indexed independently. This affects 8 URLs reported in GSC.
 
 ### Solution
+Make each page set its canonical URL to its **own path** (not the Spanish one). Google will then see `/team`, `/equip`, and `/equipo` as three independent pages linked via `hreflang`, each indexable in its respective language search results.
 
-#### 1. Add Catalan service routes to AppRoutes.tsx
+### What Changes
 
-Map each Catalan path to its existing Spanish component:
+**Core principle**: `canonical` must always match the current URL path, never point to another language variant. Hreflang tags (already correctly configured) tell Google about the language relationship.
 
-```
-/serveis/valoracions        -> Valoraciones
-/serveis/venda-empreses     -> VentaEmpresasServicio
-/serveis/due-diligence      -> DueDiligence
-/serveis/assessorament-legal -> AsesoramientoLegal
-/serveis/reestructuracions  -> Reestructuraciones
-/serveis/planificacio-fiscal -> PlanificacionFiscal
-```
+#### 1. Update ~17 page components
 
-#### 2. Add English service routes to AppRoutes.tsx
+For every page that has multilingual routes, change the hardcoded canonical to use the current path dynamically.
 
-```
-/services/valuations      -> Valoraciones
-/services/sell-companies   -> VentaEmpresasServicio
-/services/due-diligence    -> DueDiligence
-/services/legal-advisory   -> AsesoramientoLegal
-/services/restructuring    -> Reestructuraciones
-/services/tax-planning     -> PlanificacionFiscal
+Before:
+```tsx
+<SEOHead canonical="https://capittal.es/equipo" ... />
 ```
 
-#### 3. Add Catalan/English sector routes to AppRoutes.tsx
-
-```
-/sectors/tecnologia       -> Tecnologia
-/sectors/technology       -> Tecnologia
-/sectors/healthcare       -> Healthcare
-/sectors/salut            -> Healthcare
-/sectors/industrial       -> Industrial
-/sectors/retail-consum    -> RetailConsumer
-/sectors/retail-consumer  -> RetailConsumer
-/sectors/energia          -> Energia
-/sectors/energy           -> Energia
-/sectors/seguretat        -> Seguridad
-/sectors/security         -> Seguridad
-/sectors/construccio      -> Construccion
-/sectors/alimentacio      -> Alimentacion
-/sectors/logistica        -> Logistica
-/sectors/medi-ambient     -> MedioAmbiente
+After:
+```tsx
+const location = useLocation();
+// ...
+<SEOHead canonical={`https://capittal.es${location.pathname}`} ... />
 ```
 
-#### 4. Add `/partners-program` route
+**Pages to update:**
+- `src/pages/Equipo.tsx`
+- `src/pages/CasosExito.tsx`
+- `src/pages/por-que-elegirnos/index.tsx` (or equivalent)
+- `src/pages/CompraEmpresas.tsx`
+- `src/pages/VentaEmpresas.tsx`
+- `src/pages/Contacto.tsx`
+- `src/pages/ProgramaColaboradores.tsx`
+- `src/pages/DeLooperACapittal.tsx`
+- `src/pages/servicios/Valoraciones.tsx`
+- `src/pages/servicios/VentaEmpresas.tsx` (service page)
+- `src/pages/servicios/DueDiligence.tsx`
+- `src/pages/servicios/AsesoramientoLegal.tsx`
+- `src/pages/servicios/Reestructuraciones.tsx`
+- `src/pages/servicios/PlanificacionFiscal.tsx`
+- `src/pages/sectores/Tecnologia.tsx` (and all other sector pages)
+- `src/pages/TerminosUso.tsx`
+- `src/pages/LandingCalculator.tsx` (for `?lang=en` variant)
 
-```
-/partners-program -> ProgramaColaboradores
-```
+Most of these already import `useLocation` or `useHreflang` (which provides path awareness), so the change is minimal per file.
 
-#### 5. Handle `/operaciones/:id` route
+#### 2. Update `useHreflang` hook
 
-Create a simple redirect or detail page. Since these are operation detail links from `SectorOperationsGrid`, the simplest fix is to redirect to `/oportunidades` (the marketplace) or create a minimal operation detail page that shows basic info and a contact CTA.
+The hook already sets canonical correctly to `currentPath` (line 145), but `SEOHead` overwrites it afterward because both manipulate the same DOM element. Fix: ensure `SEOHead`'s canonical and `useHreflang`'s canonical are consistent. Since we're fixing the source (the `canonical` prop), no change needed in the hook itself.
 
-Option: Redirect to oportunidades with a hash/param:
-```
-/operaciones/:id -> Redirect to /oportunidades or render an OperationDetail component
-```
+#### 3. Update `pages-ssr` Edge Function
 
-#### 6. Handle non-existent sectors (financial-services, inmobiliario)
+Add unique entries for the English and Catalan paths in `PAGES_DATA` (or expand the alias system) so crawlers receive the correct canonical for each language variant. Currently, aliases map to Spanish data which has the Spanish canonical.
 
-These are referenced in `useHreflang` and `generateSitemap.ts` but have no React page component. Two options:
-- **Option A**: Remove them from hreflang/sitemap (if these sectors are not planned)
-- **Option B**: Create minimal sector pages for them
+For each alias, override the canonical and hreflang in the served HTML:
+- `/team` serves `canonical: https://capittal.es/team` with hreflang pointing to `/equipo` (es), `/equip` (ca), `/team` (en)
+- `/equip` serves `canonical: https://capittal.es/equip` with same hreflang set
 
-Recommended: Remove from hreflang and sitemap since they don't represent real content, and redirect any existing URLs to avoid soft 404s:
-```
-/sectores/financial-services -> Redirect to /sectores/tecnologia or /oportunidades
-/sectores/inmobiliario       -> Redirect to /oportunidades
-/sectors/serveis-financers   -> Same redirect
-/sectors/immobiliari         -> Same redirect
-/sectors/real-estate         -> Same redirect
-/sectors/financial-services  -> Same redirect
-```
+#### 4. Update `public/sitemap.xml`
+
+Ensure English and Catalan URLs are listed with their own `<loc>` entries (not just as `xhtml:link` alternates of Spanish pages). Each variant should appear as a standalone `<url>` block with its own canonical loc.
 
 ### Files to modify
 
-| File | Changes |
-|------|---------|
-| `src/core/routing/AppRoutes.tsx` | Add ~25 new Route entries for Catalan, English, and missing paths |
-| `supabase/functions/pages-ssr/index.ts` | Add the new multilingual paths to `PAGES_DATA` map so crawlers get full HTML |
-| `src/hooks/useHreflang.tsx` | Remove references to non-existent sectors (financial-services, inmobiliario) |
-| `src/utils/seo/generateSitemap.ts` | Remove non-existent sector URLs from static sitemap |
-| `public/sitemap.xml` | Update to match cleaned-up URL list |
+| File | Change |
+|------|--------|
+| ~17 page components (listed above) | Replace hardcoded `canonical` with dynamic `location.pathname` |
+| `supabase/functions/pages-ssr/index.ts` | Serve unique canonical per language path instead of always Spanish |
+| `public/sitemap.xml` | Add standalone entries for EN/CA URLs |
 
-### Expected Impact
-- All ~30 "Not indexed" URLs will either resolve to real content or be properly redirected
-- Google will stop discovering dead-end URLs from hreflang and sitemap
-- Catalan and English users arriving via hreflang links will see the correct page
-- Operation detail links from sector pages will work instead of 404-ing
+### Expected Result
+- Google indexes `/team`, `/equip`, and `/equipo` as 3 separate pages
+- Each appears in search results for its respective language
+- Hreflang tags (already correct) link them as language variants
+- The 8 "Alternate page with proper canonical" warnings in GSC resolve
 
