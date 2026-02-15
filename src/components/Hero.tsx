@@ -199,7 +199,7 @@ const Hero: React.FC = () => {
             ) : (
               <>
                 <img
-                  src={currentSlide === 0 ? '/hero-slide-1.jpg' : slide.image}
+                  src={slide.image}
                   alt={slide.title}
                   className="absolute inset-0 w-full h-full object-cover object-center"
                   width={1920}
