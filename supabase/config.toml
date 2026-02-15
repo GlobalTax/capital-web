@@ -302,3 +302,6 @@ verify_jwt = false
 
 [functions.pages-ssr]
 verify_jwt = false
+
+[functions.prerender-proxy]
+verify_jwt = false
