@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Shield, Camera, Flame, Bug } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 } from '@/components/sector-v2';
 
 const Seguridad = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -143,7 +145,7 @@ const Seguridad = () => {
       <SEOHead 
         title="Valoración de Empresas de Seguridad | M&A Seguridad Privada | Capittal"
         description="Expertos en M&A y valoración de empresas de seguridad: vigilancia, alarmas, protección contra incendios, control de plagas. Asesoramiento especializado."
-        canonical="https://capittal.es/sectores/seguridad"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas seguridad, vender empresa vigilancia, M&A seguridad privada, valoración alarmas"
         structuredData={[
           getServiceSchema(

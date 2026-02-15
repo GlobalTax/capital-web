@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
@@ -11,6 +12,7 @@ import ReestructuracionesFAQ from '@/components/reestructuraciones/Reestructurac
 import ReestructuracionesCTA from '@/components/reestructuraciones/ReestructuracionesCTA';
 
 const Reestructuraciones = () => {
+  const location = useLocation();
   useHreflang();
   
   return (
@@ -18,7 +20,7 @@ const Reestructuraciones = () => {
       <SEOHead 
         title="Reestructuraciones Empresariales y Financieras | Capittal"
         description="Servicios de reestructuración empresarial y financiera. Optimización de capital, refinanciación de deuda y planes de viabilidad en España."
-        canonical="https://capittal.es/servicios/reestructuraciones"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="reestructuración empresarial, refinanciación, viabilidad financiera"
         structuredData={getServiceSchema(
           "Reestructuraciones Empresariales",

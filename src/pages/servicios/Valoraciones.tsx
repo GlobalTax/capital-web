@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
@@ -13,6 +14,7 @@ import ValoracionesFAQNew from '@/components/valoraciones/ValoracionesFAQNew';
 import ValoracionesCTANew from '@/components/valoraciones/ValoracionesCTANew';
 
 const Valoraciones = () => {
+  const location = useLocation();
   console.log('🟢 VALORACIONES PAGE IS RENDERING - This should appear in console');
   useHreflang();
   
@@ -21,7 +23,7 @@ const Valoraciones = () => {
       <SEOHead 
         title="Valoración de Empresas - Métodos DCF, Múltiplos y Comparables | Capittal"
         description="Valoración profesional de empresas con métodos DCF, múltiplos sectoriales y comparables. Informes certificados para M&A, herencias y disputas societarias."
-        canonical="https://capittal.es/servicios/valoraciones"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración de empresas, DCF, múltiplos de valoración, España"
         structuredData={getServiceSchema(
           "Valoración de Empresas",

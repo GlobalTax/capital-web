@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Zap, Sun, Wind, Leaf } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 } from '@/components/sector-v2';
 
 const Energia = () => {
+  const location = useLocation();
   useHreflang();
 
   // Datos verificados REE 2024 y fuentes públicas
@@ -145,7 +147,7 @@ const Energia = () => {
       <SEOHead 
         title="Valoración de Empresas de Energía y Renovables | Capittal"
         description="Expertos en M&A y valoración de activos energéticos: solar, eólica, almacenamiento. +180 operaciones anuales en renovables en España."
-        canonical="https://capittal.es/sectores/energia"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas energía, M&A renovables, vender planta solar, valoración eólica"
         structuredData={[
           getServiceSchema(

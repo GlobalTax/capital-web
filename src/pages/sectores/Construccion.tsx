@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Building2, Hammer, HardHat, Wrench } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 } from '@/components/sector-v2';
 
 const Construccion = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -143,7 +145,7 @@ const Construccion = () => {
       <SEOHead 
         title="Valoración de Empresas de Construcción | M&A Constructoras | Capittal"
         description="Expertos en M&A y valoración de empresas de construcción: obra civil, rehabilitación, pavimentos industriales, estructuras metálicas. Asesoramiento especializado."
-        canonical="https://capittal.es/sectores/construccion"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas construcción, vender constructora, M&A construcción, valoración obra civil"
         structuredData={[
           getServiceSchema(

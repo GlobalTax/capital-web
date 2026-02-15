@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Factory, Truck, Cog, Wrench } from 'lucide-react';
@@ -18,6 +19,7 @@ import {
 } from '@/components/sector-v2';
 
 const Industrial = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -161,7 +163,7 @@ const Industrial = () => {
       <SEOHead 
         title="Valoración de Empresas Industriales - M&A Industrial | Capittal"
         description="Expertos en M&A y valoración de empresas industriales: manufactura, logística, componentes. +420 operaciones anuales en sector industrial en España."
-        canonical="https://capittal.es/sectores/industrial"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas industriales, M&A manufactura, vender fábrica, valoración logística"
         structuredData={[
           getServiceSchema(

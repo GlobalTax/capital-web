@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Truck, Package, Warehouse, MapPin } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 } from '@/components/sector-v2';
 
 const Logistica = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -143,7 +145,7 @@ const Logistica = () => {
       <SEOHead 
         title="Valoración de Empresas de Logística | M&A Transporte | Capittal"
         description="Expertos en M&A y valoración de empresas de logística: transporte, operadores 3PL, última milla, almacenaje. Asesoramiento especializado en el sector."
-        canonical="https://capittal.es/sectores/logistica"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas logística, vender empresa transporte, M&A logística, valoración operador logístico"
         structuredData={[
           getServiceSchema(

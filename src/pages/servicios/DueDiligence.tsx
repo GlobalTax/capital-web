@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
@@ -12,6 +13,7 @@ import DueDiligenceFAQ from '@/components/due-diligence/DueDiligenceFAQ';
 import DueDiligenceCTA from '@/components/due-diligence/DueDiligenceCTA';
 
 const DueDiligence = () => {
+  const location = useLocation();
   useHreflang();
   
   return (
@@ -19,7 +21,7 @@ const DueDiligence = () => {
       <SEOHead 
         title="Due Diligence M&A - Análisis Exhaustivo de Empresas | Capittal"
         description="Servicio especializado de due diligence para fusiones y adquisiciones. Análisis financiero, legal, operacional y estratégico de empresas en España."
-        canonical="https://capittal.es/servicios/due-diligence"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="due diligence, análisis empresarial, auditoría M&A, España"
         structuredData={getServiceSchema(
           "Due Diligence M&A",

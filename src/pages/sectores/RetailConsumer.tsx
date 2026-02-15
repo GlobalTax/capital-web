@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ShoppingBag, Store, Palette, TrendingUp } from 'lucide-react';
@@ -18,6 +19,7 @@ import {
 } from '@/components/sector-v2';
 
 const RetailConsumer = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -161,7 +163,7 @@ const RetailConsumer = () => {
       <SEOHead 
         title="Valoración de Empresas Retail y Consumer - M&A Retail | Capittal"
         description="Expertos en M&A retail: e-commerce, marcas de consumo, franquicias, food & beverage. +250 operaciones anuales en retail en España."
-        canonical="https://capittal.es/sectores/retail-consumer"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas retail, M&A e-commerce, vender marca consumo, valoración franquicias"
         structuredData={[
           getServiceSchema(

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
@@ -12,6 +13,7 @@ import AsesoramientoLegalFAQ from '@/components/asesoramiento-legal/Asesoramient
 import AsesoramientoLegalCTA from '@/components/asesoramiento-legal/AsesoramientoLegalCTA';
 
 const AsesoramientoLegal = () => {
+  const location = useLocation();
   useHreflang();
   
   return (
@@ -19,7 +21,7 @@ const AsesoramientoLegal = () => {
       <SEOHead 
         title="Asesoramiento Legal M&A | Capittal"
         description="Servicio legal especializado en compraventa de empresas: due diligence, contratos, disclosure, mitigación de riesgos y post‑closing."
-        canonical="https://capittal.es/servicios/asesoramiento-legal"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="asesoramiento legal M&A, contratos compraventa empresas, due diligence legal"
         structuredData={getServiceSchema(
           "Asesoramiento Legal M&A",

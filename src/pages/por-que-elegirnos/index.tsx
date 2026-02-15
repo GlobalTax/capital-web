@@ -48,12 +48,12 @@ const PorQueElegirnos = () => {
       <SEOHead 
         title={t('porQueElegirnos.seo.title')}
         description={t('porQueElegirnos.seo.description')}
-        canonical="https://capittal.es/por-que-elegirnos"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords={t('porQueElegirnos.seo.keywords')}
         structuredData={getWebPageSchema(
           t('porQueElegirnos.seo.title'),
           t('porQueElegirnos.seo.description'),
-          "https://capittal.es/por-que-elegirnos"
+          `https://capittal.es${location.pathname}`
         )}
       />
       <Header />

@@ -44,12 +44,12 @@ const Equipo = () => {
       <SEOHead 
         title={t('equipo.seo.title')}
         description={t('equipo.seo.description')}
-        canonical="https://capittal.es/equipo"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords={t('equipo.seo.keywords')}
         structuredData={getWebPageSchema(
           t('equipo.seo.title'),
           t('equipo.seo.description'),
-          "https://capittal.es/equipo"
+          `https://capittal.es${location.pathname}`
         )}
       />
       <UnifiedLayout>

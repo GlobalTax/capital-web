@@ -53,12 +53,12 @@ const ProgramaColaboradores = () => {
       <SEOHead 
         title={t('collab.seo.title')}
         description={t('collab.seo.description')}
-        canonical="https://capittal.es/programa-colaboradores"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords={t('collab.seo.keywords')}
         structuredData={getWebPageSchema(
           t('collab.seo.title'),
           t('collab.seo.description'),
-          "https://capittal.es/programa-colaboradores"
+          `https://capittal.es${location.pathname}`
         )}
       />
       <div className="min-h-screen bg-background">

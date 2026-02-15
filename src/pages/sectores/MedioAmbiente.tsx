@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Recycle, Trash2, Leaf, Building } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 } from '@/components/sector-v2';
 
 const MedioAmbiente = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -143,7 +145,7 @@ const MedioAmbiente = () => {
       <SEOHead 
         title="Valoración de Empresas de Medio Ambiente | M&A Residuos | Capittal"
         description="Expertos en M&A y valoración de empresas de medio ambiente: gestión de residuos, reciclaje, demoliciones, servicios ambientales. Asesoramiento especializado."
-        canonical="https://capittal.es/sectores/medio-ambiente"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas residuos, vender empresa medio ambiente, M&A reciclaje, valoración gestión residuos"
         structuredData={[
           getServiceSchema(
