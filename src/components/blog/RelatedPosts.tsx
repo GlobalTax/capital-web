@@ -44,6 +44,10 @@ const RelatedPosts = ({ posts }: RelatedPostsProps) => {
                       src={post.featured_image_url}
                       alt={post.title}
                       className="w-full h-32 object-cover rounded"
+                      width={400}
+                      height={128}
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 )}
