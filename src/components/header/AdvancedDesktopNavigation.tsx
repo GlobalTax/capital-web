@@ -79,11 +79,22 @@ const SectoresMenu = () => (
       <NavigationMenuLink key={sector.id} asChild>
         <Link
           to={sector.href}
-          className="group flex flex-col space-y-4 p-6 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200"
+          className={`group flex flex-col space-y-4 p-6 rounded-lg border hover:shadow-md transition-all duration-200 ${
+            sector.id === 'seguridad'
+              ? 'border-slate-800 bg-slate-50/50 hover:border-slate-900'
+              : 'border-gray-200 hover:border-gray-300'
+          }`}
         >
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-gray-900 group-hover:text-black">
-              {sector.label}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-900 group-hover:text-black">
+                {sector.label}
+              </span>
+              {sector.id === 'seguridad' && (
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-600 bg-slate-200 px-1.5 py-0.5 rounded">
+                  Destacado
+                </span>
+              )}
             </div>
             <ArrowRight className="size-4 text-gray-400 transition-transform group-hover:translate-x-1" />
           </div>

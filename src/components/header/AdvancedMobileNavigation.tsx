@@ -122,10 +122,17 @@ const AdvancedMobileNavigation = ({ isMenuOpen, setIsMenuOpen }: AdvancedMobileN
                   <Link
                     key={item.href}
                     to={item.href}
-                    className="block text-gray-600 text-sm hover:text-gray-900 transition-colors duration-200 py-1"
+                    className={`block text-sm hover:text-gray-900 transition-colors duration-200 py-1 ${
+                      item.id === 'seguridad' ? 'text-gray-900 font-medium' : 'text-gray-600'
+                    }`}
                     onClick={closeMenu}
                   >
-                    {item.label}
+                    <span className="flex items-center gap-1.5">
+                      {item.label}
+                      {item.id === 'seguridad' && (
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-800" />
+                      )}
+                    </span>
                   </Link>
                 ))}
               </div>
