@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
   <meta property="og:description" content="${description}">
   <meta property="og:image" content="${escapeHtml(image)}">
   <meta property="og:url" content="${canonicalUrl}">
-  <meta property="og:site_name" content="Capittal">
+  <meta property="og:site_name" content="Capittal Transacciones">
   <meta property="og:locale" content="es_ES">
   <meta property="article:published_time" content="${publishedAt}">
   <meta property="article:modified_time" content="${updatedAt}">

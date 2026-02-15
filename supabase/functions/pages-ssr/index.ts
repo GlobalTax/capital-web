@@ -61,6 +61,7 @@ interface PageData {
   keywords: string;
   canonical: string;
   ogType: string;
+  ogImage?: string;
   hreflang?: Record<string, string>;
   structuredData: object[];
   content: string;
@@ -997,6 +998,7 @@ const PAGES_DATA: Record<string, PageData> = {
   // ─── LP CALCULADORAS ───
   "/lp/calculadora": {
     title: "Calculadora de Valoración de Empresas Gratuita | Capittal",
+    ogImage: "https://capittal.es/og-calculadora.jpg",
     description:
       "Calcula el valor de tu empresa gratis con nuestra calculadora de valoración. Múltiplos sectoriales actualizados, resultado inmediato y confidencial.",
     keywords:
@@ -1070,6 +1072,7 @@ const PAGES_DATA: Record<string, PageData> = {
 
   "/lp/calculadora-fiscal": {
     title: "Calculadora de Impacto Fiscal en Venta de Empresas | Capittal",
+    ogImage: "https://capittal.es/og-calculadora.jpg",
     description:
       "Calcula el impacto fiscal de la venta de tu empresa. Estima impuestos, plusvalías y opciones de optimización fiscal gratuita.",
     keywords:
@@ -1328,13 +1331,13 @@ function buildPageHtml(path: string, page: PageData): string {
   <meta property="og:title" content="${escapeHtml(page.title)}">
   <meta property="og:description" content="${escapeHtml(page.description)}">
   <meta property="og:url" content="${escapeHtml(page.canonical)}">
-  <meta property="og:image" content="https://capittal.es/og-image.png">
-  <meta property="og:site_name" content="Capittal">
+  <meta property="og:image" content="${escapeHtml(page.ogImage || 'https://capittal.es/og-image.jpg')}">
+  <meta property="og:site_name" content="Capittal Transacciones">
   <meta property="og:locale" content="es_ES">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(page.title)}">
   <meta name="twitter:description" content="${escapeHtml(page.description)}">
-  <meta name="twitter:image" content="https://capittal.es/og-image.png">
+  <meta name="twitter:image" content="${escapeHtml(page.ogImage || 'https://capittal.es/og-image.jpg')}">
   ${orgJsonLdScript}
   ${jsonLdScripts}
   <meta http-equiv="refresh" content="3;url=${spaUrl}">
