@@ -1,71 +1,48 @@
 
 
-## Simulador de Operacion para el Sector Seguridad
+## Correccion del error critico: pagina en blanco
 
-### Concepto
+### Problema identificado
 
-Crear una herramienta interactiva especifica para empresas de seguridad privada que simule una operacion de compraventa, teniendo en cuenta las metricas clave del sector: ingresos recurrentes por contratos, numero de conexiones en CRA (Central Receptora de Alarmas), personal habilitado, licencias y certificaciones. Seria una nueva landing page en `/lp/simulador-seguridad`.
+El error `Uncaught ReferenceError: Cannot access 'w' before initialization` en `charts-CwGLX5rB.js` es causado por la configuracion de `manualChunks` en `vite.config.ts` (linea 36-47).
 
-### Diferencias con la calculadora generica
+Recharts y las librerias d3 tienen dependencias circulares internas. Cuando Vite/Rollup las fuerza en un chunk separado (`charts`), el orden de inicializacion de variables se rompe, causando un error de "Temporal Dead Zone" (TDZ) que impide que toda la aplicacion arranque.
 
-| Calculadora actual | Simulador Seguridad |
-|---|---|
-| Pide facturacion y EBITDA genericos | Pide ingresos recurrentes mensuales (MRR), numero de conexiones CRA, contratos activos |
-| Multiplo EBITDA estandar | Multiplo ajustado por recurrencia, churn rate y tipo de servicio (vigilancia, alarmas, contra incendios) |
-| Resultado: rango de valoracion | Resultado: valoracion + simulacion de estructura de operacion (precio fijo + earn-out ligado a retencion de contratos) |
-| Formulario generico | Formulario con subsectores especificos: vigilancia, alarmas, sistemas electronicos, contra incendios, ciberseguridad |
+El catch-all `return 'vendor'` en linea 46 agrava el problema al crear dependencias cruzadas entre chunks.
 
-### Flujo del simulador
+### Solucion
 
-1. **Paso 1 - Tipo de empresa**: seleccionar subsector (alarmas/CRA, vigilancia, sistemas electronicos, contra incendios, ciberseguridad, mixto)
-2. **Paso 2 - Datos clave**: segun el subsector, pedir metricas especificas (MRR, conexiones, contratos, personal, licencias)
-3. **Paso 3 - Contacto**: nombre, email, empresa (para captar el lead)
-4. **Resultado**: valoracion estimada con desglose (valor base + prima por recurrencia + prima por licencias), estructura de deal sugerida (% precio fijo + % earn-out), y comparativa con operaciones recientes del sector
+Simplificar la configuracion de `manualChunks` eliminando las entradas problematicas:
 
-### Archivos a crear
+**Archivo: `vite.config.ts`**
 
-| Archivo | Descripcion |
-|---|---|
-| `src/pages/LandingSimuladorSeguridad.tsx` | Pagina principal de la landing con SEO, layout y contenido contextual |
-| `src/components/security-simulator/SecuritySimulatorForm.tsx` | Formulario multi-paso con campos especificos del sector |
-| `src/components/security-simulator/SecuritySimulatorResults.tsx` | Visualizacion de resultados: valoracion, estructura de deal, comparativa |
-| `src/components/security-simulator/subsectorFields.ts` | Configuracion de campos por subsector (alarmas vs vigilancia vs contra incendios) |
-| `src/utils/securityValuation.ts` | Logica de calculo: multiplos por subsector, primas por recurrencia, simulacion de earn-out |
+Cambiar la funcion `manualChunks` para:
+1. Eliminar el chunk `charts` (recharts + d3)
+2. Eliminar el catch-all `vendor`
+3. Mantener solo chunks seguros que no tienen dependencias circulares (pdf, editor, export)
 
-### Archivos a modificar
+```text
+manualChunks: (id) => {
+  if (id.includes('node_modules')) {
+    if (id.includes('@react-pdf') || id.includes('jspdf')) return 'pdf';
+    if (id.includes('react-quill') || id.includes('quill')) return 'editor';
+    if (id.includes('xlsx') || id.includes('html2canvas')) return 'export';
+    if (id.includes('@supabase')) return 'supabase';
+  }
+  // Sin return = Rollup decide automaticamente (evita conflictos circulares)
+}
+```
+
+### Impacto
+
+- Corrige la pagina en blanco inmediatamente
+- La aplicacion carga sin errores de inicializacion
+- Rollup gestiona automaticamente el splitting de recharts, d3, framer-motion y react-dom, evitando conflictos de dependencias circulares
+- Los chunks de PDF, editor, export y supabase se mantienen separados (son seguros porque no tienen dependencias circulares)
+
+### Archivo a modificar
 
 | Archivo | Cambio |
 |---|---|
-| `src/App.tsx` | Anadir ruta `/lp/simulador-seguridad` |
-| `src/pages/sectores/Seguridad.tsx` | Anadir CTA que lleve al simulador desde la pagina de sector |
-
-### Logica de valoracion (securityValuation.ts)
-
-- **Alarmas/CRA**: valoracion basada en numero de conexiones x valor por conexion (rango 800-1.500 EUR/conexion segun mercado) + prima por % de contratos > 24 meses
-- **Vigilancia**: multiplo EBITDA (4x-6x) ajustado por concentracion de clientes y margen operativo
-- **Sistemas electronicos**: multiplo sobre ingresos recurrentes de mantenimiento (1.5x-3x MRR anual) + backlog de instalaciones
-- **Contra incendios**: multiplo mixto (EBITDA + cartera de mantenimiento obligatorio)
-- **Ciberseguridad**: multiplo revenue (2x-5x) por perfil de crecimiento
-
-### Captacion de leads
-
-- El formulario guardara el lead en `contact_leads` con `source = 'simulador-seguridad'` y los datos del subsector
-- Se enviara notificacion al equipo via la edge function `send-form-notifications`
-- El resultado se podra descargar como PDF con branding Capittal
-
-### SEO
-
-- URL: `/lp/simulador-seguridad`
-- Title: "Simulador de Operacion Seguridad Privada | Capittal M&A"
-- Meta description enfocada en keywords: valoracion empresa seguridad, vender empresa alarmas, compraventa vigilancia
-- Canonical y hreflang configurados
-
-### Detalle tecnico
-
-La estructura reutiliza patrones existentes del proyecto:
-- Layout con `UnifiedLayout variant="landing"` igual que las otras LPs
-- Captacion de leads con el mismo protocolo de persistencia (send-form-notifications + contact_leads)
-- Componentes de UI de shadcn/ui para formularios (Select, Input, RadioGroup)
-- Recharts para la visualizacion del desglose de valoracion en resultados
-- React PDF Renderer para generacion del informe descargable
+| `vite.config.ts` | Simplificar manualChunks eliminando chunks problematicos (charts, framer, react-dom, vendor) |
 
