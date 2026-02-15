@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SimpleButton } from '@/components/ui/simple-button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useI18n } from '@/shared/i18n/I18nProvider';
@@ -29,6 +29,13 @@ const Header = () => {
 
           {/* CTA Buttons - Updated styling */}
           <div className="hidden md:flex items-center space-x-3">
+            <Link to="/lp/calculadora">
+              <SimpleButton 
+                text="Valora tu empresa"
+                variant="outline"
+                size="sm"
+              />
+            </Link>
             <Link to={getLocalizedUrl('contacto', lang)}>
               <SimpleButton 
                 text={t('nav.contacto')}
@@ -40,7 +47,14 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            <a
+              href="tel:+34695717490"
+              className="p-2 text-black hover:text-gray-600"
+              aria-label="Llamar por teléfono"
+            >
+              <Phone size={22} />
+            </a>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 text-black hover:text-gray-600"
