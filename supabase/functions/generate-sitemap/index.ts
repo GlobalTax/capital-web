@@ -94,6 +94,8 @@ const staticRoutes: RouteEntry[] = [
 
   // ─── Recursos ───
   { path: "/recursos/blog", changefreq: "weekly", priority: 0.8 },
+  { path: "/recursos/noticias", changefreq: "daily", priority: 0.75 },
+  { path: "/recursos/case-studies", changefreq: "monthly", priority: 0.75 },
 
   // ─── Multilingual: English ───
   { path: "/sell-companies", changefreq: "monthly", priority: 0.7 },
