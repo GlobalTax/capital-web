@@ -551,13 +551,19 @@ const PAGES_DATA: Record<string, PageData> = {
 
   // ─── OTRAS PÁGINAS ───
   "/contacto": {
-    title: "Contacto | Capittal - Asesores M&A en Barcelona",
+    title: "Contacto | Capittal Transacciones - Asesores M&A Barcelona",
     description:
-      "Contacte con Capittal para una consulta confidencial sobre la compraventa de su empresa. Oficinas en Barcelona. Valoraciones, M&A y due diligence.",
+      "Contacta con Capittal para asesoramiento en M&A, valoraciones y due diligence. Oficinas en Ausiàs March 36, Barcelona.",
     keywords:
-      "contacto Capittal, asesores M&A Barcelona, consulta venta empresa, oficina M&A Barcelona",
+      "contacto M&A Barcelona, asesores fusiones adquisiciones, consulta valoración empresas, Capittal contacto",
     canonical: "https://capittal.es/contacto",
     ogType: "website",
+    hreflang: {
+      es: "https://capittal.es/contacto",
+      ca: "https://capittal.es/contacte",
+      en: "https://capittal.es/contact",
+      "x-default": "https://capittal.es/contacto",
+    },
     structuredData: [
       {
         "@context": "https://schema.org",
@@ -565,18 +571,30 @@ const PAGES_DATA: Record<string, PageData> = {
         name: "Capittal Transacciones",
         url: "https://capittal.es",
         image: "https://capittal.es/og-image.png",
-        address: ORG_JSONLD.address,
+        telephone: "+34695717490",
+        email: "info@capittal.es",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: "Ausiàs March 36, Principal",
+          addressLocality: "Barcelona",
+          postalCode: "08010",
+          addressCountry: "ES",
+        },
         areaServed: { "@type": "Country", name: "España" },
-        description: "Firma de asesoramiento en fusiones y adquisiciones con sede en Barcelona.",
+        description: "Firma líder en asesoramiento de fusiones y adquisiciones con sede en Barcelona. Especialistas en sector seguridad.",
+        priceRange: "$$$$",
+        openingHours: "Mo-Fr 09:00-19:00",
       },
     ],
     content: `
-      <h1>Contacte con Capittal</h1>
-      <p>Estamos a su disposición para una consulta confidencial sobre la compraventa de su empresa, valoraciones o due diligence. Nuestro equipo le atenderá con la máxima discreción.</p>
+      <h1>Contacta con nosotros</h1>
+      <p>Hablemos sobre tu próxima operación. Nuestro equipo de más de 70 profesionales está a tu disposición para asesorarte en M&A, valoraciones y due diligence con la máxima confidencialidad.</p>
       <h2>Oficina en Barcelona</h2>
-      <p>Gran Vía 617, Principal, 08007 Barcelona, España.</p>
-      <h2>Solicitar una reunión</h2>
-      <p>Complete nuestro formulario de contacto o llámenos directamente. La primera consulta es gratuita y completamente confidencial.</p>
+      <p>Ausiàs March 36, Principal, 08010 Barcelona, España. Teléfono: +34 695 717 490. Email: info@capittal.es.</p>
+      <h2>Nuestros servicios</h2>
+      <p>Asesoramiento en venta de empresas, adquisiciones, valoraciones profesionales y due diligence financiero, legal y comercial.</p>
+      <h2>¿Por qué Capittal?</h2>
+      <p>Más de 70 profesionales, especialistas en el sector seguridad, operaciones con Private Equity internacional y máxima confidencialidad en cada proceso.</p>
     `,
   },
 
