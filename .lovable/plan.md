@@ -1,100 +1,81 @@
 
-## Pre-rendering SEO: Analisis y solucion viable
 
-### Situacion actual
+## Optimizar la pagina de calculadora de valoracion para SEO
 
-El proyecto ya tiene un sistema SSR completo mediante Edge Functions:
+### Resumen
 
-- **`pages-ssr`**: Genera HTML completo con todo el contenido (headings, texto, enlaces, meta tags, JSON-LD) para ~40 rutas (home, servicios, sectores, contacto, calculadoras, legal).
-- **`blog-ssr`**: Genera HTML completo para cada post del blog con Article schema.
-- **`generate-sitemap`**: Genera sitemap XML dinamico con hreflang.
+Anadir contenido SEO estructurado (H1 visible, secciones explicativas, FAQ con accordion y JSON-LD) a la pagina `/lp/calculadora`, manteniendo la calculadora interactiva above the fold. Tambien actualizar el SSR en `pages-ssr` para que los crawlers reciban todo el contenido.
 
-El problema no es la falta de contenido pre-renderizado -- ya existe. El problema es que **Google no llega a las Edge Functions**. Cuando Google visita `capittal.es/venta-empresas`, recibe el SPA con `<div id="root"></div>` vacio en lugar del HTML completo que ya genera `pages-ssr`.
+### Cambios propuestos
 
-### Por que Options A/B/C no funcionan en Lovable
+#### 1. Nuevo componente: `src/components/landing/CalculatorSEOContent.tsx`
 
-| Opcion | Problema |
-|--------|----------|
-| `vite-plugin-ssr` / `vite-plugin-ssg` | Requiere reestructurar toda la app a un modelo SSR con server entries. No compatible con el build de Lovable. |
-| `react-snap` | Requiere Puppeteer (Chrome headless) en build time. El entorno de build de Lovable no tiene Chrome instalado. |
-| `prerender-spa-plugin` | Tambien requiere Chrome headless. Mismo problema. |
+Componente que contiene todo el contenido SEO debajo de la calculadora:
 
-Estas herramientas necesitan un navegador real ejecutandose durante el build para renderizar cada pagina. El entorno de Lovable no lo soporta.
+**Seccion 1 - Intro (encima de la calculadora, dentro del layout):**
+- H1 visible: "Calculadora de Valoracion de Empresas" (reemplaza el H1 `sr-only` actual)
+- Parrafo introductorio (2-3 frases): explica que la herramienta es para empresarios que quieren vender, inversores evaluando adquisiciones, o emprendedores curiosos sobre el valor de su empresa
 
-### Solucion propuesta: Dynamic Rendering via Edge Function
+**Seccion 2 - Contenido SEO (debajo de la calculadora):**
 
-La solucion estandar para SPAs es **Dynamic Rendering** (recomendado por Google hasta 2024): un proxy en el edge que detecta crawlers y les sirve el HTML pre-renderizado, mientras los usuarios reales reciben la SPA normal.
+- **H2: "Como funciona nuestra calculadora de valoracion?"**
+  - Explicacion de la metodologia: multiples de EBITDA, benchmarks sectoriales, ajustes por tamano/crecimiento/margen
+  - 3-4 parrafos, ~400-500 palabras
 
-#### Implementacion: Edge Function `prerender-proxy`
+- **H2: "Cuando necesitas valorar tu empresa?"**
+  - Lista de escenarios: venta, entrada de socio, herencia, financiacion, planificacion estrategica
+  - ~200-300 palabras
 
-Crear una nueva Edge Function `prerender-proxy` que:
+- **H2: "Valoracion profesional vs. calculadora online"**
+  - Explicacion de que la calculadora da una estimacion orientativa
+  - CTA: "Solicita una valoracion profesional" enlazando a `/contacto`
+  - ~150-200 palabras
 
-1. Recibe TODAS las peticiones entrantes (configurado como proxy en el dominio `capittal.es`)
-2. Inspecciona el `User-Agent` para detectar bots (Googlebot, Bingbot, Slurp, DuckDuckBot, facebookexternalhit, Twitterbot, LinkedInBot, etc.)
-3. **Si es un bot**: llama internamente a `pages-ssr` o `blog-ssr` con el path solicitado y devuelve el HTML completo
-4. **Si es un usuario real**: devuelve un redirect 302 al SPA normal o sirve el `index.html` con un script que carga la app
+**Seccion 3 - FAQ (accordion):**
+- Usa componentes `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent` de shadcn/ui
+- 5 preguntas:
+  1. Es gratuita la calculadora de valoracion?
+  2. Que metodos de valoracion utilizais?
+  3. Cuanto tarda una valoracion profesional?
+  4. Los datos que introduzco son confidenciales?
+  5. Que sectores cubre la calculadora?
 
-```text
-                Peticion a capittal.es/venta-empresas
-                              |
-                    prerender-proxy (Edge)
-                       /            \
-              Bot detectado     Usuario real
-                  |                    |
-          Llama pages-ssr        Sirve SPA normal
-          con ?path=/venta-      (div id=root + JS)
-          empresas
-                  |
-          Devuelve HTML completo
-          con todo el contenido
+#### 2. Modificar `src/pages/LandingCalculator.tsx`
+
+- Reemplazar el H1 `sr-only` (linea 187) por un H1 visible con parrafo introductorio encima de `UnifiedCalculator`
+- Importar y renderizar `CalculatorSEOContent` despues de `ConfidentialityBlock` y `CapittalBrief`
+- Anadir FAQ Schema (JSON-LD) al array `structuredData` del `SEOHead` usando `getFAQSchema` ya existente en `src/utils/seo/schemas.ts`
+
+**Estructura resultante del JSX:**
+```
+UnifiedLayout
+  LanguageSelector
+  H1 visible + parrafo intro
+  UnifiedCalculator (above the fold, interactivo)
+  ConfidentialityBlock
+  CapittalBrief
+  CalculatorSEOContent (H2s + FAQ accordion)
 ```
 
-#### Archivo: `supabase/functions/prerender-proxy/index.ts`
+#### 3. Actualizar SSR en `supabase/functions/pages-ssr/index.ts`
 
-La funcion:
+Expandir el campo `content` de la ruta `/lp/calculadora` (lineas 1021-1026) para incluir todo el contenido SEO: los 3 bloques H2, la seccion FAQ con preguntas y respuestas, y el CTA a contacto. Tambien anadir el FAQPage schema al array `structuredData`.
 
-- Lista de User-Agents de bots conocidos para deteccion
-- Para rutas `/blog/*`: llama a `blog-ssr`
-- Para todas las demas rutas: llama a `pages-ssr`
-- Incluye cache headers para que el CDN cache las respuestas de bots
-- Fallback: si la Edge Function SSR falla, sirve la SPA normal
-
-#### Configuracion necesaria fuera de Lovable
-
-**IMPORTANTE**: Para que esto funcione, se necesita configurar el DNS/proxy del dominio `capittal.es` para que las peticiones pasen por la Edge Function. Esto se hace tipicamente con:
-
-- **Cloudflare Workers** (si el dominio usa Cloudflare): Un Worker que intercepta peticiones y las enruta a la Edge Function
-- **Vercel Edge Middleware** o similar
-- **Nginx reverse proxy** con deteccion de User-Agent
-
-Esta configuracion de infraestructura esta fuera del alcance de Lovable y debe hacerse en el panel de control del proveedor de hosting/DNS.
-
-#### Alternativa inmediata: Enriquecer `index.html` con `noscript`
-
-Como solucion parcial e inmediata (sin necesidad de configuracion externa), podemos anadir un bloque `<noscript>` al `index.html` que contenga:
-
-- El contenido principal de la homepage (H1, H2, descripcion, enlaces a secciones principales)
-- Un nav con enlaces a todas las paginas clave
-- Texto descriptivo de los servicios
-
-Esto no resuelve el problema para todas las paginas pero da a Google contenido basico en la raiz del sitio incluso sin JavaScript. Ademas, Google renderiza JavaScript en la mayoria de los casos, pero el `noscript` actua como red de seguridad.
-
-### Plan de implementacion
-
-1. **Crear `supabase/functions/prerender-proxy/index.ts`** - Edge Function que detecta bots y proxea a `pages-ssr`/`blog-ssr`
-2. **Enriquecer `index.html`** - Anadir bloque `<noscript>` con contenido semantico de la homepage y navegacion completa
-3. **Desplegar** la nueva Edge Function
-4. **Documentar** los pasos de configuracion del dominio necesarios para activar el proxy
+Esto garantiza que los crawlers que reciben el HTML via SSR vean exactamente el mismo contenido que se renderiza en el cliente.
 
 ### Archivos a crear/modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `supabase/functions/prerender-proxy/index.ts` | **Nuevo** - Proxy de dynamic rendering |
-| `index.html` | Anadir `<noscript>` con contenido semantico |
+| `src/components/landing/CalculatorSEOContent.tsx` | **Nuevo** - Contenido SEO + FAQ accordion |
+| `src/pages/LandingCalculator.tsx` | H1 visible, importar CalculatorSEOContent, anadir FAQ schema |
+| `supabase/functions/pages-ssr/index.ts` | Expandir contenido SSR de `/lp/calculadora` con todo el texto SEO y FAQ schema |
 
-### Limitaciones
+### Detalles tecnicos
 
-- El proxy solo funciona cuando el dominio esta configurado para enrutar trafico a traves de el. Sin esa configuracion, la Edge Function existe pero no recibe peticiones.
-- El bloque `<noscript>` solo cubre la homepage, no todas las rutas.
-- Google actualmente renderiza JavaScript (usa Chrome 41+), por lo que en muchos casos ya puede ver el contenido de la SPA. El problema principal es con otros crawlers y con la primera indexacion.
+- El FAQ accordion usa los componentes existentes de `@/components/ui/accordion`
+- El FAQ Schema JSON-LD usa `getFAQSchema()` de `@/utils/seo/schemas.ts` -- ya implementado
+- El CTA "Solicita una valoracion profesional" usa `react-router-dom` `Link` a `/contacto`
+- Todo el contenido es estatico (no requiere fetch de datos), por lo que no hay impacto en rendimiento
+- El H1 visible reemplaza el actual `sr-only` -- mejora SEO sin perder accesibilidad
+
