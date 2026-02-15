@@ -116,6 +116,10 @@ const TestimonialsCarousel = () => {
                                 src={testimonial.logo_url}
                                 alt={`Logo de ${testimonial.client_company}`}
                                 className="h-8 w-auto opacity-70"
+                                width={120}
+                                height={32}
+                                loading="lazy"
+                                decoding="async"
                               />
                             )}
                           </div>

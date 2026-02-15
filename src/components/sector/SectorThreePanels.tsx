@@ -26,11 +26,15 @@ const SectorThreePanels = ({ panels }: SectorThreePanelsProps) => {
                  <div className="space-y-6">
                    <div className="aspect-[4/5] bg-muted/50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300 border border-border/50">
                      {panel.imageUrl ? (
-                       <img 
-                         src={panel.imageUrl} 
-                         alt={panel.title}
-                         className="w-full h-full object-cover"
-                       />
+                        <img 
+                          src={panel.imageUrl} 
+                          alt={panel.title}
+                          className="w-full h-full object-cover"
+                          width={400}
+                          height={500}
+                          loading="lazy"
+                          decoding="async"
+                        />
                      ) : (
                        <div className="w-full h-full flex items-center justify-center">
                          <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center">

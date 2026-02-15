@@ -38,10 +38,13 @@ const PartnerCard = ({ member }: { member: TeamMember }) => {
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
-            alt={`${member.name} - ${member.position || 'Socio'}`}
+            alt={`${member.name} - ${member.position || 'Socio'} en Capittal`}
             className="w-full h-full object-cover object-[center_30%] grayscale group-hover:grayscale-0 transition-all duration-500"
             onError={() => setImageError(true)}
             loading="lazy"
+            decoding="async"
+            width={400}
+            height={533}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -91,10 +94,13 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
         {member.image_url && !imageError ? (
           <img
             src={member.image_url}
-            alt={`${member.name} - ${member.position || 'Miembro del equipo'}`}
+            alt={`${member.name} - ${member.position || 'Miembro del equipo'} en Capittal`}
             className="w-full h-full object-cover object-[center_30%] grayscale group-hover:grayscale-0 transition-all duration-500"
             onError={() => setImageError(true)}
             loading="lazy"
+            decoding="async"
+            width={400}
+            height={533}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted">

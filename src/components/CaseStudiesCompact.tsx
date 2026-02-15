@@ -134,8 +134,12 @@ const CaseStudiesCompact = () => {
                     <div className="w-28 h-28 mb-6 bg-gray-50 rounded-lg p-3 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200 mx-auto">
                       <img 
                         src={case_.logo_url} 
-                        alt={`${case_.title} logo`}
+                        alt={`Logo de ${case_.title}`}
                         className="w-full h-full object-contain"
+                        width={112}
+                        height={112}
+                        loading="lazy"
+                        decoding="async"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           const fallback = document.createElement('div');

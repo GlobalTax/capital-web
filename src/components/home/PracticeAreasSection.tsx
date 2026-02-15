@@ -128,8 +128,12 @@ const PracticeAreasSection: React.FC = () => {
               {/* Background Image */}
               <img
                 src={service.image}
-                alt={service.title}
+                alt={`Servicio de ${service.title} - Capittal`}
                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                width={800}
+                height={500}
+                loading="lazy"
+                decoding="async"
               />
 
               {/* Gradient Overlay */}

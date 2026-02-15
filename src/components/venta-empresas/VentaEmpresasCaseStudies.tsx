@@ -58,8 +58,12 @@ const VentaEmpresasCaseStudies = () => {
                         <div className="mb-4 flex justify-center">
                           <img 
                             src={study.logo_url} 
-                            alt={study.title}
+                            alt={`Logo de ${study.title}`}
                             className="h-12 object-contain"
+                            width={120}
+                            height={48}
+                            loading="lazy"
+                            decoding="async"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
