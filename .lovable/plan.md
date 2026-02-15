@@ -1,32 +1,23 @@
 
 
-## Aplicar `rounded-lg` a todas las imagenes (excepto heroes)
+## Eliminar la card de Francisco Garcia & Assessors
 
-### Problema
-Las imagenes en las paginas publicas no tienen el mismo border-radius que las cards (`rounded-lg` = 8px). Esto rompe la coherencia visual del sistema de diseno.
+### Cambio
 
-### Que se cambia
+En `src/pages/sectores/Seguridad.tsx`, seccion "Por que Capittal para el sector seguridad":
 
-| Archivo | Elemento | Cambio |
-|---------|----------|--------|
-| `src/components/home/LaFirmaSection.tsx` | Contenedor de imagen del equipo | Anadir `rounded-lg` al div `aspect-square overflow-hidden` |
-| `src/components/home/PracticeAreasSection.tsx` | Cards de servicios (actuan como cards con imagen) | Anadir `rounded-lg` al `motion.a` contenedor |
-| `src/components/blog/BlogPostContent.tsx` | Imagen destacada del post | Ya tiene `rounded-lg` -- sin cambios |
-| `src/components/blog/RelatedPosts.tsx` | Thumbnails de posts relacionados | Cambiar `rounded` a `rounded-lg` |
-| `src/components/blog/SimpleBlogPopularPosts.tsx` | Thumbnails de posts populares | Cambiar `rounded` a `rounded-lg` |
-| `src/components/blog/BlogPopularPosts.tsx` | Thumbnails de posts populares | Cambiar `rounded` a `rounded-lg` |
-| `src/components/por-que-elegirnos/PorQueElegirnosTestimonials.tsx` | Fotos de clientes (circular) | Sin cambios -- son avatares `rounded-full`, no imagenes de contenido |
-| `src/components/operations/OperationDetailsModal.tsx` | Logo de operacion | Sin cambios -- son logos pequenos, no imagenes de contenido |
+1. **Eliminar la 4a card** (lineas 422-432): el bloque completo de "Partnership con Francisco Garcia & Assessors"
+2. **Cambiar el grid** de `grid md:grid-cols-2` a `grid md:grid-cols-3` para que las 3 cards restantes queden en una fila equilibrada
 
-### Que NO se toca (heroes)
-- Hero slider principal (`HeroSliderSection`) -- imagenes a sangre completa
-- Cualquier imagen que funcione como fondo de pantalla completa
+### Cards que se mantienen
+- Conocimiento sectorial profundo (Shield)
+- Red de contactos con PEs internacionales (Users)
+- Track record demostrable (Award)
 
 ### Detalle tecnico
 
-1. **LaFirmaSection.tsx** (linea 103): `aspect-square overflow-hidden bg-muted` -> `aspect-square overflow-hidden bg-muted rounded-lg`
-2. **PracticeAreasSection.tsx** (linea 126): `group relative overflow-hidden bg-muted aspect-[4/3]...` -> anadir `rounded-lg`
-3. **RelatedPosts.tsx**: `rounded` -> `rounded-lg` en la clase de la imagen
-4. **SimpleBlogPopularPosts.tsx**: `rounded` -> `rounded-lg`
-5. **BlogPopularPosts.tsx**: `rounded` -> `rounded-lg`
+| Linea | Cambio |
+|-------|--------|
+| 385 | `grid md:grid-cols-2 gap-6` -> `grid md:grid-cols-3 gap-6` |
+| 422-432 | Eliminar bloque completo de la card Partnership |
 
