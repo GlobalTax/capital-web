@@ -20,6 +20,25 @@ function safeJsonLd(str: string): string {
   return str.replace(/</g, "\\u003c");
 }
 
+// ─── Organization JSON-LD (shared, matches pages-ssr) ───
+const ORG_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Capittal Transacciones",
+  "legalName": "Capittal Transacciones S.L.",
+  "url": "https://capittal.es",
+  "logo": "https://capittal.es/logo.png",
+  "description": "Firma de asesoramiento en M&A, valoraciones y due diligence especializada en el sector seguridad",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Ausiàs March 36, Principal",
+    "addressLocality": "Barcelona",
+    "postalCode": "08010",
+    "addressCountry": "ES",
+  },
+  "sameAs": ["https://www.linkedin.com/company/capittal-transacciones"],
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -74,7 +93,8 @@ Deno.serve(async (req) => {
     const updatedAt = post.updated_at;
     const tags = post.tags || [];
 
-    const jsonLd = safeJsonLd(JSON.stringify({
+    // Article structured data with full publisher
+    const articleJsonLd = safeJsonLd(JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Article",
       headline: post.meta_title || post.title,
@@ -83,8 +103,12 @@ Deno.serve(async (req) => {
       author: { "@type": "Person", name: post.author_name },
       publisher: {
         "@type": "Organization",
-        name: "Capittal",
-        logo: { "@type": "ImageObject", url: "https://capittal.es/lovable-uploads/capittal-logo.png" },
+        name: "Capittal Transacciones",
+        legalName: "Capittal Transacciones S.L.",
+        url: "https://capittal.es",
+        logo: { "@type": "ImageObject", url: "https://capittal.es/logo.png" },
+        description: "Firma de asesoramiento en M&A, valoraciones y due diligence especializada en el sector seguridad",
+        sameAs: ["https://www.linkedin.com/company/capittal-transacciones"],
       },
       datePublished: publishedAt,
       dateModified: updatedAt,
@@ -92,6 +116,9 @@ Deno.serve(async (req) => {
       keywords: tags.join(", "),
       articleSection: post.category,
     }));
+
+    // Global Organization schema
+    const orgJsonLd = safeJsonLd(JSON.stringify(ORG_JSONLD));
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -117,7 +144,8 @@ Deno.serve(async (req) => {
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${description}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
-  <script type="application/ld+json">${jsonLd}</script>
+  <script type="application/ld+json">${orgJsonLd}</script>
+  <script type="application/ld+json">${articleJsonLd}</script>
   <meta http-equiv="refresh" content="3;url=${canonicalUrl}">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
