@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => {
     },
     target: ['es2020', 'chrome80', 'safari14'],
     minify: 'esbuild',
+    cssMinify: true,
     sourcemap: mode === 'development', // ⚡ Sourcemaps solo en desarrollo
     chunkSizeWarningLimit: 500,
     assetsInlineLimit: 4096,

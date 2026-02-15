@@ -97,8 +97,12 @@ const OperationsTable: React.FC<OperationsTableProps> = ({ operations, isLoading
                         {operation.logo_url && (
                           <img 
                             src={operation.logo_url} 
-                            alt={operation.company_name}
+                            alt={`Logo de ${operation.company_name}`}
                             className="w-10 h-10 rounded-lg object-contain bg-muted p-1"
+                            width={40}
+                            height={40}
+                            loading="lazy"
+                            decoding="async"
                           />
                         )}
                       </TableCell>

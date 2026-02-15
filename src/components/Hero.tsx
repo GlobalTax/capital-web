@@ -185,10 +185,14 @@ const Hero: React.FC = () => {
               </>
             ) : slide.isMosaic && teamMembers.length > 0 ? (
               <>
-                <img
+              <img
                   src={teamMembers[0].image_url || ''}
-                  alt="Equipo"
+                  alt="Equipo multidisciplinar de Capittal Transacciones"
                   className="absolute inset-0 w-full h-full object-cover object-center"
+                  width={1920}
+                  height={1080}
+                  loading="eager"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/40" />
               </>

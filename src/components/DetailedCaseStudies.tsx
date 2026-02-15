@@ -48,8 +48,12 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
               <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
                 <img 
                   src={logoUrl} 
-                  alt={`Logo ${title}`}
+                  alt={`Logo de ${title}`}
                   className="max-w-full max-h-full object-contain"
+                  width={80}
+                  height={80}
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>

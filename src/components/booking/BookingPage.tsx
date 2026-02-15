@@ -14,8 +14,12 @@ const CapittalLogo = () => (
   <div className="flex items-center gap-2">
     <img 
       src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" 
-      alt="Capittal" 
+      alt="Capittal - Especialistas en M&A"
       className="h-8"
+      width={120}
+      height={32}
+      loading="eager"
+      decoding="async"
     />
   </div>
 );
