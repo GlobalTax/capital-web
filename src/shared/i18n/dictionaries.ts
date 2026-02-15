@@ -273,9 +273,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'compraEmpresas.hero.ctaSecondary': 'Solicitar Consulta',
     
     // Contacto Page
-    'contacto.seo.title': 'Contacto - Consulta Gratuita M&A | Capittal',
-    'contacto.seo.description': 'Contacta con los expertos de Capittal. Consulta gratuita sobre valoración, venta o compra de empresas. Primera reunión sin compromiso.',
-    'contacto.seo.keywords': 'contacto M&A, consulta valoración empresas, asesoría M&A España, contacto fusiones adquisiciones',
+    'contacto.seo.title': 'Contacto | Capittal Transacciones - Asesores M&A Barcelona',
+    'contacto.seo.description': 'Contacta con Capittal para asesoramiento en M&A, valoraciones y due diligence. Oficinas en Ausiàs March 36, Barcelona.',
+    'contacto.seo.keywords': 'contacto M&A Barcelona, asesores fusiones adquisiciones, consulta valoración empresas, Capittal contacto',
     
     // Casos de Éxito Page
     'casosExito.seo.title': 'Casos de Éxito M&A - Más de 200 Transacciones | Capittal',
@@ -1538,9 +1538,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'compraEmpresas.hero.ctaSecondary': 'Sol·licitar Consulta',
     
     // Contacto Page SEO - CA
-    'contacto.seo.title': 'Contacte - Consulta Gratuïta M&A | Capittal',
-    'contacto.seo.description': 'Contacta amb els experts de Capittal. Consulta gratuïta sobre valoració, venda o compra d\'empreses. Primera reunió sense compromís.',
-    'contacto.seo.keywords': 'contacte M&A, consulta valoració empreses, assessoria M&A Espanya',
+    'contacto.seo.title': 'Contacte | Capittal Transaccions - Assessors M&A Barcelona',
+    'contacto.seo.description': 'Contacta amb Capittal per assessorament en M&A, valoracions i due diligence. Oficines a Ausiàs March 36, Barcelona.',
+    'contacto.seo.keywords': 'contacte M&A Barcelona, assessors fusions adquisicions, consulta valoració empreses',
     
     // Equipo Page SEO - CA
     'equipo.seo.title': 'El Nostre Equip - Experts en M&A | Capittal',
@@ -2156,9 +2156,9 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     'contact.description.compra': 'Leave us your details and we will contact you to understand your investment objectives.',
     
     // Contacto Page SEO - EN
-    'contacto.seo.title': 'Contact - Free M&A Consultation | Capittal',
-    'contacto.seo.description': 'Contact Capittal experts. Free consultation on valuation, sale or acquisition of companies. First meeting with no commitment.',
-    'contacto.seo.keywords': 'M&A contact, business valuation consultation, M&A advisory Spain',
+    'contacto.seo.title': 'Contact | Capittal Transactions - M&A Advisors Barcelona',
+    'contacto.seo.description': 'Contact Capittal for M&A advisory, valuations and due diligence. Offices at Ausiàs March 36, Barcelona.',
+    'contacto.seo.keywords': 'M&A contact Barcelona, mergers acquisitions advisors, business valuation consultation',
     
     // Equipo Page SEO - EN
     'equipo.seo.title': 'Our Team - M&A Experts | Capittal',

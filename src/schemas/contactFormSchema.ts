@@ -28,7 +28,7 @@ export const contactFormSchema = z.object({
     .max(254, 'Email muy largo')
     .transform(val => val.toLowerCase().trim()),
   
-  serviceType: z.enum(['vender', 'comprar', 'otros'], {
+  serviceType: z.enum(['vender', 'comprar', 'valoracion', 'due-diligence', 'otros'], {
     required_error: 'Selecciona una opción',
     invalid_type_error: 'Opción inválida'
   }),
