@@ -30,6 +30,13 @@ export const serviciosData: MenuCategory[] = [
         image: "/lovable-uploads/5459d292-9157-404f-915b-a1608e1f4779.png"
       },
       {
+        id: "valoracion-empresas",
+        label: "Valoración de Empresas",
+        href: "/valoracion-empresas",
+        icon: 'chart-bar',
+        description: "Guía completa de métodos y herramientas de valoración"
+      },
+      {
         id: "search-funds",
         label: "Search Funds",
         href: "/servicios/search-funds",
