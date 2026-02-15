@@ -838,6 +838,84 @@ const PAGES_DATA: Record<string, PageData> = {
       <p>1. Valoración gratuita de su empresa. 2. Preparación del memorando informativo confidencial. 3. Contacto con compradores cualificados. 4. Negociación y cierre al mejor precio.</p>
     `,
   },
+
+  "/politica-privacidad": {
+    title: "Política de Privacidad | Capittal",
+    description:
+      "Política de privacidad de Capittal. Información sobre el tratamiento de datos personales, derechos RGPD y protección de datos en operaciones de M&A.",
+    keywords: "política privacidad, RGPD, protección datos, privacidad Capittal",
+    canonical: "https://capittal.es/politica-privacidad",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "Política de Privacidad - Capittal",
+        url: "https://capittal.es/politica-privacidad",
+        description: "Política de privacidad y protección de datos de Capittal.",
+      },
+    ],
+    content: `
+      <h1>Política de Privacidad</h1>
+      <p>En Capittal nos comprometemos con la protección de sus datos personales conforme al Reglamento General de Protección de Datos (RGPD) y la Ley Orgánica de Protección de Datos (LOPDGDD).</p>
+      <h2>Responsable del Tratamiento</h2>
+      <p>Capittal Transacciones S.L., con domicilio en Gran Vía 617, Principal, 08007 Barcelona, España.</p>
+      <h2>Derechos del Interesado</h2>
+      <p>Puede ejercer sus derechos de acceso, rectificación, supresión, portabilidad, limitación y oposición al tratamiento de sus datos personales contactando con nosotros.</p>
+    `,
+  },
+
+  "/terminos-uso": {
+    title: "Términos de Uso | Capittal",
+    description:
+      "Términos y condiciones de uso del sitio web de Capittal. Condiciones legales, limitaciones de responsabilidad y uso aceptable.",
+    keywords: "términos uso, condiciones legales, aviso legal, Capittal",
+    canonical: "https://capittal.es/terminos-uso",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "Términos de Uso - Capittal",
+        url: "https://capittal.es/terminos-uso",
+        description: "Términos y condiciones de uso del sitio web de Capittal.",
+      },
+    ],
+    content: `
+      <h1>Términos de Uso</h1>
+      <p>El presente documento establece las condiciones de uso del sitio web capittal.es, propiedad de Capittal Transacciones S.L.</p>
+      <h2>Uso del Sitio Web</h2>
+      <p>El acceso y uso de este sitio web implica la aceptación de estos términos y condiciones. El contenido del sitio web tiene carácter informativo y no constituye asesoramiento financiero, fiscal o legal vinculante.</p>
+      <h2>Propiedad Intelectual</h2>
+      <p>Todos los contenidos, diseños, textos, gráficos, logos y software de este sitio web son propiedad de Capittal Transacciones S.L. y están protegidos por las leyes de propiedad intelectual.</p>
+    `,
+  },
+
+  "/cookies": {
+    title: "Política de Cookies | Capittal",
+    description:
+      "Política de cookies de Capittal. Información sobre las cookies utilizadas, tipos, finalidades y cómo gestionarlas.",
+    keywords: "política cookies, cookies, gestión cookies, Capittal",
+    canonical: "https://capittal.es/cookies",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "Política de Cookies - Capittal",
+        url: "https://capittal.es/cookies",
+        description: "Política de cookies del sitio web de Capittal.",
+      },
+    ],
+    content: `
+      <h1>Política de Cookies</h1>
+      <p>Este sitio web utiliza cookies propias y de terceros para mejorar la experiencia de navegación, analizar el tráfico y personalizar el contenido.</p>
+      <h2>Tipos de Cookies</h2>
+      <p>Utilizamos cookies técnicas necesarias para el funcionamiento del sitio, cookies analíticas (Google Analytics) para medir el rendimiento, y cookies de preferencias para recordar sus elecciones de idioma y configuración.</p>
+      <h2>Gestión de Cookies</h2>
+      <p>Puede configurar su navegador para rechazar cookies o eliminar las almacenadas. Tenga en cuenta que desactivar ciertas cookies puede afectar la funcionalidad del sitio.</p>
+    `,
+  },
 };
 
 // ─── Multilingual aliases (point to same PageData as the Spanish canonical) ───
