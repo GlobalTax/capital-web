@@ -129,6 +129,28 @@ Para cada pieza genera:
 
 Distribuye las fechas de forma inteligente. NO necesitas que el usuario te diga frecuencia ni canales, tú eres el estratega.`;
 
+const SYSTEM_PROMPT_AUTO_SCHEDULE = `Eres un planificador editorial experto en Private Equity y M&A para Capittal (España). Tu tarea es ASIGNAR FECHAS ÓPTIMAS a contenidos existentes que aún no tienen fecha programada.
+
+RECIBES:
+- Una lista de items existentes (cada uno con id, título, canal, tipo, prioridad, notas)
+- Un rango de fechas (inicio y fin) para distribuir los contenidos
+- Items que YA están programados en ese rango (para evitar solapamientos)
+
+REGLAS DE PROGRAMACIÓN:
+1. LinkedIn empresa: máximo 3 posts/semana, mejores días martes-jueves
+2. LinkedIn personal: 2-3 posts/semana, mejores días lunes/miércoles/viernes
+3. Blog: 1-2 artículos/mes, publicar martes o miércoles
+4. Newsletter: quincenal o mensual, enviar martes o jueves
+5. CRM interno: cualquier día laborable
+6. NUNCA programar 2 contenidos del mismo canal en el mismo día
+7. Respetar los items ya programados: no poner nada en fechas/canales ya ocupados
+8. Priorizar items con prioridad "urgent" y "high" más al inicio del rango
+9. Alternar formatos y canales para variedad editorial
+10. No programar en sábados ni domingos
+11. Distribuir de forma equilibrada a lo largo del horizonte temporal
+
+IMPORTANTE: Devuelve EXACTAMENTE el mismo número de items que recibiste, cada uno con su id original y la fecha asignada.`;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -154,7 +176,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { mode, sector_context, item_data, channel_filter, topics, idea, start_date, frequency, preferred_channels } = await req.json();
+    const { mode, sector_context, item_data, channel_filter, topics, idea, start_date, frequency, preferred_channels, items_to_schedule, already_scheduled, end_date } = await req.json();
 
     let systemPrompt: string;
     let userPrompt: string;
@@ -192,6 +214,24 @@ serve(async (req) => {
       const today = new Date().toISOString().split('T')[0];
 
       userPrompt = `FECHA ACTUAL: ${today}\n\nIDEAS DEL USUARIO:\n${userIdea}\n\nDescompón estas ideas en piezas de contenido concretas y genera un plan editorial completo. Tú decides las fechas óptimas (empezando desde mañana), la frecuencia ideal, y el canal más apropiado para cada pieza.`;
+      useToolCalling = true;
+
+    } else if (mode === "auto_schedule") {
+      if (!items_to_schedule || !Array.isArray(items_to_schedule) || items_to_schedule.length === 0) {
+        throw new Error("No hay items para programar");
+      }
+      systemPrompt = SYSTEM_PROMPT_AUTO_SCHEDULE;
+      const today = new Date().toISOString().split('T')[0];
+
+      const itemsList = items_to_schedule.map((it: any, idx: number) =>
+        `${idx + 1}. [ID: ${it.id}] "${it.title}" | Canal: ${it.channel} | Tipo: ${it.content_type} | Prioridad: ${it.priority} | Categoría: ${it.category || 'N/A'} | Notas: ${it.notes || 'N/A'}`
+      ).join('\n');
+
+      const scheduledList = (already_scheduled || []).map((it: any) =>
+        `- ${it.scheduled_date} | Canal: ${it.channel}`
+      ).join('\n') || 'Ninguno';
+
+      userPrompt = `FECHA ACTUAL: ${today}\nRANGO DE PROGRAMACIÓN: ${start_date || today} a ${end_date || 'sin límite'}\n\nITEMS YA PROGRAMADOS EN ESTE RANGO:\n${scheduledList}\n\nITEMS A PROGRAMAR (${items_to_schedule.length}):\n${itemsList}\n\nAsigna una fecha óptima a cada item respetando las reglas editoriales.`;
       useToolCalling = true;
 
     } else {
@@ -301,6 +341,34 @@ serve(async (req) => {
           },
         }];
         body.tool_choice = { type: "function", function: { name: "return_editorial_plan" } };
+      } else if (mode === "auto_schedule") {
+        body.tools = [{
+          type: "function",
+          function: {
+            name: "return_schedule",
+            description: "Return the scheduled dates for each item",
+            parameters: {
+              type: "object",
+              properties: {
+                schedule: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      item_id: { type: "string", description: "The original item ID" },
+                      scheduled_date: { type: "string", description: "YYYY-MM-DD format" },
+                    },
+                    required: ["item_id", "scheduled_date"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ["schedule"],
+              additionalProperties: false,
+            },
+          },
+        }];
+        body.tool_choice = { type: "function", function: { name: "return_schedule" } };
       }
     }
 
@@ -357,6 +425,9 @@ serve(async (req) => {
           meta_description: result?.meta_description || "",
           target_keywords: Array.isArray(result?.target_keywords) ? result.target_keywords : [],
         };
+      }
+      if (mode === "auto_schedule" && !Array.isArray(result?.schedule)) {
+        result = { schedule: [] };
       }
     } else {
       // Draft mode: return the text content directly

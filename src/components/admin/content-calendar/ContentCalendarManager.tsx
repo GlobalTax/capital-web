@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { CalendarDays, LayoutList, Lightbulb, Database, Sparkles, BarChart3, Columns3, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { CalendarDays, LayoutList, Lightbulb, Database, Sparkles, BarChart3, Columns3, Search, CalendarClock } from 'lucide-react';
 import CalendarView from './CalendarView';
 import ListView from './ListView';
 import KanbanView from './KanbanView';
@@ -10,12 +12,14 @@ import PESectorBrowser from './PESectorBrowser';
 import AIContentEngine from './AIContentEngine';
 import ContentDashboard from './ContentDashboard';
 import ContentItemDialog from './ContentItemDialog';
+import AutoScheduleDialog from './AutoScheduleDialog';
 import { useContentCalendar, type ContentCalendarItem } from '@/hooks/useContentCalendar';
 import { toast } from 'sonner';
 
 const ContentCalendarManager = () => {
   const { items, isLoading, createItem, updateItem, deleteItem } = useContentCalendar();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [autoScheduleOpen, setAutoScheduleOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ContentCalendarItem | null>(null);
   const [prefillData, setPrefillData] = useState<Partial<ContentCalendarItem>>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,6 +85,19 @@ const ContentCalendarManager = () => {
     published: items.filter(i => i.status === 'published').length,
   }), [items]);
 
+  const unscheduledCount = useMemo(() =>
+    items.filter(i => !i.scheduled_date && ['idea', 'draft', 'review'].includes(i.status)).length
+  , [items]);
+
+  const handleAutoScheduleConfirm = (updates: { id: string; scheduled_date: string }[]) => {
+    updates.forEach(u => {
+      updateItem.mutate(
+        { id: u.id, scheduled_date: u.scheduled_date, status: 'scheduled' },
+        { onError: (e: Error) => toast.error(e.message || 'Error al programar') }
+      );
+    });
+  };
+
   return (
     <div className="p-4 space-y-4">
       {/* Header */}
@@ -95,6 +112,13 @@ const ContentCalendarManager = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {unscheduledCount > 0 && (
+            <Button variant="outline" size="sm" onClick={() => setAutoScheduleOpen(true)} className="gap-1.5">
+              <CalendarClock className="h-4 w-4" />
+              Agendar con IA
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{unscheduledCount}</Badge>
+            </Button>
+          )}
           {/* Status pills */}
           <div className="flex gap-1.5 text-xs">
             {[
@@ -208,6 +232,13 @@ const ContentCalendarManager = () => {
         item={editingItem}
         prefill={prefillData}
         onSave={handleSave}
+      />
+
+      <AutoScheduleDialog
+        open={autoScheduleOpen}
+        onOpenChange={setAutoScheduleOpen}
+        items={items}
+        onConfirm={handleAutoScheduleConfirm}
       />
     </div>
   );
