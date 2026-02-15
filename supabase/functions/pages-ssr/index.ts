@@ -1017,12 +1017,54 @@ const PAGES_DATA: Record<string, PageData> = {
         },
         provider: ORG_JSONLD,
       },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [
+          { "@type": "Question", name: "¿Es gratuita la calculadora de valoración?", acceptedAnswer: { "@type": "Answer", text: "Sí, nuestra calculadora de valoración de empresas es completamente gratuita y sin compromiso. Puedes utilizarla tantas veces como necesites para obtener una estimación orientativa del valor de tu negocio." } },
+          { "@type": "Question", name: "¿Qué métodos de valoración utilizáis?", acceptedAnswer: { "@type": "Answer", text: "Nuestra calculadora utiliza el método de múltiplos de EBITDA y de facturación, ajustados por sector, tamaño de empresa, márgenes operativos y tasa de crecimiento. Estos múltiplos se basan en transacciones reales del mercado español y europeo, actualizados periódicamente." } },
+          { "@type": "Question", name: "¿Cuánto tarda una valoración profesional?", acceptedAnswer: { "@type": "Answer", text: "Una valoración profesional completa realizada por nuestro equipo de expertos en M&A suele tardar entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera." } },
+          { "@type": "Question", name: "¿Los datos que introduzco son confidenciales?", acceptedAnswer: { "@type": "Answer", text: "Absolutamente. Todos los datos introducidos en la calculadora son tratados con total confidencialidad. No compartimos información con terceros y cumplimos con la normativa RGPD." } },
+          { "@type": "Question", name: "¿Qué sectores cubre la calculadora?", acceptedAnswer: { "@type": "Answer", text: "La calculadora cubre más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte y logística, alimentación, energía, y muchos más." } },
+        ],
+      },
     ],
     content: `
       <h1>Calculadora de Valoración de Empresas</h1>
-      <p>Utiliza nuestra calculadora gratuita para obtener una estimación del valor de tu empresa. Basada en múltiplos sectoriales actualizados y metodologías reconocidas internacionalmente.</p>
-      <h2>¿Cómo funciona?</h2>
-      <p>Introduce los datos básicos de tu empresa (facturación, EBITDA, sector) y obtén una estimación de valoración inmediata. El proceso es 100% confidencial y gratuito.</p>
+      <p>Descubre cuánto vale tu empresa con nuestra herramienta gratuita. Diseñada para empresarios que consideran vender, inversores evaluando adquisiciones y emprendedores que quieren conocer el valor real de su negocio.</p>
+
+      <h2>¿Cómo funciona nuestra calculadora de valoración?</h2>
+      <p>Nuestra calculadora de valoración de empresas utiliza la metodología de múltiplos de EBITDA (beneficio antes de intereses, impuestos, depreciación y amortización), uno de los métodos más utilizados en el mundo de las fusiones y adquisiciones (M&A). Este enfoque permite obtener una estimación rápida y fundamentada del valor de un negocio, basándose en cómo el mercado valora empresas similares en el mismo sector.</p>
+      <p>El proceso es sencillo: introduces los datos financieros básicos de tu empresa — facturación anual, EBITDA, sector de actividad y número de empleados — y la calculadora aplica los múltiplos sectoriales correspondientes. Estos múltiplos se extraen de bases de datos de transacciones reales del mercado español y europeo, y se actualizan periódicamente para reflejar las condiciones del mercado.</p>
+      <p>Además del múltiplo sectorial base, la calculadora incorpora ajustes por tamaño de empresa, tasa de crecimiento y márgenes operativos. Una empresa con márgenes superiores a la media de su sector, o con un crecimiento sostenido, recibirá una valoración más alta que la media. Del mismo modo, empresas más pequeñas suelen tener un descuento por menor liquidez y mayor riesgo operativo.</p>
+      <p>El resultado es un rango de valoración que refleja el intervalo en el que podría cerrarse una transacción real, no un número único. Esto te ofrece una perspectiva más realista del valor de mercado de tu empresa y te ayuda a tomar decisiones informadas antes de iniciar cualquier proceso de venta, inversión o reestructuración.</p>
+
+      <h2>¿Cuándo necesitas valorar tu empresa?</h2>
+      <p>Conocer el valor de tu empresa es fundamental en múltiples situaciones empresariales. No solo es necesario cuando planeas vender, sino en cualquier momento clave del ciclo de vida de tu negocio:</p>
+      <ul>
+        <li><strong>Venta de la empresa:</strong> conocer el valor de mercado es el primer paso para negociar con garantías y maximizar el precio de venta.</li>
+        <li><strong>Entrada de un nuevo socio o inversor:</strong> una valoración objetiva determina el porcentaje de participación justo para ambas partes.</li>
+        <li><strong>Herencia y sucesión:</strong> para planificar la transmisión generacional o calcular el impacto fiscal de una herencia empresarial.</li>
+        <li><strong>Búsqueda de financiación:</strong> bancos e inversores necesitan una valoración actualizada para evaluar la solvencia y el potencial del negocio.</li>
+        <li><strong>Planificación estratégica:</strong> monitorizar la evolución del valor de tu empresa año a año te permite medir el impacto de tus decisiones de gestión.</li>
+      </ul>
+
+      <h2>Valoración profesional vs. calculadora online</h2>
+      <p>Nuestra calculadora online proporciona una estimación orientativa del valor de tu empresa basada en datos de mercado y múltiplos sectoriales. Es una excelente herramienta para obtener una primera aproximación rápida y gratuita, pero no sustituye a una valoración profesional completa.</p>
+      <p>Una valoración profesional incluye un análisis detallado de los estados financieros, la posición competitiva, los activos tangibles e intangibles, la calidad del equipo directivo, los contratos recurrentes, y otros factores cualitativos que una calculadora automática no puede evaluar.</p>
+      <p><a href="/contacto">Solicita una valoración profesional</a></p>
+
+      <h2>Preguntas frecuentes</h2>
+      <h3>¿Es gratuita la calculadora de valoración?</h3>
+      <p>Sí, nuestra calculadora de valoración de empresas es completamente gratuita y sin compromiso. Puedes utilizarla tantas veces como necesites para obtener una estimación orientativa del valor de tu negocio.</p>
+      <h3>¿Qué métodos de valoración utilizáis?</h3>
+      <p>Nuestra calculadora utiliza el método de múltiplos de EBITDA y de facturación, ajustados por sector, tamaño de empresa, márgenes operativos y tasa de crecimiento. Estos múltiplos se basan en transacciones reales del mercado español y europeo, actualizados periódicamente.</p>
+      <h3>¿Cuánto tarda una valoración profesional?</h3>
+      <p>Una valoración profesional completa realizada por nuestro equipo de expertos en M&A suele tardar entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera.</p>
+      <h3>¿Los datos que introduzco son confidenciales?</h3>
+      <p>Absolutamente. Todos los datos introducidos en la calculadora son tratados con total confidencialidad. No compartimos información con terceros y cumplimos con la normativa RGPD.</p>
+      <h3>¿Qué sectores cubre la calculadora?</h3>
+      <p>La calculadora cubre más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte y logística, alimentación, energía, y muchos más.</p>
     `,
   },
 

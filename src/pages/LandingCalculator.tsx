@@ -11,7 +11,8 @@ import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
 import CapittalBrief from '@/components/landing/CapittalBrief';
 import ConfidentialityBlock from '@/components/landing/ConfidentialityBlock';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { getServiceSchema, getWebPageSchema, getFAQSchema } from '@/utils/seo/schemas';
+import CalculatorSEOContent, { FAQ_DATA } from '@/components/landing/CalculatorSEOContent';
 import { blobToBase64 } from '@/utils/blobToBase64';
 
 const LandingCalculatorInner = () => {
@@ -177,17 +178,26 @@ const LandingCalculatorInner = () => {
             t('landing.title'),
             t('landing.description'),
             `https://capittal.es${location.pathname}${location.search}`
-          )
+          ),
+          getFAQSchema(FAQ_DATA)
         ]}
       />
       <UnifiedLayout variant="landing">
         <div className="max-w-6xl mx-auto px-4 flex justify-end">
           <LanguageSelector />
         </div>
-        <h1 className="sr-only">{t('landing.h1')}</h1>
+        <div className="max-w-4xl mx-auto px-4 text-center mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+            Calculadora de Valoración de Empresas
+          </h1>
+          <p className="text-muted-foreground text-lg leading-relaxed max-w-2xl mx-auto">
+            Descubre cuánto vale tu empresa con nuestra herramienta gratuita. Diseñada para empresarios que consideran vender, inversores evaluando adquisiciones y emprendedores que quieren conocer el valor real de su negocio.
+          </p>
+        </div>
         <UnifiedCalculator config={V2_CONFIG} extraMetadata={extraMetadata} />
         <ConfidentialityBlock />
         <CapittalBrief />
+        <CalculatorSEOContent />
       </UnifiedLayout>
     </>
   );
