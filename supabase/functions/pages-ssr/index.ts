@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -654,6 +656,188 @@ const PAGES_DATA: Record<string, PageData> = {
       <p>Seguridad privada y protección contra incendios, tecnología y servicios IT, industria y manufactura, y servicios profesionales.</p>
     `,
   },
+
+  "/programa-colaboradores": {
+    title: "Programa de Colaboradores | Red de Partners | Capittal",
+    description:
+      "Únase al programa de colaboradores de Capittal. Red de asesores, consultores y profesionales que refieren operaciones de M&A y reciben compensación.",
+    keywords:
+      "programa colaboradores M&A, partners M&A, referidos venta empresa, red asesores Capittal",
+    canonical: "https://capittal.es/programa-colaboradores",
+    ogType: "website",
+    hreflang: {
+      es: "https://capittal.es/programa-colaboradores",
+      ca: "https://capittal.es/programa-col·laboradors",
+      en: "https://capittal.es/collaborators-program",
+      "x-default": "https://capittal.es/programa-colaboradores",
+    },
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "Programa de Colaboradores - Capittal",
+        url: "https://capittal.es/programa-colaboradores",
+        description: "Programa de colaboradores y partners para referir operaciones de M&A.",
+        mainEntity: ORG_JSONLD,
+      },
+    ],
+    content: `
+      <h1>Programa de Colaboradores</h1>
+      <p>El programa de colaboradores de Capittal permite a asesores fiscales, abogados, consultores y otros profesionales colaborar con nosotros refiriendo operaciones de compraventa de empresas. Ofrecemos una compensación atractiva por cada operación que se cierre con éxito.</p>
+      <h2>¿Cómo Funciona?</h2>
+      <p>Identifique empresarios que deseen vender o comprar una empresa, preséntenos la oportunidad y nosotros nos encargamos del proceso completo de M&A. Usted recibe una comisión de éxito al cierre de la operación.</p>
+      <h2>Beneficios del Programa</h2>
+      <p>Comisión de éxito competitiva, soporte completo del equipo Capittal, confidencialidad garantizada, formación en M&A y acceso a herramientas exclusivas para colaboradores.</p>
+    `,
+  },
+
+  "/venta-empresas": {
+    title: "Vender mi Empresa | Proceso de Venta | Capittal",
+    description:
+      "¿Quiere vender su empresa? Capittal le asesora en todo el proceso: valoración, búsqueda de compradores, negociación y cierre. Máxima confidencialidad.",
+    keywords:
+      "vender mi empresa, quiero vender empresa, venta de negocio, cómo vender empresa, asesor venta empresa",
+    canonical: "https://capittal.es/venta-empresas",
+    ogType: "website",
+    hreflang: {
+      es: "https://capittal.es/venta-empresas",
+      ca: "https://capittal.es/venda-empreses",
+      en: "https://capittal.es/sell-companies",
+      "x-default": "https://capittal.es/venta-empresas",
+    },
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        name: "Venta de Empresas",
+        provider: ORG_JSONLD,
+        description: "Asesoramiento integral en la venta de empresas. Maximice el valor con Capittal.",
+        areaServed: { "@type": "Country", name: "España" },
+        serviceType: "Venta de empresas",
+      },
+    ],
+    content: `
+      <h1>Vender mi Empresa</h1>
+      <p>Capittal le asesora en todo el proceso de venta de su empresa, desde la valoración inicial hasta el cierre de la operación. Nuestro objetivo es maximizar el valor de la transacción garantizando la máxima confidencialidad.</p>
+      <h2>Proceso de Venta</h2>
+      <p>Valoración profesional, preparación del memorando informativo, identificación de compradores potenciales, gestión del data room virtual, negociación y cierre. Todo con el acompañamiento de nuestro equipo especializado.</p>
+    `,
+  },
+
+  "/compra-empresas": {
+    title: "Comprar una Empresa | Buy-Side M&A | Capittal",
+    description:
+      "¿Busca adquirir una empresa? Capittal le ayuda a identificar oportunidades, valorar targets y cerrar la adquisición con las mejores condiciones.",
+    keywords:
+      "comprar empresa, adquirir negocio, buy-side M&A, búsqueda empresas comprar, adquisición empresa",
+    canonical: "https://capittal.es/compra-empresas",
+    ogType: "website",
+    hreflang: {
+      es: "https://capittal.es/compra-empresas",
+      ca: "https://capittal.es/compra-empreses",
+      en: "https://capittal.es/buy-companies",
+      "x-default": "https://capittal.es/compra-empresas",
+    },
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        name: "Compra de Empresas",
+        provider: ORG_JSONLD,
+        description: "Asesoramiento buy-side en adquisición de empresas. Identificación de targets y due diligence.",
+        areaServed: { "@type": "Country", name: "España" },
+        serviceType: "Compra de empresas",
+      },
+    ],
+    content: `
+      <h1>Comprar una Empresa</h1>
+      <p>Capittal asesora a compradores corporativos y fondos de inversión en la identificación, evaluación y adquisición de empresas en España. Nuestro servicio buy-side cubre todo el proceso desde la definición de la estrategia de adquisición hasta el cierre.</p>
+      <h2>Servicios Buy-Side</h2>
+      <p>Definición de criterios de búsqueda, identificación de targets, aproximación confidencial, valoración, due diligence coordinada, negociación y cierre.</p>
+    `,
+  },
+
+  "/recursos/blog": {
+    title: "Blog de M&A y Valoraciones | Artículos y Análisis | Capittal",
+    description:
+      "Blog de Capittal sobre fusiones y adquisiciones, valoración de empresas, due diligence, tendencias sectoriales y casos de estudio de M&A en España.",
+    keywords:
+      "blog M&A, artículos fusiones adquisiciones, noticias M&A España, análisis valoración empresas, tendencias M&A",
+    canonical: "https://capittal.es/recursos/blog",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        name: "Blog Capittal - M&A y Valoraciones",
+        url: "https://capittal.es/recursos/blog",
+        description: "Artículos y análisis sobre fusiones y adquisiciones, valoración de empresas y tendencias sectoriales en España.",
+        publisher: ORG_JSONLD,
+      },
+    ],
+    content: `
+      <h1>Blog de M&A y Valoraciones</h1>
+      <p>En el blog de Capittal publicamos artículos y análisis sobre fusiones y adquisiciones, valoración de empresas, due diligence, tendencias sectoriales y casos de estudio del mercado M&A en España.</p>
+      <h2>Temas Principales</h2>
+      <p>Valoración de empresas por sectores, guías para vender tu empresa, tendencias de M&A en seguridad privada, tecnología e industria, planificación fiscal en operaciones de compraventa, y análisis de múltiplos sectoriales.</p>
+      <h2>Recursos para Empresarios</h2>
+      <p>Calculadora de valoración gratuita, informes sectoriales, guías de due diligence y herramientas para preparar su empresa para la venta.</p>
+    `,
+  },
+
+  "/de-looper-a-capittal": {
+    title: "De Looper a Capittal | Nuestra Historia | Capittal",
+    description:
+      "Conoce la evolución de Looper a Capittal. Nuestra historia de transformación y crecimiento como firma de M&A de referencia en España.",
+    keywords:
+      "Looper Capittal, historia Capittal, evolución marca, rebranding M&A",
+    canonical: "https://capittal.es/de-looper-a-capittal",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "De Looper a Capittal",
+        url: "https://capittal.es/de-looper-a-capittal",
+        description: "La evolución de Looper a Capittal como firma de M&A de referencia.",
+      },
+    ],
+    content: `
+      <h1>De Looper a Capittal</h1>
+      <p>Capittal nace de la evolución natural de Looper, nuestra firma original de asesoramiento financiero. El cambio de marca refleja nuestro crecimiento, madurez y posicionamiento como firma de referencia en operaciones de M&A en España.</p>
+      <h2>Nuestra Evolución</h2>
+      <p>Desde nuestros inicios como Looper, hemos completado múltiples operaciones de compraventa de empresas, ampliado nuestro equipo y consolidado nuestra especialización sectorial en seguridad privada, tecnología e industria.</p>
+    `,
+  },
+
+  "/lp/venta-empresas": {
+    title: "¡Vende Tu Empresa Ahora! | Máximo Precio Garantizado | Capittal",
+    description:
+      "Vende tu empresa al máximo precio. Más de 200 operaciones exitosas. Consulta gratuita en 48h. Proceso 100% confidencial.",
+    keywords:
+      "vender empresa rápido, máximo precio empresa, valoración gratuita, venta empresa exitosa",
+    canonical: "https://capittal.es/lp/venta-empresas",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        name: "Venta de Empresas - Capittal",
+        provider: ORG_JSONLD,
+        description: "Servicio de asesoramiento en venta de empresas. Máximo precio garantizado.",
+        areaServed: { "@type": "Country", name: "España" },
+        serviceType: "Venta de empresas",
+      },
+    ],
+    content: `
+      <h1>¡Vende Tu Empresa al Máximo Precio!</h1>
+      <p>En Capittal te ayudamos a vender tu empresa al mejor precio posible. Con más de 200 operaciones completadas con éxito, somos la firma de M&A de referencia en España.</p>
+      <h2>¿Por qué elegir Capittal?</h2>
+      <p>Consulta gratuita en 48 horas, proceso 100% confidencial, red de más de 500 compradores cualificados, equipo con experiencia en banca de inversión de primer nivel y resultados demostrables.</p>
+      <h2>Proceso Sencillo</h2>
+      <p>1. Valoración gratuita de su empresa. 2. Preparación del memorando informativo confidencial. 3. Contacto con compradores cualificados. 4. Negociación y cierre al mejor precio.</p>
+    `,
+  },
 };
 
 // ─── Multilingual aliases (point to same PageData as the Spanish canonical) ───
@@ -705,6 +889,8 @@ const PATH_ALIASES: Record<string, string> = {
   "/sectors/energy": "/sectores/energia",
   "/sectors/security": "/sectores/seguridad",
   "/partners-program": "/programa-colaboradores",
+  "/programa-col·laboradors": "/programa-colaboradores",
+  "/programa-col-laboradors": "/programa-colaboradores",
 };
 
 // ─── Build full HTML ───
@@ -821,7 +1007,7 @@ Deno.serve(async (req) => {
 
     // Resolve aliases for multilingual paths
     const resolvedPath = PATH_ALIASES[path] || path;
-    const page = PAGES_DATA[resolvedPath];
+    let page = PAGES_DATA[resolvedPath];
 
     if (!page) {
       // List available pages for debugging
@@ -848,7 +1034,38 @@ Deno.serve(async (req) => {
       ? { ...page, canonical: `https://capittal.es${path}` }
       : page;
 
-    const html = buildPageHtml(path, effectivePage);
+    // Enrich /recursos/blog with dynamic blog post listing
+    let finalPage = effectivePage;
+    if (resolvedPath === "/recursos/blog") {
+      try {
+        const supabase = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY")!
+        );
+        const { data: posts } = await supabase
+          .from("blog_posts")
+          .select("title, slug, excerpt, category, published_at")
+          .eq("is_published", true)
+          .order("published_at", { ascending: false })
+          .limit(20);
+
+        if (posts?.length) {
+          const postsHtml = posts.map((p: any) => {
+            const date = p.published_at ? new Date(p.published_at).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" }) : "";
+            return `<article><h3><a href="https://capittal.es/blog/${escapeHtml(p.slug)}">${escapeHtml(p.title)}</a></h3><p>${escapeHtml(p.excerpt || "")}</p><small>${escapeHtml(p.category)} · ${date}</small></article>`;
+          }).join("\n      ");
+
+          finalPage = {
+            ...effectivePage,
+            content: effectivePage.content + `\n      <h2>Últimos Artículos</h2>\n      ${postsHtml}`,
+          };
+        }
+      } catch (e) {
+        console.error("Error enriching blog listing:", e);
+      }
+    }
+
+    const html = buildPageHtml(path, finalPage);
 
     return new Response(html, {
       status: 200,
