@@ -168,7 +168,7 @@ const handler = async (req: Request): Promise<Response> => {
                     <!-- Header -->
                     <tr>
                       <td style="padding: 32px 40px 24px; border-bottom: 1px solid #eee;">
-                        <img src="https://capittal.es/lovable-uploads/capittal-logo.png" alt="Capittal" style="height: 32px;">
+                        <img src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" alt="Capittal" style="height: 32px;">
                       </td>
                     </tr>
                     
