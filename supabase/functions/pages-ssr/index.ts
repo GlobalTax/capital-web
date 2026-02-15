@@ -281,34 +281,36 @@ const PAGES_DATA: Record<string, PageData> = {
 
   // ─── SECTORES ───
   "/sectores/seguridad": {
-    title: "M&A Sector Seguridad Privada en España | Capittal",
+    title: "M&A Sector Seguridad | Fusiones y Adquisiciones Seguridad Privada - Capittal",
     description:
-      "Especialistas en fusiones y adquisiciones del sector seguridad privada en España. Asesoramos en compraventa de empresas de seguridad, vigilancia, sistemas de alarma y protección contra incendios.",
+      "Capittal es la firma líder en M&A del sector seguridad en España. Asesoramos en compraventa de empresas de seguridad privada, alarmas, vigilancia y servicios auxiliares.",
     keywords:
-      "M&A seguridad privada, venta empresa seguridad, compra empresa vigilancia, fusiones seguridad España, valoración empresa seguridad",
+      "M&A seguridad privada, fusiones adquisiciones seguridad, vender empresa vigilancia, valoración alarmas, compraventa empresas seguridad, ciberseguridad M&A, sistemas contra incendios, control de accesos",
     canonical: "https://capittal.es/sectores/seguridad",
     ogType: "website",
     structuredData: [
       {
         "@context": "https://schema.org",
         "@type": "Service",
-        name: "M&A Sector Seguridad Privada",
+        name: "M&A Sector Seguridad",
         provider: ORG_JSONLD,
         description:
-          "Asesoramiento en fusiones y adquisiciones del sector seguridad privada en España. Vigilancia, alarmas, protección contra incendios.",
+          "Asesoramiento especializado en fusiones y adquisiciones para empresas de seguridad privada, alarmas, vigilancia y servicios auxiliares en España y Europa.",
         areaServed: { "@type": "Country", name: "España" },
         serviceType: "M&A sector seguridad",
       },
     ],
     content: `
-      <h1>M&A en el Sector de Seguridad Privada</h1>
-      <p>Capittal es la firma de referencia en operaciones de fusiones y adquisiciones del sector seguridad privada en España. Hemos asesorado en operaciones con actores clave como Scutum Group, APT Instalaciones, Grupo SEA España, Mitie y Visegurity.</p>
-      <h2>Subsectores de Seguridad</h2>
-      <p>Cubrimos todos los segmentos del sector seguridad: vigilancia privada, sistemas de alarma y detección, protección contra incendios (PCI), ciberseguridad, control de accesos, transporte de fondos y seguridad electrónica.</p>
-      <h2>Tendencias de Consolidación</h2>
-      <p>El sector seguridad en España está experimentando una fuerte ola de consolidación, liderada por grupos internacionales como Securitas, Scutum y Prosegur. Las empresas medianas son objetivos atractivos de adquisición por su base de clientes recurrente y contratos a largo plazo.</p>
-      <h2>Nuestras Credenciales</h2>
-      <p>Hemos completado múltiples operaciones en el sector seguridad: Scutum/Kosmos Group (sistemas contra incendios), Scutum/APT Instalaciones, Mitie/Visegurity, entre otras. Nuestro partnership con Francisco Garcia & Assessors refuerza nuestra posición de liderazgo en M&A de seguridad.</p>
+      <h1>Especialistas en M&A del Sector Seguridad</h1>
+      <p>Líderes en asesoramiento de fusiones y adquisiciones para empresas de seguridad privada, sistemas de alarmas, vigilancia y servicios auxiliares en España y Europa.</p>
+      <h2>Nuestro expertise en seguridad</h2>
+      <p>En Capittal contamos con un conocimiento profundo del sector de la seguridad privada en España y Europa. Hemos asesorado en múltiples operaciones que abarcan desde empresas de vigilancia tradicional hasta compañías líderes en alarmas, sistemas contra incendios, control de accesos y ciberseguridad.</p>
+      <h2>Operaciones destacadas</h2>
+      <p>Scutum Group / APT Instalaciones (seguridad electrónica, sell-side). Scutum / Grupo SEA España (sistemas de seguridad, sell-side). Mitie / Visegurity (vigilancia, buy-side). Scutum / Kosmos Group (sistemas contra incendios, sell-side).</p>
+      <h2>El sector seguridad en España: tendencias M&A</h2>
+      <p>Consolidación: el mercado español de seguridad privada se encuentra altamente fragmentado. Tecnificación: transición de vigilancia humana a sistemas electrónicos inteligentes. Regulación: la Ley de Seguridad Privada establece barreras de entrada significativas. Internacionalización: grupos europeos como Scutum y Securitas adquieren activamente empresas españolas.</p>
+      <h2>¿Por qué Capittal para el sector seguridad?</h2>
+      <p>Conocimiento sectorial profundo. Red de contactos con PEs internacionales. Track record demostrable con compradores como Scutum Group y Mitie. Partnership con Francisco Garcia & Assessors para asesoramiento integral.</p>
     `,
   },
 
