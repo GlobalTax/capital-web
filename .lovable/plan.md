@@ -1,81 +1,85 @@
 
 
-## Optimizar la pagina de calculadora de valoracion para SEO
+## Nueva pagina SEO: /valoracion-empresas
 
 ### Resumen
 
-Anadir contenido SEO estructurado (H1 visible, secciones explicativas, FAQ con accordion y JSON-LD) a la pagina `/lp/calculadora`, manteniendo la calculadora interactiva above the fold. Tambien actualizar el SSR en `pages-ssr` para que los crawlers reciban todo el contenido.
+Crear una pagina de contenido SEO en `/valoracion-empresas` con estructura informativa completa sobre valoracion de empresas, incluyendo metodos de valoracion, CTA a la calculadora y a contacto, FAQ con JSON-LD, y anadirla a la navegacion bajo Servicios.
 
-### Cambios propuestos
+### Archivos a crear/modificar
 
-#### 1. Nuevo componente: `src/components/landing/CalculatorSEOContent.tsx`
+| Archivo | Cambio |
+|---------|--------|
+| `src/pages/ValoracionEmpresas.tsx` | **Nuevo** - Pagina principal con todo el contenido |
+| `src/core/routing/AppRoutes.tsx` | Anadir ruta `/valoracion-empresas` |
+| `src/components/header/data/serviciosData.ts` | Anadir item "Valoracion de Empresas" al submenu de Servicios Principales |
+| `supabase/functions/pages-ssr/index.ts` | Anadir contenido SSR para `/valoracion-empresas` |
 
-Componente que contiene todo el contenido SEO debajo de la calculadora:
+### Estructura de la pagina
 
-**Seccion 1 - Intro (encima de la calculadora, dentro del layout):**
-- H1 visible: "Calculadora de Valoracion de Empresas" (reemplaza el H1 `sr-only` actual)
-- Parrafo introductorio (2-3 frases): explica que la herramienta es para empresarios que quieren vender, inversores evaluando adquisiciones, o emprendedores curiosos sobre el valor de su empresa
+La pagina usa el patron existente: `Header` + secciones + `Footer`, con `SEOHead` para meta tags y structured data.
 
-**Seccion 2 - Contenido SEO (debajo de la calculadora):**
+**Seccion 1 - Hero/Intro:**
+- H1: "Valoracion de Empresas: Guia Completa y Herramientas"
+- Parrafo introductorio explicando que es la valoracion de empresas y por que es importante
+- Fondo limpio, tipografia grande
 
-- **H2: "Como funciona nuestra calculadora de valoracion?"**
-  - Explicacion de la metodologia: multiples de EBITDA, benchmarks sectoriales, ajustes por tamano/crecimiento/margen
-  - 3-4 parrafos, ~400-500 palabras
+**Seccion 2 - Metodos de valoracion (cards con iconos):**
+- H2: "Metodos de Valoracion"
+- 4 tarjetas en grid 2x2 (md:grid-cols-2):
+  - **Descuento de flujos de caja (DCF)** - icono `TrendingUp` - descripcion 2-3 frases
+  - **Multiplos de mercado (EV/EBITDA, EV/Revenue)** - icono `BarChart3` - descripcion 2-3 frases
+  - **Valoracion por activos** - icono `Building` - descripcion 2-3 frases
+  - **Transacciones comparables** - icono `Scale` - descripcion 2-3 frases
+- Cada tarjeta: borde gris, padding, icono a la izquierda o arriba, titulo en negrita, descripcion debajo
 
-- **H2: "Cuando necesitas valorar tu empresa?"**
-  - Lista de escenarios: venta, entrada de socio, herencia, financiacion, planificacion estrategica
-  - ~200-300 palabras
+**Seccion 3 - Banner calculadora:**
+- H2: "Calcula el valor de tu empresa"
+- Texto breve invitando a usar la herramienta
+- CTA: "Usar calculadora gratuita" con flecha, enlazando a `/lp/calculadora`
+- Fondo de contraste suave (slate-50 o similar)
 
-- **H2: "Valoracion profesional vs. calculadora online"**
-  - Explicacion de que la calculadora da una estimacion orientativa
-  - CTA: "Solicita una valoracion profesional" enlazando a `/contacto`
-  - ~150-200 palabras
+**Seccion 4 - CTA profesional:**
+- H2: "Necesitas una valoracion profesional?"
+- Texto: "Nuestra calculadora da una estimacion inicial. Para una valoracion formal con informe detallado, contacta con nuestro equipo."
+- Boton "Solicita una valoracion profesional" enlazando a `/contacto`
 
-**Seccion 3 - FAQ (accordion):**
-- Usa componentes `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent` de shadcn/ui
-- 5 preguntas:
+**Seccion 5 - FAQ accordion:**
+- H2: "Preguntas frecuentes sobre valoracion de empresas"
+- 5 preguntas con respuestas usando `Accordion` de shadcn/ui:
   1. Es gratuita la calculadora de valoracion?
   2. Que metodos de valoracion utilizais?
   3. Cuanto tarda una valoracion profesional?
   4. Los datos que introduzco son confidenciales?
   5. Que sectores cubre la calculadora?
 
-#### 2. Modificar `src/pages/LandingCalculator.tsx`
+### SEO
 
-- Reemplazar el H1 `sr-only` (linea 187) por un H1 visible con parrafo introductorio encima de `UnifiedCalculator`
-- Importar y renderizar `CalculatorSEOContent` despues de `ConfidentialityBlock` y `CapittalBrief`
-- Anadir FAQ Schema (JSON-LD) al array `structuredData` del `SEOHead` usando `getFAQSchema` ya existente en `src/utils/seo/schemas.ts`
+- **Title**: "Valoracion de Empresas | Metodos, Herramientas y Asesoramiento - Capittal"
+- **Description**: "Todo sobre valoracion de empresas: metodos DCF, multiplos, comparables. Usa nuestra calculadora gratuita o solicita una valoracion profesional."
+- **Canonical**: `https://capittal.es/valoracion-empresas`
+- **Structured Data**: `WebPage` schema + `FAQPage` schema (JSON-LD) usando `getWebPageSchema` y `getFAQSchema` ya existentes en `src/utils/seo/schemas.ts`
 
-**Estructura resultante del JSX:**
+### Navegacion
+
+Anadir al array "Servicios Principales" en `serviciosData.ts`:
 ```
-UnifiedLayout
-  LanguageSelector
-  H1 visible + parrafo intro
-  UnifiedCalculator (above the fold, interactivo)
-  ConfidentialityBlock
-  CapittalBrief
-  CalculatorSEOContent (H2s + FAQ accordion)
+{
+  id: "valoracion-empresas",
+  label: "Valoracion de Empresas",
+  href: "/valoracion-empresas",
+  icon: 'bar-chart',
+  description: "Guia completa de metodos y herramientas de valoracion"
+}
 ```
 
-#### 3. Actualizar SSR en `supabase/functions/pages-ssr/index.ts`
-
-Expandir el campo `content` de la ruta `/lp/calculadora` (lineas 1021-1026) para incluir todo el contenido SEO: los 3 bloques H2, la seccion FAQ con preguntas y respuestas, y el CTA a contacto. Tambien anadir el FAQPage schema al array `structuredData`.
-
-Esto garantiza que los crawlers que reciben el HTML via SSR vean exactamente el mismo contenido que se renderiza en el cliente.
-
-### Archivos a crear/modificar
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/landing/CalculatorSEOContent.tsx` | **Nuevo** - Contenido SEO + FAQ accordion |
-| `src/pages/LandingCalculator.tsx` | H1 visible, importar CalculatorSEOContent, anadir FAQ schema |
-| `supabase/functions/pages-ssr/index.ts` | Expandir contenido SSR de `/lp/calculadora` con todo el texto SEO y FAQ schema |
+Se colocara despues de "Valoraciones" (que apunta a `/servicios/valoraciones`) para diferenciar: "Valoraciones" es el servicio profesional, "Valoracion de Empresas" es la guia/hub SEO.
 
 ### Detalles tecnicos
 
-- El FAQ accordion usa los componentes existentes de `@/components/ui/accordion`
-- El FAQ Schema JSON-LD usa `getFAQSchema()` de `@/utils/seo/schemas.ts` -- ya implementado
-- El CTA "Solicita una valoracion profesional" usa `react-router-dom` `Link` a `/contacto`
-- Todo el contenido es estatico (no requiere fetch de datos), por lo que no hay impacto en rendimiento
-- El H1 visible reemplaza el actual `sr-only` -- mejora SEO sin perder accesibilidad
-
+- Componente unico `ValoracionEmpresas.tsx` con todas las secciones inline (no componentes separados, ya que el contenido es estatico y simple)
+- Iconos de Lucide: `TrendingUp`, `BarChart3`, `Building`, `Scale`, `ArrowRight`, `Calculator`
+- Link component de `react-router-dom` para navegacion interna
+- Accordion de `@/components/ui/accordion`
+- Lazy loading en `AppRoutes.tsx` siguiendo el patron existente
+- SSR: anadir entrada completa en `pages-ssr` con todo el texto y FAQ schema
