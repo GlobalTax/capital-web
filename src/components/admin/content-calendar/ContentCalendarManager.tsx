@@ -55,7 +55,7 @@ const ContentCalendarManager = () => {
   };
 
   const handleDelete = (id: string) => {
-    deleteItem.mutate(id);
+    deleteItem.mutate(id, { onError: (e: Error) => toast.error(e.message || 'Error al eliminar') });
   };
 
   const handleCreateFromSector = (sectorData: { title: string; pe_sector_id: string; category: string; notes: string }) => {

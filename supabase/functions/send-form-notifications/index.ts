@@ -1309,7 +1309,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { submissionId, formType, email, fullName, formData }: FormNotificationRequest = await req.json();
 
-    console.log(`Processing form notification: ${formType}`);
+    console.log(`Processing form notification: type=${formType}, submissionId=${submissionId}`);
 
     // ====== STEP 1: Upsert lead BEFORE sending emails ======
     let leadId: string | null = null;
@@ -1345,7 +1345,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     // Enviar emails a administradores con delay para respetar rate limit
-    console.log(`Enviando ${ADMIN_EMAILS.length} emails a administradores con delays...`);
+    console.log(`Enviando ${ADMIN_EMAILS.length} emails admin para submissionId=${submissionId}...`);
     const adminEmailResults = [];
     
     for (const adminEmail of ADMIN_EMAILS) {
@@ -1358,10 +1358,10 @@ const handler = async (req: Request): Promise<Response> => {
           html: adminTemplate.html,
         });
         adminEmailResults.push({ status: 'fulfilled', value: result });
-        console.log(`✅ Email enviado a ${adminEmail}`);
+        console.log(`✅ Email admin enviado correctamente`);
       } catch (error) {
         adminEmailResults.push({ status: 'rejected', reason: error });
-        console.error(`❌ Error enviando a ${adminEmail}:`, error);
+        console.error(`❌ Error enviando email admin:`, error);
       }
       
       // Delay de 500ms entre emails (respeta límite de 2 req/segundo)
@@ -1369,7 +1369,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Enviar email de confirmación al usuario
-    console.log(`Enviando email de confirmación al usuario...`);
+    console.log(`Enviando email de confirmación al usuario (type=${formType})...`);
     let userResult;
     try {
       // Configuración especial para campaign_valuation
@@ -1394,10 +1394,10 @@ const handler = async (req: Request): Promise<Response> => {
         html: userTemplate.html,
       });
       userResult = { status: 'fulfilled', value: result };
-      console.log(`✅ Email de confirmación enviado al usuario`);
+      console.log(`✅ Email de confirmación enviado correctamente`);
     } catch (error) {
       userResult = { status: 'rejected', reason: error };
-      console.error(`❌ Error enviando confirmación a ${email}:`, error);
+      console.error(`❌ Error enviando confirmación:`, error);
     }
 
     const allAdminSuccessful = adminEmailResults.every(result => result.status === 'fulfilled');
@@ -1425,9 +1425,9 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (userEmailSuccessful) {
-      console.log(`User confirmation email sent successfully to ${email} for submission ${submissionId}`);
+      console.log(`User confirmation email sent successfully for submission ${submissionId}`);
     } else {
-      console.error(`User confirmation email failed for ${email}:`, userResult.status === 'rejected' ? userResult.reason : 'Unknown error');
+      console.error(`User confirmation email failed for submission ${submissionId}:`, userResult.status === 'rejected' ? userResult.reason : 'Unknown error');
     }
 
     return new Response(
