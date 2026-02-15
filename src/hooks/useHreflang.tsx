@@ -14,7 +14,7 @@ const routeMap: Record<string, HreflangRoute> = {
   '/ca': { es: '/', ca: '/ca', en: '/en' },
   '/inici': { es: '/', ca: '/inici', en: '/en' },
   '/en': { es: '/', ca: '/ca', en: '/en' },
-  '/home': { es: '/', ca: '/ca', en: '/en' },
+  '/home': { es: '/', ca: '/ca', en: '/' },
   
   // === BUSINESS PAGES ===
   '/venta-empresas': { es: '/venta-empresas', ca: '/venda-empreses', en: '/sell-companies' },

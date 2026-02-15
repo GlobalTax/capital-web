@@ -4,7 +4,7 @@ import { collaboratorsTranslations } from './collaborators-translations';
 // Helper function to get localized URL
 export function getLocalizedUrl(page: string, lang: 'es' | 'ca' | 'en'): string {
   const urlMap: Record<string, Record<string, string>> = {
-    home: { es: '/', ca: '/inici', en: '/home' },
+    home: { es: '/', ca: '/inici', en: '/' },
     ventaEmpresas: { es: '/venta-empresas', ca: '/venda-empreses', en: '/sell-companies' },
     compraEmpresas: { es: '/compra-empresas', ca: '/compra-empreses', en: '/buy-companies' },
     contacto: { es: '/contacto', ca: '/contacte', en: '/contact' },

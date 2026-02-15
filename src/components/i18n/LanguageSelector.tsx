@@ -18,7 +18,7 @@ interface LanguageSelectorProps {
 function getLocalizedPath(currentPath: string, newLang: LangCode): string {
   // Map of route patterns: ES -> CA -> EN
   const routePatterns = [
-    { es: '/', ca: '/inici', en: '/home' },
+    { es: '/', ca: '/inici', en: '/' },
     { es: '/venta-empresas', ca: '/venda-empreses', en: '/sell-companies' },
     { es: '/compra-empresas', ca: '/compra-empreses', en: '/buy-companies' },
     { es: '/contacto', ca: '/contacte', en: '/contact' },
