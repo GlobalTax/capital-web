@@ -1,44 +1,118 @@
 
 
-## Actualizar meta tags SEO en pages-ssr y diccionarios i18n
+## Optimizar Core Web Vitals (LCP e INP) para moviles
 
 ### Diagnostico
 
-Todas las paginas solicitadas ya existen en `pages-ssr` con title, description, canonical y JSON-LD. Sin embargo, los textos exactos difieren de los solicitados. Ademas, los diccionarios i18n del cliente (`src/shared/i18n/dictionaries.ts`) tienen sus propios valores que tambien necesitan sincronizarse.
+Google Search Console reporta 21 URLs con LCP >4s y 21 URLs con INP >200ms en moviles. Tras analizar el codigo, las causas raiz son:
 
-### Cambios de titulo y descripcion
+### Causa 1: Fuentes bloqueantes
 
-| Pagina | Campo | Valor actual | Valor solicitado |
-|--------|-------|-------------|-----------------|
-| `/` | title | "Capittal - Especialistas en M&A, Valoraciones y Due Diligence" | "Capittal \| Asesores M&A Especializados en el Sector Seguridad - Barcelona" |
-| `/` | description | "Capittal es su socio estrategico en operaciones de fusiones..." | "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con mas de 70 profesionales. Barcelona." |
-| `/venta-empresas` | title | "Vender mi Empresa \| Proceso de Venta \| Capittal" | "Venta de Empresas \| Asesoramiento M&A Profesional - Capittal" |
-| `/venta-empresas` | description | "Quiere vender su empresa? Capittal le asesora..." | "Quieres vender tu empresa? Capittal te acompana en todo el proceso: valoracion, busqueda de comprador, negociacion y cierre. Maxima confidencialidad." |
-| `/compra-empresas` | title | "Comprar una Empresa \| Buy-Side M&A \| Capittal" | "Compra de Empresas \| Asesoria Buy-Side M&A - Capittal" |
-| `/compra-empresas` | description | "Busca adquirir una empresa?..." | "Identificamos y evaluamos oportunidades de adquisicion alineadas con tu estrategia de crecimiento. Especialistas en sector seguridad y servicios auxiliares." |
-| `/equipo` | title | "Nuestro Equipo \| Profesionales M&A \| Capittal" | "Nuestro Equipo \| +70 Profesionales en M&A - Capittal Transacciones" |
-| `/equipo` | description | "Conozca al equipo de Capittal: profesionales con experiencia en banca de inversion..." | "Conoce al equipo de Capittal: profesionales con experiencia en Deloitte, ESADE y las principales firmas de corporate finance de Espana." |
-| `/sectores/tecnologia` | title | "M&A Sector Tecnologia \| Tech M&A Espana \| Capittal" | "M&A Sector Tecnologia \| Valoracion de Empresas Tech - Capittal" |
-| `/sectores/tecnologia` | description | "Asesoramiento en fusiones y adquisiciones de empresas tecnologicas..." | "Asesoramiento especializado en fusiones y adquisiciones del sector tecnologico. Valoracion, due diligence y negociacion de operaciones tech." |
-| `/sectores/industrial` | title | "M&A Sector Industrial \| Fusiones y Adquisiciones Industria \| Capittal" | "M&A Sector Industrial \| Compraventa de Empresas Industriales - Capittal" |
-| `/sectores/industrial` | description | "Asesoramiento en M&A del sector industrial..." | "Expertos en transacciones del sector industrial. Asesoramiento integral en valoracion, compraventa y reestructuracion de empresas industriales." |
+- **Google Fonts**: Se cargan 3 familias (Plus Jakarta Sans, Roboto Mono, Playfair Display) con un `<link>` bloqueante en `index.html` linea 19
+- **General Sans**: Servida en formato `.otf` (mas pesado que `.woff2`) desde `src/index.css`
+- Impacto: Retrasa el primer renderizado significativamente en moviles
 
-### Canonicals
+### Causa 2: Imagenes del Hero sin optimizar
 
-Todos los canonicals ya estan correctamente configurados apuntando a su propia URL. La homepage usa `https://capittal.es/` como canonical (correcto).
+- 3 imagenes JPG importadas estaticamente (`hero-slide-1.jpg`, `hero-slide-2.jpg`, `hero-slide-3.jpg`) sin preload ni `fetchPriority`
+- El Hero ademas hace 2 queries a Supabase (`hero_slides`, `hero_service_pills`) antes de mostrar contenido
+- Las imagenes no tienen `width`/`height` explicitos ni `sizes` para responsive
+- Impacto: El LCP element (imagen hero) tarda en cargar
+
+### Causa 3: Bundle JavaScript masivo
+
+- Todo `node_modules` esta en un unico chunk `vendor` (vite.config.ts linea 36-41)
+- Incluye librerias pesadas que no se usan en la carga inicial: `@react-pdf/renderer`, `recharts`, `xlsx`, `react-quill`, `quill`, `html2canvas`, `jspdf`
+- `framer-motion` se usa en 30+ componentes y se carga completo en vendor
+- Impacto: Tiempo de parseo/ejecucion de JS alto, afecta tanto LCP como INP
+
+### Causa 4: INP - Interacciones lentas
+
+- AnimatePresence de framer-motion en el Hero ejecuta animaciones pesadas durante interaccion
+- `usePredictiveNavigation` ejecuta logica en cada pagina
+- Multiples providers anidados (8 niveles) en `AppProviders.tsx`
+
+---
+
+### Cambios propuestos
+
+#### 1. Optimizar carga de fuentes en `index.html`
+
+Cambiar Google Fonts de bloqueante a no bloqueante usando `media="print" onload`:
+
+```html
+<link rel="preload" href="/fonts/GeneralSans-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" 
+      media="print" onload="this.media='all'" rel="stylesheet">
+```
+
+- Eliminar Roboto Mono (no se usa en paginas publicas)
+- Preload de General Sans (convertir a woff2 si es posible, o al menos preload del .otf)
+
+#### 2. Preload de imagen hero LCP en `index.html`
+
+Anadir preload de la primera imagen del hero:
+
+```html
+<link rel="preload" as="image" href="/hero-slide-1.jpg" fetchpriority="high">
+```
+
+Mover la primera imagen hero a `public/` para que sea accesible por URL directa y se pueda precargar. Ademas, anadir `fetchPriority="high"` al `<img>` del primer slide en `Hero.tsx`.
+
+#### 3. Dividir el vendor chunk en `vite.config.ts`
+
+Separar las librerias pesadas que no se necesitan en carga inicial:
+
+```javascript
+manualChunks: (id) => {
+  if (id.includes('node_modules')) {
+    if (id.includes('framer-motion')) return 'framer';
+    if (id.includes('@react-pdf') || id.includes('jspdf')) return 'pdf';
+    if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+    if (id.includes('react-quill') || id.includes('quill')) return 'editor';
+    if (id.includes('xlsx') || id.includes('html2canvas')) return 'export';
+    if (id.includes('@supabase')) return 'supabase';
+    if (id.includes('react-dom')) return 'react-dom';
+    return 'vendor';
+  }
+}
+```
+
+Esto permite que solo se carguen los chunks necesarios para cada pagina.
+
+#### 4. Optimizar Hero.tsx para LCP
+
+- Renderizar la primera imagen inmediatamente sin esperar a las queries de Supabase (usar `fallbackSlides` como SSR-ready default)
+- Anadir `fetchPriority="high"` y eliminar animacion de entrada en el primer slide
+- Diferir la carga de `AnimatePresence` al segundo slide
+
+#### 5. Reducir INP en Hero.tsx
+
+- Usar `will-change: transform` en slides para hint al compositor
+- Convertir los indicadores de slide a elementos mas simples (sin re-render completo)
+- Reducir duracion de transiciones de 1.2s a 0.6s
 
 ### Archivos a modificar
 
 | Archivo | Cambio |
 |---------|--------|
-| `supabase/functions/pages-ssr/index.ts` | Actualizar title y description de 7 paginas en `PAGES_DATA` |
-| `src/shared/i18n/dictionaries.ts` | Sincronizar las claves `home.seo.*`, `ventaEmpresas.seo.*`, `compraEmpresas.seo.*`, `equipo.seo.*` con los nuevos valores |
+| `index.html` | Fuentes no bloqueantes, preload imagen hero |
+| `vite.config.ts` | Dividir vendor chunk en chunks mas pequenos |
+| `src/components/Hero.tsx` | fetchPriority en imagen, reducir animaciones iniciales |
+| `src/index.css` | Preload hint para General Sans (si se convierte a woff2) |
 
-### Detalle tecnico
+### Impacto esperado
 
-En `pages-ssr/index.ts`, se actualizan los campos `title` y `description` de las entradas `/`, `/venta-empresas`, `/compra-empresas`, `/equipo`, `/sectores/tecnologia` y `/sectores/industrial`. Los campos `keywords`, `canonical`, `structuredData` y `content` no cambian.
+| Metrica | Antes | Estimado despues |
+|---------|-------|-----------------|
+| LCP (movil) | >4s | ~2-2.5s |
+| INP (movil) | >200ms | <200ms |
+| Bundle inicial | ~1 chunk vendor grande | 6 chunks especializados |
 
-En `dictionaries.ts`, se actualizan las claves de idioma espanol (`es`) para que coincidan con los nuevos valores SSR. Las traducciones en catalan e ingles se mantienen tal cual, ya que los valores solicitados son solo en espanol.
+### Notas importantes
 
-Tambien se actualizan los `description` dentro de los objetos `structuredData` (JSON-LD) de cada pagina para mantener coherencia con las nuevas descripciones.
+- Los cambios de fuentes y preload tienen impacto inmediato en LCP
+- La division de chunks reduce el JS que se parsea en la carga inicial
+- Los cambios en Hero.tsx mejoran tanto LCP como INP
+- Se necesitara verificar en PageSpeed Insights despues de publicar para confirmar mejoras
 
