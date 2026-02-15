@@ -1,118 +1,73 @@
 
 
-## Optimizar Core Web Vitals (LCP e INP) para moviles
+## Redisenar la pagina /contacto
 
-### Diagnostico
+### Resumen
 
-Google Search Console reporta 21 URLs con LCP >4s y 21 URLs con INP >200ms en moviles. Tras analizar el codigo, las causas raiz son:
-
-### Causa 1: Fuentes bloqueantes
-
-- **Google Fonts**: Se cargan 3 familias (Plus Jakarta Sans, Roboto Mono, Playfair Display) con un `<link>` bloqueante en `index.html` linea 19
-- **General Sans**: Servida en formato `.otf` (mas pesado que `.woff2`) desde `src/index.css`
-- Impacto: Retrasa el primer renderizado significativamente en moviles
-
-### Causa 2: Imagenes del Hero sin optimizar
-
-- 3 imagenes JPG importadas estaticamente (`hero-slide-1.jpg`, `hero-slide-2.jpg`, `hero-slide-3.jpg`) sin preload ni `fetchPriority`
-- El Hero ademas hace 2 queries a Supabase (`hero_slides`, `hero_service_pills`) antes de mostrar contenido
-- Las imagenes no tienen `width`/`height` explicitos ni `sizes` para responsive
-- Impacto: El LCP element (imagen hero) tarda en cargar
-
-### Causa 3: Bundle JavaScript masivo
-
-- Todo `node_modules` esta en un unico chunk `vendor` (vite.config.ts linea 36-41)
-- Incluye librerias pesadas que no se usan en la carga inicial: `@react-pdf/renderer`, `recharts`, `xlsx`, `react-quill`, `quill`, `html2canvas`, `jspdf`
-- `framer-motion` se usa en 30+ componentes y se carga completo en vendor
-- Impacto: Tiempo de parseo/ejecucion de JS alto, afecta tanto LCP como INP
-
-### Causa 4: INP - Interacciones lentas
-
-- AnimatePresence de framer-motion en el Hero ejecuta animaciones pesadas durante interaccion
-- `usePredictiveNavigation` ejecuta logica en cada pagina
-- Multiples providers anidados (8 niveles) en `AppProviders.tsx`
-
----
+Reemplazar la pagina de contacto actual (que es un formulario centrado simple) con un diseno mas completo que incluya formulario con sidebar de informacion, Google Maps embebido, trust signals y SEO actualizado.
 
 ### Cambios propuestos
 
-#### 1. Optimizar carga de fuentes en `index.html`
+#### 1. Nuevo componente de pagina `src/pages/Contacto.tsx`
 
-Cambiar Google Fonts de bloqueante a no bloqueante usando `media="print" onload`:
+Reescribir la pagina completa con layout de 2 columnas (en desktop):
 
-```html
-<link rel="preload" href="/fonts/GeneralSans-Regular.woff2" as="font" type="font/woff2" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" 
-      media="print" onload="this.media='all'" rel="stylesheet">
-```
+- **Columna izquierda (formulario)**: H1 "Contacta con nosotros", subtitulo, y formulario de contacto personalizado
+- **Columna derecha (sidebar)**: Informacion de contacto, Google Maps embebido, y trust signals
 
-- Eliminar Roboto Mono (no se usa en paginas publicas)
-- Preload de General Sans (convertir a woff2 si es posible, o al menos preload del .otf)
+El formulario tendra estos campos (diferentes al formulario generico actual):
+- Nombre completo (required)
+- Email (required)
+- Telefono (optional)
+- Empresa (optional - actualmente es required en el schema generico)
+- Tipo de consulta: dropdown con 5 opciones: "Quiero vender mi empresa", "Quiero comprar/adquirir", "Necesito una valoracion", "Due Diligence", "Otro"
+- Mensaje (textarea)
+- Boton: "Enviar consulta"
 
-#### 2. Preload de imagen hero LCP en `index.html`
+En lugar de modificar el `ContactForm` generico (que se usa en multiples sitios), se creara un formulario inline directamente en la pagina de contacto, reutilizando el hook `useContactForm` y el schema de validacion existente.
 
-Anadir preload de la primera imagen del hero:
+#### 2. Sidebar de informacion de contacto
 
-```html
-<link rel="preload" as="image" href="/hero-slide-1.jpg" fetchpriority="high">
-```
+Incluira:
+- **Direccion**: Ausias March 36, Principal, Barcelona (con icono MapPin)
+- **Google Maps embed**: iframe con la ubicacion de la oficina
+- **Telefono**: +34 695 717 490 como enlace `tel:` (click-to-call en movil)
+- **Email**: info@capittal.es como enlace `mailto:`
+- **LinkedIn**: enlace a la pagina de empresa
 
-Mover la primera imagen hero a `public/` para que sea accesible por URL directa y se pueda precargar. Ademas, anadir `fetchPriority="high"` al `<img>` del primer slide en `Hero.tsx`.
+#### 3. Trust signals
 
-#### 3. Dividir el vendor chunk en `vite.config.ts`
+Seccion con 4 indicadores en grid:
+- "+70 profesionales"
+- "Especialistas en sector seguridad"
+- "Operaciones con PE internacional"
+- "Maxima confidencialidad"
 
-Separar las librerias pesadas que no se necesitan en carga inicial:
+#### 4. SEO y SSR
 
-```javascript
-manualChunks: (id) => {
-  if (id.includes('node_modules')) {
-    if (id.includes('framer-motion')) return 'framer';
-    if (id.includes('@react-pdf') || id.includes('jspdf')) return 'pdf';
-    if (id.includes('recharts') || id.includes('d3-')) return 'charts';
-    if (id.includes('react-quill') || id.includes('quill')) return 'editor';
-    if (id.includes('xlsx') || id.includes('html2canvas')) return 'export';
-    if (id.includes('@supabase')) return 'supabase';
-    if (id.includes('react-dom')) return 'react-dom';
-    return 'vendor';
-  }
-}
-```
+Actualizar el titulo y descripcion SEO:
+- **Title**: "Contacto | Capittal Transacciones - Asesores M&A Barcelona"
+- **Description**: "Contacta con Capittal para asesoramiento en M&A, valoraciones y due diligence. Oficinas en Ausias March 36, Barcelona."
 
-Esto permite que solo se carguen los chunks necesarios para cada pagina.
+Actualizar la entrada en `pages-ssr/index.ts` para `/contacto` con los nuevos meta tags, direccion actualizada y schema LocalBusiness en structuredData.
 
-#### 4. Optimizar Hero.tsx para LCP
+Actualizar los textos en `src/shared/i18n/dictionaries.ts` para las claves `contacto.seo.title` y `contacto.seo.description`.
 
-- Renderizar la primera imagen inmediatamente sin esperar a las queries de Supabase (usar `fallbackSlides` como SSR-ready default)
-- Anadir `fetchPriority="high"` y eliminar animacion de entrada en el primer slide
-- Diferir la carga de `AnimatePresence` al segundo slide
-
-#### 5. Reducir INP en Hero.tsx
-
-- Usar `will-change: transform` en slides para hint al compositor
-- Convertir los indicadores de slide a elementos mas simples (sin re-render completo)
-- Reducir duracion de transiciones de 1.2s a 0.6s
-
-### Archivos a modificar
+### Detalles tecnicos
 
 | Archivo | Cambio |
 |---------|--------|
-| `index.html` | Fuentes no bloqueantes, preload imagen hero |
-| `vite.config.ts` | Dividir vendor chunk en chunks mas pequenos |
-| `src/components/Hero.tsx` | fetchPriority en imagen, reducir animaciones iniciales |
-| `src/index.css` | Preload hint para General Sans (si se convierte a woff2) |
+| `src/pages/Contacto.tsx` | Reescribir con layout 2 columnas, formulario personalizado, sidebar, maps, trust signals |
+| `src/shared/i18n/dictionaries.ts` | Actualizar claves SEO de contacto (es, ca, en) |
+| `supabase/functions/pages-ssr/index.ts` | Actualizar meta tags y contenido SSR para `/contacto` |
+| `src/schemas/contactFormSchema.ts` | Extender serviceType enum para incluir "valoracion" y "due-diligence" |
 
-### Impacto esperado
+### Nota sobre el formulario
 
-| Metrica | Antes | Estimado despues |
-|---------|-------|-----------------|
-| LCP (movil) | >4s | ~2-2.5s |
-| INP (movil) | >200ms | <200ms |
-| Bundle inicial | ~1 chunk vendor grande | 6 chunks especializados |
+El dropdown de "Tipo de consulta" necesita 5 opciones pero el schema actual solo permite 3 (`vender`, `comprar`, `otros`). Se extendera el enum a: `vender`, `comprar`, `valoracion`, `due-diligence`, `otros`. Esto es compatible con el backend porque el campo se envia como string al Edge Function.
 
-### Notas importantes
+### Diseno responsive
 
-- Los cambios de fuentes y preload tienen impacto inmediato en LCP
-- La division de chunks reduce el JS que se parsea en la carga inicial
-- Los cambios en Hero.tsx mejoran tanto LCP como INP
-- Se necesitara verificar en PageSpeed Insights despues de publicar para confirmar mejoras
-
+- Desktop: 2 columnas (formulario 60% + sidebar 40%)
+- Tablet: 2 columnas mas compactas
+- Movil: 1 columna, sidebar debajo del formulario
