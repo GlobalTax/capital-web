@@ -1,47 +1,61 @@
 
 
-## Aplicar las 6 Mejoras Pendientes de la PR
+## Sistema "Agendar con IA" -- Auto-programar contenidos existentes
 
-### Contexto
-Estas mejoras fueron propuestas en una PR de GitHub pero nunca llegaron al codigo de Lovable. Son mejoras de rendimiento, UX y seguridad.
+### Objetivo
+Crear un boton "Agendar con IA" que tome los contenidos existentes sin fecha (ideas, borradores) y les asigne fechas inteligentes automaticamente, rellenando el calendario. El resultado es editable antes de confirmar.
 
 ---
+
+### Flujo de usuario
+
+1. El usuario pulsa "Agendar con IA" (visible en Kanban, Calendario o Lista)
+2. Se abre un dialogo que muestra cuantos items sin fecha hay y permite configurar:
+   - Fecha de inicio (por defecto: manana)
+   - Horizonte temporal: 2 semanas / 1 mes / 2 meses
+   - Que estados incluir: ideas, drafts, review (checkboxes)
+3. Al pulsar "Generar calendario", la IA recibe todos esos items y devuelve un plan con fechas asignadas
+4. Se muestra una tabla de preview con las fechas propuestas (igual que SmartPlanner: editable inline)
+5. El usuario puede modificar fechas, deseleccionar items, y al confirmar se actualizan todos en la BD
 
 ### Cambios
 
-**1. KanbanView.tsx -- useMemo para rendimiento**
-- Envolver `columnItems` en `useMemo` para evitar recalcular las columnas en cada render
-- Dependencias: `[items]`
+**1. Nuevo componente `AutoScheduleDialog.tsx`**
+- Dialogo modal con configuracion (fecha inicio, horizonte, filtro de estados)
+- Vista previa de items a programar
+- Tabla de resultados editable (reutilizando patron de SmartPlannerSection)
+- Boton de confirmacion que hace batch update via `updateItem.mutate`
 
-**2. CalendarView.tsx -- Normalizacion de fechas**
-- Cambiar linea 58 de `const key = date` a `const key = format(new Date(date), 'yyyy-MM-dd')` para normalizar fechas y evitar problemas de agrupacion cuando el formato varia
+**2. Nuevo modo en la Edge Function `generate-content-calendar-ai`**
+- Modo `auto_schedule`: recibe los items existentes (titulo, canal, tipo, prioridad, notas) y un rango de fechas
+- Nuevo system prompt `SYSTEM_PROMPT_AUTO_SCHEDULE` que instruye a la IA a:
+  - Respetar las reglas de frecuencia por canal (max 3 LinkedIn empresa/semana, etc.)
+  - No programar 2 contenidos del mismo canal en el mismo dia
+  - Priorizar items con prioridad alta/urgente antes en el calendario
+  - Alternar canales y formatos para variedad
+  - Devolver un mapping `{ item_id: scheduled_date }` para cada item
+- Tool calling para respuesta estructurada
 
-**3. ListView.tsx -- Confirmacion antes de eliminar en masa**
-- Anadir `window.confirm()` en `bulkDelete` antes de ejecutar la eliminacion
-- Mensaje: "Vas a eliminar X elementos. Esta accion no se puede deshacer."
-
-**4. ContentCalendarManager.tsx -- onError con toast en mutaciones**
-- Anadir callbacks `onError` en las llamadas a `updateItem.mutate`, `createItem.mutate` y `deleteItem.mutate`
-- Mostrar toast de error con `sonner` cuando falle una operacion
-
-**5. newsletterExport.ts -- Bloqueo de protocolo javascript:**
-- Sanitizar URLs de imagenes en `extractImagesFromHtml`: rechazar cualquier src que empiece por `javascript:`
-- Sanitizar el href del link de descarga para prevenir inyeccion
-
-**6. send-form-notifications/index.ts -- Eliminacion de PII de los logs**
-- Revisar todos los `console.log` del archivo y eliminar datos personales (email, nombre, telefono) de los mensajes de log
-- Dejar solo IDs y tipos de formulario en los logs
+**3. Integrar el boton en `ContentCalendarManager.tsx`**
+- Boton "Agendar con IA" junto al buscador o en el header
+- Visible solo cuando hay items sin fecha programada
+- Badge con el numero de items pendientes de agendar
 
 ---
 
-### Archivos a modificar
+### Detalles tecnicos
 
 | Archivo | Cambio |
 |---|---|
-| `src/components/admin/content-calendar/KanbanView.tsx` | useMemo en columnItems |
-| `src/components/admin/content-calendar/CalendarView.tsx` | Normalizar fecha con format() |
-| `src/components/admin/content-calendar/ListView.tsx` | confirm() en bulkDelete |
-| `src/components/admin/content-calendar/ContentCalendarManager.tsx` | onError + toast en mutaciones |
-| `src/utils/newsletterExport.ts` | Bloquear protocolo javascript: en URLs |
-| `supabase/functions/send-form-notifications/index.ts` | Limpiar PII de console.log |
+| `src/components/admin/content-calendar/AutoScheduleDialog.tsx` | Nuevo componente: dialogo con config, preview y tabla editable |
+| `supabase/functions/generate-content-calendar-ai/index.ts` | Nuevo modo `auto_schedule` con prompt y tool calling |
+| `src/components/admin/content-calendar/ContentCalendarManager.tsx` | Boton "Agendar con IA" en el header |
 
+### Logica de la IA para programar
+
+La IA recibe:
+- Lista de items con su id, titulo, canal, tipo, prioridad, notas
+- Fecha de inicio y fecha de fin del horizonte
+- Items ya programados en ese rango (para no solapar)
+
+Y devuelve para cada item una fecha optima siguiendo las reglas editoriales (frecuencia por canal, prioridad, variedad).
