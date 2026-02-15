@@ -382,7 +382,7 @@ const Seguridad = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-background rounded-xl border border-border p-8">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center mb-5">
                 <Shield className="w-6 h-6 text-slate-600" />
@@ -419,17 +419,6 @@ const Seguridad = () => {
               </p>
             </div>
 
-            <div className="bg-background rounded-xl border border-border p-8">
-              <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center mb-5">
-                <Handshake className="w-6 h-6 text-slate-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Partnership con Francisco Garcia & Assessors</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Nuestra alianza estratégica con Francisco Garcia & Assessors nos permite ofrecer un 
-                asesoramiento integral que combina expertise en M&A con conocimiento jurídico y fiscal 
-                especializado en el sector seguridad.
-              </p>
-            </div>
           </div>
         </div>
       </section>
