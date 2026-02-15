@@ -21,7 +21,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to={getLocalizedUrl('home', lang)} className="flex flex-col">
-              <img src={CAPITTAL_LOGO_SVG} alt={CAPITTAL_LOGO_ALT} className="h-8" width={120} height={32} />
+              <img src={CAPITTAL_LOGO_SVG} alt={CAPITTAL_LOGO_ALT} className="h-6" width={90} height={24} />
             </Link>
           </div>
 
