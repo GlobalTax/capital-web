@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo';
@@ -10,6 +11,7 @@ import PlanificacionFiscalFAQ from '@/components/planificacion-fiscal/Planificac
 import PlanificacionFiscalCTA from '@/components/planificacion-fiscal/PlanificacionFiscalCTA';
 
 const PlanificacionFiscal = () => {
+  const location = useLocation();
   useHreflang();
   
   return (
@@ -17,7 +19,7 @@ const PlanificacionFiscal = () => {
       <SEOHead 
         title="Planificación Fiscal M&A en España | Capittal"
         description="Optimización fiscal en fusiones y adquisiciones. Reducimos la carga tributaria diseñando estructuras eficientes y conformes a la normativa española."
-        canonical="https://capittal.es/servicios/planificacion-fiscal"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="planificación fiscal M&A, optimización fiscal, estructuras fiscales España"
         structuredData={getServiceSchema(
           "Planificación Fiscal M&A",

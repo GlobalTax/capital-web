@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AccessibilityTools from '@/components/AccessibilityTools';
@@ -8,12 +9,13 @@ import { SEOHead } from '@/components/seo';
 import { getWebPageSchema } from '@/utils/seo';
 
 const DeLooperACapittal = () => {
+  const location = useLocation();
   return (
     <>
       <SEOHead 
         title="De Looper a Capittal: Nuestra Evolución | Capittal"
         description="Descubre por qué evolucionamos de Looper a Capittal. Conoce nuestra historia, los beneficios del cambio y cómo seguimos mejorando nuestros servicios de valoración empresarial."
-        canonical="https://capittal.es/de-looper-a-capittal"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="evolución Capittal, historia empresa, Looper a Capittal, transformación empresarial"
         structuredData={getWebPageSchema(
           "De Looper a Capittal: Nuestra Evolución",

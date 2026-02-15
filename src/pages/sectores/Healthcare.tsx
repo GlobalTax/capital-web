@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Hospital, Heart, Pill, Stethoscope } from 'lucide-react';
@@ -18,6 +19,7 @@ import {
 } from '@/components/sector-v2';
 
 const Healthcare = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -162,7 +164,7 @@ const Healthcare = () => {
       <SEOHead 
         title="Valoración de Empresas Healthcare y Farmacéuticas | Capittal"
         description="Expertos en M&A y valoración de empresas del sector salud: clínicas, farmacéuticas, dispositivos médicos. +350 operaciones anuales en healthcare en España."
-        canonical="https://capittal.es/sectores/healthcare"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas healthcare, M&A farmacéuticas, vender clínica, valoración dispositivos médicos"
         structuredData={[
           getServiceSchema(

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { UtensilsCrossed, Truck, Wine, Coffee } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 } from '@/components/sector-v2';
 
 const Alimentacion = () => {
+  const location = useLocation();
   useHreflang();
 
   const heroMetrics = [
@@ -143,7 +145,7 @@ const Alimentacion = () => {
       <SEOHead 
         title="Valoración de Empresas Alimentarias | M&A Food & Beverage | Capittal"
         description="Expertos en M&A y valoración de empresas alimentarias: producción, distribución, bebidas, HORECA. Asesoramiento especializado en el sector food & beverage."
-        canonical="https://capittal.es/sectores/alimentacion"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="valoración empresas alimentarias, vender empresa alimentación, M&A food beverage, valoración distribución alimentaria"
         structuredData={[
           getServiceSchema(

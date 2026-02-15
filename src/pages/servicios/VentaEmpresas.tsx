@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import VentaEmpresasHeroService from '@/components/venta-empresas/VentaEmpresasHeroService';
 import VentaEmpresasProcess from '@/components/venta-empresas/VentaEmpresasProcess';
@@ -13,6 +14,7 @@ import { getServiceSchema } from '@/utils/seo';
 import { useHreflang } from '@/hooks/useHreflang';
 
 const VentaEmpresas = () => {
+  const location = useLocation();
   useHreflang();
   
   return (
@@ -20,7 +22,7 @@ const VentaEmpresas = () => {
       <SEOHead 
         title="Servicio de Venta de Empresas | M&A Profesional | Capittal"
         description="Servicio profesional integral de M&A para venta de empresas. Metodología probada, due diligence completo, negociación experta. Parte de nuestros servicios financieros."
-        canonical="https://capittal.es/servicios/venta-empresas"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="servicio M&A profesional, asesoramiento venta empresas, metodología M&A, due diligence empresas, servicios financieros Capittal"
         structuredData={getServiceSchema(
           "Servicio de Venta de Empresas M&A",

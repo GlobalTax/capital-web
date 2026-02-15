@@ -51,7 +51,7 @@ const VentaEmpresas = () => {
       <SEOHead 
         title={t('ventaEmpresas.seo.title')}
         description={t('ventaEmpresas.seo.description')}
-        canonical="https://capittal.es/venta-empresas"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords={t('ventaEmpresas.seo.keywords')}
         structuredData={getServiceSchema(
           t('ventaEmpresas.seo.title'),

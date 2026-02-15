@@ -1,16 +1,18 @@
 
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getWebPageSchema } from '@/utils/seo';
 
 const TerminosUso = () => {
+  const location = useLocation();
   return (
     <>
       <SEOHead 
         title="Términos y Condiciones de Uso | Capittal"
         description="Términos y condiciones completos para el uso de Capittal y su herramienta de valoración de empresas. Marco legal robusto y protección integral."
-        canonical="https://capittal.es/terminos-uso"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="términos uso Capittal, condiciones uso, aviso legal, protección datos"
         structuredData={getWebPageSchema(
           "Términos y Condiciones de Uso",

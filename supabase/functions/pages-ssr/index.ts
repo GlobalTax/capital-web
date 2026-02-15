@@ -658,18 +658,36 @@ const PAGES_DATA: Record<string, PageData> = {
 
 // ─── Multilingual aliases (point to same PageData as the Spanish canonical) ───
 const PATH_ALIASES: Record<string, string> = {
+  // ─── Main pages multilingual ───
+  "/team": "/equipo",
+  "/equip": "/equipo",
+  "/buy-companies": "/compra-empresas",
+  "/compra-empreses": "/compra-empresas",
+  "/sell-companies": "/venta-empresas",
+  "/venda-empreses": "/venta-empresas",
+  "/why-choose-us": "/por-que-elegirnos",
+  "/per-que-triar-nos": "/por-que-elegirnos",
+  "/success-stories": "/casos-exito",
+  "/casos-exit": "/casos-exito",
+  "/contact": "/contacto",
+  "/contacte": "/contacto",
+  "/collaborators-program": "/programa-colaboradores",
+  "/partners-program": "/programa-colaboradores",
+  // ─── Catalan service routes ───
   "/serveis/valoracions": "/servicios/valoraciones",
   "/serveis/venda-empreses": "/servicios/venta-empresas",
   "/serveis/due-diligence": "/servicios/due-diligence",
   "/serveis/assessorament-legal": "/servicios/asesoramiento-legal",
   "/serveis/reestructuracions": "/servicios/reestructuraciones",
   "/serveis/planificacio-fiscal": "/servicios/planificacion-fiscal",
+  // ─── English service routes ───
   "/services/valuations": "/servicios/valoraciones",
   "/services/sell-companies": "/servicios/venta-empresas",
   "/services/due-diligence": "/servicios/due-diligence",
   "/services/legal-advisory": "/servicios/asesoramiento-legal",
   "/services/restructuring": "/servicios/reestructuraciones",
   "/services/tax-planning": "/servicios/planificacion-fiscal",
+  // ─── Catalan sector routes ───
   "/sectors/tecnologia": "/sectores/tecnologia",
   "/sectors/salut": "/sectores/healthcare",
   "/sectors/industrial": "/sectores/industrial",
@@ -680,6 +698,7 @@ const PATH_ALIASES: Record<string, string> = {
   "/sectors/alimentacio": "/sectores/alimentacion",
   "/sectors/logistica": "/sectores/logistica",
   "/sectors/medi-ambient": "/sectores/medio-ambiente",
+  // ─── English sector routes ───
   "/sectors/technology": "/sectores/tecnologia",
   "/sectors/healthcare": "/sectores/healthcare",
   "/sectors/retail-consumer": "/sectores/retail-consumer",
@@ -823,7 +842,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const html = buildPageHtml(path, page);
+    // If path is an alias, override canonical to match the actual requested path
+    // so each language variant is independently indexable
+    const effectivePage = path !== resolvedPath
+      ? { ...page, canonical: `https://capittal.es${path}` }
+      : page;
+
+    const html = buildPageHtml(path, effectivePage);
 
     return new Response(html, {
       status: 200,

@@ -50,7 +50,7 @@ const CompraEmpresas = () => {
       <SEOHead 
         title={t('compraEmpresas.seo.title')}
         description={t('compraEmpresas.seo.description')}
-        canonical="https://capittal.es/compra-empresas"
+        canonical={`https://capittal.es${location.pathname}`}
         keywords={t('compraEmpresas.seo.keywords')}
         structuredData={[
           getServiceSchema(
@@ -61,7 +61,7 @@ const CompraEmpresas = () => {
           getWebPageSchema(
             t('compraEmpresas.seo.title'),
             t('compraEmpresas.seo.description'),
-            "https://capittal.es/compra-empresas"
+            `https://capittal.es${location.pathname}`
           )
         ]}
       />
