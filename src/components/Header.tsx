@@ -20,7 +20,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link to={getLocalizedUrl('home', lang)} className="flex flex-col">
-              <span className="text-2xl font-bold text-black">Capittal</span>
+              <img src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo.svg" alt="Capittal - Especialistas en M&A" className="h-8" width={120} height={32} />
             </Link>
           </div>
 
