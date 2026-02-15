@@ -21,15 +21,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"></noscript>
     
-    <!-- LCP: Preload hero image -->
-    <link rel="preload" as="image" href="/hero-slide-1.jpg" fetchpriority="high">
-    
     <!-- ⚡ OPTIMIZACIÓN: DNS Prefetch + Preconnect to Supabase -->
     <link rel="dns-prefetch" href="https://fwhqtzkkvnjkazhaficj.supabase.co">
     <link rel="preconnect" href="https://fwhqtzkkvnjkazhaficj.supabase.co" crossorigin>
 
-    
-    
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://capittal.es/og-image.jpg">
     <meta property="og:site_name" content="Capittal Transacciones" />
@@ -39,9 +34,73 @@
     <meta name="twitter:image" content="https://capittal.es/og-image.jpg">
 
     <meta property="og:title" content="Capittal - Especialistas en Fusiones y Adquisiciones">
-  <meta name="twitter:title" content="Capittal - Especialistas en Fusiones y Adquisiciones">
-  <meta property="og:description" content="Capittal es su socio estratégico en operaciones de M&amp;A, due diligence y valoraciones empresariales. Experiencia y confianza en cada transacción.">
-  <meta name="twitter:description" content="Capittal es su socio estratégico en operaciones de M&amp;A, due diligence y valoraciones empresariales. Experiencia y confianza en cada transacción.">
+    <meta name="twitter:title" content="Capittal - Especialistas en Fusiones y Adquisiciones">
+    <meta property="og:description" content="Capittal es su socio estratégico en operaciones de M&amp;A, due diligence y valoraciones empresariales. Experiencia y confianza en cada transacción.">
+    <meta name="twitter:description" content="Capittal es su socio estratégico en operaciones de M&amp;A, due diligence y valoraciones empresariales. Experiencia y confianza en cada transacción.">
+
+    <!-- SEO: Synchronous route-based meta tags injection (runs before React) -->
+    <script>
+      (function(){
+        var R={
+          "/":{t:"Capittal | Asesores M&A Especializados en Valoraciones y Due Diligence",d:"Capittal Transacciones: firma de M&A en Barcelona. Especialistas en venta y compra de empresas, valoraciones, due diligence y planificación fiscal."},
+          "/venta-empresas":{t:"Venta de Empresas | Asesoramiento Profesional | Capittal",d:"¿Quiere vender su empresa? Capittal le acompaña en todo el proceso: valoración, cuaderno de venta, negociación y cierre. Especialistas en seguridad, tecnología e industrial."},
+          "/compra-empresas":{t:"Compra de Empresas | Asesoramiento Buy-Side | Capittal",d:"Identificamos oportunidades de adquisición y le asesoramos en todo el proceso de compra. Due diligence, valoración y negociación con Capittal."},
+          "/contacto":{t:"Contacto | Capittal Transacciones",d:"Hablemos sobre su próxima operación. Contacte con Capittal en Barcelona: Ausiàs March 36. Asesoramiento en M&A, valoraciones y due diligence."},
+          "/equipo":{t:"Nuestro Equipo | Profesionales M&A | Capittal",d:"Conozca al equipo de Capittal: profesionales especializados en fusiones, adquisiciones, valoraciones y asesoramiento financiero."},
+          "/por-que-elegirnos":{t:"Por Qué Elegirnos | Capittal Transacciones",d:"Experiencia, metodología y resultados. Descubra por qué Capittal es su mejor socio en operaciones de M&A y valoraciones empresariales."},
+          "/casos-exito":{t:"Casos de Éxito | Operaciones M&A | Capittal",d:"Operaciones cerradas con éxito por Capittal. Venta de empresas, adquisiciones y valoraciones en múltiples sectores."},
+          "/programa-colaboradores":{t:"Programa de Colaboradores | Capittal",d:"Únase a nuestra red de colaboradores. Refiera operaciones de M&A y reciba compensación por cada transacción cerrada."},
+          "/servicios/venta-empresas":{t:"Servicio de Venta de Empresas | Capittal",d:"Servicio profesional integral de venta de empresas. Valoración, preparación del cuaderno de venta, búsqueda de compradores y cierre de la operación."},
+          "/servicios/compra-empresas":{t:"Servicio de Compra de Empresas | Capittal",d:"Asesoramiento buy-side profesional. Identificación de targets, due diligence, valoración y negociación para su adquisición."},
+          "/servicios/valoraciones":{t:"Valoración de Empresas | Informes Profesionales | Capittal",d:"Informes de valoración profesional con múltiplos sectoriales, DCF y metodologías reconocidas. Valoraciones para M&A, fiscales y estratégicas."},
+          "/servicios/due-diligence":{t:"Due Diligence Financiera y Fiscal | Capittal",d:"Análisis financiero, fiscal y legal para operaciones de M&A. Due diligence exhaustiva para minimizar riesgos en su transacción."},
+          "/servicios/reestructuraciones":{t:"Reestructuraciones Empresariales | Capittal",d:"Soluciones para empresas en situaciones especiales. Reestructuración financiera, operativa y estratégica con Capittal."},
+          "/servicios/planificacion-fiscal":{t:"Planificación Fiscal en M&A | Capittal",d:"Optimización fiscal en operaciones de compraventa de empresas. Planificación fiscal estratégica para maximizar el valor neto."},
+          "/servicios/asesoramiento-legal":{t:"Asesoramiento Legal en M&A | Capittal",d:"Soporte jurídico especializado en operaciones de fusiones y adquisiciones. Contratos, due diligence legal y cierre de transacciones."},
+          "/servicios/search-funds":{t:"Search Funds | Asesoramiento Especializado | Capittal",d:"Asesoramiento integral para Search Funds. Desde la captación de capital hasta la adquisición y gestión de la empresa objetivo."},
+          "/sectores/seguridad":{t:"M&A Sector Seguridad Privada | Alarmas y Vigilancia | Capittal",d:"Capittal es la firma líder en M&A del sector seguridad privada. Alarmas, vigilancia, CRA. Operaciones con fondos internacionales y Private Equity."},
+          "/sectores/tecnologia":{t:"M&A Sector Tecnología | Capittal",d:"Asesoramiento M&A especializado en empresas tecnológicas. SaaS, ciberseguridad, IT services y transformación digital."},
+          "/sectores/industrial":{t:"M&A Sector Industrial | Capittal",d:"Operaciones de M&A en el sector industrial. Manufactura, automoción, maquinaria y procesos industriales."},
+          "/sectores/healthcare":{t:"M&A Sector Healthcare | Capittal",d:"Fusiones y adquisiciones en el sector sanitario. Clínicas, laboratorios, medtech y servicios de salud."},
+          "/sectores/energia":{t:"M&A Sector Energía | Capittal",d:"Asesoramiento M&A en el sector energético. Renovables, eficiencia energética y transición energética."},
+          "/sectores/construccion":{t:"M&A Sector Construcción | Capittal",d:"Operaciones de M&A en construcción e infraestructuras. Promotoras, constructoras e ingeniería civil."},
+          "/sectores/logistica":{t:"M&A Sector Logística | Capittal",d:"Fusiones y adquisiciones en logística y transporte. Distribución, almacenaje y cadena de suministro."},
+          "/sectores/medio-ambiente":{t:"M&A Sector Medio Ambiente | Capittal",d:"Operaciones de M&A en medio ambiente. Gestión de residuos, tratamiento de aguas y sostenibilidad."},
+          "/sectores/retail-consumer":{t:"M&A Sector Retail y Consumo | Capittal",d:"Asesoramiento M&A en retail y consumo. Distribución, franquicias, e-commerce y marcas de consumo."},
+          "/sectores/alimentacion":{t:"M&A Sector Alimentación | Capittal",d:"Operaciones de M&A en el sector alimentario. Producción, distribución y marcas de alimentación."},
+          "/recursos/blog":{t:"Blog M&A y Valoraciones | Capittal",d:"Artículos, análisis y tendencias sobre fusiones y adquisiciones, valoración de empresas y mercado M&A en España."},
+          "/lp/calculadora":{t:"Calculadora de Valoración de Empresas Gratuita | Capittal",d:"Calcule el valor orientativo de su empresa en 2 minutos. Herramienta gratuita con múltiplos sectoriales actualizados."},
+          "/lp/calculadora-fiscal":{t:"Calculadora Fiscal para Venta de Empresas | Capittal",d:"Calcule el impacto fiscal de la venta de su empresa. Simulador gratuito de impuestos en operaciones de M&A."},
+          "/lp/calculadora-asesores":{t:"Calculadora de Valoración para Asesores | Capittal",d:"Herramienta profesional de valoración para asesores financieros. Múltiplos sectoriales y metodologías avanzadas."},
+          "/de-looper-a-capittal":{t:"De Looper a Capittal | Nuestra Historia",d:"La evolución de Looper a Capittal Transacciones. Nuestra historia, visión y compromiso con el mercado M&A español."},
+          "/valoracion-empresas":{t:"Valoración de Empresas Online | Capittal",d:"Obtenga una valoración profesional de su empresa. Múltiplos sectoriales, DCF y comparables de mercado."},
+          "/oportunidades":{t:"Oportunidades de Inversión | Empresas en Venta | Capittal",d:"Explore oportunidades de inversión y empresas en venta. Marketplace de operaciones M&A verificadas por Capittal."},
+          "/politica-privacidad":{t:"Política de Privacidad | Capittal",d:"Política de privacidad y protección de datos de Capittal Transacciones S.L."},
+          "/terminos-uso":{t:"Términos de Uso | Capittal",d:"Términos y condiciones de uso del sitio web de Capittal Transacciones."},
+          "/cookies":{t:"Política de Cookies | Capittal",d:"Información sobre el uso de cookies en el sitio web de Capittal Transacciones."}
+        };
+        var p=window.location.pathname.replace(/\/+$/,'') || '/';
+        var r=R[p];
+        if(r){
+          document.title=r.t;
+          var dm=document.querySelector('meta[name="description"]');
+          if(dm) dm.setAttribute('content',r.d);
+          var ogt=document.querySelector('meta[property="og:title"]');
+          if(ogt) ogt.setAttribute('content',r.t);
+          var ogd=document.querySelector('meta[property="og:description"]');
+          if(ogd) ogd.setAttribute('content',r.d);
+          var twt=document.querySelector('meta[name="twitter:title"]');
+          if(twt) twt.setAttribute('content',r.t);
+          var twd=document.querySelector('meta[name="twitter:description"]');
+          if(twd) twd.setAttribute('content',r.d);
+        }
+        // Canonical link
+        var canon='https://capittal.es'+p;
+        var cl=document.querySelector('link[rel="canonical"]');
+        if(!cl){cl=document.createElement('link');cl.setAttribute('rel','canonical');document.head.appendChild(cl);}
+        cl.setAttribute('href',canon);
+      })();
+    </script>
 </head>
 
   <body>

@@ -51,15 +51,7 @@
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/compra-empreses" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/buy-companies" />
   </url>
-  <url>
-    <loc>https://capittal.es/compra-empreses</loc>
-    <lastmod>2026-02-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/compra-empresas" />
-    <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/compra-empreses" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/buy-companies" />
-  </url>
+  <!-- /compra-empreses removed: redirects to /compra-empresas -->
   <url>
     <loc>https://capittal.es/buy-companies</loc>
     <lastmod>2026-02-15</lastmod>
