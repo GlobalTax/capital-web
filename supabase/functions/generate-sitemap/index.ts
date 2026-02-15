@@ -24,6 +24,18 @@ const HREFLANG_MAP: Record<string, { ca?: string; en?: string }> = {
   "/servicios/asesoramiento-legal": { ca: "/serveis/assessorament-legal", en: "/services/legal-advisory" },
   "/servicios/reestructuraciones": { ca: "/serveis/reestructuracions", en: "/services/restructuring" },
   "/servicios/planificacion-fiscal": { ca: "/serveis/planificacio-fiscal", en: "/services/tax-planning" },
+
+  // ─── Sectores ───
+  "/sectores/tecnologia": { ca: "/sectors/tecnologia", en: "/sectors/technology" },
+  "/sectores/healthcare": { ca: "/sectors/salut", en: "/sectors/healthcare" },
+  "/sectores/seguridad": { ca: "/sectors/seguretat", en: "/sectors/security" },
+  "/sectores/industrial": { ca: "/sectors/industrial" },
+  "/sectores/retail-consumer": { ca: "/sectors/retail-consum" },
+  "/sectores/energia": { ca: "/sectors/energia", en: "/sectors/energy" },
+  "/sectores/construccion": { ca: "/sectors/construccio" },
+  "/sectores/logistica": { ca: "/sectors/logistica" },
+  "/sectores/alimentacion": { ca: "/sectors/alimentacio" },
+  "/sectores/medio-ambiente": { ca: "/sectors/medi-ambient" },
 };
 
 // Build reverse map: given any path (es/ca/en), find its group
