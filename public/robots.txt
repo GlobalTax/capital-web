@@ -1,47 +1,12 @@
-# Robots.txt - Capittal.es
-# Última actualización: 2026-02-15
-
-# Acceso General
 User-agent: *
 Allow: /
-
-# Bloquear rutas administrativas
 Disallow: /admin/
 Disallow: /admin-login/
 Disallow: /auth/
-
-# Bloquear rutas internas y de desarrollo
 Disallow: /api/private/
 Disallow: /operaciones/
 Disallow: /_vite/
 Disallow: /__vite/
 Disallow: /ws/
 
-# Permitir acceso a recursos estáticos
-Allow: /assets/
-Allow: /*.css$
-Allow: /*.js$
-Allow: /*.jpg$
-Allow: /*.jpeg$
-Allow: /*.png$
-Allow: /*.webp$
-Allow: /*.svg$
-
-# Bots específicos
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-# Referencia al sitemap dinámico (edge function)
-Sitemap: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap
-
-# Sitemap estático como fallback
 Sitemap: https://capittal.es/sitemap.xml
