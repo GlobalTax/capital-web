@@ -1099,6 +1099,65 @@ const PAGES_DATA: Record<string, PageData> = {
     `,
   },
 
+  "/valoracion-empresas": {
+    title: "Valoración de Empresas | Métodos, Herramientas y Asesoramiento - Capittal",
+    description: "Todo sobre valoración de empresas: métodos DCF, múltiplos, comparables. Usa nuestra calculadora gratuita o solicita una valoración profesional.",
+    keywords: "valoración de empresas, métodos valoración, DCF, múltiplos EBITDA, valorar empresa, calculadora valoración",
+    canonical: "https://capittal.es/valoracion-empresas",
+    ogType: "website",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "Valoración de Empresas: Guía Completa y Herramientas",
+        description: "Todo sobre valoración de empresas: métodos DCF, múltiplos, comparables. Usa nuestra calculadora gratuita o solicita una valoración profesional.",
+        url: "https://capittal.es/valoracion-empresas",
+        isPartOf: { "@type": "WebSite", name: "Capittal", url: "https://capittal.es" },
+      },
+      buildFAQPageSchema([
+        { question: "¿Es gratuita la calculadora de valoración?", answer: "Sí, nuestra calculadora de valoración de empresas es completamente gratuita y sin compromiso. Puedes utilizarla tantas veces como necesites para obtener una estimación orientativa del valor de tu negocio." },
+        { question: "¿Qué métodos de valoración utilizáis?", answer: "Nuestra calculadora utiliza el método de múltiplos de EBITDA y de facturación, ajustados por sector, tamaño de empresa, márgenes operativos y tasa de crecimiento. Para valoraciones profesionales, combinamos DCF, múltiplos y comparables." },
+        { question: "¿Cuánto tarda una valoración profesional?", answer: "Una valoración profesional completa realizada por nuestro equipo de expertos en M&A suele tardar entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera." },
+        { question: "¿Los datos que introduzco son confidenciales?", answer: "Absolutamente. Todos los datos introducidos en la calculadora son tratados con total confidencialidad. No compartimos información con terceros y cumplimos con la normativa RGPD." },
+        { question: "¿Qué sectores cubre la calculadora?", answer: "La calculadora cubre más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte y logística, alimentación, energía, y muchos más." },
+      ]),
+    ],
+    content: `
+      <h1>Valoración de Empresas: Guía Completa y Herramientas</h1>
+      <p>Conocer el valor real de tu empresa es fundamental para tomar decisiones estratégicas con confianza. Ya sea que estés considerando una venta, buscando inversores, planificando una sucesión o simplemente quieras entender el valor de mercado de tu negocio, esta guía te explica los principales métodos de valoración y te ofrece herramientas gratuitas para obtener una primera estimación.</p>
+
+      <h2>Métodos de Valoración</h2>
+      <h3>Descuento de Flujos de Caja (DCF)</h3>
+      <p>Estima el valor de una empresa proyectando sus flujos de caja futuros y descontándolos a valor presente. Es el método más riguroso y utilizado en valoraciones formales, especialmente para empresas con flujos predecibles.</p>
+      <h3>Múltiplos de Mercado (EV/EBITDA, EV/Revenue)</h3>
+      <p>Compara la empresa con otras similares del mismo sector usando ratios como EV/EBITDA o EV/Revenue. Es rápido, intuitivo y refleja las condiciones actuales del mercado de compraventa.</p>
+      <h3>Valoración por Activos</h3>
+      <p>Calcula el valor neto de los activos de la empresa menos sus pasivos. Es especialmente útil para empresas intensivas en activos, inmobiliarias o en situación de liquidación.</p>
+      <h3>Transacciones Comparables</h3>
+      <p>Analiza el precio pagado en transacciones reales de empresas similares. Proporciona una referencia directa del mercado y es muy valorado por inversores y fondos de adquisición.</p>
+
+      <h2>Calcula el valor de tu empresa</h2>
+      <p>Utiliza nuestra calculadora gratuita de valoración basada en múltiplos de EBITDA y benchmarks sectoriales actualizados. Resultado inmediato y confidencial.</p>
+      <p><a href="/lp/calculadora">Usar calculadora gratuita →</a></p>
+
+      <h2>¿Necesitas una valoración profesional?</h2>
+      <p>Nuestra calculadora da una estimación inicial. Para una valoración formal con informe detallado, análisis de estados financieros, posición competitiva y factores cualitativos, contacta con nuestro equipo de expertos en M&A.</p>
+      <p><a href="/contacto">Solicita una valoración profesional</a></p>
+
+      <h2>Preguntas frecuentes sobre valoración de empresas</h2>
+      <h3>¿Es gratuita la calculadora de valoración?</h3>
+      <p>Sí, nuestra calculadora de valoración de empresas es completamente gratuita y sin compromiso.</p>
+      <h3>¿Qué métodos de valoración utilizáis?</h3>
+      <p>Nuestra calculadora utiliza el método de múltiplos de EBITDA y de facturación, ajustados por sector, tamaño de empresa, márgenes operativos y tasa de crecimiento.</p>
+      <h3>¿Cuánto tarda una valoración profesional?</h3>
+      <p>Entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera.</p>
+      <h3>¿Los datos que introduzco son confidenciales?</h3>
+      <p>Absolutamente. Todos los datos son tratados con total confidencialidad y cumplimos con la normativa RGPD.</p>
+      <h3>¿Qué sectores cubre la calculadora?</h3>
+      <p>Más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte, alimentación, energía, y muchos más.</p>
+    `,
+  },
+
   "/politica-privacidad": {
     title: "Política de Privacidad | Capittal",
     description:
