@@ -99,20 +99,31 @@ const AutoScheduleDialog: React.FC<AutoScheduleDialogProps> = ({ open, onOpenCha
       }
 
       const data = await response.json();
-      const schedule = data.result?.schedule || [];
+      const schedule = Array.isArray(data.result?.schedule) ? data.result.schedule : [];
 
-      setResults(
-        schedule.map((s: any) => {
-          const original = unscheduledItems.find(i => i.id === s.item_id);
+      const validResults = schedule
+        .filter((s: any) => {
+          if (!s.item_id || !s.scheduled_date) return false;
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(s.scheduled_date)) return false;
+          return unscheduledItems.some(i => i.id === s.item_id);
+        })
+        .map((s: any) => {
+          const original = unscheduledItems.find(i => i.id === s.item_id)!;
           return {
             id: s.item_id,
-            title: original?.title || 'Sin título',
-            channel: original?.channel || '',
+            title: original.title || 'Sin título',
+            channel: original.channel || '',
             scheduled_date: s.scheduled_date,
             selected: true,
           };
-        })
-      );
+        });
+
+      if (validResults.length === 0) {
+        toast.error('La IA no devolvió resultados válidos. Inténtalo de nuevo.');
+        return;
+      }
+
+      setResults(validResults);
       setStep('preview');
     } catch (e: any) {
       console.error('Auto-schedule error:', e);
@@ -201,7 +212,7 @@ const AutoScheduleDialog: React.FC<AutoScheduleDialogProps> = ({ open, onOpenCha
             {/* Horizon */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Horizonte temporal</label>
-              <Select value={horizon} onValueChange={(v) => setHorizon(v as any)}>
+              <Select value={horizon} onValueChange={(v) => setHorizon(v as '2w' | '1m' | '2m')}>
                 <SelectTrigger className="max-w-xs">
                   <SelectValue />
                 </SelectTrigger>
