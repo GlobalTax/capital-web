@@ -123,7 +123,7 @@ const PracticeAreasSection: React.FC = () => {
               key={service.title}
               href={service.href}
               variants={cardVariants}
-              className="group relative overflow-hidden bg-muted aspect-[4/3] md:aspect-[16/10] cursor-pointer block"
+              className="group relative overflow-hidden bg-muted aspect-[4/3] md:aspect-[16/10] cursor-pointer block rounded-lg"
             >
               {/* Background Image */}
               <img

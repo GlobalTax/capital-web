@@ -172,7 +172,7 @@ const SimpleBlogPopularPosts = ({
                       <img
                         src={post.blog_posts.featured_image_url}
                         alt={post.blog_posts.title}
-                        className="w-full h-full object-cover rounded"
+                        className="w-full h-full object-cover rounded-lg"
                         width={48}
                         height={48}
                         loading="lazy"
