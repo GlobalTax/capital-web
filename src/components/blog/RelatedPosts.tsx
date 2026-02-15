@@ -43,7 +43,7 @@ const RelatedPosts = ({ posts }: RelatedPostsProps) => {
                     <img
                       src={post.featured_image_url}
                       alt={post.title}
-                      className="w-full h-32 object-cover rounded"
+                      className="w-full h-32 object-cover rounded-lg"
                       width={400}
                       height={128}
                       loading="lazy"

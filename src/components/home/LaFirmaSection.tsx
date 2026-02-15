@@ -100,7 +100,7 @@ const LaFirmaSection: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }} className="relative">
-            <div className="aspect-square overflow-hidden bg-muted">
+            <div className="aspect-square overflow-hidden bg-muted rounded-lg">
               {imageSource && <img src={imageSource} alt={c.image_alt || 'Capittal equipo de asesores M&A'} className="w-full h-full object-cover" width={800} height={800} loading="lazy" decoding="async" />}
             </div>
             <div className="absolute -bottom-6 -right-6 w-32 h-32 border border-border -z-10 hidden lg:block" />
