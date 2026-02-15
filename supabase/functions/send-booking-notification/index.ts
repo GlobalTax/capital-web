@@ -91,7 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <!-- Header -->
           <div style="background-color: #0f172a; padding: 24px; text-align: center;">
-            <img src="https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/public-assets/logotipo-white.svg" alt="Capittal" style="height: 32px;" />
+            <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Capittal</span>
           </div>
           
           <!-- Content -->
