@@ -56,6 +56,15 @@ const htmlToBrevoJson = (html: string, subject?: string): object => {
   };
 };
 
+// Validate URL is safe (block javascript: and other dangerous protocols)
+const isSafeUrl = (url: string): boolean => {
+  const trimmed = url.trim().toLowerCase();
+  if (trimmed.startsWith('javascript:') || trimmed.startsWith('data:') || trimmed.startsWith('vbscript:')) {
+    return false;
+  }
+  return true;
+};
+
 // Extract and encode images as base64 for ZIP export
 const extractImagesFromHtml = (html: string): { src: string; filename: string }[] => {
   const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/gi;
@@ -65,6 +74,7 @@ const extractImagesFromHtml = (html: string): { src: string; filename: string }[
   
   while ((match = imgRegex.exec(html)) !== null) {
     const src = match[1];
+    if (!isSafeUrl(src)) continue;
     if (src.startsWith('http://') || src.startsWith('https://')) {
       const extension = src.split('.').pop()?.split('?')[0] || 'png';
       images.push({
@@ -139,6 +149,12 @@ ${localHtml}`;
   // Create and download file
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
+  
+  // Validate the generated URL is safe
+  if (!isSafeUrl(url)) {
+    throw new Error('Generated download URL is not safe');
+  }
+  
   const link = document.createElement('a');
   link.href = url;
   link.download = `${baseFilename}.${extension}`;
