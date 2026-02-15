@@ -1,149 +1,103 @@
 
-## Structured Data JSON-LD completo en SSR
+
+## Optimizacion de imagenes y rendimiento
 
 ### Resumen
 
-Enriquecer el sistema SSR con datos estructurados JSON-LD segun las especificaciones de Schema.org, cubriendo todas las paginas: Organization global, LocalBusiness para contacto, Service para venta/compra, WebApplication para calculadoras, Article para blog, y FAQPage para secciones con acordeon.
+Aplicar optimizaciones de rendimiento a todas las imagenes del proyecto: atributos `loading`, `width`/`height` para prevenir CLS, textos `alt` descriptivos, y preloads para imagenes criticas. Tambien crear un componente `OptimizedImage` centralizado para estandarizar el patron.
 
-### Cambios por archivo
+### Hallazgos del analisis
 
-#### 1. `supabase/functions/pages-ssr/index.ts`
+**Estado actual:**
+- El hero (`Hero.tsx`) ya tiene `width/height`, `fetchPriority="high"`, y `loading="eager"` para la primera slide -- bien configurado
+- `LazyImage` compartido (`shared/LazyImage.tsx`) usa IntersectionObserver con soporte `priority` -- bien disenado
+- `Team.tsx` ya usa `loading="lazy"` -- parcialmente correcto, le falta `width/height`
+- La mayoria de las demas imagenes (~60 instancias en 66 archivos) NO tienen `loading`, `width`, ni `height`
+- Las imagenes en `public/` son JPG/PNG sin versiones WebP
+- Vite ya usa `esbuild` para minificacion y tiene chunks optimizados
+- No hay configuracion de compresion (Gzip/Brotli) -- esto lo gestiona el hosting de Lovable, no es configurable desde Vite
 
-**a) Actualizar `ORG_JSONLD` (lineas 23-37)**
+### Cambios propuestos
 
-Reemplazar el objeto Organization actual con la version completa solicitada:
+#### 1. Crear componente `OptimizedImg` reutilizable
 
-```text
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Capittal Transacciones",
-  "legalName": "Capittal Transacciones S.L.",
-  "url": "https://capittal.es",
-  "logo": "https://capittal.es/logo.png",
-  "description": "Firma de asesoramiento en M&A, valoraciones y due diligence especializada en el sector seguridad",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Ausias March 36, Principal",
-    "addressLocality": "Barcelona",
-    "postalCode": "08010",
-    "addressCountry": "ES"
-  },
-  "sameAs": ["https://www.linkedin.com/company/capittal-transacciones"]
-}
-```
+Nuevo archivo: `src/components/shared/OptimizedImg.tsx`
 
-**b) Inyectar Organization en TODAS las paginas**
+Componente wrapper de `<img>` que aplica automaticamente:
+- `loading="lazy"` por defecto (override con `priority={true}` para above-the-fold)
+- `decoding="async"`
+- `width` y `height` requeridos como props (previene CLS)
+- Fallback `alt` warning en desarrollo si esta vacio
+- Soporte WebP con `<picture>` y fallback JPEG/PNG cuando se proporciona `webpSrc`
 
-Modificar la funcion `buildPageHtml` (linea 995) para inyectar automaticamente el bloque Organization como un `<script type="application/ld+json">` adicional en todas las paginas, ademas del `structuredData` especifico de cada pagina. Esto evita tener que duplicar el schema Organization en cada entrada del mapa.
+#### 2. Actualizar imagenes en componentes publicos (below-the-fold)
 
-**c) Actualizar `/contacto` structuredData (lineas 567-588)**
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/home/PracticeAreasSection.tsx` | Anadir `loading="lazy"`, `width={800}`, `height={500}`, `decoding="async"` |
+| `src/components/sector/SectorThreePanels.tsx` | Anadir `loading="lazy"`, `width={400}`, `height={500}`, `decoding="async"` |
+| `src/components/DetailedCaseStudies.tsx` | Anadir `loading="lazy"`, `width={80}`, `height={80}`, `decoding="async"` |
+| `src/components/Team.tsx` | Anadir `width={400}`, `height={533}`, `decoding="async"` (ya tiene `loading="lazy"`) |
+| `src/components/TestimonialsCarousel.tsx` | Anadir `loading="lazy"`, `width={120}`, `height={40}`, `decoding="async"` |
+| `src/components/venta-empresas/VentaEmpresasCaseStudies.tsx` | Anadir `loading="lazy"`, `width={120}`, `height={120}`, `decoding="async"` |
+| `src/components/operations/OperationsTable.tsx` | Anadir `loading="lazy"`, `width={40}`, `height={40}`, `decoding="async"` |
+| `src/components/booking/BookingPage.tsx` | Anadir `loading="lazy"`, `width={120}`, `height={40}`, `decoding="async"` |
+| `src/components/lead-magnets/LeadMagnetLandingPage.tsx` | Anadir `loading="lazy"`, `width={120}`, `height={32}`, `decoding="async"` |
+| `src/components/CaseStudiesCompact.tsx` | Anadir `loading="lazy"`, `width/height`, `decoding="async"` si tiene imagenes |
 
-Anadir `geo`, que falta actualmente:
+#### 3. Imagenes hero/above-the-fold (NO lazy load)
 
-```text
-"geo": {
-  "@type": "GeoCoordinates",
-  "latitude": 41.3935,
-  "longitude": 2.1753
-}
-```
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/Hero.tsx` (slide.isMosaic img, linea 188) | Anadir `width={1920}`, `height={1080}`, `fetchPriority="high"`, `loading="eager"` -- actualmente le falta |
+| `src/components/Hero.tsx` (video fallback img, linea 188) | Mismos atributos para consistency |
 
-Ya tiene `openingHours` y `telephone` correctos.
+#### 4. Preload de imagenes criticas en `index.html`
 
-**d) Actualizar `/venta-empresas` y `/compra-empresas` (lineas 728-770)**
+El preload de `hero-slide-1.jpg` ya existe. No se necesitan cambios adicionales aqui a menos que se conviertan a WebP (ver punto 5).
 
-Anadir `"serviceType": "Mergers and Acquisitions Advisory"` al schema Service. Tambien hacer lo mismo para las rutas `/servicios/venta-empresas` (linea 116) y `/servicios/due-diligence` etc. que ya tienen Service pero con `serviceType` en espanol. Se anadira el campo en ingles estandarizado como segundo serviceType.
+#### 5. Conversion a WebP
 
-**e) Anadir rutas LP calculadora al mapa**
+Las imagenes en `public/` que se pueden convertir:
+- `public/hero-slide-1.jpg` -- Convertir a WebP, mantener JPG como fallback
+- `public/lovable-uploads/*.png` (6 archivos) -- Convertir a WebP
 
-Anadir las siguientes entradas nuevas al mapa `PAGES_DATA`:
+**Limitacion**: Las imagenes servidas desde Supabase Storage (logos, team photos, hero slides dinamicos) no se pueden convertir en build time ya que son URLs externas. Para estas, la optimizacion se limita a atributos HTML.
 
-- `/lp/calculadora` - con schema WebApplication:
-```text
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Calculadora de Valoracion de Empresas - Capittal",
-  "applicationCategory": "BusinessApplication",
-  "operatingSystem": "Web",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "EUR"
-  },
-  "provider": ORG_JSONLD
-}
-```
+**Implementacion**: Actualizar `index.html` preload para apuntar a WebP. Usar `<picture>` con `<source type="image/webp">` en el hero para el slide 1.
 
-- `/lp/calculadora-fiscal` - con schema WebApplication similar enfocado a fiscalidad.
+#### 6. Optimizacion de bundles (Vite)
 
-**f) Anadir FAQPage schema a paginas con secciones FAQ**
+El proyecto ya tiene:
+- `esbuild` minification (optimo)
+- Manual chunks por feature
+- `console`/`debugger` drop en produccion
+- Legal comments eliminados
+- Source maps solo en desarrollo
 
-Para las siguientes rutas que tienen componentes SectorFAQ o FAQ especificos, anadir un bloque FAQPage en su `structuredData`:
+**Mejora adicional**: Anadir `cssMinify: true` explicitamente en el build config (esbuild lo hace por defecto, pero asegurarlo). No hay mas optimizaciones significativas posibles en Vite config.
 
-- `/sectores/seguridad` (ya tiene SectorFAQ en la pagina)
-- `/sectores/tecnologia`
-- `/sectores/industrial`
-- `/sectores/healthcare`
-- `/sectores/energia`
-- `/sectores/construccion`
-- `/sectores/logistica`
-- `/sectores/medio-ambiente`
-- `/sectores/retail-consumer`
-- `/sectores/alimentacion`
-- `/servicios/venta-empresas`
-- `/servicios/valoraciones`
-- `/servicios/planificacion-fiscal`
-- `/servicios/asesoramiento-legal`
-- `/servicios/reestructuraciones`
+#### 7. Compresion de texto (Gzip/Brotli)
 
-Para cada una, se incluira un array `mainEntity` con las preguntas y respuestas que ya existen en los componentes FAQ del frontend. Ejemplo:
+Esto es responsabilidad del servidor/CDN, no de Vite. Lovable.dev sirve assets comprimidos automaticamente. No se requiere configuracion adicional.
 
-```text
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Como se valora una empresa de seguridad?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Se utilizan multiplos EBITDA especificos del sector..."
-      }
-    }
-  ]
-}
-```
+### Archivos a modificar
 
-Nota: Esto implica leer los FAQ de cada componente frontend y duplicar las preguntas/respuestas en el mapa SSR. Es la unica forma de que los buscadores las vean server-side.
+| Archivo | Tipo de cambio |
+|---------|----------------|
+| `src/components/shared/OptimizedImg.tsx` | **Nuevo** - Componente reutilizable |
+| `src/components/Hero.tsx` | Atributos faltantes en img mosaic |
+| `src/components/home/PracticeAreasSection.tsx` | loading, width, height, decoding |
+| `src/components/sector/SectorThreePanels.tsx` | loading, width, height, decoding |
+| `src/components/DetailedCaseStudies.tsx` | loading, width, height, decoding |
+| `src/components/Team.tsx` | width, height, decoding |
+| `src/components/TestimonialsCarousel.tsx` | loading, width, height, decoding |
+| `src/components/venta-empresas/VentaEmpresasCaseStudies.tsx` | loading, width, height, decoding |
+| `src/components/operations/OperationsTable.tsx` | loading, width, height, decoding |
+| `src/components/booking/BookingPage.tsx` | loading, width, height, decoding |
+| `src/components/lead-magnets/LeadMagnetLandingPage.tsx` | loading, width, height, decoding |
+| `index.html` | Actualizar preload a WebP si se convierte |
 
-#### 2. `supabase/functions/blog-ssr/index.ts`
+### Nota sobre WebP
 
-El blog SSR ya tiene un schema Article correcto (lineas 77-94) con:
-- `headline`, `description`, `image`
-- `author` (Person), `publisher` (Organization)
-- `datePublished`, `dateModified`
-- `mainEntityOfPage`, `keywords`, `articleSection`
-
-Cambios necesarios:
-- Actualizar el `publisher` para usar la version completa de Organization (con `legalName`, `description`, `sameAs`, direccion actualizada)
-- Anadir el bloque Organization global como segundo `<script type="application/ld+json">` (igual que en pages-ssr)
-
-### Secuenciacion
-
-1. Actualizar `ORG_JSONLD` y la funcion `buildPageHtml` para inyectar Organization global
-2. Actualizar `/contacto` con geo coordinates
-3. Actualizar rutas de venta/compra con serviceType estandarizado
-4. Anadir entradas LP calculadora con WebApplication
-5. Anadir FAQPage a todas las rutas con secciones FAQ (sector + servicios)
-6. Actualizar blog-ssr con Organization actualizado
-7. Redesplegar ambas Edge Functions
-
-### Volumen estimado
-
-- ~20 rutas de sectores/servicios recibiran FAQPage schema (cada una con 3-6 preguntas)
-- 2 rutas LP nuevas
-- 1 Organization global en todas las paginas
-- El archivo pages-ssr crecera significativamente (~300-400 lineas adicionales por las FAQs)
+La conversion real de archivos JPG/PNG a WebP requiere herramientas externas (cwebp, squoosh). Se crearan las referencias en codigo asumiendo que los archivos WebP se generaran. Como alternativa practica, se puede usar un plugin de Vite como `vite-plugin-image-optimizer` pero esto anade complejidad de build. La recomendacion es mantener la solucion simple: anadir `<picture>` con fallback donde sea posible y asegurar que las imagenes nuevas se suban directamente en WebP.
