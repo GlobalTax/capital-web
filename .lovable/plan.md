@@ -1,47 +1,47 @@
 
 
-## Automatizar el sitemap dinamicamente
+## Actualizar sitemap.xml y sincronizar paginas faltantes
 
 ### Situacion actual
-- `public/sitemap.xml`: Archivo estatico de ~780 lineas con fechas hardcodeadas. Es lo que leen los buscadores.
-- Edge Function `generate-sitemap`: Ya genera el sitemap completo dinamicamente (rutas estaticas + posts del blog desde la base de datos). Funciona correctamente.
-- El problema: los buscadores leen el archivo estatico, no la Edge Function.
+- Todas las fechas `lastmod` en `public/sitemap.xml` son `2026-02-15` (ayer)
+- Faltan 5 landing pages que existen en `static-landing-pages.ts` pero no estan ni en el sitemap estatico ni en la Edge Function:
+  - `/lp/calculadora-meta` (Meta Ads)
+  - `/lp/venta-empresas-v2` (A/B testing)
+  - `/lp/valoracion-2026` (campana estacional)
+  - `/lp/rod-linkedin` (LinkedIn)
+  - `/lp/accountex` (evento)
+- Faltan variantes catalanas de algunos sectores en el sitemap estatico (retail-consum, industrial, energia, logistica, alimentacio, medi-ambient)
 
-### Solucion
+### Cambios
 
-**1. Actualizar `robots.txt`**
-Cambiar la directiva `Sitemap` para que apunte directamente a la Edge Function de Supabase en lugar del archivo estatico:
+**1. `public/sitemap.xml` - Actualizar fechas y anadir paginas**
+- Cambiar todos los `lastmod` de `2026-02-15` a `2026-02-16`
+- Anadir las 5 landing pages que faltan en la seccion de Landing Pages
+- Anadir las variantes catalanas de sectores que faltan (sectors/retail-consum, sectors/industrial, sectors/energia, sectors/logistica, sectors/alimentacio)
 
-```
-Sitemap: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap
-```
-
-Google y otros buscadores aceptan URLs de sitemap en dominios distintos al principal. Esto hace que cada vez que un bot solicite el sitemap, reciba la version dinamica con los posts del blog actualizados automaticamente.
-
-**2. Simplificar `public/sitemap.xml`**
-Reemplazar las ~780 lineas del archivo estatico por un XML minimo tipo "sitemap index" que redirige a la Edge Function. Esto sirve como fallback por si alguien accede directamente a `/sitemap.xml`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap>
-    <loc>https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap</loc>
-    <lastmod>2026-02-16</lastmod>
-  </sitemap>
-</sitemapindex>
-```
-
-**3. Sin cambios en la Edge Function**
-La funcion `generate-sitemap` ya esta completa: incluye todas las rutas estaticas con hreflang multilingue y consulta `blog_posts` de Supabase para anadir posts publicados dinamicamente.
-
-### Resultado
-- Cada vez que Google rastree el sitemap, obtendra la version dinamica actualizada
-- Los nuevos posts del blog aparecen automaticamente sin intervencion manual
-- Las fechas `lastmod` se generan dinamicamente (fecha del dia para rutas estaticas, `updated_at` para posts)
-- No se requiere Cloudflare Worker para esta funcionalidad
+**2. `supabase/functions/generate-sitemap/index.ts` - Anadir LPs faltantes**
+- Anadir las 5 landing pages al array `staticRoutes` para mantener sincronizacion con el sitemap estatico
 
 ### Seccion tecnica
-- Archivos modificados: `public/robots.txt`, `public/sitemap.xml`
-- Sin nuevas dependencias
-- La Edge Function usa `SUPABASE_URL` y `SUPABASE_ANON_KEY` (variables de entorno por defecto de Supabase, ya configuradas)
+
+**Paginas nuevas a anadir (ambos archivos):**
+
+```text
+/lp/calculadora-meta    -> priority 0.9, changefreq monthly
+/lp/venta-empresas-v2   -> priority 0.9, changefreq monthly
+/lp/valoracion-2026     -> priority 0.85, changefreq monthly
+/lp/rod-linkedin        -> priority 0.85, changefreq monthly
+/lp/accountex           -> priority 0.8, changefreq monthly
+```
+
+**Variantes catalanas de sectores a anadir (solo sitemap.xml):**
+Estas ya estan en la Edge Function pero faltan en el archivo estatico:
+- `/sectors/retail-consum`
+- `/sectors/industrial`
+- `/sectors/energia`
+- `/sectors/logistica`
+- `/sectors/alimentacio`
+
+**Archivos modificados:** `public/sitemap.xml`, `supabase/functions/generate-sitemap/index.ts`
+**Sin nuevas dependencias**
 
