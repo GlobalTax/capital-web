@@ -1,32 +1,47 @@
 
 
-## Restaurar el logo de Capittal en toda la web
+## Automatizar el sitemap dinamicamente
 
-### Problema
-El logo no se muestra porque la URL de Supabase Storage devuelve 404. El usuario ha subido dos versiones PNG del logotipo.
+### Situacion actual
+- `public/sitemap.xml`: Archivo estatico de ~780 lineas con fechas hardcodeadas. Es lo que leen los buscadores.
+- Edge Function `generate-sitemap`: Ya genera el sitemap completo dinamicamente (rutas estaticas + posts del blog desde la base de datos). Funciona correctamente.
+- El problema: los buscadores leen el archivo estatico, no la Edge Function.
 
-### Cambios
+### Solucion
 
-**1. Copiar el logo al repositorio**
-- Copiar `user-uploads://Logo_Capittal.png` a `src/assets/logotipo.png` (version principal, alta resolucion)
-- Copiar `user-uploads://Logo_Capittal_450x450.png` a `src/assets/logotipo-small.png` (version compacta para headers)
+**1. Actualizar `robots.txt`**
+Cambiar la directiva `Sitemap` para que apunte directamente a la Edge Function de Supabase en lugar del archivo estatico:
 
-**2. Actualizar `src/config/brand.ts`**
-- Reemplazar la URL de Supabase por un import local del PNG
-- Exportar la imagen importada como constante
-
-```ts
-import logotipo from '@/assets/logotipo.png';
-
-export const CAPITTAL_LOGO_SVG = logotipo;
-export const CAPITTAL_LOGO_ALT = 'Capittal - Especialistas en M&A';
+```
+Sitemap: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap
 ```
 
-**3. Actualizar templates de email HTML** (`reengagementTemplates.ts`, `send-corporate-email`)
-- Estas plantillas usan la URL directa en strings HTML (no imports de React), por lo que no pueden usar imports de assets locales
-- Se mantendran con un fallback de texto "Capittal" en negrita, ya que los emails necesitan URLs publicas absolutas y la de Supabase no funciona
+Google y otros buscadores aceptan URLs de sitemap en dominios distintos al principal. Esto hace que cada vez que un bot solicite el sitemap, reciba la version dinamica con los posts del blog actualizados automaticamente.
+
+**2. Simplificar `public/sitemap.xml`**
+Reemplazar las ~780 lineas del archivo estatico por un XML minimo tipo "sitemap index" que redirige a la Edge Function. Esto sirve como fallback por si alguien accede directamente a `/sitemap.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap</loc>
+    <lastmod>2026-02-16</lastmod>
+  </sitemap>
+</sitemapindex>
+```
+
+**3. Sin cambios en la Edge Function**
+La funcion `generate-sitemap` ya esta completa: incluye todas las rutas estaticas con hreflang multilingue y consulta `blog_posts` de Supabase para anadir posts publicados dinamicamente.
 
 ### Resultado
-- Todos los componentes React (Header, LandingHeaderMinimal, BookingPage, LeadMagnetLandingPage, presentaciones) mostraran el logo automaticamente via `brand.ts`
-- Los emails usaran texto estilizado como fallback seguro
+- Cada vez que Google rastree el sitemap, obtendra la version dinamica actualizada
+- Los nuevos posts del blog aparecen automaticamente sin intervencion manual
+- Las fechas `lastmod` se generan dinamicamente (fecha del dia para rutas estaticas, `updated_at` para posts)
+- No se requiere Cloudflare Worker para esta funcionalidad
+
+### Seccion tecnica
+- Archivos modificados: `public/robots.txt`, `public/sitemap.xml`
+- Sin nuevas dependencias
+- La Edge Function usa `SUPABASE_URL` y `SUPABASE_ANON_KEY` (variables de entorno por defecto de Supabase, ya configuradas)
 
