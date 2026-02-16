@@ -1,47 +1,90 @@
 
 
-## Actualizar sitemap.xml y sincronizar paginas faltantes
+## Configurar Cloudflare Worker para servir el sitemap dinamico
 
-### Situacion actual
-- Todas las fechas `lastmod` en `public/sitemap.xml` son `2026-02-15` (ayer)
-- Faltan 5 landing pages que existen en `static-landing-pages.ts` pero no estan ni en el sitemap estatico ni en la Edge Function:
-  - `/lp/calculadora-meta` (Meta Ads)
-  - `/lp/venta-empresas-v2` (A/B testing)
-  - `/lp/valoracion-2026` (campana estacional)
-  - `/lp/rod-linkedin` (LinkedIn)
-  - `/lp/accountex` (evento)
-- Faltan variantes catalanas de algunos sectores en el sitemap estatico (retail-consum, industrial, energia, logistica, alimentacio, medi-ambient)
+### Contexto
+Lovable no puede crear ni desplegar Cloudflare Workers directamente, ya que son infraestructura externa. Este plan proporciona el codigo completo del Worker y las instrucciones paso a paso para configurarlo en tu dashboard de Cloudflare.
 
-### Cambios
+### Que hace el Worker
+Cuando un visitante o bot solicita `https://capittal.es/sitemap.xml`, el Worker intercepta la peticion y la redirige a la Edge Function de Supabase (`generate-sitemap`), devolviendo el sitemap dinamico con cabeceras XML correctas y cache de 1 hora.
 
-**1. `public/sitemap.xml` - Actualizar fechas y anadir paginas**
-- Cambiar todos los `lastmod` de `2026-02-15` a `2026-02-16`
-- Anadir las 5 landing pages que faltan en la seccion de Landing Pages
-- Anadir las variantes catalanas de sectores que faltan (sectors/retail-consum, sectors/industrial, sectors/energia, sectors/logistica, sectors/alimentacio)
+### Codigo del Cloudflare Worker
 
-**2. `supabase/functions/generate-sitemap/index.ts` - Anadir LPs faltantes**
-- Anadir las 5 landing pages al array `staticRoutes` para mantener sincronizacion con el sitemap estatico
+```javascript
+const SITEMAP_FUNCTION_URL =
+  "https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap";
 
-### Seccion tecnica
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I";
 
-**Paginas nuevas a anadir (ambos archivos):**
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
 
-```text
-/lp/calculadora-meta    -> priority 0.9, changefreq monthly
-/lp/venta-empresas-v2   -> priority 0.9, changefreq monthly
-/lp/valoracion-2026     -> priority 0.85, changefreq monthly
-/lp/rod-linkedin        -> priority 0.85, changefreq monthly
-/lp/accountex           -> priority 0.8, changefreq monthly
+    // Solo interceptar /sitemap.xml
+    if (url.pathname !== "/sitemap.xml") {
+      return fetch(request);
+    }
+
+    try {
+      const response = await fetch(SITEMAP_FUNCTION_URL, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+      });
+
+      if (!response.ok) {
+        // Fallback: devolver el sitemap estatico del origen
+        return fetch(request);
+      }
+
+      const xml = await response.text();
+
+      return new Response(xml, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/xml; charset=utf-8",
+          "Cache-Control": "public, max-age=3600, s-maxage=86400",
+          "X-Robots-Tag": "noindex",
+        },
+      });
+    } catch (err) {
+      console.error("Sitemap worker error:", err);
+      // Fallback al origen (sitemap estatico)
+      return fetch(request);
+    }
+  },
+};
 ```
 
-**Variantes catalanas de sectores a anadir (solo sitemap.xml):**
-Estas ya estan en la Edge Function pero faltan en el archivo estatico:
-- `/sectors/retail-consum`
-- `/sectors/industrial`
-- `/sectors/energia`
-- `/sectors/logistica`
-- `/sectors/alimentacio`
+### Instrucciones de configuracion en Cloudflare
 
-**Archivos modificados:** `public/sitemap.xml`, `supabase/functions/generate-sitemap/index.ts`
-**Sin nuevas dependencias**
+**Paso 1: Crear el Worker**
+1. Entra en tu dashboard de Cloudflare > Workers & Pages
+2. Clic en "Create" > "Create Worker"
+3. Ponle nombre: `capittal-sitemap`
+4. Pega el codigo de arriba y haz clic en "Deploy"
+
+**Paso 2: Configurar la ruta**
+1. Ve a tu dominio `capittal.es` en Cloudflare > Workers Routes
+2. Anade una nueva ruta: `capittal.es/sitemap.xml` apuntando al worker `capittal-sitemap`
+
+**Paso 3: Actualizar robots.txt (en Lovable)**
+Cambiar la directiva Sitemap en `public/robots.txt` para que apunte al dominio principal en lugar de la URL de Supabase:
+
+```
+Sitemap: https://capittal.es/sitemap.xml
+```
+
+Esto es mejor para SEO porque Google prefiere que el sitemap este en el mismo dominio.
+
+### Seguridad
+- La anon key de Supabase es publica por diseno (las RLS policies protegen los datos)
+- El Worker solo lee datos publicos (posts publicados)
+- Si la Edge Function falla, el Worker hace fallback al archivo estatico `sitemap.xml`
+
+### Cambios en Lovable
+Solo se modifica un archivo: `public/robots.txt` (cambiar la URL del Sitemap al dominio principal).
+Sin nuevas dependencias.
 
