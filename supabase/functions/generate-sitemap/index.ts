@@ -69,8 +69,13 @@ const staticRoutes: RouteEntry[] = [
   { path: "/lp/calculadora", changefreq: "weekly", priority: 0.95 },
   { path: "/lp/calculadora-fiscal", changefreq: "weekly", priority: 0.95 },
   { path: "/lp/calculadora-asesores", changefreq: "weekly", priority: 0.95 },
+  { path: "/lp/calculadora-meta", changefreq: "monthly", priority: 0.9 },
   { path: "/lp/venta-empresas", changefreq: "monthly", priority: 0.9 },
+  { path: "/lp/venta-empresas-v2", changefreq: "monthly", priority: 0.9 },
+  { path: "/lp/valoracion-2026", changefreq: "monthly", priority: 0.85 },
+  { path: "/lp/rod-linkedin", changefreq: "monthly", priority: 0.85 },
   { path: "/lp/suiteloop", changefreq: "monthly", priority: 0.85 },
+  { path: "/lp/accountex", changefreq: "monthly", priority: 0.8 },
 
   // ─── Servicios (ES) ───
   { path: "/servicios/valoraciones", changefreq: "monthly", priority: 0.9 },
