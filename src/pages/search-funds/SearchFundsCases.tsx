@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet';
 import { Building2, TrendingUp, Users, Calendar, MapPin, Filter, Lightbulb, Quote, Award } from 'lucide-react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 interface CaseStudy {
   id: number;
@@ -274,14 +275,12 @@ const SearchFundsCases = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Casos de Éxito Search Funds España | Capittal</title>
-        <meta 
-          name="description" 
-          content="Historias reales de transacciones Search Funds en España. Casos de éxito en sectores industrial, servicios, healthcare y tecnología con lecciones aprendidas." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/casos" />
-      </Helmet>
+      <SEOHead
+        title="Casos de Éxito Search Funds España | Capittal"
+        description="Historias reales de transacciones Search Funds en España. Casos de éxito en sectores industrial, servicios, healthcare y tecnología con lecciones aprendidas."
+        canonical="https://capittal.es/search-funds/recursos/casos"
+        structuredData={getWebPageSchema('Casos de Éxito Search Funds España', 'Historias reales de transacciones Search Funds en España con lecciones aprendidas.', 'https://capittal.es/search-funds/recursos/casos')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

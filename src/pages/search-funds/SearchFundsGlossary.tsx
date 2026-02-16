@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { GlossarySearch, GlossaryCard } from '@/components/search-funds-center';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const glossaryTerms = [
   // === ESTRUCTURA ===
@@ -336,14 +337,12 @@ const SearchFundsGlossary = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Glosario M&A y Search Funds | {totalTerms} Términos | Capittal</title>
-        <meta 
-          name="description" 
-          content={`Diccionario completo de ${totalTerms} términos M&A y Search Funds: LOI, EBITDA, Due Diligence, Earn-out, LBO, MBO y más. Definiciones claras con ejemplos prácticos.`}
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/glosario" />
-      </Helmet>
+      <SEOHead
+        title={`Glosario M&A y Search Funds | ${totalTerms} Términos | Capittal`}
+        description={`Diccionario completo de ${totalTerms} términos M&A y Search Funds: LOI, EBITDA, Due Diligence, Earn-out, LBO, MBO y más. Definiciones claras con ejemplos prácticos.`}
+        canonical="https://capittal.es/search-funds/recursos/glosario"
+        structuredData={getWebPageSchema('Glosario M&A y Search Funds', `Diccionario completo de ${totalTerms} términos M&A y Search Funds con definiciones claras y ejemplos prácticos.`, 'https://capittal.es/search-funds/recursos/glosario')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

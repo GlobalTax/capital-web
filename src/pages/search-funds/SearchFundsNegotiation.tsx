@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Handshake, Brain, MessageSquare, Target, Shield, AlertTriangle, Users, FileText, Clock } from 'lucide-react';
 import { GuideHero, GuideTip, GuideChecklist, GuideCTA, GuideSection, GuideMetricsGrid } from '@/components/search-funds-guides';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const SearchFundsNegotiation = () => {
   useEffect(() => {
@@ -11,14 +12,12 @@ const SearchFundsNegotiation = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Negociación con Vendedores en M&A | Guía para Search Funds | Capittal</title>
-        <meta 
-          name="description" 
-          content="Técnicas de negociación para adquirir empresas: psicología del vendedor, estructuración creativa del deal, earn-outs, vendor financing y cómo cerrar el trato." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/negociacion" />
-      </Helmet>
+      <SEOHead
+        title="Negociación con Vendedores en M&A | Guía para Search Funds | Capittal"
+        description="Técnicas de negociación para adquirir empresas: psicología del vendedor, estructuración creativa del deal, earn-outs, vendor financing y cómo cerrar el trato."
+        canonical="https://capittal.es/search-funds/recursos/negociacion"
+        structuredData={getWebPageSchema('Negociación con Vendedores en M&A', 'Técnicas de negociación para adquirir empresas: psicología del vendedor, estructuración creativa del deal y cómo cerrar el trato.', 'https://capittal.es/search-funds/recursos/negociacion')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

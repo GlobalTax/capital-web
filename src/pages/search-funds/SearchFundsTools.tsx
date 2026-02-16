@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { Calculator, ClipboardCheck, FileSpreadsheet, ArrowRight, Scale } from 'lucide-react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Button } from '@/components/ui/button';
 import { SearchFundsFitCalculator } from '@/components/search-funds/SearchFundsFitCalculator';
 import { SearchFundsComparator } from '@/components/search-funds/SearchFundsComparator';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const tools = [
   {
@@ -38,14 +39,12 @@ const SearchFundsTools = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Herramientas Search Funds | Calculadoras y Tests | Capittal</title>
-        <meta 
-          name="description" 
-          content="Herramientas gratuitas para Search Funds: calculadora de fit, comparador SF vs PE, valoración de empresas, test exit-ready y más. Evalúa si tu empresa es candidata." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/herramientas" />
-      </Helmet>
+      <SEOHead
+        title="Herramientas Search Funds | Calculadoras y Tests | Capittal"
+        description="Herramientas gratuitas para Search Funds: calculadora de fit, comparador SF vs PE, valoración de empresas, test exit-ready y más. Evalúa si tu empresa es candidata."
+        canonical="https://capittal.es/search-funds/recursos/herramientas"
+        structuredData={getWebPageSchema('Herramientas Search Funds', 'Herramientas gratuitas para Search Funds: calculadora de fit, comparador SF vs PE, valoración de empresas y más.', 'https://capittal.es/search-funds/recursos/herramientas')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

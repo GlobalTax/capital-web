@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Calculator, TrendingUp, Scale, FileSearch, PiggyBank, AlertTriangle, BarChart3, CheckCircle } from 'lucide-react';
 import { GuideHero, GuideTip, GuideChecklist, GuideCTA, GuideSection, GuideMetricsGrid } from '@/components/search-funds-guides';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const SearchFundsValuation = () => {
   useEffect(() => {
@@ -11,14 +12,12 @@ const SearchFundsValuation = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Valoración de Empresas en Search Funds | Guía Completa | Capittal</title>
-        <meta 
-          name="description" 
-          content="Aprende a valorar empresas para Search Funds: múltiplos de EBITDA, ajustes normalizados, Quality of Earnings y técnicas de negociación del precio." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/valoracion" />
-      </Helmet>
+      <SEOHead
+        title="Valoración de Empresas en Search Funds | Guía Completa | Capittal"
+        description="Aprende a valorar empresas para Search Funds: múltiplos de EBITDA, ajustes normalizados, Quality of Earnings y técnicas de negociación del precio."
+        canonical="https://capittal.es/search-funds/recursos/valoracion"
+        structuredData={getWebPageSchema('Valoración de Empresas en Search Funds', 'Aprende a valorar empresas para Search Funds: múltiplos de EBITDA, ajustes normalizados y Quality of Earnings.', 'https://capittal.es/search-funds/recursos/valoracion')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">
