@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import { CampaignValuationForm } from '@/components/campaign/CampaignValuationForm';
+import { SEOHead } from '@/components/seo';
 import { TrendingUp, Calendar, Target } from 'lucide-react';
 
 const LandingValoracion2026 = () => {
@@ -11,15 +11,12 @@ const LandingValoracion2026 = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Valoración Cierre de Año 2025 | Capittal</title>
-        <meta
-          name="description"
-          content="Planifica tu 2026 con una valoración profesional de tu empresa. Conoce el valor real de tu negocio antes de cerrar el año."
-        />
-        <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://capittal.es/lp/valoracion-2026" />
-      </Helmet>
+      <SEOHead
+        title="Valoración Cierre de Año 2025 | Capittal"
+        description="Planifica tu 2026 con una valoración profesional de tu empresa. Conoce el valor real de tu negocio antes de cerrar el año."
+        canonical="https://capittal.es/lp/valoracion-2026"
+        noindex={true}
+      />
 
       <div className="min-h-screen bg-background">
         {/* Header */}

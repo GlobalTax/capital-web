@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { LibraryItem } from '@/components/search-funds-center';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const libraryItems = [
   {
@@ -74,14 +75,12 @@ const SearchFundsLibrary = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Biblioteca Search Funds | Estudios, PDFs y Recursos | Capittal</title>
-        <meta 
-          name="description" 
-          content="Biblioteca de recursos sobre Search Funds: estudios de Stanford, IESE, podcasts, videos y artículos. Todo el conocimiento en un solo lugar." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/biblioteca" />
-      </Helmet>
+      <SEOHead
+        title="Biblioteca Search Funds | Estudios, PDFs y Recursos | Capittal"
+        description="Biblioteca de recursos sobre Search Funds: estudios de Stanford, IESE, podcasts, videos y artículos. Todo el conocimiento en un solo lugar."
+        canonical="https://capittal.es/search-funds/recursos/biblioteca"
+        structuredData={getWebPageSchema('Biblioteca Search Funds', 'Biblioteca de recursos sobre Search Funds: estudios de Stanford, IESE, podcasts, videos y artículos.', 'https://capittal.es/search-funds/recursos/biblioteca')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

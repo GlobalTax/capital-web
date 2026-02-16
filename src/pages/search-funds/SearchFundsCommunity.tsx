@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { ExternalLink, GraduationCap, Users, Calendar, Linkedin } from 'lucide-react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
-
 import { Button } from '@/components/ui/button';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const institutions = [
   {
@@ -70,14 +70,12 @@ const SearchFundsCommunity = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Comunidad Search Funds España | Networking y Eventos | Capittal</title>
-        <meta 
-          name="description" 
-          content="Conecta con el ecosistema de Search Funds en España: IESE, IE, ESADE, asociaciones, grupos de LinkedIn y eventos del sector." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/comunidad" />
-      </Helmet>
+      <SEOHead
+        title="Comunidad Search Funds España | Networking y Eventos | Capittal"
+        description="Conecta con el ecosistema de Search Funds en España: IESE, IE, ESADE, asociaciones, grupos de LinkedIn y eventos del sector."
+        canonical="https://capittal.es/search-funds/recursos/comunidad"
+        structuredData={getWebPageSchema('Comunidad Search Funds España', 'Conecta con el ecosistema de Search Funds en España: IESE, IE, ESADE y eventos del sector.', 'https://capittal.es/search-funds/recursos/comunidad')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

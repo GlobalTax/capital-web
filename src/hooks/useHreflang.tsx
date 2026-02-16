@@ -79,7 +79,6 @@ const routeMap: Record<string, HreflangRoute> = {
   '/sectors/salut': { es: '/sectores/healthcare', ca: '/sectors/salut', en: '/sectors/healthcare' },
   '/sectors/healthcare': { es: '/sectores/healthcare', ca: '/sectors/salut', en: '/sectors/healthcare' },
   
-  
   '/sectores/industrial': { es: '/sectores/industrial', ca: '/sectors/industrial', en: '/sectors/industrial' },
   '/sectors/industrial': { es: '/sectores/industrial', ca: '/sectors/industrial', en: '/sectors/industrial' },
   
@@ -90,8 +89,23 @@ const routeMap: Record<string, HreflangRoute> = {
   '/sectores/energia': { es: '/sectores/energia', ca: '/sectors/energia', en: '/sectors/energy' },
   '/sectors/energia': { es: '/sectores/energia', ca: '/sectors/energia', en: '/sectors/energy' },
   '/sectors/energy': { es: '/sectores/energia', ca: '/sectors/energia', en: '/sectors/energy' },
-  
-  
+
+  '/sectores/seguridad': { es: '/sectores/seguridad', ca: '/sectors/seguretat', en: '/sectors/security' },
+  '/sectors/seguretat': { es: '/sectores/seguridad', ca: '/sectors/seguretat', en: '/sectors/security' },
+  '/sectors/security': { es: '/sectores/seguridad', ca: '/sectors/seguretat', en: '/sectors/security' },
+
+  '/sectores/construccion': { es: '/sectores/construccion', ca: '/sectors/construccio', en: '/sectors/construccion' },
+  '/sectors/construccio': { es: '/sectores/construccion', ca: '/sectors/construccio', en: '/sectors/construccion' },
+
+  '/sectores/logistica': { es: '/sectores/logistica', ca: '/sectors/logistica', en: '/sectors/logistica' },
+  '/sectors/logistica': { es: '/sectores/logistica', ca: '/sectors/logistica', en: '/sectors/logistica' },
+
+  '/sectores/medio-ambiente': { es: '/sectores/medio-ambiente', ca: '/sectors/medi-ambient', en: '/sectors/medio-ambiente' },
+  '/sectors/medi-ambient': { es: '/sectores/medio-ambiente', ca: '/sectors/medi-ambient', en: '/sectors/medio-ambiente' },
+
+  '/sectores/alimentacion': { es: '/sectores/alimentacion', ca: '/sectors/alimentacio', en: '/sectors/alimentacion' },
+  '/sectors/alimentacio': { es: '/sectores/alimentacion', ca: '/sectors/alimentacio', en: '/sectors/alimentacion' },
+
   // === LANDING PAGES ===
   '/lp/calculadora': { es: '/lp/calculadora', ca: '/lp/calculadora', en: '/lp/calculadora' },
   '/lp/calculadora-fiscal': { es: '/lp/calculadora-fiscal', ca: '/lp/calculadora-fiscal', en: '/lp/calculadora-fiscal' },

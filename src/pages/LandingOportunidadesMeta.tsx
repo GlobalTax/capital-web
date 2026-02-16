@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
+import { SEOHead } from '@/components/seo';
 import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,10 +144,10 @@ const LandingOportunidadesMeta: React.FC = () => {
   if (isSubmitted) {
     return (
       <>
-        <Helmet>
-          <title>Gracias | Capittal</title>
-          <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        <SEOHead
+          title="Gracias | Capittal"
+          noindex={true}
+        />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
           <div className="max-w-md text-center">
             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -172,12 +172,12 @@ const LandingOportunidadesMeta: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Empresas en Venta | Oportunidades de Inversión | Capittal</title>
-        <meta name="description" content="Descubre empresas en venta con mandato directo. Oportunidades de inversión exclusivas en diversos sectores. Accede al marketplace M&A." />
-        <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://capittal.es/lp/oportunidades-meta" />
-      </Helmet>
+      <SEOHead
+        title="Empresas en Venta | Oportunidades de Inversión | Capittal"
+        description="Descubre empresas en venta con mandato directo. Oportunidades de inversión exclusivas en diversos sectores. Accede al marketplace M&A."
+        canonical="https://capittal.es/lp/oportunidades-meta"
+        noindex={true}
+      />
 
       <LandingHeaderMinimal />
 

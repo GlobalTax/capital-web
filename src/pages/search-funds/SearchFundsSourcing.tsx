@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Target, Mail, Phone, Users, Database, TrendingUp, AlertCircle, BarChart3, Briefcase, MessageSquare } from 'lucide-react';
 import { GuideHero, GuideTip, GuideChecklist, GuideCTA, GuideSection, GuideMetricsGrid } from '@/components/search-funds-guides';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const SearchFundsSourcing = () => {
   useEffect(() => {
@@ -11,14 +12,12 @@ const SearchFundsSourcing = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Cómo Conseguir Empresas para un Search Fund | Guía de Sourcing | Capittal</title>
-        <meta 
-          name="description" 
-          content="Guía completa de sourcing para Search Funds: canales de adquisición, estrategias de outreach, métricas de embudo y gestión del pipeline de oportunidades." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/sourcing" />
-      </Helmet>
+      <SEOHead
+        title="Cómo Conseguir Empresas para un Search Fund | Guía de Sourcing | Capittal"
+        description="Guía completa de sourcing para Search Funds: canales de adquisición, estrategias de outreach, métricas de embudo y gestión del pipeline de oportunidades."
+        canonical="https://capittal.es/search-funds/recursos/sourcing"
+        structuredData={getWebPageSchema('Cómo Conseguir Empresas para un Search Fund', 'Guía completa de sourcing para Search Funds: canales de adquisición, estrategias de outreach y métricas.', 'https://capittal.es/search-funds/recursos/sourcing')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

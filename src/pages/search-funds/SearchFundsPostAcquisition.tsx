@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { Calendar, Users, TrendingUp, MessageSquare, AlertTriangle, Target, CheckCircle, Clock, BarChart3, Heart } from 'lucide-react';
 import { GuideHero, GuideTip, GuideChecklist, GuideCTA, GuideSection, GuideMetricsGrid } from '@/components/search-funds-guides';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const SearchFundsPostAcquisition = () => {
   useEffect(() => {
@@ -11,14 +12,12 @@ const SearchFundsPostAcquisition = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Los Primeros 100 Días Post-Adquisición | Guía para Search Funds | Capittal</title>
-        <meta 
-          name="description" 
-          content="Plan de transición tras adquirir una empresa: comunicación con empleados, retención de talento, quick wins, KPIs a monitorear y errores comunes a evitar." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/post-adquisicion" />
-      </Helmet>
+      <SEOHead
+        title="Los Primeros 100 Días Post-Adquisición | Guía para Search Funds | Capittal"
+        description="Plan de transición tras adquirir una empresa: comunicación con empleados, retención de talento, quick wins, KPIs a monitorear y errores comunes a evitar."
+        canonical="https://capittal.es/search-funds/recursos/post-adquisicion"
+        structuredData={getWebPageSchema('Los Primeros 100 Días Post-Adquisición', 'Plan de transición tras adquirir una empresa: comunicación con empleados, retención de talento y quick wins.', 'https://capittal.es/search-funds/recursos/post-adquisicion')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

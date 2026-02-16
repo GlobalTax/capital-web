@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import {
   SearchFundsHubHero,
@@ -12,6 +11,8 @@ import {
   SearchFundsHubFAQ,
   SearchFundsHubCTA,
 } from '@/components/search-funds-hub';
+import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 
 const SearchFundsGuide = () => {
   useEffect(() => {
@@ -20,14 +21,12 @@ const SearchFundsGuide = () => {
 
   return (
     <UnifiedLayout>
-      <Helmet>
-        <title>Guía Completa de Search Funds en España | Capittal</title>
-        <meta 
-          name="description" 
-          content="Aprende todo sobre Search Funds: qué son, cómo funcionan, modelos de financiación, proceso de adquisición y por qué España es líder europeo." 
-        />
-        <link rel="canonical" href="https://capittal.es/search-funds/recursos/guia" />
-      </Helmet>
+      <SEOHead
+        title="Guía Completa de Search Funds en España | Capittal"
+        description="Aprende todo sobre Search Funds: qué son, cómo funcionan, modelos de financiación, proceso de adquisición y por qué España es líder europeo."
+        canonical="https://capittal.es/search-funds/recursos/guia"
+        structuredData={getWebPageSchema('Guía Completa de Search Funds en España', 'Aprende todo sobre Search Funds: qué son, cómo funcionan, modelos de financiación y proceso de adquisición.', 'https://capittal.es/search-funds/recursos/guia')}
+      />
 
       <div className="pt-24">
         <div className="container mx-auto px-4 py-12">

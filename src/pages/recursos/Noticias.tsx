@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
+import { getWebPageSchema } from '@/utils/seo/schemas';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -91,6 +92,7 @@ const Noticias: React.FC = () => {
         description="Últimas noticias sobre fusiones, adquisiciones, private equity y venture capital en España. Mantente informado sobre el sector M&A."
         canonical="https://capittal.es/recursos/noticias"
         keywords="noticias M&A, fusiones adquisiciones España, private equity noticias, venture capital España"
+        structuredData={getWebPageSchema('Noticias M&A España', 'Últimas noticias sobre fusiones, adquisiciones, private equity y venture capital en España.', 'https://capittal.es/recursos/noticias')}
       />
 
       <div className="min-h-screen bg-background">

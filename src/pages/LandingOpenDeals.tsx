@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
 import LandingHeaderMinimal from '@/components/landing/LandingHeaderMinimal';
+import { SEOHead } from '@/components/seo';
 import LandingFooterMinimal from '@/components/landing/LandingFooterMinimal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -138,10 +138,10 @@ const LandingOpenDeals: React.FC = () => {
   if (isSubmitted) {
     return (
       <>
-        <Helmet>
-          <title>Descarga Completada | Capittal</title>
-          <meta name="robots" content="noindex, nofollow" />
-        </Helmet>
+        <SEOHead
+          title="Descarga Completada | Capittal"
+          noindex={true}
+        />
         <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
           <div className="max-w-md text-center">
             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -173,12 +173,12 @@ const LandingOpenDeals: React.FC = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Descargar Relación de Open Deals | Empresas en Venta | Capittal</title>
-        <meta name="description" content="Descarga gratis la relación de empresas en venta con mandato directo. +50 oportunidades de inversión en diversos sectores." />
-        <meta name="robots" content="noindex, nofollow" />
-        <link rel="canonical" href="https://capittal.es/lp/open-deals" />
-      </Helmet>
+      <SEOHead
+        title="Descargar Relación de Open Deals | Empresas en Venta | Capittal"
+        description="Descarga gratis la relación de empresas en venta con mandato directo. +50 oportunidades de inversión en diversos sectores."
+        canonical="https://capittal.es/lp/open-deals"
+        noindex={true}
+      />
 
       <LandingHeaderMinimal />
 
