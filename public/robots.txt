@@ -9,4 +9,4 @@ Disallow: /_vite/
 Disallow: /__vite/
 Disallow: /ws/
 
-Sitemap: https://capittal.es/sitemap.xml
+Sitemap: https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap
