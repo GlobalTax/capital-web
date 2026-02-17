@@ -220,7 +220,8 @@ const cleanPdfBase64 = (b64: string): string => {
 const generateValuationPdfBase64 = async (
   companyData: CompanyDataEmail,
   result: ValuationResultEmail,
-  locale: string
+  locale: string,
+  logoBytes?: Uint8Array | null
 ): Promise<string> => {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595.28, 841.89]);
@@ -234,11 +235,25 @@ const generateValuationPdfBase64 = async (
   const lineHeight = 18;
   const colorPrimary = rgb(0.106, 0.247, 0.675);
 
-  const drawHeader = () => {
+  const drawHeader = async () => {
     const title = "Informe de Valoración";
     page.drawText(title, { x: margin, y, size: 20, font: fontBold, color: colorPrimary });
     y -= lineHeight + 6;
-    page.drawText("Capittal", { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
+    
+    // Draw logo or text fallback
+    if (logoBytes) {
+      try {
+        const logoImage = await pdfDoc.embedPng(logoBytes);
+        const logoHeight = 24;
+        const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
+        page.drawImage(logoImage, { x: margin, y: y - 4, width: logoWidth, height: logoHeight });
+      } catch {
+        page.drawText("Capittal", { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
+      }
+    } else {
+      page.drawText("Capittal", { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
+    }
+    
     const date = new Date().toLocaleDateString(locale);
     const dateText = `Fecha: ${date}`;
     const dateWidth = font.widthOfTextAtSize(dateText, 10);
@@ -259,7 +274,7 @@ const generateValuationPdfBase64 = async (
     y -= lineHeight;
   };
 
-  drawHeader();
+  await drawHeader();
   drawSectionTitle("Datos de la empresa");
   drawKV("Contacto:", companyData.contactName || "-");
   drawKV("Empresa:", companyData.companyName || "-");
@@ -300,7 +315,8 @@ const generateValuationPdfBase64 = async (
 const generateConfidentialityPdf = async (
   contactName: string,
   companyName: string,
-  locale: string
+  locale: string,
+  logoBytes?: Uint8Array | null
 ): Promise<string> => {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -322,9 +338,22 @@ const generateConfidentialityPdf = async (
   const page = pdfDoc.addPage([pageWidth, pageHeight]);
   let y = pageHeight - margin;
 
-  // Header
-  page.drawText('CAPITTAL', { x: margin, y, size: 22, font: fontBold, color: colorPrimary });
-  y -= 20;
+  // Header - Logo or text fallback
+  if (logoBytes) {
+    try {
+      const logoImage = await pdfDoc.embedPng(logoBytes);
+      const logoHeight = 30;
+      const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
+      page.drawImage(logoImage, { x: margin, y: y - logoHeight + 8, width: logoWidth, height: logoHeight });
+      y -= logoHeight + 2;
+    } catch {
+      page.drawText('CAPITTAL', { x: margin, y, size: 22, font: fontBold, color: colorPrimary });
+      y -= 20;
+    }
+  } else {
+    page.drawText('CAPITTAL', { x: margin, y, size: 22, font: fontBold, color: colorPrimary });
+    y -= 20;
+  }
   page.drawText('Transacciones S.L.', { x: margin, y, size: 11, font, color: colorPrimary });
   y -= 10;
   page.drawLine({ start: { x: margin, y }, end: { x: pageWidth - margin, y }, color: colorPrimary, thickness: 2 });
@@ -645,11 +674,26 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
+    // Download logo once for both PDFs
+    let logoBytes: Uint8Array | null = null;
+    try {
+      const logoUrl = 'https://capittal.es/lovable-uploads/capittal-logo-white.png';
+      const logoResp = await fetch(logoUrl);
+      if (logoResp.ok) {
+        logoBytes = new Uint8Array(await logoResp.arrayBuffer());
+        log('info', 'LOGO_DOWNLOADED', { sizeBytes: logoBytes.length });
+      } else {
+        log('warn', 'LOGO_DOWNLOAD_FAILED', { status: logoResp.status });
+      }
+    } catch (logoErr: any) {
+      log('warn', 'LOGO_DOWNLOAD_ERROR', { error: logoErr?.message || logoErr });
+    }
+
     // Prepare PDF
     let pdfToAttach: string | null = (pdfBase64 && pdfBase64.trim().length > 0) ? pdfBase64.trim() : null;
     if (!pdfToAttach) {
       try {
-        pdfToAttach = await generateValuationPdfBase64(companyData, result, locale);
+        pdfToAttach = await generateValuationPdfBase64(companyData, result, locale, logoBytes);
       } catch (ePdf: any) {
         log('error', 'PDF_GENERATION_FAILED', { error: ePdf?.message || ePdf });
       }
@@ -832,7 +876,8 @@ const handler = async (req: Request): Promise<Response> => {
         confidentialityPdfBase64 = await generateConfidentialityPdf(
           companyData.contactName || '',
           companyData.companyName || '',
-          locale
+          locale,
+          logoBytes
         );
         log('info', 'CONFIDENTIALITY_PDF_GENERATED', { sizeBytes: confidentialityPdfBase64?.length || 0 });
         
