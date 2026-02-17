@@ -157,3 +157,6 @@ export const LazyCampanaValoracionForm = lazy(() => import('@/pages/admin/Campan
 
 // === CONTENT CALENDAR ===
 export const LazyContentCalendarPage = lazy(() => import('@/pages/admin/ContentCalendarPage'));
+
+// === NDA MANAGEMENT ===
+export const LazyNDAManagementPage = lazy(() => import('@/pages/admin/NDAManagementPage'));

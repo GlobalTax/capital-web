@@ -376,10 +376,10 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestión de leads ROD"
       },
       { 
-        title: "Documentos Fase 0",
-        url: "/admin/documentos-fase0", 
+        title: "Gestión NDAs",
+        url: "/admin/ndas", 
         icon: Shield,
-        description: "NDA y Propuestas de Mandato"
+        description: "NDAs, mandatos y seguimiento"
       },
     ]
   },

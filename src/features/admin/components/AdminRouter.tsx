@@ -94,6 +94,7 @@ import {
   LazyCampanasValoracion,
   LazyCampanaValoracionForm,
   LazyContentCalendarPage,
+  LazyNDAManagementPage,
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
@@ -148,7 +149,8 @@ const AdminRouter = () => {
           <Route path="/leads-pipeline" element={<LazyLeadsPipelinePage />} />
           <Route path="/bookings" element={<LazyBookingsPage />} />
           <Route path="/proposals" element={<LazyProposalsManager />} />
-          <Route path="/documentos-fase0" element={<LazyFase0TemplatesPage />} />
+          <Route path="/documentos-fase0" element={<Navigate to="/admin/ndas" replace />} />
+          <Route path="/ndas" element={<LazyNDAManagementPage />} />
           <Route path="/contacts" element={<LazyContactsPage />} />
           <Route path="/contacts/:id" element={<LazyLeadDetailPage />} />
           <Route path="/buyer-contacts" element={<LazyBuyerContactsManager />} />
