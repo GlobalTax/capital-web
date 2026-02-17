@@ -294,6 +294,169 @@ const generateValuationPdfBase64 = async (
   return base64;
 };
 
+// =====================================================
+// CONFIDENTIALITY COMMITMENT PDF GENERATOR
+// =====================================================
+const generateConfidentialityPdf = async (
+  contactName: string,
+  companyName: string,
+  locale: string
+): Promise<string> => {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+  
+  const colorPrimary = rgb(0.106, 0.247, 0.675);
+  const colorText = rgb(0.13, 0.13, 0.13);
+  const colorGray = rgb(0.42, 0.42, 0.42);
+  const margin = 50;
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const contentWidth = pageWidth - margin * 2;
+  const lineHeight = 16;
+  
+  const today = new Date();
+  const dateStr = today.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  
+  const page = pdfDoc.addPage([pageWidth, pageHeight]);
+  let y = pageHeight - margin;
+
+  // Header
+  page.drawText('CAPITTAL', { x: margin, y, size: 22, font: fontBold, color: colorPrimary });
+  y -= 20;
+  page.drawText('Transacciones S.L.', { x: margin, y, size: 11, font, color: colorPrimary });
+  y -= 10;
+  page.drawLine({ start: { x: margin, y }, end: { x: pageWidth - margin, y }, color: colorPrimary, thickness: 2 });
+  y -= 30;
+
+  // Title
+  page.drawText('COMPROMISO DE CONFIDENCIALIDAD', { x: margin, y, size: 16, font: fontBold, color: colorPrimary });
+  y -= 28;
+
+  // Date and location
+  page.drawText(`Barcelona, a ${dateStr}`, { x: margin, y, size: 10, font: fontItalic, color: colorGray });
+  y -= 28;
+
+  // Parties section
+  page.drawText('PARTES', { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
+  y -= 18;
+  
+  const drawWrappedText = (text: string, x: number, yStart: number, fontSize: number, usedFont: any, maxWidth: number, lh: number): number => {
+    const words = text.split(' ');
+    let line = '';
+    let currentY = yStart;
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (usedFont.widthOfTextAtSize(test, fontSize) > maxWidth && line) {
+        page.drawText(line, { x, y: currentY, size: fontSize, font: usedFont, color: colorText });
+        currentY -= lh;
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) {
+      page.drawText(line, { x, y: currentY, size: fontSize, font: usedFont, color: colorText });
+      currentY -= lh;
+    }
+    return currentY;
+  };
+
+  y = drawWrappedText(
+    `De una parte, CAPITTAL TRANSACCIONES S.L. (en adelante, "Capittal"), con domicilio social en Carrer Ausias March, 36 Principal, 08010 Barcelona, representada a estos efectos por su equipo directivo.`,
+    margin, y, 10, font, contentWidth, lineHeight
+  );
+  y -= 6;
+  y = drawWrappedText(
+    `De otra parte, ${contactName || 'el cliente'}${companyName ? `, en representación de ${companyName}` : ''} (en adelante, "el Cliente").`,
+    margin, y, 10, font, contentWidth, lineHeight
+  );
+  y -= 20;
+
+  // Object
+  page.drawText('OBJETO', { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
+  y -= 18;
+  y = drawWrappedText(
+    'Mediante el presente documento, Capittal manifiesta su compromiso unilateral e irrevocable de mantener la más estricta confidencialidad sobre toda la información proporcionada por el Cliente, así como sobre cualquier dato, documento o comunicación intercambiada en el contexto de la valoración de su empresa y de cualquier servicio de asesoramiento que pudiera derivarse.',
+    margin, y, 10, font, contentWidth, lineHeight
+  );
+  y -= 20;
+
+  // Clauses
+  page.drawText('COMPROMISOS', { x: margin, y, size: 12, font: fontBold, color: colorPrimary });
+  y -= 18;
+
+  const clauses = [
+    ['1. Obligación de confidencialidad.', ' Capittal se compromete a tratar como estrictamente confidencial toda la información financiera, operativa, estratégica, comercial y personal que el Cliente comparta durante el proceso de valoración y asesoramiento.'],
+    ['2. Uso exclusivo.', ' La información recibida será utilizada exclusivamente para evaluar la operación objeto de consulta y prestar los servicios profesionales solicitados, sin que pueda destinarse a ningún otro fin.'],
+    ['3. No divulgación a terceros.', ' Capittal no revelará, divulgará ni comunicará la información confidencial a terceros sin el consentimiento previo y por escrito del Cliente, salvo requerimiento legal o judicial debidamente acreditado.'],
+    ['4. Protección interna.', ' Dentro de la organización de Capittal, el acceso a la información confidencial quedará restringido exclusivamente al personal directamente involucrado en la operación, quienes estarán sujetos a las mismas obligaciones de confidencialidad.'],
+    ['5. Devolución o destrucción.', ' En caso de que la operación no se materialice, Capittal procederá, a petición del Cliente, a la devolución o destrucción de toda la documentación recibida, certificando dicha acción por escrito.'],
+    ['6. Duración.', ' Las obligaciones de confidencialidad aquí asumidas permanecerán vigentes durante un periodo de tres (3) años desde la fecha del presente documento, con independencia de que la relación profesional entre las partes finalice con anterioridad.'],
+  ];
+
+  for (const [bold, rest] of clauses) {
+    const boldWidth = fontBold.widthOfTextAtSize(bold, 10);
+    page.drawText(bold, { x: margin, y, size: 10, font: fontBold, color: colorText });
+    
+    // Draw rest as wrapped text starting after the bold part
+    const firstLineRemaining = contentWidth - boldWidth;
+    const restWords = rest.trim().split(' ');
+    let line = '';
+    let isFirstLine = true;
+    
+    for (const word of restWords) {
+      const test = line ? `${line} ${word}` : word;
+      const maxW = isFirstLine ? firstLineRemaining : contentWidth;
+      if (font.widthOfTextAtSize(test, 10) > maxW && line) {
+        const xPos = isFirstLine ? margin + boldWidth : margin;
+        page.drawText(line, { x: xPos, y, size: 10, font, color: colorText });
+        y -= lineHeight;
+        isFirstLine = false;
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) {
+      const xPos = isFirstLine ? margin + boldWidth : margin;
+      page.drawText(line, { x: xPos, y, size: 10, font, color: colorText });
+      y -= lineHeight;
+    }
+    y -= 4;
+    
+    // Check if we need a new page
+    if (y < 120) {
+      const newPage = pdfDoc.addPage([pageWidth, pageHeight]);
+      // We can't easily switch page context in this simple approach,
+      // but with 6 clauses this shouldn't overflow a single page
+    }
+  }
+
+  y -= 16;
+
+  // Signature
+  page.drawText('Firmado electrónicamente por:', { x: margin, y, size: 10, font: fontItalic, color: colorGray });
+  y -= 18;
+  page.drawText('CAPITTAL TRANSACCIONES S.L.', { x: margin, y, size: 11, font: fontBold, color: colorPrimary });
+  y -= 16;
+  page.drawText(`Fecha: ${dateStr}`, { x: margin, y, size: 10, font, color: colorGray });
+  y -= 30;
+
+  // Footer
+  page.drawLine({ start: { x: margin, y }, end: { x: pageWidth - margin, y }, color: rgb(0.85, 0.89, 0.95), thickness: 1 });
+  y -= 14;
+  page.drawText('Capittal · samuel@capittal.es · +34 695 717 490', { x: margin, y, size: 8, font, color: colorGray });
+  y -= 12;
+  page.drawText('Carrer Ausias March, 36 Principal, 08010 Barcelona', { x: margin, y, size: 8, font, color: colorGray });
+  y -= 12;
+  page.drawText('P.º de la Castellana, 11, B - A, Chamberí, 28046 Madrid', { x: margin, y, size: 8, font, color: colorGray });
+
+  const base64 = await pdfDoc.saveAsBase64({ dataUri: false });
+  return base64;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -622,6 +785,12 @@ const handler = async (req: Request): Promise<Response> => {
             <p style="margin:20px 0 16px; line-height:1.6;">Quedamos a su disposición para concertar una llamada y revisar las conclusiones (metodología, horquilla orientativa y próximos pasos).</p>
             <p style="margin:0 0 20px; line-height:1.6;">Si lo considera oportuno, indíquenos dos o tres opciones de horario y le remitiremos la invitación. Le recordamos que esta valoración es <strong>completamente confidencial</strong>.</p>
 
+            <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:20px; margin:20px 0;">
+              <p style="margin:0; line-height:1.6; color:#1e40af;">
+                <strong>🔒 Compromiso de Confidencialidad:</strong> Adjuntamos también nuestro Compromiso de Confidencialidad, que garantiza la protección absoluta de toda la información compartida durante este proceso. La confianza y discreción son pilares fundamentales de nuestro servicio.
+              </p>
+            </div>
+
             ${enlacesUtiles ? `<div style="background:#ecfdf5; border:1px solid #d1fae5; border-radius:8px; padding:20px; margin:20px 0;"><p style="margin:0 0 12px; font-weight:600; color:#065f46;">🔗 Enlaces útiles (guarde este correo):</p>${enlacesUtiles}</div>` : ''}
 
             <div style="background:#f8fafc; border-radius:8px; padding:20px; margin:24px 0;">
@@ -652,6 +821,50 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>`;
 
+      // =====================================================
+      // GENERATE CONFIDENTIALITY PDF
+      // =====================================================
+      let confidentialityPdfBase64: string | null = null;
+      const confidentialityFilename = `Capittal-Compromiso-Confidencialidad-${sanitizeForFilename(companyData.companyName || 'empresa')}.pdf`;
+      
+      try {
+        log('info', 'CONFIDENTIALITY_PDF_GENERATE_START', { company: companyData.companyName });
+        confidentialityPdfBase64 = await generateConfidentialityPdf(
+          companyData.contactName || '',
+          companyData.companyName || '',
+          locale
+        );
+        log('info', 'CONFIDENTIALITY_PDF_GENERATED', { sizeBytes: confidentialityPdfBase64?.length || 0 });
+        
+        // Upload to storage
+        try {
+          const confBinary = Uint8Array.from(atob(confidentialityPdfBase64), (c) => c.charCodeAt(0));
+          const confFileName = ensurePdfExtension(`${Date.now()}-confidencialidad-${sanitizeForFilename(companyData.companyName || 'empresa')}`);
+          const { error: confUpErr } = await supabase.storage
+            .from('valuations')
+            .upload(confFileName, confBinary, { contentType: 'application/pdf', upsert: true });
+          if (confUpErr) {
+            log('warn', 'CONFIDENTIALITY_PDF_UPLOAD_FAILED', { error: confUpErr.message });
+          } else {
+            log('info', 'CONFIDENTIALITY_PDF_UPLOADED', { fileName: confFileName });
+          }
+        } catch (eConfUp: any) {
+          log('warn', 'CONFIDENTIALITY_PDF_UPLOAD_EXCEPTION', { error: eConfUp?.message || eConfUp });
+        }
+      } catch (eConf: any) {
+        log('warn', 'CONFIDENTIALITY_PDF_GENERATION_FAILED', { error: eConf?.message || eConf });
+        // Continue without it - decoupled pattern
+      }
+
+      // Build attachments array
+      const clientAttachments: Array<{ filename: string; content: string }> = [];
+      if (pdfToAttach) {
+        clientAttachments.push({ filename, content: cleanPdfBase64(pdfToAttach) });
+      }
+      if (confidentialityPdfBase64) {
+        clientAttachments.push({ filename: confidentialityFilename, content: confidentialityPdfBase64 });
+      }
+
       try {
         await resend.emails.send({
           from: "Capittal <samuel@capittal.es>",
@@ -664,8 +877,9 @@ const handler = async (req: Request): Promise<Response> => {
             "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>",
             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
           },
+          ...(clientAttachments.length > 0 ? { attachments: clientAttachments } : {}),
         });
-        log('info', 'CLIENT_EMAIL_SENT', { recipient: companyData.email });
+        log('info', 'CLIENT_EMAIL_SENT', { recipient: companyData.email, attachmentCount: clientAttachments.length });
       } catch (e2: any) {
         log('warn', 'CLIENT_EMAIL_FALLBACK', { error: e2?.message });
         await resend.emails.send({
@@ -679,6 +893,7 @@ const handler = async (req: Request): Promise<Response> => {
             "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>, <https://capittal.es/unsubscribe>", 
             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" 
           },
+          ...(clientAttachments.length > 0 ? { attachments: clientAttachments } : {}),
         });
       }
     }

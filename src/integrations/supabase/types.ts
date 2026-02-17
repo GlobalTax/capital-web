@@ -19404,6 +19404,95 @@ export type Database = {
         }
         Relationships: []
       }
+      system_review_checks: {
+        Row: {
+          check_name: string
+          check_type: string
+          created_at: string
+          error_message: string | null
+          id: string
+          review_item_id: string
+          status: string
+          tested_at: string | null
+          tested_by: string | null
+        }
+        Insert: {
+          check_name: string
+          check_type?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          review_item_id: string
+          status?: string
+          tested_at?: string | null
+          tested_by?: string | null
+        }
+        Update: {
+          check_name?: string
+          check_type?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          review_item_id?: string
+          status?: string
+          tested_at?: string | null
+          tested_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_review_checks_review_item_id_fkey"
+            columns: ["review_item_id"]
+            isOneToOne: false
+            referencedRelation: "system_review_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_review_items: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          module_name: string
+          notes: string | null
+          route: string | null
+          severity: string
+          status: string
+          tested_at: string | null
+          tested_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          module_name: string
+          notes?: string | null
+          route?: string | null
+          severity?: string
+          status?: string
+          tested_at?: string | null
+          tested_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          module_name?: string
+          notes?: string | null
+          route?: string | null
+          severity?: string
+          status?: string
+          tested_at?: string | null
+          tested_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tareas: {
         Row: {
           ai_confidence: number | null
@@ -23053,6 +23142,7 @@ export type Database = {
         Args: { p_tipo_operacion: string }
         Returns: Json
       }
+      sync_template_smart: { Args: { p_tipo_operacion: string }; Returns: Json }
       sync_valuations_to_contactos: {
         Args: never
         Returns: {
