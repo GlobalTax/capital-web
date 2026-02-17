@@ -1,87 +1,118 @@
 
-# Adjuntar Acuerdo de Confidencialidad con la Valoracion
+# Herramienta de Gestion de NDAs
 
-## Objetivo
+## Contexto actual
 
-Cuando se envia el email de valoracion al cliente, adjuntar automaticamente un PDF de "Acuerdo de Confidencialidad" junto al informe de valoracion. Esto genera confianza inmediata en que Capittal protege los datos y comunicaciones del cliente.
+Ya existen las piezas fundamentales pero estan desconectadas:
 
-## Que se hara
+- **Tabla `fase0_documents`**: almacena NDAs generados con estados (draft, sent, viewed, signed, expired, cancelled), tracking de envio, firma y visualizacion
+- **`Fase0DocumentModal`**: permite generar NDAs rellenando variables sobre plantillas
+- **`Fase0TemplatesPage`** (`/admin/documentos-fase0`): solo muestra plantillas, con TODOs en editar/preview
+- **`nda_tracking_events`**: tabla de eventos de tracking (creada pero sin UI)
+- **Compromiso de Confidencialidad**: PDF auto-adjunto con cada email de valoracion (recien implementado)
 
-### 1. Crear el PDF de Confidencialidad (estatico, profesional)
+Lo que falta es un **panel centralizado de gestion de NDAs** donde el equipo pueda ver, filtrar, enviar y hacer seguimiento de todos los acuerdos de confidencialidad.
 
-Se creara un PDF profesional generado directamente en la Edge Function `send-valuation-email` usando `pdf-lib` (ya importado). El documento incluira:
+## Que se construira
 
-- **Titulo**: "Compromiso de Confidencialidad"
-- **Partes**: Capittal Transacciones S.L. y el nombre/empresa del cliente (datos dinamicos)
-- **Clausulas clave**:
-  - Obligacion de confidencialidad sobre toda la informacion compartida
-  - Duracion: 3 anos desde la fecha del documento
-  - Uso exclusivo para evaluar la operacion
-  - No divulgacion a terceros sin consentimiento
-  - Devolucion/destruccion de documentos si no se avanza
-- **Firma**: Firmado digitalmente por Capittal (texto "Firmado electronicamente por Capittal Transacciones S.L.")
-- **Fecha**: Fecha actual del envio
-- **Pie**: Datos de contacto y direccion de Capittal
+### 1. Pagina principal: Gestion de NDAs (`/admin/ndas`)
 
-### 2. Modificar la Edge Function `send-valuation-email`
+Un dashboard con dos tabs principales:
 
-Cambios en el flujo de envio al cliente:
+**Tab "Documentos"** - Listado de todos los NDAs generados
 
-- Generar el PDF de confidencialidad con los datos del cliente (nombre, empresa)
-- Adjuntarlo como segundo archivo en el email al cliente (ademas del PDF de valoracion)
-- Nombre del archivo: `Capittal-Compromiso-Confidencialidad-[NombreEmpresa].pdf`
+| Empresa/Cliente | Tipo | Estado | Enviado | Visto | Firmado | Acciones |
+|---|---|---|---|---|---|---|
+| Empresa A | NDA Advisor | Firmado | 10/02 | 10/02 | 12/02 | [...] |
+| Empresa B | NDA Advisor | Enviado | 08/02 | 09/02 | - | [...] |
+| Empresa C | NDA Advisor | Borrador | - | - | - | [...] |
 
-El email al cliente incluira ambos adjuntos:
-1. `Capittal-Valoracion-[Empresa].pdf` (ya existente)
-2. `Capittal-Compromiso-Confidencialidad-[Empresa].pdf` (nuevo)
+Columnas:
+- Cliente/Empresa (extraido de `filled_data`)
+- Tipo de documento (NDA, Mandato Venta, Mandato Compra)
+- Estado (badge con color segun `FASE0_STATUS_COLORS`)
+- Referencia (numero auto-generado)
+- Fecha de envio / visualizacion / firma
+- Acciones: Ver, Descargar PDF, Reenviar, Marcar como firmado
 
-### 3. Actualizar el texto del email al cliente
+Filtros:
+- Por tipo de documento (multiselect)
+- Por estado (multiselect)
+- Buscador por nombre de empresa/cliente
+- Rango de fechas
 
-Anadir una mencion en el cuerpo del email que refuerce el compromiso:
+**Tab "Plantillas"** - El contenido actual de `Fase0TemplatesPage`, integrado aqui
 
-> "Adjuntamos tambien nuestro Compromiso de Confidencialidad, que garantiza la proteccion absoluta de toda la informacion compartida durante este proceso."
+### 2. Detalle de NDA (Sheet lateral)
 
-### 4. Subir el PDF de confidencialidad a Storage
+Al hacer click en un NDA del listado, se abre un panel lateral con:
+- Datos completos del documento (variables rellenadas)
+- Timeline de eventos (creado, enviado, visto, firmado) usando `nda_tracking_events`
+- Acciones: descargar PDF, reenviar por email, marcar firmado, cancelar
+- Link a la empresa/contacto asociado
 
-Igual que se hace con el PDF de valoracion, subir el PDF de confidencialidad al bucket `valuations` de Supabase Storage para tenerlo archivado.
+### 3. Crear nuevo NDA desde el listado
+
+Boton "Nuevo NDA" que abre el `Fase0DocumentModal` existente, pero con un selector previo de empresa/contacto para vincular.
+
+### 4. Indicadores de estado visual
+
+- Borrador: gris
+- Enviado: azul
+- Visto: amarillo (el cliente abrio el documento)
+- Firmado: verde
+- Expirado: rojo
+- Cancelado: gris tachado
 
 ## Detalles tecnicos
+
+### Archivos nuevos
+
+| Archivo | Descripcion |
+|---|---|
+| `src/pages/admin/NDAManagementPage.tsx` | Pagina principal con tabs Documentos + Plantillas |
+| `src/features/fase0-documents/components/NDADocumentsTable.tsx` | Tabla de NDAs con filtros y acciones |
+| `src/features/fase0-documents/components/NDADetailSheet.tsx` | Panel lateral de detalle con timeline |
+| `src/features/fase0-documents/hooks/useNDATracking.ts` | Hook para leer `nda_tracking_events` |
 
 ### Archivos modificados
 
 | Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/send-valuation-email/index.ts` | Generar PDF de confidencialidad con pdf-lib, adjuntarlo al email del cliente, actualizar HTML del email |
+|---|---|
+| `src/features/admin/components/AdminRouter.tsx` | Anadir ruta `/admin/ndas` |
+| `src/features/admin/config/sidebar-config.ts` | Cambiar el item "Documentos Fase 0" por "Gestion NDAs" apuntando a `/admin/ndas` |
+| `src/features/admin/components/LazyAdminComponents.tsx` | Anadir lazy import de `NDAManagementPage` |
 
-### Generacion del PDF
+### Queries principales
 
-Se reutiliza `pdf-lib` (ya importado) para generar un PDF de 1-2 paginas con:
-- Encabezado con logo/nombre Capittal
-- Datos del cliente rellenados dinamicamente
-- Clausulas legales estandar
-- Fecha y firma electronica
-
-### Estructura del adjunto en Resend
+La tabla `fase0_documents` ya tiene toda la estructura necesaria. Las queries usaran el hook `useFase0Documents` existente con filtros adicionales:
 
 ```text
-attachments: [
-  { filename: 'Valoracion.pdf', content: pdfValoracionBase64 },
-  { filename: 'Compromiso-Confidencialidad.pdf', content: pdfConfidencialidadBase64 }
-]
+-- Listado principal (ya existe el hook)
+SELECT * FROM fase0_documents
+WHERE document_type = 'nda' (o todos)
+ORDER BY created_at DESC
+
+-- Timeline de eventos
+SELECT * FROM nda_tracking_events
+WHERE recipient_id = [document_id o lead_id]
+ORDER BY created_at ASC
 ```
 
-### Impacto
+### Integracion con flujo existente
 
-- **No se modifican** componentes React del frontend
-- **No se crean** nuevas tablas en la BD
-- **No se rompe** el flujo existente de Fase 0 NDA (ese es un documento separado para el proceso de mandato)
-- El PDF de confidencialidad es **automatico**: se genera y adjunta sin intervencion del usuario
-- Si la generacion del PDF de confidencialidad falla, el email se envia igualmente solo con el PDF de valoracion (patron de desacoplamiento existente)
+- La pagina actual `/admin/documentos-fase0` se redirigira a `/admin/ndas`
+- El `Fase0DocumentModal` se reutiliza tal cual para crear/editar NDAs
+- El `Fase0DocumentsList` se reutiliza dentro del detalle de empresa
+- No se modifica la tabla `fase0_documents` ni se crean nuevas tablas
 
-## Relacion con el NDA de Fase 0
+### Sin cambios en base de datos
 
-El sistema ya tiene un NDA formal en `fase0-documents` para el proceso de mandato (Fase 0). Este **Compromiso de Confidencialidad** es diferente:
-- Es un documento unilateral de Capittal (no requiere firma del cliente)
-- Se envia automaticamente con cada valoracion
-- Es mas ligero que el NDA formal
-- Sirve como primer contacto de confianza, antes de llegar al NDA contractual del mandato
+Todo lo necesario ya existe en las tablas `fase0_documents`, `fase0_document_templates` y `nda_tracking_events`. No se requieren migraciones.
+
+## Alcance
+
+- 4 archivos nuevos (pagina + 2 componentes + 1 hook)
+- 3 archivos modificados (router, sidebar, lazy imports)
+- 0 migraciones de BD
+- Se reutiliza toda la infraestructura existente de Fase 0
