@@ -1,45 +1,48 @@
 
-# Añadir Logo de Capittal al PDF de Confidencialidad
 
-## Objetivo
+# Fix: Logo invisible en PDFs (logo blanco sobre fondo blanco)
 
-Reemplazar el texto "CAPITTAL" del encabezado del PDF de Compromiso de Confidencialidad por el logotipo real de Capittal como imagen embebida.
+## Problema
 
-## Enfoque
+La URL actual (`capittal-logo-white.png`) es un logo blanco para fondos oscuros. Se descarga correctamente, se embebe en el PDF, pero no se ve porque el fondo del PDF es blanco.
 
-Dentro de la Edge Function `send-valuation-email`, antes de generar el PDF de confidencialidad, se descargara el logo PNG desde la URL publica existente (`https://capittal.es/lovable-uploads/capittal-logo-white.png` o una version en color oscuro si existe) y se embebera como imagen en el encabezado del PDF usando `pdfDoc.embedPng()` de pdf-lib.
+## Solucion
 
-Si la descarga del logo falla (red, timeout, etc.), se mantendra el texto "CAPITTAL" como fallback para no romper la generacion del PDF.
+1. **Subir el logo oscuro** (`src/assets/logotipo.png`) al bucket publico de Supabase Storage para que sea accesible via URL desde la Edge Function.
 
-## Cambios
+2. **Cambiar la URL en la Edge Function** de `capittal-logo-white.png` a la nueva URL del logo oscuro en Supabase Storage.
 
-### Archivo modificado
+## Cambios tecnicos
+
+### Paso 1: Copiar logo a public/ para subirlo
+
+Copiar `src/assets/logotipo.png` al bucket de Supabase Storage (e.g., `public` bucket o usar la URL de la web publicada `https://webcapittal.lovable.app/logotipo.png`).
+
+Alternativa mas simple: copiar `logotipo.png` a la carpeta `public/` del proyecto para que sea accesible en la URL publicada.
+
+### Paso 2: Actualizar URL en Edge Function
 
 | Archivo | Cambio |
 |---|---|
-| `supabase/functions/send-valuation-email/index.ts` | Descargar logo, embeber en ambos PDFs (valoracion y confidencialidad) |
+| `supabase/functions/send-valuation-email/index.ts` (linea 680) | Cambiar URL de `capittal-logo-white.png` a la URL del logo oscuro |
 
-### Detalle tecnico
+```text
+// ANTES
+const logoUrl = 'https://capittal.es/lovable-uploads/capittal-logo-white.png';
 
-1. **Descargar el logo** al inicio de la funcion (una sola vez, reutilizable para ambos PDFs):
-   ```text
-   const logoUrl = 'https://capittal.es/lovable-uploads/capittal-logo-white.png';
-   let logoBytes: Uint8Array | null = null;
-   try {
-     const resp = await fetch(logoUrl);
-     logoBytes = new Uint8Array(await resp.arrayBuffer());
-   } catch { /* fallback a texto */ }
-   ```
+// DESPUES  
+const logoUrl = 'https://webcapittal.lovable.app/logotipo.png';
+```
 
-2. **En `generateConfidentialityPdf`**: recibir `logoBytes` como parametro opcional. Si existe, usar `pdfDoc.embedPng(logoBytes)` y `page.drawImage()` para dibujar el logo en el encabezado (aprox 120x30px). Si no existe, mantener el `drawText('CAPITTAL')` actual.
+### Paso 3: Verificar formato
 
-3. **En `generateValuationPdfBase64`**: aplicar el mismo patron para consistencia visual entre ambos PDFs.
+El `logotipo.png` es un PNG. El codigo ya usa `embedPng()`, asi que es compatible. Si el archivo tuviera fondo transparente, se vera correctamente sobre blanco (letras oscuras visibles).
 
-4. **Dimensiones del logo**: Se escalara proporcionalmente a un ancho de ~120px, manteniendo la relacion de aspecto original.
+## Archivos modificados
 
-### Impacto
+- `public/logotipo.png` (copiar desde src/assets/ para accesibilidad publica)
+- `supabase/functions/send-valuation-email/index.ts` (1 linea: cambiar URL del logo)
 
-- El logo se descarga una sola vez por ejecucion de la funcion
-- Si falla la descarga, el PDF se genera igualmente con texto (patron de fallback existente)
-- Ambos PDFs (valoracion y confidencialidad) tendran el logo consistente
-- No se modifican tablas ni componentes frontend
+## Verificacion
+
+Redesplegar la Edge Function y enviar una valoracion de prueba para confirmar que el logo oscuro aparece en los encabezados de ambos PDFs.
