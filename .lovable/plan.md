@@ -1,48 +1,30 @@
 
 
-# Fix: Logo invisible en PDFs (logo blanco sobre fondo blanco)
+# Añadir cláusula RGPD/LOPD al Compromiso de Confidencialidad
 
-## Problema
+## Cambio
 
-La URL actual (`capittal-logo-white.png`) es un logo blanco para fondos oscuros. Se descarga correctamente, se embebe en el PDF, pero no se ve porque el fondo del PDF es blanco.
+Añadir una nueva cláusula 7 sobre protección de datos personales (RGPD/LOPD) al array `clauses` en la función `generateConfidentialityPdf` del archivo `supabase/functions/send-valuation-email/index.ts`.
 
-## Solucion
+## Texto de la nueva cláusula
 
-1. **Subir el logo oscuro** (`src/assets/logotipo.png`) al bucket publico de Supabase Storage para que sea accesible via URL desde la Edge Function.
+**7. Protección de datos personales.** Capittal tratará los datos personales del Cliente conforme al Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD). Los datos facilitados serán tratados con la finalidad exclusiva de prestar los servicios profesionales solicitados. El Cliente podrá ejercer sus derechos de acceso, rectificación, supresión, limitación, portabilidad y oposición dirigiéndose a samuel@capittal.es. Para más información, puede consultar nuestra política de privacidad en capittal.es.
 
-2. **Cambiar la URL en la Edge Function** de `capittal-logo-white.png` a la nueva URL del logo oscuro en Supabase Storage.
-
-## Cambios tecnicos
-
-### Paso 1: Copiar logo a public/ para subirlo
-
-Copiar `src/assets/logotipo.png` al bucket de Supabase Storage (e.g., `public` bucket o usar la URL de la web publicada `https://webcapittal.lovable.app/logotipo.png`).
-
-Alternativa mas simple: copiar `logotipo.png` a la carpeta `public/` del proyecto para que sea accesible en la URL publicada.
-
-### Paso 2: Actualizar URL en Edge Function
+## Detalle técnico
 
 | Archivo | Cambio |
 |---|---|
-| `supabase/functions/send-valuation-email/index.ts` (linea 680) | Cambiar URL de `capittal-logo-white.png` a la URL del logo oscuro |
+| `supabase/functions/send-valuation-email/index.ts` (línea ~426) | Añadir cláusula 7 al array `clauses` |
+
+Se insertará un nuevo elemento al final del array `clauses` (línea 426), después de la cláusula 6 (Duración):
 
 ```text
-// ANTES
-const logoUrl = 'https://capittal.es/lovable-uploads/capittal-logo-white.png';
-
-// DESPUES  
-const logoUrl = 'https://webcapittal.lovable.app/logotipo.png';
+['7. Protección de datos personales.', ' Capittal tratará los datos personales del Cliente conforme al Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD). Los datos facilitados serán tratados con la finalidad exclusiva de prestar los servicios profesionales solicitados. El Cliente podrá ejercer sus derechos de acceso, rectificación, supresión, limitación, portabilidad y oposición dirigiéndose a samuel@capittal.es. Para más información, puede consultar nuestra política de privacidad en capittal.es.'],
 ```
 
-### Paso 3: Verificar formato
+## Consideraciones
 
-El `logotipo.png` es un PNG. El codigo ya usa `embedPng()`, asi que es compatible. Si el archivo tuviera fondo transparente, se vera correctamente sobre blanco (letras oscuras visibles).
+- El texto cabe en la misma página ya que hay espacio suficiente antes de la firma (y > 120 threshold para nueva página ya está implementado).
+- No se modifican otros archivos ni la estructura del PDF.
+- Se redesplega la Edge Function tras el cambio.
 
-## Archivos modificados
-
-- `public/logotipo.png` (copiar desde src/assets/ para accesibilidad publica)
-- `supabase/functions/send-valuation-email/index.ts` (1 linea: cambiar URL del logo)
-
-## Verificacion
-
-Redesplegar la Edge Function y enviar una valoracion de prueba para confirmar que el logo oscuro aparece en los encabezados de ambos PDFs.
