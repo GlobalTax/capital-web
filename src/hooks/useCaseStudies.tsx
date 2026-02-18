@@ -41,6 +41,7 @@ export const useCaseStudies = () => {
       
       const { data, error } = await query
         .order('is_featured', { ascending: false })
+        .order('display_order', { ascending: true })
         .order('year', { ascending: false })
         .order('created_at', { ascending: false });
 
