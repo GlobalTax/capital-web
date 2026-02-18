@@ -305,3 +305,12 @@ verify_jwt = false
 
 [functions.prerender-proxy]
 verify_jwt = false
+
+[functions.daily-incomplete-report]
+verify_jwt = false
+
+[functions.daily-hours-report]
+verify_jwt = false
+
+[functions.run-alerts-cron]
+verify_jwt = false
