@@ -423,6 +423,7 @@ const generateConfidentialityPdf = async (
     ['4. Protección interna.', ' Dentro de la organización de Capittal, el acceso a la información confidencial quedará restringido exclusivamente al personal directamente involucrado en la operación, quienes estarán sujetos a las mismas obligaciones de confidencialidad.'],
     ['5. Devolución o destrucción.', ' En caso de que la operación no se materialice, Capittal procederá, a petición del Cliente, a la devolución o destrucción de toda la documentación recibida, certificando dicha acción por escrito.'],
     ['6. Duración.', ' Las obligaciones de confidencialidad aquí asumidas permanecerán vigentes durante un periodo de tres (3) años desde la fecha del presente documento, con independencia de que la relación profesional entre las partes finalice con anterioridad.'],
+    ['7. Protección de datos personales.', ' Capittal tratará los datos personales del Cliente conforme al Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD). Los datos facilitados serán tratados con la finalidad exclusiva de prestar los servicios profesionales solicitados. El Cliente podrá ejercer sus derechos de acceso, rectificación, supresión, limitación, portabilidad y oposición dirigiéndose a samuel@capittal.es. Para más información, puede consultar nuestra política de privacidad en capittal.es.'],
   ];
 
   for (const [bold, rest] of clauses) {
