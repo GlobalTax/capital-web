@@ -44,22 +44,25 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth verification
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader) {
-    return new Response(
-      JSON.stringify({ error: 'No autorizado' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-
+  // Auth verification - skip for scheduled/cron calls
+  let body: any = {};
   try {
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    body = await req.clone().json();
+  } catch {}
+
+  const isScheduledCall = body?.scheduled === true;
+
+  if (!isScheduledCall) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'No autorizado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-    // Validate JWT
     const supabaseAuth = createClient(supabaseUrl, supabaseKey);
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
@@ -69,6 +72,13 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+  }
+
+  try {
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
     if (!lovableApiKey && !openAIApiKey) {
       console.error('No AI API key configured');
