@@ -16,12 +16,7 @@ const CaseStudies = () => {
   const featuredCases = React.useMemo(() => {
     if (!caseStudies || caseStudies.length === 0) return [];
     
-    // First try to get featured cases, then all cases, limit to 6
-    const featured = caseStudies.filter(case_ => case_.is_featured);
-    const displayCases = featured.length > 0 ? featured : caseStudies;
-    
-    return displayCases
-      .slice(0, 6)
+    return caseStudies
       .map(case_ => ({
         id: case_.id,
         title: case_.title,

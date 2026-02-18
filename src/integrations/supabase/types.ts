@@ -3627,6 +3627,7 @@ export type Database = {
           created_at: string
           description: string
           display_locations: string[] | null
+          display_order: number | null
           featured_image_url: string | null
           highlights: string[] | null
           id: string
@@ -3646,6 +3647,7 @@ export type Database = {
           created_at?: string
           description: string
           display_locations?: string[] | null
+          display_order?: number | null
           featured_image_url?: string | null
           highlights?: string[] | null
           id?: string
@@ -3665,6 +3667,7 @@ export type Database = {
           created_at?: string
           description?: string
           display_locations?: string[] | null
+          display_order?: number | null
           featured_image_url?: string | null
           highlights?: string[] | null
           id?: string
