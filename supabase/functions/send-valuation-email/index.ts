@@ -677,7 +677,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Download logo once for both PDFs
     let logoBytes: Uint8Array | null = null;
     try {
-      const logoUrl = 'https://capittal.es/lovable-uploads/capittal-logo-white.png';
+      const logoUrl = 'https://webcapittal.lovable.app/logotipo.png';
       const logoResp = await fetch(logoUrl);
       if (logoResp.ok) {
         logoBytes = new Uint8Array(await logoResp.arrayBuffer());
