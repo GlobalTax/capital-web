@@ -1,81 +1,77 @@
 
-# Opcion de Valoracion con 1 o 3 Anos en Campanas Outbound
+# Parseo Robusto de Excel en Valoraciones
 
-## Resumen
+## Diagnostico
 
-Anadir un selector en el paso de configuracion de campana que permita elegir entre valorar con 1 ano (solo ultimo ejercicio) o 3 anos (trienio completo). El formulario, calculos, plantillas Excel y resumen se adaptaran automaticamente segun la opcion elegida.
+El sistema actual en `CompaniesStep.tsx` ya tiene:
+- Un `buildColumnMap()` (lineas 24-51) con mapeo basico de columnas
+- Auto-mapping en `onDrop` (linea 278) que hace `h.toLowerCase().trim()` para buscar en el mapa
+- Preview con mapeo manual de columnas via Select dropdowns
+- Deteccion de duplicados y filas invalidas
 
-## Diagnostico actual
+**Debilidades actuales:**
+- La normalizacion solo hace `toLowerCase().trim()` — no maneja acentos, espacios multiples ni caracteres especiales
+- El mapa de sinonimos es limitado (faltan variaciones comunes como "compania", "correo electronico", "movil", etc.)
+- Los numeros con formato espanol (puntos como separador de miles: "500.000") se parsean incorrectamente — `parseFloat("500.000")` da `500` en vez de `500000`
+- No hay logs de debugging para el proceso de parseo
+- El `MAPPABLE_FIELDS` para mapeo manual no incluye campos por ano (solo generico "Facturacion" / "EBITDA")
 
-- La tabla `valuation_campaigns` ya tiene columna `financial_years` (array de 3 numeros, default `[2025, 2024, 2023]`)
-- El `CampaignConfigStep` ya permite editar el "ultimo ano disponible" y calcula automaticamente los otros 2
-- El `CompaniesStep` siempre muestra 3 anos en el formulario manual y en la plantilla Excel
-- El calculo en `ReviewCalculateStep` ya soporta 1 o N anos via `financial_years_data` en cada empresa
-- No existe campo `years_mode` en la tabla
+## Cambios Planificados
 
-## Cambios planificados
+### 1. Funcion `normalizeColumnName` robusta
 
-### 1. Base de datos
+Crear una funcion de normalizacion que:
+- Convierta a minusculas
+- Elimine acentos (a/e/i/o/u, n)
+- Colapse espacios multiples a uno
+- Elimine caracteres especiales excepto alfanumericos y espacios
+- Se aplique tanto en `buildColumnMap` como en el auto-mapping de `onDrop`
 
-Agregar columna `years_mode` a `valuation_campaigns`:
+### 2. Ampliar `buildColumnMap` con mas sinonimos
 
-```text
-ALTER TABLE valuation_campaigns 
-ADD COLUMN IF NOT EXISTS years_mode TEXT DEFAULT '3_years';
-```
+Anadir variaciones comunes:
+- Empresa: "compania", "compañia", "sociedad", "denominacion", "nombre empresa"
+- Contacto: "persona contacto", "responsable", "contact name"
+- Email: "correo electronico", "mail", "direccion email"
+- Telefono: "movil", "celular", "telf", "tel"
+- CIF: "tax id", "vat", "numero fiscal", "identificacion fiscal"
+- Facturacion: "sales", "turnover", "cifra de negocio", "cifra negocio"
+- EBITDA: variaciones con guiones y espacios
 
-No se usa CHECK constraint (para evitar problemas de restauracion). La validacion se hace en frontend.
+### 3. Mejorar `parseNumber` para formato espanol
 
-### 2. Hook useCampaigns
+El parseo numerico actual usa `parseFloat(String(value).replace(/[^\d.-]/g, ''))` que falla con "500.000" (formato espanol).
 
-Agregar `years_mode` al tipo `ValuationCampaign` para que TypeScript lo reconozca.
+Nueva logica:
+- Detectar si el numero usa formato espanol (puntos como miles, coma como decimal) vs formato anglosajón
+- Heuristica: si hay punto seguido de exactamente 3 digitos, es separador de miles
+- Limpiar correctamente antes de parsear
 
-### 3. CampaignConfigStep - Selector de modo
+### 4. Logs de debugging
 
-Anadir un **RadioGroup** con 2 opciones antes de la seccion de "Anos financieros":
+Anadir `console.group/log` en:
+- `onDrop`: headers encontrados, mapeo automatico resultante
+- `handleImportPreview`: filas procesadas, valores parseados
+- Warnings para columnas no mapeadas
 
-- **"Ultimo ano disponible"** (1_year) - Badge "Recomendado", descripcion corta
-- **"Ultimos 3 anos"** (3_years) - Descripcion de mayor precision
+### 5. Actualizar `MAPPABLE_FIELDS` para incluir campos por ano
 
-Cuando se selecciona `1_year`:
-- Solo se muestra 1 campo de ano (editable)
-- `financial_years` se guarda como array de 1 elemento: `[2025]`
-
-Cuando se selecciona `3_years`:
-- Se muestran 3 campos (como ahora): ultimo editable, los otros 2 auto-calculados
-- `financial_years` se guarda como array de 3: `[2025, 2024, 2023]`
-
-### 4. CompaniesStep - Formulario adaptativo
-
-- El formulario manual mostrara 1 o 3 filas de datos financieros segun `years_mode`
-- La plantilla Excel descargable tendra columnas para 1 o 3 anos segun la configuracion
-- El mapeo de columnas Excel se adaptara al modo seleccionado
-
-Para esto, `CompaniesStep` necesita recibir `years_mode` como prop (ademas de `financialYears`).
-
-### 5. CampaignSummaryStep - Badge de modo
-
-Agregar un badge informativo en el resumen que indique:
-- "Valoracion con 1 ano" o "Valoracion con 3 anos"
-
-### 6. CampanaValoracionForm (pagina principal)
-
-- Inicializar `years_mode` como `'1_year'` por defecto (recomendado)
-- Pasar `years_mode` al `CompaniesStep`
-- Ajustar `financial_years` segun el modo cuando cambia
+Actualmente solo tiene "Facturacion" y "EBITDA" genericos. Anadir opciones por ano (revenue_year_2, ebitda_year_2, etc.) para que el mapeo manual tambien soporte multi-ano.
 
 ## Archivos a modificar
 
-1. **Migracion SQL** - Agregar columna `years_mode`
-2. **`src/hooks/useCampaigns.ts`** - Agregar `years_mode` al tipo
-3. **`src/pages/admin/CampanaValoracionForm.tsx`** - Default `years_mode: '1_year'`, pasar como prop, ajustar `financial_years` segun modo
-4. **`src/components/admin/campanas-valoracion/steps/CampaignConfigStep.tsx`** - RadioGroup selector + logica condicional de anos
-5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`** - Adaptar formulario manual y plantilla Excel al modo
-6. **`src/components/admin/campanas-valoracion/steps/CampaignSummaryStep.tsx`** - Badge informativo del modo
+1. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`** — Unico archivo. Todos los cambios son aqui:
+   - Nueva funcion `normalizeColumnName`
+   - Ampliar `buildColumnMap` con sinonimos
+   - Mejorar parseo numerico en `handleImportPreview` y `previewStats`
+   - Anadir campos por ano a `MAPPABLE_FIELDS`
+   - Anadir logs en `onDrop` y `handleImportPreview`
+   - Aplicar normalizacion en el auto-mapping de `onDrop`
 
 ## Lo que NO cambia
 
-- `ReviewCalculateStep` ya funciona con 1 o N anos (usa `financial_years_data` del company)
-- `ProcessSendStep` ya mapea `financial_years_data` correctamente al PDF
-- Los calculos de valoracion (`calculateProfessionalValuation`) ya soportan arrays de cualquier tamano
-- Las RLS policies no se modifican
+- La estructura del preview (ya existe y funciona bien)
+- El flujo de importacion (upload -> preview con mapeo -> importar)
+- La deteccion de duplicados
+- La base de datos ni hooks
+- El formulario manual
