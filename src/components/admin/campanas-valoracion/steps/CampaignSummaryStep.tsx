@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign } from 'lucide-react';
+import { Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign, Calendar } from 'lucide-react';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
@@ -57,6 +57,23 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Years mode badge */}
+      <div className="flex items-center gap-2 p-3 rounded-lg border bg-muted/30">
+        {campaign.years_mode === '1_year' ? (
+          <>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Valoración con último año disponible</span>
+            <Badge variant="secondary" className="text-[10px]">1 año</Badge>
+          </>
+        ) : (
+          <>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Valoración con últimos 3 años</span>
+            <Badge variant="secondary" className="text-[10px]">3 años</Badge>
+          </>
+        )}
+      </div>
+
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>

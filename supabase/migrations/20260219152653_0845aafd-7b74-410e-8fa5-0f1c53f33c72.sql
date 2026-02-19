@@ -1,0 +1,1 @@
+ALTER TABLE valuation_campaigns ADD COLUMN IF NOT EXISTS years_mode TEXT DEFAULT '3_years';

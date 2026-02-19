@@ -29,6 +29,7 @@ export interface ValuationCampaign {
   lead_source: string;
   service_type: string;
   financial_years: number[] | null;
+  years_mode: string;
   total_companies: number;
   total_created: number;
   total_sent: number;
