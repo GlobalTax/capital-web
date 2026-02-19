@@ -5,12 +5,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2, Save, Download } from 'lucide-react';
+import { Sparkles, Loader2, Save, Download, Calendar, TrendingUp } from 'lucide-react';
 import { VALUATION_SECTORS } from '@/types/professionalValuation';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const TEMPLATES_KEY = 'campaign-sector-templates';
 
@@ -238,33 +241,109 @@ export function CampaignConfigStep({ data, updateField }: Props) {
             <Label>Incluir comparables en PDF</Label>
           </div>
 
+          {/* Modo de años */}
+          <div className="space-y-3">
+            <Label className="font-medium">¿Con cuántos años valorar?</Label>
+            <RadioGroup
+              value={data.years_mode || '1_year'}
+              onValueChange={(v) => {
+                updateField('years_mode' as any, v);
+                const baseYear = (data.financial_years?.[0]) || new Date().getFullYear() - 1;
+                if (v === '1_year') {
+                  updateField('financial_years', [baseYear] as any);
+                } else {
+                  updateField('financial_years', [baseYear, baseYear - 1, baseYear - 2] as any);
+                }
+              }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+            >
+              <div>
+                <RadioGroupItem value="1_year" id="years_1" className="sr-only peer" />
+                <Label
+                  htmlFor="years_1"
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-4 border-2 rounded-lg cursor-pointer transition-colors",
+                    "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5",
+                    "hover:bg-muted"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span className="font-semibold text-sm">Último año disponible</span>
+                    <Badge variant="secondary" className="text-[10px]">Recomendado</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Solo necesitas datos del último ejercicio cerrado. Más rápido y simple.</p>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="3_years" id="years_3" className="sr-only peer" />
+                <Label
+                  htmlFor="years_3"
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-4 border-2 rounded-lg cursor-pointer transition-colors",
+                    "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5",
+                    "hover:bg-muted"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="font-semibold text-sm">Últimos 3 años</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Valoración más precisa con el histórico de 3 ejercicios.</p>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           {/* Años financieros */}
           <div className="space-y-2">
             <Label className="font-medium">Años financieros</Label>
-            <p className="text-xs text-muted-foreground">Indica el último ejercicio depositado en el Registro Mercantil. Los demás años se calculan automáticamente.</p>
-            <div className="grid grid-cols-3 gap-3">
-              {(() => {
-                const years = data.financial_years || [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
-                const labels = ['Último año disponible', 'Año anterior', 'Dos años antes'];
-                return labels.map((label, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <Label className="text-xs">{label}</Label>
-                    {idx === 0 ? (
-                      <Input
-                        type="number"
-                        value={years[0] ?? ''}
-                        onChange={e => {
-                          const base = parseInt(e.target.value) || 0;
-                          updateField('financial_years', [base, base - 1, base - 2] as any);
-                        }}
-                      />
-                    ) : (
-                      <Input type="number" value={years[idx] ?? ''} disabled className="opacity-60" />
-                    )}
+            <p className="text-xs text-muted-foreground">Indica el último ejercicio depositado en el Registro Mercantil.</p>
+            {(() => {
+              const yearsMode = data.years_mode || '1_year';
+              const years = data.financial_years || [new Date().getFullYear() - 1];
+              const baseYear = years[0] ?? new Date().getFullYear() - 1;
+
+              if (yearsMode === '1_year') {
+                return (
+                  <div className="max-w-[200px] space-y-1">
+                    <Label className="text-xs">Último año disponible</Label>
+                    <Input
+                      type="number"
+                      value={baseYear}
+                      onChange={e => {
+                        const v = parseInt(e.target.value) || 0;
+                        updateField('financial_years', [v] as any);
+                      }}
+                    />
                   </div>
-                ));
-              })()}
-            </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Último año disponible</Label>
+                    <Input
+                      type="number"
+                      value={baseYear}
+                      onChange={e => {
+                        const v = parseInt(e.target.value) || 0;
+                        updateField('financial_years', [v, v - 1, v - 2] as any);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Año anterior</Label>
+                    <Input type="number" value={baseYear - 1} disabled className="opacity-60" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Dos años antes</Label>
+                    <Input type="number" value={baseYear - 2} disabled className="opacity-60" />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </CardContent>
       </Card>

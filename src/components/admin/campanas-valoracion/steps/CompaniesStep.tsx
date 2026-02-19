@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { CurrencyInput } from '@/components/ui/currency-input';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
 
@@ -52,6 +53,7 @@ function buildColumnMap(years: number[]): Record<string, string> {
 interface Props {
   campaignId: string;
   financialYears?: number[];
+  yearsMode?: string;
 }
 
 const MAPPABLE_FIELDS = [
@@ -76,10 +78,13 @@ interface PreviewRow {
 
 const emptyYearRow = (year: number) => ({ year, revenue: '', ebitda: '' });
 
-export function CompaniesStep({ campaignId, financialYears }: Props) {
-  const years = financialYears && financialYears.length === 3 ? financialYears : DEFAULT_YEARS;
-  const [YEAR_1, YEAR_2, YEAR_3] = years;
-  const COLUMN_MAP = buildColumnMap(years);
+export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years' }: Props) {
+  const is1Year = yearsMode === '1_year';
+  const years = is1Year
+    ? (financialYears && financialYears.length >= 1 ? financialYears.slice(0, 1) : [DEFAULT_YEARS[0]])
+    : (financialYears && financialYears.length === 3 ? financialYears : DEFAULT_YEARS);
+  const [YEAR_1, YEAR_2, YEAR_3] = [...years, years[0] - 1, years[0] - 2];
+  const COLUMN_MAP = buildColumnMap(is1Year ? [YEAR_1] : years);
 
   const { companies, stats, addCompany, bulkAddCompanies, updateCompany, deleteCompany, isAdding, isBulkAdding, isUpdating, isDeleting } = useCampaignCompanies(campaignId);
 
@@ -188,11 +193,15 @@ export function CompaniesStep({ campaignId, financialYears }: Props) {
   const [manual, setManual] = useState({
     client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '',
   });
-  const [manualYears, setManualYears] = useState([
-    { year: YEAR_1, revenue: 0, ebitda: 0 },
-    { year: YEAR_2, revenue: 0, ebitda: 0 },
-    { year: YEAR_3, revenue: 0, ebitda: 0 },
-  ]);
+  const [manualYears, setManualYears] = useState(
+    is1Year
+      ? [{ year: YEAR_1, revenue: 0, ebitda: 0 }]
+      : [
+          { year: YEAR_1, revenue: 0, ebitda: 0 },
+          { year: YEAR_2, revenue: 0, ebitda: 0 },
+          { year: YEAR_3, revenue: 0, ebitda: 0 },
+        ]
+  );
 
   const updateManualYear = (idx: number, field: 'revenue' | 'ebitda', value: number) => {
     setManualYears(prev => prev.map((y, i) => i === idx ? { ...y, [field]: value } : y));
@@ -233,7 +242,11 @@ export function CompaniesStep({ campaignId, financialYears }: Props) {
     } as Partial<CampaignCompanyInsert>);
 
     setManual({ client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '' });
-    setManualYears([{ year: YEAR_1, revenue: 0, ebitda: 0 }, { year: YEAR_2, revenue: 0, ebitda: 0 }, { year: YEAR_3, revenue: 0, ebitda: 0 }]);
+    setManualYears(
+      is1Year
+        ? [{ year: YEAR_1, revenue: 0, ebitda: 0 }]
+        : [{ year: YEAR_1, revenue: 0, ebitda: 0 }, { year: YEAR_2, revenue: 0, ebitda: 0 }, { year: YEAR_3, revenue: 0, ebitda: 0 }]
+    );
   };
 
   // Excel preview state
@@ -387,27 +400,31 @@ export function CompaniesStep({ campaignId, financialYears }: Props) {
   });
 
   const downloadTemplate = () => {
-    const data = [
-      {
-        Empresa: 'Empresa Ejemplo S.L.', Contacto: 'Juan Garcia', Email: 'juan@ejemplo.com',
-        Telefono: '+34 612 345 678', CIF: 'B12345678',
-        [`Facturacion ${YEAR_1}`]: 5000000, [`EBITDA ${YEAR_1}`]: 800000,
-        [`Facturacion ${YEAR_2}`]: 4500000, [`EBITDA ${YEAR_2}`]: 720000,
-        [`Facturacion ${YEAR_3}`]: 4000000, [`EBITDA ${YEAR_3}`]: 650000,
-      },
-      {
-        Empresa: 'Industrias Demo S.A.', Contacto: 'Ana Lopez', Email: 'ana@demo.com',
-        Telefono: '+34 698 765 432', CIF: 'A87654321',
-        [`Facturacion ${YEAR_1}`]: 12000000, [`EBITDA ${YEAR_1}`]: 2500000,
-        [`Facturacion ${YEAR_2}`]: 11000000, [`EBITDA ${YEAR_2}`]: 2200000,
-        [`Facturacion ${YEAR_3}`]: 10000000, [`EBITDA ${YEAR_3}`]: 2000000,
-      },
-    ];
+    const baseRow1: Record<string, any> = {
+      Empresa: 'Empresa Ejemplo S.L.', Contacto: 'Juan Garcia', Email: 'juan@ejemplo.com',
+      Telefono: '+34 612 345 678', CIF: 'B12345678',
+      [`Facturacion ${YEAR_1}`]: 5000000, [`EBITDA ${YEAR_1}`]: 800000,
+    };
+    const baseRow2: Record<string, any> = {
+      Empresa: 'Industrias Demo S.A.', Contacto: 'Ana Lopez', Email: 'ana@demo.com',
+      Telefono: '+34 698 765 432', CIF: 'A87654321',
+      [`Facturacion ${YEAR_1}`]: 12000000, [`EBITDA ${YEAR_1}`]: 2500000,
+    };
+
+    if (!is1Year) {
+      baseRow1[`Facturacion ${YEAR_2}`] = 4500000; baseRow1[`EBITDA ${YEAR_2}`] = 720000;
+      baseRow1[`Facturacion ${YEAR_3}`] = 4000000; baseRow1[`EBITDA ${YEAR_3}`] = 650000;
+      baseRow2[`Facturacion ${YEAR_2}`] = 11000000; baseRow2[`EBITDA ${YEAR_2}`] = 2200000;
+      baseRow2[`Facturacion ${YEAR_3}`] = 10000000; baseRow2[`EBITDA ${YEAR_3}`] = 2000000;
+    }
+
+    const data = [baseRow1, baseRow2];
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [
-      { wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 }, { wch: 12 },
-      { wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 14 },
-    ];
+    const colWidths = [{ wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 }, { wch: 12 }, { wch: 16 }, { wch: 14 }];
+    if (!is1Year) {
+      colWidths.push({ wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 14 });
+    }
+    ws['!cols'] = colWidths;
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
     XLSX.writeFile(wb, 'plantilla_campana_valoracion.xlsx');
@@ -444,7 +461,9 @@ export function CompaniesStep({ campaignId, financialYears }: Props) {
               <>
                 <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                 <p className="text-sm font-medium">Arrastra un archivo Excel o haz clic para seleccionar</p>
-                <p className="text-xs text-muted-foreground mt-1">Columnas: Empresa, Contacto, Email, CIF, Facturación {YEAR_1}/{YEAR_2}/{YEAR_3}, EBITDA {YEAR_1}/{YEAR_2}/{YEAR_3}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Columnas: Empresa, Contacto, Email, CIF, Facturación {YEAR_1}{!is1Year ? `/${YEAR_2}/${YEAR_3}` : ''}, EBITDA {YEAR_1}{!is1Year ? `/${YEAR_2}/${YEAR_3}` : ''}
+                </p>
               </>
             )}
           </div>
@@ -537,8 +556,8 @@ export function CompaniesStep({ campaignId, financialYears }: Props) {
 
           {/* 3 Financial Years */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium flex items-center gap-1"><Calendar className="h-3 w-3" />Datos financieros (3 años)</Label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Label className="text-xs font-medium flex items-center gap-1"><Calendar className="h-3 w-3" />Datos financieros ({is1Year ? '1 año' : '3 años'})</Label>
+            <div className={cn("grid gap-3", is1Year ? "grid-cols-1 max-w-xs" : "grid-cols-1 md:grid-cols-3")}>
               {manualYears.map((yr, idx) => (
                 <div key={yr.year} className="border rounded-lg p-3 space-y-2">
                   <span className="text-xs font-semibold text-muted-foreground">{yr.year}</span>

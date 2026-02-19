@@ -20961,6 +20961,7 @@ export type Database = {
           use_custom_advisor: boolean | null
           valuation_context: string | null
           weaknesses_template: string | null
+          years_mode: string | null
         }
         Insert: {
           advisor_email?: string | null
@@ -20992,6 +20993,7 @@ export type Database = {
           use_custom_advisor?: boolean | null
           valuation_context?: string | null
           weaknesses_template?: string | null
+          years_mode?: string | null
         }
         Update: {
           advisor_email?: string | null
@@ -21023,6 +21025,7 @@ export type Database = {
           use_custom_advisor?: boolean | null
           valuation_context?: string | null
           weaknesses_template?: string | null
+          years_mode?: string | null
         }
         Relationships: []
       }
