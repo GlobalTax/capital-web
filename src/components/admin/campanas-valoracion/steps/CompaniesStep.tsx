@@ -20,31 +20,140 @@ import { cn } from '@/lib/utils';
 
 const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
 
+/**
+ * Normalize a column name: lowercase, remove accents, collapse spaces, strip special chars.
+ */
+function normalizeColumnName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove accents (á→a, ñ→n, etc.)
+    .replace(/\s+/g, ' ')           // collapse multiple spaces
+    .replace(/[^a-z0-9 ]/g, '');    // strip special chars except alphanumeric and spaces
+}
+
+/**
+ * Parse a number value handling Spanish format (dots as thousands, comma as decimal).
+ * Heuristic: if there's a dot followed by exactly 3 digits (and no comma), treat dots as thousands separators.
+ */
+function parseSpanishNumber(value: any): number {
+  if (value === null || value === undefined || value === '') return 0;
+  if (typeof value === 'number') return value;
+
+  const str = String(value).trim();
+  if (!str) return 0;
+
+  // Detect Spanish format: dots as thousands separators
+  // Pattern: digits with dots every 3 digits, optional comma decimal
+  // e.g. "1.500.000" or "500.000" or "1.234,56"
+  const hasComma = str.includes(',');
+  const hasDot = str.includes('.');
+
+  let cleaned: string;
+
+  if (hasDot && hasComma) {
+    // Both present: dots are thousands, comma is decimal (European format)
+    // e.g. "1.500.000,50" → "1500000.50"
+    cleaned = str.replace(/\./g, '').replace(',', '.');
+  } else if (hasDot && !hasComma) {
+    // Only dots: check if they look like thousands separators
+    // Heuristic: dot followed by exactly 3 digits (possibly repeated) = thousands
+    const isThousandsSep = /^\d{1,3}(\.\d{3})+$/.test(str.replace(/[^\d.]/g, ''));
+    if (isThousandsSep) {
+      // Spanish thousands: "500.000" → "500000"
+      cleaned = str.replace(/\./g, '');
+    } else {
+      // Decimal dot: "500.5" → "500.5"
+      cleaned = str;
+    }
+  } else if (hasComma && !hasDot) {
+    // Only comma: treat as decimal separator
+    // e.g. "500,50" → "500.50"
+    cleaned = str.replace(',', '.');
+  } else {
+    cleaned = str;
+  }
+
+  // Remove any remaining non-numeric chars except dot and minus
+  cleaned = cleaned.replace(/[^\d.\-]/g, '');
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
 // Build dynamic column map with year-specific headers
 function buildColumnMap(years: number[]): Record<string, string> {
-  const base: Record<string, string> = {
-    'empresa': 'client_company', 'company': 'client_company', 'razón social': 'client_company',
-    'razon social': 'client_company', 'nombre empresa': 'client_company',
-    'contacto': 'client_name', 'nombre': 'client_name', 'nombre contacto': 'client_name', 'name': 'client_name',
-    'email': 'client_email', 'correo': 'client_email', 'e-mail': 'client_email',
-    'teléfono': 'client_phone', 'telefono': 'client_phone', 'phone': 'client_phone',
-    'cif': 'client_cif', 'nif': 'client_cif',
-    // Legacy single-year columns (fallback)
-    'facturación': 'revenue', 'facturacion': 'revenue', 'revenue': 'revenue', 'ventas': 'revenue', 'ingresos': 'revenue',
-    'ebitda': 'ebitda',
-    'año': 'financial_year', 'year': 'financial_year',
+  const base: Record<string, string> = {};
+
+  // Helper to add all normalized synonyms for a field
+  const addSynonyms = (field: string, synonyms: string[]) => {
+    for (const syn of synonyms) {
+      base[normalizeColumnName(syn)] = field;
+    }
   };
+
+  // Empresa
+  addSynonyms('client_company', [
+    'empresa', 'company', 'compañía', 'compañia', 'compania',
+    'sociedad', 'denominación', 'denominacion', 'nombre empresa',
+    'nombre de empresa', 'razón social', 'razon social',
+    'denominación social', 'denominacion social',
+  ]);
+
+  // Contacto
+  addSynonyms('client_name', [
+    'contacto', 'contact', 'nombre', 'nombre contacto', 'nombre de contacto',
+    'persona contacto', 'persona de contacto', 'responsable',
+    'contact name', 'name', 'interlocutor',
+  ]);
+
+  // Email
+  addSynonyms('client_email', [
+    'email', 'e-mail', 'correo', 'correo electrónico', 'correo electronico',
+    'mail', 'dirección email', 'direccion email', 'email address',
+  ]);
+
+  // Teléfono
+  addSynonyms('client_phone', [
+    'teléfono', 'telefono', 'phone', 'tel', 'telf', 'tlf',
+    'móvil', 'movil', 'celular', 'telephone', 'mobile',
+    'número teléfono', 'numero telefono',
+  ]);
+
+  // CIF
+  addSynonyms('client_cif', [
+    'cif', 'nif', 'tax id', 'vat', 'número fiscal', 'numero fiscal',
+    'identificación fiscal', 'identificacion fiscal', 'nif/cif',
+    'cif/nif', 'tax number', 'vat number',
+  ]);
+
+  // Legacy single-year (fallback)
+  addSynonyms('revenue', [
+    'facturación', 'facturacion', 'revenue', 'ventas', 'ingresos',
+    'sales', 'turnover', 'cifra de negocio', 'cifra negocio',
+    'volumen de negocio', 'volumen negocio',
+  ]);
+  addSynonyms('ebitda', ['ebitda', 'e.b.i.t.d.a', 'e-b-i-t-d-a']);
+  addSynonyms('financial_year', ['año', 'ano', 'year', 'ejercicio']);
 
   // Year-specific mappings
   const suffixes = ['', '_year_2', '_year_3'];
   years.forEach((yr, i) => {
     const suffix = suffixes[i] || `_year_${i + 1}`;
-    base[`facturacion ${yr}`] = `revenue${suffix}`;
-    base[`facturación ${yr}`] = `revenue${suffix}`;
-    base[`revenue ${yr}`] = `revenue${suffix}`;
-    base[`ventas ${yr}`] = `revenue${suffix}`;
-    base[`ingresos ${yr}`] = `revenue${suffix}`;
-    base[`ebitda ${yr}`] = `ebitda${suffix}`;
+    const revenueField = `revenue${suffix}`;
+    const ebitdaField = `ebitda${suffix}`;
+
+    addSynonyms(revenueField, [
+      `facturación ${yr}`, `facturacion ${yr}`, `facturacion${yr}`,
+      `revenue ${yr}`, `ventas ${yr}`, `ingresos ${yr}`,
+      `sales ${yr}`, `turnover ${yr}`,
+      `cifra de negocio ${yr}`, `cifra negocio ${yr}`,
+    ]);
+
+    addSynonyms(ebitdaField, [
+      `ebitda ${yr}`, `ebitda${yr}`, `ebitda_${yr}`,
+      `ebitda-${yr}`, `e.b.i.t.d.a ${yr}`,
+    ]);
   });
 
   return base;
@@ -56,17 +165,38 @@ interface Props {
   yearsMode?: string;
 }
 
-const MAPPABLE_FIELDS = [
-  { value: 'client_company', label: 'Empresa' },
-  { value: 'client_name', label: 'Contacto' },
-  { value: 'client_email', label: 'Email' },
-  { value: 'client_phone', label: 'Teléfono' },
-  { value: 'client_cif', label: 'CIF' },
-  { value: 'revenue', label: 'Facturación' },
-  { value: 'ebitda', label: 'EBITDA' },
-  { value: 'financial_year', label: 'Año' },
-  { value: '__ignore__', label: '— Ignorar —' },
-];
+// Build MAPPABLE_FIELDS dynamically based on years
+function buildMappableFields(years: number[], is1Year: boolean): { value: string; label: string }[] {
+  const fields = [
+    { value: 'client_company', label: 'Empresa' },
+    { value: 'client_name', label: 'Contacto' },
+    { value: 'client_email', label: 'Email' },
+    { value: 'client_phone', label: 'Teléfono' },
+    { value: 'client_cif', label: 'CIF' },
+    { value: 'revenue', label: `Facturación ${years[0] || ''}` },
+    { value: 'ebitda', label: `EBITDA ${years[0] || ''}` },
+  ];
+
+  if (!is1Year && years.length >= 2) {
+    fields.push(
+      { value: 'revenue_year_2', label: `Facturación ${years[1]}` },
+      { value: 'ebitda_year_2', label: `EBITDA ${years[1]}` },
+    );
+  }
+  if (!is1Year && years.length >= 3) {
+    fields.push(
+      { value: 'revenue_year_3', label: `Facturación ${years[2]}` },
+      { value: 'ebitda_year_3', label: `EBITDA ${years[2]}` },
+    );
+  }
+
+  fields.push(
+    { value: 'financial_year', label: 'Año' },
+    { value: '__ignore__', label: '— Ignorar —' },
+  );
+
+  return fields;
+}
 
 interface PreviewRow {
   _raw: Record<string, any>;
@@ -85,6 +215,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     : (financialYears && financialYears.length === 3 ? financialYears : DEFAULT_YEARS);
   const [YEAR_1, YEAR_2, YEAR_3] = [...years, years[0] - 1, years[0] - 2];
   const COLUMN_MAP = buildColumnMap(is1Year ? [YEAR_1] : years);
+  const MAPPABLE_FIELDS = useMemo(() => buildMappableFields(years, is1Year), [years, is1Year]);
 
   const { companies, stats, addCompany, bulkAddCompanies, updateCompany, deleteCompany, isAdding, isBulkAdding, isUpdating, isDeleting } = useCampaignCompanies(campaignId);
 
@@ -255,36 +386,62 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const [headerMapping, setHeaderMapping] = useState<Record<string, string>>({});
   const [rawPreviewRows, setRawPreviewRows] = useState<Record<string, any>[]>([]);
 
-  // Excel upload — Phase 1: Preview
+  // Excel upload — Phase 1: Preview with robust normalization
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
     try {
+      console.group('[EXCEL_PARSE] Processing file:', file.name);
+      console.log('File size:', file.size, 'bytes');
+
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
+      console.log('Sheet:', sheetName, '| Total sheets:', workbook.SheetNames.length);
+
       const rows = XLSX.utils.sheet_to_json<Record<string, any>>(workbook.Sheets[sheetName]);
 
       if (rows.length === 0) {
         toast.error('El archivo no contiene datos');
+        console.groupEnd();
         return;
       }
 
-      // Extract headers and auto-map
+      // Extract headers and auto-map using normalized matching
       const headers = Object.keys(rows[0]);
+      console.log('Headers found:', headers);
+
       const autoMapping: Record<string, string> = {};
+      const unmappedHeaders: string[] = [];
+
       for (const h of headers) {
-        const mapped = COLUMN_MAP[h.toLowerCase().trim()];
-        if (mapped) autoMapping[h] = mapped;
+        const normalized = normalizeColumnName(h);
+        const mapped = COLUMN_MAP[normalized];
+        if (mapped) {
+          autoMapping[h] = mapped;
+          console.log(`[COLUMN_MATCH] "${h}" (normalized: "${normalized}") → ${mapped}`);
+        } else {
+          unmappedHeaders.push(h);
+        }
       }
+
+      if (unmappedHeaders.length > 0) {
+        console.warn('[UNMAPPED_COLUMNS]', unmappedHeaders);
+      }
+      console.log('[AUTO_MAPPING] Result:', autoMapping);
 
       setPreviewHeaders(headers);
       setHeaderMapping(autoMapping);
       setRawPreviewRows(rows);
       setPreviewRows(rows);
+      console.log(`[EXCEL_PARSE] ${rows.length} rows found, ${Object.keys(autoMapping).length}/${headers.length} columns auto-mapped`);
+      console.groupEnd();
+
       toast.info(`${rows.length} filas encontradas. Revisa el mapeo antes de importar.`);
     } catch (e: any) {
+      console.error('[EXCEL_PARSE] Error:', e);
+      console.groupEnd();
       toast.error('Error al procesar el archivo: ' + e.message);
     }
   }, []);
@@ -293,7 +450,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     setHeaderMapping(prev => ({ ...prev, [header]: field === '__ignore__' ? '' : field }));
   };
 
-  // Preview stats
+  // Preview stats — now uses parseSpanishNumber
   const previewStats = useMemo(() => {
     if (!previewRows) return null;
     const existingNames = new Set(companies.map(c => c.client_company.toLowerCase()));
@@ -307,7 +464,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
       const cifHeader = previewHeaders.find(h => headerMapping[h] === 'client_cif');
 
       const company = companyHeader ? String(row[companyHeader] || '').trim() : '';
-      const ebitda = ebitdaHeader ? (typeof row[ebitdaHeader] === 'number' ? row[ebitdaHeader] : parseFloat(String(row[ebitdaHeader]).replace(/[^\d.-]/g, '')) || 0) : 0;
+      const ebitda = ebitdaHeader ? parseSpanishNumber(row[ebitdaHeader]) : 0;
       const email = emailHeader ? String(row[emailHeader] || '').trim() : '';
       const cif = cifHeader ? String(row[cifHeader] || '').trim() : '';
 
@@ -321,9 +478,11 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     return { total: previewRows.length, valid, invalid, noEmail, duplicates };
   }, [previewRows, headerMapping, previewHeaders, companies]);
 
-  // Import from preview
+  // Import from preview — uses parseSpanishNumber + debug logs
   const handleImportPreview = async () => {
     if (!previewRows) return;
+
+    console.group('[EXCEL_IMPORT] Processing', previewRows.length, 'rows');
 
     const mapped = previewRows.map((row, idx) => {
       const result: Record<string, any> = { source: 'excel', excel_row_number: idx + 1 };
@@ -332,7 +491,9 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
         if (!field) continue;
         const value = row[header];
         if (field.startsWith('revenue') || field.startsWith('ebitda')) {
-          result[field] = typeof value === 'number' ? value : parseFloat(String(value).replace(/[^\d.-]/g, '')) || 0;
+          const parsed = parseSpanishNumber(value);
+          result[field] = parsed;
+          if (idx < 3) console.log(`[ROW ${idx + 1}] ${field}: raw="${value}" → parsed=${parsed}`);
         } else if (field === 'financial_year') {
           result[field] = parseInt(String(value)) || YEAR_1;
         } else {
@@ -341,24 +502,24 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
       }
 
       // Build financial_years_data
-      const years: FinancialYearData[] = [];
+      const yearsData: FinancialYearData[] = [];
       const rev1 = result.revenue || 0;
       const ebitda1 = result.ebitda || 0;
-      if (ebitda1) years.push({ year: result.financial_year || YEAR_1, revenue: rev1, ebitda: ebitda1 });
+      if (ebitda1) yearsData.push({ year: result.financial_year || YEAR_1, revenue: rev1, ebitda: ebitda1 });
 
       const rev2 = result.revenue_year_2 || 0;
       const ebitda2 = result.ebitda_year_2 || 0;
-      if (ebitda2) years.push({ year: YEAR_2, revenue: rev2, ebitda: ebitda2 });
+      if (ebitda2) yearsData.push({ year: YEAR_2, revenue: rev2, ebitda: ebitda2 });
 
       const rev3 = result.revenue_year_3 || 0;
       const ebitda3 = result.ebitda_year_3 || 0;
-      if (ebitda3) years.push({ year: YEAR_3, revenue: rev3, ebitda: ebitda3 });
+      if (ebitda3) yearsData.push({ year: YEAR_3, revenue: rev3, ebitda: ebitda3 });
 
-      if (years.length > 0) {
-        result.financial_years_data = years;
-        if (!result.revenue && years[0].revenue) result.revenue = years[0].revenue;
-        if (!result.ebitda && years[0].ebitda) result.ebitda = years[0].ebitda;
-        if (!result.financial_year) result.financial_year = years[0].year;
+      if (yearsData.length > 0) {
+        result.financial_years_data = yearsData;
+        if (!result.revenue && yearsData[0].revenue) result.revenue = yearsData[0].revenue;
+        if (!result.ebitda && yearsData[0].ebitda) result.ebitda = yearsData[0].ebitda;
+        if (!result.financial_year) result.financial_year = yearsData[0].year;
       }
 
       delete result.revenue_year_2;
@@ -370,6 +531,9 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     });
 
     const valid = mapped.filter(r => r.client_company && r.ebitda);
+    console.log(`[EXCEL_IMPORT] ${valid.length} valid rows out of ${mapped.length} total`);
+    console.groupEnd();
+
     if (valid.length === 0) {
       toast.error('No se encontraron filas válidas');
       return;
@@ -554,7 +718,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
             </div>
           </div>
 
-          {/* 3 Financial Years */}
+          {/* Financial Years */}
           <div className="space-y-2">
             <Label className="text-xs font-medium flex items-center gap-1"><Calendar className="h-3 w-3" />Datos financieros ({is1Year ? '1 año' : '3 años'})</Label>
             <div className={cn("grid gap-3", is1Year ? "grid-cols-1 max-w-xs" : "grid-cols-1 md:grid-cols-3")}>
