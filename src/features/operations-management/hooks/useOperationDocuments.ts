@@ -15,6 +15,20 @@ const DOCUMENTS_QUERY_KEY = 'operation-documents';
 const DOWNLOADS_QUERY_KEY = 'operation-document-downloads';
 
 /**
+ * Helper: triggers a browser download from a Blob
+ */
+function triggerDownload(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+/**
  * Hook para gestionar documentos de operaciones
  */
 export const useOperationDocuments = (operationId: string) => {
@@ -136,45 +150,96 @@ export const useOperationDocuments = (operationId: string) => {
   // Download document mutation
   const downloadMutation = useMutation({
     mutationFn: async (documentId: string) => {
-      const document = documents?.find(d => d.id === documentId);
-      if (!document) throw new Error('Documento no encontrado');
+      console.group('[DOWNLOAD_DOCUMENT] Starting...');
+      console.log('Document ID:', documentId);
+      console.log('Documents in cache:', documents?.length);
 
-      // Get signed URL for download
-      const { data: signedUrlData, error: urlError } = await supabase.storage
+      // Try cache first, then fetch fresh from DB
+      let doc = documents?.find(d => d.id === documentId);
+
+      if (!doc) {
+        console.log('[DOWNLOAD_DOCUMENT] Not in cache, fetching from DB...');
+        const { data, error: fetchError } = await supabase
+          .from('operation_documents')
+          .select('*')
+          .eq('id', documentId)
+          .single();
+
+        if (fetchError) {
+          console.error('[DOWNLOAD_DOCUMENT] DB fetch error:', fetchError);
+          throw new Error(`Documento no encontrado: ${fetchError.message}`);
+        }
+        doc = data as OperationDocument;
+      }
+
+      console.log('[DOWNLOAD_DOCUMENT] Document:', doc.file_name);
+      console.log('[DOWNLOAD_DOCUMENT] File path:', doc.file_path);
+      console.log('[DOWNLOAD_DOCUMENT] File type:', doc.file_type);
+
+      if (!doc.file_path) {
+        throw new Error('El documento no tiene ruta de archivo (file_path vacío)');
+      }
+
+      // Try direct download first
+      console.log('[DOWNLOAD_DOCUMENT] Attempting direct download...');
+      const { data: fileBlob, error: downloadError } = await supabase.storage
         .from('operation-documents')
-        .createSignedUrl(document.file_path, 60); // 60 seconds expiry
+        .download(doc.file_path);
 
-      if (urlError) throw urlError;
+      if (downloadError) {
+        console.warn('[DOWNLOAD_DOCUMENT] Direct download failed:', downloadError.message);
+        // Fallback: signed URL
+        console.log('[DOWNLOAD_DOCUMENT] Trying signed URL fallback...');
+        const { data: signedData, error: signedError } = await supabase.storage
+          .from('operation-documents')
+          .createSignedUrl(doc.file_path, 120);
 
-      // Log download
-      const { data: user } = await supabase.auth.getUser();
+        if (signedError || !signedData) {
+          console.error('[DOWNLOAD_DOCUMENT] Signed URL failed:', signedError);
+          throw new Error(`Error de acceso al archivo: ${signedError?.message || 'Sin URL firmada'}`);
+        }
+
+        console.log('[DOWNLOAD_DOCUMENT] Signed URL obtained, fetching blob...');
+        const response = await fetch(signedData.signedUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        const blob = await response.blob();
+        triggerDownload(blob, doc.file_name);
+      } else {
+        console.log('[DOWNLOAD_DOCUMENT] Direct download succeeded');
+        triggerDownload(fileBlob, doc.file_name);
+      }
+
+      // Log download in audit table
+      const { data: userData } = await supabase.auth.getUser();
+      await supabase.from('operation_document_downloads').insert({
+        document_id: documentId,
+        downloaded_by: userData.user?.id,
+      });
+
+      // Increment download_count
       await supabase
-        .from('operation_document_downloads')
-        .insert({
-          document_id: documentId,
-          downloaded_by: user.user?.id,
-        });
+        .from('operation_documents')
+        .update({ download_count: (doc.download_count || 0) + 1 })
+        .eq('id', documentId);
 
-      return { url: signedUrlData.signedUrl, fileName: document.file_name };
+      console.log('[DOWNLOAD_DOCUMENT] Complete');
+      console.groupEnd();
+
+      return { fileName: doc.file_name };
     },
-    onSuccess: ({ url, fileName }) => {
-      // Trigger download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
+    onSuccess: ({ fileName }) => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENTS_QUERY_KEY, operationId] });
       toast({
         title: 'Descarga iniciada',
-        description: 'El documento se está descargando',
+        description: `Descargando ${fileName}`,
       });
     },
     onError: (error: Error) => {
+      console.error('[DOWNLOAD_DOCUMENT] Final error:', error);
       toast({
-        title: 'Error al descargar',
+        title: 'Error al descargar documento',
         description: error.message,
         variant: 'destructive',
       });
@@ -244,14 +309,26 @@ export const useOperationDocuments = (operationId: string) => {
 
   // Get preview URL for document
   const getPreviewUrl = async (documentId: string): Promise<string | null> => {
-    const document = documents?.find(d => d.id === documentId);
-    if (!document) return null;
+    let doc = documents?.find(d => d.id === documentId);
+
+    if (!doc) {
+      const { data } = await supabase
+        .from('operation_documents')
+        .select('file_path, file_name')
+        .eq('id', documentId)
+        .single();
+      if (!data) return null;
+      doc = data as OperationDocument;
+    }
 
     const { data, error } = await supabase.storage
       .from('operation-documents')
-      .createSignedUrl(document.file_path, 300); // 5 minutes
+      .createSignedUrl(doc.file_path, 300); // 5 minutes
 
-    if (error) return null;
+    if (error) {
+      console.error('[PREVIEW_URL] Error:', error);
+      return null;
+    }
     return data.signedUrl;
   };
 
