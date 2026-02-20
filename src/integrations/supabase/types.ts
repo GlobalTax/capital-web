@@ -23140,6 +23140,10 @@ export type Database = {
           website_url: string
         }[]
       }
+      sync_campaign_totals: {
+        Args: { p_campaign_id: string }
+        Returns: undefined
+      }
       sync_template_additions: {
         Args: { p_tipo_operacion: string }
         Returns: Json
