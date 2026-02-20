@@ -821,6 +821,13 @@ export type Database = {
             foreignKeyName: "admin_videos_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "admin_videos_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -2017,6 +2024,13 @@ export type Database = {
             foreignKeyName: "booking_assignment_history_assigned_by_fkey"
             columns: ["assigned_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "booking_assignment_history_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -2025,6 +2039,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "booking_assignment_history_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -3156,6 +3177,13 @@ export type Database = {
             foreignKeyName: "calendar_bookings_assigned_by_fkey"
             columns: ["assigned_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "calendar_bookings_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -3164,6 +3192,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "calendar_bookings_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -3932,6 +3967,13 @@ export type Database = {
             foreignKeyName: "collaborator_applications_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "collaborator_applications_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -4187,6 +4229,13 @@ export type Database = {
             columns: ["processed_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_acquisition_inquiries_processed_by"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -4454,6 +4503,13 @@ export type Database = {
             foreignKeyName: "company_operations_assigned_by_fkey"
             columns: ["assigned_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_operations_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -4462,6 +4518,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_operations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -4869,6 +4932,13 @@ export type Database = {
             foreignKeyName: "company_valuations_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "company_valuations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -5170,6 +5240,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "contact_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -8204,6 +8281,13 @@ export type Database = {
             foreignKeyName: "documents_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -10409,6 +10493,13 @@ export type Database = {
             foreignKeyName: "import_logs_imported_by_fkey"
             columns: ["imported_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "import_logs_imported_by_fkey"
+            columns: ["imported_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -10881,6 +10972,13 @@ export type Database = {
             foreignKeyName: "investor_leads_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "investor_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -10889,6 +10987,13 @@ export type Database = {
             columns: ["deleted_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "investor_leads_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -11141,6 +11246,13 @@ export type Database = {
             foreignKeyName: "job_application_activities_performed_by_fkey"
             columns: ["performed_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_application_activities_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -11276,6 +11388,13 @@ export type Database = {
             foreignKeyName: "job_applications_deleted_by_fkey"
             columns: ["deleted_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_applications_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -11291,6 +11410,13 @@ export type Database = {
             columns: ["reviewed_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_applications_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -11417,6 +11543,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_post_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -11568,6 +11701,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "job_posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -12457,6 +12597,13 @@ export type Database = {
             foreignKeyName: "lead_tasks_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lead_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -12465,6 +12612,13 @@ export type Database = {
             columns: ["completed_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "lead_tasks_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -12886,6 +13040,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "mandate_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -14038,6 +14199,13 @@ export type Database = {
             foreignKeyName: "mandato_transactions_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "mandato_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -14088,6 +14256,7 @@ export type Database = {
           nombre_proyecto: string | null
           numero_ofertas_recibidas: number | null
           outcome: Database["public"]["Enums"]["mandato_outcome"] | null
+          owner_id: string | null
           parcialmente_facturado: boolean | null
           parent_mandato_id: string | null
           perfil_empresa_buscada: string | null
@@ -14103,6 +14272,7 @@ export type Database = {
           sectores_interes: string[] | null
           servicio_tipo: string | null
           stage_entered_at: string | null
+          team_member_ids: string[] | null
           timeline_objetivo: string | null
           tipo: string
           tipo_comprador_buscado: string | null
@@ -14157,6 +14327,7 @@ export type Database = {
           nombre_proyecto?: string | null
           numero_ofertas_recibidas?: number | null
           outcome?: Database["public"]["Enums"]["mandato_outcome"] | null
+          owner_id?: string | null
           parcialmente_facturado?: boolean | null
           parent_mandato_id?: string | null
           perfil_empresa_buscada?: string | null
@@ -14172,6 +14343,7 @@ export type Database = {
           sectores_interes?: string[] | null
           servicio_tipo?: string | null
           stage_entered_at?: string | null
+          team_member_ids?: string[] | null
           timeline_objetivo?: string | null
           tipo?: string
           tipo_comprador_buscado?: string | null
@@ -14226,6 +14398,7 @@ export type Database = {
           nombre_proyecto?: string | null
           numero_ofertas_recibidas?: number | null
           outcome?: Database["public"]["Enums"]["mandato_outcome"] | null
+          owner_id?: string | null
           parcialmente_facturado?: boolean | null
           parent_mandato_id?: string | null
           perfil_empresa_buscada?: string | null
@@ -14241,6 +14414,7 @@ export type Database = {
           sectores_interes?: string[] | null
           servicio_tipo?: string | null
           stage_entered_at?: string | null
+          team_member_ids?: string[] | null
           timeline_objetivo?: string | null
           tipo?: string
           tipo_comprador_buscado?: string | null
@@ -15374,6 +15548,13 @@ export type Database = {
             columns: ["changed_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "operation_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -17894,6 +18075,13 @@ export type Database = {
             foreignKeyName: "saved_searches_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "mandato_workload"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "saved_searches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "v_admin_users_safe"
             referencedColumns: ["user_id"]
           },
@@ -18071,6 +18259,13 @@ export type Database = {
             columns: ["verified_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "searcher_leads_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {
@@ -21626,6 +21821,18 @@ export type Database = {
         }
         Relationships: []
       }
+      mandato_workload: {
+        Row: {
+          email: string | null
+          full_name: string | null
+          mandatos_como_miembro: number | null
+          mandatos_como_owner: number | null
+          role: Database["public"]["Enums"]["admin_role"] | null
+          total_mandatos: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       task_time_summary: {
         Row: {
           fase: string | null
@@ -22504,6 +22711,13 @@ export type Database = {
             columns: ["responsable_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "mandate_leads_assigned_to_fkey"
+            columns: ["responsable_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_workload"
             referencedColumns: ["user_id"]
           },
           {

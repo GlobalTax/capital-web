@@ -98,6 +98,7 @@ import {
 } from './LazyAdminComponents';
 
 const LazyAdvisorMultiplesRangesTabs = React.lazy(() => import('@/components/admin/AdvisorMultiplesRangesTabs'));
+const LazyMandatoWorkloadPage = React.lazy(() => import('@/pages/admin/MandatoWorkloadPage'));
 const LazyManualLeadEntryPage = React.lazy(() => import('@/pages/admin/ManualLeadEntryPage'));
 const LazyFase0TemplatesPage = React.lazy(() => import('@/pages/admin/Fase0TemplatesPage'));
 const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news/NewsArticlesManager').then(m => ({ default: m.NewsArticlesManager })));
@@ -200,6 +201,7 @@ const AdminRouter = () => {
           <Route path="/operations/kanban" element={<LazyOperationsKanban />} />
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
+          <Route path="/mandatos/workload" element={<LazyMandatoWorkloadPage />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
           <Route path="/advisor-multiples" element={<LazyAdvisorMultiplesManager />} />
           <Route path="/advisor-multiples-ranges" element={<LazyAdvisorMultiplesRangesTabs />} />

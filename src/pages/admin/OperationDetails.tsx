@@ -21,6 +21,7 @@ import { OperationHistoryTimeline } from '@/features/operations-management/compo
 import { OperationNotesPanel } from '@/features/operations-management/components/notes';
 import { OperationDocumentsPanel } from '@/features/operations-management/components/documents';
 import { useMandatoInteracciones, type CreateInteraccionInput, type TipoInteraccion } from '@/hooks/useMandatoInteracciones';
+import { MandatoEquipoPanel } from '@/components/admin/mandatos/MandatoEquipoPanel';
 
 const TIPO_OPTIONS: { value: TipoInteraccion; label: string; icon: React.ReactNode }[] = [
   { value: 'email', label: 'Email', icon: <Mail className="h-4 w-4" /> },
@@ -781,6 +782,9 @@ const OperationDetails = () => {
             currentAssignedTo={operation.assigned_to}
             assignedAt={operation.assigned_at}
           />
+
+          {/* Mandato Team Panel */}
+          <MandatoEquipoPanel mandatoId={id!} />
 
           {/* Configuration */}
           <Card>
