@@ -1,188 +1,209 @@
 
-# Descarga y Previsualización de Valoraciones en Campañas
+# Selección múltiple y descarga masiva (ZIP) en ProcessSendStep
 
-## Diagnóstico del sistema actual
+## Estado actual
 
-El paso 4 (`ProcessSendStep`) ya tiene:
-- `generatePdfBase64()` — genera el PDF como base64 usando `@react-pdf/renderer` y `ProfessionalValuationPDF`
-- `mapToPdfData()` — mapea los datos de empresa al formato del PDF
-- Envío masivo secuencial con progress bar y botón de pausa
-- Tabla de resultados con enlace al PDF si `pdf_url` está guardada
+El `ProcessSendStep.tsx` (647 líneas) ya tiene:
+- `downloadSingle(c)` — descarga individual por fila (en DropdownMenu)
+- `handleDownloadAll()` — descarga secuencial de todos los PDFs (uno por uno, con delay de 600ms entre cada uno)
+- `PDFPreviewModal` con iframe
+- Barra de progreso de descarga (`downloadProgress` state)
+- DropdownMenu por fila con Previsualizar / Descargar PDF / Enviar email / Reenviar
 
-**Lo que falta:**
-- Botón de descarga por empresa (fila a fila)
-- Preview del PDF antes de enviar (modal con iframe)
-- Descarga masiva en ZIP (no hay `jszip` instalado)
-- Reenvío individual a empresas con status `failed`
-- Botón de envío individual por fila
+**Lo que falta completamente:**
+1. Checkboxes por fila + master checkbox en header → `selectedIds: string[]`
+2. Fondo visual diferenciado en filas seleccionadas
+3. Barra flotante (`FloatingActionBar`) que aparece cuando `selectedIds.length > 0`
+4. Descarga de seleccionadas como ZIP (actualmente solo hay descarga secuencial individual, no ZIP)
+5. Atajos de teclado: Ctrl+A, Escape, Ctrl+D
 
-## Estrategia técnica
+## Decisión sobre ZIP
 
-### Generación de PDF para descarga
-Reutilizaremos `generatePdfBase64` ya existente. Para la descarga local, convertiremos el base64 a Blob y lo descargaremos:
+El plan original pide ZIP. El código actual hace descarga individual secuencial (trigerea múltiples descargas del browser). Con 147 empresas, el browser bloquea descargas múltiples.
 
+**Solución**: Usamos la librería `fflate` que ya está disponible transitivamente en el proyecto (es dependencia de `@react-pdf/renderer`). Importación dinámica: `const { zip, strToU8 } = await import('fflate')`. Esto genera un `.zip` real en memoria sin instalar nada nuevo.
+
+Si `fflate` no está disponible en runtime, fallback a descarga secuencial con delay (la implementación actual de `handleDownloadAll`).
+
+## Cambios — solo `ProcessSendStep.tsx`
+
+### 1. Nuevos imports (línea 1)
+Añadir `Checkbox` de `@/components/ui/checkbox`, `X` de `lucide-react`, y `cn` de `@/lib/utils`.
+
+### 2. Estado de selección (después de línea 217)
 ```typescript
-// base64 → Blob → Object URL → link.click()
-const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-const blob = new Blob([bytes], { type: 'application/pdf' });
+const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+const toggleSelection = (id: string) =>
+  setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+
+const toggleSelectAll = () =>
+  setSelectedIds(selectedIds.length === companies.length ? [] : companies.map(c => c.id));
+
+const clearSelection = () => setSelectedIds([]);
+
+const isAllSelected = companies.length > 0 && selectedIds.length === companies.length;
+const isIndeterminate = selectedIds.length > 0 && selectedIds.length < companies.length;
 ```
 
-### ZIP sin dependencia externa
-En vez de instalar `jszip`, usaremos la **Compression Streams API** nativa del navegador o la generación secuencial de descargas. La alternativa más simple y confiable: generar cada PDF individualmente y usar una descarga encadenada (no bloquea la UI). Para >10 empresas, mejor opción: usar `fflate` (ya disponible transitivamente) o la API nativa.
-
-**Decision final**: Usaremos `fflate` si está disponible, o implementaremos un ZIP mínimo usando la Web Streams API nativa. Si ninguna funciona, ofreceremos descarga individual secuencial con delay controlado. Dado el contexto (máx 149 PDFs), la descarga secuencial con progreso es suficiente y evita dependencias.
-
-### Preview
-Modal con `<iframe>` que muestra un Object URL del PDF generado. El PDF se genera on-demand al abrir el preview.
-
-## Cambios planificados
-
-### 1. `ProcessSendStep.tsx` — Refactor completo del componente
-
-**Extraer funciones reutilizables** al nivel de módulo:
-- `generatePdfBlob(data, campaign)` → retorna `Blob` (adaptación de `generatePdfBase64`)
-- `downloadPdfBlob(blob, filename)` → crea Object URL y dispara descarga
-
-**Nuevas secciones en la UI:**
-
-#### A) Botones de acción masiva (arriba de la tabla)
-- "Descargar todos los PDFs" — genera y descarga secuencialmente con barra de progreso
-- "Reenviar errores" — reintenta solo las que tienen status `failed`
-
-#### B) Columna de acciones por fila (DropdownMenu)
-Cada fila de la tabla tendrá un `DropdownMenu` con:
-- **Previsualizar** → abre `PDFPreviewModal`
-- **Descargar PDF** → `generatePdfBlob` + `downloadPdfBlob`
-- **Enviar email** (solo si tiene email y status no es `sent`) → llama a la edge function para ese empresa
-
-#### C) `PDFPreviewModal` (nuevo componente inline)
-```
-Dialog (max-w-4xl, h-[85vh])
-  ├── DialogHeader: Nombre empresa
-  ├── iframe src={objectUrl} (flex-1, h-full)
-  └── DialogFooter
-        ├── Button "Cerrar"
-        ├── Button "Descargar"
-        └── Button "Enviar email" (si tiene email)
-```
-
-Estado del modal:
-- `loadingPreview: boolean` — mientras se genera el PDF
-- `previewUrl: string | null` — Object URL del PDF
-- Cleanup del Object URL al cerrar
-
-#### D) Barra de progreso de descarga masiva
-Separada de la barra de envío. Muestra: "Descargando 3/149: Empresa S.A."
-
-### 2. Archivos a modificar
-
-Solo **`src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`** — toda la lógica nueva va aquí para mantener la colocación existente. El archivo actualmente tiene 273 líneas, el nuevo tendrá ~500 líneas.
-
-No se necesitan cambios en:
-- `ReviewCalculateStep.tsx` — el detail sheet ya existe; no duplicamos funcionalidades
-- Base de datos — no necesitamos nueva tabla (los logs ya van en `valuation_campaign_companies.status`)
-- Edge functions — ya existe `send-professional-valuation-email`
-- Otros pasos
-
-## Detalle de implementación
-
-### Función `generatePdfBlob` (refactor de la existente)
+### 3. Función `handleDownloadSelected` (nueva, después de `handleDownloadAll`)
 ```typescript
-async function generatePdfBlob(
-  company: CampaignCompany,
-  campaign: ValuationCampaign
-): Promise<Blob> {
-  const [{ pdf }, { default: ProfessionalValuationPDF }] = await Promise.all([
-    import('@react-pdf/renderer'),
-    import('@/components/pdf/ProfessionalValuationPDF'),
-  ]);
-  const data = mapToPdfData(company, campaign);
-  const advisorInfo = campaign.use_custom_advisor ? { ... } : undefined;
-  const element = <ProfessionalValuationPDF data={data} advisorInfo={advisorInfo} />;
-  return await pdf(element).toBlob();
+const handleDownloadSelected = useCallback(async (ids: string[]) => {
+  const targets = companies.filter(c => ids.includes(c.id));
+  if (targets.length === 0) return;
+  
+  setDownloadProgress({ active: true, current: 0, total: targets.length, name: '' });
+  
+  try {
+    // Intento ZIP con fflate
+    const fflate = await import('fflate');
+    const files: Record<string, Uint8Array> = {};
+    
+    for (let i = 0; i < targets.length; i++) {
+      const c = targets[i];
+      setDownloadProgress(p => ({ ...p, current: i + 1, name: c.client_company }));
+      const blob = await generatePdfBlob(c, campaign);
+      const buffer = await blob.arrayBuffer();
+      const filename = `${String(i + 1).padStart(3, '0')}_${c.client_company.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+      files[filename] = new Uint8Array(buffer);
+    }
+    
+    // Generar ZIP sincrónicamente
+    const zipped = fflate.zipSync(files, { level: 6 });
+    const zipBlob = new Blob([zipped], { type: 'application/zip' });
+    downloadBlob(zipBlob, `Valoraciones_${targets.length}_empresas.zip`);
+    toast.success(`${targets.length} PDFs descargados como ZIP`);
+  } catch (err) {
+    // Fallback: descarga secuencial
+    console.warn('[ZIP] fflate no disponible, fallback secuencial', err);
+    for (let i = 0; i < targets.length; i++) {
+      const c = targets[i];
+      setDownloadProgress(p => ({ ...p, current: i + 1, name: c.client_company }));
+      const blob = await generatePdfBlob(c, campaign);
+      downloadBlob(blob, `${String(i + 1).padStart(3, '0')}_${c.client_company.replace(/\s+/g, '_')}.pdf`);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    toast.success(`${targets.length} PDFs descargados`);
+  } finally {
+    setDownloadProgress(p => ({ ...p, active: false }));
+  }
+}, [companies, campaign]);
+```
+
+### 4. Atajos de teclado (nuevo `useEffect`)
+```typescript
+useEffect(() => {
+  const onKey = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+      e.preventDefault();
+      toggleSelectAll();
+    }
+    if (e.key === 'Escape' && selectedIds.length > 0) clearSelection();
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedIds.length > 0) {
+      e.preventDefault();
+      handleDownloadSelected(selectedIds);
+    }
+  };
+  window.addEventListener('keydown', onKey);
+  return () => window.removeEventListener('keydown', onKey);
+}, [selectedIds, toggleSelectAll, clearSelection, handleDownloadSelected]);
+```
+
+### 5. Header de la tabla — añadir columna checkbox (línea ~537)
+Antes de `<TableHead>Empresa</TableHead>` añadir:
+```tsx
+<TableHead className="w-10">
+  <Checkbox
+    checked={isAllSelected}
+    // Radix Checkbox acepta boolean o 'indeterminate'
+    data-state={isIndeterminate ? 'indeterminate' : undefined}
+    onCheckedChange={toggleSelectAll}
+    aria-label="Seleccionar todas"
+  />
+</TableHead>
+```
+
+### 6. Filas de la tabla — añadir checkbox y fondo seleccionado (línea ~554)
+- `<TableRow>` → `<TableRow className={cn(selectedIds.includes(c.id) && 'bg-primary/5')}>`
+- Primera celda nueva antes de `<TableCell className="font-medium">`:
+```tsx
+<TableCell className="w-10">
+  <Checkbox
+    checked={selectedIds.includes(c.id)}
+    onCheckedChange={() => toggleSelection(c.id)}
+    aria-label={`Seleccionar ${c.client_company}`}
+  />
+</TableCell>
+```
+
+### 7. `FloatingActionBar` — nuevo componente inline (antes del `return` principal)
+```tsx
+function FloatingActionBar({
+  selectedCount, onClear, onDownload, onSend, isBusy
+}: {
+  selectedCount: number;
+  onClear: () => void;
+  onDownload: () => void;
+  onSend: () => void;
+  isBusy: boolean;
+}) {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
+      <Card className="shadow-2xl border">
+        <CardContent className="flex items-center gap-3 py-3 px-4">
+          <span className="text-sm font-medium tabular-nums">
+            {selectedCount} seleccionada{selectedCount !== 1 ? 's' : ''}
+          </span>
+          <div className="h-4 w-px bg-border" />
+          <Button size="sm" variant="ghost" onClick={onClear} disabled={isBusy}>
+            <X className="h-4 w-4 mr-1.5" />Limpiar
+          </Button>
+          <Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
+            <Download className="h-4 w-4 mr-1.5" />
+            Descargar PDFs
+          </Button>
+          <Button size="sm" onClick={onSend} disabled={isBusy}>
+            <Mail className="h-4 w-4 mr-1.5" />
+            Enviar emails
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 ```
 
-### Preview modal (estado local en ProcessSendStep)
-```typescript
-const [previewCompany, setPreviewCompany] = useState<CampaignCompany | null>(null);
-const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-const [previewLoading, setPreviewLoading] = useState(false);
-
-const openPreview = async (company: CampaignCompany) => {
-  setPreviewCompany(company);
-  setPreviewLoading(true);
-  const blob = await generatePdfBlob(company, campaign);
-  const url = URL.createObjectURL(blob);
-  setPreviewUrl(url);
-  setPreviewLoading(false);
-};
-
-const closePreview = () => {
-  if (previewUrl) URL.revokeObjectURL(previewUrl);
-  setPreviewCompany(null);
-  setPreviewUrl(null);
-};
+### 8. Render del `FloatingActionBar` (al final del JSX principal, antes del cierre `</div>`)
+```tsx
+{selectedIds.length > 0 && (
+  <FloatingActionBar
+    selectedCount={selectedIds.length}
+    onClear={clearSelection}
+    onDownload={() => handleDownloadSelected(selectedIds)}
+    onSend={() => { /* enviar solo seleccionadas — llama sendSingle en loop */ }}
+    isBusy={isBusy}
+  />
+)}
 ```
 
-### Descarga individual
-```typescript
-const downloadSingle = async (company: CampaignCompany) => {
-  const blob = await generatePdfBlob(company, campaign);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `valoracion_${company.client_company.replace(/\s+/g, '_')}.pdf`;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-```
+Para "Enviar emails" desde la barra flotante, se añade `handleSendSelected(ids)` que reutiliza la lógica de `sendSingle` en bucle sobre las seleccionadas con email.
 
-### Descarga masiva (secuencial con progreso)
-```typescript
-const [downloadProgress, setDownloadProgress] = useState({ active: false, current: 0, total: 0, name: '' });
+## Archivos a modificar
 
-const handleDownloadAll = async () => {
-  const targets = companies.filter(c => ['calculated', 'sent', 'created'].includes(c.status));
-  setDownloadProgress({ active: true, current: 0, total: targets.length, name: '' });
-  
-  for (let i = 0; i < targets.length; i++) {
-    setDownloadProgress(p => ({ ...p, current: i + 1, name: targets[i].client_company }));
-    await downloadSingle(targets[i]);
-    await new Promise(r => setTimeout(r, 500)); // evitar bloquear el navegador
-  }
-  
-  setDownloadProgress(p => ({ ...p, active: false }));
-  toast.success(`${targets.length} PDFs descargados`);
-};
-```
-
-### Reenvío individual
-```typescript
-const resendSingle = async (company: CampaignCompany) => {
-  // Genera PDF y llama a la edge function — misma lógica que el envío masivo existente
-  // Actualiza status en DB al resultado
-};
-```
-
-## UX de la tabla actualizada
-
-```text
-| # | Empresa      | Email  | Valoración | PDF | Estado    | Acciones         |
-|---|--------------|--------|------------|-----|-----------|------------------|
-| 1 | Empresa S.A. | ✓      | 1.2M€      | ⬇   | Enviado   | [···] dropdown   |
-| 2 | Beta Corp    | —      | 850K€      | ⬇   | Calculada | [···] dropdown   |
-```
-
-El dropdown por fila contiene:
-- Eye "Previsualizar"
-- Download "Descargar PDF"
-- Mail "Enviar email" (disabled si no tiene email o ya enviado)
-- RefreshCw "Reenviar" (solo visible si status = 'failed')
+Solo **`src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`**:
+- Nuevos imports en línea 1: `Checkbox`, `X`, `cn`
+- Estado `selectedIds` y helpers de selección tras línea 217
+- Función `handleDownloadSelected` tras `handleDownloadAll` (~línea 337)
+- Función `handleSendSelected` (similar a `handleSendEmails` pero filtra por ids)
+- `useEffect` de atajos de teclado
+- Componente `FloatingActionBar` (inline antes del componente principal)
+- Header de tabla: nueva columna checkbox (línea ~537)
+- Cada `<TableRow>`: clase condicional + celda checkbox (línea ~554)
+- Render de `FloatingActionBar` al final del JSX
 
 ## Lo que NO cambia
-- La lógica de envío masivo existente (se mantiene intacta)
-- `ProfessionalValuationPDF` template
-- Edge function `send-professional-valuation-email`
-- Resto de pasos del formulario
-- Base de datos
+- Toda la lógica de `sendSingle`, `handleSendEmails`, `handleDownloadAll`, `handleRetryFailed`
+- `PDFPreviewModal`
+- `generatePdfBlob`, `downloadBlob`, `mapToPdfData`
+- La Card de "Enviar Valoraciones" (botones globales superiores)
+- Base de datos, edge functions, otros pasos
