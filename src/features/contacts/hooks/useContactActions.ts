@@ -101,13 +101,21 @@ export const useContactActions = () => {
         title: "Contacto eliminado",
         description: "Eliminación permanente completada",
       });
-    } catch (error) {
+    } catch (error: any) {
       // 2. ROLLBACK: Restaurar estado previo
       restoreSnapshot(snapshot);
       console.error('Error eliminando contacto:', error);
+
+      // Detectar error de FK RESTRICT (23503): contacto asignado como comprador en mandato
+      const isFKError =
+        error?.code === '23503' ||
+        (error?.message && error.message.includes('mandato_contactos'));
+
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el contacto",
+        title: isFKError ? "No se puede eliminar" : "Error",
+        description: isFKError
+          ? "Este contacto está asignado como comprador en uno o más mandatos. Ve a la pestaña 'Compradores' del mandato y desvincula el contacto antes de eliminarlo."
+          : "No se pudo eliminar el contacto",
         variant: "destructive",
       });
     }
