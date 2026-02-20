@@ -17,6 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   ArrowLeft,
   Building2,
@@ -43,6 +51,10 @@ import {
   Unlink,
   X,
   Check,
+  MessageSquare,
+  Plus,
+  Loader2,
+  Clock,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useCreateServicio } from '@/hooks/useCreateServicio';
@@ -55,9 +67,119 @@ import { EmpresaContactsTable } from '@/components/admin/companies/EmpresaContac
 import { useEmpresaContactos } from '@/hooks/useEmpresaContactos';
 import { EmpresaLinkContactDialog } from '@/components/admin/companies/EmpresaLinkContactDialog';
 import { formatCompactCurrency } from '@/shared/utils/format';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import {
+  useEmpresaInteracciones,
+  type Interaccion,
+  type TipoInteraccion,
+  type ResultadoInteraccion,
+  type CreateInteraccionInput,
+} from '@/hooks/useEmpresaInteracciones';
+
+// ============= CONSTANTS =============
+const TIPO_OPTIONS: { value: TipoInteraccion; label: string }[] = [
+  { value: 'llamada',  label: '📞 Llamada' },
+  { value: 'email',    label: '📧 Email' },
+  { value: 'reunion',  label: '🤝 Reunión' },
+  { value: 'nota',     label: '📝 Nota interna' },
+  { value: 'whatsapp', label: '💬 WhatsApp' },
+  { value: 'linkedin', label: '🔗 LinkedIn' },
+  { value: 'visita',   label: '🏢 Visita' },
+];
+
+const RESULTADO_OPTIONS: { value: ResultadoInteraccion; label: string }[] = [
+  { value: 'positivo',              label: '✅ Positivo' },
+  { value: 'neutral',               label: '➖ Neutral' },
+  { value: 'negativo',              label: '❌ Negativo' },
+  { value: 'pendiente_seguimiento', label: '⏰ Pendiente seguimiento' },
+];
+
+const TIPO_COLORS: Record<TipoInteraccion, string> = {
+  llamada:  'bg-green-500/10 text-green-700 border-green-200',
+  email:    'bg-blue-500/10 text-blue-700 border-blue-200',
+  reunion:  'bg-purple-500/10 text-purple-700 border-purple-200',
+  nota:     'bg-yellow-500/10 text-yellow-700 border-yellow-200',
+  whatsapp: 'bg-emerald-500/10 text-emerald-700 border-emerald-200',
+  linkedin: 'bg-sky-500/10 text-sky-700 border-sky-200',
+  visita:   'bg-orange-500/10 text-orange-700 border-orange-200',
+};
+
+const RESULTADO_COLORS: Record<ResultadoInteraccion, string> = {
+  positivo:              'bg-green-100 text-green-800',
+  neutral:               'bg-gray-100 text-gray-700',
+  negativo:              'bg-red-100 text-red-800',
+  pendiente_seguimiento: 'bg-amber-100 text-amber-800',
+};
+
+// ============= INTERACCION CARD =============
+function InteraccionCard({
+  interaccion,
+  onDelete,
+}: {
+  interaccion: Interaccion;
+  onDelete: (id: string) => void;
+}) {
+  const tipoLabel = TIPO_OPTIONS.find(o => o.value === interaccion.tipo)?.label || interaccion.tipo;
+  const resultadoLabel = interaccion.resultado
+    ? RESULTADO_OPTIONS.find(o => o.value === interaccion.resultado)?.label || interaccion.resultado
+    : null;
+
+  return (
+    <div className="border rounded-lg p-4 hover:bg-muted/30 transition-colors group">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className={`p-2 rounded-lg border ${TIPO_COLORS[interaccion.tipo]}`}>
+            <MessageSquare className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <Badge variant="outline" className={`text-xs border ${TIPO_COLORS[interaccion.tipo]}`}>
+                {tipoLabel}
+              </Badge>
+              {interaccion.resultado && (
+                <Badge className={`text-xs ${RESULTADO_COLORS[interaccion.resultado]}`}>
+                  {resultadoLabel}
+                </Badge>
+              )}
+            </div>
+            <p className="font-medium text-sm">{interaccion.titulo}</p>
+            {interaccion.descripcion && (
+              <p className="text-sm text-muted-foreground mt-1 line-clamp-3">
+                {interaccion.descripcion}
+              </p>
+            )}
+            {interaccion.siguiente_accion && (
+              <div className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
+                <Clock className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                <span><span className="font-medium">Siguiente:</span> {interaccion.siguiente_accion}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            {formatDistanceToNow(new Date(interaccion.fecha), { addSuffix: true, locale: es })}
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+            onClick={() => {
+              if (confirm('¿Eliminar esta interacción?')) onDelete(interaccion.id);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+      <div className="mt-2 pt-2 border-t text-xs text-muted-foreground">
+        {format(new Date(interaccion.fecha), "d MMM yyyy 'a las' HH:mm", { locale: es })}
+      </div>
+    </div>
+  );
+}
 
 export default function EmpresaDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,7 +194,19 @@ export default function EmpresaDetailPage() {
   const [descriptionValue, setDescriptionValue] = useState('');
   const [editingContact, setEditingContact] = useState(false);
   const [contactEditValues, setContactEditValues] = useState({ nombre: '', apellidos: '', email: '', telefono: '', cargo: '' });
-  
+
+  // Interacciones state
+  const [isInteraccionOpen, setIsInteraccionOpen] = useState(false);
+  const [interaccionForm, setInteraccionForm] = useState<CreateInteraccionInput>({
+    tipo: 'llamada',
+    titulo: '',
+    descripcion: '',
+    fecha: new Date().toISOString().slice(0, 16),
+    resultado: '' as ResultadoInteraccion,
+    siguiente_accion: '',
+    fecha_siguiente_accion: '',
+  });
+
   const { deleteEmpresa, updateEmpresa } = useEmpresas();
 
   // Fetch empresa by ID
@@ -101,6 +235,26 @@ export default function EmpresaDetailPage() {
 
   // Active pause check
   const { data: activePause } = useActivePause(id);
+
+  // Interacciones
+  const { interacciones, isLoading: isLoadingInteracciones, createInteraccion, isCreating, deleteInteraccion } = useEmpresaInteracciones(id);
+
+  const handleSaveInteraccion = () => {
+    createInteraccion(interaccionForm, {
+      onSuccess: () => {
+        setIsInteraccionOpen(false);
+        setInteraccionForm({
+          tipo: 'llamada',
+          titulo: '',
+          descripcion: '',
+          fecha: new Date().toISOString().slice(0, 16),
+          resultado: '' as ResultadoInteraccion,
+          siguiente_accion: '',
+          fecha_siguiente_accion: '',
+        });
+      },
+    });
+  };
 
   // Update mutation for quick fields
   const updateMutation = useMutation({
@@ -248,12 +402,26 @@ export default function EmpresaDetailPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
-        {/* Left Column - Main Content */}
-        <div className="space-y-6">
-          {/* Contacto Principal */}
-          <Card>
+      {/* Main Content with Tabs */}
+      <Tabs defaultValue="info">
+        <TabsList>
+          <TabsTrigger value="info">Información General</TabsTrigger>
+          <TabsTrigger value="interacciones" className="flex items-center gap-1.5">
+            <MessageSquare className="h-3.5 w-3.5" />
+            Interacciones
+            {interacciones.length > 0 && (
+              <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">{interacciones.length}</Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Info Tab */}
+        <TabsContent value="info" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+            {/* Left Column */}
+            <div className="space-y-6">
+              {/* Contacto Principal */}
+              <Card>
             <CardHeader className="flex flex-row items-center justify-between py-3">
               <CardTitle className="text-base font-medium flex items-center gap-2">
                 <User className="h-4 w-4" />
@@ -445,9 +613,8 @@ export default function EmpresaDetailPage() {
               )}
             </CardContent>
           </Card>
-        </div>
+            </div>
 
-        {/* Right Column - Sidebar */}
         <div className="space-y-4">
           {/* Acciones Card */}
           <Card>
@@ -641,9 +808,133 @@ export default function EmpresaDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+          </div>
+        </TabsContent>
 
-      {/* Edit Dialog */}
+        {/* Interacciones Tab */}
+        <TabsContent value="interacciones" className="mt-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold">Historial de Interacciones</h3>
+                <p className="text-sm text-muted-foreground">
+                  {interacciones.length === 0
+                    ? 'Sin interacciones registradas'
+                    : `${interacciones.length} interacción${interacciones.length !== 1 ? 'es' : ''} registrada${interacciones.length !== 1 ? 's' : ''}`}
+                </p>
+              </div>
+              <Button size="sm" onClick={() => setIsInteraccionOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />Nueva Interacción
+              </Button>
+            </div>
+
+            {isLoadingInteracciones ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : interacciones.length === 0 ? (
+              <div className="text-center py-16 border rounded-lg">
+                <MessageSquare className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground text-sm">No hay interacciones registradas</p>
+                <p className="text-xs text-muted-foreground mt-1">Haz click en "Nueva Interacción" para empezar</p>
+                <Button size="sm" variant="outline" className="mt-4" onClick={() => setIsInteraccionOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />Registrar primera interacción
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {interacciones.map((interaccion) => (
+                  <InteraccionCard key={interaccion.id} interaccion={interaccion} onDelete={deleteInteraccion} />
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Nueva Interaccion Dialog */}
+      <Dialog open={isInteraccionOpen} onOpenChange={setIsInteraccionOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Registrar Nueva Interacción</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label>Tipo *</Label>
+              <Select value={interaccionForm.tipo} onValueChange={(v) => setInteraccionForm(f => ({ ...f, tipo: v as TipoInteraccion }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TIPO_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Título *</Label>
+              <Input
+                placeholder="Ej: Llamada inicial de presentación"
+                value={interaccionForm.titulo}
+                onChange={(e) => setInteraccionForm(f => ({ ...f, titulo: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Descripción</Label>
+              <Textarea
+                placeholder="Notas de la interacción..."
+                rows={3}
+                value={interaccionForm.descripcion}
+                onChange={(e) => setInteraccionForm(f => ({ ...f, descripcion: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Fecha y hora *</Label>
+              <Input
+                type="datetime-local"
+                value={interaccionForm.fecha}
+                onChange={(e) => setInteraccionForm(f => ({ ...f, fecha: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Resultado</Label>
+              <Select value={interaccionForm.resultado as string || ''} onValueChange={(v) => setInteraccionForm(f => ({ ...f, resultado: v as ResultadoInteraccion }))}>
+                <SelectTrigger><SelectValue placeholder="Sin resultado" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin resultado</SelectItem>
+                  {RESULTADO_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Siguiente Acción</Label>
+              <Textarea
+                placeholder="¿Qué hay que hacer a continuación?"
+                rows={2}
+                value={interaccionForm.siguiente_accion}
+                onChange={(e) => setInteraccionForm(f => ({ ...f, siguiente_accion: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Fecha Siguiente Acción</Label>
+              <Input
+                type="date"
+                value={interaccionForm.fecha_siguiente_accion}
+                onChange={(e) => setInteraccionForm(f => ({ ...f, fecha_siguiente_accion: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsInteraccionOpen(false)} disabled={isCreating}>Cancelar</Button>
+            <Button onClick={handleSaveInteraccion} disabled={isCreating || !interaccionForm.titulo.trim()}>
+              {isCreating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Guardando...</> : 'Guardar Interacción'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <CompanyFormDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
