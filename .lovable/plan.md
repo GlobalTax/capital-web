@@ -1,209 +1,242 @@
 
-# Selección múltiple y descarga masiva (ZIP) en ProcessSendStep
+# Arreglar descarga de documentos en Perfil de Empresa (OperationDocumentsPanel)
 
-## Estado actual
+## Diagnóstico exacto del problema
 
-El `ProcessSendStep.tsx` (647 líneas) ya tiene:
-- `downloadSingle(c)` — descarga individual por fila (en DropdownMenu)
-- `handleDownloadAll()` — descarga secuencial de todos los PDFs (uno por uno, con delay de 600ms entre cada uno)
-- `PDFPreviewModal` con iframe
-- Barra de progreso de descarga (`downloadProgress` state)
-- DropdownMenu por fila con Previsualizar / Descargar PDF / Enviar email / Reenviar
+Analizando el código y la base de datos, hay **dos causas raíz** combinadas:
 
-**Lo que falta completamente:**
-1. Checkboxes por fila + master checkbox en header → `selectedIds: string[]`
-2. Fondo visual diferenciado en filas seleccionadas
-3. Barra flotante (`FloatingActionBar`) que aparece cuando `selectedIds.length > 0`
-4. Descarga de seleccionadas como ZIP (actualmente solo hay descarga secuencial individual, no ZIP)
-5. Atajos de teclado: Ctrl+A, Escape, Ctrl+D
+### Causa 1: RLS policy de storage demasiado restrictiva (problema principal)
 
-## Decisión sobre ZIP
+El bucket `operation-documents` es **privado** y tiene estas policies en `storage.objects`:
 
-El plan original pide ZIP. El código actual hace descarga individual secuencial (trigerea múltiples descargas del browser). Con 147 empresas, el browser bloquea descargas múltiples.
-
-**Solución**: Usamos la librería `fflate` que ya está disponible transitivamente en el proyecto (es dependencia de `@react-pdf/renderer`). Importación dinámica: `const { zip, strToU8 } = await import('fflate')`. Esto genera un `.zip` real en memoria sin instalar nada nuevo.
-
-Si `fflate` no está disponible en runtime, fallback a descarga secuencial con delay (la implementación actual de `handleDownloadAll`).
-
-## Cambios — solo `ProcessSendStep.tsx`
-
-### 1. Nuevos imports (línea 1)
-Añadir `Checkbox` de `@/components/ui/checkbox`, `X` de `lucide-react`, y `cn` de `@/lib/utils`.
-
-### 2. Estado de selección (después de línea 217)
-```typescript
-const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-const toggleSelection = (id: string) =>
-  setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-
-const toggleSelectAll = () =>
-  setSelectedIds(selectedIds.length === companies.length ? [] : companies.map(c => c.id));
-
-const clearSelection = () => setSelectedIds([]);
-
-const isAllSelected = companies.length > 0 && selectedIds.length === companies.length;
-const isIndeterminate = selectedIds.length > 0 && selectedIds.length < companies.length;
+```
+SELECT: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
+INSERT: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
+DELETE: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
+UPDATE: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
 ```
 
-### 3. Función `handleDownloadSelected` (nueva, después de `handleDownloadAll`)
+La función `is_user_admin(auth.uid())` llama a `check_is_admin(check_user_id)` que busca en `admin_users`. Esto significa que **solo los super_admin/admin/editor/viewer del panel pueden acceder**. Aunque el usuario esté autenticado y sea admin, el problema está en que `is_user_admin` recibe `auth.uid()` pero la función espera `check_user_id uuid`. Si hay cualquier issue con el contexto de la llamada desde storage, falla silenciosamente.
+
+La query confirma que **hay 0 documentos en `operation_documents`** (tabla BD vacía) y **0 objetos en el bucket `operation-documents`** — lo que significa que la subida también está fallando, o la feature es relativamente nueva y no se han subido archivos reales aún con el sistema actual.
+
+### Causa 2: `downloadMutation` busca en `documents` (state local) que puede ser undefined
+
+En `useOperationDocuments.ts`, línea 139:
 ```typescript
-const handleDownloadSelected = useCallback(async (ids: string[]) => {
-  const targets = companies.filter(c => ids.includes(c.id));
-  if (targets.length === 0) return;
-  
-  setDownloadProgress({ active: true, current: 0, total: targets.length, name: '' });
-  
-  try {
-    // Intento ZIP con fflate
-    const fflate = await import('fflate');
-    const files: Record<string, Uint8Array> = {};
+const document = documents?.find(d => d.id === documentId);
+if (!document) throw new Error('Documento no encontrado');
+```
+
+La mutación accede a `documents` (el estado del `useQuery`), pero si hay una condición de carrera o el cache se invalida antes de que se ejecute la mutación, `documents` puede ser `undefined` o vacío, causando el error "Documento no encontrado".
+
+### Causa 3: El `download_count` no se incrementa en la DB
+
+El `downloadMutation` registra en `operation_document_downloads` pero nunca actualiza `download_count` en `operation_documents`. Esto es menor pero incompleto.
+
+### Contexto adicional
+- El bucket existe y es privado (confirmado)
+- Las policies usan `is_user_admin(auth.uid())` — la función existe en `public` schema y acepta `uuid`
+- El `createSignedUrl` debería funcionar para admins, pero si `documents` state es undefined la mutación falla antes de llegar al storage call
+- El error "Error al descargar el archivo" proviene del `onError` del `downloadMutation`
+
+## Solución
+
+### 1. Migración SQL — Añadir policy SELECT para `operation_document_downloads` y arreglar storage policy
+
+La policy de storage actual es correcta para admins pero necesitamos asegurarnos de que la función `is_user_admin` se ejecuta correctamente en el contexto de storage. Añadimos también una policy más robusta que incluya a todos los usuarios autenticados que sean admin (usando `admin_users` directamente en lugar de la función wrapper).
+
+```sql
+-- Reemplazar las policies de storage con versión más robusta
+DROP POLICY IF EXISTS "Admins view operation documents" ON storage.objects;
+DROP POLICY IF EXISTS "Admins upload operation documents" ON storage.objects;
+DROP POLICY IF EXISTS "Admins delete operation documents" ON storage.objects;
+DROP POLICY IF EXISTS "Admins update operation documents" ON storage.objects;
+
+-- Nueva policy unificada usando JOIN directo (más robusta)
+CREATE POLICY "Admin users can manage operation documents"
+ON storage.objects FOR ALL
+TO authenticated
+USING (
+  bucket_id = 'operation-documents'
+  AND EXISTS (
+    SELECT 1 FROM public.admin_users
+    WHERE admin_users.user_id = auth.uid()
+    AND admin_users.is_active = true
+    AND admin_users.role IN ('super_admin', 'admin', 'editor', 'viewer')
+  )
+)
+WITH CHECK (
+  bucket_id = 'operation-documents'
+  AND EXISTS (
+    SELECT 1 FROM public.admin_users
+    WHERE admin_users.user_id = auth.uid()
+    AND admin_users.is_active = true
+    AND admin_users.role IN ('super_admin', 'admin', 'editor', 'viewer')
+  )
+);
+```
+
+### 2. Arreglar `useOperationDocuments.ts` — `downloadMutation`
+
+El problema clave: la mutación accede a `documents` del closure, que puede no estar disponible. La solución es hacer un fetch del documento directamente desde la BD en el `mutationFn`, garantizando que siempre tenemos datos frescos. También añadimos logs exhaustivos y actualizamos `download_count`.
+
+**Cambios en `downloadMutation` (líneas 137-182):**
+
+```typescript
+const downloadMutation = useMutation({
+  mutationFn: async (documentId: string) => {
+    console.group('[DOWNLOAD_DOCUMENT] Starting...');
+    console.log('Document ID:', documentId);
+    console.log('Documents in cache:', documents?.length);
+
+    // Primero intentar desde cache, luego hacer fetch directo
+    let document = documents?.find(d => d.id === documentId);
     
-    for (let i = 0; i < targets.length; i++) {
-      const c = targets[i];
-      setDownloadProgress(p => ({ ...p, current: i + 1, name: c.client_company }));
-      const blob = await generatePdfBlob(c, campaign);
-      const buffer = await blob.arrayBuffer();
-      const filename = `${String(i + 1).padStart(3, '0')}_${c.client_company.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-      files[filename] = new Uint8Array(buffer);
+    if (!document) {
+      console.log('[DOWNLOAD_DOCUMENT] Not in cache, fetching from DB...');
+      const { data, error: fetchError } = await supabase
+        .from('operation_documents')
+        .select('*')
+        .eq('id', documentId)
+        .single();
+      
+      if (fetchError) {
+        console.error('[DOWNLOAD_DOCUMENT] DB fetch error:', fetchError);
+        throw new Error(`Documento no encontrado: ${fetchError.message}`);
+      }
+      document = data as OperationDocument;
     }
     
-    // Generar ZIP sincrónicamente
-    const zipped = fflate.zipSync(files, { level: 6 });
-    const zipBlob = new Blob([zipped], { type: 'application/zip' });
-    downloadBlob(zipBlob, `Valoraciones_${targets.length}_empresas.zip`);
-    toast.success(`${targets.length} PDFs descargados como ZIP`);
-  } catch (err) {
-    // Fallback: descarga secuencial
-    console.warn('[ZIP] fflate no disponible, fallback secuencial', err);
-    for (let i = 0; i < targets.length; i++) {
-      const c = targets[i];
-      setDownloadProgress(p => ({ ...p, current: i + 1, name: c.client_company }));
-      const blob = await generatePdfBlob(c, campaign);
-      downloadBlob(blob, `${String(i + 1).padStart(3, '0')}_${c.client_company.replace(/\s+/g, '_')}.pdf`);
-      await new Promise(r => setTimeout(r, 600));
+    console.log('[DOWNLOAD_DOCUMENT] Document:', document.file_name);
+    console.log('[DOWNLOAD_DOCUMENT] File path:', document.file_path);
+    console.log('[DOWNLOAD_DOCUMENT] File type:', document.file_type);
+
+    if (!document.file_path) {
+      throw new Error('El documento no tiene ruta de archivo (file_path vacío)');
     }
-    toast.success(`${targets.length} PDFs descargados`);
-  } finally {
-    setDownloadProgress(p => ({ ...p, active: false }));
-  }
-}, [companies, campaign]);
+
+    // Intentar descarga directa primero (más eficiente)
+    console.log('[DOWNLOAD_DOCUMENT] Attempting direct download...');
+    const { data: fileBlob, error: downloadError } = await supabase.storage
+      .from('operation-documents')
+      .download(document.file_path);
+
+    if (downloadError) {
+      console.warn('[DOWNLOAD_DOCUMENT] Direct download failed:', downloadError.message);
+      // Fallback: signed URL
+      console.log('[DOWNLOAD_DOCUMENT] Trying signed URL fallback...');
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('operation-documents')
+        .createSignedUrl(document.file_path, 120);
+
+      if (signedError || !signedData) {
+        console.error('[DOWNLOAD_DOCUMENT] Signed URL failed:', signedError);
+        throw new Error(`Error de acceso al archivo: ${signedError?.message || 'Sin URL firmada'}`);
+      }
+
+      console.log('[DOWNLOAD_DOCUMENT] Signed URL obtained, fetching blob...');
+      const response = await fetch(signedData.signedUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      triggerDownload(blob, document.file_name);
+    } else {
+      console.log('[DOWNLOAD_DOCUMENT] Direct download succeeded');
+      triggerDownload(fileBlob, document.file_name);
+    }
+
+    // Log download in audit table
+    const { data: user } = await supabase.auth.getUser();
+    await supabase.from('operation_document_downloads').insert({
+      document_id: documentId,
+      downloaded_by: user.user?.id,
+    });
+
+    // Increment download_count
+    await supabase
+      .from('operation_documents')
+      .update({ download_count: (document.download_count || 0) + 1 })
+      .eq('id', documentId);
+
+    console.log('[DOWNLOAD_DOCUMENT] Complete');
+    console.groupEnd();
+    
+    return { fileName: document.file_name };
+  },
+  onSuccess: ({ fileName }) => {
+    queryClient.invalidateQueries({ queryKey: [DOCUMENTS_QUERY_KEY, operationId] });
+    toast({
+      title: 'Descarga iniciada',
+      description: `Descargando ${fileName}`,
+    });
+  },
+  onError: (error: Error) => {
+    console.error('[DOWNLOAD_DOCUMENT] Final error:', error);
+    toast({
+      title: 'Error al descargar documento',
+      description: error.message,
+      variant: 'destructive',
+    });
+  },
+});
 ```
 
-### 4. Atajos de teclado (nuevo `useEffect`)
+**Nueva helper function `triggerDownload`** (añadir fuera del hook, nivel de módulo):
+
 ```typescript
-useEffect(() => {
-  const onKey = (e: KeyboardEvent) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-      e.preventDefault();
-      toggleSelectAll();
-    }
-    if (e.key === 'Escape' && selectedIds.length > 0) clearSelection();
-    if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedIds.length > 0) {
-      e.preventDefault();
-      handleDownloadSelected(selectedIds);
-    }
-  };
-  window.addEventListener('keydown', onKey);
-  return () => window.removeEventListener('keydown', onKey);
-}, [selectedIds, toggleSelectAll, clearSelection, handleDownloadSelected]);
-```
-
-### 5. Header de la tabla — añadir columna checkbox (línea ~537)
-Antes de `<TableHead>Empresa</TableHead>` añadir:
-```tsx
-<TableHead className="w-10">
-  <Checkbox
-    checked={isAllSelected}
-    // Radix Checkbox acepta boolean o 'indeterminate'
-    data-state={isIndeterminate ? 'indeterminate' : undefined}
-    onCheckedChange={toggleSelectAll}
-    aria-label="Seleccionar todas"
-  />
-</TableHead>
-```
-
-### 6. Filas de la tabla — añadir checkbox y fondo seleccionado (línea ~554)
-- `<TableRow>` → `<TableRow className={cn(selectedIds.includes(c.id) && 'bg-primary/5')}>`
-- Primera celda nueva antes de `<TableCell className="font-medium">`:
-```tsx
-<TableCell className="w-10">
-  <Checkbox
-    checked={selectedIds.includes(c.id)}
-    onCheckedChange={() => toggleSelection(c.id)}
-    aria-label={`Seleccionar ${c.client_company}`}
-  />
-</TableCell>
-```
-
-### 7. `FloatingActionBar` — nuevo componente inline (antes del `return` principal)
-```tsx
-function FloatingActionBar({
-  selectedCount, onClear, onDownload, onSend, isBusy
-}: {
-  selectedCount: number;
-  onClear: () => void;
-  onDownload: () => void;
-  onSend: () => void;
-  isBusy: boolean;
-}) {
-  return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
-      <Card className="shadow-2xl border">
-        <CardContent className="flex items-center gap-3 py-3 px-4">
-          <span className="text-sm font-medium tabular-nums">
-            {selectedCount} seleccionada{selectedCount !== 1 ? 's' : ''}
-          </span>
-          <div className="h-4 w-px bg-border" />
-          <Button size="sm" variant="ghost" onClick={onClear} disabled={isBusy}>
-            <X className="h-4 w-4 mr-1.5" />Limpiar
-          </Button>
-          <Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
-            <Download className="h-4 w-4 mr-1.5" />
-            Descargar PDFs
-          </Button>
-          <Button size="sm" onClick={onSend} disabled={isBusy}>
-            <Mail className="h-4 w-4 mr-1.5" />
-            Enviar emails
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
+function triggerDownload(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 ```
 
-### 8. Render del `FloatingActionBar` (al final del JSX principal, antes del cierre `</div>`)
-```tsx
-{selectedIds.length > 0 && (
-  <FloatingActionBar
-    selectedCount={selectedIds.length}
-    onClear={clearSelection}
-    onDownload={() => handleDownloadSelected(selectedIds)}
-    onSend={() => { /* enviar solo seleccionadas — llama sendSingle en loop */ }}
-    isBusy={isBusy}
-  />
-)}
-```
+**También arreglar `getPreviewUrl`** — mismo patrón: buscar en cache o fetch desde DB:
+```typescript
+const getPreviewUrl = async (documentId: string): Promise<string | null> => {
+  let doc = documents?.find(d => d.id === documentId);
+  
+  if (!doc) {
+    const { data } = await supabase
+      .from('operation_documents')
+      .select('file_path')
+      .eq('id', documentId)
+      .single();
+    if (!data) return null;
+    doc = data as OperationDocument;
+  }
 
-Para "Enviar emails" desde la barra flotante, se añade `handleSendSelected(ids)` que reutiliza la lógica de `sendSingle` en bucle sobre las seleccionadas con email.
+  const { data, error } = await supabase.storage
+    .from('operation-documents')
+    .createSignedUrl(doc.file_path, 300);
+
+  if (error) {
+    console.error('[PREVIEW_URL] Error:', error);
+    return null;
+  }
+  return data.signedUrl;
+};
+```
 
 ## Archivos a modificar
 
-Solo **`src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`**:
-- Nuevos imports en línea 1: `Checkbox`, `X`, `cn`
-- Estado `selectedIds` y helpers de selección tras línea 217
-- Función `handleDownloadSelected` tras `handleDownloadAll` (~línea 337)
-- Función `handleSendSelected` (similar a `handleSendEmails` pero filtra por ids)
-- `useEffect` de atajos de teclado
-- Componente `FloatingActionBar` (inline antes del componente principal)
-- Header de tabla: nueva columna checkbox (línea ~537)
-- Cada `<TableRow>`: clase condicional + celda checkbox (línea ~554)
-- Render de `FloatingActionBar` al final del JSX
+1. **`supabase/migrations/TIMESTAMP_fix_operation_documents_storage_policy.sql`** — Migración que reemplaza las 4 policies separadas de storage por una policy `FOR ALL` con JOIN directo a `admin_users` (más robusta, mismo acceso)
+
+2. **`src/features/operations-management/hooks/useOperationDocuments.ts`** — 
+   - Añadir `triggerDownload` helper al nivel de módulo
+   - Refactorizar `downloadMutation.mutationFn` con fetch directo + fallback a signed URL + logs
+   - Refactorizar `getPreviewUrl` para no depender del estado local del cache
 
 ## Lo que NO cambia
-- Toda la lógica de `sendSingle`, `handleSendEmails`, `handleDownloadAll`, `handleRetryFailed`
-- `PDFPreviewModal`
-- `generatePdfBlob`, `downloadBlob`, `mapToPdfData`
-- La Card de "Enviar Valoraciones" (botones globales superiores)
-- Base de datos, edge functions, otros pasos
+- `uploadMutation` — la lógica de subida está correcta
+- `updateMutation`, `deleteMutation` — correctos
+- `OperationDocumentsPanel`, `DocumentCard`, `DocumentsGallery`, `DocumentViewer` — sin cambios de UI
+- Tipos en `documents.ts` — sin cambios
+- Permisos de acceso — solo admins pueden descargar (correcto para documentos de operaciones M&A)
