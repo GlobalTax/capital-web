@@ -11,7 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Building2, DollarSign, FileText, Calendar, MapPin, Settings, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { ArrowLeft, Building2, DollarSign, FileText, Calendar, MapPin, Settings, Loader2, Plus, Trash2, MessageSquare, Phone, Mail, Users, Linkedin, StickyNote, X } from 'lucide-react';
 import { formatCurrency } from '@/shared/utils/format';
 import { useToast } from '@/hooks/use-toast';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
@@ -19,6 +20,34 @@ import { AssignmentPanel } from '@/features/operations-management/components/ass
 import { OperationHistoryTimeline } from '@/features/operations-management/components/history';
 import { OperationNotesPanel } from '@/features/operations-management/components/notes';
 import { OperationDocumentsPanel } from '@/features/operations-management/components/documents';
+import { useMandatoInteracciones, type CreateInteraccionInput, type TipoInteraccion } from '@/hooks/useMandatoInteracciones';
+
+const TIPO_OPTIONS: { value: TipoInteraccion; label: string; icon: React.ReactNode }[] = [
+  { value: 'email', label: 'Email', icon: <Mail className="h-4 w-4" /> },
+  { value: 'llamada', label: 'Llamada', icon: <Phone className="h-4 w-4" /> },
+  { value: 'reunion', label: 'Reunión', icon: <Users className="h-4 w-4" /> },
+  { value: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare className="h-4 w-4" /> },
+  { value: 'linkedin', label: 'LinkedIn', icon: <Linkedin className="h-4 w-4" /> },
+  { value: 'nota', label: 'Nota', icon: <StickyNote className="h-4 w-4" /> },
+  { value: 'visita', label: 'Visita', icon: <MapPin className="h-4 w-4" /> },
+];
+
+const TIPO_COLORS: Record<TipoInteraccion, string> = {
+  email: 'bg-blue-100 text-blue-700',
+  llamada: 'bg-green-100 text-green-700',
+  reunion: 'bg-purple-100 text-purple-700',
+  whatsapp: 'bg-emerald-100 text-emerald-700',
+  linkedin: 'bg-sky-100 text-sky-700',
+  nota: 'bg-yellow-100 text-yellow-700',
+  visita: 'bg-orange-100 text-orange-700',
+};
+
+const RESULTADO_OPTIONS = [
+  { value: 'positivo', label: '✅ Positivo' },
+  { value: 'neutral', label: '➖ Neutral' },
+  { value: 'negativo', label: '❌ Negativo' },
+  { value: 'pendiente_seguimiento', label: '🔄 Pendiente seguimiento' },
+];
 
 interface Operation {
   id: string;
@@ -57,6 +86,36 @@ const OperationDetails = () => {
   const [operation, setOperation] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set());
+
+  // Interacciones
+  const { interacciones, isLoading: loadingInteracciones, createInteraccion, isCreating, deleteInteraccion } = useMandatoInteracciones(id);
+  const [isInteraccionOpen, setIsInteraccionOpen] = useState(false);
+  const [interaccionForm, setInteraccionForm] = useState<CreateInteraccionInput>({
+    tipo: 'email',
+    titulo: '',
+    descripcion: '',
+    fecha: new Date().toISOString().slice(0, 16),
+    resultado: '',
+    siguiente_accion: '',
+    fecha_siguiente_accion: '',
+  });
+
+  const handleSaveInteraccion = () => {
+    createInteraccion(interaccionForm, {
+      onSuccess: () => {
+        setIsInteraccionOpen(false);
+        setInteraccionForm({
+          tipo: 'email',
+          titulo: '',
+          descripcion: '',
+          fecha: new Date().toISOString().slice(0, 16),
+          resultado: '',
+          siguiente_accion: '',
+          fecha_siguiente_accion: '',
+        });
+      },
+    });
+  };
 
   useEffect(() => {
     const fetchOperation = async () => {
@@ -507,6 +566,153 @@ const OperationDetails = () => {
 
           {/* Documentos */}
           <OperationDocumentsPanel operationId={id!} />
+
+          {/* Interacciones */}
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center justify-between text-lg">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                  Interacciones
+                  {interacciones.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">{interacciones.length}</Badge>
+                  )}
+                </div>
+                <Button
+                  onClick={() => setIsInteraccionOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="h-8"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Nueva
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {loadingInteracciones ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : interacciones.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">
+                  No hay interacciones registradas.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {interacciones.map((interaccion) => (
+                    <div key={interaccion.id} className="border rounded-lg p-3 space-y-1.5 relative group">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${TIPO_COLORS[interaccion.tipo]}`}>
+                            {TIPO_OPTIONS.find(t => t.value === interaccion.tipo)?.label ?? interaccion.tipo}
+                          </span>
+                          <span className="text-sm font-medium">{interaccion.titulo}</span>
+                        </div>
+                        <button
+                          onClick={() => deleteInteraccion(interaccion.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      {interaccion.descripcion && (
+                        <p className="text-xs text-muted-foreground">{interaccion.descripcion}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(interaccion.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Dialog Nueva Interacción */}
+          <Dialog open={isInteraccionOpen} onOpenChange={setIsInteraccionOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Nueva Interacción</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Tipo *</Label>
+                  <Select
+                    value={interaccionForm.tipo}
+                    onValueChange={(v) => setInteraccionForm({ ...interaccionForm, tipo: v as TipoInteraccion })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIPO_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          <span className="flex items-center gap-2">{opt.icon}{opt.label}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Título *</Label>
+                  <Input
+                    value={interaccionForm.titulo}
+                    onChange={(e) => setInteraccionForm({ ...interaccionForm, titulo: e.target.value })}
+                    placeholder="Ej: Envío de datapack y IM"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Descripción</Label>
+                  <Textarea
+                    value={interaccionForm.descripcion}
+                    onChange={(e) => setInteraccionForm({ ...interaccionForm, descripcion: e.target.value })}
+                    placeholder="Detalles de la interacción..."
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fecha y Hora</Label>
+                  <Input
+                    type="datetime-local"
+                    value={interaccionForm.fecha}
+                    onChange={(e) => setInteraccionForm({ ...interaccionForm, fecha: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Resultado</Label>
+                  <Select
+                    value={interaccionForm.resultado || ''}
+                    onValueChange={(v) => setInteraccionForm({ ...interaccionForm, resultado: v as any })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar resultado..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RESULTADO_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Siguiente acción</Label>
+                  <Input
+                    value={interaccionForm.siguiente_accion}
+                    onChange={(e) => setInteraccionForm({ ...interaccionForm, siguiente_accion: e.target.value })}
+                    placeholder="¿Qué viene después?"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsInteraccionOpen(false)}>Cancelar</Button>
+                <Button onClick={handleSaveInteraccion} disabled={isCreating}>
+                  {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  Guardar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Right Column - Sidebar */}
