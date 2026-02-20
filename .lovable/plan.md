@@ -1,242 +1,306 @@
 
-# Arreglar descarga de documentos en Perfil de Empresa (OperationDocumentsPanel)
+# Crear sistema de Interacciones en el Perfil de Empresa
 
 ## Diagnóstico exacto del problema
 
-Analizando el código y la base de datos, hay **dos causas raíz** combinadas:
+El `EmpresaDetailPage.tsx` **no tiene ninguna sección de interacciones**. La página actual solo muestra: Contacto Principal, Financials, Contactos Asociados, Descripción, y un sidebar de Estado/Acciones. 
 
-### Causa 1: RLS policy de storage demasiado restrictiva (problema principal)
+El usuario reporta el error desde `godeal.es/empresas/{id}` (entorno live). El feature existe en producción pero **el código fuente del mismo está ausente o fue eliminado** del repositorio. Es necesario construirlo desde cero.
 
-El bucket `operation-documents` es **privado** y tiene estas policies en `storage.objects`:
+### Estado de la base de datos (confirmado)
 
+La tabla `interacciones` ya existe y tiene datos:
 ```
-SELECT: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
-INSERT: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
-DELETE: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
-UPDATE: (bucket_id = 'operation-documents') AND is_user_admin(auth.uid())
-```
-
-La función `is_user_admin(auth.uid())` llama a `check_is_admin(check_user_id)` que busca en `admin_users`. Esto significa que **solo los super_admin/admin/editor/viewer del panel pueden acceder**. Aunque el usuario esté autenticado y sea admin, el problema está en que `is_user_admin` recibe `auth.uid()` pero la función espera `check_user_id uuid`. Si hay cualquier issue con el contexto de la llamada desde storage, falla silenciosamente.
-
-La query confirma que **hay 0 documentos en `operation_documents`** (tabla BD vacía) y **0 objetos en el bucket `operation-documents`** — lo que significa que la subida también está fallando, o la feature es relativamente nueva y no se han subido archivos reales aún con el sistema actual.
-
-### Causa 2: `downloadMutation` busca en `documents` (state local) que puede ser undefined
-
-En `useOperationDocuments.ts`, línea 139:
-```typescript
-const document = documents?.find(d => d.id === documentId);
-if (!document) throw new Error('Documento no encontrado');
+id, empresa_id, mandato_id, tipo, titulo, descripcion, fecha, 
+resultado, siguiente_accion, fecha_siguiente_accion, created_by, ...
 ```
 
-La mutación accede a `documents` (el estado del `useQuery`), pero si hay una condición de carrera o el cache se invalida antes de que se ejecute la mutación, `documents` puede ser `undefined` o vacío, causando el error "Documento no encontrado".
+**Constraints importantes:**
+- `tipo` CHECK: solo acepta `'llamada'|'email'|'reunion'|'nota'|'whatsapp'|'linkedin'|'visita'` (en español/lowercase)
+- `resultado` CHECK: solo acepta `'positivo'|'neutral'|'negativo'|'pendiente_seguimiento'` (en español)
+- `titulo` es NOT NULL y obligatorio
+- `contacto_id IS NOT NULL OR empresa_id IS NOT NULL` (al menos uno requerido)
+- `created_by` es nullable en DB pero la RLS policy de INSERT requiere `created_by = auth.uid()`
 
-### Causa 3: El `download_count` no se incrementa en la DB
+**RLS Policies:**
+- SELECT: `current_user_can_read()` — funciona para cualquier admin
+- INSERT: `current_user_can_read() AND (created_by = auth.uid())` — requiere pasar `created_by` con el UID del usuario autenticado
 
-El `downloadMutation` registra en `operation_document_downloads` pero nunca actualiza `download_count` en `operation_documents`. Esto es menor pero incompleto.
+### Causa raíz del error
 
-### Contexto adicional
-- El bucket existe y es privado (confirmado)
-- Las policies usan `is_user_admin(auth.uid())` — la función existe en `public` schema y acepta `uuid`
-- El `createSignedUrl` debería funcionar para admins, pero si `documents` state es undefined la mutación falla antes de llegar al storage call
-- El error "Error al descargar el archivo" proviene del `onError` del `downloadMutation`
+La causa más probable del error "Error al registrar la interacción" es que el formulario existente en producción enviaba alguno de estos valores incorrectos:
+1. `tipo: 'WhatsApp'` en lugar de `tipo: 'whatsapp'` (violación de CHECK constraint → error 23514)
+2. `resultado: 'Positivo'` en lugar de `resultado: 'positivo'` (violación de CHECK constraint)
+3. `created_by` ausente o incorrecto (violación de RLS policy)
+4. O simplemente el código fuente no existe en este repo y hay que crearlo
 
-## Solución
+## Solución completa
 
-### 1. Migración SQL — Añadir policy SELECT para `operation_document_downloads` y arreglar storage policy
+### Arquitectura
 
-La policy de storage actual es correcta para admins pero necesitamos asegurarnos de que la función `is_user_admin` se ejecuta correctamente en el contexto de storage. Añadimos también una policy más robusta que incluya a todos los usuarios autenticados que sean admin (usando `admin_users` directamente en lugar de la función wrapper).
-
-```sql
--- Reemplazar las policies de storage con versión más robusta
-DROP POLICY IF EXISTS "Admins view operation documents" ON storage.objects;
-DROP POLICY IF EXISTS "Admins upload operation documents" ON storage.objects;
-DROP POLICY IF EXISTS "Admins delete operation documents" ON storage.objects;
-DROP POLICY IF EXISTS "Admins update operation documents" ON storage.objects;
-
--- Nueva policy unificada usando JOIN directo (más robusta)
-CREATE POLICY "Admin users can manage operation documents"
-ON storage.objects FOR ALL
-TO authenticated
-USING (
-  bucket_id = 'operation-documents'
-  AND EXISTS (
-    SELECT 1 FROM public.admin_users
-    WHERE admin_users.user_id = auth.uid()
-    AND admin_users.is_active = true
-    AND admin_users.role IN ('super_admin', 'admin', 'editor', 'viewer')
-  )
-)
-WITH CHECK (
-  bucket_id = 'operation-documents'
-  AND EXISTS (
-    SELECT 1 FROM public.admin_users
-    WHERE admin_users.user_id = auth.uid()
-    AND admin_users.is_active = true
-    AND admin_users.role IN ('super_admin', 'admin', 'editor', 'viewer')
-  )
-);
+```text
+Nueva feature de Interacciones en EmpresaDetailPage
+├── src/hooks/useEmpresaInteracciones.ts  (hook nuevo)
+│     ├── useQuery: leer interacciones por empresa_id
+│     └── useMutation: crear, actualizar, eliminar
+└── src/pages/admin/EmpresaDetailPage.tsx  (añadir tab de Interacciones)
+      ├── Tabs: Info General / Interacciones (NUEVO)
+      ├── InteraccionesTimeline (lista con cards)
+      └── NuevaInteraccionDialog (modal de creación)
 ```
 
-### 2. Arreglar `useOperationDocuments.ts` — `downloadMutation`
+### 1. Nuevo hook: `src/hooks/useEmpresaInteracciones.ts`
 
-El problema clave: la mutación accede a `documents` del closure, que puede no estar disponible. La solución es hacer un fetch del documento directamente desde la BD en el `mutationFn`, garantizando que siempre tenemos datos frescos. También añadimos logs exhaustivos y actualizamos `download_count`.
-
-**Cambios en `downloadMutation` (líneas 137-182):**
+Este hook encapsula toda la lógica de datos para las interacciones de una empresa concreta:
 
 ```typescript
-const downloadMutation = useMutation({
-  mutationFn: async (documentId: string) => {
-    console.group('[DOWNLOAD_DOCUMENT] Starting...');
-    console.log('Document ID:', documentId);
-    console.log('Documents in cache:', documents?.length);
+// Tipos
+type TipoInteraccion = 'llamada' | 'email' | 'reunion' | 'nota' | 'whatsapp' | 'linkedin' | 'visita';
+type ResultadoInteraccion = 'positivo' | 'neutral' | 'negativo' | 'pendiente_seguimiento';
 
-    // Primero intentar desde cache, luego hacer fetch directo
-    let document = documents?.find(d => d.id === documentId);
-    
-    if (!document) {
-      console.log('[DOWNLOAD_DOCUMENT] Not in cache, fetching from DB...');
-      const { data, error: fetchError } = await supabase
-        .from('operation_documents')
-        .select('*')
-        .eq('id', documentId)
-        .single();
-      
-      if (fetchError) {
-        console.error('[DOWNLOAD_DOCUMENT] DB fetch error:', fetchError);
-        throw new Error(`Documento no encontrado: ${fetchError.message}`);
-      }
-      document = data as OperationDocument;
-    }
-    
-    console.log('[DOWNLOAD_DOCUMENT] Document:', document.file_name);
-    console.log('[DOWNLOAD_DOCUMENT] File path:', document.file_path);
-    console.log('[DOWNLOAD_DOCUMENT] File type:', document.file_type);
+interface Interaccion {
+  id: string;
+  empresa_id: string | null;
+  tipo: TipoInteraccion;
+  titulo: string;
+  descripcion: string | null;
+  fecha: string;
+  resultado: ResultadoInteraccion | null;
+  siguiente_accion: string | null;
+  fecha_siguiente_accion: string | null;
+  created_by: string | null;
+  created_at: string | null;
+}
 
-    if (!document.file_path) {
-      throw new Error('El documento no tiene ruta de archivo (file_path vacío)');
-    }
-
-    // Intentar descarga directa primero (más eficiente)
-    console.log('[DOWNLOAD_DOCUMENT] Attempting direct download...');
-    const { data: fileBlob, error: downloadError } = await supabase.storage
-      .from('operation-documents')
-      .download(document.file_path);
-
-    if (downloadError) {
-      console.warn('[DOWNLOAD_DOCUMENT] Direct download failed:', downloadError.message);
-      // Fallback: signed URL
-      console.log('[DOWNLOAD_DOCUMENT] Trying signed URL fallback...');
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('operation-documents')
-        .createSignedUrl(document.file_path, 120);
-
-      if (signedError || !signedData) {
-        console.error('[DOWNLOAD_DOCUMENT] Signed URL failed:', signedError);
-        throw new Error(`Error de acceso al archivo: ${signedError?.message || 'Sin URL firmada'}`);
-      }
-
-      console.log('[DOWNLOAD_DOCUMENT] Signed URL obtained, fetching blob...');
-      const response = await fetch(signedData.signedUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const blob = await response.blob();
-      triggerDownload(blob, document.file_name);
-    } else {
-      console.log('[DOWNLOAD_DOCUMENT] Direct download succeeded');
-      triggerDownload(fileBlob, document.file_name);
-    }
-
-    // Log download in audit table
-    const { data: user } = await supabase.auth.getUser();
-    await supabase.from('operation_document_downloads').insert({
-      document_id: documentId,
-      downloaded_by: user.user?.id,
-    });
-
-    // Increment download_count
-    await supabase
-      .from('operation_documents')
-      .update({ download_count: (document.download_count || 0) + 1 })
-      .eq('id', documentId);
-
-    console.log('[DOWNLOAD_DOCUMENT] Complete');
-    console.groupEnd();
-    
-    return { fileName: document.file_name };
-  },
-  onSuccess: ({ fileName }) => {
-    queryClient.invalidateQueries({ queryKey: [DOCUMENTS_QUERY_KEY, operationId] });
-    toast({
-      title: 'Descarga iniciada',
-      description: `Descargando ${fileName}`,
-    });
-  },
-  onError: (error: Error) => {
-    console.error('[DOWNLOAD_DOCUMENT] Final error:', error);
-    toast({
-      title: 'Error al descargar documento',
-      description: error.message,
-      variant: 'destructive',
-    });
-  },
-});
-```
-
-**Nueva helper function `triggerDownload`** (añadir fuera del hook, nivel de módulo):
-
-```typescript
-function triggerDownload(blob: Blob, fileName: string): void {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 100);
+interface CreateInteraccionInput {
+  tipo: TipoInteraccion;
+  titulo: string;
+  descripcion?: string;
+  fecha: string;  // ISO string
+  resultado?: ResultadoInteraccion;
+  siguiente_accion?: string;
+  fecha_siguiente_accion?: string;  // date string YYYY-MM-DD
 }
 ```
 
-**También arreglar `getPreviewUrl`** — mismo patrón: buscar en cache o fetch desde DB:
+**`useEmpresaInteracciones(empresaId)`** retorna:
+- `interacciones: Interaccion[]` — lista ordenada por fecha desc
+- `isLoading: boolean`
+- `createInteraccion(input)` — mutación con validación + logs
+- `deleteInteraccion(id)` — mutación
+
+**Lógica crítica en `createInteraccion`:**
 ```typescript
-const getPreviewUrl = async (documentId: string): Promise<string | null> => {
-  let doc = documents?.find(d => d.id === documentId);
+const mutationFn = async (input: CreateInteraccionInput) => {
+  // 1. Obtener userId actual
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('No autenticado');
   
-  if (!doc) {
-    const { data } = await supabase
-      .from('operation_documents')
-      .select('file_path')
-      .eq('id', documentId)
-      .single();
-    if (!data) return null;
-    doc = data as OperationDocument;
-  }
-
-  const { data, error } = await supabase.storage
-    .from('operation-documents')
-    .createSignedUrl(doc.file_path, 300);
-
+  // 2. Los valores ya vienen normalizados del formulario
+  //    (el form usa los valores del enum directamente)
+  const insertData = {
+    empresa_id: empresaId,
+    tipo: input.tipo,            // ya es 'whatsapp', 'llamada', etc.
+    titulo: input.titulo.trim(),
+    descripcion: input.descripcion?.trim() || null,
+    fecha: input.fecha,          // ISO string
+    resultado: input.resultado || null,
+    siguiente_accion: input.siguiente_accion?.trim() || null,
+    fecha_siguiente_accion: input.fecha_siguiente_accion || null,
+    created_by: user.id,         // CRÍTICO: requerido por RLS
+  };
+  
+  // 3. Validación frontend
+  if (!insertData.titulo) throw new Error('El título es obligatorio');
+  if (!insertData.tipo) throw new Error('El tipo de interacción es obligatorio');
+  
+  // 4. Insert con log exhaustivo
+  console.group('[CREATE_INTERACCION]');
+  console.log('empresa_id:', empresaId);
+  console.log('user_id:', user.id);
+  console.log('data:', insertData);
+  
+  const { data, error } = await supabase
+    .from('interacciones')
+    .insert(insertData)
+    .select()
+    .single();
+  
   if (error) {
-    console.error('[PREVIEW_URL] Error:', error);
-    return null;
+    console.error('Supabase error:', { code: error.code, message: error.message, details: error.details, hint: error.hint });
+    console.groupEnd();
+    // Mensajes de error específicos según código
+    if (error.code === '23514') throw new Error(`Valor inválido: ${error.message}`);
+    if (error.code === '23503') throw new Error('ID de empresa no válido');
+    throw error;
   }
-  return data.signedUrl;
+  
+  console.log('Success:', data);
+  console.groupEnd();
+  return data;
 };
 ```
 
-## Archivos a modificar
+### 2. Refactor de `EmpresaDetailPage.tsx` — añadir Tabs + InteraccionesSection
 
-1. **`supabase/migrations/TIMESTAMP_fix_operation_documents_storage_policy.sql`** — Migración que reemplaza las 4 policies separadas de storage por una policy `FOR ALL` con JOIN directo a `admin_users` (más robusta, mismo acceso)
+El layout actual (2 columnas: `[1fr_280px]`) se mantiene pero se envuelve en `<Tabs>`:
 
-2. **`src/features/operations-management/hooks/useOperationDocuments.ts`** — 
-   - Añadir `triggerDownload` helper al nivel de módulo
-   - Refactorizar `downloadMutation.mutationFn` con fetch directo + fallback a signed URL + logs
-   - Refactorizar `getPreviewUrl` para no depender del estado local del cache
+```text
+ANTES: Layout directo con cards apiladas
+DESPUÉS: 
+  <Tabs defaultValue="info">
+    <TabsList>
+      <TabsTrigger value="info">Información</TabsTrigger>
+      <TabsTrigger value="interacciones">
+        Interacciones {count > 0 && <Badge>{count}</Badge>}
+      </TabsTrigger>
+    </TabsList>
+    
+    <TabsContent value="info">
+      [contenido actual: contacto, financials, descripción, sidebar]
+    </TabsContent>
+    
+    <TabsContent value="interacciones">
+      <InteraccionesSection empresaId={id} />
+    </TabsContent>
+  </Tabs>
+```
 
-## Lo que NO cambia
-- `uploadMutation` — la lógica de subida está correcta
-- `updateMutation`, `deleteMutation` — correctos
-- `OperationDocumentsPanel`, `DocumentCard`, `DocumentsGallery`, `DocumentViewer` — sin cambios de UI
-- Tipos en `documents.ts` — sin cambios
-- Permisos de acceso — solo admins pueden descargar (correcto para documentos de operaciones M&A)
+#### `InteraccionesSection` (componente inline en la página)
+
+Contiene:
+1. **Header con botón** "Nueva Interacción" (abre el dialog)
+2. **Timeline de interacciones** — lista de cards ordenadas por fecha desc
+3. **EmptyState** si no hay interacciones
+
+#### `NuevaInteraccionDialog` (componente inline)
+
+Modal con form controlado (sin react-hook-form para mantener simplicidad, usando estado local igual que otros modales de la app):
+
+```text
+Dialog max-w-lg
+  DialogHeader: "Registrar Nueva Interacción"
+  
+  Form fields:
+  ├── Tipo * [Select]
+  │     opciones: llamada/email/reunion/nota/whatsapp/linkedin/visita
+  │     valores del <SelectItem> = valores del enum DB directamente
+  ├── Título * [Input]
+  ├── Descripción [Textarea rows=3]
+  ├── Fecha * [Input type="datetime-local" default=now]
+  ├── Resultado [Select] opciones: positivo/neutral/negativo/pendiente_seguimiento
+  ├── Siguiente Acción [Textarea rows=2]
+  └── Fecha Siguiente Acción [Input type="date"]
+  
+  Footer: [Cancelar] [Guardar Interacción]
+```
+
+**Labels en español para el usuario, valores en español del enum para la DB:**
+```typescript
+const TIPO_OPTIONS = [
+  { value: 'llamada',   label: '📞 Llamada' },
+  { value: 'email',     label: '📧 Email' },
+  { value: 'reunion',   label: '🤝 Reunión' },
+  { value: 'nota',      label: '📝 Nota interna' },
+  { value: 'whatsapp',  label: '💬 WhatsApp' },
+  { value: 'linkedin',  label: '🔗 LinkedIn' },
+  { value: 'visita',    label: '🏢 Visita' },
+];
+
+const RESULTADO_OPTIONS = [
+  { value: 'positivo',              label: '✅ Positivo' },
+  { value: 'neutral',               label: '➖ Neutral' },
+  { value: 'negativo',              label: '❌ Negativo' },
+  { value: 'pendiente_seguimiento', label: '⏰ Pendiente seguimiento' },
+];
+```
+
+#### `InteraccionCard` (componente inline)
+
+Card por interacción que muestra:
+- Badge del tipo (con color por tipo)
+- Título
+- Descripción (truncada a 3 líneas)
+- Fecha formateada (date-fns + es locale)
+- Badge del resultado si existe
+- Siguiente acción si existe
+
+### 3. Archivos a crear/modificar
+
+| Archivo | Operación | Descripción |
+|---------|-----------|-------------|
+| `src/hooks/useEmpresaInteracciones.ts` | Crear | Hook con read + create + delete |
+| `src/pages/admin/EmpresaDetailPage.tsx` | Modificar | Añadir Tabs, InteraccionesSection, NuevaInteraccionDialog, InteraccionCard |
+
+### 4. Cambios en `EmpresaDetailPage.tsx` en detalle
+
+**Imports nuevos a añadir** (línea 1-46):
+- `Tabs, TabsContent, TabsList, TabsTrigger` de `@/components/ui/tabs`
+- `Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter` de `@/components/ui/dialog`
+- `MessageSquare, Clock, ChevronRight` de `lucide-react`
+- `useEmpresaInteracciones` del nuevo hook
+- `format, formatDistanceToNow` de `date-fns` (ya importado `format`)
+
+**Estado nuevo** en el componente (tras línea 74):
+```typescript
+const [isInteraccionDialogOpen, setIsInteraccionDialogOpen] = useState(false);
+const [nuevaInteraccion, setNuevaInteraccion] = useState({
+  tipo: 'llamada' as const,
+  titulo: '',
+  descripcion: '',
+  fecha: new Date().toISOString().slice(0, 16),
+  resultado: '' as string,
+  siguiente_accion: '',
+  fecha_siguiente_accion: '',
+});
+```
+
+**Hook de datos**:
+```typescript
+const { interacciones, isLoading: isLoadingInteracciones, createInteraccion, isCreating } = useEmpresaInteracciones(id);
+```
+
+**Wrapping del contenido actual en Tabs** (línea 194 del return):
+El `<div className="space-y-6">` principal se convierte en:
+```tsx
+<div className="space-y-6">
+  {/* Header remains the same */}
+  
+  <Tabs defaultValue="info">
+    <TabsList>
+      <TabsTrigger value="info">Información General</TabsTrigger>
+      <TabsTrigger value="interacciones">
+        Interacciones
+        {interacciones.length > 0 && (
+          <Badge variant="secondary" className="ml-2">{interacciones.length}</Badge>
+        )}
+      </TabsTrigger>
+    </TabsList>
+    
+    <TabsContent value="info" className="mt-4">
+      {/* Todo el grid actual [1fr_280px] */}
+    </TabsContent>
+    
+    <TabsContent value="interacciones" className="mt-4">
+      <InteraccionesSection />
+    </TabsContent>
+  </Tabs>
+  
+  {/* Dialogs remain at the bottom */}
+</div>
+```
+
+### 5. No se necesitan migraciones de DB
+
+La tabla `interacciones` ya existe con la estructura correcta. Los RLS policies ya están configurados y correctos. Solo hay que construir el frontend.
+
+### 6. Referencia al componente existente similar
+
+`CRPortfolioInteractionsTab.tsx` es la referencia de diseño. La nueva implementación seguirá el mismo patrón visual (cards con icono + badge de tipo + descripción + fecha relativa), adaptado a la tabla `interacciones` en lugar de `cr_portfolio_interactions`.
+
+### Resumen de cambios
+
+- **1 hook nuevo**: `src/hooks/useEmpresaInteracciones.ts` (~120 líneas)
+- **1 archivo modificado**: `src/pages/admin/EmpresaDetailPage.tsx` (~+200 líneas)
+- **0 migraciones** de base de datos requeridas
+- **0 cambios** en otros archivos o edge functions
