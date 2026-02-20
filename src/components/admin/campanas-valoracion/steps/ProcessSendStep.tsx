@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
@@ -11,8 +12,9 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive,
+  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
@@ -202,6 +204,43 @@ function PDFPreviewModal({ company, campaign, onClose, onSend, isSending }: PDFP
 }
 
 // ─────────────────────────────────────────────
+// Floating Action Bar
+// ─────────────────────────────────────────────
+interface FloatingActionBarProps {
+  selectedCount: number;
+  onClear: () => void;
+  onDownload: () => void;
+  onSend: () => void;
+  isBusy: boolean;
+}
+
+function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy }: FloatingActionBarProps) {
+  return (
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
+      <Card className="shadow-2xl border">
+        <CardContent className="flex items-center gap-3 py-3 px-4">
+          <span className="text-sm font-medium tabular-nums">
+            {selectedCount} seleccionada{selectedCount !== 1 ? 's' : ''}
+          </span>
+          <div className="h-4 w-px bg-border" />
+          <Button size="sm" variant="ghost" onClick={onClear} disabled={isBusy}>
+            <X className="h-4 w-4 mr-1.5" />Limpiar
+          </Button>
+          <Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
+            <Download className="h-4 w-4 mr-1.5" />
+            Descargar PDFs
+          </Button>
+          <Button size="sm" onClick={onSend} disabled={isBusy}>
+            <Mail className="h-4 w-4 mr-1.5" />
+            Enviar emails
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────
 export function ProcessSendStep({ campaignId, campaign }: Props) {
@@ -222,6 +261,22 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
 
   // Preview modal
   const [previewCompany, setPreviewCompany] = useState<CampaignCompany | null>(null);
+
+  // Multi-selection
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleSelection = useCallback((id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]),
+  []);
+
+  const toggleSelectAll = useCallback(() =>
+    setSelectedIds(prev => prev.length === companies.length ? [] : companies.map(c => c.id)),
+  [companies]);
+
+  const clearSelection = useCallback(() => setSelectedIds([]), []);
+
+  const isAllSelected = companies.length > 0 && selectedIds.length === companies.length;
+  const isIndeterminate = selectedIds.length > 0 && selectedIds.length < companies.length;
 
   const readyToSend = companies.filter(c => c.status === 'calculated' && c.client_email);
   const sentCompanies = companies.filter(c => c.status === 'sent');
@@ -314,7 +369,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     }
   }, [campaign]);
 
-  // ── Bulk download ──
+  // ── Bulk download (all) ──
   const handleDownloadAll = useCallback(async () => {
     if (downloadableCompanies.length === 0) return;
     setDownloadProgress({ active: true, current: 0, total: downloadableCompanies.length, name: '' });
@@ -335,6 +390,94 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     setDownloadProgress(p => ({ ...p, active: false }));
     toast.success(`${downloadableCompanies.length} PDFs descargados`);
   }, [downloadableCompanies, campaign]);
+
+  // ── Download selected as ZIP ──
+  const handleDownloadSelected = useCallback(async (ids: string[]) => {
+    const targets = companies.filter(c => ids.includes(c.id));
+    if (targets.length === 0) return;
+    setDownloadProgress({ active: true, current: 0, total: targets.length, name: '' });
+
+    try {
+      const fflate = await import('fflate');
+      const files: Record<string, Uint8Array> = {};
+
+      for (let i = 0; i < targets.length; i++) {
+        const c = targets[i];
+        setDownloadProgress(p => ({ ...p, current: i + 1, name: c.client_company }));
+        const blob = await generatePdfBlob(c, campaign);
+        const buffer = await blob.arrayBuffer();
+        const filename = `${String(i + 1).padStart(3, '0')}_${c.client_company.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+        files[filename] = new Uint8Array(buffer);
+      }
+
+      const zipped = fflate.zipSync(files, { level: 6 });
+      const zipBlob = new Blob([zipped.buffer as ArrayBuffer], { type: 'application/zip' });
+      downloadBlob(zipBlob, `Valoraciones_${targets.length}_empresas.zip`);
+      toast.success(`${targets.length} PDFs descargados como ZIP`);
+    } catch (err) {
+      // Fallback: descarga secuencial
+      console.warn('[ZIP] fflate no disponible, fallback secuencial', err);
+      for (let i = 0; i < targets.length; i++) {
+        const c = targets[i];
+        setDownloadProgress(p => ({ ...p, current: i + 1, name: c.client_company }));
+        try {
+          const blob = await generatePdfBlob(c, campaign);
+          downloadBlob(blob, `${String(i + 1).padStart(3, '0')}_${c.client_company.replace(/\s+/g, '_')}.pdf`);
+          await new Promise(r => setTimeout(r, 600));
+        } catch (e: any) {
+          toast.error(`PDF falló: ${c.client_company}`);
+        }
+      }
+      toast.success(`${targets.length} PDFs descargados`);
+    } finally {
+      setDownloadProgress(p => ({ ...p, active: false }));
+    }
+  }, [companies, campaign]);
+
+  // ── Send selected ──
+  const handleSendSelected = useCallback(async (ids: string[]) => {
+    const targets = companies.filter(c => ids.includes(c.id) && !!c.client_email && c.status !== 'sent');
+    if (targets.length === 0) { toast.info('No hay empresas con email seleccionadas'); return; }
+    setSendingProgress({ active: true, current: 0, total: targets.length, name: '', phase: '' });
+    pauseRef.current = false;
+
+    let sent = 0;
+    for (let i = 0; i < targets.length; i++) {
+      if (pauseRef.current) break;
+      const c = targets[i];
+      setSendingProgress(p => ({ ...p, current: i + 1, name: c.client_company, phase: 'Enviando' }));
+      try {
+        await sendSingle(c);
+        sent++;
+        await new Promise(r => setTimeout(r, 1000));
+      } catch {
+        // sendSingle handles its own toast
+      }
+    }
+
+    setSendingProgress(p => ({ ...p, active: false }));
+    if (!pauseRef.current) {
+      toast.success(`${sent} emails enviados`);
+      clearSelection();
+    }
+  }, [companies, sendSingle, clearSelection]);
+
+  // ── Keyboard shortcuts ──
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        toggleSelectAll();
+      }
+      if (e.key === 'Escape' && selectedIds.length > 0) clearSelection();
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd' && selectedIds.length > 0) {
+        e.preventDefault();
+        handleDownloadSelected(selectedIds);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedIds, toggleSelectAll, clearSelection, handleDownloadSelected]);
 
   // ── Bulk send (existing logic, preserved) ──
   const handleSendEmails = async () => {
@@ -535,6 +678,13 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10 pl-4">
+                  <Checkbox
+                    checked={isAllSelected || (isIndeterminate ? 'indeterminate' : false)}
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Seleccionar todas"
+                  />
+                </TableHead>
                 <TableHead>Empresa</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
@@ -549,9 +699,17 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 const isRowSending = rowSending === c.id;
                 const canSend = !!c.client_email && c.status !== 'sent';
                 const isFailed = c.status === 'failed';
+                const isSelected = selectedIds.includes(c.id);
 
                 return (
-                  <TableRow key={c.id}>
+                  <TableRow key={c.id} className={cn(isSelected && 'bg-primary/5')}>
+                    <TableCell className="pl-4 w-10">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleSelection(c.id)}
+                        aria-label={`Seleccionar ${c.client_company}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
                       {c.professional_valuation_id ? (
                         <span
@@ -642,6 +800,17 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Floating Action Bar */}
+      {selectedIds.length > 0 && (
+        <FloatingActionBar
+          selectedCount={selectedIds.length}
+          onClear={clearSelection}
+          onDownload={() => handleDownloadSelected(selectedIds)}
+          onSend={() => handleSendSelected(selectedIds)}
+          isBusy={isBusy}
+        />
+      )}
     </div>
   );
 }
