@@ -22,6 +22,7 @@ import { OperationNotesPanel } from '@/features/operations-management/components
 import { OperationDocumentsPanel } from '@/features/operations-management/components/documents';
 import { useMandatoInteracciones, type CreateInteraccionInput, type TipoInteraccion } from '@/hooks/useMandatoInteracciones';
 import { MandatoEquipoPanel } from '@/components/admin/mandatos/MandatoEquipoPanel';
+import { MandatoContactosAuditBanner } from '@/components/admin/mandatos/MandatoContactosAuditBanner';
 
 const TIPO_OPTIONS: { value: TipoInteraccion; label: string; icon: React.ReactNode }[] = [
   { value: 'email', label: 'Email', icon: <Mail className="h-4 w-4" /> },
@@ -785,6 +786,9 @@ const OperationDetails = () => {
 
           {/* Mandato Team Panel */}
           <MandatoEquipoPanel mandatoId={id!} />
+
+          {/* Audit banner: contactos perdidos en compradores */}
+          <MandatoContactosAuditBanner mandatoId={id!} />
 
           {/* Configuration */}
           <Card>

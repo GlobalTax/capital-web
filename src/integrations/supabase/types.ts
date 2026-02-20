@@ -13602,6 +13602,45 @@ export type Database = {
           },
         ]
       }
+      mandato_contactos_audit_log: {
+        Row: {
+          action: string
+          contacto_id: string
+          contacto_snapshot: Json | null
+          deletion_reason: string | null
+          id: string
+          mandato_contactos_id: string | null
+          mandato_id: string
+          performed_at: string | null
+          performed_by: string | null
+          rol: string | null
+        }
+        Insert: {
+          action: string
+          contacto_id: string
+          contacto_snapshot?: Json | null
+          deletion_reason?: string | null
+          id?: string
+          mandato_contactos_id?: string | null
+          mandato_id: string
+          performed_at?: string | null
+          performed_by?: string | null
+          rol?: string | null
+        }
+        Update: {
+          action?: string
+          contacto_id?: string
+          contacto_snapshot?: Json | null
+          deletion_reason?: string | null
+          id?: string
+          mandato_contactos_id?: string | null
+          mandato_id?: string
+          performed_at?: string | null
+          performed_by?: string | null
+          rol?: string | null
+        }
+        Relationships: []
+      }
       mandato_documentos: {
         Row: {
           created_at: string | null
@@ -23223,10 +23262,19 @@ export type Database = {
       }
       log_tracking_access_violation: { Args: never; Returns: undefined }
       log_valuation_access_attempt: { Args: never; Returns: undefined }
-      merge_contactos: {
-        Args: { p_source_id: string; p_target_id: string; p_user_id: string }
-        Returns: Json
-      }
+      merge_contactos:
+        | {
+            Args: { p_source_id: string; p_target_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_source_id: string
+              p_target_id: string
+              p_user_id: string
+            }
+            Returns: Json
+          }
       monitor_security_violations: { Args: never; Returns: undefined }
       normalize_company_name: { Args: { name: string }; Returns: string }
       record_tracking_event: {

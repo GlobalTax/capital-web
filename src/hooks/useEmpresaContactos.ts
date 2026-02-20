@@ -166,6 +166,35 @@ export const useEmpresaContactos = (empresaId: string | undefined) => {
     },
   });
 
+  // Delete contacto — protected by ON DELETE RESTRICT if assigned to mandato
+  const deleteContacto = useMutation({
+    mutationFn: async (contactoId: string) => {
+      const { error } = await supabase
+        .from('contactos')
+        .delete()
+        .eq('id', contactoId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      invalidate();
+      toast({ title: '✅ Contacto eliminado' });
+    },
+    onError: (error: any) => {
+      // FK RESTRICT error: contacto is assigned as buyer in one or more mandatos
+      const isFKError =
+        error?.code === '23503' ||
+        (error?.message && error.message.includes('mandato_contactos'));
+
+      toast({
+        title: isFKError ? 'No se puede eliminar' : 'Error al eliminar',
+        description: isFKError
+          ? 'Este contacto está asignado como comprador en uno o más mandatos. Desvinculalo primero desde la pestaña "Compradores" del mandato.'
+          : error?.message || 'No se pudo eliminar el contacto',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Search contactos not linked to this empresa
   const searchContactos = async (query: string) => {
     if (query.length < 2) return [];
@@ -186,6 +215,7 @@ export const useEmpresaContactos = (empresaId: string | undefined) => {
     linkContacto,
     unlinkContacto,
     updateContacto,
+    deleteContacto,
     searchContactos,
     refetch: contactosQuery.refetch,
   };
