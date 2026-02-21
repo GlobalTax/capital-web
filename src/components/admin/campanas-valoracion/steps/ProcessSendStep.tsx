@@ -274,23 +274,38 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   // Multi-selection
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // Status filter
+  const [statusFilter, setStatusFilter] = useState<'all' | 'calculated' | 'sent' | 'failed'>('all');
+
   const toggleSelection = useCallback((id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]),
   []);
-
-  const toggleSelectAll = useCallback(() =>
-    setSelectedIds(prev => prev.length === companies.length ? [] : companies.map(c => c.id)),
-  [companies]);
-
-  const clearSelection = useCallback(() => setSelectedIds([]), []);
-
-  const isAllSelected = companies.length > 0 && selectedIds.length === companies.length;
-  const isIndeterminate = selectedIds.length > 0 && selectedIds.length < companies.length;
 
   const readyToSend = companies.filter(c => c.status === 'calculated' && c.client_email);
   const sentCompanies = companies.filter(c => c.status === 'sent');
   const failedCompanies = companies.filter(c => c.status === 'failed');
   const downloadableCompanies = companies.filter(c => ['calculated', 'sent', 'created'].includes(c.status));
+
+  const filteredCompanies = statusFilter === 'all'
+    ? companies
+    : companies.filter(c => c.status === statusFilter);
+
+  const toggleSelectAll = useCallback(() =>
+    setSelectedIds(prev => {
+      const filteredIds = filteredCompanies.map(c => c.id);
+      const allFilteredSelected = filteredIds.length > 0 && filteredIds.every(id => prev.includes(id));
+      if (allFilteredSelected) {
+        return prev.filter(id => !filteredIds.includes(id));
+      }
+      return [...new Set([...prev, ...filteredIds])];
+    }),
+  [filteredCompanies]);
+
+  const clearSelection = useCallback(() => setSelectedIds([]), []);
+
+  const filteredIds = filteredCompanies.map(c => c.id);
+  const isAllSelected = filteredCompanies.length > 0 && filteredIds.every(id => selectedIds.includes(id));
+  const isIndeterminate = !isAllSelected && filteredIds.some(id => selectedIds.includes(id));
 
   // ── Individual send (used from row dropdown and preview modal) ──
   const sendSingle = useCallback(async (c: CampaignCompany) => {
@@ -682,7 +697,27 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
 
       {/* Results Table */}
       <Card>
-        <CardHeader><CardTitle className="text-base">Resultados</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="text-base">Resultados</CardTitle>
+          <div className="flex items-center gap-1.5">
+            {([
+              { key: 'all' as const, label: 'Todos', count: companies.length },
+              { key: 'calculated' as const, label: 'Listos', count: companies.filter(c => c.status === 'calculated').length },
+              { key: 'sent' as const, label: 'Enviados', count: sentCompanies.length },
+              { key: 'failed' as const, label: 'Errores', count: failedCompanies.length },
+            ]).map(f => (
+              <Button
+                key={f.key}
+                variant={statusFilter === f.key ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 text-xs px-2.5"
+                onClick={() => setStatusFilter(f.key)}
+              >
+                {f.label} ({f.count})
+              </Button>
+            ))}
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -703,7 +738,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {companies.map(c => {
+              {filteredCompanies.map(c => {
                 const isRowDownloading = rowDownloading === c.id;
                 const isRowSending = rowSending === c.id;
                 const canSend = !!c.client_email && c.status !== 'sent';
