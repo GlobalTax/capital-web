@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompanyInsert, CampaignCompany, FinancialYearData } from '@/hooks/useCampaignCompanies';
 import { useDropzone } from 'react-dropzone';
@@ -217,7 +219,26 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const COLUMN_MAP = buildColumnMap(is1Year ? [YEAR_1] : years);
   const MAPPABLE_FIELDS = useMemo(() => buildMappableFields(years, is1Year), [years, is1Year]);
 
-  const { companies, stats, addCompany, bulkAddCompanies, updateCompany, deleteCompany, isAdding, isBulkAdding, isUpdating, isDeleting } = useCampaignCompanies(campaignId);
+  const { companies, stats, addCompany, bulkAddCompanies, updateCompany, deleteCompany, bulkDeleteCompanies, isAdding, isBulkAdding, isUpdating, isDeleting, isBulkDeleting } = useCampaignCompanies(campaignId);
+
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const toggleSelection = (id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+
+  const toggleSelectAll = () =>
+    setSelectedIds(prev => prev.length === companies.length ? [] : companies.map(c => c.id));
+
+  const isAllSelected = companies.length > 0 && selectedIds.length === companies.length;
+  const isIndeterminate = selectedIds.length > 0 && selectedIds.length < companies.length;
+
+  const handleBulkDelete = async () => {
+    await bulkDeleteCompanies(selectedIds);
+    setSelectedIds([]);
+    setShowDeleteConfirm(false);
+  };
 
   // Edit dialog state
   const [editingCompany, setEditingCompany] = useState<CampaignCompany | null>(null);
@@ -775,6 +796,21 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           )}
         </CardHeader>
         <CardContent className="p-0">
+          {/* Bulk selection bar */}
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 border-b">
+              <span className="text-sm font-medium">{selectedIds.length} seleccionada{selectedIds.length !== 1 ? 's' : ''}</span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isBulkDeleting}
+              >
+                {isBulkDeleting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1" />}
+                Eliminar seleccionadas
+              </Button>
+            </div>
+          )}
           {companies.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               <p>No hay empresas. Importa un Excel o añade manualmente.</p>
@@ -783,6 +819,12 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={isAllSelected ? true : isIndeterminate ? 'indeterminate' : false}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>Empresa</TableHead>
                   <TableHead>Contacto</TableHead>
                   <TableHead>Email</TableHead>
@@ -799,6 +841,12 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                   const yearsCount = getYearsCount(c);
                   return (
                     <TableRow key={c.id} className={!c.client_email ? 'bg-yellow-50/50' : ''}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.includes(c.id)}
+                          onCheckedChange={() => toggleSelection(c.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{c.client_company}</TableCell>
                       <TableCell>{c.client_name || '—'}</TableCell>
                       <TableCell>
@@ -878,6 +926,25 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar {selectedIds.length} empresa{selectedIds.length !== 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminarán permanentemente las empresas seleccionadas de la campaña.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isBulkDeleting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

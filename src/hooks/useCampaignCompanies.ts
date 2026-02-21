@@ -142,6 +142,21 @@ export function useCampaignCompanies(campaignId: string | undefined) {
     onError: (e: Error) => toast.error('Error al eliminar: ' + e.message),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .delete()
+        .in('id', ids);
+      if (error) throw error;
+    },
+    onSuccess: (_: unknown, ids: string[]) => {
+      queryClient.invalidateQueries({ queryKey });
+      toast.success(`${ids.length} empresas eliminadas`);
+    },
+    onError: (e: Error) => toast.error('Error al eliminar: ' + e.message),
+  });
+
   const stats = {
     total: companies?.length || 0,
     withEmail: companies?.filter(c => c.client_email).length || 0,
@@ -164,9 +179,11 @@ export function useCampaignCompanies(campaignId: string | undefined) {
     updateCompany: updateMutation.mutateAsync,
     bulkUpdateCompanies: bulkUpdateMutation.mutateAsync,
     deleteCompany: deleteMutation.mutateAsync,
+    bulkDeleteCompanies: bulkDeleteMutation.mutateAsync,
     isAdding: addMutation.isPending,
     isBulkAdding: bulkAddMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isBulkDeleting: bulkDeleteMutation.isPending,
   };
 }
