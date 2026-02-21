@@ -1,71 +1,83 @@
 
-# Añadir estimación de tamaño del ZIP antes de descargar
 
-## Contexto
+# Filtros rápidos por estado en la tabla de procesamiento
 
-Actualmente los botones "Descargar PDFs" (tanto el global como el de la FloatingActionBar) no muestran ninguna estimación de tamaño. El usuario no sabe si el ZIP pesará 5 MB o 500 MB antes de iniciar la descarga.
+## Problema
 
-## Enfoque
+Con 147+ empresas en la tabla, no hay forma de filtrar por estado. El usuario tiene que hacer scroll para encontrar las que fallaron o las que ya se enviaron.
 
-Los PDFs se generan con `@react-pdf/renderer` dinámicamente, por lo que no podemos saber el tamaño exacto sin generarlos. Sin embargo, podemos usar una **estimación basada en un tamaño medio por PDF**. Observando PDFs de valoración típicos (gráficos + texto + branding), un PDF de valoración profesional pesa entre **150-250 KB**. Usaremos **~200 KB como media**.
+## Solucion
 
-La estimación se calcula como: `numPDFs * 200 KB` (sin comprimir) y `numPDFs * 150 KB` (comprimido ZIP ~75% del original).
+Añadir una fila de botones-filtro (chips/tabs) justo encima de la tabla "Resultados", con los estados: **Todos**, **Listos**, **Enviados**, **Errores**. Cada chip muestra el contador.
 
-## Cambios
+```
+[Todos (147)] [Listos (89)] [Enviados (52)] [Errores (6)]
+```
 
-### 1. Función helper de estimación
+## Cambios en `ProcessSendStep.tsx`
 
-Añadir al inicio de `ProcessSendStep.tsx`:
+### 1. Nuevo estado `statusFilter`
 
 ```typescript
-function estimateZipSize(count: number): string {
-  // ~200KB per PDF, ZIP compression ~75%
-  const estimatedBytes = count * 200 * 1024 * 0.75;
-  if (estimatedBytes >= 1024 * 1024) {
-    return `~${(estimatedBytes / (1024 * 1024)).toFixed(0)} MB`;
-  }
-  return `~${(estimatedBytes / 1024).toFixed(0)} KB`;
-}
+const [statusFilter, setStatusFilter] = useState<'all' | 'calculated' | 'sent' | 'failed'>('all');
 ```
 
-### 2. FloatingActionBar — mostrar tamaño estimado en el botón de descarga
+### 2. Lista filtrada `filteredCompanies`
 
-Modificar `FloatingActionBarProps` para recibir `estimatedSize: string` y mostrarlo:
-
-```tsx
-<Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
-  <Download className="h-4 w-4 mr-1.5" />
-  Descargar PDFs ({estimatedSize})
-</Button>
+```typescript
+const filteredCompanies = statusFilter === 'all'
+  ? companies
+  : companies.filter(c => c.status === statusFilter);
 ```
 
-### 3. Botón "Descargar todas" — mostrar tamaño estimado
+### 3. Chips de filtro en el CardHeader de "Resultados"
 
-En el botón global (linea 617-626):
+Añadir botones compactos al lado del titulo "Resultados":
 
-```tsx
-Descargar {downloadableCompanies.length} PDFs ({estimateZipSize(downloadableCompanies.length)})
+| Chip | Filtro | Contador |
+|------|--------|----------|
+| Todos | `all` | `companies.length` |
+| Listos | `calculated` | `readyToSend.length` (ya existe) |
+| Enviados | `sent` | `sentCompanies.length` (ya existe) |
+| Errores | `failed` | `failedCompanies.length` (ya existe) |
+
+Los chips usaran `Badge` o `Button variant="outline"` con estilo activo cuando esta seleccionado.
+
+### 4. La tabla itera `filteredCompanies` en lugar de `companies`
+
+Cambiar `companies.map(c => ...)` a `filteredCompanies.map(c => ...)` en el TableBody.
+
+### 5. Ajustar seleccion (select all aplica solo a las visibles)
+
+`toggleSelectAll` selecciona/deselecciona solo `filteredCompanies`, no todas:
+
+```typescript
+const toggleSelectAll = useCallback(() =>
+  setSelectedIds(prev => {
+    const filteredIds = filteredCompanies.map(c => c.id);
+    const allFilteredSelected = filteredIds.every(id => prev.includes(id));
+    if (allFilteredSelected) {
+      return prev.filter(id => !filteredIds.includes(id));
+    }
+    return [...new Set([...prev, ...filteredIds])];
+  }),
+[filteredCompanies]);
 ```
 
-### 4. Pasar la prop al FloatingActionBar
-
-En la invocación del componente (linea 806), añadir:
-
-```tsx
-<FloatingActionBar
-  ...
-  estimatedSize={estimateZipSize(selectedIds.length)}
-/>
-```
-
-## Archivos modificados
-
-| Archivo | Cambio |
-|---------|--------|
-| `ProcessSendStep.tsx` | Función `estimateZipSize`, nueva prop en `FloatingActionBar`, textos actualizados en botones |
+El master checkbox refleja el estado de `filteredCompanies`, no de `companies`.
 
 ## Resultado visual
 
-- Botón global: `Descargar 147 PDFs (~22 MB)`
-- FloatingActionBar con 5 seleccionadas: `Descargar PDFs (~750 KB)`
-- FloatingActionBar con 50 seleccionadas: `Descargar PDFs (~7 MB)`
+Antes de la tabla:
+```
+Resultados    [Todos 147] [Listos 89] [Enviados 52] [Errores 6]
+```
+
+Al hacer click en "Errores", solo se muestran las 6 filas con error. El master checkbox aplica solo a esas 6.
+
+## Archivo modificado
+
+| Archivo | Cambio |
+|---------|--------|
+| `ProcessSendStep.tsx` | Estado `statusFilter`, array `filteredCompanies`, chips de filtro en CardHeader, tabla usa `filteredCompanies`, `toggleSelectAll` ajustado |
+
