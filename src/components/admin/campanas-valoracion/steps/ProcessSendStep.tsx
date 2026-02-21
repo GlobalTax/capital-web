@@ -23,6 +23,14 @@ import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
 
+function estimateZipSize(count: number): string {
+  const estimatedBytes = count * 200 * 1024 * 0.75;
+  if (estimatedBytes >= 1024 * 1024) {
+    return `~${(estimatedBytes / (1024 * 1024)).toFixed(0)} MB`;
+  }
+  return `~${(estimatedBytes / 1024).toFixed(0)} KB`;
+}
+
 interface Props {
   campaignId: string;
   campaign: ValuationCampaign;
@@ -212,9 +220,10 @@ interface FloatingActionBarProps {
   onDownload: () => void;
   onSend: () => void;
   isBusy: boolean;
+  estimatedSize: string;
 }
 
-function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy }: FloatingActionBarProps) {
+function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy, estimatedSize }: FloatingActionBarProps) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
       <Card className="shadow-2xl border">
@@ -228,7 +237,7 @@ function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy 
           </Button>
           <Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
             <Download className="h-4 w-4 mr-1.5" />
-            Descargar PDFs
+            Descargar PDFs ({estimatedSize})
           </Button>
           <Button size="sm" onClick={onSend} disabled={isBusy}>
             <Mail className="h-4 w-4 mr-1.5" />
@@ -622,7 +631,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
               {downloadProgress.active
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Archive className="h-4 w-4 mr-2" />}
-              Descargar {downloadableCompanies.length} PDFs
+              Descargar {downloadableCompanies.length} PDFs ({estimateZipSize(downloadableCompanies.length)})
             </Button>
 
             {failedCompanies.length > 0 && (
@@ -809,6 +818,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           onDownload={() => handleDownloadSelected(selectedIds)}
           onSend={() => handleSendSelected(selectedIds)}
           isBusy={isBusy}
+          estimatedSize={estimateZipSize(selectedIds.length)}
         />
       )}
     </div>
