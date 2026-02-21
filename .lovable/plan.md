@@ -1,83 +1,83 @@
 
 
-# Filtros rápidos por estado en la tabla de procesamiento
+# Eliminacion masiva de empresas en CompaniesStep
 
 ## Problema
 
-Con 147+ empresas en la tabla, no hay forma de filtrar por estado. El usuario tiene que hacer scroll para encontrar las que fallaron o las que ya se enviaron.
+La tabla de empresas en el paso 2 (CompaniesStep) solo permite eliminar empresas una a una con el icono de papelera. Con listados grandes (100+ empresas), esto es muy tedioso.
 
 ## Solucion
 
-Añadir una fila de botones-filtro (chips/tabs) justo encima de la tabla "Resultados", con los estados: **Todos**, **Listos**, **Enviados**, **Errores**. Cada chip muestra el contador.
+Añadir seleccion multiple con checkboxes y un boton de "Eliminar seleccionadas" en la tabla de empresas, siguiendo el mismo patron que ya existe en ProcessSendStep.
 
-```
-[Todos (147)] [Listos (89)] [Enviados (52)] [Errores (6)]
-```
+## Cambios en `CompaniesStep.tsx`
 
-## Cambios en `ProcessSendStep.tsx`
-
-### 1. Nuevo estado `statusFilter`
+### 1. Nuevo estado de seleccion
 
 ```typescript
-const [statusFilter, setStatusFilter] = useState<'all' | 'calculated' | 'sent' | 'failed'>('all');
+const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+const toggleSelection = (id: string) =>
+  setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+
+const toggleSelectAll = () =>
+  setSelectedIds(prev => prev.length === companies.length ? [] : companies.map(c => c.id));
+
+const isAllSelected = companies.length > 0 && selectedIds.length === companies.length;
+const isIndeterminate = selectedIds.length > 0 && selectedIds.length < companies.length;
 ```
 
-### 2. Lista filtrada `filteredCompanies`
+### 2. Funcion de eliminacion masiva
+
+Usar `deleteCompany` del hook `useCampaignCompanies` en bucle, o mejor, añadir un `bulkDeleteCompanies` al hook para hacerlo en una sola operacion de base de datos.
+
+**En `useCampaignCompanies.ts`** -- nuevo mutation:
 
 ```typescript
-const filteredCompanies = statusFilter === 'all'
-  ? companies
-  : companies.filter(c => c.status === statusFilter);
+const bulkDeleteMutation = useMutation({
+  mutationFn: async (ids: string[]) => {
+    const { error } = await supabase
+      .from('valuation_campaign_companies')
+      .delete()
+      .in('id', ids);
+    if (error) throw error;
+  },
+  onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  onError: (e) => toast.error('Error al eliminar: ' + e.message),
+});
 ```
 
-### 3. Chips de filtro en el CardHeader de "Resultados"
+Exponer `bulkDeleteCompanies` y `isBulkDeleting` en el return.
 
-Añadir botones compactos al lado del titulo "Resultados":
+### 3. UI en la tabla
 
-| Chip | Filtro | Contador |
-|------|--------|----------|
-| Todos | `all` | `companies.length` |
-| Listos | `calculated` | `readyToSend.length` (ya existe) |
-| Enviados | `sent` | `sentCompanies.length` (ya existe) |
-| Errores | `failed` | `failedCompanies.length` (ya existe) |
+- Añadir columna de checkbox (master en header, individual en cada fila)
+- Barra de accion flotante cuando hay seleccion: "X seleccionadas - [Eliminar]"
+- Dialogo de confirmacion antes de borrar (AlertDialog)
 
-Los chips usaran `Badge` o `Button variant="outline"` con estilo activo cuando esta seleccionado.
+### 4. Estructura visual
 
-### 4. La tabla itera `filteredCompanies` en lugar de `companies`
+```
+Empresas (147)    [con email: 120] [sin EBITDA: 3] [Enriquecer con IA]
 
-Cambiar `companies.map(c => ...)` a `filteredCompanies.map(c => ...)` en el TableBody.
+  3 seleccionadas  [Eliminar seleccionadas]    <-- aparece solo con seleccion
 
-### 5. Ajustar seleccion (select all aplica solo a las visibles)
-
-`toggleSelectAll` selecciona/deselecciona solo `filteredCompanies`, no todas:
-
-```typescript
-const toggleSelectAll = useCallback(() =>
-  setSelectedIds(prev => {
-    const filteredIds = filteredCompanies.map(c => c.id);
-    const allFilteredSelected = filteredIds.every(id => prev.includes(id));
-    if (allFilteredSelected) {
-      return prev.filter(id => !filteredIds.includes(id));
-    }
-    return [...new Set([...prev, ...filteredIds])];
-  }),
-[filteredCompanies]);
+[x] | Empresa      | Contacto | Email | CIF | Facturacion | EBITDA | Anos | Origen | Acciones
+[x] | Acme S.L.    | ...      | ...   | ... | ...         | ...    | ...  | ...    | Editar Borrar
+[ ] | Beta Corp    | ...      | ...   | ... | ...         | ...    | ...  | ...    | Editar Borrar
 ```
 
-El master checkbox refleja el estado de `filteredCompanies`, no de `companies`.
-
-## Resultado visual
-
-Antes de la tabla:
-```
-Resultados    [Todos 147] [Listos 89] [Enviados 52] [Errores 6]
-```
-
-Al hacer click en "Errores", solo se muestran las 6 filas con error. El master checkbox aplica solo a esas 6.
-
-## Archivo modificado
+## Archivos modificados
 
 | Archivo | Cambio |
 |---------|--------|
-| `ProcessSendStep.tsx` | Estado `statusFilter`, array `filteredCompanies`, chips de filtro en CardHeader, tabla usa `filteredCompanies`, `toggleSelectAll` ajustado |
+| `useCampaignCompanies.ts` | Nuevo `bulkDeleteMutation` con `.delete().in('id', ids)` |
+| `CompaniesStep.tsx` | Estado de seleccion, checkboxes en tabla, barra de acciones masivas, AlertDialog de confirmacion |
+
+## Detalles tecnicos
+
+- Se usa `AlertDialog` de Radix para confirmar la eliminacion masiva (evitar borrados accidentales)
+- Limpiar `selectedIds` tras eliminar exitosamente
+- El checkbox master usa `Checkbox` de shadcn/ui con soporte `indeterminate` via `checked="indeterminate"`
+- La barra de seleccion se muestra entre el CardHeader y la tabla, con fondo suave (`bg-blue-50`) para destacar
 
