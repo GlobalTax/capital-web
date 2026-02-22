@@ -75,6 +75,22 @@ export const useSectorIntelligence = () => {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const bulkCreateRows = useMutation({
+    mutationFn: async (rows: Omit<SectorIntelligenceRow, 'id' | 'created_at' | 'updated_at'>[]) => {
+      // Chunk into batches of 500
+      for (let i = 0; i < rows.length; i += 500) {
+        const chunk = rows.slice(i, i + 500);
+        const { error } = await supabase.from('pe_sector_intelligence').insert(chunk);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['sector-intelligence'] });
+      toast.success(`${variables.length} registros importados`);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   // Group by sector
   const grouped = useMemo(() => rows.reduce((acc, row) => {
     if (!acc[row.sector]) acc[row.sector] = [];
@@ -84,5 +100,5 @@ export const useSectorIntelligence = () => {
 
   const sectors = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
-  return { rows, grouped, sectors, isLoading, updateRow, createRow, deleteRow };
+  return { rows, grouped, sectors, isLoading, updateRow, createRow, deleteRow, bulkCreateRows };
 };

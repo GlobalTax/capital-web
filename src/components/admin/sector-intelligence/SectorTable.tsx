@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, Search, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ interface Props {
   onEdit: (row: SectorIntelligenceRow) => void;
   onDelete: (id: string) => void;
   onCreate: () => void;
+  onImport?: () => void;
 }
 
 const PHASE_COLORS: Record<string, string> = {
@@ -48,7 +49,7 @@ const SECTOR_COLORS: Record<string, string> = {
   'ENERGÍA': 'bg-yellow-500/10 border-l-yellow-500',
 };
 
-export const SectorTable: React.FC<Props> = ({ grouped, sectors, onEdit, onDelete, onCreate }) => {
+export const SectorTable: React.FC<Props> = ({ grouped, sectors, onEdit, onDelete, onCreate, onImport }) => {
   const [search, setSearch] = useState('');
   const [sectorFilter, setSectorFilter] = useState('all');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -114,7 +115,12 @@ export const SectorTable: React.FC<Props> = ({ grouped, sectors, onEdit, onDelet
           </SelectContent>
         </Select>
         <span className="text-xs text-[hsl(var(--linear-text-tertiary))]">{totalCount} subsectores</span>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          {onImport && (
+            <Button size="sm" variant="outline" onClick={onImport} className="h-8 text-xs gap-1">
+              <Upload className="h-3.5 w-3.5" /> Importar
+            </Button>
+          )}
           <Button size="sm" onClick={onCreate} className="h-8 text-xs gap-1">
             <Plus className="h-3.5 w-3.5" /> Nuevo
           </Button>
