@@ -1,5 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, Search, Upload } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Trash2, Plus, Search, Upload, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +77,28 @@ export const SectorTable: React.FC<Props> = ({ grouped, sectors, onEdit, onDelet
   const filteredSectors = Object.keys(filteredGrouped).sort();
   const totalCount = Object.values(filteredGrouped).reduce((a, b) => a + b.length, 0);
 
+  const handleExport = () => {
+    const allRows = filteredSectors.flatMap(s => filteredGrouped[s]);
+    const exportData = allRows.map(r => ({
+      'Sector': r.sector,
+      'Subsector': r.subsector,
+      'Vertical': r.vertical || '',
+      'Tesis PE': r.pe_thesis || '',
+      'Datos Cuantitativos': r.quantitative_data || '',
+      'Firmas PE Activas': r.active_pe_firms || '',
+      'Plataformas / Operaciones': r.platforms_operations || '',
+      'Múltiplos / Valoraciones': r.multiples_valuations || '',
+      'Fase Consolidación': r.consolidation_phase || '',
+      'Geografía': r.geography || '',
+      'Activo': r.is_active ? 'Sí' : 'No',
+    }));
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Inteligencia Sectorial');
+    XLSX.writeFile(wb, `inteligencia_sectorial_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+    toast.success(`${exportData.length} registros exportados`);
+  };
+
   const toggleRow = (id: string) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
@@ -116,6 +141,9 @@ export const SectorTable: React.FC<Props> = ({ grouped, sectors, onEdit, onDelet
         </Select>
         <span className="text-xs text-[hsl(var(--linear-text-tertiary))]">{totalCount} subsectores</span>
         <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={handleExport} disabled={totalCount === 0} className="h-8 text-xs gap-1">
+            <Download className="h-3.5 w-3.5" /> Exportar
+          </Button>
           {onImport && (
             <Button size="sm" variant="outline" onClick={onImport} className="h-8 text-xs gap-1">
               <Upload className="h-3.5 w-3.5" /> Importar
