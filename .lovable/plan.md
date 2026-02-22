@@ -1,123 +1,148 @@
 
-# Fase 3: Tab de Intel Sectorial en Ficha de Empresa
 
-## Objetivo
+# Fase 4: Generacion Mejorada de Dossiers con Datos de pe_sector_intelligence
 
-Anadir una nueva pestana "Intel Sectorial" en la ficha de detalle de empresa (`EmpresaDetailPage.tsx`) que cruza automaticamente el sector de la empresa con los datos de `pe_sector_intelligence` y muestra informacion relevante: tesis PE, multiplos, firmas activas y fase de consolidacion.
+## Problema actual
+
+La edge function `generate-sector-dossier` obtiene datos de `company_operations`, `advisor_valuation_multiples` y `case_studies`, pero **ignora completamente** la tabla `pe_sector_intelligence` que contiene tesis PE, firmas activas, multiplos cualitativos, fase de consolidacion, etc.
+
+Ademas, el Studio usa una lista de sectores hardcodeada (11 opciones genericas) en lugar de los sectores reales de la base de datos.
 
 ## Cambios propuestos
 
-### 1. Nuevo componente: `SectorIntelligenceTab.tsx`
+### 1. Edge Function: Inyectar datos de pe_sector_intelligence en el prompt
 
-Crear `src/components/admin/empresas/SectorIntelligenceTab.tsx` que recibe el sector y subsector de la empresa y:
+**Archivo**: `supabase/functions/generate-sector-dossier/index.ts`
 
-- Busca coincidencias en `pe_sector_intelligence` (primero por sector+subsector exacto, luego por sector)
-- Si hay match exacto: muestra una card rica con todos los datos del subsector
-- Si hay match solo por sector: muestra lista de subsectores disponibles con datos resumidos
-- Si no hay match: muestra estado vacio con mensaje informativo
+- Anadir una nueva funcion `fetchSectorIntelligence(sector, subsector, supabase)` que busque en `pe_sector_intelligence` por sector (ilike) y opcionalmente por subsector
+- Inyectar los datos encontrados en el prompt como una nueva seccion "INTELIGENCIA PE SECTORIAL" antes de las instrucciones de generacion
+- Campos a incluir: `pe_thesis`, `quantitative_data`, `active_pe_firms`, `platforms_operations`, `multiples_valuations`, `consolidation_phase`, `geography`
+- Si hay match, el prompt lo indica explicitamente para que la IA lo use como fuente primaria
 
-**Contenido de la card de match:**
-- Tesis PE (texto completo)
-- Multiplos y valoraciones (destacado visualmente)
-- Firmas PE activas (como badges individuales)
-- Fase de consolidacion (con indicador visual)
-- Datos cuantitativos
-- Operaciones de plataforma
-- Geografia
-
-**Seccion "Firmas PE interesadas":**
-- Parsear `active_pe_firms` del subsector matcheado
-- Mostrar cada firma como badge con icono
-- Si hay multiples subsectores del mismo sector, agregar firmas unicas de todos
-
-### 2. Modificar `EmpresaDetailPage.tsx`
-
-- Importar el nuevo componente `SectorIntelligenceTab`
-- Anadir una tercera pestana "Intel Sectorial" en el TabsList, con icono de BarChart3
-- Mostrar badge con numero de matches encontrados
-- Pasar `empresa.sector` y `empresa.subsector` como props
-
-### 3. Anadir helper en `useSectorIntelligence.ts`
-
-Anadir una funcion `findBySector` al hook existente:
-
-```typescript
-const findBySector = useMemo(() => (sector: string, subsector?: string | null) => {
-  const sectorNorm = sector?.toLowerCase().trim();
-  const exactMatch = rows.filter(r => 
-    r.sector.toLowerCase().trim() === sectorNorm && 
-    (!subsector || r.subsector.toLowerCase().trim() === subsector.toLowerCase().trim())
-  );
-  if (exactMatch.length > 0) return { type: 'exact', matches: exactMatch };
-  const sectorMatch = rows.filter(r => r.sector.toLowerCase().trim() === sectorNorm);
-  if (sectorMatch.length > 0) return { type: 'sector', matches: sectorMatch };
-  return { type: 'none', matches: [] };
-}, [rows]);
+Seccion anadida al prompt:
 ```
+INTELIGENCIA PE SECTORIAL (Datos internos Capittal):
+- Tesis PE: [pe_thesis]
+- Multiplos y valoraciones: [multiples_valuations]
+- Firmas PE activas: [active_pe_firms]
+- Fase consolidacion: [consolidation_phase]
+- Datos cuantitativos: [quantitative_data]
+- Operaciones plataforma: [platforms_operations]
+- Geografia: [geography]
+```
+
+### 2. Studio: Sectores dinamicos y selector de subsector
+
+**Archivo**: `src/pages/admin/SectorDossierStudio.tsx`
+
+- Reemplazar la lista hardcodeada `SECTORS` por los sectores reales obtenidos de `useSectorIntelligence`
+- Anadir un segundo selector de subsector que se filtra segun el sector seleccionado
+- Anadir un panel de "Datos disponibles" que muestra un resumen de los campos rellenos del subsector seleccionado antes de generar (para que el usuario sepa que intel tiene el sistema)
+- Pasar el subsector seleccionado al `SectorDossierViewer`
+
+### 3. Viewer: Indicador de fuente de datos
+
+**Archivo**: `src/components/admin/SectorDossierViewer.tsx`
+
+- Mostrar un badge "Enriquecido con Intel Sectorial" cuando el dossier se genero con datos de `pe_sector_intelligence`
+- Pasar un flag `enriched` desde la edge function en la respuesta para indicarlo
 
 ## Detalle tecnico
 
-### Archivos afectados
+### Edge Function - Nueva funcion fetchSectorIntelligence
+
+```typescript
+async function fetchSectorIntelligence(sector: string, subsector: string | undefined, supabase: any) {
+  let query = supabase
+    .from('pe_sector_intelligence')
+    .select('*')
+    .eq('is_active', true);
+
+  // Buscar por sector+subsector exacto primero
+  if (subsector) {
+    const { data: exactMatch } = await query
+      .ilike('sector', `%${sector}%`)
+      .ilike('subsector', `%${subsector}%`);
+    if (exactMatch?.length > 0) return exactMatch;
+  }
+
+  // Fallback: todos los subsectores del sector
+  const { data: sectorMatch } = await supabase
+    .from('pe_sector_intelligence')
+    .select('*')
+    .eq('is_active', true)
+    .ilike('sector', `%${sector}%`);
+
+  return sectorMatch || [];
+}
+```
+
+### Edge Function - Prompt enriquecido
+
+Se anade una seccion al prompt solo cuando hay datos de `pe_sector_intelligence`:
+
+```typescript
+function buildIntelligenceContext(intelData: any[]): string {
+  if (!intelData.length) return '';
+
+  const sections = intelData.map(row => {
+    const parts = [`Subsector: ${row.subsector}`];
+    if (row.pe_thesis) parts.push(`Tesis PE: ${row.pe_thesis}`);
+    if (row.multiples_valuations) parts.push(`Multiplos: ${row.multiples_valuations}`);
+    if (row.active_pe_firms) parts.push(`Firmas PE activas: ${row.active_pe_firms}`);
+    if (row.consolidation_phase) parts.push(`Fase consolidacion: ${row.consolidation_phase}`);
+    if (row.quantitative_data) parts.push(`Datos cuantitativos: ${row.quantitative_data}`);
+    if (row.platforms_operations) parts.push(`Operaciones plataforma: ${row.platforms_operations}`);
+    if (row.geography) parts.push(`Geografia: ${row.geography}`);
+    return parts.join('\n  ');
+  });
+
+  return `
+INTELIGENCIA PE SECTORIAL (Datos internos Capittal - USAR COMO FUENTE PRIMARIA):
+${sections.join('\n\n')}
+`;
+}
+```
+
+### Studio - Selectores dinamicos
+
+Cambios en `SectorDossierStudio.tsx`:
+
+- Importar `useSectorIntelligence` para obtener sectores y subsectores reales
+- Reemplazar `SECTORS` hardcodeado por `sectors` del hook
+- Anadir estado `selectedSubsector` y un segundo `Select` filtrado
+- Anadir componente `SectorDataPreview` que muestra campos rellenos vs vacios del subsector seleccionado
+- Pasar `subsector` al `SectorDossierViewer`
+
+### Viewer - Badge de enriquecimiento
+
+Cambios en `SectorDossierViewer.tsx`:
+
+- Anadir estado `enrichedWithIntel` que se activa si la respuesta de la edge function incluye `intel_count > 0`
+- Mostrar badge verde "Enriquecido con X registros de Intel Sectorial" en la metadata
+
+### Respuesta de la edge function
+
+Anadir al JSON de respuesta:
+```json
+{
+  "intel_count": 3,
+  "intel_sectors": ["Clinicas dentales", "Hospitales", "Farmaceuticas"]
+}
+```
+
+## Archivos afectados
 
 | Archivo | Accion |
 |---------|--------|
-| `src/hooks/useSectorIntelligence.ts` | Anadir funcion `findBySector` al return |
-| `src/components/admin/empresas/SectorIntelligenceTab.tsx` | Crear nuevo componente |
-| `src/pages/admin/EmpresaDetailPage.tsx` | Anadir tab "Intel Sectorial" (lineas 406-416) |
-
-### Estructura del componente SectorIntelligenceTab
-
-```text
-Props: { sector: string, subsector?: string | null }
-
-+-------------------------------------------------+
-| Intel Sectorial para [Sector] > [Subsector]     |
-+-------------------------------------------------+
-| [Match exacto encontrado]                       |
-|                                                 |
-| +---------------------+ +--------------------+ |
-| | Tesis PE            | | Multiplos          | |
-| | (texto completo)    | | (destacado)        | |
-| +---------------------+ +--------------------+ |
-| +---------------------+ +--------------------+ |
-| | Fase Consolidacion  | | Datos Cuantitativos| |
-| | (badge + texto)     | | (texto)            | |
-| +---------------------+ +--------------------+ |
-|                                                 |
-| Firmas PE Activas                               |
-| [Badge1] [Badge2] [Badge3] [Badge4]             |
-|                                                 |
-| Operaciones de Plataforma                       |
-| (texto)                                         |
-+-------------------------------------------------+
-```
-
-### Flujo de matching
-
-1. Empresa tiene `sector: "Salud y Biotecnologia"` y `subsector: "Clinicas dentales"`
-2. Se busca en `pe_sector_intelligence` por sector+subsector
-3. Si hay match exacto: mostrar card completa
-4. Si solo hay match por sector: mostrar resumen de todos los subsectores del sector con datos
-5. Sin match: mostrar "No hay inteligencia sectorial disponible para este sector"
-
-### Tab en EmpresaDetailPage
-
-Se anade entre la tab "Interacciones" y el cierre del TabsList:
-
-```tsx
-<TabsTrigger value="sector-intel" className="flex items-center gap-1.5">
-  <BarChart3 className="h-3.5 w-3.5" />
-  Intel Sectorial
-  {matchCount > 0 && (
-    <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">{matchCount}</Badge>
-  )}
-</TabsTrigger>
-```
+| `supabase/functions/generate-sector-dossier/index.ts` | Anadir fetchSectorIntelligence, enriquecer prompt, incluir intel_count en respuesta |
+| `src/pages/admin/SectorDossierStudio.tsx` | Reemplazar SECTORS hardcodeado, anadir selector subsector, anadir preview de datos |
+| `src/components/admin/SectorDossierViewer.tsx` | Mostrar badge de enriquecimiento |
 
 ## Lo que NO se toca
 
-- No se modifican tablas de base de datos
-- No se crean nuevas tablas
+- No se crean tablas nuevas
 - No se modifican RLS policies
-- La tabla de empresas no cambia
-- El resto de tabs existentes no se alteran
+- No se cambia la logica de cache ni feedback
+- No se modifican otros componentes del admin
+
