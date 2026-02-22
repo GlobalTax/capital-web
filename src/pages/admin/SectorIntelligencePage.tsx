@@ -3,13 +3,15 @@ import { Database } from 'lucide-react';
 import { useSectorIntelligence, SectorIntelligenceRow } from '@/hooks/useSectorIntelligence';
 import { SectorTable } from '@/components/admin/sector-intelligence/SectorTable';
 import { SectorEditDialog } from '@/components/admin/sector-intelligence/SectorEditDialog';
+import { SectorImportDialog } from '@/components/admin/sector-intelligence/SectorImportDialog';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 
 const SectorIntelligencePage: React.FC = () => {
-  const { grouped, sectors, isLoading, updateRow, createRow, deleteRow } = useSectorIntelligence();
+  const { grouped, sectors, isLoading, updateRow, createRow, deleteRow, bulkCreateRows } = useSectorIntelligence();
   const [editRow, setEditRow] = useState<SectorIntelligenceRow | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const handleEdit = (row: SectorIntelligenceRow) => {
     setEditRow(row);
@@ -32,6 +34,12 @@ const SectorIntelligencePage: React.FC = () => {
     }
   };
 
+  const handleBulkImport = (rows: Record<string, any>[]) => {
+    bulkCreateRows.mutate(rows as any, {
+      onSuccess: () => setImportDialogOpen(false),
+    });
+  };
+
   if (isLoading) return <PageLoadingSkeleton />;
 
   return (
@@ -52,6 +60,7 @@ const SectorIntelligencePage: React.FC = () => {
         onEdit={handleEdit}
         onDelete={(id) => deleteRow.mutate(id)}
         onCreate={handleCreate}
+        onImport={() => setImportDialogOpen(true)}
       />
 
       <SectorEditDialog
@@ -60,6 +69,13 @@ const SectorIntelligencePage: React.FC = () => {
         row={editRow}
         onSave={handleSave}
         isNew={isNew}
+      />
+
+      <SectorImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={handleBulkImport}
+        isImporting={bulkCreateRows.isPending}
       />
     </div>
   );
