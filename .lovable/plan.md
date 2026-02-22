@@ -1,44 +1,89 @@
 
+# Importacion masiva CSV/Excel para Inteligencia Sectorial
 
-# Fix: Timeout de LockManager en autenticacion Supabase
+## Objetivo
 
-## Problema
+Anadir un boton "Importar" en la toolbar de la tabla de inteligencia sectorial que permita cargar un archivo CSV o Excel (.xlsx) con multiples subsectores de golpe.
 
-El error `Acquiring an exclusive Navigator LockManager lock "lock:capittal-auth-token" timed out waiting 10000ms` bloquea la autenticacion en Chrome. Ocurre porque Supabase Auth usa el API `Navigator.locks` del navegador para coordinar sesiones entre pestanas, y el lock se queda "atascado" (por extensiones, multiples pestanas, o hot-reload en desarrollo).
+## Flujo de usuario
 
-Los demas errores de consola (`web-capture-extension-frames.js`, `inject.bundle.js`, `runtime.lastError`) son de extensiones de Chrome y no afectan a la aplicacion.
+1. Click en boton "Importar" (junto al boton "Nuevo")
+2. Se abre un dialog con zona de drag-and-drop para archivo CSV/Excel
+3. El sistema parsea el archivo, muestra preview de las filas detectadas con mapeo de columnas
+4. El usuario revisa y confirma la importacion
+5. Los registros se insertan en la tabla `pe_sector_intelligence`
+6. Toast de confirmacion con cantidad de registros importados
 
-## Solucion
+## Columnas esperadas del archivo
 
-Añadir la opcion `lock: 'no-op'` en la configuracion de auth del cliente Supabase. Esto desactiva el uso del `Navigator LockManager`, eliminando el timeout. Es seguro porque la app ya usa un singleton global que impide multiples instancias del cliente.
+El sistema detectara automaticamente estas columnas (con normalizacion de acentos y sinonimos):
 
-## Cambio (1 archivo, 1 linea)
+| Campo BD | Sinonimos aceptados |
+|----------|---------------------|
+| sector | Sector |
+| subsector | Subsector, Sub-sector |
+| vertical | Vertical |
+| pe_thesis | Tesis PE, PE Thesis, Tesis |
+| quantitative_data | Datos Cuantitativos, Quantitative Data |
+| active_pe_firms | Firmas PE, Active PE Firms, Firmas Activas |
+| platforms_operations | Plataformas, Operaciones, Platforms |
+| multiples_valuations | Multiplos, Valoraciones, Multiples |
+| consolidation_phase | Fase, Consolidacion, Phase |
+| geography | Geografia, Geography, Geo |
 
-**Archivo:** `src/integrations/supabase/optimizedClient.ts`
+## Archivos a crear/modificar
 
-En la configuracion de auth (linea 71-77), añadir `lock: 'no-op'`:
+### Nuevo: `src/components/admin/sector-intelligence/SectorImportDialog.tsx`
+
+Componente dialog con:
+- Zona de drag-and-drop usando `react-dropzone` (ya instalado)
+- Parseo con libreria `xlsx` (ya instalada)
+- Normalizacion de cabeceras (reutilizando patron de `normalizeColumnName` de CompaniesStep)
+- Preview en tabla con las primeras 5 filas
+- Indicadores de columnas mapeadas vs no reconocidas
+- Boton "Importar X registros"
+- Validacion: sector y subsector son obligatorios
+
+### Modificar: `src/hooks/useSectorIntelligence.ts`
+
+Anadir mutacion `bulkCreateRows` para insertar multiples filas de golpe:
 
 ```typescript
-auth: {
-  persistSession: canPersistSession,
-  storage: safeLocalStorage,
-  storageKey: 'capittal-auth-token',
-  autoRefreshToken: canPersistSession,
-  detectSessionInUrl: true,
-  lock: 'no-op',  // <-- NUEVO: evita timeout del Navigator LockManager
-},
+const bulkCreateRows = useMutation({
+  mutationFn: async (rows: Omit<SectorIntelligenceRow, 'id' | 'created_at' | 'updated_at'>[]) => {
+    const { error } = await supabase.from('pe_sector_intelligence').insert(rows);
+    if (error) throw error;
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['sector-intelligence'] });
+    toast.success('Registros importados');
+  },
+});
 ```
 
-## Por que es seguro
+### Modificar: `src/pages/admin/SectorIntelligencePage.tsx`
 
-- La app ya tiene un patron singleton robusto (`SupabaseClientSingleton`) que garantiza una unica instancia del cliente
-- El lock solo es necesario cuando hay multiples instancias de Supabase Auth compitiendo por el mismo token, lo cual no ocurre aqui
-- Supabase documenta `lock: 'no-op'` como opcion valida para entornos donde el LockManager causa problemas
+- Importar `SectorImportDialog`
+- Anadir estado `importDialogOpen`
+- Pasar `onImport` callback al `SectorTable`
+
+### Modificar: `src/components/admin/sector-intelligence/SectorTable.tsx`
+
+- Anadir prop `onImport`
+- Anadir boton "Importar" con icono `Upload` en la toolbar junto al boton "Nuevo"
+
+## Detalles tecnicos
+
+- **Parseo**: Usa `xlsx.read()` para leer el archivo (soporta .csv, .xlsx, .xls)
+- **Normalizacion**: Funcion `normalizeColumnName` que quita acentos, minusculas, colapsa espacios (mismo patron que CompaniesStep)
+- **Validacion**: Filas sin sector o subsector se marcan como invalidas y no se importan
+- **Duplicados**: No se verifican duplicados automaticamente (el usuario puede revisar en la preview)
+- **Batch**: Se insertan todas las filas validas en un solo `INSERT` a Supabase
+- **Limite**: Supabase permite hasta 1000 filas por insert; si hay mas, se divide en chunks de 500
 
 ## Lo que NO se toca
 
-- Ninguna otra configuracion del cliente
-- El sistema de autenticacion
-- El singleton pattern
-- Nada en el frontend
-
+- Esquema de la base de datos (no se necesitan cambios)
+- Politicas RLS (ya existen para la tabla)
+- Edge functions
+- Otros componentes del admin
