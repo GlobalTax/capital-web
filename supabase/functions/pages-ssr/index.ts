@@ -1103,61 +1103,106 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 
   "/valoracion-empresas": {
-    title: "Valoración de Empresas | Métodos, Herramientas y Asesoramiento - Capittal",
-    description: "Todo sobre valoración de empresas: métodos DCF, múltiplos, comparables. Usa nuestra calculadora gratuita o solicita una valoración profesional.",
-    keywords: "valoración de empresas, métodos valoración, DCF, múltiplos EBITDA, valorar empresa, calculadora valoración",
+    title: "Valoración de Empresas en España: Guía Completa, Métodos y Calculadora Gratuita - Capittal",
+    description: "Guía completa sobre valoración de empresas en España: métodos DCF, múltiplos EBITDA, comparables y patrimonial. Calculadora gratuita online. Asesoramiento profesional M&A.",
+    keywords: "valoración de empresas, valorar empresa España, métodos valoración, DCF, múltiplos EBITDA, calculadora valoración empresas, valor empresa, Enterprise Value, M&A España",
     canonical: "https://capittal.es/valoracion-empresas",
     ogType: "website",
     structuredData: [
       {
         "@context": "https://schema.org",
         "@type": "WebPage",
-        name: "Valoración de Empresas: Guía Completa y Herramientas",
-        description: "Todo sobre valoración de empresas: métodos DCF, múltiplos, comparables. Usa nuestra calculadora gratuita o solicita una valoración profesional.",
+        name: "Valoración de Empresas en España: Guía Completa, Métodos y Calculadora Gratuita",
+        description: "Guía completa sobre valoración de empresas en España: métodos DCF, múltiplos EBITDA, comparables y patrimonial. Calculadora gratuita online.",
         url: "https://capittal.es/valoracion-empresas",
         isPartOf: { "@type": "WebSite", name: "Capittal", url: "https://capittal.es" },
       },
       buildFAQPageSchema([
         { question: "¿Es gratuita la calculadora de valoración?", answer: "Sí, nuestra calculadora de valoración de empresas es completamente gratuita y sin compromiso. Puedes utilizarla tantas veces como necesites para obtener una estimación orientativa del valor de tu negocio." },
         { question: "¿Qué métodos de valoración utilizáis?", answer: "Nuestra calculadora utiliza el método de múltiplos de EBITDA y de facturación, ajustados por sector, tamaño de empresa, márgenes operativos y tasa de crecimiento. Para valoraciones profesionales, combinamos DCF, múltiplos y comparables." },
-        { question: "¿Cuánto tarda una valoración profesional?", answer: "Una valoración profesional completa realizada por nuestro equipo de expertos en M&A suele tardar entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera." },
-        { question: "¿Los datos que introduzco son confidenciales?", answer: "Absolutamente. Todos los datos introducidos en la calculadora son tratados con total confidencialidad. No compartimos información con terceros y cumplimos con la normativa RGPD." },
-        { question: "¿Qué sectores cubre la calculadora?", answer: "La calculadora cubre más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte y logística, alimentación, energía, y muchos más." },
+        { question: "¿Cuánto tarda una valoración profesional?", answer: "Una valoración profesional completa suele tardar entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera." },
+        { question: "¿Los datos que introduzco son confidenciales?", answer: "Absolutamente. Todos los datos son tratados con total confidencialidad y cumplimos con la normativa RGPD." },
+        { question: "¿Qué sectores cubre la calculadora?", answer: "La calculadora cubre más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte, alimentación, energía y muchos más." },
+        { question: "¿Cómo se calcula el valor de una empresa en España?", answer: "El valor se calcula combinando varias metodologías: DCF, múltiplos de EBITDA sectoriales (entre 3x y 8x para PYMES en España), transacciones comparables y valoración patrimonial." },
+        { question: "¿Cuánto vale una empresa que factura 1 millón de euros?", answer: "Depende del sector y la rentabilidad. Con un margen EBITDA del 20% (200.000€), podría valorarse entre 600.000€ y 1.600.000€ aplicando múltiplos de 3x a 8x EBITDA." },
+        { question: "¿Qué múltiplo de EBITDA aplica a mi sector?", answer: "Varía por sector: tecnología/SaaS (8-15x), salud (7-10x), seguridad (6-9x), servicios profesionales (5-8x), industrial (4-7x), construcción (3-6x), hostelería (3-5x)." },
+        { question: "¿Cuál es la diferencia entre Enterprise Value y valor de equity?", answer: "El Enterprise Value incluye el valor total del negocio (equity + deuda neta). El valor de equity es lo que recibe el vendedor tras descontar la deuda y sumar la caja excedente." },
+        { question: "¿Es obligatorio valorar una empresa para venderla?", answer: "No es legalmente obligatorio, pero es altamente recomendable para negociar con datos objetivos y justificar el precio ante Hacienda." },
       ]),
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        name: "Cómo valorar una empresa en España",
+        description: "Proceso paso a paso para realizar una valoración empresarial profesional en España.",
+        step: [
+          { "@type": "HowToStep", position: 1, name: "Recopilación de información financiera", text: "Reunir estados financieros de los últimos 3-5 años, información sobre contratos, cartera de clientes y estructura de deuda." },
+          { "@type": "HowToStep", position: 2, name: "Análisis del sector y mercado", text: "Estudiar tendencias de crecimiento, competencia, barreras de entrada y múltiplos de transacciones recientes del sector." },
+          { "@type": "HowToStep", position: 3, name: "Aplicación de metodologías de valoración", text: "Aplicar al menos dos metodologías complementarias (DCF y múltiplos) para obtener un rango de valoración robusto." },
+          { "@type": "HowToStep", position: 4, name: "Ajustes y normalización del EBITDA", text: "Normalizar el EBITDA eliminando partidas extraordinarias y gastos no recurrentes para reflejar la capacidad real de generación de beneficios." },
+          { "@type": "HowToStep", position: 5, name: "Determinación del rango de valor", text: "Establecer un rango de valoración con escenarios conservador, base y optimista." },
+          { "@type": "HowToStep", position: 6, name: "Elaboración del informe de valoración", text: "Documentar metodología, supuestos, datos de mercado y conclusiones en un informe profesional utilizable en negociaciones." },
+        ],
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "Calculadora de Valoración de Empresas Gratuita - Capittal",
+        description: "Herramienta online gratuita para calcular el valor de tu empresa usando múltiplos de EBITDA y facturación ajustados por sector.",
+        url: "https://capittal.es/lp/calculadora",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "All",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+        provider: ORG_JSONLD,
+        inLanguage: ["es", "ca", "en"],
+        isAccessibleForFree: true,
+      },
     ],
     content: `
-      <h1>Valoración de Empresas: Guía Completa y Herramientas</h1>
-      <p>Conocer el valor real de tu empresa es fundamental para tomar decisiones estratégicas con confianza. Ya sea que estés considerando una venta, buscando inversores, planificando una sucesión o simplemente quieras entender el valor de mercado de tu negocio, esta guía te explica los principales métodos de valoración y te ofrece herramientas gratuitas para obtener una primera estimación.</p>
+      <h1>Valoración de Empresas en España: Guía Completa de Métodos, Herramientas y Asesoramiento Profesional</h1>
+      <p>Conocer el valor real de tu empresa es una de las decisiones más importantes que puedes tomar como empresario. Ya sea que estés considerando vender tu negocio, buscar inversores, planificar una sucesión generacional o simplemente quieras entender tu posición competitiva en el mercado, una valoración empresarial rigurosa te proporciona la información necesaria para tomar decisiones con confianza.</p>
+      <p>En España, el mercado de fusiones y adquisiciones (M&A) ha experimentado un crecimiento sostenido, con más de 2.800 operaciones anuales según TTR Data. Sin embargo, muchos empresarios desconocen el valor real de sus compañías o se basan en estimaciones subjetivas.</p>
 
-      <h2>Métodos de Valoración</h2>
+      <h2>¿Por qué necesitas valorar tu empresa?</h2>
+      <p>Existen múltiples situaciones: venta de la empresa, entrada o salida de socios, búsqueda de inversión, planificación fiscal y sucesoria, procesos judiciales o arbitrajes, y planificación estratégica.</p>
+
+      <h2>Métodos de Valoración de Empresas</h2>
       <h3>Descuento de Flujos de Caja (DCF)</h3>
-      <p>Estima el valor de una empresa proyectando sus flujos de caja futuros y descontándolos a valor presente. Es el método más riguroso y utilizado en valoraciones formales, especialmente para empresas con flujos predecibles.</p>
+      <p>El método DCF estima el valor intrínseco proyectando flujos de caja libres futuros y descontándolos a valor presente mediante WACC. Es el método preferido por analistas y bancos de inversión. Adecuado para empresas con flujos predecibles.</p>
       <h3>Múltiplos de Mercado (EV/EBITDA, EV/Revenue)</h3>
-      <p>Compara la empresa con otras similares del mismo sector usando ratios como EV/EBITDA o EV/Revenue. Es rápido, intuitivo y refleja las condiciones actuales del mercado de compraventa.</p>
-      <h3>Valoración por Activos</h3>
-      <p>Calcula el valor neto de los activos de la empresa menos sus pasivos. Es especialmente útil para empresas intensivas en activos, inmobiliarias o en situación de liquidación.</p>
+      <p>Compara tu empresa con otras similares del sector usando ratios como EV/EBITDA. En España, los múltiplos para PYMES oscilan entre 3x y 8x. Empresas tecnológicas SaaS pueden alcanzar 10-15x EBITDA.</p>
+      <h3>Valoración por Activos (Valor Patrimonial)</h3>
+      <p>Calcula el valor neto de activos menos pasivos. Método más conservador, proporciona un suelo de valoración. Útil para inmobiliarias, holdings y empresas en liquidación.</p>
       <h3>Transacciones Comparables</h3>
-      <p>Analiza el precio pagado en transacciones reales de empresas similares. Proporciona una referencia directa del mercado y es muy valorado por inversores y fondos de adquisición.</p>
+      <p>Analiza precios pagados en transacciones reales de empresas similares. En Capittal mantenemos una base de datos propietaria de transacciones M&A en España.</p>
 
-      <h2>Calcula el valor de tu empresa</h2>
-      <p>Utiliza nuestra calculadora gratuita de valoración basada en múltiplos de EBITDA y benchmarks sectoriales actualizados. Resultado inmediato y confidencial.</p>
+      <h2>Cómo valorar una empresa: proceso paso a paso</h2>
+      <p>1. Recopilación de información financiera (estados financieros 3-5 años). 2. Análisis del sector y mercado. 3. Aplicación de metodologías de valoración. 4. Ajustes y normalización del EBITDA. 5. Determinación del rango de valor. 6. Elaboración del informe de valoración.</p>
+
+      <h2>Factores clave que afectan la valoración</h2>
+      <p>Crecimiento de ingresos, rentabilidad y márgenes, sector y posición competitiva, dependencia del fundador, diversificación de clientes, y recurrencia de ingresos.</p>
+
+      <h2>Valoración online gratuita vs. profesional</h2>
+      <p>La calculadora gratuita ofrece una estimación en 5 minutos basada en múltiplos sectoriales (precisión ±30%). La valoración profesional tarda 2-4 semanas, combina DCF+Múltiplos+Comparables, genera un informe certificado con validez fiscal/legal (precisión ±10%).</p>
+
+      <h2>Calcula el valor de tu empresa gratis</h2>
+      <p>Utiliza nuestra calculadora gratuita basada en múltiplos EBITDA y benchmarks sectoriales actualizados para el mercado español. Más de 20 sectores disponibles.</p>
       <p><a href="/lp/calculadora">Usar calculadora gratuita →</a></p>
 
-      <h2>¿Necesitas una valoración profesional?</h2>
-      <p>Nuestra calculadora da una estimación inicial. Para una valoración formal con informe detallado, análisis de estados financieros, posición competitiva y factores cualitativos, contacta con nuestro equipo de expertos en M&A.</p>
-      <p><a href="/contacto">Solicita una valoración profesional</a></p>
+      <h2>Preguntas frecuentes sobre valoración de empresas en España</h2>
+      <h3>¿Cómo se calcula el valor de una empresa en España?</h3>
+      <p>Combinando DCF, múltiplos EBITDA sectoriales (3x-8x para PYMES), transacciones comparables y valoración patrimonial.</p>
+      <h3>¿Cuánto vale una empresa que factura 1 millón de euros?</h3>
+      <p>Con un margen EBITDA del 20% (200.000€), entre 600.000€ y 1.600.000€ según el sector (múltiplos 3x-8x).</p>
+      <h3>¿Qué múltiplo de EBITDA aplica a mi sector?</h3>
+      <p>Tecnología/SaaS: 8-15x. Salud: 7-10x. Seguridad: 6-9x. Servicios profesionales: 5-8x. Industrial: 4-7x. Construcción: 3-6x.</p>
+      <h3>¿Cuál es la diferencia entre Enterprise Value y valor de equity?</h3>
+      <p>EV = equity + deuda neta. Equity = EV - deuda neta. El equity es lo que recibe el vendedor.</p>
+      <h3>¿Es obligatorio valorar una empresa para venderla?</h3>
+      <p>No es legalmente obligatorio, pero es altamente recomendable para negociar con datos objetivos y justificar el precio ante Hacienda.</p>
 
-      <h2>Preguntas frecuentes sobre valoración de empresas</h2>
-      <h3>¿Es gratuita la calculadora de valoración?</h3>
-      <p>Sí, nuestra calculadora de valoración de empresas es completamente gratuita y sin compromiso.</p>
-      <h3>¿Qué métodos de valoración utilizáis?</h3>
-      <p>Nuestra calculadora utiliza el método de múltiplos de EBITDA y de facturación, ajustados por sector, tamaño de empresa, márgenes operativos y tasa de crecimiento.</p>
-      <h3>¿Cuánto tarda una valoración profesional?</h3>
-      <p>Entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera.</p>
-      <h3>¿Los datos que introduzco son confidenciales?</h3>
-      <p>Absolutamente. Todos los datos son tratados con total confidencialidad y cumplimos con la normativa RGPD.</p>
-      <h3>¿Qué sectores cubre la calculadora?</h3>
-      <p>Más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte, alimentación, energía, y muchos más.</p>
+      <h2>¿Necesitas una valoración profesional?</h2>
+      <p>Contacta con nuestro equipo de expertos en M&A. Más de 15 años de experiencia en valoraciones empresariales en España.</p>
+      <p><a href="/contacto">Solicita una valoración profesional</a></p>
     `,
   },
 
