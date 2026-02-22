@@ -1,63 +1,89 @@
 
-# Exportacion CSV/Excel de Inteligencia Sectorial
+# Mejora de UI de la tabla de Inteligencia Sectorial
 
 ## Objetivo
 
-Anadir un boton "Exportar" en la toolbar de la tabla de inteligencia sectorial que permita descargar todos los datos (o los filtrados) en formato Excel (.xlsx).
+Redisenar la tabla de inteligencia sectorial para mejorar la visualizacion de datos con cards expandibles mas ricas, filtros avanzados por campo y mejor jerarquia visual.
 
-## Flujo de usuario
+## Cambios propuestos
 
-1. El usuario filtra opcionalmente por sector o texto de busqueda
-2. Click en boton "Exportar" (junto a "Importar" y "Nuevo")
-3. Se descarga un archivo `.xlsx` con los datos visibles en la tabla
+### 1. Filtros avanzados en la toolbar
 
-## Cambios
+Anadir filtros adicionales al toolbar existente:
 
-### Modificar: `src/components/admin/sector-intelligence/SectorTable.tsx`
+- **Filtro por fase de consolidacion**: Select con las fases disponibles (Temprano, Medio, Maduro, etc.)
+- **Filtro por geografia**: Select con las geografias detectadas en los datos
+- **Toggle activos/inactivos**: Switch para mostrar/ocultar registros inactivos
+- **Boton "Limpiar filtros"**: Aparece solo cuando hay filtros activos, con indicador del numero de filtros
 
-1. Importar `Download` de lucide-react y `* as XLSX` de `xlsx`
-2. Anadir funcion `handleExport` que:
-   - Recoge las filas filtradas (de `filteredGrouped`)
-   - Mapea cada fila a un objeto con cabeceras legibles en espanol: Sector, Subsector, Vertical, Tesis PE, Datos Cuantitativos, Firmas PE Activas, Plataformas/Operaciones, Multiplos/Valoraciones, Fase Consolidacion, Geografia, Activo
-   - Usa `XLSX.utils.json_to_sheet()` + `XLSX.utils.book_new()` + `XLSX.writeFile()` (mismo patron que ya se usa en UnifiedLeadsManager, SFAcquisitionsPage, etc.)
-   - Nombre del archivo: `inteligencia_sectorial_YYYYMMDD.xlsx`
-3. Anadir boton "Exportar" con icono `Download` en la toolbar, junto a "Importar"
+### 2. Cards expandibles mejoradas
 
-### Detalle tecnico
+Redisenar la zona expandida de cada subsector con:
 
+- **Layout en grid de 3 columnas** (en vez de 2) para aprovechar mejor el espacio
+- **Iconos por seccion**: Cada bloque de datos con su icono (TrendingUp para multiplos, Users para firmas PE, etc.)
+- **Tags para firmas PE**: Parsear las firmas activas y mostrarlas como badges individuales separados por coma
+- **Indicador visual de completitud**: Barra de progreso pequena que muestra cuantos campos tiene rellenos el registro (ej. 8/10)
+- **Boton de edicion rapida**: Dentro de la card expandida, boton "Editar" mas visible
+
+### 3. Mejoras visuales en la tabla principal
+
+- **Contador de campos rellenos**: Pequeno indicador junto al subsector mostrando completitud (ej. "8/10")
+- **Tooltip en celdas truncadas**: Al pasar el raton por tesis PE o multiplos truncados, mostrar el contenido completo
+- **Expandir/colapsar todo**: Botones en la toolbar para expandir o colapsar todos los sectores de golpe
+- **Resaltado de busqueda**: Highlight del texto que coincide con la busqueda
+
+## Archivo a modificar
+
+`src/components/admin/sector-intelligence/SectorTable.tsx` -- unico archivo afectado
+
+## Detalle tecnico
+
+### Nuevos estados
+```
+phaseFilter: string (filtro por fase)
+geoFilter: string (filtro por geografia)
+showInactive: boolean (mostrar inactivos, default true)
+```
+
+### Fases y geografias dinamicas
+Se extraen automaticamente de los datos existentes con `useMemo`:
 ```typescript
-const handleExport = () => {
-  const allRows = filteredSectors.flatMap(s => filteredGrouped[s]);
-  const exportData = allRows.map(r => ({
-    'Sector': r.sector,
-    'Subsector': r.subsector,
-    'Vertical': r.vertical || '',
-    'Tesis PE': r.pe_thesis || '',
-    'Datos Cuantitativos': r.quantitative_data || '',
-    'Firmas PE Activas': r.active_pe_firms || '',
-    'Plataformas / Operaciones': r.platforms_operations || '',
-    'Multiplos / Valoraciones': r.multiples_valuations || '',
-    'Fase Consolidacion': r.consolidation_phase || '',
-    'Geografia': r.geography || '',
-    'Activo': r.is_active ? 'Si' : 'No',
-  }));
+const phases = useMemo(() => 
+  [...new Set(rows.flatMap(r => r.consolidation_phase ? [r.consolidation_phase.split('.')[0].trim()] : []))].sort()
+, [rows]);
 
-  const ws = XLSX.utils.json_to_sheet(exportData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Inteligencia Sectorial');
-  XLSX.writeFile(wb, `inteligencia_sectorial_${format(new Date(), 'yyyyMMdd')}.xlsx`);
-  toast.success(`${exportData.length} registros exportados`);
+const geographies = useMemo(() => 
+  [...new Set(rows.flatMap(r => r.geography ? [r.geography.trim()] : []))].sort()
+, [rows]);
+```
+
+### Completitud por registro
+```typescript
+const getCompleteness = (row: SectorIntelligenceRow) => {
+  const fields = ['vertical', 'pe_thesis', 'quantitative_data', 'active_pe_firms', 
+                   'platforms_operations', 'multiples_valuations', 'consolidation_phase', 'geography'];
+  const filled = fields.filter(f => row[f]).length;
+  return { filled, total: fields.length };
 };
 ```
 
-El boton se deshabilitara si no hay filas para exportar.
+### Card expandida rediseñada
+Grid de 3 columnas con:
+- Icono + label + contenido para cada campo
+- Firmas PE parseadas como badges: `row.active_pe_firms?.split(/[,;]/).map(f => <Badge>...</Badge>)`
+- Barra de progreso de completitud usando el componente `Progress` de shadcn/ui
 
-## Archivos afectados
+### Expandir/Colapsar todo
+Dos botones en la toolbar:
+- "Expandir todo" -> `setCollapsedSectors(new Set())`
+- "Colapsar todo" -> `setCollapsedSectors(new Set(filteredSectors))`
 
-- `src/components/admin/sector-intelligence/SectorTable.tsx` (unico archivo a modificar)
+### Tooltips en celdas truncadas
+Usar el componente `Tooltip` de shadcn/ui en las celdas de "Tesis PE" y "Multiplos" que ya tienen `truncate`.
 
 ## Lo que NO se toca
-
-- Hook `useSectorIntelligence` (no necesita cambios)
-- Pagina `SectorIntelligencePage` (no necesita cambios)
+- Hook `useSectorIntelligence` (sin cambios)
+- Pagina `SectorIntelligencePage` (sin cambios)
 - Base de datos ni RLS
+- Funcionalidad de importar/exportar (se mantiene intacta)
