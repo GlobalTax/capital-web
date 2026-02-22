@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, FileText, RefreshCw, AlertCircle, ThumbsUp, ThumbsDown, BarChart3 } from 'lucide-react';
+import { Loader2, FileText, RefreshCw, AlertCircle, ThumbsUp, ThumbsDown, BarChart3, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReactMarkdown from 'react-markdown';
 
@@ -41,6 +41,8 @@ export const SectorDossierViewer: React.FC<SectorDossierViewerProps> = ({
   const [hasFeedback, setHasFeedback] = useState(false);
   const [isCached, setIsCached] = useState(false);
   const [cacheAgeDays, setCacheAgeDays] = useState<number | null>(null);
+  const [intelCount, setIntelCount] = useState<number>(0);
+  const [intelSectors, setIntelSectors] = useState<string[]>([]);
 
   // Use synthetic lead_id for sector dossiers: "sector:{sector_name}"
   const syntheticLeadId = `sector:${sector}${subsector ? `:${subsector}` : ''}`;
@@ -103,11 +105,13 @@ export const SectorDossierViewer: React.FC<SectorDossierViewerProps> = ({
       } else {
         setIsCached(false);
         setCacheAgeDays(null);
+        setIntelCount(data?.intel_count || 0);
+        setIntelSectors(data?.intel_sectors || []);
         toast({
           title: '✅ Dossier generado',
           description: forceRegenerate 
             ? 'Se ha regenerado el dossier con nuevos datos'
-            : 'El análisis sectorial se ha completado correctamente.',
+            : `Análisis completado${data?.intel_count ? ` (enriquecido con ${data.intel_count} registros de intel)` : ''}.`,
         });
       }
 
@@ -341,6 +345,12 @@ export const SectorDossierViewer: React.FC<SectorDossierViewerProps> = ({
           <div className="space-y-4">
             {/* Metadata */}
             <div className="flex flex-wrap gap-4 text-xs text-muted-foreground border-b pb-3">
+              {intelCount > 0 && (
+                <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200">
+                  <Database className="h-3 w-3 mr-1" />
+                  Enriquecido con {intelCount} registros de Intel Sectorial
+                </Badge>
+              )}
               {dossier.tokens_used && (
                 <span>Tokens: {dossier.tokens_used.toLocaleString()}</span>
               )}
