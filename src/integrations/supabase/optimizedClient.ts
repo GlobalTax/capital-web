@@ -74,6 +74,7 @@ class SupabaseClientSingleton {
               storageKey: 'capittal-auth-token',
               autoRefreshToken: canPersistSession,
               detectSessionInUrl: true,
+              lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => await fn(),
             },
             // Disable realtime completely to prevent WebSocket connection attempts
             realtime: {
