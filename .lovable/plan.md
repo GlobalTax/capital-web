@@ -1,89 +1,99 @@
 
-# Mejora de UI de la tabla de Inteligencia Sectorial
+# Plan de Mejoras: Inteligencia Sectorial PE
 
-## Objetivo
+## Vision general
 
-Redisenar la tabla de inteligencia sectorial para mejorar la visualizacion de datos con cards expandibles mas ricas, filtros avanzados por campo y mejor jerarquia visual.
+La base de datos de inteligencia sectorial es rica pero infrautilizada. Actualmente solo alimenta el calendario de contenido y los dossiers sectoriales de forma basica. El plan propone 5 lineas de mejora ordenadas por impacto y complejidad.
 
-## Cambios propuestos
+---
 
-### 1. Filtros avanzados en la toolbar
+## Fase 1: Dashboard de Cobertura Sectorial (impacto alto, complejidad baja)
 
-Anadir filtros adicionales al toolbar existente:
+Anadir un panel resumen visual en la parte superior de `/admin/sector-intelligence` que muestre de un vistazo el estado de la base de datos.
 
-- **Filtro por fase de consolidacion**: Select con las fases disponibles (Temprano, Medio, Maduro, etc.)
-- **Filtro por geografia**: Select con las geografias detectadas en los datos
-- **Toggle activos/inactivos**: Switch para mostrar/ocultar registros inactivos
-- **Boton "Limpiar filtros"**: Aparece solo cuando hay filtros activos, con indicador del numero de filtros
+**Componentes:**
+- **KPI Cards**: Total subsectores, % completitud media, sectores cubiertos, registros inactivos
+- **Heatmap de completitud**: Grid visual por sector mostrando que campos faltan (rojo/amarillo/verde)
+- **Top gaps**: Lista de los 10 subsectores con mas campos vacios, con boton directo a editar
 
-### 2. Cards expandibles mejoradas
+**Archivos afectados:**
+- Nuevo: `src/components/admin/sector-intelligence/SectorCoverageDashboard.tsx`
+- Modificar: `src/pages/admin/SectorIntelligencePage.tsx` (insertar dashboard arriba)
 
-Redisenar la zona expandida de cada subsector con:
+---
 
-- **Layout en grid de 3 columnas** (en vez de 2) para aprovechar mejor el espacio
-- **Iconos por seccion**: Cada bloque de datos con su icono (TrendingUp para multiplos, Users para firmas PE, etc.)
-- **Tags para firmas PE**: Parsear las firmas activas y mostrarlas como badges individuales separados por coma
-- **Indicador visual de completitud**: Barra de progreso pequena que muestra cuantos campos tiene rellenos el registro (ej. 8/10)
-- **Boton de edicion rapida**: Dentro de la card expandida, boton "Editar" mas visible
+## Fase 2: Enriquecer Valoraciones con Datos Sectoriales (impacto muy alto, complejidad media)
 
-### 3. Mejoras visuales en la tabla principal
+Conectar la inteligencia sectorial con el motor de valoraciones para que, al valorar una empresa, se sugieran automaticamente los multiplos y contexto del subsector correspondiente.
 
-- **Contador de campos rellenos**: Pequeno indicador junto al subsector mostrando completitud (ej. "8/10")
-- **Tooltip en celdas truncadas**: Al pasar el raton por tesis PE o multiplos truncados, mostrar el contenido completo
-- **Expandir/colapsar todo**: Botones en la toolbar para expandir o colapsar todos los sectores de golpe
-- **Resaltado de busqueda**: Highlight del texto que coincide con la busqueda
+**Flujo:**
+1. Cuando un admin abre una valoracion profesional, el sistema busca el sector/subsector en `pe_sector_intelligence`
+2. Si hay match, muestra un panel lateral con: multiplos del sector, fase de consolidacion, firmas PE activas
+3. El advisor puede "aplicar" los multiplos sugeridos con un click
 
-## Archivo a modificar
+**Archivos afectados:**
+- Nuevo: `src/components/admin/professional-valuations/SectorIntelligencePanel.tsx`
+- Modificar: pagina de detalle de valoracion para incluir el panel
+- Modificar: `src/hooks/useSectorIntelligence.ts` (anadir funcion `findBySector(sector, subsector)`)
 
-`src/components/admin/sector-intelligence/SectorTable.tsx` -- unico archivo afectado
+---
 
-## Detalle tecnico
+## Fase 3: Matching Sectorial en CRM (impacto alto, complejidad media)
 
-### Nuevos estados
-```
-phaseFilter: string (filtro por fase)
-geoFilter: string (filtro por geografia)
-showInactive: boolean (mostrar inactivos, default true)
-```
+Cuando se trabaja con un lead o empresa, cruzar automaticamente su sector con la inteligencia PE para mostrar oportunidades de consolidacion y firmas interesadas.
 
-### Fases y geografias dinamicas
-Se extraen automaticamente de los datos existentes con `useMemo`:
-```typescript
-const phases = useMemo(() => 
-  [...new Set(rows.flatMap(r => r.consolidation_phase ? [r.consolidation_phase.split('.')[0].trim()] : []))].sort()
-, [rows]);
+**Funcionalidades:**
+- En la ficha de contacto/empresa: nueva tab "Intel Sectorial" que muestra datos del subsector si hay match
+- Indicador visual en la lista de empresas: badge "PE Intel" si el sector tiene datos ricos
+- Sugerencia de firmas PE potencialmente interesadas basado en `active_pe_firms`
 
-const geographies = useMemo(() => 
-  [...new Set(rows.flatMap(r => r.geography ? [r.geography.trim()] : []))].sort()
-, [rows]);
-```
+**Archivos afectados:**
+- Nuevo: `src/components/admin/empresas/SectorIntelligenceTab.tsx`
+- Modificar: detalle de empresa para anadir la tab
+- Modificar: `src/hooks/useSectorIntelligence.ts` (anadir lookup por sector)
 
-### Completitud por registro
-```typescript
-const getCompleteness = (row: SectorIntelligenceRow) => {
-  const fields = ['vertical', 'pe_thesis', 'quantitative_data', 'active_pe_firms', 
-                   'platforms_operations', 'multiples_valuations', 'consolidation_phase', 'geography'];
-  const filled = fields.filter(f => row[f]).length;
-  return { filled, total: fields.length };
-};
-```
+---
 
-### Card expandida rediseñada
-Grid de 3 columnas con:
-- Icono + label + contenido para cada campo
-- Firmas PE parseadas como badges: `row.active_pe_firms?.split(/[,;]/).map(f => <Badge>...</Badge>)`
-- Barra de progreso de completitud usando el componente `Progress` de shadcn/ui
+## Fase 4: Generacion Mejorada de Dossiers (impacto medio, complejidad media)
 
-### Expandir/Colapsar todo
-Dos botones en la toolbar:
-- "Expandir todo" -> `setCollapsedSectors(new Set())`
-- "Colapsar todo" -> `setCollapsedSectors(new Set(filteredSectors))`
+El `SectorDossierStudio` actual genera dossiers con IA pero no aprovecha bien los datos estructurados de `pe_sector_intelligence`. Mejoras propuestas:
 
-### Tooltips en celdas truncadas
-Usar el componente `Tooltip` de shadcn/ui en las celdas de "Tesis PE" y "Multiplos" que ya tienen `truncate`.
+- Inyectar automaticamente los datos de la tabla (tesis PE, multiplos, firmas activas, fase) como contexto del prompt de IA
+- Anadir un selector de subsector (no solo sector) en el estudio de dossiers
+- Previsualizar los datos disponibles antes de generar (para que el usuario sepa que intel tiene el sistema)
+- Mostrar fuente de datos: "Basado en X datos de inteligencia sectorial"
 
-## Lo que NO se toca
-- Hook `useSectorIntelligence` (sin cambios)
-- Pagina `SectorIntelligencePage` (sin cambios)
-- Base de datos ni RLS
-- Funcionalidad de importar/exportar (se mantiene intacta)
+**Archivos afectados:**
+- Modificar: `src/pages/admin/SectorDossierStudio.tsx`
+- Modificar: `src/components/admin/SectorDossierViewer.tsx`
+- Modificar: edge function `generate-sector-dossier` (enriquecer prompt con datos de tabla)
+
+---
+
+## Fase 5: Alertas y Seguimiento Sectorial (impacto medio, complejidad alta)
+
+Sistema de alertas basado en cambios en los datos sectoriales:
+
+- **Watchlist**: Permitir marcar subsectores como "seguidos" por el usuario
+- **Changelog**: Registrar cambios en los datos (nuevo campo rellenado, cambio de fase)
+- **Notificaciones**: Cuando un sector seguido se actualiza, notificar via toast o email
+
+**Archivos afectados:**
+- Nueva tabla: `pe_sector_intelligence_watchlist` (user_id, sector_id)
+- Nueva tabla: `pe_sector_intelligence_changelog` (sector_id, field, old_value, new_value, changed_at)
+- Nuevo: `src/hooks/useSectorWatchlist.ts`
+- Modificar: `src/hooks/useSectorIntelligence.ts` (registrar cambios en update)
+
+---
+
+## Orden de implementacion recomendado
+
+| Fase | Descripcion | Esfuerzo | Impacto |
+|------|------------|----------|---------|
+| 1 | Dashboard de cobertura | Bajo | Alto |
+| 2 | Enriquecer valoraciones | Medio | Muy alto |
+| 3 | Matching CRM | Medio | Alto |
+| 4 | Dossiers mejorados | Medio | Medio |
+| 5 | Alertas y seguimiento | Alto | Medio |
+
+Recomiendo empezar por la Fase 1 (rapida de implementar y da visibilidad inmediata) y luego la Fase 2 (mayor impacto en el negocio al conectar inteligencia con valoraciones).
