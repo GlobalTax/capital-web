@@ -4,10 +4,11 @@ import { useSectorIntelligence, SectorIntelligenceRow } from '@/hooks/useSectorI
 import { SectorTable } from '@/components/admin/sector-intelligence/SectorTable';
 import { SectorEditDialog } from '@/components/admin/sector-intelligence/SectorEditDialog';
 import { SectorImportDialog } from '@/components/admin/sector-intelligence/SectorImportDialog';
+import { SectorCoverageDashboard } from '@/components/admin/sector-intelligence/SectorCoverageDashboard';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 
 const SectorIntelligencePage: React.FC = () => {
-  const { grouped, sectors, isLoading, updateRow, createRow, deleteRow, bulkCreateRows } = useSectorIntelligence();
+  const { rows, grouped, sectors, isLoading, updateRow, createRow, deleteRow, bulkCreateRows } = useSectorIntelligence();
   const [editRow, setEditRow] = useState<SectorIntelligenceRow | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -53,6 +54,8 @@ const SectorIntelligencePage: React.FC = () => {
       <p className="text-xs text-[hsl(var(--linear-text-tertiary))]">
         Base de datos completa de subsectores de inversión PE con tesis, firmas activas, plataformas y múltiplos.
       </p>
+
+      <SectorCoverageDashboard rows={rows} grouped={grouped} sectors={sectors} onEdit={handleEdit} />
 
       <SectorTable
         grouped={grouped}
