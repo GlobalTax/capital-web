@@ -1,83 +1,80 @@
 
 
-# Eliminacion masiva de empresas en CompaniesStep
+# Fix PDF: Sector sin "(Otro)" + Rangos de Multiplos Correctos
 
 ## Problema
 
-La tabla de empresas en el paso 2 (CompaniesStep) solo permite eliminar empresas una a una con el icono de papelera. Con listados grandes (100+ empresas), esto es muy tedioso.
+El PDF generado desde campanas outbound tiene dos bugs visibles:
 
-## Solucion
+1. **Sector**: Aparece "el sector de actividad (Otro)" con parentesis
+2. **Rangos de multiplos**: Conservador y Optimista muestran `0.0x` porque `ebitdaMultipleLow` y `ebitdaMultipleHigh` no se pasan al componente PDF
 
-Añadir seleccion multiple con checkboxes y un boton de "Eliminar seleccionadas" en la tabla de empresas, siguiendo el mismo patron que ya existe en ProcessSendStep.
+## Causa Raiz
 
-## Cambios en `CompaniesStep.tsx`
+En `ProcessSendStep.tsx`, la funcion `mapToPdfData()` no mapea los campos `ebitdaMultipleLow` y `ebitdaMultipleHigh`. La campana tiene `multiple_low` y `multiple_high` a nivel de campana, pero no se pasan al PDF. Ademas, el sector se muestra tal cual sin limpiar el texto "(Otro)".
 
-### 1. Nuevo estado de seleccion
+## Solucion (minima y segura)
 
-```typescript
-const [selectedIds, setSelectedIds] = useState<string[]>([]);
+### Cambio 1: `mapToPdfData` en ProcessSendStep.tsx
 
-const toggleSelection = (id: string) =>
-  setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-
-const toggleSelectAll = () =>
-  setSelectedIds(prev => prev.length === companies.length ? [] : companies.map(c => c.id));
-
-const isAllSelected = companies.length > 0 && selectedIds.length === companies.length;
-const isIndeterminate = selectedIds.length > 0 && selectedIds.length < companies.length;
-```
-
-### 2. Funcion de eliminacion masiva
-
-Usar `deleteCompany` del hook `useCampaignCompanies` en bucle, o mejor, añadir un `bulkDeleteCompanies` al hook para hacerlo en una sola operacion de base de datos.
-
-**En `useCampaignCompanies.ts`** -- nuevo mutation:
+Anadir los campos faltantes usando los datos de la campana:
 
 ```typescript
-const bulkDeleteMutation = useMutation({
-  mutationFn: async (ids: string[]) => {
-    const { error } = await supabase
-      .from('valuation_campaign_companies')
-      .delete()
-      .in('id', ids);
-    if (error) throw error;
-  },
-  onSuccess: () => queryClient.invalidateQueries({ queryKey }),
-  onError: (e) => toast.error('Error al eliminar: ' + e.message),
-});
+ebitdaMultipleLow: campaign.multiple_low || undefined,
+ebitdaMultipleHigh: campaign.multiple_high || undefined,
 ```
 
-Exponer `bulkDeleteCompanies` y `isBulkDeleting` en el return.
+Si la campana no tiene `multiple_low`/`multiple_high`, calcular automaticamente con offset -1/+1 respecto al multiplo usado de la empresa.
 
-### 3. UI en la tabla
+### Cambio 2: Sector limpio en ProfessionalValuationPDF.tsx
 
-- Añadir columna de checkbox (master en header, individual en cada fila)
-- Barra de accion flotante cuando hay seleccion: "X seleccionadas - [Eliminar]"
-- Dialogo de confirmacion antes de borrar (AlertDialog)
+En el texto de justificacion del multiplo (linea ~879), limpiar el nombre del sector:
+- Quitar parentesis: `(Otro)` -> `Otro`
+- Reemplazar "Otro" por el nombre real del sector o "Servicios Generales"
 
-### 4. Estructura visual
+Esto se hace directamente en el componente PDF con una funcion helper simple (sin tabla de BD, sin async):
 
+```typescript
+function cleanSectorName(sector: string): string {
+  let clean = sector.replace(/[()]/g, '').trim();
+  if (clean.toLowerCase() === 'otro' || !clean) {
+    return 'Servicios Generales';
+  }
+  return clean;
+}
 ```
-Empresas (147)    [con email: 120] [sin EBITDA: 3] [Enriquecer con IA]
 
-  3 seleccionadas  [Eliminar seleccionadas]    <-- aparece solo con seleccion
+### Cambio 3: Fallback de rangos en ProfessionalValuationPDF.tsx
 
-[x] | Empresa      | Contacto | Email | CIF | Facturacion | EBITDA | Anos | Origen | Acciones
-[x] | Acme S.L.    | ...      | ...   | ... | ...         | ...    | ...  | ...    | Editar Borrar
-[ ] | Beta Corp    | ...      | ...   | ... | ...         | ...    | ...  | ...    | Editar Borrar
+Anadir logica defensiva en la pagina de rangos (linea ~894-920) para que si `ebitdaMultipleLow`/`ebitdaMultipleHigh` son 0 o undefined, se calculen automaticamente como `base - 1` y `base + 1`:
+
+```typescript
+const baseMult = data.ebitdaMultipleUsed || 0;
+const lowMult = data.ebitdaMultipleLow || (baseMult > 1 ? baseMult - 1 : baseMult * 0.85);
+const highMult = data.ebitdaMultipleHigh || baseMult + 1;
+const ebitda = data.normalizedEbitda || 0;
 ```
 
 ## Archivos modificados
 
 | Archivo | Cambio |
 |---------|--------|
-| `useCampaignCompanies.ts` | Nuevo `bulkDeleteMutation` con `.delete().in('id', ids)` |
-| `CompaniesStep.tsx` | Estado de seleccion, checkboxes en tabla, barra de acciones masivas, AlertDialog de confirmacion |
+| `ProcessSendStep.tsx` | Anadir `ebitdaMultipleLow` y `ebitdaMultipleHigh` en `mapToPdfData` |
+| `ProfessionalValuationPDF.tsx` | Helper `cleanSectorName` + fallback de rangos con offset +-1 |
 
-## Detalles tecnicos
+## Lo que NO se toca
 
-- Se usa `AlertDialog` de Radix para confirmar la eliminacion masiva (evitar borrados accidentales)
-- Limpiar `selectedIds` tras eliminar exitosamente
-- El checkbox master usa `Checkbox` de shadcn/ui con soporte `indeterminate` via `checked="indeterminate"`
-- La barra de seleccion se muestra entre el CardHeader y la tabla, con fondo suave (`bg-blue-50`) para destacar
+- Firma de funciones de generacion de PDF
+- Sistema de descarga individual/masiva/ZIP
+- Estructura general del PDF
+- Estilos y diseno
+- No se crea tabla `valuation_config` (innecesario para este fix)
+- No se crea pagina admin de configuracion (se puede hacer despues si se necesita)
+
+## Resultado esperado
+
+- Sector "Otro" -> "Servicios Generales" en el texto
+- Sector "Tecnologia" -> "Tecnologia" (sin cambios)
+- Con multiplo base 8.0x -> Conservador: 7.0x, Base: 8.0x, Optimista: 9.0x
+- Valoraciones calculadas correctamente con cada multiplo
 
