@@ -2,6 +2,15 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Font, Image } from '@react-pdf/renderer';
 import { ProfessionalValuationData, NormalizationAdjustment, FinancialYear } from '@/types/professionalValuation';
 
+// Helper to clean sector names for display in PDF
+function cleanSectorName(sector: string): string {
+  let clean = sector.replace(/[()]/g, '').trim();
+  if (clean.toLowerCase() === 'otro' || !clean) {
+    return 'Servicios Generales';
+  }
+  return clean;
+}
+
 // Registrar fuentes con fallback robusto
 const PDF_FONT_FAMILY = 'Plus Jakarta Sans';
 
@@ -578,7 +587,7 @@ const ExecutiveSummaryPage: React.FC<{ data: ProfessionalValuationData }> = ({ d
           <Text style={styles.summaryLabel}>Múltiplo Aplicado</Text>
           <Text style={styles.summaryValue}>{(data.ebitdaMultipleUsed || 0).toFixed(1)}x</Text>
           <Text style={styles.summarySubtext}>
-            Rango: {(data.ebitdaMultipleLow || 0).toFixed(1)}x - {(data.ebitdaMultipleHigh || 0).toFixed(1)}x
+            Rango: {(data.ebitdaMultipleLow || (data.ebitdaMultipleUsed ? data.ebitdaMultipleUsed - 1 : 0)).toFixed(1)}x - {(data.ebitdaMultipleHigh || (data.ebitdaMultipleUsed ? data.ebitdaMultipleUsed + 1 : 0)).toFixed(1)}x
           </Text>
         </View>
         <View style={styles.summaryItem}>
@@ -700,8 +709,8 @@ const FinancialAnalysisPage: React.FC<{ data: ProfessionalValuationData }> = ({ 
               </Text>
             ))}
           </View>
-          
-          
+
+
           <View style={[styles.tableRow, styles.tableRowAlt]}>
             <Text style={[styles.tableCellBold, { flex: 0.3 }]}>Margen EBITDA</Text>
             {sortedYears.map((year, i) => (
@@ -825,7 +834,15 @@ const NormalizationPage: React.FC<{ data: ProfessionalValuationData }> = ({ data
 };
 
 // Methodology Page
-const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
+const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => {
+  const baseMult = data.ebitdaMultipleUsed || 0;
+  const lowMult = data.ebitdaMultipleLow || (baseMult > 1 ? baseMult - 1 : baseMult * 0.85);
+  const highMult = data.ebitdaMultipleHigh || baseMult + 1;
+  const ebitda = data.normalizedEbitda || 0;
+  const valLow = data.valuationLow || ebitda * lowMult;
+  const valHigh = data.valuationHigh || ebitda * highMult;
+
+  return (
   <Page size="A4" style={styles.contentPage}>
     <View style={styles.header}>
       <CapittalLogo />
@@ -877,7 +894,7 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
         <Text style={styles.contextText}>
           {data.multipleJustification || 
             `El múltiplo de ${(data.ebitdaMultipleUsed || 0).toFixed(1)}x se ha seleccionado considerando 
-            el sector de actividad (${data.sector}), el tamaño de la empresa, la calidad de los beneficios, 
+            el sector de actividad ${cleanSectorName(data.sector || '')}, el tamaño de la empresa, la calidad de los beneficios, 
             las perspectivas de crecimiento y las condiciones actuales del mercado de M&A en España.`}
         </Text>
       </View>
@@ -894,10 +911,10 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
         <View style={styles.tableRow}>
           <Text style={[styles.tableCell, { flex: 0.5 }]}>Conservador</Text>
           <Text style={[styles.tableCell, { flex: 0.25, textAlign: 'center' }]}>
-            {(data.ebitdaMultipleLow || 0).toFixed(1)}x
+            {lowMult.toFixed(1)}x
           </Text>
           <Text style={[styles.tableCell, { flex: 0.25, textAlign: 'right' }]}>
-            {formatCurrency(data.valuationLow || 0)}
+            {formatCurrency(valLow)}
           </Text>
         </View>
         <View style={[styles.tableRow, styles.tableRowAlt]}>
@@ -912,10 +929,10 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
         <View style={styles.tableRow}>
           <Text style={[styles.tableCell, { flex: 0.5 }]}>Optimista</Text>
           <Text style={[styles.tableCell, { flex: 0.25, textAlign: 'center' }]}>
-            {(data.ebitdaMultipleHigh || 0).toFixed(1)}x
+            {highMult.toFixed(1)}x
           </Text>
           <Text style={[styles.tableCell, { flex: 0.25, textAlign: 'right' }]}>
-            {formatCurrency(data.valuationHigh || 0)}
+            {formatCurrency(valHigh)}
           </Text>
         </View>
       </View>
@@ -926,7 +943,8 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
       <Text style={styles.pageNumber}>Página 5</Text>
     </View>
   </Page>
-);
+  );
+};
 
 // Disclaimer & Signature Page
 const DisclaimerPage: React.FC<{ 
