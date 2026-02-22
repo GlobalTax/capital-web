@@ -52,6 +52,8 @@ function mapToPdfData(c: CampaignCompany, campaign: ValuationCampaign): Professi
     normalizationAdjustments: [],
     normalizedEbitda: c.normalized_ebitda || c.ebitda,
     ebitdaMultipleUsed: c.multiple_used || undefined,
+    ebitdaMultipleLow: campaign.multiple_low || (c.multiple_used ? c.multiple_used - 1 : undefined),
+    ebitdaMultipleHigh: campaign.multiple_high || (c.multiple_used ? c.multiple_used + 1 : undefined),
     valuationCentral: c.valuation_central || undefined,
     valuationLow: c.valuation_low || undefined,
     valuationHigh: c.valuation_high || undefined,
