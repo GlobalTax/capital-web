@@ -77,8 +77,8 @@ import {
   type ResultadoInteraccion,
   type CreateInteraccionInput,
 } from '@/hooks/useEmpresaInteracciones';
-
-// ============= CONSTANTS =============
+import { SectorIntelligenceTab } from '@/components/admin/empresas/SectorIntelligenceTab';
+import { useSectorIntelligence } from '@/hooks/useSectorIntelligence';
 const TIPO_OPTIONS: { value: TipoInteraccion; label: string }[] = [
   { value: 'llamada',  label: '📞 Llamada' },
   { value: 'email',    label: '📧 Email' },
@@ -238,6 +238,9 @@ export default function EmpresaDetailPage() {
 
   // Interacciones
   const { interacciones, isLoading: isLoadingInteracciones, createInteraccion, isCreating, deleteInteraccion } = useEmpresaInteracciones(id);
+
+  // Sector intelligence matching
+  const { findBySector } = useSectorIntelligence();
 
   const handleSaveInteraccion = () => {
     createInteraccion(interaccionForm, {
@@ -412,6 +415,11 @@ export default function EmpresaDetailPage() {
             {interacciones.length > 0 && (
               <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">{interacciones.length}</Badge>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="sector-intel" className="flex items-center gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" />
+            Intel Sectorial
+            {(() => { const c = empresa?.sector ? findBySector(empresa.sector, empresa.subsector).matches.length : 0; return c > 0 ? <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">{c}</Badge> : null; })()}
           </TabsTrigger>
         </TabsList>
 
@@ -849,6 +857,14 @@ export default function EmpresaDetailPage() {
               </div>
             )}
           </div>
+        </TabsContent>
+
+        {/* Sector Intelligence Tab */}
+        <TabsContent value="sector-intel" className="mt-4">
+          <SectorIntelligenceTab
+            sector={empresa?.sector || ''}
+            subsector={empresa?.subsector}
+          />
         </TabsContent>
       </Tabs>
 

@@ -100,5 +100,18 @@ export const useSectorIntelligence = () => {
 
   const sectors = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
-  return { rows, grouped, sectors, isLoading, updateRow, createRow, deleteRow, bulkCreateRows };
+  const findBySector = useMemo(() => (sector: string, subsector?: string | null) => {
+    const sectorNorm = sector?.toLowerCase().trim();
+    if (!sectorNorm) return { type: 'none' as const, matches: [] as SectorIntelligenceRow[] };
+    const exactMatch = rows.filter(r =>
+      r.sector.toLowerCase().trim() === sectorNorm &&
+      (!subsector || r.subsector.toLowerCase().trim() === subsector.toLowerCase().trim())
+    );
+    if (exactMatch.length > 0) return { type: 'exact' as const, matches: exactMatch };
+    const sectorMatch = rows.filter(r => r.sector.toLowerCase().trim() === sectorNorm);
+    if (sectorMatch.length > 0) return { type: 'sector' as const, matches: sectorMatch };
+    return { type: 'none' as const, matches: [] as SectorIntelligenceRow[] };
+  }, [rows]);
+
+  return { rows, grouped, sectors, isLoading, updateRow, createRow, deleteRow, bulkCreateRows, findBySector };
 };
