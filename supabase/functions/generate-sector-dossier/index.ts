@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
@@ -45,6 +45,73 @@ interface MultiplesData {
   net_profit_multiple_min: number;
   net_profit_multiple_median: number;
   net_profit_multiple_max: number;
+}
+
+// Fetch PE sector intelligence data
+async function fetchSectorIntelligence(sector: string, subsector: string | undefined, supabase: any) {
+  console.log('🔍 Fetching PE sector intelligence for:', sector, subsector || '(no subsector)');
+
+  // Try exact sector+subsector match first
+  if (subsector) {
+    const { data: exactMatch, error: exactError } = await supabase
+      .from('pe_sector_intelligence')
+      .select('*')
+      .eq('is_active', true)
+      .ilike('sector', `%${sector}%`)
+      .ilike('subsector', `%${subsector}%`);
+
+    if (!exactError && exactMatch?.length > 0) {
+      console.log(`✅ Exact intel match: ${exactMatch.length} rows`);
+      return exactMatch;
+    }
+  }
+
+  // Fallback: all subsectors for the sector
+  const { data: sectorMatch, error: sectorError } = await supabase
+    .from('pe_sector_intelligence')
+    .select('*')
+    .eq('is_active', true)
+    .ilike('sector', `%${sector}%`);
+
+  if (!sectorError && sectorMatch?.length > 0) {
+    console.log(`✅ Sector intel match: ${sectorMatch.length} rows`);
+    return sectorMatch;
+  }
+
+  console.log('⚠️ No PE sector intelligence found');
+  return [];
+}
+
+// Build intelligence context string for prompt injection
+function buildIntelligenceContext(intelData: any[]): string {
+  if (!intelData.length) return '';
+
+  const sections = intelData.map(row => {
+    const parts = [`### Subsector: ${row.subsector}`];
+    if (row.pe_thesis) parts.push(`  - **Tesis PE**: ${row.pe_thesis}`);
+    if (row.multiples_valuations) parts.push(`  - **Múltiplos y valoraciones**: ${row.multiples_valuations}`);
+    if (row.active_pe_firms) parts.push(`  - **Firmas PE activas**: ${row.active_pe_firms}`);
+    if (row.consolidation_phase) parts.push(`  - **Fase consolidación**: ${row.consolidation_phase}`);
+    if (row.quantitative_data) parts.push(`  - **Datos cuantitativos**: ${row.quantitative_data}`);
+    if (row.platforms_operations) parts.push(`  - **Operaciones plataforma**: ${row.platforms_operations}`);
+    if (row.geography) parts.push(`  - **Geografía**: ${row.geography}`);
+    return parts.join('\n');
+  });
+
+  return `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏦 INTELIGENCIA PE SECTORIAL (Datos internos Capittal - USAR COMO FUENTE PRIMARIA)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${sections.join('\n\n')}
+
+INSTRUCCIONES SOBRE ESTA INTELIGENCIA:
+- Usa estos datos como FUENTE PRIMARIA para el dossier
+- Integra las tesis PE, firmas activas y múltiplos en las secciones relevantes
+- Menciona explícitamente las firmas PE activas en la sección de compradores
+- Usa los datos cuantitativos para enriquecer el panorama del sector
+- Refleja la fase de consolidación en el análisis de tendencias M&A
+`;
 }
 
 // Fetch sector data from database
@@ -107,7 +174,7 @@ async function fetchSectorData(sector: string, supabase: any) {
 }
 
 // Build specialized prompt for sector dossier
-function buildSectorDossierPrompt(sector: string, sectorData: any): string {
+function buildSectorDossierPrompt(sector: string, sectorData: any, intelligenceContext: string): string {
   const { competitors, multiples, caseStudies, stats } = sectorData;
 
   const competitorsText = competitors.length > 0
@@ -138,6 +205,8 @@ ${multiplesText}
 
 🎯 CASOS DE ÉXITO:
 ${caseStudies.length > 0 ? caseStudies.map((c: any) => `- ${c.title} (${c.year})`).join('\n') : 'No disponibles'}
+
+${intelligenceContext}
 
 ━━━━━━━━━━━━━━━━
 
@@ -281,11 +350,17 @@ serve(async (req) => {
 
     console.log('🚀 Generating new sector dossier...');
 
-    // 1. Fetch sector data
-    const sectorData = await fetchSectorData(sector, supabase);
-    console.log('✅ Sector data fetched');
+    // 1. Fetch sector data + PE intelligence in parallel
+    const [sectorData, intelData] = await Promise.all([
+      fetchSectorData(sector, supabase),
+      fetchSectorIntelligence(sector, subsector, supabase),
+    ]);
+    console.log('✅ Sector data fetched, intel rows:', intelData.length);
 
-    // 2. Create initial report record
+    // 2. Build intelligence context
+    const intelligenceContext = buildIntelligenceContext(intelData);
+
+    // 3. Create initial report record
     const { data: report, error: reportError } = await supabase
       .from('lead_ai_reports')
       .insert({
@@ -303,7 +378,7 @@ serve(async (req) => {
     reportId = report.id;
     console.log('✅ Report record created:', reportId);
 
-    // 3. Build specialized prompt
+    // 4. Build specialized prompt
     const systemPrompt = `Eres un analista senior de M&A especializado en mercado español de PYMES.
 Trabajas para Capittal, una boutique de M&A que asesora en compraventa de empresas.
 
@@ -316,11 +391,11 @@ Tu objetivo es crear dossiers sectoriales profesionales que ayuden al equipo com
 Responde en español (España), de forma estructurada, concreta y ACCIONABLE.
 Usa datos concretos cuando los tengas, pero infiere con criterio de experto cuando sea necesario.`;
 
-    const userPrompt = buildSectorDossierPrompt(sector, sectorData);
+    const userPrompt = buildSectorDossierPrompt(sector, sectorData, intelligenceContext);
 
     console.log('🤖 Calling OpenAI for sector dossier...');
 
-    // 4. Call OpenAI
+    // 5. Call OpenAI
     const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -333,7 +408,7 @@ Usa datos concretos cuando los tengas, pero infiere con criterio de experto cuan
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_completion_tokens: 6000, // Longer than lead reports
+        max_completion_tokens: 6000,
       }),
     });
 
@@ -345,11 +420,11 @@ Usa datos concretos cuando los tengas, pero infiere con criterio de experto cuan
     const openaiData = await openaiResponse.json();
     const dossierContent = openaiData.choices[0].message.content;
     const tokensUsed = openaiData.usage.total_tokens;
-    const costUsd = (tokensUsed / 1000000) * 0.0002; // gpt-5-mini pricing
+    const costUsd = (tokensUsed / 1000000) * 0.0002;
 
     console.log('✅ Dossier generated:', tokensUsed, 'tokens, $', costUsd.toFixed(4));
 
-    // 5. Save dossier to database
+    // 6. Save dossier to database
     const processingTime = Math.floor((Date.now() - startTime) / 1000);
 
     const { error: updateError } = await supabase
@@ -379,7 +454,9 @@ Usa datos concretos cuando los tengas, pero infiere con criterio de experto cuan
         tokens_used: tokensUsed,
         cost_usd: costUsd,
         processing_time_seconds: processingTime,
-        cached: false
+        cached: false,
+        intel_count: intelData.length,
+        intel_sectors: intelData.map((r: any) => r.subsector),
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
