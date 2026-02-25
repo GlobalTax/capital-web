@@ -1206,6 +1206,76 @@ const PAGES_DATA: Record<string, PageData> = {
     `,
   },
 
+  "/guia-valoracion-empresas": {
+    title: "Guía Completa de Métodos de Valoración de Empresas: Ejemplos Reales del Mercado Español | Capittal",
+    description: "Guía educativa con ejemplos numéricos reales: DCF paso a paso, múltiplos EBITDA por sector en España (2024-2025), transacciones comparables y valoración patrimonial. 4000+ palabras.",
+    keywords: "cómo valorar una empresa, métodos de valoración de empresas, múltiplos EBITDA España, DCF valoración, transacciones comparables España, valoración PYME",
+    canonical: "https://capittal.es/guia-valoracion-empresas",
+    ogType: "article",
+    structuredData: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: "Guía Completa de Métodos de Valoración de Empresas: Ejemplos Reales del Mercado Español",
+        description: "Guía educativa con ejemplos numéricos reales del mercado español. Métodos DCF, múltiplos EBITDA por sector, transacciones comparables y valoración patrimonial.",
+        image: "https://capittal.es/og-default.jpg",
+        url: "https://capittal.es/guia-valoracion-empresas",
+        datePublished: "2025-01-15",
+        dateModified: "2025-06-01",
+        author: { "@type": "Person", name: "Equipo Capittal" },
+        publisher: ORG_JSONLD,
+      },
+      buildFAQPageSchema([
+        { question: "¿Cuál es el método de valoración más fiable para una PYME española?", answer: "No existe un único método óptimo. Para PYMEs con flujos estables, el DCF combinado con múltiplos sectoriales ofrece el rango más fiable. La clave es usar al menos dos metodologías y triangular resultados." },
+        { question: "¿Qué múltiplo de EBITDA se paga en España por sector en 2025?", answer: "Los rangos medios son: Tecnología/SaaS 8-15x, Salud 7-10x, Seguridad 6-9x, Servicios profesionales 5-8x, Industrial 4-7x, Construcción 3-6x, Hostelería 3-5x." },
+        { question: "¿Cómo afecta el tamaño de la empresa a su valoración?", answer: "Existe una prima por tamaño significativa. Empresas con EBITDA >5M€ suelen valorarse con múltiplos 1.5-2x superiores a empresas con EBITDA <1M€ del mismo sector." },
+        { question: "¿Qué es el descuento por iliquidez y cómo se aplica?", answer: "Las empresas privadas aplican un descuento del 15-30% respecto a comparables cotizados, porque las acciones no pueden venderse fácilmente. En España, para PYMES suele situarse entre el 20-25%." },
+        { question: "¿Cuándo debo usar valoración patrimonial en lugar de DCF o múltiplos?", answer: "La valoración patrimonial es preferible cuando los activos tangibles son el principal motor de valor: holdings inmobiliarios, empresas agrícolas, negocios en liquidación o empresas con activos significativamente infravalorados en balance." },
+        { question: "¿Cómo se normaliza el EBITDA de una empresa familiar?", answer: "Se ajustan gastos personales imputados a la empresa, salarios fuera de mercado del propietario, operaciones con partes vinculadas, gastos extraordinarios no recurrentes y provisiones excesivas. Un EBITDA normalizado puede ser un 20-40% superior al reportado." },
+        { question: "¿Qué fuentes de datos existen para comparables en el mercado español?", answer: "Las principales son: TTR para M&A en Iberia, Capital IQ y PitchBook para transacciones globales, Registro Mercantil para cuentas anuales, SABI para análisis financiero, e informes sectoriales de KPMG, Deloitte y PwC." },
+        { question: "¿Es necesario contratar un asesor para valorar mi empresa?", answer: "Para una estimación orientativa, herramientas como nuestra calculadora gratuita ofrecen un punto de partida válido. Sin embargo, para operaciones de compraventa, planificación fiscal o procesos judiciales, es imprescindible una valoración profesional con informe certificado." },
+      ]),
+      {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        name: "Cómo elegir el método de valoración adecuado para tu empresa",
+        description: "Guía paso a paso para seleccionar la metodología de valoración más apropiada según el tipo de empresa, sector y propósito.",
+        step: [
+          { "@type": "HowToStep", position: 1, name: "Identifica el propósito de la valoración", text: "Define si la valoración es para venta, inversión, fiscalidad, sucesión o planificación estratégica." },
+          { "@type": "HowToStep", position: 2, name: "Analiza el perfil de tu empresa", text: "Evalúa si tu empresa genera flujos de caja predecibles (DCF), tiene comparables claros (múltiplos), o su valor reside en activos tangibles (patrimonial)." },
+          { "@type": "HowToStep", position: 3, name: "Selecciona al menos dos metodologías", text: "Aplica un mínimo de dos métodos complementarios para obtener un rango de valor robusto." },
+          { "@type": "HowToStep", position: 4, name: "Recopila datos de mercado actualizados", text: "Obtén múltiplos sectoriales recientes, tasas de descuento actuales y transacciones comparables de los últimos 24 meses." },
+          { "@type": "HowToStep", position: 5, name: "Triangula resultados y determina un rango", text: "Compara los valores obtenidos. Si divergen más del 30%, revisa los supuestos. El rango final debe ser defendible y coherente con el mercado." },
+        ],
+      },
+    ],
+    content: `
+      <h1>Guía Completa de Métodos de Valoración de Empresas: Ejemplos Reales del Mercado Español</h1>
+      <p>Valorar una empresa correctamente es una de las decisiones financieras más críticas. Esta guía desglosamos los cuatro métodos principales con ejemplos numéricos reales, tablas de múltiplos actualizados por sector y errores frecuentes en PYMEs españolas.</p>
+
+      <h2>Método DCF: Descuento de Flujos de Caja</h2>
+      <p>El método DCF estima el valor intrínseco proyectando flujos de caja libres futuros y descontándolos al presente mediante WACC. Ejemplo: empresa industrial con facturación de 5M€, EBITDA de 750K€, crecimiento del 4%, WACC del 10.5%. Resultado: Enterprise Value de 4.84M€ (6.5x EBITDA).</p>
+
+      <h2>Método de Múltiplos: EV/EBITDA por Sector en España</h2>
+      <p>Múltiplos EV/EBITDA 2024-2025: Tecnología 8-15x, Salud 7-10x, Seguridad 6-9x, Servicios profesionales 5-8x, Industrial 4-7x, Construcción 3-6x. Ejemplo: consultora con EBITDA normalizado de 800K€ a 6x = 4.8M€ Enterprise Value.</p>
+
+      <h2>Transacciones Comparables</h2>
+      <p>Analiza precios realmente pagados en operaciones similares. Fuentes: TTR, Capital IQ, Registro Mercantil, SABI. Ajustes habituales: tamaño (-10-15%), geografía (+5-10% Madrid/Barcelona), antigüedad de la transacción.</p>
+
+      <h2>Valoración Patrimonial</h2>
+      <p>Calcula el valor como diferencia entre activos y pasivos ajustados a mercado. Ideal para holdings inmobiliarios, empresas agrícolas y liquidaciones. Ejemplo: holding con activos contables de 2.1M€ y valor de mercado de 5.4M€.</p>
+
+      <h2>8 Errores Comunes en Valoraciones de PYMEs</h2>
+      <p>1. No normalizar el EBITDA. 2. Usar un único método. 3. Ignorar la deuda neta. 4. Aplicar múltiplos de cotizadas sin ajustar. 5. Sobreestimar crecimiento. 6. No considerar dependencia del fundador. 7. Concentración de clientes. 8. Ignorar capital circulante normalizado.</p>
+
+      <h2>Preguntas frecuentes</h2>
+      <p>Respondemos las 8 preguntas más frecuentes sobre valoración: método más fiable, múltiplos por sector en 2025, prima por tamaño, descuento por iliquidez, normalización de EBITDA familiar, fuentes de datos en España y cuándo contratar un asesor.</p>
+
+      <p><a href="/lp/calculadora">Usar calculadora gratuita →</a></p>
+      <p><a href="/contacto">Solicitar valoración profesional →</a></p>
+    `,
+  },
+
   "/politica-privacidad": {
     title: "Política de Privacidad | Capittal",
     description:
