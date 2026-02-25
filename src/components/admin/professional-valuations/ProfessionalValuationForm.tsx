@@ -165,15 +165,25 @@ export function ProfessionalValuationForm({
       return baseData;
     }
     
+    // Usar múltiplos efectivos: los del usuario si existen, los del sector si no
+    const effectiveLow = baseData.ebitdaMultipleLow ?? calculatedValues.multipleLow;
+    const effectiveHigh = baseData.ebitdaMultipleHigh ?? calculatedValues.multipleHigh;
+    const normalizedEbitda = calculatedValues.normalizedEbitda;
+
+    // RECALCULAR valoraciones con múltiplos efectivos (EBITDA × Múltiplo)
+    const recalcValuationLow = normalizedEbitda * effectiveLow;
+    const recalcValuationHigh = normalizedEbitda * effectiveHigh;
+    const recalcValuationCentral = normalizedEbitda * baseData.ebitdaMultipleUsed;
+
     return {
       ...baseData,
       reportedEbitda: getLatestEbitda(data.financialYears),
-      normalizedEbitda: calculatedValues.normalizedEbitda,
-      ebitdaMultipleLow: baseData.ebitdaMultipleLow ?? calculatedValues.multipleLow,
-      ebitdaMultipleHigh: baseData.ebitdaMultipleHigh ?? calculatedValues.multipleHigh,
-      valuationLow: calculatedValues.valuationLow || baseData.valuationLow,
-      valuationHigh: calculatedValues.valuationHigh || baseData.valuationHigh,
-      valuationCentral: calculatedValues.valuationCentral || baseData.valuationCentral,
+      normalizedEbitda,
+      ebitdaMultipleLow: effectiveLow,
+      ebitdaMultipleHigh: effectiveHigh,
+      valuationLow: recalcValuationLow,
+      valuationHigh: recalcValuationHigh,
+      valuationCentral: recalcValuationCentral,
       sensitivityMatrix: calculatedValues.sensitivityMatrix || baseData.sensitivityMatrix,
     };
   }, [data, calculatedValues]);
