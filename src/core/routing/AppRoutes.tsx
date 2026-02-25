@@ -94,6 +94,7 @@ const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pa
 const Noticias = lazy(() => import('@/pages/recursos/Noticias'));
 const TestExitReady = lazy(() => import('@/pages/recursos/TestExitReady').catch(() => import('@/pages/VentaEmpresas')));
 const SearchFundsHub = lazy(() => import('@/pages/recursos/SearchFundsHub'));
+const InformesMA = lazy(() => import('@/pages/recursos/InformesMA'));
 
 // === SEARCH FUNDS RESOURCE CENTER ===
 const SearchFundsResourceCenter = lazy(() => import('@/pages/search-funds/SearchFundsResourceCenter'));
@@ -329,6 +330,7 @@ export const AppRoutes = () => {
         <Route path="/recursos/case-studies" element={<CaseStudies />} />
         <Route path="/recursos/newsletter" element={<Newsletter />} />
         <Route path="/recursos/webinars" element={<Webinars />} />
+        <Route path="/recursos/informes-ma" element={<InformesMA />} />
         
         {/* === SEARCH FUNDS RESOURCE CENTER === */}
         <Route path="/search-funds/recursos" element={<SearchFundsResourceCenter />} />
