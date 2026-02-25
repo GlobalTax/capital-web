@@ -1,96 +1,93 @@
 
-# Informes Trimestrales M&A: Seccion de Autoridad para Capittal
+# Fix: Calculo Incorrecto de Valoraciones en Rango de Multiplos
 
-## Objetivo
+## Diagnostico
 
-Crear una seccion dedicada de informes trimestrales del mercado M&A en Espana dentro del blog existente, con datos propietarios de Capittal. Estos informes seran contenido citable por motores de IA gracias a datos unicos, structured data `Report` y formato optimizado para AEO.
+El bug esta en `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`, lineas 168-176, en el `useMemo` llamado `dataWithCalculations`.
 
-## Estrategia
+### Flujo actual (con bug)
 
-En lugar de crear una infraestructura nueva, aprovecharemos el sistema de blog existente (`blog_posts` table) con una nueva categoria "Informes M&A" y una pagina hub dedicada en `/recursos/informes-ma` que agrega y presenta estos informes con un diseno diferenciado.
+1. `calculateProfessionalValuation()` calcula `valuationLow` y `valuationHigh` usando los multiplos **del sector** (de la matriz EBITDA), NO los multiplos personalizados del usuario.
+2. `dataWithCalculations` asigna estos valores directamente: `valuationLow: calculatedValues.valuationLow || baseData.valuationLow`
+3. Cuando el usuario configura multiplos custom (ej: 7.0x - 9.0x con base 8.0x), el calculo sigue usando los multiplos del sector (ej: 4.5x - 6.5x), produciendo valores incorrectos.
+4. El PDF recibe `data.valuationLow` / `data.valuationHigh` ya con valores incorrectos.
 
-## Arquitectura
+### Ejemplo del bug
 
 ```text
-/recursos/informes-ma (HUB) --> Lista todos los informes trimestrales
-    |
-    +--> /blog/informe-ma-q1-2025  (post individual con structured data Report)
-    +--> /blog/informe-ma-q4-2024
-    +--> /blog/informe-ma-q3-2024
-    ...
+EBITDA normalizado: 1.533.543
+Multiplos del usuario: 7.0x (low) / 8.0x (base) / 9.0x (high)
+Multiplos del sector (matriz): ~5.5x (low) / ~6.5x (high)
+
+Resultado actual (INCORRECTO):
+  Conservador = 1.533.543 x 5.5 = 8.434.487   (usa multiplo sector)
+  Base        = 1.533.543 x 8.0 = 12.268.344   (usa multiplo usuario - OK)
+  Optimista   = 1.533.543 x 6.5 = 9.968.030    (usa multiplo sector)
+
+Resultado correcto:
+  Conservador = 1.533.543 x 7.0 = 10.734.801
+  Base        = 1.533.543 x 8.0 = 12.268.344
+  Optimista   = 1.533.543 x 9.0 = 13.801.887
 ```
 
-Los informes se crean como blog posts con categoria "Informes M&A", lo que permite gestionarlos desde el admin existente sin cambios en la base de datos.
+## Solucion
 
-## Cambios Planificados
+### Archivo: `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`
 
-### 1. Nueva pagina hub: `src/pages/recursos/InformesMA.tsx`
+Modificar el `useMemo` `dataWithCalculations` (lineas 157-179) para recalcular `valuationLow` y `valuationHigh` usando los multiplos **efectivos** (los del usuario si existen, los del sector si no):
 
-Pagina dedicada que:
-- Filtra blog posts con categoria "Informes M&A"
-- Presenta un hero con contexto de autoridad ("Datos propietarios de mas de 500 valoraciones realizadas")
-- Muestra los informes en formato cronologico con tarjetas destacadas
-- Incluye metricas clave visibles (numero de operaciones analizadas, sectores cubiertos, anos de datos)
-- Tiene un CTA para suscripcion al newsletter
-- Structured data: `CollectionPage` + `DataCatalog` para que los bots entiendan que es una coleccion de informes con datos propietarios
+```typescript
+const dataWithCalculations = useMemo((): ProfessionalValuationData => {
+  const baseData = { ...data };
 
-### 2. Primer informe semilla: Contenido pre-creado
+  if (!baseData.ebitdaMultipleUsed || baseData.ebitdaMultipleUsed <= 0) {
+    baseData.ebitdaMultipleUsed = 6;
+  }
 
-Crear un blog post de 2000+ palabras como primer informe trimestral (Q4 2024) con:
-- Resumen ejecutivo del mercado M&A en Espana
-- Volumen de operaciones y tendencias
-- Multiplos EV/EBITDA por sector (datos propietarios de Capittal)
-- Sectores mas activos
-- Perspectivas para el siguiente trimestre
-- Tablas con datos numericos concretos y citables
-- Metodologia de analisis
+  if (!calculatedValues) {
+    return baseData;
+  }
 
-Este contenido se insertara directamente en la tabla `blog_posts` usando el insert tool.
+  // Usar multiplos efectivos: los del usuario si existen, los calculados si no
+  const effectiveLow = baseData.ebitdaMultipleLow ?? calculatedValues.multipleLow;
+  const effectiveHigh = baseData.ebitdaMultipleHigh ?? calculatedValues.multipleHigh;
+  const normalizedEbitda = calculatedValues.normalizedEbitda;
 
-### 3. Ruta en AppRoutes.tsx
+  // RECALCULAR valoraciones con multiplos efectivos (EBITDA x Multiplo)
+  const recalcValuationLow = normalizedEbitda * effectiveLow;
+  const recalcValuationHigh = normalizedEbitda * effectiveHigh;
+  const recalcValuationCentral = normalizedEbitda * baseData.ebitdaMultipleUsed;
 
-Anadir lazy import y ruta `/recursos/informes-ma`.
+  return {
+    ...baseData,
+    reportedEbitda: getLatestEbitda(data.financialYears),
+    normalizedEbitda,
+    ebitdaMultipleLow: effectiveLow,
+    ebitdaMultipleHigh: effectiveHigh,
+    valuationLow: recalcValuationLow,
+    valuationHigh: recalcValuationHigh,
+    valuationCentral: recalcValuationCentral,
+    sensitivityMatrix: calculatedValues.sensitivityMatrix || baseData.sensitivityMatrix,
+  };
+}, [data, calculatedValues]);
+```
 
-### 4. SSR en pages-ssr/index.ts
+### Que cambia exactamente
 
-Anadir metadata y structured data para `/recursos/informes-ma` con schema `CollectionPage`.
+- Antes: `valuationLow = calculatedValues.valuationLow` (usa multiplos del sector)
+- Despues: `valuationLow = normalizedEbitda * effectiveLow` (usa multiplos del usuario si existen)
 
-### 5. Navegacion: recursosData.ts
+### Por que el valor Base era correcto
 
-Anadir "Informes M&A" al menu de Recursos en la navegacion principal.
+`valuationCentral` se calculaba con `customMultiple` (el multiplo del usuario) en `calculateProfessionalValuation()` linea 156, por eso el valor central siempre era correcto. El bug solo afectaba a los valores conservador y optimista.
 
-### 6. Categoria en useBlogCategories.tsx
+## Archivos afectados
 
-Anadir "Informes M&A" a las categorias predefinidas.
+Solo 1 archivo: `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`
 
-## Detalle Tecnico
+## Impacto
 
-### Archivos a crear
-- `src/pages/recursos/InformesMA.tsx` - Pagina hub de informes
-
-### Archivos a modificar
-- `src/core/routing/AppRoutes.tsx` - Nueva ruta `/recursos/informes-ma`
-- `src/components/header/data/recursosData.ts` - Enlace en navegacion
-- `src/hooks/useBlogCategories.tsx` - Nueva categoria predefinida
-- `supabase/functions/pages-ssr/index.ts` - Metadata SSR
-
-### Datos a insertar (via insert tool)
-- 1 blog post semilla: "Informe Trimestral M&A Espana - Q4 2024" con datos propietarios, tablas de multiplos sectoriales y analisis de tendencias
-
-### Structured Data del hub
-- `CollectionPage`: Describe la coleccion de informes
-- `DataCatalog`: Indica que contiene datasets propietarios
-- Cada informe individual hereda el schema `Article` existente del BlogPost
-
-### Diseno del hub
-- Hero con estadisticas de autoridad (operaciones analizadas, sectores, anos)
-- Grid de informes con indicadores visuales de trimestre/ano
-- Sidebar con metricas clave y CTA de suscripcion
-- Estilo consistente con el blog existente (mismo layout UnifiedLayout)
-
-### Principios AEO aplicados
-- Datos numericos concretos y unicos (no disponibles en competidores)
-- Formato tabular citable por LLMs
-- Metadata "datePublished" para frescura de datos
-- Nomenclatura consistente en slugs para indexacion serial
-- Internal links bidireccionales con `/valoracion-empresas` y `/guia-valoracion-empresas`
+- El PDF mostrara los 3 escenarios con valores correctos (EBITDA x Multiplo correspondiente)
+- La vista previa (PreviewStep) tambien se corrige automaticamente porque usa `dataWithCalculations`
+- El QuickEditSheet ya calcula correctamente (lineas 42-43) pero sus valores se perdian al volver al flujo principal
+- No se rompe nada mas: solo se corrige la fuente de verdad de los valores de rango
