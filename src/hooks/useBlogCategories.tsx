@@ -21,7 +21,7 @@ export const useBlogCategories = () => {
   });
 
   // Common predefined categories that should always be available
-  const predefinedCategories = ['M&A', 'Valoración', 'Due Diligence', 'Análisis', 'Estrategia', 'Financiación', 'Legal', 'Fiscal'];
+  const predefinedCategories = ['M&A', 'Valoración', 'Due Diligence', 'Análisis', 'Estrategia', 'Financiación', 'Legal', 'Fiscal', 'Informes M&A'];
   
   // Combine and deduplicate categories
   const allCategories = [...new Set([...predefinedCategories, ...existingCategories])];

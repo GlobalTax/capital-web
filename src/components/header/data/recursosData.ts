@@ -31,6 +31,13 @@ export const recursosData: MenuCategory[] = [
     title: "Contenido",
     items: [
       {
+        id: "informes-ma",
+        label: "Informes M&A",
+        href: "/recursos/informes-ma",
+        icon: 'trending-up',
+        description: "Informes trimestrales del mercado M&A con datos propietarios"
+      },
+      {
         id: "blog",
         label: "Blog",
         href: "/recursos/blog",

@@ -1409,6 +1409,25 @@ const PAGES_DATA: Record<string, PageData> = {
     structuredData: [{ "@context": "https://schema.org", "@type": "WebPage", name: "Webinars M&A - Capittal", url: "https://capittal.es/recursos/webinars" }],
     content: `<h1>Webinars M&A</h1><p>Webinars sobre fusiones y adquisiciones, valoración de empresas y tendencias M&A impartidos por expertos de Capittal.</p>`,
   },
+  "/recursos/informes-ma": {
+    title: "Informes Trimestrales M&A España | Datos Propietarios | Capittal",
+    description: "Informes trimestrales del mercado M&A en España con datos propietarios de Capittal: múltiplos EV/EBITDA por sector, volumen de operaciones y tendencias. Basado en +500 valoraciones.",
+    keywords: "informe M&A España, múltiplos EBITDA sector, mercado M&A trimestral, datos propietarios valoración empresas",
+    canonical: "https://capittal.es/recursos/informes-ma",
+    ogType: "website",
+    structuredData: [
+      { "@context": "https://schema.org", "@type": "CollectionPage", name: "Informes Trimestrales M&A España", url: "https://capittal.es/recursos/informes-ma", description: "Informes trimestrales del mercado M&A en España con datos propietarios de Capittal basados en más de 500 valoraciones.", publisher: ORG_JSONLD },
+      { "@context": "https://schema.org", "@type": "DataCatalog", name: "Datos Propietarios M&A España - Capittal", description: "Múltiplos EV/EBITDA por sector, volumen de operaciones y tendencias del mercado M&A español.", url: "https://capittal.es/recursos/informes-ma", creator: ORG_JSONLD, temporalCoverage: "2020/..", spatialCoverage: { "@type": "Place", name: "España" } },
+    ],
+    content: `
+      <h1>Informes Trimestrales del Mercado M&A en España</h1>
+      <p>Análisis trimestral del mercado de fusiones y adquisiciones en España con datos propietarios extraídos de más de 500 valoraciones realizadas por Capittal Transacciones.</p>
+      <h2>Datos Propietarios</h2>
+      <p>Nuestros informes incluyen múltiplos EV/EBITDA por sector actualizados, volumen de operaciones, sectores más activos, tendencias de precios y perspectivas de mercado. Datos únicos no disponibles en fuentes públicas.</p>
+      <h2>Metodología</h2>
+      <p>Los datos se extraen de las más de 500 valoraciones realizadas por nuestro equipo, complementados con información de TTR, SABI y el Registro Mercantil. Cada informe es revisado por nuestro comité de valoración.</p>
+    `,
+  },
 
   // ─── OPORTUNIDADES ───
   "/oportunidades": {
