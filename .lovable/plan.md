@@ -1,67 +1,96 @@
 
-# Guia Completa de Valoracion de Empresas: /guia-valoracion-empresas
+# Informes Trimestrales M&A: Seccion de Autoridad para Capittal
 
 ## Objetivo
 
-Crear una pagina pilar de 4000+ palabras en `/guia-valoracion-empresas` enfocada en **ejemplos reales del mercado espanol**, con datos concretos de transacciones, multiplos por sector y casos practicos. Esta pagina complementa `/valoracion-empresas` (orientada a la calculadora) y compite directamente con eValora y PRETIVM en busquedas genericas como "como valorar una empresa", "metodos de valoracion de empresas" y "multiplos EBITDA Espana".
+Crear una seccion dedicada de informes trimestrales del mercado M&A en Espana dentro del blog existente, con datos propietarios de Capittal. Estos informes seran contenido citable por motores de IA gracias a datos unicos, structured data `Report` y formato optimizado para AEO.
 
-## Diferenciacion vs /valoracion-empresas
+## Estrategia
 
-| Aspecto | /valoracion-empresas | /guia-valoracion-empresas |
-|---------|---------------------|--------------------------|
-| Enfoque | Calculadora + resumen de metodos | Guia educativa con ejemplos reales |
-| CTA principal | Calculadora gratuita | Contacto profesional + Calculadora |
-| Contenido | 3000 palabras, metodos resumidos | 4000+ palabras, casos practicos con numeros |
-| Target SEO | "valoracion empresas Espana" | "como valorar empresa", "metodos valoracion" |
-| Structured Data | WebPage + FAQ + HowTo + WebApp | Article + FAQ + HowTo |
+En lugar de crear una infraestructura nueva, aprovecharemos el sistema de blog existente (`blog_posts` table) con una nueva categoria "Informes M&A" y una pagina hub dedicada en `/recursos/informes-ma` que agrega y presenta estos informes con un diseno diferenciado.
 
-## Estructura del Contenido
+## Arquitectura
 
-### Secciones de la pagina (9 secciones)
+```text
+/recursos/informes-ma (HUB) --> Lista todos los informes trimestrales
+    |
+    +--> /blog/informe-ma-q1-2025  (post individual con structured data Report)
+    +--> /blog/informe-ma-q4-2024
+    +--> /blog/informe-ma-q3-2024
+    ...
+```
 
-1. **Hero** (~200 palabras) - H1: "Guia Completa de Metodos de Valoracion de Empresas: Ejemplos Reales del Mercado Espanol"
-2. **Indice de contenidos** - Navegacion por anclas a cada seccion
-3. **Metodo DCF en profundidad** (~800 palabras) - Explicacion paso a paso con ejemplo numerico real: empresa industrial espanola con facturacion de 5M, proyeccion a 5 anos, calculo del WACC, valor terminal. Tabla con numeros concretos.
-4. **Metodo de Multiplos** (~800 palabras) - Tabla de multiplos EV/EBITDA por sector en Espana (2024-2025): Tecnologia 8-15x, Salud 7-10x, Seguridad 6-9x, Industrial 4-7x, Construccion 3-6x. Ejemplo: empresa de servicios profesionales con EBITDA 800K.
-5. **Transacciones Comparables** (~600 palabras) - Ejemplo con datos de mercado espanol, fuentes de informacion (Registro Mercantil, TTR, Capital IQ), como ajustar por tamano y geografia.
-6. **Valoracion Patrimonial** (~400 palabras) - Cuando usar, ejemplo de holding inmobiliario, diferencia entre valor contable y valor de mercado.
-7. **Comparativa de metodos** (~300 palabras) - Tabla resumen con cuando usar cada metodo, precision esperada y coste.
-8. **Errores comunes** (~400 palabras) - 8 errores frecuentes en valoraciones de PYMEs espanolas con consecuencias reales.
-9. **FAQ ampliado** (~600 palabras) - 8 preguntas orientadas a queries de IA, diferentes a las de /valoracion-empresas.
-10. **CTA dual** - Calculadora gratuita + Contacto profesional.
+Los informes se crean como blog posts con categoria "Informes M&A", lo que permite gestionarlos desde el admin existente sin cambios en la base de datos.
 
-### Componentes reutilizados
+## Cambios Planificados
 
-Se usaran los componentes existentes de `search-funds-guides/`:
-- `GuideSection` para secciones con iconos
-- `GuideTip` para callouts de informacion/advertencia
-- `GuideChecklist` para listas de verificacion
-- `GuideCTA` para llamadas a la accion
+### 1. Nueva pagina hub: `src/pages/recursos/InformesMA.tsx`
 
-Ademas: `SEOHead`, `Header`, `Footer`, `Accordion` (FAQ).
+Pagina dedicada que:
+- Filtra blog posts con categoria "Informes M&A"
+- Presenta un hero con contexto de autoridad ("Datos propietarios de mas de 500 valoraciones realizadas")
+- Muestra los informes en formato cronologico con tarjetas destacadas
+- Incluye metricas clave visibles (numero de operaciones analizadas, sectores cubiertos, anos de datos)
+- Tiene un CTA para suscripcion al newsletter
+- Structured data: `CollectionPage` + `DataCatalog` para que los bots entiendan que es una coleccion de informes con datos propietarios
 
-## Structured Data
+### 2. Primer informe semilla: Contenido pre-creado
 
-- **Article** (schema.org): Guia como articulo educativo con autor, fecha, editorial
-- **FAQPage**: 8 preguntas frecuentes
-- **HowTo**: "Como elegir el metodo de valoracion adecuado" con pasos
-- Interlink con `/valoracion-empresas` y `/lp/calculadora`
+Crear un blog post de 2000+ palabras como primer informe trimestral (Q4 2024) con:
+- Resumen ejecutivo del mercado M&A en Espana
+- Volumen de operaciones y tendencias
+- Multiplos EV/EBITDA por sector (datos propietarios de Capittal)
+- Sectores mas activos
+- Perspectivas para el siguiente trimestre
+- Tablas con datos numericos concretos y citables
+- Metodologia de analisis
+
+Este contenido se insertara directamente en la tabla `blog_posts` usando el insert tool.
+
+### 3. Ruta en AppRoutes.tsx
+
+Anadir lazy import y ruta `/recursos/informes-ma`.
+
+### 4. SSR en pages-ssr/index.ts
+
+Anadir metadata y structured data para `/recursos/informes-ma` con schema `CollectionPage`.
+
+### 5. Navegacion: recursosData.ts
+
+Anadir "Informes M&A" al menu de Recursos en la navegacion principal.
+
+### 6. Categoria en useBlogCategories.tsx
+
+Anadir "Informes M&A" a las categorias predefinidas.
 
 ## Detalle Tecnico
 
-### Archivos a crear/modificar
+### Archivos a crear
+- `src/pages/recursos/InformesMA.tsx` - Pagina hub de informes
 
-1. **`src/pages/GuiaValoracionEmpresas.tsx`** (NUEVO) - Pagina completa con todo el contenido, structured data y SEO
-2. **`src/core/routing/AppRoutes.tsx`** - Anadir lazy import y ruta `/guia-valoracion-empresas`
-3. **`supabase/functions/pages-ssr/index.ts`** - Anadir metadata SSR para la nueva ruta con structured data Article + FAQ + HowTo
-4. **`src/utils/seo/schemas.ts`** - Anadir `getArticleSchema()` para contenido tipo guia educativa
+### Archivos a modificar
+- `src/core/routing/AppRoutes.tsx` - Nueva ruta `/recursos/informes-ma`
+- `src/components/header/data/recursosData.ts` - Enlace en navegacion
+- `src/hooks/useBlogCategories.tsx` - Nueva categoria predefinida
+- `supabase/functions/pages-ssr/index.ts` - Metadata SSR
 
-### Ruta
+### Datos a insertar (via insert tool)
+- 1 blog post semilla: "Informe Trimestral M&A Espana - Q4 2024" con datos propietarios, tablas de multiplos sectoriales y analisis de tendencias
 
-```
-/guia-valoracion-empresas
-```
+### Structured Data del hub
+- `CollectionPage`: Describe la coleccion de informes
+- `DataCatalog`: Indica que contiene datasets propietarios
+- Cada informe individual hereda el schema `Article` existente del BlogPost
 
-### Layout
+### Diseno del hub
+- Hero con estadisticas de autoridad (operaciones analizadas, sectores, anos)
+- Grid de informes con indicadores visuales de trimestre/ano
+- Sidebar con metricas clave y CTA de suscripcion
+- Estilo consistente con el blog existente (mismo layout UnifiedLayout)
 
-Usara `Header` + `Footer` directamente (mismo patron que `ValoracionEmpresas.tsx`), con contenido en `max-w-4xl` para lectura optima del contenido largo.
+### Principios AEO aplicados
+- Datos numericos concretos y unicos (no disponibles en competidores)
+- Formato tabular citable por LLMs
+- Metadata "datePublished" para frescura de datos
+- Nomenclatura consistente en slugs para indexacion serial
+- Internal links bidireccionales con `/valoracion-empresas` y `/guia-valoracion-empresas`
