@@ -155,18 +155,20 @@ export function calculateProfessionalValuation(
   // 4. Múltiplo a usar (personalizado o punto medio)
   const multipleUsed = customMultiple ?? (multipleLow + multipleHigh) / 2;
   
-  // 5. Calcular valoraciones
-  const valuationLow = calculateValuation(normalizedEbitda, multipleLow);
-  const valuationHigh = calculateValuation(normalizedEbitda, multipleHigh);
+  // 5. Calcular valoraciones - usar múltiplos efectivos cuando hay customMultiple
+  const effectiveLow = customMultiple ? customMultiple - 1 : multipleLow;
+  const effectiveHigh = customMultiple ? customMultiple + 1 : multipleHigh;
+  const valuationLow = calculateValuation(normalizedEbitda, effectiveLow);
+  const valuationHigh = calculateValuation(normalizedEbitda, effectiveHigh);
   const valuationCentral = calculateValuation(normalizedEbitda, multipleUsed);
   
   // 6. Generar matriz de sensibilidad
-  const sensitivityMatrix = generateSensitivityMatrix(normalizedEbitda, multipleLow, multipleHigh);
+  const sensitivityMatrix = generateSensitivityMatrix(normalizedEbitda, effectiveLow, effectiveHigh);
   
   return {
     normalizedEbitda,
-    multipleLow,
-    multipleHigh,
+    multipleLow: effectiveLow,
+    multipleHigh: effectiveHigh,
     multipleUsed,
     valuationLow,
     valuationHigh,

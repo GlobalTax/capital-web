@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calculator, Sparkles, Loader2, Building2, Mail, TrendingUp, DollarSign, X } from 'lucide-react';
+import { Calculator, Sparkles, Loader2, Building2, Mail, TrendingUp, DollarSign, X, RefreshCw } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { calculateProfessionalValuation, formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
@@ -251,6 +251,50 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
     }
   };
 
+  const [recalculating, setRecalculating] = useState(false);
+
+  const handleRecalculateAll = async () => {
+    setRecalculating(true);
+    try {
+      const toRecalc = companies.filter(c => c.status !== 'excluded' && selectedIds.has(c.id) && c.ebitda);
+      const updates: { id: string; data: Partial<CampaignCompany> }[] = [];
+
+      for (const c of toRecalc) {
+        const financialYears = c.financial_years_data?.length
+          ? c.financial_years_data
+          : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }];
+        const result = calculateProfessionalValuation(
+          financialYears,
+          [],
+          campaign.sector,
+          c.custom_multiple || campaign.custom_multiple || undefined
+        );
+
+        updates.push({
+          id: c.id,
+          data: {
+            valuation_low: result.valuationLow,
+            valuation_central: result.valuationCentral,
+            valuation_high: result.valuationHigh,
+            normalized_ebitda: result.normalizedEbitda,
+            multiple_used: result.multipleUsed,
+            status: c.status === 'pending' ? 'calculated' : c.status,
+          },
+        });
+      }
+
+      if (updates.length > 0) {
+        await bulkUpdateCompanies(updates);
+        toast.success(`${updates.length} valoraciones recalculadas`);
+      }
+      await refetch();
+    } catch (e: any) {
+      toast.error('Error al recalcular: ' + e.message);
+    } finally {
+      setRecalculating(false);
+    }
+  };
+
   const pendingCount = companies.filter(c => c.status === 'pending' && selectedIds.has(c.id)).length;
   const calculatedCount = companies.filter(c => ['calculated', 'created', 'sent'].includes(c.status)).length;
   const avgValuation = calculatedCount > 0 ? stats.totalValuation / calculatedCount : 0;
@@ -294,6 +338,10 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             Calcular {pendingCount} pendientes
           </Button>
         )}
+        <Button variant="outline" onClick={handleRecalculateAll} disabled={recalculating}>
+          {recalculating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+          Recalcular todas ({selectedIds.size})
+        </Button>
         <Button variant="outline" onClick={handleEnrichAll} disabled={enriching || !campaign.ai_personalize}>
           {enriching ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
           Enriquecer con IA ({selectedIds.size})
