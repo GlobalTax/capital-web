@@ -1,91 +1,67 @@
 
-
-# Estrategia AEO: Contenido Pilar en /valoracion-empresas
+# Guia Completa de Valoracion de Empresas: /guia-valoracion-empresas
 
 ## Objetivo
 
-Transformar la pagina actual (~800 palabras) en un contenido pilar de 3000+ palabras optimizado para Answer Engine Optimization (AEO), con structured data completo (FAQPage, HowTo, WebApplication) para maximizar la visibilidad de Capittal en ChatGPT, Perplexity y otros motores de IA.
+Crear una pagina pilar de 4000+ palabras en `/guia-valoracion-empresas` enfocada en **ejemplos reales del mercado espanol**, con datos concretos de transacciones, multiplos por sector y casos practicos. Esta pagina complementa `/valoracion-empresas` (orientada a la calculadora) y compite directamente con eValora y PRETIVM en busquedas genericas como "como valorar una empresa", "metodos de valoracion de empresas" y "multiplos EBITDA Espana".
 
-## Estado Actual
+## Diferenciacion vs /valoracion-empresas
 
-- La pagina tiene 4 secciones cortas: Hero, Metodos (4 tarjetas), CTA Calculadora, FAQ (5 preguntas)
-- Structured data: solo WebPage + FAQPage
-- Contenido insuficiente para que LLMs lo citen como fuente autoritativa
+| Aspecto | /valoracion-empresas | /guia-valoracion-empresas |
+|---------|---------------------|--------------------------|
+| Enfoque | Calculadora + resumen de metodos | Guia educativa con ejemplos reales |
+| CTA principal | Calculadora gratuita | Contacto profesional + Calculadora |
+| Contenido | 3000 palabras, metodos resumidos | 4000+ palabras, casos practicos con numeros |
+| Target SEO | "valoracion empresas Espana" | "como valorar empresa", "metodos valoracion" |
+| Structured Data | WebPage + FAQ + HowTo + WebApp | Article + FAQ + HowTo |
 
-## Cambios Planificados
+## Estructura del Contenido
 
-### 1. Nuevo schema: WebApplication (schemas.ts)
+### Secciones de la pagina (9 secciones)
 
-Agregar `getWebApplicationSchema()` en `src/utils/seo/schemas.ts` para describir la calculadora como herramienta web con datos de tipo SoftwareApplication/WebApplication, incluyendo nombre, URL, categoria, precio (gratuito) y sistema operativo.
+1. **Hero** (~200 palabras) - H1: "Guia Completa de Metodos de Valoracion de Empresas: Ejemplos Reales del Mercado Espanol"
+2. **Indice de contenidos** - Navegacion por anclas a cada seccion
+3. **Metodo DCF en profundidad** (~800 palabras) - Explicacion paso a paso con ejemplo numerico real: empresa industrial espanola con facturacion de 5M, proyeccion a 5 anos, calculo del WACC, valor terminal. Tabla con numeros concretos.
+4. **Metodo de Multiplos** (~800 palabras) - Tabla de multiplos EV/EBITDA por sector en Espana (2024-2025): Tecnologia 8-15x, Salud 7-10x, Seguridad 6-9x, Industrial 4-7x, Construccion 3-6x. Ejemplo: empresa de servicios profesionales con EBITDA 800K.
+5. **Transacciones Comparables** (~600 palabras) - Ejemplo con datos de mercado espanol, fuentes de informacion (Registro Mercantil, TTR, Capital IQ), como ajustar por tamano y geografia.
+6. **Valoracion Patrimonial** (~400 palabras) - Cuando usar, ejemplo de holding inmobiliario, diferencia entre valor contable y valor de mercado.
+7. **Comparativa de metodos** (~300 palabras) - Tabla resumen con cuando usar cada metodo, precision esperada y coste.
+8. **Errores comunes** (~400 palabras) - 8 errores frecuentes en valoraciones de PYMEs espanolas con consecuencias reales.
+9. **FAQ ampliado** (~600 palabras) - 8 preguntas orientadas a queries de IA, diferentes a las de /valoracion-empresas.
+10. **CTA dual** - Calculadora gratuita + Contacto profesional.
 
-### 2. Expansion masiva del contenido (ValoracionEmpresas.tsx)
+### Componentes reutilizados
 
-Reescribir la pagina completa con las siguientes secciones de contenido extenso:
+Se usaran los componentes existentes de `search-funds-guides/`:
+- `GuideSection` para secciones con iconos
+- `GuideTip` para callouts de informacion/advertencia
+- `GuideChecklist` para listas de verificacion
+- `GuideCTA` para llamadas a la accion
 
-**Seccion 1 - Hero ampliado** (~200 palabras)
-- H1 optimizado para AEO
-- Parrafo introductorio denso en keywords naturales
-- Contexto del mercado espanol de M&A
+Ademas: `SEOHead`, `Header`, `Footer`, `Accordion` (FAQ).
 
-**Seccion 2 - Por que valorar tu empresa** (~400 palabras)
-- 6 escenarios detallados: venta, inversion, sucesion, fiscalidad, socios, estrategia
-- Cada escenario con explicacion de 2-3 lineas
+## Structured Data
 
-**Seccion 3 - Metodos de Valoracion ampliados** (~800 palabras)
-- 4 metodos con descripcion extensa (150-200 palabras cada uno)
-- Cuando usar cada metodo
-- Ventajas y limitaciones
-- Ejemplo practico simplificado
-
-**Seccion 4 - Proceso paso a paso** (~400 palabras)
-- 6 pasos del proceso de valoracion
-- Contenido alineado con el schema HowTo
-- Desde recopilacion de datos hasta informe final
-
-**Seccion 5 - Factores que afectan la valoracion** (~300 palabras)
-- Crecimiento, rentabilidad, sector, posicion competitiva
-- Dependencia del fundador, diversificacion de clientes
-
-**Seccion 6 - Valoracion gratuita vs profesional** (~300 palabras)
-- Tabla comparativa
-- Cuando elegir cada opcion
-
-**Seccion 7 - CTA Calculadora** (existente, sin cambios)
-
-**Seccion 8 - FAQ ampliado** (~600 palabras)
-- Ampliar de 5 a 10 preguntas
-- Nuevas preguntas orientadas a queries de IA:
-  - "Como se calcula el valor de una empresa en Espana"
-  - "Cuanto vale una empresa que factura 1 millon"
-  - "Que multiplo de EBITDA aplica a mi sector"
-  - "Diferencia entre valor de empresa y valor de equity"
-  - "Es obligatorio valorar una empresa para venderla"
-
-**Seccion 9 - CTA Profesional** (existente, sin cambios)
-
-### 3. Structured Data completo
-
-La pagina incluira 4 schemas combinados:
-- **WebPage**: Metadata de la pagina (existente)
-- **FAQPage**: 10 preguntas frecuentes (ampliado)
-- **HowTo**: "Como valorar una empresa en Espana" con 6 pasos (nuevo, usando `getHowToSchema` existente)
-- **WebApplication**: Calculadora de valoracion gratuita (nuevo)
-
-### 4. Actualizacion SSR (pages-ssr/index.ts)
-
-Actualizar los metadatos de la ruta `/valoracion-empresas` en el edge function de SSR para incluir los nuevos schemas HowTo y WebApplication, asegurando que los bots reciban el structured data completo sin ejecutar JavaScript.
+- **Article** (schema.org): Guia como articulo educativo con autor, fecha, editorial
+- **FAQPage**: 8 preguntas frecuentes
+- **HowTo**: "Como elegir el metodo de valoracion adecuado" con pasos
+- Interlink con `/valoracion-empresas` y `/lp/calculadora`
 
 ## Detalle Tecnico
 
-**Archivos modificados:**
-- `src/utils/seo/schemas.ts` - Agregar `getWebApplicationSchema()`
-- `src/pages/ValoracionEmpresas.tsx` - Reescribir con contenido pilar completo + schemas
-- `supabase/functions/pages-ssr/index.ts` - Actualizar structured data para `/valoracion-empresas`
+### Archivos a crear/modificar
 
-**Principios AEO aplicados:**
-- Contenido factual y citable (datos, porcentajes, rangos)
-- Respuestas directas a preguntas frecuentes en formato Q&A
-- Estructura semantica clara (H1 > H2 > H3)
-- Lenguaje natural que coincide con queries de voz/IA
-- Datos propietarios diferenciadores (rangos de multiplos por sector)
+1. **`src/pages/GuiaValoracionEmpresas.tsx`** (NUEVO) - Pagina completa con todo el contenido, structured data y SEO
+2. **`src/core/routing/AppRoutes.tsx`** - Anadir lazy import y ruta `/guia-valoracion-empresas`
+3. **`supabase/functions/pages-ssr/index.ts`** - Anadir metadata SSR para la nueva ruta con structured data Article + FAQ + HowTo
+4. **`src/utils/seo/schemas.ts`** - Anadir `getArticleSchema()` para contenido tipo guia educativa
 
+### Ruta
+
+```
+/guia-valoracion-empresas
+```
+
+### Layout
+
+Usara `Header` + `Footer` directamente (mismo patron que `ValoracionEmpresas.tsx`), con contenido en `max-w-4xl` para lectura optima del contenido largo.
