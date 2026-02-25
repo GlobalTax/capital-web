@@ -1,93 +1,98 @@
 
-# Fix: Calculo Incorrecto de Valoraciones en Rango de Multiplos
 
-## Diagnostico
+# Fix: Calculo Incorrecto de Valoraciones en Campanas Outbound
 
-El bug esta en `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`, lineas 168-176, en el `useMemo` llamado `dataWithCalculations`.
+## Diagnostico confirmado
 
-### Flujo actual (con bug)
-
-1. `calculateProfessionalValuation()` calcula `valuationLow` y `valuationHigh` usando los multiplos **del sector** (de la matriz EBITDA), NO los multiplos personalizados del usuario.
-2. `dataWithCalculations` asigna estos valores directamente: `valuationLow: calculatedValues.valuationLow || baseData.valuationLow`
-3. Cuando el usuario configura multiplos custom (ej: 7.0x - 9.0x con base 8.0x), el calculo sigue usando los multiplos del sector (ej: 4.5x - 6.5x), produciendo valores incorrectos.
-4. El PDF recibe `data.valuationLow` / `data.valuationHigh` ya con valores incorrectos.
-
-### Ejemplo del bug
+El bug esta en `calculateProfessionalValuation()` en `src/utils/professionalValuationCalculation.ts`, lineas 159-161:
 
 ```text
-EBITDA normalizado: 1.533.543
-Multiplos del usuario: 7.0x (low) / 8.0x (base) / 9.0x (high)
-Multiplos del sector (matriz): ~5.5x (low) / ~6.5x (high)
-
-Resultado actual (INCORRECTO):
-  Conservador = 1.533.543 x 5.5 = 8.434.487   (usa multiplo sector)
-  Base        = 1.533.543 x 8.0 = 12.268.344   (usa multiplo usuario - OK)
-  Optimista   = 1.533.543 x 6.5 = 9.968.030    (usa multiplo sector)
-
-Resultado correcto:
-  Conservador = 1.533.543 x 7.0 = 10.734.801
-  Base        = 1.533.543 x 8.0 = 12.268.344
-  Optimista   = 1.533.543 x 9.0 = 13.801.887
+valuationLow  = normalizedEbitda * multipleLow   <-- multipleLow viene del SECTOR (matriz)
+valuationHigh = normalizedEbitda * multipleHigh   <-- multipleHigh viene del SECTOR (matriz)
+valuationCentral = normalizedEbitda * customMultiple  <-- OK, usa el del usuario
 ```
 
-## Solucion
+Cuando el usuario pone multiplo 7.0x, el sistema calcula:
+- Central: EBITDA x 7.0 (correcto)
+- Low: EBITDA x 3.5 (sector, incorrecto - deberia ser 6.0)
+- High: EBITDA x 5.5 (sector, incorrecto - deberia ser 8.0)
 
-### Archivo: `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`
+Este bug afecta a dos flujos:
+1. **ReviewCalculateStep** (linea 98-100): guarda `result.valuationLow/High` (incorrectos) en DB
+2. **ProcessSendStep > mapToPdfData** (linea 57-59): lee `c.valuation_low/high` de DB (ya incorrectos)
 
-Modificar el `useMemo` `dataWithCalculations` (lineas 157-179) para recalcular `valuationLow` y `valuationHigh` usando los multiplos **efectivos** (los del usuario si existen, los del sector si no):
+El fix previo en `ProfessionalValuationForm.tsx` solo arreglo las valoraciones profesionales individuales, no las campanas outbound.
+
+## Solucion (3 cambios)
+
+### 1. Arreglar `calculateProfessionalValuation()` (raiz del problema)
+
+**Archivo:** `src/utils/professionalValuationCalculation.ts`
+
+Cuando se pasa un `customMultiple`, derivar low/high como `customMultiple - 1` y `customMultiple + 1` en vez de usar los multiplos del sector:
 
 ```typescript
-const dataWithCalculations = useMemo((): ProfessionalValuationData => {
-  const baseData = { ...data };
+// Lineas 153-161, ANTES:
+const multipleUsed = customMultiple ?? (multipleLow + multipleHigh) / 2;
+const valuationLow = calculateValuation(normalizedEbitda, multipleLow);
+const valuationHigh = calculateValuation(normalizedEbitda, multipleHigh);
 
-  if (!baseData.ebitdaMultipleUsed || baseData.ebitdaMultipleUsed <= 0) {
-    baseData.ebitdaMultipleUsed = 6;
-  }
-
-  if (!calculatedValues) {
-    return baseData;
-  }
-
-  // Usar multiplos efectivos: los del usuario si existen, los calculados si no
-  const effectiveLow = baseData.ebitdaMultipleLow ?? calculatedValues.multipleLow;
-  const effectiveHigh = baseData.ebitdaMultipleHigh ?? calculatedValues.multipleHigh;
-  const normalizedEbitda = calculatedValues.normalizedEbitda;
-
-  // RECALCULAR valoraciones con multiplos efectivos (EBITDA x Multiplo)
-  const recalcValuationLow = normalizedEbitda * effectiveLow;
-  const recalcValuationHigh = normalizedEbitda * effectiveHigh;
-  const recalcValuationCentral = normalizedEbitda * baseData.ebitdaMultipleUsed;
-
-  return {
-    ...baseData,
-    reportedEbitda: getLatestEbitda(data.financialYears),
-    normalizedEbitda,
-    ebitdaMultipleLow: effectiveLow,
-    ebitdaMultipleHigh: effectiveHigh,
-    valuationLow: recalcValuationLow,
-    valuationHigh: recalcValuationHigh,
-    valuationCentral: recalcValuationCentral,
-    sensitivityMatrix: calculatedValues.sensitivityMatrix || baseData.sensitivityMatrix,
-  };
-}, [data, calculatedValues]);
+// DESPUES:
+const multipleUsed = customMultiple ?? (multipleLow + multipleHigh) / 2;
+const effectiveLow = customMultiple ? customMultiple - 1 : multipleLow;
+const effectiveHigh = customMultiple ? customMultiple + 1 : multipleHigh;
+const valuationLow = calculateValuation(normalizedEbitda, effectiveLow);
+const valuationHigh = calculateValuation(normalizedEbitda, effectiveHigh);
 ```
 
-### Que cambia exactamente
+Tambien actualizar los valores retornados `multipleLow`/`multipleHigh` para que reflejen los efectivos.
 
-- Antes: `valuationLow = calculatedValues.valuationLow` (usa multiplos del sector)
-- Despues: `valuationLow = normalizedEbitda * effectiveLow` (usa multiplos del usuario si existen)
+### 2. Boton "Recalcular todas las valoraciones"
 
-### Por que el valor Base era correcto
+**Archivo:** `src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx`
 
-`valuationCentral` se calculaba con `customMultiple` (el multiplo del usuario) en `calculateProfessionalValuation()` linea 156, por eso el valor central siempre era correcto. El bug solo afectaba a los valores conservador y optimista.
+Anadir un boton que recalcule TODAS las empresas (no solo las pendientes). El `handleCalculateAll` actual solo procesa `status === 'pending'`. Se anadira una funcion `handleRecalculateAll` que:
+- Itera TODAS las empresas (excepto excluidas)
+- Llama a `calculateProfessionalValuation()` con el multiplo custom
+- Actualiza `valuation_low`, `valuation_central`, `valuation_high` en DB
+- Muestra progreso y resultado
+
+### 3. Doble seguridad en PDF: recalcular en `mapToPdfData`
+
+**Archivo:** `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`
+
+En `mapToPdfData()` (linea 42-67), recalcular `valuationLow`/`valuationHigh` en vez de leer de DB:
+
+```typescript
+const normalizedEbitda = c.normalized_ebitda || c.ebitda;
+const multipleUsed = c.multiple_used || 6;
+const effectiveLow = campaign.multiple_low || (multipleUsed - 1);
+const effectiveHigh = campaign.multiple_high || (multipleUsed + 1);
+
+return {
+  ...existingFields,
+  valuationLow: normalizedEbitda * effectiveLow,
+  valuationCentral: normalizedEbitda * multipleUsed,
+  valuationHigh: normalizedEbitda * effectiveHigh,
+  ebitdaMultipleLow: effectiveLow,
+  ebitdaMultipleHigh: effectiveHigh,
+};
+```
 
 ## Archivos afectados
 
-Solo 1 archivo: `src/components/admin/professional-valuations/ProfessionalValuationForm.tsx`
+1. `src/utils/professionalValuationCalculation.ts` - Fix del calculo raiz
+2. `src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx` - Boton recalcular
+3. `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` - Doble seguridad en PDF
 
-## Impacto
+## Verificacion esperada
 
-- El PDF mostrara los 3 escenarios con valores correctos (EBITDA x Multiplo correspondiente)
-- La vista previa (PreviewStep) tambien se corrige automaticamente porque usa `dataWithCalculations`
-- El QuickEditSheet ya calcula correctamente (lineas 42-43) pero sus valores se perdian al volver al flujo principal
-- No se rompe nada mas: solo se corrige la fuente de verdad de los valores de rango
+Con EBITDA = 41.738 y multiplo = 7.0:
+- Val. Baja: 41.738 x 6.0 = 250.428
+- Val. Central: 41.738 x 7.0 = 292.166
+- Val. Alta: 41.738 x 8.0 = 333.904
+
+Con EBITDA = 1.533.543 y multiplo = 8.0:
+- Conservador: 1.533.543 x 7.0 = 10.734.801
+- Base: 1.533.543 x 8.0 = 12.268.344
+- Optimista: 1.533.543 x 9.0 = 13.801.887
