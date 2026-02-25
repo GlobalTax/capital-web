@@ -1,98 +1,110 @@
 
+# Valoracion por Facturacion ademas de EBITDA
 
-# Fix: Calculo Incorrecto de Valoraciones en Campanas Outbound
+## Resumen
 
-## Diagnostico confirmado
+Anadir un selector de tipo de valoracion en las campanas outbound que permita elegir entre "Multiplo de EBITDA" (actual) y "Multiplo de Facturacion" (nuevo). Los calculos, la importacion Excel, la tabla de revision y el PDF se adaptaran segun el tipo elegido.
 
-El bug esta en `calculateProfessionalValuation()` en `src/utils/professionalValuationCalculation.ts`, lineas 159-161:
+## Cambios planificados
+
+### 1. Migracion de base de datos
+
+Anadir columna `valuation_type` a la tabla `valuation_campaigns`:
 
 ```text
-valuationLow  = normalizedEbitda * multipleLow   <-- multipleLow viene del SECTOR (matriz)
-valuationHigh = normalizedEbitda * multipleHigh   <-- multipleHigh viene del SECTOR (matriz)
-valuationCentral = normalizedEbitda * customMultiple  <-- OK, usa el del usuario
+ALTER TABLE valuation_campaigns
+  ADD COLUMN valuation_type text NOT NULL DEFAULT 'ebitda_multiple'
+  CHECK (valuation_type IN ('ebitda_multiple', 'revenue_multiple'));
 ```
 
-Cuando el usuario pone multiplo 7.0x, el sistema calcula:
-- Central: EBITDA x 7.0 (correcto)
-- Low: EBITDA x 3.5 (sector, incorrecto - deberia ser 6.0)
-- High: EBITDA x 5.5 (sector, incorrecto - deberia ser 8.0)
+Esto garantiza backward compatibility: todas las campanas existentes seran `ebitda_multiple` por defecto.
 
-Este bug afecta a dos flujos:
-1. **ReviewCalculateStep** (linea 98-100): guarda `result.valuationLow/High` (incorrectos) en DB
-2. **ProcessSendStep > mapToPdfData** (linea 57-59): lee `c.valuation_low/high` de DB (ya incorrectos)
+### 2. Tipo TypeScript: `ValuationCampaign` (useCampaigns.ts)
 
-El fix previo en `ProfessionalValuationForm.tsx` solo arreglo las valoraciones profesionales individuales, no las campanas outbound.
+Anadir `valuation_type: 'ebitda_multiple' | 'revenue_multiple'` al interface `ValuationCampaign`.
 
-## Solucion (3 cambios)
+### 3. Selector en CampaignConfigStep.tsx
 
-### 1. Arreglar `calculateProfessionalValuation()` (raiz del problema)
+Anadir un RadioGroup (igual al existente de `years_mode`) dentro de la card "Plantilla de Valoracion" con dos opciones:
+- **Multiplo de EBITDA**: "Valoracion = EBITDA x Multiplo. Metodo mas comun para empresas rentables."
+- **Multiplo de Facturacion**: "Valoracion = Facturacion x Multiplo. Util para empresas en crecimiento o sectores donde la facturacion es mas relevante."
 
-**Archivo:** `src/utils/professionalValuationCalculation.ts`
+Tambien cambiar el label "Multiplo EBITDA (opcional)" a label dinamico segun tipo.
 
-Cuando se pasa un `customMultiple`, derivar low/high como `customMultiple - 1` y `customMultiple + 1` en vez de usar los multiplos del sector:
+### 4. Calculo en ReviewCalculateStep.tsx
 
-```typescript
-// Lineas 153-161, ANTES:
-const multipleUsed = customMultiple ?? (multipleLow + multipleHigh) / 2;
-const valuationLow = calculateValuation(normalizedEbitda, multipleLow);
-const valuationHigh = calculateValuation(normalizedEbitda, multipleHigh);
+Modificar `handleCalculateAll` y `handleRecalculateAll` para que, cuando `campaign.valuation_type === 'revenue_multiple'`, usen `revenue` en vez de `ebitda` como base del calculo:
 
-// DESPUES:
-const multipleUsed = customMultiple ?? (multipleLow + multipleHigh) / 2;
-const effectiveLow = customMultiple ? customMultiple - 1 : multipleLow;
-const effectiveHigh = customMultiple ? customMultiple + 1 : multipleHigh;
-const valuationLow = calculateValuation(normalizedEbitda, effectiveLow);
-const valuationHigh = calculateValuation(normalizedEbitda, effectiveHigh);
+- Obtener el valor base: `const baseValue = campaign.valuation_type === 'revenue_multiple' ? c.revenue : c.ebitda`
+- Pasar este valor a `calculateProfessionalValuation` o calcular directamente: `baseValue * multiple`
+
+Dado que `calculateProfessionalValuation()` esta disenada para EBITDA (usa `getLatestEbitda`), para revenue se hara el calculo directo en el step:
+
+```text
+if (campaign.valuation_type === 'revenue_multiple') {
+  const baseValue = latestRevenue;
+  const multipleUsed = customMultiple || campaignMultiple || 2.0;
+  const effectiveLow = multipleUsed - 1;
+  const effectiveHigh = multipleUsed + 1;
+  valuationLow = baseValue * effectiveLow;
+  valuationCentral = baseValue * multipleUsed;
+  valuationHigh = baseValue * effectiveHigh;
+  normalizedEbitda = baseValue; // Reusar campo para "base value"
+} else {
+  // Flujo EBITDA existente via calculateProfessionalValuation()
+}
 ```
 
-Tambien actualizar los valores retornados `multipleLow`/`multipleHigh` para que reflejen los efectivos.
+Tambien actualizar la tabla para mostrar "Facturacion" o "EBITDA" en el header segun tipo.
 
-### 2. Boton "Recalcular todas las valoraciones"
+### 5. Excel en CompaniesStep.tsx
 
-**Archivo:** `src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx`
+- Cambiar el boton de descarga de plantilla para que, si `valuation_type === 'revenue_multiple'`, genere columnas sin EBITDA obligatorio (solo Facturacion).
+- En la validacion de filas importadas, si es revenue_multiple, no requerir EBITDA (pero si Facturacion).
+- El boton "Excluir sin EBITDA" cambiara a "Excluir sin Facturacion" cuando el tipo sea revenue.
 
-Anadir un boton que recalcule TODAS las empresas (no solo las pendientes). El `handleCalculateAll` actual solo procesa `status === 'pending'`. Se anadira una funcion `handleRecalculateAll` que:
-- Itera TODAS las empresas (excepto excluidas)
-- Llama a `calculateProfessionalValuation()` con el multiplo custom
-- Actualiza `valuation_low`, `valuation_central`, `valuation_high` en DB
-- Muestra progreso y resultado
+### 6. PDF en ProcessSendStep.tsx (mapToPdfData)
 
-### 3. Doble seguridad en PDF: recalcular en `mapToPdfData`
+Modificar `mapToPdfData` para que cuando `campaign.valuation_type === 'revenue_multiple'`:
+- Use `revenue` como `normalizedEbitda` (el campo que el PDF usa como base de calculo)
+- Recalcule valoraciones con revenue en vez de ebitda
+- Pase un flag o campo adicional para que el PDF muestre "Facturacion" en vez de "EBITDA"
 
-**Archivo:** `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`
+### 7. PDF Component (ProfessionalValuationPDF.tsx)
 
-En `mapToPdfData()` (linea 42-67), recalcular `valuationLow`/`valuationHigh` en vez de leer de DB:
+Anadir soporte para un campo opcional `valuationMethod` en ProfessionalValuationData:
 
-```typescript
-const normalizedEbitda = c.normalized_ebitda || c.ebitda;
-const multipleUsed = c.multiple_used || 6;
-const effectiveLow = campaign.multiple_low || (multipleUsed - 1);
-const effectiveHigh = campaign.multiple_high || (multipleUsed + 1);
-
-return {
-  ...existingFields,
-  valuationLow: normalizedEbitda * effectiveLow,
-  valuationCentral: normalizedEbitda * multipleUsed,
-  valuationHigh: normalizedEbitda * effectiveHigh,
-  ebitdaMultipleLow: effectiveLow,
-  ebitdaMultipleHigh: effectiveHigh,
-};
+```text
+valuationMethod?: 'ebitda_multiple' | 'revenue_multiple';
 ```
 
-## Archivos afectados
+En MethodologyPage:
+- Cambiar titulo "Metodo de Multiplos EBITDA" a "Metodo de Multiplos de Facturacion" si aplica
+- Cambiar label "EBITDA Normalizado" a "Facturacion" si aplica
+- Cambiar texto descriptivo del metodo
 
-1. `src/utils/professionalValuationCalculation.ts` - Fix del calculo raiz
-2. `src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx` - Boton recalcular
-3. `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` - Doble seguridad en PDF
+### 8. ProfessionalValuationData type
 
-## Verificacion esperada
+Anadir campo opcional:
 
-Con EBITDA = 41.738 y multiplo = 7.0:
-- Val. Baja: 41.738 x 6.0 = 250.428
-- Val. Central: 41.738 x 7.0 = 292.166
-- Val. Alta: 41.738 x 8.0 = 333.904
+```text
+valuationMethod?: 'ebitda_multiple' | 'revenue_multiple';
+```
 
-Con EBITDA = 1.533.543 y multiplo = 8.0:
-- Conservador: 1.533.543 x 7.0 = 10.734.801
-- Base: 1.533.543 x 8.0 = 12.268.344
-- Optimista: 1.533.543 x 9.0 = 13.801.887
+## Archivos a modificar
+
+1. **Nueva migracion SQL** - Columna `valuation_type`
+2. `src/hooks/useCampaigns.ts` - Tipo TS
+3. `src/types/professionalValuation.ts` - Campo `valuationMethod`
+4. `src/components/admin/campanas-valoracion/steps/CampaignConfigStep.tsx` - RadioGroup selector + labels dinamicos
+5. `src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx` - Calculo con revenue, headers tabla, boton excluir
+6. `src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx` - Plantilla Excel, validacion importacion
+7. `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` - mapToPdfData con revenue
+8. `src/components/pdf/ProfessionalValuationPDF.tsx` - Labels dinamicos EBITDA/Facturacion
+
+## Impacto y compatibilidad
+
+- Campanas existentes no se ven afectadas (default `ebitda_multiple`)
+- La formula sigue siendo `Valor Base x Multiplo` para ambos tipos
+- Los multiplos por defecto para facturacion suelen ser mas bajos (1-3x vs 5-9x para EBITDA), pero el usuario los configura manualmente
+- El PDF indicara claramente que metodo se uso
