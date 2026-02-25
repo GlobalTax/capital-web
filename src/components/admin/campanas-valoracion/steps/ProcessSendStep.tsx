@@ -54,9 +54,10 @@ function mapToPdfData(c: CampaignCompany, campaign: ValuationCampaign): Professi
     ebitdaMultipleUsed: c.multiple_used || undefined,
     ebitdaMultipleLow: campaign.multiple_low || (c.multiple_used ? c.multiple_used - 1 : undefined),
     ebitdaMultipleHigh: campaign.multiple_high || (c.multiple_used ? c.multiple_used + 1 : undefined),
-    valuationCentral: c.valuation_central || undefined,
-    valuationLow: c.valuation_low || undefined,
-    valuationHigh: c.valuation_high || undefined,
+    // Recalcular valoraciones en vez de leer de DB (doble seguridad)
+    valuationCentral: (c.normalized_ebitda || c.ebitda) * (c.multiple_used || 6),
+    valuationLow: (c.normalized_ebitda || c.ebitda) * (campaign.multiple_low || (c.multiple_used ? c.multiple_used - 1 : 5)),
+    valuationHigh: (c.normalized_ebitda || c.ebitda) * (campaign.multiple_high || (c.multiple_used ? c.multiple_used + 1 : 7)),
     strengths: c.ai_strengths || campaign.strengths_template || undefined,
     weaknesses: c.ai_weaknesses || campaign.weaknesses_template || undefined,
     valuationContext: c.ai_context || campaign.valuation_context || undefined,
