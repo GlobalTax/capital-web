@@ -21194,6 +21194,7 @@ export type Database = {
           updated_at: string
           use_custom_advisor: boolean | null
           valuation_context: string | null
+          valuation_type: string
           weaknesses_template: string | null
           years_mode: string | null
         }
@@ -21226,6 +21227,7 @@ export type Database = {
           updated_at?: string
           use_custom_advisor?: boolean | null
           valuation_context?: string | null
+          valuation_type?: string
           weaknesses_template?: string | null
           years_mode?: string | null
         }
@@ -21258,6 +21260,7 @@ export type Database = {
           updated_at?: string
           use_custom_advisor?: boolean | null
           valuation_context?: string | null
+          valuation_type?: string
           weaknesses_template?: string | null
           years_mode?: string | null
         }

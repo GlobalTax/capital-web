@@ -60,10 +60,13 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
   const selectAll = () => setSelectedIds(new Set(activeCompanies.map(c => c.id)));
   const deselectAll = () => setSelectedIds(new Set());
-  const excludeWithoutEbitda = () => {
+  const isRevenue = campaign.valuation_type === 'revenue_multiple';
+  const baseValueLabel = isRevenue ? 'Facturación' : 'EBITDA';
+
+  const excludeWithoutBaseValue = () => {
     setSelectedIds(prev => {
       const next = new Set(prev);
-      companies.filter(c => !c.ebitda).forEach(c => next.delete(c.id));
+      companies.filter(c => isRevenue ? !c.revenue : !c.ebitda).forEach(c => next.delete(c.id));
       return next;
     });
   };
@@ -85,24 +88,40 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
         const financialYears = c.financial_years_data?.length
           ? c.financial_years_data
           : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }];
-        const result = calculateProfessionalValuation(
-          financialYears,
-          [],
-          campaign.sector,
-          c.custom_multiple || campaign.custom_multiple || undefined
-        );
 
-        updates.push({
-          id: c.id,
-          data: {
+        let updateData: Partial<CampaignCompany>;
+
+        if (isRevenue) {
+          const latestRevenue = financialYears[0]?.revenue || c.revenue || 0;
+          const multipleUsed = c.custom_multiple || campaign.custom_multiple || 2.0;
+          const effectiveLow = multipleUsed - 1;
+          const effectiveHigh = multipleUsed + 1;
+          updateData = {
+            valuation_low: latestRevenue * effectiveLow,
+            valuation_central: latestRevenue * multipleUsed,
+            valuation_high: latestRevenue * effectiveHigh,
+            normalized_ebitda: latestRevenue,
+            multiple_used: multipleUsed,
+            status: 'calculated',
+          };
+        } else {
+          const result = calculateProfessionalValuation(
+            financialYears,
+            [],
+            campaign.sector,
+            c.custom_multiple || campaign.custom_multiple || undefined
+          );
+          updateData = {
             valuation_low: result.valuationLow,
             valuation_central: result.valuationCentral,
             valuation_high: result.valuationHigh,
             normalized_ebitda: result.normalizedEbitda,
             multiple_used: result.multipleUsed,
             status: 'calculated',
-          },
-        });
+          };
+        }
+
+        updates.push({ id: c.id, data: updateData });
       }
 
       if (updates.length > 0) {
@@ -256,31 +275,47 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
   const handleRecalculateAll = async () => {
     setRecalculating(true);
     try {
-      const toRecalc = companies.filter(c => c.status !== 'excluded' && selectedIds.has(c.id) && c.ebitda);
+      const toRecalc = companies.filter(c => c.status !== 'excluded' && selectedIds.has(c.id) && (isRevenue ? c.revenue : c.ebitda));
       const updates: { id: string; data: Partial<CampaignCompany> }[] = [];
 
       for (const c of toRecalc) {
         const financialYears = c.financial_years_data?.length
           ? c.financial_years_data
           : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }];
-        const result = calculateProfessionalValuation(
-          financialYears,
-          [],
-          campaign.sector,
-          c.custom_multiple || campaign.custom_multiple || undefined
-        );
 
-        updates.push({
-          id: c.id,
-          data: {
+        let updateData: Partial<CampaignCompany>;
+
+        if (isRevenue) {
+          const latestRevenue = financialYears[0]?.revenue || c.revenue || 0;
+          const multipleUsed = c.custom_multiple || campaign.custom_multiple || 2.0;
+          const effectiveLow = multipleUsed - 1;
+          const effectiveHigh = multipleUsed + 1;
+          updateData = {
+            valuation_low: latestRevenue * effectiveLow,
+            valuation_central: latestRevenue * multipleUsed,
+            valuation_high: latestRevenue * effectiveHigh,
+            normalized_ebitda: latestRevenue,
+            multiple_used: multipleUsed,
+            status: c.status === 'pending' ? 'calculated' : c.status,
+          };
+        } else {
+          const result = calculateProfessionalValuation(
+            financialYears,
+            [],
+            campaign.sector,
+            c.custom_multiple || campaign.custom_multiple || undefined
+          );
+          updateData = {
             valuation_low: result.valuationLow,
             valuation_central: result.valuationCentral,
             valuation_high: result.valuationHigh,
             normalized_ebitda: result.normalizedEbitda,
             multiple_used: result.multipleUsed,
             status: c.status === 'pending' ? 'calculated' : c.status,
-          },
-        });
+          };
+        }
+
+        updates.push({ id: c.id, data: updateData });
       }
 
       if (updates.length > 0) {
@@ -349,7 +384,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
         <div className="ml-auto flex gap-1">
           <Button variant="ghost" size="sm" onClick={selectAll}>Seleccionar todo</Button>
           <Button variant="ghost" size="sm" onClick={deselectAll}>Deseleccionar</Button>
-          <Button variant="ghost" size="sm" onClick={excludeWithoutEbitda}>Excluir sin EBITDA</Button>
+          <Button variant="ghost" size="sm" onClick={excludeWithoutBaseValue}>Excluir sin {baseValueLabel}</Button>
           <Button variant="ghost" size="sm" onClick={excludeWithoutEmail}>Excluir sin email</Button>
         </div>
       </div>
@@ -380,7 +415,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                 </TableHead>
                 <TableHead>#</TableHead>
                 <TableHead>Empresa</TableHead>
-                <TableHead className="text-right">EBITDA</TableHead>
+                <TableHead className="text-right">{baseValueLabel}</TableHead>
                 <TableHead className="text-center">Múltiplo</TableHead>
                 <TableHead className="text-right">Val. Baja</TableHead>
                 <TableHead className="text-right">Val. Central</TableHead>
@@ -405,7 +440,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">{i + 1}</TableCell>
                   <TableCell className="font-medium">{c.client_company}</TableCell>
-                  <TableCell className="text-right">{formatCurrencyEUR(c.ebitda)}</TableCell>
+                  <TableCell className="text-right">{formatCurrencyEUR(isRevenue ? (c.revenue || 0) : c.ebitda)}</TableCell>
                   <TableCell className="text-center">{c.multiple_used?.toFixed(1) || '—'}</TableCell>
                   <TableCell className="text-right">{c.valuation_low ? formatCurrencyEUR(c.valuation_low) : '—'}</TableCell>
                   <TableCell className="text-right font-medium">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
@@ -457,7 +492,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
                 {/* Multiple override */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Múltiplo EBITDA</Label>
+                  <Label className="text-sm font-medium">Múltiplo {baseValueLabel}</Label>
                   <div className="flex items-center gap-3">
                     <Slider
                       value={[detailMultiple]}
