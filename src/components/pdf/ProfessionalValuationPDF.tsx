@@ -561,7 +561,11 @@ const CoverPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
 );
 
 // Executive Summary Page
-const ExecutiveSummaryPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => (
+const ExecutiveSummaryPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => {
+  const isRevenue = data.valuationMethod === 'revenue_multiple';
+  const baseLabel = isRevenue ? 'Facturación' : 'EBITDA Normalizado';
+  
+  return (
   <Page size="A4" style={styles.contentPage}>
     <View style={styles.header}>
       <CapittalLogo />
@@ -580,7 +584,7 @@ const ExecutiveSummaryPage: React.FC<{ data: ProfessionalValuationData }> = ({ d
     <View style={styles.summaryBox}>
       <View style={styles.summaryGrid}>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>EBITDA Normalizado</Text>
+          <Text style={styles.summaryLabel}>{baseLabel}</Text>
           <Text style={styles.summaryValue}>{formatCurrency(data.normalizedEbitda || 0)}</Text>
         </View>
         <View style={styles.summaryItem}>
@@ -637,7 +641,8 @@ const ExecutiveSummaryPage: React.FC<{ data: ProfessionalValuationData }> = ({ d
       <Text style={styles.pageNumber}>Página 2</Text>
     </View>
   </Page>
-);
+  );
+};
 
 // Financial Analysis Page
 const FinancialAnalysisPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => {
@@ -835,12 +840,15 @@ const NormalizationPage: React.FC<{ data: ProfessionalValuationData }> = ({ data
 
 // Methodology Page
 const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }) => {
+  const isRevenue = data.valuationMethod === 'revenue_multiple';
+  const methodLabel = isRevenue ? 'Múltiplos de Facturación' : 'Múltiplos EBITDA';
+  const baseLabel = isRevenue ? 'Facturación' : 'EBITDA Normalizado';
   const baseMult = data.ebitdaMultipleUsed || 0;
   const lowMult = data.ebitdaMultipleLow || (baseMult > 1 ? baseMult - 1 : baseMult * 0.85);
   const highMult = data.ebitdaMultipleHigh || baseMult + 1;
-  const ebitda = data.normalizedEbitda || 0;
-  const valLow = data.valuationLow || ebitda * lowMult;
-  const valHigh = data.valuationHigh || ebitda * highMult;
+  const baseValue = data.normalizedEbitda || 0;
+  const valLow = data.valuationLow || baseValue * lowMult;
+  const valHigh = data.valuationHigh || baseValue * highMult;
 
   return (
   <Page size="A4" style={styles.contentPage}>
@@ -852,15 +860,18 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
     <Text style={styles.pageTitle}>Metodología de Valoración</Text>
     
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Método de Múltiplos EBITDA</Text>
+      <Text style={styles.sectionTitle}>Método de {methodLabel}</Text>
       <Text style={styles.paragraph}>
-        El método de múltiplos EBITDA es el enfoque de valoración más utilizado en el mercado español 
-        de M&A para empresas medianas. Este método compara la empresa objetivo con transacciones 
-        comparables en el mismo sector, aplicando un múltiplo al EBITDA normalizado.
+        {isRevenue
+          ? `El método de múltiplos de facturación valora la empresa aplicando un múltiplo a sus ingresos totales. Este enfoque es especialmente útil para empresas en crecimiento, startups o sectores donde la rentabilidad todavía no refleja el potencial del negocio.`
+          : `El método de múltiplos EBITDA es el enfoque de valoración más utilizado en el mercado español de M&A para empresas medianas. Este método compara la empresa objetivo con transacciones comparables en el mismo sector, aplicando un múltiplo al EBITDA normalizado.`
+        }
       </Text>
       <Text style={styles.paragraph}>
-        El múltiplo EBITDA refleja cuántos años de beneficio operativo normalizado está dispuesto a 
-        pagar un comprador estratégico o financiero por la empresa.
+        {isRevenue
+          ? `El múltiplo de facturación refleja el valor que el mercado asigna a cada euro de ingresos generado por la empresa.`
+          : `El múltiplo EBITDA refleja cuántos años de beneficio operativo normalizado está dispuesto a pagar un comprador estratégico o financiero por la empresa.`
+        }
       </Text>
     </View>
     
@@ -868,7 +879,7 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
       <Text style={styles.sectionTitle}>Cálculo de la Valoración</Text>
       <View style={styles.table}>
         <View style={styles.tableRow}>
-          <Text style={[styles.tableCell, { flex: 0.6 }]}>EBITDA Normalizado</Text>
+          <Text style={[styles.tableCell, { flex: 0.6 }]}>{baseLabel}</Text>
           <Text style={[styles.tableCellBold, { flex: 0.4, textAlign: 'right' }]}>
             {formatCurrency(data.normalizedEbitda || 0)}
           </Text>
@@ -894,7 +905,7 @@ const MethodologyPage: React.FC<{ data: ProfessionalValuationData }> = ({ data }
         <Text style={styles.contextText}>
           {data.multipleJustification || 
             `El múltiplo de ${(data.ebitdaMultipleUsed || 0).toFixed(1)}x se ha seleccionado considerando 
-            el sector de actividad ${cleanSectorName(data.sector || '')}, el tamaño de la empresa, la calidad de los beneficios, 
+            el sector de actividad ${cleanSectorName(data.sector || '')}, el tamaño de la empresa, ${isRevenue ? 'el volumen de ingresos' : 'la calidad de los beneficios'}, 
             las perspectivas de crecimiento y las condiciones actuales del mercado de M&A en España.`}
         </Text>
       </View>
@@ -996,7 +1007,7 @@ const DisclaimerPage: React.FC<{
         valoración formal ni como asesoramiento profesional.
       </Text>
       <Text style={styles.disclaimerText}>
-        La valoración contenida es una estimación basada en el método de múltiplos de EBITDA 
+        La valoración contenida es una estimación basada en el método de múltiplos 
         y no constituye una oferta de compra o venta, ni tampoco asesoramiento financiero, 
         fiscal o legal.
       </Text>

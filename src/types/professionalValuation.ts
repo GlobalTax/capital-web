@@ -184,6 +184,9 @@ export interface ProfessionalValuationData {
   version?: number;
   parentId?: string;
   
+  // Método de valoración
+  valuationMethod?: 'ebitda_multiple' | 'revenue_multiple';
+  
   // Vinculación
   linkedLeadId?: string;
   linkedLeadType?: string;

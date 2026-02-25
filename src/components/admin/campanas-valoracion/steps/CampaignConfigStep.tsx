@@ -187,9 +187,55 @@ export function CampaignConfigStep({ data, updateField }: Props) {
       <Card>
         <CardHeader><CardTitle className="text-base">Plantilla de Valoración</CardTitle></CardHeader>
         <CardContent className="space-y-4">
+          {/* Tipo de valoración */}
+          <div className="space-y-3">
+            <Label className="font-medium">Método de valoración</Label>
+            <RadioGroup
+              value={data.valuation_type || 'ebitda_multiple'}
+              onValueChange={(v) => updateField('valuation_type' as any, v)}
+              className="grid grid-cols-1 md:grid-cols-2 gap-3"
+            >
+              <div>
+                <RadioGroupItem value="ebitda_multiple" id="vt_ebitda" className="sr-only peer" />
+                <Label
+                  htmlFor="vt_ebitda"
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-4 border-2 rounded-lg cursor-pointer transition-colors",
+                    "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5",
+                    "hover:bg-muted"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="font-semibold text-sm">Múltiplo de EBITDA</span>
+                    <Badge variant="secondary" className="text-[10px]">Estándar</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Valoración = EBITDA × Múltiplo. Método más común para empresas rentables.</p>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="revenue_multiple" id="vt_revenue" className="sr-only peer" />
+                <Label
+                  htmlFor="vt_revenue"
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-4 border-2 rounded-lg cursor-pointer transition-colors",
+                    "peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5",
+                    "hover:bg-muted"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="font-semibold text-sm">Múltiplo de Facturación</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Valoración = Facturación × Múltiplo. Útil para empresas en crecimiento o sectores donde la facturación es más relevante.</p>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Múltiplo EBITDA (opcional)</Label>
+              <Label>Múltiplo {(data.valuation_type || 'ebitda_multiple') === 'revenue_multiple' ? 'Facturación' : 'EBITDA'} (opcional)</Label>
               <Input type="number" step="0.1" placeholder="Auto"
                 value={data.custom_multiple ?? ''} onChange={e => updateField('custom_multiple', e.target.value ? parseFloat(e.target.value) : null as any)} />
             </div>

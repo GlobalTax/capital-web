@@ -40,6 +40,14 @@ interface Props {
  * Map campaign company data to ProfessionalValuationData for PDF generation.
  */
 function mapToPdfData(c: CampaignCompany, campaign: ValuationCampaign): ProfessionalValuationData {
+  const isRevenue = campaign.valuation_type === 'revenue_multiple';
+  const baseValue = isRevenue
+    ? (c.normalized_ebitda || c.revenue || 0)
+    : (c.normalized_ebitda || c.ebitda);
+  const multipleUsed = c.multiple_used || 6;
+  const effectiveLow = campaign.multiple_low || (multipleUsed - 1);
+  const effectiveHigh = campaign.multiple_high || (multipleUsed + 1);
+
   return {
     clientName: c.client_name || '',
     clientCompany: c.client_company,
@@ -50,14 +58,15 @@ function mapToPdfData(c: CampaignCompany, campaign: ValuationCampaign): Professi
       ? c.financial_years_data
       : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }],
     normalizationAdjustments: [],
-    normalizedEbitda: c.normalized_ebitda || c.ebitda,
-    ebitdaMultipleUsed: c.multiple_used || undefined,
-    ebitdaMultipleLow: campaign.multiple_low || (c.multiple_used ? c.multiple_used - 1 : undefined),
-    ebitdaMultipleHigh: campaign.multiple_high || (c.multiple_used ? c.multiple_used + 1 : undefined),
-    // Recalcular valoraciones en vez de leer de DB (doble seguridad)
-    valuationCentral: (c.normalized_ebitda || c.ebitda) * (c.multiple_used || 6),
-    valuationLow: (c.normalized_ebitda || c.ebitda) * (campaign.multiple_low || (c.multiple_used ? c.multiple_used - 1 : 5)),
-    valuationHigh: (c.normalized_ebitda || c.ebitda) * (campaign.multiple_high || (c.multiple_used ? c.multiple_used + 1 : 7)),
+    normalizedEbitda: baseValue,
+    ebitdaMultipleUsed: multipleUsed,
+    ebitdaMultipleLow: effectiveLow,
+    ebitdaMultipleHigh: effectiveHigh,
+    // Recalcular valoraciones localmente (doble seguridad)
+    valuationCentral: baseValue * multipleUsed,
+    valuationLow: baseValue * effectiveLow,
+    valuationHigh: baseValue * effectiveHigh,
+    valuationMethod: campaign.valuation_type || 'ebitda_multiple',
     strengths: c.ai_strengths || campaign.strengths_template || undefined,
     weaknesses: c.ai_weaknesses || campaign.weaknesses_template || undefined,
     valuationContext: c.ai_context || campaign.valuation_context || undefined,
