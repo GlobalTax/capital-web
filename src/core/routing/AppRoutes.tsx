@@ -75,6 +75,7 @@ const Reestructuraciones = lazy(() => import('@/pages/servicios/Reestructuracion
 const PlanificacionFiscal = lazy(() => import('@/pages/servicios/PlanificacionFiscal').catch(() => import('@/pages/VentaEmpresas')));
 const SearchFunds = lazy(() => import('@/pages/servicios/SearchFunds'));
 const ValoracionEmpresas = lazy(() => import('@/pages/ValoracionEmpresas'));
+const GuiaValoracionEmpresas = lazy(() => import('@/pages/GuiaValoracionEmpresas'));
 
 // === SECTOR PAGES ===
 const Tecnologia = lazy(() => import('@/pages/sectores/Tecnologia').catch(() => import('@/pages/VentaEmpresas')));
@@ -253,6 +254,7 @@ export const AppRoutes = () => {
         <Route path="/servicios/search-funds" element={<SearchFunds />} />
         <Route path="/search-funds" element={<SearchFunds />} />
         <Route path="/valoracion-empresas" element={<ValoracionEmpresas />} />
+        <Route path="/guia-valoracion-empresas" element={<GuiaValoracionEmpresas />} />
         
         {/* === SERVICE ROUTES (Catalan) === */}
         <Route path="/serveis/valoracions" element={<Valoraciones />} />
