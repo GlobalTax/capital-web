@@ -1961,6 +1961,7 @@ Deno.serve(async (req) => {
     // 301 redirects for deprecated/renamed paths
     const REDIRECTS_301: Record<string, string> = {
       "/home": "/",
+      "/blog": "/recursos/blog",
       "/compra-empreses": "/compra-empresas",
     };
     if (REDIRECTS_301[path]) {
