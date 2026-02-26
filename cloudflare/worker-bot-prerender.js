@@ -81,12 +81,28 @@ export default {
       const ssrUrl = `${env.SUPABASE_URL}/functions/v1/prerender-proxy?path=${encodeURIComponent(pathname)}&ssr=1`;
 
       const ssrResponse = await fetch(ssrUrl, {
+        redirect: 'manual',
         headers: {
           'apikey': env.SUPABASE_ANON_KEY,
           'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
           'User-Agent': userAgent,
         },
       });
+
+      // Propagate 301/302 redirects to the bot
+      if (ssrResponse.status === 301 || ssrResponse.status === 302) {
+        const location = ssrResponse.headers.get('Location');
+        if (location) {
+          return new Response(null, {
+            status: ssrResponse.status,
+            headers: {
+              'Location': location,
+              'Cache-Control': 'public, max-age=31536000, immutable',
+              'X-Prerender': '1',
+            },
+          });
+        }
+      }
 
       if (!ssrResponse.ok) {
         console.error(`SSR failed (${ssrResponse.status}) for ${pathname}`);

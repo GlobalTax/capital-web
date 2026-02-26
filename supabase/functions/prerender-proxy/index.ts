@@ -85,12 +85,28 @@ Deno.serve(async (req) => {
     }
 
     const ssrResponse = await fetch(`${ssrFunctionUrl}${ssrParams}`, {
+      redirect: "manual",
       headers: {
         "apikey": supabaseAnonKey,
         "Authorization": `Bearer ${supabaseAnonKey}`,
         "User-Agent": userAgent,
       },
     });
+
+    // Propagate 301/302 redirects from pages-ssr to the bot
+    if (ssrResponse.status === 301 || ssrResponse.status === 302) {
+      const location = ssrResponse.headers.get("Location");
+      if (location) {
+        return new Response(null, {
+          status: ssrResponse.status,
+          headers: {
+            ...corsHeaders,
+            "Location": location,
+            "Cache-Control": "public, max-age=31536000, immutable",
+          },
+        });
+      }
+    }
 
     if (!ssrResponse.ok) {
       console.error(
