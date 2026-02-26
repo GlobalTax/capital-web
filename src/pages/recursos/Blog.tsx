@@ -1,7 +1,7 @@
 import React from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
-import { getOrganizationSchema } from '@/utils/seo';
+import { getOrganizationSchema, getBreadcrumbSchema } from '@/utils/seo';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar, Tag } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -66,14 +66,21 @@ const Blog = () => {
         description="Artículos especializados sobre fusiones y adquisiciones, valoración de empresas, due diligence y reestructuraciones. Análisis de mercado y guías prácticas para empresarios en España."
         canonical="https://capittal.es/recursos/blog"
         keywords="blog M&A, artículos valoración empresas, guías fusiones adquisiciones"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Blog",
-          "name": "Blog Capittal",
-          "description": "Artículos especializados sobre M&A y valoraciones empresariales",
-          "url": "https://capittal.es/recursos/blog",
-          "publisher": getOrganizationSchema()
-        }}
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            "name": "Blog Capittal",
+            "description": "Artículos especializados sobre M&A y valoraciones empresariales",
+            "url": "https://capittal.es/recursos/blog",
+            "publisher": getOrganizationSchema()
+          },
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Recursos', url: 'https://capittal.es/recursos' },
+            { name: 'Blog', url: 'https://capittal.es/recursos/blog' }
+          ])
+        ]}
       />
       <section className="py-20 bg-white">
           <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
-import { getArticleSchema } from '@/utils/seo';
+import { getArticleSchema, getBreadcrumbSchema } from '@/utils/seo';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import BlogNavigation from '@/components/blog/BlogNavigation';
 import RelatedPosts from '@/components/blog/RelatedPosts';
@@ -91,15 +91,22 @@ const BlogPost = () => {
         canonical={`https://capittal.es/blog/${post.slug}`}
         ogImage={post.featured_image_url || 'https://capittal.es/og-blog-default.jpg'}
         keywords={post.tags?.join(', ')}
-        structuredData={getArticleSchema(
-          post.title,
-          post.meta_description || post.excerpt || '',
-          `https://capittal.es/blog/${post.slug}`,
-          post.featured_image_url || '',
-          post.published_at || post.created_at,
-          post.updated_at,
-          post.author_name || 'Equipo Capittal'
-        )}
+        structuredData={[
+          getArticleSchema(
+            post.title,
+            post.meta_description || post.excerpt || '',
+            `https://capittal.es/blog/${post.slug}`,
+            post.featured_image_url || '',
+            post.published_at || post.created_at,
+            post.updated_at,
+            post.author_name || 'Equipo Capittal'
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Blog', url: 'https://capittal.es/recursos/blog' },
+            { name: post.title, url: `https://capittal.es/blog/${post.slug}` }
+          ])
+        ]}
       />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
         <BlogPostContent post={post} />
