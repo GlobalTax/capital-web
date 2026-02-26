@@ -1,110 +1,124 @@
 
-# Valoracion por Facturacion ademas de EBITDA
 
-## Resumen
+# Plan de Mejoras SEO y Marketing Digital - Capittal.es
 
-Anadir un selector de tipo de valoracion en las campanas outbound que permita elegir entre "Multiplo de EBITDA" (actual) y "Multiplo de Facturacion" (nuevo). Los calculos, la importacion Excel, la tabla de revision y el PDF se adaptaran segun el tipo elegido.
+Basado en la auditoria completa del codigo fuente, estas son las mejoras priorizadas por impacto.
 
-## Cambios planificados
+---
 
-### 1. Migracion de base de datos
+## QUICK WINS (Impacto alto, esfuerzo bajo)
 
-Anadir columna `valuation_type` a la tabla `valuation_campaigns`:
+### 1. Pagina 404 profesional con CTA y SEO
+**Estado actual:** Pagina 404 basica con solo "Pagina no encontrada" y un boton.
+**Mejora:** Redisenar con sugerencias de navegacion (servicios populares, calculadora, blog), buscador integrado, y tracking del error para detectar enlaces rotos.
+- Archivo: `src/pages/NotFound.tsx`
 
+### 2. Completar schema Organization con redes sociales
+**Estado actual:** El array `sameAs` solo tiene LinkedIn (tanto en `index.html` como en `schemas.ts`).
+**Mejora:** Anadir todas las redes sociales activas (Twitter/X, YouTube, Instagram, etc.) en ambas ubicaciones.
+- Archivos: `index.html` (linea 205-207), `src/utils/seo/schemas.ts` (linea 22-24)
+
+### 3. Implementar monitoreo de Web Vitals
+**Estado actual:** No existe ningun tracking de Core Web Vitals (LCP, CLS, INP).
+**Mejora:** Instalar `web-vitals` y enviar metricas a Google Analytics 4 para monitorear rendimiento real de usuarios.
+- Archivo nuevo: `src/utils/webVitals.ts`
+- Modificar: `src/main.tsx` para inicializar
+
+### 4. Anadir BreadcrumbList schema JSON-LD a paginas de servicios y sectores
+**Estado actual:** Breadcrumbs visuales existen en blog y documentacion, pero solo algunas paginas (SearchFunds, ValoracionEmpresas) tienen `getBreadcrumbSchema()` en su structured data.
+**Mejora:** Anadir `getBreadcrumbSchema()` a todas las paginas de servicios (`/servicios/*`) y sectores (`/sectores/*`).
+- Archivos: Paginas de servicios y sectores que no lo tienen
+
+---
+
+## MEJORAS DE IMPACTO MEDIO (1-2 dias)
+
+### 5. Trust signals en homepage: logos de clientes y sellos
+**Estado actual:** Existen componentes de trust signals en suiteloop (`TrustSignals.tsx`) y venta-empresas (`VentaEmpresasGuarantees.tsx`), pero la homepage no tiene una seccion visible de logos de clientes o certificaciones above the fold.
+**Mejora:** Crear componente `ClientLogosBar` reutilizable con logos de clientes/partners y anadirlo a la homepage.
+- Archivo nuevo: `src/components/shared/ClientLogosBar.tsx`
+- Modificar: Homepage para incluir la seccion
+
+### 6. Paginas de sectores sin FAQ schema
+**Estado actual:** Las paginas de sector usan `SectorFAQ.tsx` que inyecta FAQPage schema via `dangerouslySetInnerHTML`. Sin embargo, algunas paginas de sector antiguas (v1) podrian no usar este componente.
+**Mejora:** Auditar todas las paginas de `/sectores/*` y asegurar que todas usen `SectorFAQ` o `getFAQSchema()` consistentemente.
+- Archivos: Paginas de sector individuales
+
+### 7. Mejorar description del schema Organization
+**Estado actual:** La description dice "especializada en el sector seguridad" lo cual es limitante.
+**Mejora:** Cambiar a una descripcion mas amplia que cubra todos los sectores.
+- Archivo: `index.html` (linea 192)
+
+---
+
+## MEJORAS ESTRATEGICAS (3-5 dias)
+
+### 8. Structured data LocalBusiness para Google Maps
+**Estado actual:** Solo schema Organization. No hay LocalBusiness.
+**Mejora:** Anadir schema `ProfessionalService` (subtipo de LocalBusiness) con horarios, coordenadas GPS, telefono y area de servicio. Esto mejora visibilidad en Google Maps y busquedas locales.
+- Archivo: `index.html` o `src/utils/seo/schemas.ts`
+
+### 9. Internal linking automatizado en blog
+**Estado actual:** El blog tiene contenido pero no hay sistema automatico de enlaces internos.
+**Mejora:** Crear un sistema que detecte keywords clave en posts del blog y genere automaticamente enlaces a paginas de servicios o sectores relevantes.
+
+### 10. Mejorar robots.txt con reglas para recursos estaticos
+**Estado actual:** robots.txt basico con Disallow de admin y auth.
+**Mejora:** Anadir reglas para evitar indexacion de parametros UTM, reglas especificas para Googlebot y otros bots, y cacheo adecuado.
+- Archivo: `public/robots.txt`
+
+---
+
+## Seccion tecnica: Detalles de implementacion
+
+### Pagina 404 (Quick Win 1)
 ```text
-ALTER TABLE valuation_campaigns
-  ADD COLUMN valuation_type text NOT NULL DEFAULT 'ebitda_multiple'
-  CHECK (valuation_type IN ('ebitda_multiple', 'revenue_multiple'));
+NotFound.tsx:
+- Grid de 3 columnas con enlaces a: Servicios, Sectores, Calculadora
+- Barra de busqueda simple que redirige al blog
+- Tracking: enviar evento a GA4 con la ruta intentada
+- SEO: noindex via SEOHead
 ```
 
-Esto garantiza backward compatibility: todas las campanas existentes seran `ebitda_multiple` por defecto.
-
-### 2. Tipo TypeScript: `ValuationCampaign` (useCampaigns.ts)
-
-Anadir `valuation_type: 'ebitda_multiple' | 'revenue_multiple'` al interface `ValuationCampaign`.
-
-### 3. Selector en CampaignConfigStep.tsx
-
-Anadir un RadioGroup (igual al existente de `years_mode`) dentro de la card "Plantilla de Valoracion" con dos opciones:
-- **Multiplo de EBITDA**: "Valoracion = EBITDA x Multiplo. Metodo mas comun para empresas rentables."
-- **Multiplo de Facturacion**: "Valoracion = Facturacion x Multiplo. Util para empresas en crecimiento o sectores donde la facturacion es mas relevante."
-
-Tambien cambiar el label "Multiplo EBITDA (opcional)" a label dinamico segun tipo.
-
-### 4. Calculo en ReviewCalculateStep.tsx
-
-Modificar `handleCalculateAll` y `handleRecalculateAll` para que, cuando `campaign.valuation_type === 'revenue_multiple'`, usen `revenue` en vez de `ebitda` como base del calculo:
-
-- Obtener el valor base: `const baseValue = campaign.valuation_type === 'revenue_multiple' ? c.revenue : c.ebitda`
-- Pasar este valor a `calculateProfessionalValuation` o calcular directamente: `baseValue * multiple`
-
-Dado que `calculateProfessionalValuation()` esta disenada para EBITDA (usa `getLatestEbitda`), para revenue se hara el calculo directo en el step:
-
+### Web Vitals (Quick Win 3)
 ```text
-if (campaign.valuation_type === 'revenue_multiple') {
-  const baseValue = latestRevenue;
-  const multipleUsed = customMultiple || campaignMultiple || 2.0;
-  const effectiveLow = multipleUsed - 1;
-  const effectiveHigh = multipleUsed + 1;
-  valuationLow = baseValue * effectiveLow;
-  valuationCentral = baseValue * multipleUsed;
-  valuationHigh = baseValue * effectiveHigh;
-  normalizedEbitda = baseValue; // Reusar campo para "base value"
-} else {
-  // Flujo EBITDA existente via calculateProfessionalValuation()
+Nuevo archivo src/utils/webVitals.ts:
+- import { onLCP, onCLS, onINP } from 'web-vitals'
+- Enviar cada metrica como evento de GA4
+- Inicializar en main.tsx despues del render
+
+Dependencia nueva: web-vitals (^4.x)
+```
+
+### Schema LocalBusiness (Mejora 8)
+```text
+{
+  "@type": "ProfessionalService",
+  "name": "Capittal Transacciones",
+  "address": { ya existente },
+  "geo": { "@type": "GeoCoordinates", "latitude": 41.3946, "longitude": 2.1756 },
+  "openingHoursSpecification": { lunes-viernes 9-18 },
+  "telephone": "+34695717490",
+  "areaServed": "ES",
+  "priceRange": "€€€"
 }
 ```
 
-Tambien actualizar la tabla para mostrar "Facturacion" o "EBITDA" en el header segun tipo.
-
-### 5. Excel en CompaniesStep.tsx
-
-- Cambiar el boton de descarga de plantilla para que, si `valuation_type === 'revenue_multiple'`, genere columnas sin EBITDA obligatorio (solo Facturacion).
-- En la validacion de filas importadas, si es revenue_multiple, no requerir EBITDA (pero si Facturacion).
-- El boton "Excluir sin EBITDA" cambiara a "Excluir sin Facturacion" cuando el tipo sea revenue.
-
-### 6. PDF en ProcessSendStep.tsx (mapToPdfData)
-
-Modificar `mapToPdfData` para que cuando `campaign.valuation_type === 'revenue_multiple'`:
-- Use `revenue` como `normalizedEbitda` (el campo que el PDF usa como base de calculo)
-- Recalcule valoraciones con revenue en vez de ebitda
-- Pase un flag o campo adicional para que el PDF muestre "Facturacion" en vez de "EBITDA"
-
-### 7. PDF Component (ProfessionalValuationPDF.tsx)
-
-Anadir soporte para un campo opcional `valuationMethod` en ProfessionalValuationData:
-
+### Trust Signals Homepage (Mejora 5)
 ```text
-valuationMethod?: 'ebitda_multiple' | 'revenue_multiple';
+Reutilizar patron de VentaEmpresasGuarantees.tsx
+Componente horizontal con logos en grayscale
+Animacion sutil de scroll (ya existe embla-carousel)
+Ubicar debajo del hero, antes de servicios
 ```
 
-En MethodologyPage:
-- Cambiar titulo "Metodo de Multiplos EBITDA" a "Metodo de Multiplos de Facturacion" si aplica
-- Cambiar label "EBITDA Normalizado" a "Facturacion" si aplica
-- Cambiar texto descriptivo del metodo
+---
 
-### 8. ProfessionalValuationData type
+## Orden de ejecucion recomendado
 
-Anadir campo opcional:
+1. Quick Wins 1-4 (se pueden hacer en paralelo, ~1 dia)
+2. Mejoras 5-7 (impacto medio, ~1-2 dias)
+3. Mejoras 8-10 (estrategicas, ~3-5 dias)
 
-```text
-valuationMethod?: 'ebitda_multiple' | 'revenue_multiple';
-```
+Todas las mejoras son backward-compatible y no rompen funcionalidad existente.
 
-## Archivos a modificar
-
-1. **Nueva migracion SQL** - Columna `valuation_type`
-2. `src/hooks/useCampaigns.ts` - Tipo TS
-3. `src/types/professionalValuation.ts` - Campo `valuationMethod`
-4. `src/components/admin/campanas-valoracion/steps/CampaignConfigStep.tsx` - RadioGroup selector + labels dinamicos
-5. `src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx` - Calculo con revenue, headers tabla, boton excluir
-6. `src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx` - Plantilla Excel, validacion importacion
-7. `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` - mapToPdfData con revenue
-8. `src/components/pdf/ProfessionalValuationPDF.tsx` - Labels dinamicos EBITDA/Facturacion
-
-## Impacto y compatibilidad
-
-- Campanas existentes no se ven afectadas (default `ebitda_multiple`)
-- La formula sigue siendo `Valor Base x Multiplo` para ambos tipos
-- Los multiplos por defecto para facturacion suelen ser mas bajos (1-3x vs 5-9x para EBITDA), pero el usuario los configura manualmente
-- El PDF indicara claramente que metodo se uso
