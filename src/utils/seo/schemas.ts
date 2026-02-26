@@ -20,7 +20,10 @@ export const getOrganizationSchema = () => ({
     "availableLanguage": ["Spanish", "Catalan", "English"]
   },
   "sameAs": [
-    "https://www.linkedin.com/company/104311808"
+    "https://www.linkedin.com/company/capittal-transacciones",
+    "https://twitter.com/capittal_es",
+    "https://www.youtube.com/@capittal",
+    "https://www.instagram.com/capittal_transacciones"
   ]
 });
 

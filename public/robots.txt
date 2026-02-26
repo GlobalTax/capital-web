@@ -1,3 +1,6 @@
+# Capittal.es - Robots.txt
+# https://capittal.es
+
 User-agent: *
 Allow: /
 Disallow: /admin/
@@ -8,5 +11,22 @@ Disallow: /operaciones/
 Disallow: /_vite/
 Disallow: /__vite/
 Disallow: /ws/
+Disallow: /*?utm_*
+Disallow: /*?gclid=*
+Disallow: /*?fbclid=*
+
+# Googlebot specific
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+Disallow: /api/private/
+Disallow: /operaciones/
+
+# Assets
+User-agent: Googlebot-Image
+Allow: /assets/
+Allow: /images/
 
 Sitemap: https://capittal.es/sitemap.xml
