@@ -10,7 +10,7 @@ import VentaEmpresasValuationFactors from '@/components/venta-empresas/VentaEmpr
 import VentaEmpresasFAQ from '@/components/venta-empresas/VentaEmpresasFAQ';
 import VentaEmpresasCTA from '@/components/venta-empresas/VentaEmpresasCTA';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema } from '@/utils/seo';
+import { getServiceSchema, getBreadcrumbSchema } from '@/utils/seo';
 import { useHreflang } from '@/hooks/useHreflang';
 
 const VentaEmpresas = () => {
@@ -24,11 +24,18 @@ const VentaEmpresas = () => {
         description="Servicio profesional integral de M&A para venta de empresas. Metodología probada, due diligence completo, negociación experta. Parte de nuestros servicios financieros."
         canonical={`https://capittal.es${location.pathname}`}
         keywords="servicio M&A profesional, asesoramiento venta empresas, metodología M&A, due diligence empresas, servicios financieros Capittal"
-        structuredData={getServiceSchema(
-          "Servicio de Venta de Empresas M&A",
-          "Servicio profesional integral de M&A para venta de empresas con metodología probada y due diligence completo.",
-          "Mergers and Acquisitions"
-        )}
+        structuredData={[
+          getServiceSchema(
+            "Servicio de Venta de Empresas M&A",
+            "Servicio profesional integral de M&A para venta de empresas con metodología probada y due diligence completo.",
+            "Mergers and Acquisitions"
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Servicios', url: 'https://capittal.es/servicios' },
+            { name: 'Venta de Empresas', url: 'https://capittal.es/servicios/venta-empresas' }
+          ])
+        ]}
       />
       <UnifiedLayout variant="home">
       <VentaEmpresasHeroService />

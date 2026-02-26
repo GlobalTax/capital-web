@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Hospital, Heart, Pill, Stethoscope } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { getServiceSchema, getWebPageSchema, getBreadcrumbSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
 import {
   SectorHeroV2,
@@ -176,7 +176,12 @@ const Healthcare = () => {
             "Sector Healthcare",
             "Especialización en M&A y valoración de empresas de salud",
             "https://capittal.es/sectores/healthcare"
-          )
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Sectores', url: 'https://capittal.es/sectores' },
+            { name: 'Healthcare', url: 'https://capittal.es/sectores/healthcare' }
+          ])
         ]}
       />
       <Header />

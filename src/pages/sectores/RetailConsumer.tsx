@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ShoppingBag, Store, Palette, TrendingUp } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { getServiceSchema, getWebPageSchema, getBreadcrumbSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
 import {
   SectorHeroV2,
@@ -175,7 +175,12 @@ const RetailConsumer = () => {
             "Sector Retail & Consumer",
             "Especialización en M&A y valoración de empresas de retail",
             "https://capittal.es/sectores/retail-consumer"
-          )
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Sectores', url: 'https://capittal.es/sectores' },
+            { name: 'Retail & Consumer', url: 'https://capittal.es/sectores/retail-consumer' }
+          ])
         ]}
       />
       <Header />

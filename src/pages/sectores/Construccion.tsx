@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Building2, Hammer, HardHat, Wrench } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { getServiceSchema, getWebPageSchema, getBreadcrumbSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
 import {
   SectorHeroV2,
@@ -157,7 +157,12 @@ const Construccion = () => {
             "Sector Construcción",
             "Especialización en M&A y valoración de empresas de construcción",
             "https://capittal.es/sectores/construccion"
-          )
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Sectores', url: 'https://capittal.es/sectores' },
+            { name: 'Construcción', url: 'https://capittal.es/sectores/construccion' }
+          ])
         ]}
       />
       <Header />

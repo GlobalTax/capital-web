@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema } from '@/utils/seo';
+import { getServiceSchema, getBreadcrumbSchema } from '@/utils/seo';
 import { useHreflang } from '@/hooks/useHreflang';
 import ReestructuracionesHero from '@/components/reestructuraciones/ReestructuracionesHero';
 import ReestructuracionesProcess from '@/components/reestructuraciones/ReestructuracionesProcess';
@@ -22,10 +22,17 @@ const Reestructuraciones = () => {
         description="Servicios de reestructuración empresarial y financiera. Optimización de capital, refinanciación de deuda y planes de viabilidad en España."
         canonical={`https://capittal.es${location.pathname}`}
         keywords="reestructuración empresarial, refinanciación, viabilidad financiera"
-        structuredData={getServiceSchema(
-          "Reestructuraciones Empresariales",
-          "Reestructuración de capital y optimización financiera"
-        )}
+        structuredData={[
+          getServiceSchema(
+            "Reestructuraciones Empresariales",
+            "Reestructuración de capital y optimización financiera"
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Servicios', url: 'https://capittal.es/servicios' },
+            { name: 'Reestructuraciones', url: 'https://capittal.es/servicios/reestructuraciones' }
+          ])
+        ]}
       />
       <Header />
       <div className="pt-16">

@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Shield, Camera, Flame, Lock, TrendingUp, Globe, Scale, Handshake, Users, Award, Building2, ArrowRight } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { getServiceSchema, getWebPageSchema, getBreadcrumbSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
 import {
   SectorHeroV2,
@@ -190,7 +190,12 @@ const Seguridad = () => {
             "M&A Sector Seguridad",
             "Capittal es la firma líder en M&A del sector seguridad en España",
             "https://capittal.es/sectores/seguridad"
-          )
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Sectores', url: 'https://capittal.es/sectores' },
+            { name: 'Seguridad', url: 'https://capittal.es/sectores/seguridad' }
+          ])
         ]}
       />
       <Header />
