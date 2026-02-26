@@ -37,6 +37,9 @@ const renderApp = () => {
     const root = createRoot(rootElement);
     root.render(<App />);
     console.log('✅ Capittal App iniciado correctamente');
+
+    // Initialize Web Vitals monitoring (non-blocking)
+    import('@/utils/webVitals').then(({ initWebVitals }) => initWebVitals());
   } catch (error) {
     console.error('Error al renderizar la aplicación:', error);
     showErrorFallback();
