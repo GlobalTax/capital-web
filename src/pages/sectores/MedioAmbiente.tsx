@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Recycle, Trash2, Leaf, Building } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { getServiceSchema, getWebPageSchema, getBreadcrumbSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
 import {
   SectorHeroV2,
@@ -157,7 +157,12 @@ const MedioAmbiente = () => {
             "Sector Medio Ambiente y Residuos",
             "Especialización en M&A y valoración de empresas medioambientales",
             "https://capittal.es/sectores/medio-ambiente"
-          )
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Sectores', url: 'https://capittal.es/sectores' },
+            { name: 'Medio Ambiente', url: 'https://capittal.es/sectores/medio-ambiente' }
+          ])
         ]}
       />
       <Header />

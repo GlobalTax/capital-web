@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { UtensilsCrossed, Truck, Wine, Coffee } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
-import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
+import { getServiceSchema, getWebPageSchema, getBreadcrumbSchema } from '@/utils/seo/schemas';
 import { useHreflang } from '@/hooks/useHreflang';
 import {
   SectorHeroV2,
@@ -157,7 +157,12 @@ const Alimentacion = () => {
             "Sector Alimentación y Bebidas",
             "Especialización en M&A y valoración de empresas alimentarias",
             "https://capittal.es/sectores/alimentacion"
-          )
+          ),
+          getBreadcrumbSchema([
+            { name: 'Inicio', url: 'https://capittal.es/' },
+            { name: 'Sectores', url: 'https://capittal.es/sectores' },
+            { name: 'Alimentación', url: 'https://capittal.es/sectores/alimentacion' }
+          ])
         ]}
       />
       <Header />
