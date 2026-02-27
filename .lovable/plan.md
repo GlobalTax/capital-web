@@ -1,39 +1,30 @@
 
+## Añadir Ahrefs Web Analytics al TrackingInitializer
 
-# Añadir BreadcrumbList Schema JSON-LD al Blog
+### Cambio
+Añadir una nueva sección al `TrackingInitializer.tsx` que cargue el script de Ahrefs Web Analytics (`https://analytics.ahrefs.com/analytics.js`) con el atributo `data-key="EQfyZr09+AcMIe1vpsSrVQ"`.
 
-## Resumen
+### Ubicacion
+Se insertara como una nueva seccion `// ========== AHREFS WEB ANALYTICS ==========` despues del bloque de Brevo (linea ~325), siguiendo el mismo patron de los demas scripts:
+1. Comprobar si ya esta cargado (evitar duplicados)
+2. Crear elemento `<script>` con `async`, `src` y `data-key`
+3. Append al `<head>`
 
-Añadir structured data `BreadcrumbList` a las dos páginas del blog (listado y post individual) para mejorar los rich results en Google, reutilizando la función `getBreadcrumbSchema` que ya existe en el proyecto.
+### Detalle tecnico
 
-## Cambios
-
-### 1. Listado del blog (`src/pages/recursos/Blog.tsx`)
-
-Cambiar el `structuredData` del `SEOHead` para pasar un **array** con el schema Blog existente + el nuevo BreadcrumbList:
-
-```text
-Breadcrumb: Inicio > Recursos > Blog
+```typescript
+// ========== AHREFS WEB ANALYTICS ==========
+if (!document.getElementById('ahrefs-analytics')) {
+  const ahrefsScript = document.createElement('script');
+  ahrefsScript.id = 'ahrefs-analytics';
+  ahrefsScript.src = 'https://analytics.ahrefs.com/analytics.js';
+  ahrefsScript.setAttribute('data-key', 'EQfyZr09+AcMIe1vpsSrVQ');
+  ahrefsScript.async = true;
+  document.head.appendChild(ahrefsScript);
+}
 ```
 
-- Importar `getBreadcrumbSchema` desde `@/utils/seo`
-- Cambiar `structuredData` de objeto a array: `[blogSchema, breadcrumbSchema]`
-
-### 2. Post individual (`src/pages/blog/BlogPost.tsx`)
-
-Igual: cambiar `structuredData` para pasar un array con Article + BreadcrumbList:
-
-```text
-Breadcrumb: Inicio > Blog > {título del post}
-```
-
-- Importar `getBreadcrumbSchema` desde `@/utils/seo`
-- Añadir el breadcrumb schema al array junto con el Article schema existente
-
-## Detalle técnico
-
-No se necesitan cambios en `SEOHead.tsx` ni en `schemas.ts` porque:
-- `SEOHead` ya acepta `object | object[]` en su prop `structuredData`
-- `getBreadcrumbSchema()` ya genera el formato correcto
-
-Solo se modifican 2 archivos, añadiendo ~5 líneas en cada uno.
+### Notas
+- Ahrefs Analytics es un script ligero de analitica web que no requiere consentimiento de cookies (no usa cookies ni datos personales), por lo que se carga sin depender de Cookiebot.
+- Se respetan los guards existentes: no se carga en preview/sandbox, iframes, ni dominios no permitidos.
+- No se modifica `TrackingConfigService` ya que la data-key es fija y publica.
