@@ -323,6 +323,17 @@ export const TrackingInitializer = () => {
           document.head.appendChild(brevoSdkScript);
         }
       }
+
+      // ========== AHREFS WEB ANALYTICS ==========
+      if (!document.getElementById('ahrefs-analytics')) {
+        const ahrefsScript = document.createElement('script');
+        ahrefsScript.id = 'ahrefs-analytics';
+        ahrefsScript.src = 'https://analytics.ahrefs.com/analytics.js';
+        ahrefsScript.setAttribute('data-key', 'EQfyZr09+AcMIe1vpsSrVQ');
+        ahrefsScript.async = true;
+        document.head.appendChild(ahrefsScript);
+        console.log('[Tracking] Ahrefs Web Analytics loaded');
+      }
     };
 
     // Ejecutar inicialización
