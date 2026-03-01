@@ -1,30 +1,17 @@
 
-## Añadir Ahrefs Web Analytics al TrackingInitializer
+## Eliminar a Marc (marc@capittal.es)
 
-### Cambio
-Añadir una nueva sección al `TrackingInitializer.tsx` que cargue el script de Ahrefs Web Analytics (`https://analytics.ahrefs.com/analytics.js`) con el atributo `data-key="EQfyZr09+AcMIe1vpsSrVQ"`.
-
-### Ubicacion
-Se insertara como una nueva seccion `// ========== AHREFS WEB ANALYTICS ==========` despues del bloque de Brevo (linea ~325), siguiendo el mismo patron de los demas scripts:
-1. Comprobar si ya esta cargado (evitar duplicados)
-2. Crear elemento `<script>` con `async`, `src` y `data-key`
-3. Append al `<head>`
+### Accion
+Eliminar el registro de **Marc** (`marc@capittal.es`, rol: asesor) de la tabla `email_recipients_config`.
 
 ### Detalle tecnico
+Ejecutar un DELETE sobre `email_recipients_config` con id `937bee85-f4ab-427f-9d49-1c2dbcbaea00`.
 
-```typescript
-// ========== AHREFS WEB ANALYTICS ==========
-if (!document.getElementById('ahrefs-analytics')) {
-  const ahrefsScript = document.createElement('script');
-  ahrefsScript.id = 'ahrefs-analytics';
-  ahrefsScript.src = 'https://analytics.ahrefs.com/analytics.js';
-  ahrefsScript.setAttribute('data-key', 'EQfyZr09+AcMIe1vpsSrVQ');
-  ahrefsScript.async = true;
-  document.head.appendChild(ahrefsScript);
-}
+```sql
+DELETE FROM email_recipients_config WHERE id = '937bee85-f4ab-427f-9d49-1c2dbcbaea00';
 ```
 
 ### Notas
-- Ahrefs Analytics es un script ligero de analitica web que no requiere consentimiento de cookies (no usa cookies ni datos personales), por lo que se carga sin depender de Cookiebot.
-- Se respetan los guards existentes: no se carga en preview/sandbox, iframes, ni dominios no permitidos.
-- No se modifica `TrackingConfigService` ya que la data-key es fija y publica.
+- No tiene registros en `team_members`, solo en `email_recipients_config`.
+- Albert ya fue eliminado previamente por el usuario.
+- No hay cambios de esquema, solo eliminacion de datos.
