@@ -3224,6 +3224,50 @@ export type Database = {
           },
         ]
       }
+      campaign_company_interactions: {
+        Row: {
+          campaign_company_id: string
+          created_at: string
+          created_by: string | null
+          descripcion: string | null
+          fecha: string
+          id: string
+          resultado: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          campaign_company_id: string
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          fecha?: string
+          id?: string
+          resultado?: string | null
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          campaign_company_id?: string
+          created_at?: string
+          created_by?: string | null
+          descripcion?: string | null
+          fecha?: string
+          id?: string
+          resultado?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_company_interactions_campaign_company_id_fkey"
+            columns: ["campaign_company_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaign_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_cost_history: {
         Row: {
           amount: number | null
@@ -21075,7 +21119,10 @@ export type Database = {
           excel_row_number: number | null
           financial_year: number | null
           financial_years_data: Json | null
+          follow_up_count: number | null
+          follow_up_status: string | null
           id: string
+          last_interaction_at: string | null
           multiple_used: number | null
           normalized_ebitda: number | null
           pdf_url: string | null
@@ -21105,7 +21152,10 @@ export type Database = {
           excel_row_number?: number | null
           financial_year?: number | null
           financial_years_data?: Json | null
+          follow_up_count?: number | null
+          follow_up_status?: string | null
           id?: string
+          last_interaction_at?: string | null
           multiple_used?: number | null
           normalized_ebitda?: number | null
           pdf_url?: string | null
@@ -21135,7 +21185,10 @@ export type Database = {
           excel_row_number?: number | null
           financial_year?: number | null
           financial_years_data?: Json | null
+          follow_up_count?: number | null
+          follow_up_status?: string | null
           id?: string
+          last_interaction_at?: string | null
           multiple_used?: number | null
           normalized_ebitda?: number | null
           pdf_url?: string | null

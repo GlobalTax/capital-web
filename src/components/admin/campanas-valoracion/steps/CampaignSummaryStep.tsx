@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign, Calendar } from 'lucide-react';
+import { Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign, Calendar, MessageSquarePlus, Users, CalendarCheck } from 'lucide-react';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useMemo } from 'react';
+import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 
 interface Props {
   campaignId: string;
@@ -43,6 +44,11 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const successRate = stats.total > 0 ? ((sentCount / stats.total) * 100).toFixed(0) : '0';
   const avgValuation = createdCount > 0 ? stats.totalValuation / createdCount : 0;
 
+  // Follow-up stats
+  const followUpCount = companies.filter(c => (c as any).follow_up_count > 0).length;
+  const interestedCount = companies.filter(c => (c as any).follow_up_status === 'interested').length;
+  const meetingCount = companies.filter(c => (c as any).follow_up_status === 'meeting_scheduled').length;
+
   const distributionData = useMemo(() => {
     const companiesWithValuation = companies.filter(c => c.valuation_central && c.valuation_central > 0);
     if (companiesWithValuation.length === 0) return [];
@@ -75,7 +81,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-4">
         <Card>
           <CardContent className="pt-4 text-center">
             <Building2 className="h-5 w-5 mx-auto text-muted-foreground" />
@@ -118,6 +124,27 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
             <p className="text-xs text-muted-foreground">Promedio</p>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="pt-4 text-center">
+            <MessageSquarePlus className="h-5 w-5 mx-auto text-orange-500" />
+            <p className="text-2xl font-bold mt-1">{followUpCount}</p>
+            <p className="text-xs text-muted-foreground">Con seguimiento</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 text-center">
+            <Users className="h-5 w-5 mx-auto text-emerald-500" />
+            <p className="text-2xl font-bold mt-1">{interestedCount}</p>
+            <p className="text-xs text-muted-foreground">Interesados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 text-center">
+            <CalendarCheck className="h-5 w-5 mx-auto text-violet-500" />
+            <p className="text-2xl font-bold mt-1">{meetingCount}</p>
+            <p className="text-xs text-muted-foreground">Reuniones</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Distribution Chart */}
@@ -152,6 +179,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead>Email</TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Seguimiento</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -169,6 +197,14 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                     } className="text-xs">
                       {c.status === 'sent' ? 'Enviado' : c.status === 'failed' ? 'Error' : c.status === 'created' ? 'Creada' : c.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {(() => {
+                      const fus = (c as any).follow_up_status || 'none';
+                      const fusInfo = FOLLOW_UP_STATUSES.find(s => s.value === fus);
+                      if (fus === 'none') return <span className="text-muted-foreground text-xs">—</span>;
+                      return <Badge variant={fusInfo?.variant || 'secondary'} className="text-[10px]">{fusInfo?.label || fus}</Badge>;
+                    })()}
                   </TableCell>
                 </TableRow>
               ))}
