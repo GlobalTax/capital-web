@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,10 +13,12 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X,
+  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
+import { CampaignCompanyInteractionDialog } from '@/components/admin/campanas-valoracion/CampaignCompanyInteractionDialog';
+import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
@@ -283,11 +286,15 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   // Preview modal
   const [previewCompany, setPreviewCompany] = useState<CampaignCompany | null>(null);
 
+  // Interaction dialog
+  const [interactionCompany, setInteractionCompany] = useState<CampaignCompany | null>(null);
+
   // Multi-selection
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Status filter
-  const [statusFilter, setStatusFilter] = useState<'all' | 'calculated' | 'sent' | 'failed'>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [followUpFilter, setFollowUpFilter] = useState<string>('all');
 
   const toggleSelection = useCallback((id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]),
@@ -298,9 +305,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const failedCompanies = companies.filter(c => c.status === 'failed');
   const downloadableCompanies = companies.filter(c => ['calculated', 'sent', 'created'].includes(c.status));
 
-  const filteredCompanies = statusFilter === 'all'
-    ? companies
-    : companies.filter(c => c.status === statusFilter);
+  const filteredCompanies = companies.filter(c => {
+    if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+    if (followUpFilter !== 'all' && (c as any).follow_up_status !== followUpFilter) return false;
+    return true;
+  });
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
@@ -626,6 +635,17 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         />
       )}
 
+      {/* Interaction Dialog */}
+      {interactionCompany && (
+        <CampaignCompanyInteractionDialog
+          open={!!interactionCompany}
+          onOpenChange={(open) => { if (!open) { setInteractionCompany(null); refetch(); } }}
+          campaignCompanyId={interactionCompany.id}
+          companyName={interactionCompany.client_company}
+          currentFollowUpStatus={interactionCompany.follow_up_status || 'none'}
+        />
+      )}
+
       {/* Send emails card */}
       <Card>
         <CardHeader>
@@ -728,6 +748,18 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 {f.label} ({f.count})
               </Button>
             ))}
+            <div className="h-4 w-px bg-border mx-1" />
+            <Select value={followUpFilter} onValueChange={setFollowUpFilter}>
+              <SelectTrigger className="h-7 text-xs w-[140px]">
+                <SelectValue placeholder="Seguimiento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">Todos</SelectItem>
+                {FOLLOW_UP_STATUSES.map(s => (
+                  <SelectItem key={s.value} value={s.value} className="text-xs">{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -746,6 +778,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">PDF</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -805,6 +838,23 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
+                      {(() => {
+                        const fus = (c as any).follow_up_status || 'none';
+                        const fusInfo = FOLLOW_UP_STATUSES.find(s => s.value === fus);
+                        const count = (c as any).follow_up_count || 0;
+                        if (fus === 'none' && count === 0) return <span className="text-muted-foreground text-xs">—</span>;
+                        return (
+                          <Badge
+                            variant={fusInfo?.variant || 'secondary'}
+                            className="text-[10px] cursor-pointer"
+                            onClick={() => setInteractionCompany(c)}
+                          >
+                            {fusInfo?.label || fus}{count > 0 ? ` (${count})` : ''}
+                          </Badge>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-7 w-7" disabled={isRowDownloading || isRowSending}>
@@ -823,6 +873,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                           <DropdownMenuItem onClick={() => downloadSingle(c)} disabled={isRowDownloading}>
                             <Download className="h-4 w-4 mr-2" />
                             Descargar PDF
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setInteractionCompany(c)}>
+                            <MessageSquarePlus className="h-4 w-4 mr-2" />
+                            Registrar seguimiento
                           </DropdownMenuItem>
                           {canSend && (
                             <>

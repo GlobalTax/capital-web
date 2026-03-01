@@ -39,6 +39,9 @@ export interface CampaignCompany {
   pdf_url: string | null;
   source: string;
   excel_row_number: number | null;
+  follow_up_status: string | null;
+  follow_up_count: number | null;
+  last_interaction_at: string | null;
 }
 
 export type CampaignCompanyInsert = Omit<CampaignCompany, 'id' | 'created_at'>;
