@@ -94,8 +94,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
         if (isRevenue) {
           const latestRevenue = financialYears[0]?.revenue || c.revenue || 0;
           const multipleUsed = c.custom_multiple || campaign.custom_multiple || 2.0;
-          const effectiveLow = multipleUsed - 1;
-          const effectiveHigh = multipleUsed + 1;
+          const effectiveLow = campaign.multiple_low || (multipleUsed - 1);
+          const effectiveHigh = campaign.multiple_high || (multipleUsed + 1);
           updateData = {
             valuation_low: latestRevenue * effectiveLow,
             valuation_central: latestRevenue * multipleUsed,
@@ -109,7 +109,9 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             financialYears,
             [],
             campaign.sector,
-            c.custom_multiple || campaign.custom_multiple || undefined
+            c.custom_multiple || campaign.custom_multiple || undefined,
+            campaign.multiple_low || undefined,
+            campaign.multiple_high || undefined
           );
           updateData = {
             valuation_low: result.valuationLow,
@@ -288,8 +290,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
         if (isRevenue) {
           const latestRevenue = financialYears[0]?.revenue || c.revenue || 0;
           const multipleUsed = c.custom_multiple || campaign.custom_multiple || 2.0;
-          const effectiveLow = multipleUsed - 1;
-          const effectiveHigh = multipleUsed + 1;
+          const effectiveLow = campaign.multiple_low || (multipleUsed - 1);
+          const effectiveHigh = campaign.multiple_high || (multipleUsed + 1);
           updateData = {
             valuation_low: latestRevenue * effectiveLow,
             valuation_central: latestRevenue * multipleUsed,
@@ -303,7 +305,9 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             financialYears,
             [],
             campaign.sector,
-            c.custom_multiple || campaign.custom_multiple || undefined
+            c.custom_multiple || campaign.custom_multiple || undefined,
+            campaign.multiple_low || undefined,
+            campaign.multiple_high || undefined
           );
           updateData = {
             valuation_low: result.valuationLow,
