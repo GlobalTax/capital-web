@@ -1,0 +1,1 @@
+DELETE FROM email_recipients_config WHERE id = '937bee85-f4ab-427f-9d49-1c2dbcbaea00';
