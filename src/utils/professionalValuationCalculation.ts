@@ -141,7 +141,9 @@ export function calculateProfessionalValuation(
   financialYears: FinancialYear[],
   adjustments: NormalizationAdjustment[],
   sector: string,
-  customMultiple?: number
+  customMultiple?: number,
+  multipleLowOverride?: number,
+  multipleHighOverride?: number
 ): ValuationCalculationResult {
   // 1. Obtener EBITDA reportado (del último año)
   const reportedEbitda = getLatestEbitda(financialYears);
@@ -156,8 +158,8 @@ export function calculateProfessionalValuation(
   const multipleUsed = customMultiple ?? (multipleLow + multipleHigh) / 2;
   
   // 5. Calcular valoraciones - usar múltiplos efectivos cuando hay customMultiple
-  const effectiveLow = customMultiple ? customMultiple - 1 : multipleLow;
-  const effectiveHigh = customMultiple ? customMultiple + 1 : multipleHigh;
+  const effectiveLow = multipleLowOverride || (customMultiple ? customMultiple - 1 : multipleLow);
+  const effectiveHigh = multipleHighOverride || (customMultiple ? customMultiple + 1 : multipleHigh);
   const valuationLow = calculateValuation(normalizedEbitda, effectiveLow);
   const valuationHigh = calculateValuation(normalizedEbitda, effectiveHigh);
   const valuationCentral = calculateValuation(normalizedEbitda, multipleUsed);
