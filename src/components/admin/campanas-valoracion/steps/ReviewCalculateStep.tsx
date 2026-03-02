@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calculator, Sparkles, Loader2, Building2, Mail, TrendingUp, DollarSign, X, RefreshCw } from 'lucide-react';
+import { Calculator, Sparkles, Loader2, Building2, Mail, TrendingUp, DollarSign, X, RefreshCw, Search } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { calculateProfessionalValuation, formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
@@ -293,6 +293,13 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
   };
 
   const [recalculating, setRecalculating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCompanies = useMemo(() => {
+    if (!searchQuery.trim()) return companies;
+    const q = searchQuery.toLowerCase().trim();
+    return companies.filter(c => c.client_company?.toLowerCase().includes(q));
+  }, [companies, searchQuery]);
 
   const handleRecalculateAll = async () => {
     setRecalculating(true);
@@ -447,6 +454,33 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
       {/* Table */}
       <Card>
         <CardContent className="p-0">
+          {/* Search */}
+          <div className="p-4 pb-0 flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={`Buscar entre ${companies.length} empresas...`}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            {searchQuery && (
+              <span className="text-sm text-muted-foreground">
+                {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
+              </span>
+            )}
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -469,7 +503,13 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {companies.map((c, i) => (
+              {filteredCompanies.length === 0 && searchQuery ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                    No se encontraron empresas para "{searchQuery}"
+                  </TableCell>
+                </TableRow>
+              ) : filteredCompanies.map((c, i) => (
                 <TableRow
                   key={c.id}
                   className={`cursor-pointer hover:bg-muted/50 ${c.status === 'excluded' ? 'opacity-40' : ''}`}
