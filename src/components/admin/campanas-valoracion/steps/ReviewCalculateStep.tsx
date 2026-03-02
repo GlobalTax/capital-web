@@ -492,7 +492,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                 </TableHead>
                 <TableHead>#</TableHead>
                 <TableHead>Empresa</TableHead>
-                <TableHead className="text-right">{baseValueLabel}</TableHead>
+                <TableHead className="text-right">Facturación</TableHead>
+                <TableHead className="text-right">EBITDA</TableHead>
                 <TableHead className="text-center">Múltiplo</TableHead>
                 <TableHead className="text-right">Val. Baja</TableHead>
                 <TableHead className="text-right">Val. Central</TableHead>
@@ -505,7 +506,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             <TableBody>
               {filteredCompanies.length === 0 && searchQuery ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                     No se encontraron empresas para "{searchQuery}"
                   </TableCell>
                 </TableRow>
@@ -523,7 +524,16 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">{i + 1}</TableCell>
                   <TableCell className="font-medium">{c.client_company}</TableCell>
-                  <TableCell className="text-right">{formatCurrencyEUR(isRevenue ? (c.revenue || 0) : c.ebitda)}</TableCell>
+                  <TableCell className="text-right">
+                    {c.revenue ? (
+                      <span className={isRevenue ? 'font-semibold' : ''}>{formatCurrencyEUR(c.revenue)}</span>
+                    ) : <span className="text-muted-foreground">---</span>}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {c.ebitda ? (
+                      <span className={!isRevenue ? 'font-semibold' : ''}>{formatCurrencyEUR(c.ebitda)}</span>
+                    ) : <span className="text-muted-foreground">---</span>}
+                  </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1">
                       <span>{c.multiple_used?.toFixed(1) || '—'}</span>
