@@ -1,33 +1,29 @@
 
+## Anadir columna Facturacion en tabla de revision
 
-## Anadir buscador en tabla de valoraciones outbound
+### Cambio
+Anadir columna "Facturacion" antes de la columna EBITDA (que actualmente se llama dinamicamente segun `baseValueLabel`). Se reemplaza la columna unica por dos columnas separadas: Facturacion y EBITDA, resaltando en negrita la que se usa como base de calculo.
 
-### Que se hace
-Anadir un input de busqueda encima de la tabla en `ReviewCalculateStep.tsx` que filtre empresas en tiempo real por nombre, con contador de resultados y boton limpiar.
+### Archivo a modificar
+`src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx`
 
-### Cambios (1 solo archivo)
+### Cambios especificos
 
-**`src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx`**
+**1. TableHeader (linea 495)** - Reemplazar la columna unica `baseValueLabel` por dos columnas:
+```
+<TableHead className="text-right">Facturacion</TableHead>
+<TableHead className="text-right">EBITDA</TableHead>
+```
 
-1. Anadir estado `searchQuery` (useState)
-2. Anadir import de `Search` desde lucide-react
-3. Crear `filteredCompanies` con `useMemo` que filtra `companies` por `client_company` (case-insensitive)
-4. Anadir input de busqueda entre la barra de acciones y la tabla (dentro del Card, encima de Table)
-   - Icono Search a la izquierda
-   - Placeholder dinamico: "Buscar entre {companies.length} empresas..."
-   - Boton X para limpiar cuando hay texto
-   - Contador de resultados cuando hay query activa
-5. Reemplazar `companies.map(...)` por `filteredCompanies.map(...)` en el TableBody
-6. Mostrar mensaje "No se encontraron empresas" cuando filteredCompanies esta vacio y hay query
+**2. colSpan en fila vacia** (linea 508) - Cambiar de 11 a 12 (una columna mas)
 
-### Detalles tecnicos
+**3. TableBody (linea 526)** - Reemplazar la celda unica por dos celdas:
+- Facturacion: `c.revenue` formateado, en negrita si `isRevenue`, o "---" si no hay dato
+- EBITDA: `c.ebitda` formateado, en negrita si no es `isRevenue`, o "---" si no hay dato
 
-- Busqueda client-side con `useMemo` (sin queries a DB, datos ya cargados)
-- Busca en `client_company` con `.toLowerCase().includes(query)`
-- El indice `#` mostrara posicion dentro de resultados filtrados
-- Los botones "Seleccionar todo" / "Deseleccionar" siguen operando sobre `activeCompanies` (no filtradas)
-- Los conteos en stats cards no cambian (muestran totales reales)
-
-### Resultado
-Con 143 empresas, escribir "CASA" filtra instantaneamente y muestra solo las coincidencias con contador "2 resultados".
-
+### Resultado visual
+```
+Empresa         Facturacion    EBITDA       Multiplo   Val. Baja ...
+CASANOVAS       3.034.205 EUR  500.000 EUR  1.3x       ...
+```
+La columna base de calculo se muestra en negrita.
