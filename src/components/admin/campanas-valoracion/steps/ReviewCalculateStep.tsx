@@ -16,6 +16,7 @@ import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { calculateProfessionalValuation, formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { fetchCampaignRanges, findMatchingRange, ValuationRange } from '@/utils/assignMultiplesFromRanges';
 
 interface Props {
   campaignId: string;
@@ -84,6 +85,9 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
       const pending = companies.filter(c => c.status === 'pending' && selectedIds.has(c.id));
       const updates: { id: string; data: Partial<CampaignCompany> }[] = [];
 
+      // Fetch ranges once
+      const ranges = await fetchCampaignRanges(campaignId);
+
       for (const c of pending) {
         const financialYears = c.financial_years_data?.length
           ? c.financial_years_data
@@ -93,9 +97,10 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
         if (isRevenue) {
           const latestRevenue = financialYears[0]?.revenue || c.revenue || 0;
-          const multipleUsed = c.custom_multiple || campaign.custom_multiple || 2.0;
-          const effectiveLow = campaign.multiple_low || (multipleUsed - 1);
-          const effectiveHigh = campaign.multiple_high || (multipleUsed + 1);
+          const rangeMatch = ranges.length > 0 ? findMatchingRange(latestRevenue, ranges) : null;
+          const multipleUsed = rangeMatch ? rangeMatch.multiple_mid : (c.custom_multiple || campaign.custom_multiple || 2.0);
+          const effectiveLow = rangeMatch ? rangeMatch.multiple_low : (campaign.multiple_low || (multipleUsed - 1));
+          const effectiveHigh = rangeMatch ? rangeMatch.multiple_high : (campaign.multiple_high || (multipleUsed + 1));
           updateData = {
             valuation_low: latestRevenue * effectiveLow,
             valuation_central: latestRevenue * multipleUsed,
@@ -103,24 +108,39 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             normalized_ebitda: latestRevenue,
             multiple_used: multipleUsed,
             status: 'calculated',
+            ...(rangeMatch ? { range_label: rangeMatch.range_label, is_auto_assigned: true } : {}),
           };
         } else {
-          const result = calculateProfessionalValuation(
-            financialYears,
-            [],
-            campaign.sector,
-            c.custom_multiple || campaign.custom_multiple || undefined,
-            campaign.multiple_low || undefined,
-            campaign.multiple_high || undefined
-          );
-          updateData = {
-            valuation_low: result.valuationLow,
-            valuation_central: result.valuationCentral,
-            valuation_high: result.valuationHigh,
-            normalized_ebitda: result.normalizedEbitda,
-            multiple_used: result.multipleUsed,
-            status: 'calculated',
-          };
+          const baseValue = financialYears[0]?.ebitda || c.ebitda || 0;
+          const rangeMatch = ranges.length > 0 ? findMatchingRange(baseValue, ranges) : null;
+
+          if (rangeMatch) {
+            updateData = {
+              valuation_low: baseValue * rangeMatch.multiple_low,
+              valuation_central: baseValue * rangeMatch.multiple_mid,
+              valuation_high: baseValue * rangeMatch.multiple_high,
+              normalized_ebitda: baseValue,
+              multiple_used: rangeMatch.multiple_mid,
+              status: 'calculated',
+              range_label: rangeMatch.range_label,
+              is_auto_assigned: true,
+            };
+          } else {
+            const result = calculateProfessionalValuation(
+              financialYears, [], campaign.sector,
+              c.custom_multiple || campaign.custom_multiple || undefined,
+              campaign.multiple_low || undefined,
+              campaign.multiple_high || undefined
+            );
+            updateData = {
+              valuation_low: result.valuationLow,
+              valuation_central: result.valuationCentral,
+              valuation_high: result.valuationHigh,
+              normalized_ebitda: result.normalizedEbitda,
+              multiple_used: result.multipleUsed,
+              status: 'calculated',
+            };
+          }
         }
 
         updates.push({ id: c.id, data: updateData });
@@ -280,6 +300,9 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
       const toRecalc = companies.filter(c => c.status !== 'excluded' && selectedIds.has(c.id) && (isRevenue ? c.revenue : c.ebitda));
       const updates: { id: string; data: Partial<CampaignCompany> }[] = [];
 
+      // Fetch ranges once
+      const ranges = await fetchCampaignRanges(campaignId);
+
       for (const c of toRecalc) {
         const financialYears = c.financial_years_data?.length
           ? c.financial_years_data
@@ -289,9 +312,10 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
         if (isRevenue) {
           const latestRevenue = financialYears[0]?.revenue || c.revenue || 0;
-          const multipleUsed = c.custom_multiple || campaign.custom_multiple || 2.0;
-          const effectiveLow = campaign.multiple_low || (multipleUsed - 1);
-          const effectiveHigh = campaign.multiple_high || (multipleUsed + 1);
+          const rangeMatch = ranges.length > 0 ? findMatchingRange(latestRevenue, ranges) : null;
+          const multipleUsed = rangeMatch ? rangeMatch.multiple_mid : (c.custom_multiple || campaign.custom_multiple || 2.0);
+          const effectiveLow = rangeMatch ? rangeMatch.multiple_low : (campaign.multiple_low || (multipleUsed - 1));
+          const effectiveHigh = rangeMatch ? rangeMatch.multiple_high : (campaign.multiple_high || (multipleUsed + 1));
           updateData = {
             valuation_low: latestRevenue * effectiveLow,
             valuation_central: latestRevenue * multipleUsed,
@@ -299,24 +323,39 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             normalized_ebitda: latestRevenue,
             multiple_used: multipleUsed,
             status: c.status === 'pending' ? 'calculated' : c.status,
+            ...(rangeMatch ? { range_label: rangeMatch.range_label, is_auto_assigned: true } : {}),
           };
         } else {
-          const result = calculateProfessionalValuation(
-            financialYears,
-            [],
-            campaign.sector,
-            c.custom_multiple || campaign.custom_multiple || undefined,
-            campaign.multiple_low || undefined,
-            campaign.multiple_high || undefined
-          );
-          updateData = {
-            valuation_low: result.valuationLow,
-            valuation_central: result.valuationCentral,
-            valuation_high: result.valuationHigh,
-            normalized_ebitda: result.normalizedEbitda,
-            multiple_used: result.multipleUsed,
-            status: c.status === 'pending' ? 'calculated' : c.status,
-          };
+          const baseValue = financialYears[0]?.ebitda || c.ebitda || 0;
+          const rangeMatch = ranges.length > 0 ? findMatchingRange(baseValue, ranges) : null;
+
+          if (rangeMatch) {
+            updateData = {
+              valuation_low: baseValue * rangeMatch.multiple_low,
+              valuation_central: baseValue * rangeMatch.multiple_mid,
+              valuation_high: baseValue * rangeMatch.multiple_high,
+              normalized_ebitda: baseValue,
+              multiple_used: rangeMatch.multiple_mid,
+              status: c.status === 'pending' ? 'calculated' : c.status,
+              range_label: rangeMatch.range_label,
+              is_auto_assigned: true,
+            };
+          } else {
+            const result = calculateProfessionalValuation(
+              financialYears, [], campaign.sector,
+              c.custom_multiple || campaign.custom_multiple || undefined,
+              campaign.multiple_low || undefined,
+              campaign.multiple_high || undefined
+            );
+            updateData = {
+              valuation_low: result.valuationLow,
+              valuation_central: result.valuationCentral,
+              valuation_high: result.valuationHigh,
+              normalized_ebitda: result.normalizedEbitda,
+              multiple_used: result.multipleUsed,
+              status: c.status === 'pending' ? 'calculated' : c.status,
+            };
+          }
         }
 
         updates.push({ id: c.id, data: updateData });
@@ -445,7 +484,14 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                   <TableCell className="text-muted-foreground text-xs">{i + 1}</TableCell>
                   <TableCell className="font-medium">{c.client_company}</TableCell>
                   <TableCell className="text-right">{formatCurrencyEUR(isRevenue ? (c.revenue || 0) : c.ebitda)}</TableCell>
-                  <TableCell className="text-center">{c.multiple_used?.toFixed(1) || '—'}</TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <span>{c.multiple_used?.toFixed(1) || '—'}</span>
+                      {c.is_auto_assigned && c.range_label && (
+                        <Badge variant="secondary" className="text-[10px]">{c.range_label}</Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right">{c.valuation_low ? formatCurrencyEUR(c.valuation_low) : '—'}</TableCell>
                   <TableCell className="text-right font-medium">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
                   <TableCell className="text-right">{c.valuation_high ? formatCurrencyEUR(c.valuation_high) : '—'}</TableCell>

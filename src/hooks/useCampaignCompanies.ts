@@ -42,6 +42,8 @@ export interface CampaignCompany {
   follow_up_status: string | null;
   follow_up_count: number | null;
   last_interaction_at: string | null;
+  range_label: string | null;
+  is_auto_assigned: boolean;
 }
 
 export type CampaignCompanyInsert = Omit<CampaignCompany, 'id' | 'created_at'>;
