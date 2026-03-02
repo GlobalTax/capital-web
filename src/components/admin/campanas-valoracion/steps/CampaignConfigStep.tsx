@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { ValuationRangesConfig } from '../ValuationRangesConfig';
 
 const TEMPLATES_KEY = 'campaign-sector-templates';
 
@@ -286,6 +287,14 @@ export function CampaignConfigStep({ data, updateField }: Props) {
             <Switch checked={data.include_comparables || false} onCheckedChange={v => updateField('include_comparables', v)} />
             <Label>Incluir comparables en PDF</Label>
           </div>
+
+          {/* Rangos de Valoración Automáticos */}
+          {data.id && (
+            <ValuationRangesConfig
+              campaignId={data.id}
+              valuationType={data.valuation_type || 'ebitda_multiple'}
+            />
+          )}
 
           {/* Modo de años */}
           <div className="space-y-3">

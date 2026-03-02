@@ -21122,11 +21122,13 @@ export type Database = {
           follow_up_count: number | null
           follow_up_status: string | null
           id: string
+          is_auto_assigned: boolean | null
           last_interaction_at: string | null
           multiple_used: number | null
           normalized_ebitda: number | null
           pdf_url: string | null
           professional_valuation_id: string | null
+          range_label: string | null
           revenue: number | null
           source: string | null
           status: string | null
@@ -21155,11 +21157,13 @@ export type Database = {
           follow_up_count?: number | null
           follow_up_status?: string | null
           id?: string
+          is_auto_assigned?: boolean | null
           last_interaction_at?: string | null
           multiple_used?: number | null
           normalized_ebitda?: number | null
           pdf_url?: string | null
           professional_valuation_id?: string | null
+          range_label?: string | null
           revenue?: number | null
           source?: string | null
           status?: string | null
@@ -21188,11 +21192,13 @@ export type Database = {
           follow_up_count?: number | null
           follow_up_status?: string | null
           id?: string
+          is_auto_assigned?: boolean | null
           last_interaction_at?: string | null
           multiple_used?: number | null
           normalized_ebitda?: number | null
           pdf_url?: string | null
           professional_valuation_id?: string | null
+          range_label?: string | null
           revenue?: number | null
           source?: string | null
           status?: string | null
@@ -21318,6 +21324,53 @@ export type Database = {
           years_mode?: string | null
         }
         Relationships: []
+      }
+      valuation_ranges: {
+        Row: {
+          campaign_id: string
+          created_at: string | null
+          id: string
+          max_value: number | null
+          min_value: number | null
+          multiple_high: number
+          multiple_low: number
+          multiple_mid: number
+          range_label: string | null
+          range_order: number
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string | null
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          multiple_high: number
+          multiple_low: number
+          multiple_mid: number
+          range_label?: string | null
+          range_order: number
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string | null
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          multiple_high?: number
+          multiple_low?: number
+          multiple_mid?: number
+          range_label?: string | null
+          range_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valuation_ranges_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       valuation_share_tokens: {
         Row: {
