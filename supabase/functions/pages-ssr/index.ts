@@ -39,6 +39,20 @@ const ORG_JSONLD = {
   "sameAs": ["https://www.linkedin.com/company/capittal-transacciones"],
 };
 
+// ─── Helper: build BreadcrumbList schema ───
+function buildBreadcrumbSchema(items: Array<{ name: string; url: string }>): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": items.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": item.name,
+      "item": item.url,
+    })),
+  };
+}
+
 // ─── Helper: build FAQPage schema ───
 function buildFAQPageSchema(faqs: Array<{ question: string; answer: string }>): object {
   return {
@@ -153,6 +167,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Puedo seguir dirigiendo la empresa durante el proceso?", answer: "Absolutamente. Es esencial que mantengas el foco en el negocio durante el proceso de venta. Nosotros nos encargamos de la mayor parte del trabajo." },
         { question: "¿Qué sucede con mis empleados?", answer: "La retención del equipo es crucial para el éxito de la venta. Trabajamos con compradores que valoran el capital humano y buscamos estructuras que incentiven la continuidad del equipo clave." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Servicios", url: "https://capittal.es/servicios/venta-empresas" },
+        { name: "Venta de Empresas", url: "https://capittal.es/servicios/venta-empresas" },
+      ]),
     ],
     content: `
       <h1>Venta de Empresas - Asesoramiento Profesional</h1>
@@ -190,6 +209,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cuánto cuesta una valoración profesional?", answer: "El coste varía según la complejidad, tamaño de la empresa y urgencia. Típicamente entre €3,000-€15,000 para PYMES, y €10,000-€50,000+ para empresas grandes." },
         { question: "¿Cuánto tiempo dura el proceso?", answer: "Una valoración estándar toma 4-6 semanas desde el inicio hasta la entrega del informe final. Procesos urgentes pueden completarse en 2-3 semanas." },
         { question: "¿Puedo usar la valoración para vender mi empresa?", answer: "Absolutamente. Nuestras valoraciones están diseñadas para soportar procesos de venta y proporcionan la base técnica para negociaciones." },
+      ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Servicios", url: "https://capittal.es/servicios/valoraciones" },
+        { name: "Valoraciones", url: "https://capittal.es/servicios/valoraciones" },
       ]),
     ],
     content: `
@@ -229,6 +253,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo un Vendor Due Diligence mejora el precio de venta?", answer: "Al identificar y resolver problemas previos, presentar información transparente y completa, reducimos las contingencias del comprador y creamos confianza que se traduce en mejor valoración." },
         { question: "¿Cómo garantizan la confidencialidad del proceso?", answer: "Todos nuestros profesionales firman acuerdos de confidencialidad estrictos. Mantenemos protocolos de seguridad de información robustos y limitamos el acceso solo al equipo necesario." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Servicios", url: "https://capittal.es/servicios/due-diligence" },
+        { name: "Due Diligence", url: "https://capittal.es/servicios/due-diligence" },
+      ]),
     ],
     content: `
       <h1>Due Diligence Financiera y Fiscal</h1>
@@ -266,6 +295,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo gestionan la continuidad del negocio durante el proceso?", answer: "Priorizamos la continuidad operativa mediante planes detallados que minimizan la disrupción. Trabajamos en fases y mantenemos la comunicación con stakeholders clave." },
         { question: "¿Cuál es la tasa de éxito de sus reestructuraciones?", answer: "Nuestra tasa de éxito es del 87%, medida por empresas que logran estabilidad financiera y operativa sostenible." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Servicios", url: "https://capittal.es/servicios/reestructuraciones" },
+        { name: "Reestructuraciones", url: "https://capittal.es/servicios/reestructuraciones" },
+      ]),
     ],
     content: `
       <h1>Reestructuración Empresarial</h1>
@@ -302,6 +336,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo se estructura el coste del servicio?", answer: "Ofrecemos diferentes modalidades: tarifa fija para análisis estándar, porcentaje del ahorro generado para casos complejos, o una combinación de ambas. El análisis inicial siempre es gratuito." },
         { question: "¿Qué garantías ofrecéis sobre las estrategias fiscales?", answer: "Ofrecemos garantía de cumplimiento normativo al 100%. En caso de discrepancia con Hacienda, nos hacemos cargo de la defensa." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Servicios", url: "https://capittal.es/servicios/planificacion-fiscal" },
+        { name: "Planificación Fiscal", url: "https://capittal.es/servicios/planificacion-fiscal" },
+      ]),
     ],
     content: `
       <h1>Planificación Fiscal en Operaciones de M&A</h1>
@@ -336,6 +375,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo se estructura un earn-out en un contrato de compraventa?", answer: "El earn-out se estructura definiendo métricas objetivas (EBITDA, facturación, clientes), periodos de medición (2-3 años), umbrales mínimos y máximos, mecanismos de cálculo detallados, y cláusulas de protección." },
         { question: "¿Qué pasa si surgen contingencias tras el cierre?", answer: "Se activan las garantías contractuales: el vendedor responde según las warranty & indemnity clauses, se ejecutan las escrow accounts si las hay, y se aplican los caps y baskets acordados." },
         { question: "¿Cómo se coordina el asesoramiento legal con el proceso de valoración?", answer: "La coordinación es total: Capittal maneja la valoración y negociación comercial mientras el equipo legal gestiona todos los aspectos legales. Ambos equipos trabajan en paralelo con comunicación constante." },
+      ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Servicios", url: "https://capittal.es/servicios/asesoramiento-legal" },
+        { name: "Asesoramiento Legal", url: "https://capittal.es/servicios/asesoramiento-legal" },
       ]),
     ],
     content: `
@@ -372,6 +416,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Quién compra empresas de seguridad en España?", answer: "Los principales compradores son: grandes operadores (Prosegur, Securitas, Grupo Control), fondos de private equity armando plataformas de consolidación, y competidores regionales buscando escala." },
         { question: "¿Cuánto tiempo lleva vender una empresa de seguridad?", answer: "El proceso típico es de 6-9 meses. La due diligence se centra en contratos, personal habilitado, licencias y cumplimiento normativo." },
         { question: "¿Qué impacto tiene la regulación en la valoración?", answer: "El sector está muy regulado (Ley de Seguridad Privada). Las licencias, habilitaciones de personal y certificaciones son activos valiosos que impactan positivamente en la valoración." },
+      ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/seguridad" },
+        { name: "Seguridad", url: "https://capittal.es/sectores/seguridad" },
       ]),
     ],
     content: `
@@ -413,6 +462,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Es necesario tener beneficios para vender una empresa tech?", answer: "No necesariamente. En tech, los compradores priorizan crecimiento, retención y potencial de mercado sobre rentabilidad actual. Sin embargo, la eficiencia (rule of 40) es cada vez más valorada." },
         { question: "¿Qué tipo de compradores buscan empresas tech españolas?", answer: "El mercado español atrae a grupos de software europeos y americanos en expansión, fondos de private equity con estrategias de buy & build, corporates buscando adquisiciones de producto/talento, y fondos especializados en ciberseguridad e IA." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/tecnologia" },
+        { name: "Tecnología", url: "https://capittal.es/sectores/tecnologia" },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Tecnológico</h1>
@@ -449,6 +503,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Qué documentación necesito para vender mi empresa industrial?", answer: "Necesitarás: estados financieros de 3-5 años, inventario detallado de activos, contratos principales, licencias y certificaciones (ISO, medioambiente), organigramas, y documentación de propiedad industrial." },
         { question: "¿Cómo afecta la ubicación al valor de una empresa industrial?", answer: "La ubicación es crítica: acceso a infraestructuras (puertos, autovías), disponibilidad de mano de obra cualificada, costes laborales regionales. Empresas en polígonos bien conectados pueden alcanzar primas del 10-20%." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/industrial" },
+        { name: "Industrial", url: "https://capittal.es/sectores/industrial" },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Industrial</h1>
@@ -482,6 +541,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo afecta la regulación a la venta de una empresa sanitaria?", answer: "Las operaciones en healthcare requieren due diligence regulatoria específica: verificación de licencias sanitarias, cumplimiento RGPD sanitario, acreditaciones y autorizaciones autonómicas." },
         { question: "¿Qué tipos de compradores están activos en el sector salud español?", answer: "Fondos especializados en healthcare, grupos de consolidación europeos en dental y oftalmología, aseguradoras con integración vertical (Sanitas, Adeslas), y family offices buscando activos resilientes." },
         { question: "¿Cuánto tiempo lleva vender una clínica o empresa sanitaria?", answer: "El proceso típico dura entre 6-12 meses dependiendo de la complejidad regulatoria y el tamaño. Clínicas especializadas con documentación ordenada pueden cerrar en 4-6 meses." },
+      ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/healthcare" },
+        { name: "Healthcare", url: "https://capittal.es/sectores/healthcare" },
       ]),
     ],
     content: `
@@ -517,6 +581,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo afecta el tipo de contrato PPA a la valoración?", answer: "Los PPAs corporativos a largo plazo (10-15 años) con contrapartes investment grade pueden añadir 1-2 puntos de múltiplo EBITDA. Un activo 100% merchant puede valorarse 20-30% por debajo de uno con PPA." },
         { question: "¿Cuánto tiempo lleva vender un activo renovable?", answer: "El proceso típico es de 6-10 meses para un portfolio en operación. La due diligence técnica es intensiva. Un data room bien preparado puede acelerar 2-3 meses el proceso." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/energia" },
+        { name: "Energía", url: "https://capittal.es/sectores/energia" },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Energía y Renovables</h1>
@@ -551,6 +620,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo afectan las garantías de obra a la valoración?", answer: "Las garantías de obra pendientes se descuentan del precio. Se analiza el histórico de siniestralidad y las provisiones existentes." },
         { question: "¿Cuánto tiempo lleva vender una constructora?", answer: "El proceso típico es de 6-10 meses. La due diligence es intensiva: análisis de proyectos en curso, márgenes reales, garantías y litigios." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/construccion" },
+        { name: "Construcción", url: "https://capittal.es/sectores/construccion" },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Construcción e Inmobiliario</h1>
@@ -582,6 +656,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Quién compra empresas de logística en España?", answer: "Los principales compradores son: grandes operadores logísticos (XPO, SEUR, Logista), fondos de private equity, y competidores regionales. Hay especial interés en última milla y operadores con tecnología avanzada." },
         { question: "¿Cómo afecta la flota a la valoración?", answer: "La flota es un activo clave. Se valora: antigüedad media (ideal <5 años), proporción Euro 6 y vehículos eléctricos, financiación pendiente, y programa de renovación. Una flota moderna puede añadir 0,5-1x al múltiplo." },
         { question: "¿Cuánto tiempo lleva vender una empresa logística?", answer: "El proceso típico es de 6-9 meses. La due diligence incluye análisis de contratos, flota, conductores y cumplimiento normativo." },
+      ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/logistica" },
+        { name: "Logística", url: "https://capittal.es/sectores/logistica" },
       ]),
     ],
     content: `
@@ -615,6 +694,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo afectan los pasivos ambientales?", answer: "Los pasivos ambientales son críticos en la due diligence. Se realizan auditorías ambientales específicas y se negocian garantías. Empresas con buen historial obtienen mejores valoraciones." },
         { question: "¿Cuánto tiempo lleva vender una empresa de residuos?", answer: "El proceso típico es de 8-12 meses por complejidad de due diligence ambiental y técnica." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/medio-ambiente" },
+        { name: "Medio Ambiente", url: "https://capittal.es/sectores/medio-ambiente" },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Medio Ambiente</h1>
@@ -647,6 +731,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Cómo afecta el canal de venta a la valoración?", answer: "Las ventas DTC (direct-to-consumer) se valoran más que wholesale porque ofrecen mejores márgenes, datos de cliente y control de marca. Un modelo omnicanal equilibrado suele maximizar valor." },
         { question: "¿Es importante la sostenibilidad para la valoración?", answer: "Cada vez más. Las marcas con propuesta ESG auténtica obtienen primas de valoración del 10-20% y atraen a más compradores estratégicos." },
       ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/retail-consumer" },
+        { name: "Retail y Consumo", url: "https://capittal.es/sectores/retail-consumer" },
+      ]),
     ],
     content: `
       <h1>M&A en el Sector Retail y Consumo</h1>
@@ -678,6 +767,11 @@ const PAGES_DATA: Record<string, PageData> = {
         { question: "¿Quién compra empresas alimentarias en España?", answer: "Multinacionales alimentarias buscando productos españoles, fondos de private equity armando plataformas, y grupos familiares españoles consolidando. Hay especial interés en aceite, vino, conservas y gourmet." },
         { question: "¿Cómo afectan las certificaciones a la valoración?", answer: "Las certificaciones (IFS, BRC, ecológico, DOP, IGP) son muy valoradas. Una empresa con certificaciones completas puede obtener 0,5-1x adicional de múltiplo." },
         { question: "¿Cuánto tiempo lleva vender una empresa alimentaria?", answer: "El proceso típico es de 6-10 meses. La due diligence incluye análisis de certificaciones, contratos con distribuidores, calidad de producto y cadena de suministro." },
+      ]),
+      buildBreadcrumbSchema([
+        { name: "Inicio", url: "https://capittal.es/" },
+        { name: "Sectores", url: "https://capittal.es/sectores/alimentacion" },
+        { name: "Alimentación", url: "https://capittal.es/sectores/alimentacion" },
       ]),
     ],
     content: `
