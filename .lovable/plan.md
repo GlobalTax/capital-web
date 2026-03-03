@@ -1,86 +1,72 @@
 
 
-## Fase "Presentaciones" en Campanas Outbound
+## Mejorar fase "Procesamiento" con gestion de PDFs de Valoracion y Estudio
 
 ### Resumen
-Insertar un nuevo paso 4 "Presentaciones" entre Revision (3) y Procesamiento (ahora 5), con subida masiva de PDFs, matching IA por nombre de archivo, y asignacion manual para los no resueltos.
+Reescribir la tabla principal del tab Procesamiento para mostrar el estado de los dos documentos por empresa (PDF Valoracion + PDF Estudio), con acciones de ver/descargar/re-subir estudio, y resumen superior con contadores.
 
-### Base de datos
+### Cambios en un solo archivo
+**`src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`**
 
-**1. Tabla `campaign_presentations`**
-```sql
-CREATE TABLE campaign_presentations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES valuation_campaigns(id) ON DELETE CASCADE NOT NULL,
-  company_id UUID REFERENCES valuation_campaign_companies(id) ON DELETE SET NULL,
-  file_name TEXT NOT NULL,
-  storage_path TEXT NOT NULL,
-  match_confidence REAL DEFAULT 0,
-  status TEXT NOT NULL DEFAULT 'unassigned' CHECK (status IN ('assigned','unassigned','error')),
-  assigned_manually BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX idx_campaign_presentations_campaign ON campaign_presentations(campaign_id);
-CREATE INDEX idx_campaign_presentations_company ON campaign_presentations(company_id);
-```
+No se crean tablas ni buckets nuevos. Se reutiliza la tabla `campaign_presentations` y el bucket `campaign-presentations` ya creados en la fase Presentaciones.
 
-**2. Storage bucket** `campaign-presentations` (privado, solo PDFs, 50MB limit)
+### Detalle de cambios
 
-**3. RLS** para usuarios autenticados (select, insert, update, delete)
+**1. Imports adicionales**
+- Importar `useCampaignPresentations` para obtener las presentaciones de la campana
+- Importar `Upload` de lucide-react
+- Importar `useDropzone` de react-dropzone (para el mini-modal de re-subida)
+- Importar `Input` de ui
 
-### Archivos a crear
+**2. Nuevo componente: `StudyPdfViewerModal`**
+Modal para ver un PDF de estudio desde Supabase Storage:
+- Obtiene signed URL del bucket `campaign-presentations` usando el `storage_path`
+- Muestra iframe con el PDF
+- Botones: Descargar y Cerrar
+- Si no existe el PDF, muestra toast de error
 
-**`src/components/admin/campanas-valoracion/steps/PresentationsStep.tsx`**
-Componente principal con:
-- Resumen superior: total empresas, asignadas, sin asignar
-- Zona drag-and-drop (react-dropzone, ya instalado) que solo acepta `application/pdf`
-- Validacion estricta: rechaza cualquier no-PDF con toast "Solo se aceptan archivos en formato PDF"
-- Tabla de presentaciones subidas: Archivo | Empresa asignada | Confianza | Estado | Acciones
-- Boton "Asignar automaticamente con IA"
-- Para items "Sin asignar": dropdown con empresas de la campana + boton confirmar
-- Badge de estado con colores (verde=asignado, amarillo=sin asignar, rojo=error)
+**3. Nuevo componente: `ReuploadStudyModal`**
+Mini-modal para re-subir estudio por empresa:
+- Muestra nombre de empresa y archivo actual con fecha
+- Input file que solo acepta `.pdf` (accept="application/pdf")
+- Validacion: si el archivo no es .pdf, toast "Solo se aceptan archivos en formato PDF" y no sube
+- Al confirmar: sube a storage (upsert), actualiza registro en `campaign_presentations`
+- Toast de exito al finalizar
 
-**`src/utils/matchPresentationToCompany.ts`**
-Funcion de matching local (sin necesidad de edge function):
-- `extractCompanyName(filename)`: quita prefijo numerico `NNN_`, extension `.pdf`, reemplaza `_` por espacios
-- `findBestMatch(extractedName, companies[])`: compara con similitud de tokens (interseccion de palabras normalizadas)
-- Score > 0.5 -> asignado automatico, score <= 0.5 -> sin asignar
-- Retorna `{ companyId, confidence, status }`
+**4. Resumen superior (nuevo Card antes de la tabla)**
+Tres stats cards:
+- Empresas: `companies.length`
+- Valoraciones: cuenta de empresas con status calculated/sent (ya generadas)
+- Estudios: cuenta de presentations con status 'assigned', y cuantas faltan
 
-**`src/hooks/useCampaignPresentations.ts`**
-Hook con:
-- Query para obtener presentaciones de una campana
-- Mutation para subir PDF (storage + insert en tabla)
-- Mutation para asignar/reasignar empresa
-- Mutation para ejecutar matching masivo
+**5. Tabla principal: columnas adicionales**
+Anadir dos columnas entre "Valoracion" y "Estado":
+- **PDF Valoracion**: Badge verde "Listo" si status es calculated/sent, gris "Pendiente" si no
+- **PDF Estudio**: Badge verde "Listo" si hay presentation asignada a esa company, naranja "Sin estudio" si no
 
-### Archivo a modificar
+**6. Columna Estado combinado**
+Nuevo badge que combina ambos documentos:
+- "Completo" (verde) si tiene valoracion + estudio
+- "Sin estudio" (naranja) si tiene valoracion pero no estudio
+- "Sin valoracion" (gris) si falta valoracion
 
-**`src/pages/admin/CampanaValoracionForm.tsx`**
-- STEPS array: insertar `{ id: 4, title: 'Presentaciones', description: 'Estudios sectoriales PDF' }`, renumerar Procesamiento a 5 y Resumen a 6
-- `handleNext`: cambiar limite de 5 a 6
-- Step content: anadir `currentStep === 4` para `PresentationsStep`, renumerar 4->5 (ProcessSendStep) y 5->6 (CampaignSummaryStep)
-- Boton "Siguiente": cambiar `currentStep < 5` a `currentStep < 6`
+**7. Dropdown de acciones ampliado**
+Anadir items al DropdownMenu existente por fila:
+- Ver Valoracion (ya existe como "Previsualizar")
+- Descargar Valoracion (ya existe)
+- Separador
+- Ver Estudio → abre `StudyPdfViewerModal` (deshabilitado si no hay estudio)
+- Descargar Estudio → descarga directa desde signed URL (deshabilitado si no hay)
+- Re-subir Estudio → abre `ReuploadStudyModal`
 
-### Flujo de matching IA
-El matching se hace client-side con logica de tokens para evitar necesitar edge function:
-1. Para cada PDF, `extractCompanyName("027_CEMOEL_SL.pdf")` -> "CEMOEL SL"
-2. Normalizar: minusculas, quitar acentos, quitar formas juridicas (SL, SA, SLP, SLU)
-3. Tokenizar ambos nombres (empresa y archivo) y calcular interseccion / union (Jaccard)
-4. Score > 0.5 -> status 'assigned', sino 'unassigned'
+### Datos que se cruzan
+Para cada empresa en `filteredCompanies`, buscar en `presentations` (del hook) si hay un registro con `company_id === c.id` y `status === 'assigned'`. Esto determina si tiene estudio o no.
 
-### Detalles de implementacion
-
-- La subida sube cada archivo a `campaign-presentations/{campaignId}/{filename}` en Storage
-- Tras subir, se crea registro en `campaign_presentations` con status 'unassigned'
-- "Asignar con IA" ejecuta matching en batch sobre todos los 'unassigned'
-- Asignacion manual: dropdown + confirm actualiza company_id, status='assigned', assigned_manually=true
-- La fase no bloquea: se puede avanzar a Procesamiento sin tener archivos o con items sin asignar
-- Archivos duplicados: si ya existe un registro con mismo file_name para la campana, se sobreescribe en storage y actualiza el registro
-
-### Sin romper nada
-- Las fases existentes no se tocan (solo se renumeran en el array STEPS)
-- Los componentes existentes reciben las mismas props
-- La navegacion sigue funcionando igual, solo con un paso mas
+### Lo que NO se toca
+- Logica de envio de emails (sendSingle, handleSendEmails, etc.)
+- FloatingActionBar
+- PDFPreviewModal (valoracion)
+- Filtros de estado y seguimiento
+- Interacciones/seguimiento
+- Ninguna otra fase
 
