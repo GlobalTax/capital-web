@@ -1,22 +1,25 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus,
+  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
+import { useCampaignPresentations, CampaignPresentation } from '@/hooks/useCampaignPresentations';
 import { CampaignCompanyInteractionDialog } from '@/components/admin/campanas-valoracion/CampaignCompanyInteractionDialog';
 import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
@@ -39,9 +42,6 @@ interface Props {
   campaign: ValuationCampaign;
 }
 
-/**
- * Map campaign company data to ProfessionalValuationData for PDF generation.
- */
 function mapToPdfData(c: CampaignCompany, campaign: ValuationCampaign): ProfessionalValuationData {
   const isRevenue = campaign.valuation_type === 'revenue_multiple';
   const baseValue = isRevenue
@@ -65,7 +65,6 @@ function mapToPdfData(c: CampaignCompany, campaign: ValuationCampaign): Professi
     ebitdaMultipleUsed: multipleUsed,
     ebitdaMultipleLow: effectiveLow,
     ebitdaMultipleHigh: effectiveHigh,
-    // Recalcular valoraciones localmente (doble seguridad)
     valuationCentral: baseValue * multipleUsed,
     valuationLow: baseValue * effectiveLow,
     valuationHigh: baseValue * effectiveHigh,
@@ -79,9 +78,6 @@ function mapToPdfData(c: CampaignCompany, campaign: ValuationCampaign): Professi
   };
 }
 
-/**
- * Generate PDF blob using dynamic import to avoid loading react-pdf in main bundle.
- */
 async function generatePdfBlob(c: CampaignCompany, campaign: ValuationCampaign): Promise<Blob> {
   const [{ pdf }, { default: ProfessionalValuationPDF }] = await Promise.all([
     import('@react-pdf/renderer'),
@@ -102,9 +98,6 @@ async function generatePdfBlob(c: CampaignCompany, campaign: ValuationCampaign):
   return await pdf(element).toBlob();
 }
 
-/**
- * Generate PDF as base64 string (for email sending).
- */
 async function generatePdfBase64(data: ProfessionalValuationData, campaign: ValuationCampaign): Promise<string> {
   const blob = await generatePdfBlob({ ...data } as unknown as CampaignCompany, campaign);
   const arrayBuffer = await blob.arrayBuffer();
@@ -116,9 +109,6 @@ async function generatePdfBase64(data: ProfessionalValuationData, campaign: Valu
   return btoa(binary);
 }
 
-/**
- * Trigger browser download from a Blob.
- */
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -131,7 +121,7 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 // ─────────────────────────────────────────────
-// PDF Preview Modal
+// PDF Preview Modal (Valuation)
 // ─────────────────────────────────────────────
 interface PDFPreviewModalProps {
   company: CampaignCompany;
@@ -147,7 +137,6 @@ function PDFPreviewModal({ company, campaign, onClose, onSend, isSending }: PDFP
   const [error, setError] = useState<string | null>(null);
   const blobRef = useRef<Blob | null>(null);
 
-  // Generate PDF on mount and cleanup Object URL on unmount
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -163,7 +152,6 @@ function PDFPreviewModal({ company, campaign, onClose, onSend, isSending }: PDFP
       }
     })();
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleClose = () => {
@@ -184,7 +172,6 @@ function PDFPreviewModal({ company, campaign, onClose, onSend, isSending }: PDFP
             Vista previa — {company.client_company}
           </DialogTitle>
         </DialogHeader>
-
         <div className="flex-1 overflow-hidden px-4 py-3">
           {loading && (
             <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
@@ -205,14 +192,10 @@ function PDFPreviewModal({ company, campaign, onClose, onSend, isSending }: PDFP
             />
           )}
         </div>
-
         <DialogFooter className="px-6 pb-4 pt-3 border-t shrink-0 gap-2">
-          <Button variant="outline" size="sm" onClick={handleClose}>
-            Cerrar
-          </Button>
+          <Button variant="outline" size="sm" onClick={handleClose}>Cerrar</Button>
           <Button variant="outline" size="sm" onClick={handleDownload} disabled={!previewUrl}>
-            <Download className="h-4 w-4 mr-1.5" />
-            Descargar
+            <Download className="h-4 w-4 mr-1.5" />Descargar
           </Button>
           {company.client_email && (
             <Button size="sm" onClick={() => onSend(company)} disabled={isSending || !previewUrl}>
@@ -220,6 +203,199 @@ function PDFPreviewModal({ company, campaign, onClose, onSend, isSending }: PDFP
               Enviar email
             </Button>
           )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Study PDF Viewer Modal
+// ─────────────────────────────────────────────
+interface StudyPdfViewerModalProps {
+  companyName: string;
+  storagePath: string;
+  onClose: () => void;
+}
+
+function StudyPdfViewerModal({ companyName, storagePath, onClose }: StudyPdfViewerModalProps) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error: signError } = await supabase.storage
+          .from('campaign-presentations')
+          .createSignedUrl(storagePath, 3600);
+        if (signError) throw signError;
+        if (!cancelled) setUrl(data.signedUrl);
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || 'Error obteniendo PDF');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [storagePath]);
+
+  const handleDownload = async () => {
+    if (!url) return;
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = storagePath.split('/').pop() || 'estudio.pdf';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-3 border-b shrink-0">
+          <DialogTitle className="text-base font-medium truncate">
+            Estudio — {companyName}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-hidden px-4 py-3">
+          {loading && (
+            <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="text-sm">Cargando PDF…</span>
+            </div>
+          )}
+          {error && (
+            <div className="flex items-center justify-center h-full text-destructive text-sm">
+              Error: {error}
+            </div>
+          )}
+          {url && !loading && (
+            <iframe
+              src={url}
+              className="w-full h-full rounded border"
+              title={`Estudio ${companyName}`}
+            />
+          )}
+        </div>
+        <DialogFooter className="px-6 pb-4 pt-3 border-t shrink-0 gap-2">
+          <Button variant="outline" size="sm" onClick={onClose}>Cerrar</Button>
+          <Button variant="outline" size="sm" onClick={handleDownload} disabled={!url}>
+            <Download className="h-4 w-4 mr-1.5" />Descargar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Reupload Study Modal
+// ─────────────────────────────────────────────
+interface ReuploadStudyModalProps {
+  companyName: string;
+  companyId: string;
+  campaignId: string;
+  currentPresentation: CampaignPresentation | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresentation, onClose, onSuccess }: ReuploadStudyModalProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.name.toLowerCase().endsWith('.pdf') || f.type !== 'application/pdf') {
+      toast.error('Solo se aceptan archivos en formato PDF');
+      e.target.value = '';
+      return;
+    }
+    setFile(f);
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const storagePath = `${campaignId}/${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('campaign-presentations')
+        .upload(storagePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      if (currentPresentation) {
+        // Update existing record
+        await supabase
+          .from('campaign_presentations' as any)
+          .update({
+            file_name: file.name,
+            storage_path: storagePath,
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq('id', currentPresentation.id);
+      } else {
+        // Create new record
+        await supabase
+          .from('campaign_presentations' as any)
+          .insert({
+            campaign_id: campaignId,
+            company_id: companyId,
+            file_name: file.name,
+            storage_path: storagePath,
+            status: 'assigned',
+            assigned_manually: true,
+            match_confidence: 1,
+          } as any);
+      }
+
+      toast.success(`Estudio actualizado correctamente para ${companyName}`);
+      onSuccess();
+      onClose();
+    } catch (e: any) {
+      toast.error(`Error subiendo estudio: ${e.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-base">Re-subir estudio</DialogTitle>
+          <DialogDescription className="text-sm">
+            {companyName}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          {currentPresentation && (
+            <div className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
+              <p><span className="font-medium">Estudio actual:</span> {currentPresentation.file_name}</p>
+              <p><span className="font-medium">Subido:</span> {new Date(currentPresentation.updated_at).toLocaleDateString('es-ES')}</p>
+            </div>
+          )}
+          <div className="space-y-2">
+            <Input
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={handleFileChange}
+              className="cursor-pointer"
+            />
+            <p className="text-xs text-muted-foreground">Solo se aceptan archivos en formato PDF</p>
+            <p className="text-xs text-destructive">Esto sobrescribirá el estudio actual sin posibilidad de recuperarlo</p>
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" size="sm" onClick={onClose} disabled={uploading}>Cancelar</Button>
+          <Button size="sm" onClick={handleUpload} disabled={!file || uploading}>
+            {uploading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Upload className="h-4 w-4 mr-1.5" />}
+            Subir
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -270,6 +446,8 @@ function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy,
 export function ProcessSendStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
   const { companies, refetch } = useCampaignCompanies(campaignId);
+  const queryClient = useQueryClient();
+  const { presentations, isLoading: presentationsLoading } = useCampaignPresentations(campaignId);
   const { updateCampaign } = useCampaigns();
 
   // Send progress
@@ -283,8 +461,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [rowDownloading, setRowDownloading] = useState<string | null>(null);
   const [rowSending, setRowSending] = useState<string | null>(null);
 
-  // Preview modal
+  // Preview modal (valuation)
   const [previewCompany, setPreviewCompany] = useState<CampaignCompany | null>(null);
+
+  // Study viewer modal
+  const [studyViewerData, setStudyViewerData] = useState<{ companyName: string; storagePath: string } | null>(null);
+
+  // Reupload study modal
+  const [reuploadData, setReuploadData] = useState<{ companyName: string; companyId: string; presentation: CampaignPresentation | null } | null>(null);
 
   // Interaction dialog
   const [interactionCompany, setInteractionCompany] = useState<CampaignCompany | null>(null);
@@ -304,6 +488,16 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const sentCompanies = companies.filter(c => c.status === 'sent');
   const failedCompanies = companies.filter(c => c.status === 'failed');
   const downloadableCompanies = companies.filter(c => ['calculated', 'sent', 'created'].includes(c.status));
+
+  // Helper: get presentation for a company
+  const getPresentationForCompany = useCallback((companyId: string): CampaignPresentation | null => {
+    return presentations.find(p => p.company_id === companyId && p.status === 'assigned') || null;
+  }, [presentations]);
+
+  // Stats
+  const valuationReadyCount = companies.filter(c => ['calculated', 'sent'].includes(c.status)).length;
+  const studyReadyCount = companies.filter(c => getPresentationForCompany(c.id) !== null).length;
+  const studyMissingCount = companies.length - studyReadyCount;
 
   const filteredCompanies = companies.filter(c => {
     if (statusFilter !== 'all' && c.status !== statusFilter) return false;
@@ -328,7 +522,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const isAllSelected = filteredCompanies.length > 0 && filteredIds.every(id => selectedIds.includes(id));
   const isIndeterminate = !isAllSelected && filteredIds.some(id => selectedIds.includes(id));
 
-  // ── Individual send (used from row dropdown and preview modal) ──
+  // ── Individual send ──
   const sendSingle = useCallback(async (c: CampaignCompany) => {
     if (!c.client_email) { toast.error('Esta empresa no tiene email'); return; }
     setRowSending(c.id);
@@ -414,6 +608,25 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     }
   }, [campaign]);
 
+  // ── Download study ──
+  const downloadStudy = useCallback(async (presentation: CampaignPresentation) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('campaign-presentations')
+        .createSignedUrl(presentation.storage_path, 3600);
+      if (error) throw error;
+      const a = document.createElement('a');
+      a.href = data.signedUrl;
+      a.download = presentation.file_name;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e: any) {
+      toast.error('PDF no disponible para esta empresa');
+    }
+  }, []);
+
   // ── Bulk download (all) ──
   const handleDownloadAll = useCallback(async () => {
     if (downloadableCompanies.length === 0) return;
@@ -425,7 +638,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       try {
         const blob = await generatePdfBlob(c, campaign);
         downloadBlob(blob, `${String(i + 1).padStart(3, '0')}_${c.client_company.replace(/\s+/g, '_')}.pdf`);
-        await new Promise(r => setTimeout(r, 600)); // avoid tab flood
+        await new Promise(r => setTimeout(r, 600));
       } catch (e: any) {
         console.error('[BULK_DOWNLOAD ERROR]', c.client_company, e);
         toast.error(`PDF falló: ${c.client_company}`);
@@ -460,7 +673,6 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       downloadBlob(zipBlob, `Valoraciones_${targets.length}_empresas.zip`);
       toast.success(`${targets.length} PDFs descargados como ZIP`);
     } catch (err) {
-      // Fallback: descarga secuencial
       console.warn('[ZIP] fflate no disponible, fallback secuencial', err);
       for (let i = 0; i < targets.length; i++) {
         const c = targets[i];
@@ -524,7 +736,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedIds, toggleSelectAll, clearSelection, handleDownloadSelected]);
 
-  // ── Bulk send (existing logic, preserved) ──
+  // ── Bulk send ──
   const handleSendEmails = async () => {
     if (readyToSend.length === 0) return;
     setSendingProgress({ active: true, current: 0, total: readyToSend.length, name: '', phase: '' });
@@ -607,7 +819,6 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   // ── Retry failed ──
   const handleRetryFailed = async () => {
     if (failedCompanies.length === 0) return;
-    // Reset failed → calculated so they appear in readyToSend again
     for (const c of failedCompanies) {
       await (supabase as any)
         .from('valuation_campaign_companies')
@@ -622,9 +833,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
 
   const isBusy = sendingProgress.active || downloadProgress.active;
 
+
+
   return (
     <div className="space-y-6">
-      {/* PDF Preview Modal */}
+      {/* Modals */}
       {previewCompany && (
         <PDFPreviewModal
           company={previewCompany}
@@ -635,7 +848,27 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         />
       )}
 
-      {/* Interaction Dialog */}
+      {studyViewerData && (
+        <StudyPdfViewerModal
+          companyName={studyViewerData.companyName}
+          storagePath={studyViewerData.storagePath}
+          onClose={() => setStudyViewerData(null)}
+        />
+      )}
+
+      {reuploadData && (
+        <ReuploadStudyModal
+          companyName={reuploadData.companyName}
+          companyId={reuploadData.companyId}
+          campaignId={campaignId}
+          currentPresentation={reuploadData.presentation}
+          onClose={() => setReuploadData(null)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['campaign-presentations', campaignId] });
+          }}
+        />
+      )}
+
       {interactionCompany && (
         <CampaignCompanyInteractionDialog
           open={!!interactionCompany}
@@ -645,6 +878,42 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           currentFollowUpStatus={interactionCompany.follow_up_status || 'none'}
         />
       )}
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="pt-4 pb-3 px-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Empresas</span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums">{companies.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 px-4">
+            <div className="flex items-center gap-2 mb-1">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Valoraciones</span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums">{valuationReadyCount}</p>
+            <p className="text-xs text-muted-foreground">{valuationReadyCount} listas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 pb-3 px-4">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Estudios</span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums">{studyReadyCount}</p>
+            <p className="text-xs text-muted-foreground">
+              {studyReadyCount} listos · {studyMissingCount > 0 && <span className="text-orange-500">{studyMissingCount} sin estudio</span>}
+              {studyMissingCount === 0 && <span className="text-green-600">completo</span>}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Send emails card */}
       <Card>
@@ -660,21 +929,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           </p>
 
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={handleSendEmails}
-              disabled={isBusy || readyToSend.length === 0}
-            >
+            <Button onClick={handleSendEmails} disabled={isBusy || readyToSend.length === 0}>
               {sendingProgress.active
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Send className="h-4 w-4 mr-2" />}
               Enviar {readyToSend.length} emails
             </Button>
 
-            <Button
-              variant="outline"
-              onClick={handleDownloadAll}
-              disabled={isBusy || downloadableCompanies.length === 0}
-            >
+            <Button variant="outline" onClick={handleDownloadAll} disabled={isBusy || downloadableCompanies.length === 0}>
               {downloadProgress.active
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Archive className="h-4 w-4 mr-2" />}
@@ -682,18 +944,13 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </Button>
 
             {failedCompanies.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={handleRetryFailed}
-                disabled={isBusy}
-              >
+              <Button variant="outline" onClick={handleRetryFailed} disabled={isBusy}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reenviar {failedCompanies.length} errores
               </Button>
             )}
           </div>
 
-          {/* Send progress */}
           {sendingProgress.active && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-muted-foreground">
@@ -707,7 +964,6 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </div>
           )}
 
-          {/* Download progress */}
           {downloadProgress.active && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-muted-foreground">
@@ -774,9 +1030,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                   />
                 </TableHead>
                 <TableHead>Empresa</TableHead>
-                <TableHead>Email</TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
-                <TableHead className="text-center">PDF</TableHead>
+                <TableHead className="text-center">PDF Valoración</TableHead>
+                <TableHead className="text-center">PDF Estudio</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center w-10"></TableHead>
@@ -789,6 +1045,12 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 const canSend = !!c.client_email && c.status !== 'sent';
                 const isFailed = c.status === 'failed';
                 const isSelected = selectedIds.includes(c.id);
+                const hasValuation = ['calculated', 'sent'].includes(c.status);
+                const presentation = getPresentationForCompany(c.id);
+                const hasStudy = !!presentation;
+
+                // Combined status
+                const combinedStatus = hasValuation && hasStudy ? 'complete' : hasValuation && !hasStudy ? 'no_study' : 'no_valuation';
 
                 return (
                   <TableRow key={c.id} className={cn(isSelected && 'bg-primary/5')}>
@@ -808,33 +1070,44 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                           {c.client_company}
                         </span>
                       ) : c.client_company}
+                      <div className="text-xs text-muted-foreground">{c.client_email || '—'}</div>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{c.client_email || '—'}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}
                     </TableCell>
                     <TableCell className="text-center">
-                      {c.pdf_url ? (
-                        <a href={c.pdf_url} target="_blank" rel="noopener noreferrer" title="Abrir PDF guardado">
-                          <FileDown className="h-4 w-4 inline text-primary hover:text-primary/80" />
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
+                      <Badge
+                        variant={hasValuation ? 'default' : 'secondary'}
+                        className={cn('text-xs', hasValuation && 'bg-green-600 hover:bg-green-700 text-white')}
+                      >
+                        {hasValuation ? 'Listo' : 'Pendiente'}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge
-                        variant={
-                          c.status === 'sent' ? 'outline' :
-                          c.status === 'failed' ? 'destructive' :
-                          c.status === 'calculated' ? 'default' : 'secondary'
-                        }
-                        className="text-xs"
+                        variant={hasStudy ? 'default' : 'outline'}
+                        className={cn(
+                          'text-xs',
+                          hasStudy && 'bg-green-600 hover:bg-green-700 text-white',
+                          !hasStudy && 'border-orange-400 text-orange-600 bg-orange-50'
+                        )}
                       >
-                        {c.status === 'sent' ? 'Enviado' :
-                         c.status === 'failed' ? 'Error' :
-                         c.status === 'calculated' ? 'Listo' :
-                         c.status}
+                        {hasStudy ? 'Listo' : 'Sin estudio'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-xs',
+                          combinedStatus === 'complete' && 'border-green-500 text-green-700 bg-green-50',
+                          combinedStatus === 'no_study' && 'border-orange-400 text-orange-600 bg-orange-50',
+                          combinedStatus === 'no_valuation' && 'border-muted text-muted-foreground',
+                        )}
+                      >
+                        {combinedStatus === 'complete' ? 'Completo' :
+                         combinedStatus === 'no_study' ? 'Sin estudio' :
+                         'Sin valoración'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
@@ -865,16 +1138,52 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                             )}
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => setPreviewCompany(c)}>
+                        <DropdownMenuContent align="end" className="w-52">
+                          {/* Valuation actions */}
+                          <DropdownMenuItem onClick={() => setPreviewCompany(c)} disabled={!hasValuation}>
                             <Eye className="h-4 w-4 mr-2" />
-                            Previsualizar
+                            Ver Valoración
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => downloadSingle(c)} disabled={isRowDownloading}>
+                          <DropdownMenuItem onClick={() => downloadSingle(c)} disabled={isRowDownloading || !hasValuation}>
                             <Download className="h-4 w-4 mr-2" />
-                            Descargar PDF
+                            Descargar Valoración
+                          </DropdownMenuItem>
+                          {c.professional_valuation_id && (
+                            <DropdownMenuItem onClick={() => navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}>
+                              <FileText className="h-4 w-4 mr-2" />
+                              Editar Valoración
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          {/* Study actions */}
+                          <DropdownMenuItem
+                            disabled={!hasStudy}
+                            onClick={() => {
+                              if (presentation) {
+                                setStudyViewerData({ companyName: c.client_company, storagePath: presentation.storage_path });
+                              }
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Estudio
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={!hasStudy}
+                            onClick={() => {
+                              if (presentation) downloadStudy(presentation);
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Descargar Estudio
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setReuploadData({ companyName: c.client_company, companyId: c.id, presentation })}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Re-subir Estudio
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
+                          {/* Follow-up */}
                           <DropdownMenuItem onClick={() => setInteractionCompany(c)}>
                             <MessageSquarePlus className="h-4 w-4 mr-2" />
                             Registrar seguimiento
