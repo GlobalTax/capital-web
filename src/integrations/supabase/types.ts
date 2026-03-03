@@ -3457,6 +3457,63 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_emails: {
+        Row: {
+          body: string
+          campaign_id: string
+          company_id: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          is_manually_edited: boolean | null
+          sent_at: string | null
+          status: string
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          body?: string
+          campaign_id: string
+          company_id: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_manually_edited?: boolean | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string | null
+        }
+        Update: {
+          body?: string
+          campaign_id?: string
+          company_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_manually_edited?: boolean | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_emails_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_emails_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaign_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_leads_mapping: {
         Row: {
           campaign_id: string | null
@@ -21288,6 +21345,8 @@ export type Database = {
           created_at: string
           created_by: string | null
           custom_multiple: number | null
+          email_body_template: string | null
+          email_subject_template: string | null
           financial_years: number[] | null
           id: string
           include_comparables: boolean | null
@@ -21321,6 +21380,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           custom_multiple?: number | null
+          email_body_template?: string | null
+          email_subject_template?: string | null
           financial_years?: number[] | null
           id?: string
           include_comparables?: boolean | null
@@ -21354,6 +21415,8 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           custom_multiple?: number | null
+          email_body_template?: string | null
+          email_subject_template?: string | null
           financial_years?: number[] | null
           id?: string
           include_comparables?: boolean | null
