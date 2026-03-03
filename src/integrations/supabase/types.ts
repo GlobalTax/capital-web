@@ -3511,6 +3511,60 @@ export type Database = {
           },
         ]
       }
+      campaign_presentations: {
+        Row: {
+          assigned_manually: boolean | null
+          campaign_id: string
+          company_id: string | null
+          created_at: string | null
+          file_name: string
+          id: string
+          match_confidence: number | null
+          status: string
+          storage_path: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_manually?: boolean | null
+          campaign_id: string
+          company_id?: string | null
+          created_at?: string | null
+          file_name: string
+          id?: string
+          match_confidence?: number | null
+          status?: string
+          storage_path: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_manually?: boolean | null
+          campaign_id?: string
+          company_id?: string | null
+          created_at?: string | null
+          file_name?: string
+          id?: string
+          match_confidence?: number | null
+          status?: string
+          storage_path?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_presentations_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_presentations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaign_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           archived: boolean | null

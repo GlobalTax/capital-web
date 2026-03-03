@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CampaignConfigStep } from '@/components/admin/campanas-valoracion/steps/CampaignConfigStep';
 import { CompaniesStep } from '@/components/admin/campanas-valoracion/steps/CompaniesStep';
 import { ReviewCalculateStep } from '@/components/admin/campanas-valoracion/steps/ReviewCalculateStep';
+import { PresentationsStep } from '@/components/admin/campanas-valoracion/steps/PresentationsStep';
 import { ProcessSendStep } from '@/components/admin/campanas-valoracion/steps/ProcessSendStep';
 import { CampaignSummaryStep } from '@/components/admin/campanas-valoracion/steps/CampaignSummaryStep';
 import { cn } from '@/lib/utils';
@@ -16,8 +17,9 @@ const STEPS = [
   { id: 1, title: 'Configuración', description: 'Nombre, sector y plantilla' },
   { id: 2, title: 'Empresas', description: 'Excel o entrada manual' },
   { id: 3, title: 'Revisión', description: 'Cálculo y enriquecimiento IA' },
-  { id: 4, title: 'Procesamiento', description: 'Crear y enviar valoraciones' },
-  { id: 5, title: 'Resumen', description: 'KPIs y resultados' },
+  { id: 4, title: 'Presentaciones', description: 'Estudios sectoriales PDF' },
+  { id: 5, title: 'Procesamiento', description: 'Crear y enviar valoraciones' },
+  { id: 6, title: 'Resumen', description: 'KPIs y resultados' },
 ];
 
 export default function CampanaValoracionForm() {
@@ -63,7 +65,6 @@ export default function CampanaValoracionForm() {
       } else {
         const result = await createCampaign(campaignData);
         setCampaignId(result.id);
-        // Update URL without full navigation
         window.history.replaceState(null, '', `/admin/campanas-valoracion/${result.id}`);
         return result.id;
       }
@@ -77,7 +78,7 @@ export default function CampanaValoracionForm() {
       const savedId = await saveCampaign();
       if (!savedId) return;
     }
-    if (currentStep < 5) setCurrentStep(prev => prev + 1);
+    if (currentStep < 6) setCurrentStep(prev => prev + 1);
   };
 
   const handlePrev = () => {
@@ -147,9 +148,12 @@ export default function CampanaValoracionForm() {
           <ReviewCalculateStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
         )}
         {currentStep === 4 && campaignId && (
-          <ProcessSendStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
+          <PresentationsStep campaignId={campaignId} />
         )}
         {currentStep === 5 && campaignId && (
+          <ProcessSendStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
+        )}
+        {currentStep === 6 && campaignId && (
           <CampaignSummaryStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
         )}
       </div>
@@ -165,7 +169,7 @@ export default function CampanaValoracionForm() {
               <Save className="h-4 w-4 mr-2" />{campaignId ? 'Guardar' : 'Crear'}
             </Button>
           )}
-          {currentStep < 5 && (
+          {currentStep < 6 && (
             <Button onClick={handleNext} disabled={
               (currentStep === 1 && (!campaignData.name || !campaignData.sector)) ||
               (currentStep === 2 && companies.length === 0)
