@@ -1,72 +1,105 @@
 
 
-## Mejorar fase "Procesamiento" con gestion de PDFs de Valoracion y Estudio
+## Add "Mail" Phase to Outbound Campaign Flow
 
-### Resumen
-Reescribir la tabla principal del tab Procesamiento para mostrar el estado de los dos documentos por empresa (PDF Valoracion + PDF Estudio), con acciones de ver/descargar/re-subir estudio, y resumen superior con contadores.
+### Summary
+Insert step 6 "Mail" between Procesamiento (5) and Resumen (now 7). Two-part UI: template editor with dynamic variables, and per-company mail list with edit/send capabilities.
 
-### Cambios en un solo archivo
-**`src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`**
+### Database
 
-No se crean tablas ni buckets nuevos. Se reutiliza la tabla `campaign_presentations` y el bucket `campaign-presentations` ya creados en la fase Presentaciones.
+**New table `campaign_emails`:**
+```sql
+CREATE TABLE campaign_emails (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id UUID NOT NULL REFERENCES valuation_campaigns(id) ON DELETE CASCADE,
+  company_id UUID NOT NULL REFERENCES valuation_campaign_companies(id) ON DELETE CASCADE,
+  subject TEXT NOT NULL DEFAULT '',
+  body TEXT NOT NULL DEFAULT '',
+  is_manually_edited BOOLEAN DEFAULT FALSE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','error')),
+  sent_at TIMESTAMPTZ,
+  error_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX idx_campaign_emails_campaign ON campaign_emails(campaign_id);
+CREATE INDEX idx_campaign_emails_company ON campaign_emails(company_id);
+```
 
-### Detalle de cambios
+**New columns on `valuation_campaigns`** for storing the template:
+```sql
+ALTER TABLE valuation_campaigns
+  ADD COLUMN email_subject_template TEXT,
+  ADD COLUMN email_body_template TEXT;
+```
 
-**1. Imports adicionales**
-- Importar `useCampaignPresentations` para obtener las presentaciones de la campana
-- Importar `Upload` de lucide-react
-- Importar `useDropzone` de react-dropzone (para el mini-modal de re-subida)
-- Importar `Input` de ui
+RLS: authenticated users can select/insert/update/delete on `campaign_emails`.
 
-**2. Nuevo componente: `StudyPdfViewerModal`**
-Modal para ver un PDF de estudio desde Supabase Storage:
-- Obtiene signed URL del bucket `campaign-presentations` usando el `storage_path`
-- Muestra iframe con el PDF
-- Botones: Descargar y Cerrar
-- Si no existe el PDF, muestra toast de error
+### Files to Create
 
-**3. Nuevo componente: `ReuploadStudyModal`**
-Mini-modal para re-subir estudio por empresa:
-- Muestra nombre de empresa y archivo actual con fecha
-- Input file que solo acepta `.pdf` (accept="application/pdf")
-- Validacion: si el archivo no es .pdf, toast "Solo se aceptan archivos en formato PDF" y no sube
-- Al confirmar: sube a storage (upsert), actualiza registro en `campaign_presentations`
-- Toast de exito al finalizar
+**`src/hooks/useCampaignEmails.ts`**
+- Query: fetch all campaign_emails for a campaign (joined with company name/email)
+- Mutations: generateFromTemplate (bulk upsert), updateEmail (individual), sendEmail (individual), sendAllPending (batch)
+- Template save: update campaign's email_subject_template and email_body_template
 
-**4. Resumen superior (nuevo Card antes de la tabla)**
-Tres stats cards:
-- Empresas: `companies.length`
-- Valoraciones: cuenta de empresas con status calculated/sent (ya generadas)
-- Estudios: cuenta de presentations con status 'assigned', y cuantas faltan
+**`src/utils/campaignEmailTemplateEngine.ts`**
+- `replaceVariables(template, company, campaign)`: replaces `{{first_name}}`, `{{company}}`, `{{sector}}`, `{{valoracion_min}}`, `{{valoracion_max}}`, `{{firmante_nombre}}`, etc. with real data
+- `getAvailableVariables()`: returns list of variable objects with label and key
 
-**5. Tabla principal: columnas adicionales**
-Anadir dos columnas entre "Valoracion" y "Estado":
-- **PDF Valoracion**: Badge verde "Listo" si status es calculated/sent, gris "Pendiente" si no
-- **PDF Estudio**: Badge verde "Listo" si hay presentation asignada a esa company, naranja "Sin estudio" si no
+**`src/components/admin/campanas-valoracion/steps/MailStep.tsx`**
+Main component with two tabs/sections:
 
-**6. Columna Estado combinado**
-Nuevo badge que combina ambos documentos:
-- "Completo" (verde) si tiene valoracion + estudio
-- "Sin estudio" (naranja) si tiene valoracion pero no estudio
-- "Sin valoracion" (gris) si falta valoracion
+**Section A - Template Editor:**
+- Subject input with variable insertion support
+- Rich text body editor (ReactQuill, already in project) with variable insertion toolbar
+- Variable buttons bar: clicking inserts `{{variable}}` at cursor position
+- Variables visually highlighted in editor (CSS for `{{...}}` patterns)
+- "Guardar template" button → saves to campaign + generates/regenerates emails
+- "Previsualizar" button → modal showing rendered email with first company's data
+- Warning dialog when regenerating if manually edited emails exist
 
-**7. Dropdown de acciones ampliado**
-Anadir items al DropdownMenu existente por fila:
-- Ver Valoracion (ya existe como "Previsualizar")
-- Descargar Valoracion (ya existe)
-- Separador
-- Ver Estudio → abre `StudyPdfViewerModal` (deshabilitado si no hay estudio)
-- Descargar Estudio → descarga directa desde signed URL (deshabilitado si no hay)
-- Re-subir Estudio → abre `ReuploadStudyModal`
+**Section B - Mail List:**
+- Summary cards: total companies, generated, sent, pending, errors
+- Table: #, Empresa, Contacto, Email, PDF Valoración, PDF Estudio, Estado, Acciones
+- Actions per row: Edit mail (dialog), View PDFs, Send individual
+- "Enviar todos los pendientes" button with confirmation dialog
 
-### Datos que se cruzan
-Para cada empresa en `filteredCompanies`, buscar en `presentations` (del hook) si hay un registro con `company_id === c.id` y `status === 'assigned'`. Esto determina si tiene estudio o no.
+**Edit Mail Dialog:**
+- Left: subject + body editor (pre-filled with personalized content), Save + Restore template buttons
+- Right: PDF attachments with view/download/reupload (reuses existing PDF viewer pattern)
+- Footer: Send button + Close
 
-### Lo que NO se toca
-- Logica de envio de emails (sendSingle, handleSendEmails, etc.)
-- FloatingActionBar
-- PDFPreviewModal (valoracion)
-- Filtros de estado y seguimiento
-- Interacciones/seguimiento
-- Ninguna otra fase
+### File to Modify
+
+**`src/pages/admin/CampanaValoracionForm.tsx`**
+- Import `MailStep`
+- STEPS array: insert `{ id: 6, title: 'Mail', description: 'Plantilla y envío de emails' }`, renumber Resumen to 7
+- `handleNext`: change limit from 6 to 7
+- Step content: add `currentStep === 6` for MailStep, renumber 6→7 for CampaignSummaryStep
+- Navigation button: change `currentStep < 6` to `currentStep < 7`
+
+### Variable Replacement Logic
+```typescript
+const VARIABLES = {
+  first_name: (c) => c.client_name?.split(' ')[0] || '',
+  last_name: (c) => c.client_name?.split(' ').slice(1).join(' ') || '',
+  company: (c) => c.client_company,
+  cargo: (c) => c.client_role || '',
+  sector: (_, camp) => camp.sector,
+  valoracion_min: (c) => formatCurrencyEUR(c.valuation_low || 0),
+  valoracion_max: (c) => formatCurrencyEUR(c.valuation_high || 0),
+  firmante_nombre: (_, camp) => camp.advisor_name || '',
+  firmante_cargo: (_, camp) => camp.advisor_role || '',
+  firmante_email: (_, camp) => camp.advisor_email || '',
+  firmante_telefono: (_, camp) => camp.advisor_phone || '',
+};
+```
+
+### Email Sending
+For now, sending updates status to 'sent' with timestamp in the DB. Actual email delivery integration (via edge function) can be wired later — the UI and data layer are fully functional independently.
+
+### Non-breaking guarantees
+- Existing steps untouched (only renumbered in STEPS array)
+- Phase is optional: can advance to Resumen without generating or sending any emails
+- No changes to ProcessSendStep, PresentationsStep, or any other step component
 
