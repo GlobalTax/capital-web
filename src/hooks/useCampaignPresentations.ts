@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -9,79 +10,156 @@ export interface CampaignPresentation {
   company_id: string | null;
   file_name: string;
   storage_path: string;
-  match_confidence: number;
+  match_confidence: number | null;
   status: string;
-  assigned_manually: boolean;
-  created_at: string;
-  updated_at: string;
+  assigned_manually: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface UploadProgress {
+  current: number;
+  total: number;
+  currentFile: string;
+}
+
+export interface UploadResult {
+  success: number;
+  errors: { file: string; reason: string }[];
 }
 
 export function useCampaignPresentations(campaignId: string | undefined) {
   const queryClient = useQueryClient();
   const queryKey = ['campaign-presentations', campaignId];
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null);
+  const [matchProgress, setMatchProgress] = useState<UploadProgress | null>(null);
 
   const { data: presentations = [], isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
       if (!campaignId) return [];
       const { data, error } = await supabase
-        .from('campaign_presentations' as any)
+        .from('campaign_presentations')
         .select('*')
         .eq('campaign_id', campaignId)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return (data || []) as unknown as CampaignPresentation[];
+      return (data || []) as CampaignPresentation[];
     },
     enabled: !!campaignId,
   });
 
   const uploadMutation = useMutation({
-    mutationFn: async (files: File[]) => {
+    mutationFn: async (files: File[]): Promise<UploadResult> => {
       if (!campaignId) throw new Error('No campaign ID');
 
-      for (const file of files) {
-        const storagePath = `${campaignId}/${file.name}`;
+      const result: UploadResult = { success: 0, errors: [] };
 
-        // Upload to storage (upsert)
-        const { error: uploadError } = await supabase.storage
-          .from('campaign-presentations')
-          .upload(storagePath, file, { upsert: true });
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setUploadProgress({ current: i + 1, total: files.length, currentFile: file.name });
+        console.log(`Subiendo archivo: ${file.name}`);
 
-        if (uploadError) {
-          toast({ title: `Error subiendo ${file.name}`, description: uploadError.message, variant: 'destructive' });
-          continue;
-        }
+        try {
+          const storagePath = `${campaignId}/${file.name}`;
 
-        // Check if record already exists
-        const { data: existing } = await supabase
-          .from('campaign_presentations' as any)
-          .select('id')
-          .eq('campaign_id', campaignId)
-          .eq('file_name', file.name)
-          .maybeSingle();
+          // Upload to storage (upsert)
+          const { error: uploadError } = await supabase.storage
+            .from('campaign-presentations')
+            .upload(storagePath, file, { upsert: true });
 
-        if ((existing as any)?.id) {
-          await supabase
-            .from('campaign_presentations' as any)
-            .update({ storage_path: storagePath, updated_at: new Date().toISOString() } as any)
-            .eq('id', (existing as any).id);
-        } else {
-          await supabase
-            .from('campaign_presentations' as any)
-            .insert({
-              campaign_id: campaignId,
-              file_name: file.name,
-              storage_path: storagePath,
-              status: 'unassigned',
-            } as any);
+          if (uploadError) {
+            console.error(`ERROR archivo ${file.name}: Storage - ${uploadError.message}`);
+            result.errors.push({ file: file.name, reason: `Error Storage: ${uploadError.message}` });
+            continue;
+          }
+          console.log(`Storage OK: ${storagePath}`);
+
+          // Check if record already exists
+          const { data: existing } = await supabase
+            .from('campaign_presentations')
+            .select('id')
+            .eq('campaign_id', campaignId)
+            .eq('file_name', file.name)
+            .maybeSingle();
+
+          if (existing?.id) {
+            // Update existing
+            const { error: updateError } = await supabase
+              .from('campaign_presentations')
+              .update({ storage_path: storagePath, updated_at: new Date().toISOString() })
+              .eq('id', existing.id);
+
+            if (updateError) {
+              console.error(`ERROR archivo ${file.name}: BD update - ${updateError.message}`);
+              result.errors.push({ file: file.name, reason: `Error BD: ${updateError.message}` });
+              continue;
+            }
+            console.log(`BD update OK: ${existing.id}`);
+          } else {
+            // Insert new
+            const { data: inserted, error: insertError } = await supabase
+              .from('campaign_presentations')
+              .insert({
+                campaign_id: campaignId,
+                file_name: file.name,
+                storage_path: storagePath,
+                status: 'unassigned',
+              })
+              .select('id')
+              .single();
+
+            if (insertError) {
+              console.error(`ERROR archivo ${file.name}: BD insert - ${insertError.message}`);
+              // Retry once
+              console.log(`Reintentando insert para ${file.name}...`);
+              const { data: retryData, error: retryError } = await supabase
+                .from('campaign_presentations')
+                .insert({
+                  campaign_id: campaignId,
+                  file_name: file.name,
+                  storage_path: storagePath,
+                  status: 'unassigned',
+                })
+                .select('id')
+                .single();
+
+              if (retryError) {
+                console.error(`ERROR archivo ${file.name}: BD retry - ${retryError.message}`);
+                result.errors.push({ file: file.name, reason: `Archivo subido pero no registrado en BD: ${retryError.message}` });
+                continue;
+              }
+              console.log(`BD insert OK (retry): ${retryData.id}`);
+            } else {
+              console.log(`BD insert OK: ${inserted.id}`);
+            }
+          }
+
+          result.success++;
+          // Invalidate after each file for real-time updates
+          queryClient.invalidateQueries({ queryKey });
+        } catch (err: any) {
+          console.error(`ERROR archivo ${file.name}: ${err.message}`);
+          result.errors.push({ file: file.name, reason: err.message });
         }
       }
+
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      setUploadProgress(null);
       queryClient.invalidateQueries({ queryKey });
-      toast({ title: 'Archivos subidos correctamente' });
+      const errorMsg = result.errors.length > 0
+        ? `\n${result.errors.map(e => `• ${e.file}: ${e.reason}`).join('\n')}`
+        : '';
+      toast({
+        title: `${result.success} archivos subidos correctamente. ${result.errors.length} errores.`,
+        description: errorMsg || undefined,
+        variant: result.errors.length > 0 ? 'destructive' : 'default',
+      });
     },
     onError: (err: any) => {
+      setUploadProgress(null);
       toast({ title: 'Error al subir archivos', description: err.message, variant: 'destructive' });
     },
   });
@@ -89,13 +167,14 @@ export function useCampaignPresentations(campaignId: string | undefined) {
   const assignMutation = useMutation({
     mutationFn: async ({ presentationId, companyId }: { presentationId: string; companyId: string }) => {
       const { error } = await supabase
-        .from('campaign_presentations' as any)
+        .from('campaign_presentations')
         .update({
           company_id: companyId,
           status: 'assigned',
           assigned_manually: true,
+          match_confidence: 1.0,
           updated_at: new Date().toISOString(),
-        } as any)
+        })
         .eq('id', presentationId);
       if (error) throw error;
     },
@@ -109,20 +188,27 @@ export function useCampaignPresentations(campaignId: string | undefined) {
       const unassigned = presentations.filter(p => p.status === 'unassigned');
       let matched = 0;
 
-      for (const pres of unassigned) {
+      for (let i = 0; i < unassigned.length; i++) {
+        const pres = unassigned[i];
+        setMatchProgress({ current: i + 1, total: unassigned.length, currentFile: pres.file_name });
+
         const extracted = extractCompanyName(pres.file_name);
         const result = findBestMatch(extracted, companies);
 
-        await supabase
-          .from('campaign_presentations' as any)
+        const { error } = await supabase
+          .from('campaign_presentations')
           .update({
             company_id: result.companyId,
             match_confidence: result.confidence,
             status: result.status,
             assigned_manually: false,
             updated_at: new Date().toISOString(),
-          } as any)
+          })
           .eq('id', pres.id);
+
+        if (error) {
+          console.error(`ERROR matching ${pres.file_name}: ${error.message}`);
+        }
 
         if (result.status === 'assigned') matched++;
       }
@@ -130,8 +216,14 @@ export function useCampaignPresentations(campaignId: string | undefined) {
       return { matched, total: unassigned.length };
     },
     onSuccess: (result) => {
+      setMatchProgress(null);
       queryClient.invalidateQueries({ queryKey });
-      toast({ title: `Asignación completada: ${result.matched}/${result.total} empresas asignadas` });
+      toast({
+        title: `${result.matched} archivos asignados automáticamente. ${result.total - result.matched} requieren asignación manual.`,
+      });
+    },
+    onSettled: () => {
+      setMatchProgress(null);
     },
   });
 
@@ -142,13 +234,14 @@ export function useCampaignPresentations(campaignId: string | undefined) {
         await supabase.storage.from('campaign-presentations').remove([pres.storage_path]);
       }
       const { error } = await supabase
-        .from('campaign_presentations' as any)
+        .from('campaign_presentations')
         .delete()
         .eq('id', presentationId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
+      toast({ title: 'Archivo eliminado' });
     },
   });
 
@@ -157,9 +250,11 @@ export function useCampaignPresentations(campaignId: string | undefined) {
     isLoading,
     uploadFiles: uploadMutation.mutateAsync,
     isUploading: uploadMutation.isPending,
+    uploadProgress,
     assignCompany: assignMutation.mutateAsync,
     autoMatch: autoMatchMutation.mutateAsync,
     isMatching: autoMatchMutation.isPending,
+    matchProgress,
     deletePresentation: deleteMutation.mutateAsync,
   };
 }
