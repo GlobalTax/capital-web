@@ -72,8 +72,8 @@ export function findBestMatch(
   }
 
   return {
-    companyId: bestScore > 0.5 ? bestId : null,
+    companyId: bestScore >= 0.75 ? bestId : null,
     confidence: Math.round(bestScore * 100) / 100,
-    status: bestScore > 0.5 ? 'assigned' : 'unassigned',
+    status: bestScore >= 0.75 ? 'assigned' : 'unassigned',
   };
 }
