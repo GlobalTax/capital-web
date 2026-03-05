@@ -11874,6 +11874,42 @@ export type Database = {
           },
         ]
       }
+      kanban_stages: {
+        Row: {
+          color: string
+          created_at: string | null
+          id: string
+          is_discard: boolean | null
+          is_system: boolean | null
+          mandate_type: string
+          name: string
+          position: number
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string
+          created_at?: string | null
+          id?: string
+          is_discard?: boolean | null
+          is_system?: boolean | null
+          mandate_type: string
+          name: string
+          position: number
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string
+          created_at?: string | null
+          id?: string
+          is_discard?: boolean | null
+          is_system?: boolean | null
+          mandate_type?: string
+          name?: string
+          position?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       key_statistics: {
         Row: {
           display_locations: string[] | null
@@ -14033,6 +14069,7 @@ export type Database = {
           id: string
           label: string
           orden: number
+          tipo_operacion: string
           updated_at: string | null
         }
         Insert: {
@@ -14043,6 +14080,7 @@ export type Database = {
           id?: string
           label: string
           orden: number
+          tipo_operacion?: string
           updated_at?: string | null
         }
         Update: {
@@ -14053,6 +14091,7 @@ export type Database = {
           id?: string
           label?: string
           orden?: number
+          tipo_operacion?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -23082,6 +23121,7 @@ export type Database = {
         }[]
       }
       bootstrap_first_admin: { Args: { user_email: string }; Returns: boolean }
+      calcular_fase_mandato: { Args: { p_mandato_id: string }; Returns: string }
       calculate_email_retry_at: { Args: { attempts: number }; Returns: string }
       can_access_cim: { Args: { p_recipient_id: string }; Returns: boolean }
       check_is_admin: { Args: { check_user_id: string }; Returns: boolean }

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { extractCompanyName, findBestMatch, CompanyCandidate } from '@/utils/matchPresentationToCompany';
-import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, safeStorageUpload, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, safeStorageUpload, safeStorageDelete, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 
 export interface CampaignPresentation {
   id: string;
