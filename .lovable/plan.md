@@ -1,57 +1,48 @@
 
-Objetivo: desbloquear la subida de PDFs corrigiendo el fallo real actual (no es RLS ahora, es invocación de Edge Function).
 
-Diagnóstico confirmado (con evidencia):
-- La llamada actual falla en preflight/CORS con `FunctionsFetchError`.
-- La función `upload-campaign-presentation` existe en código y en `config.toml`, pero en runtime responde como no existente.
-- Prueba directa al endpoint de funciones devuelve `404 NOT_FOUND: Requested function was not found`.
-- No hay logs de esa función en Supabase, lo que confirma que no está desplegada/activa en ese proyecto.
+## Diagnostico
 
-Plan de implementación
+Las llamadas `createSignedUrl` y `remove` sobre el bucket `campaign-presentations` se hacen directamente con el cliente Supabase (anon key), lo que activa las mismas politicas RLS que ya bloqueaban los uploads. El error en red es:
 
-1) Restaurar disponibilidad de la función (prioridad alta)
-- Desplegar explícitamente `upload-campaign-presentation`.
-- Verificar inmediatamente que ya responde (no 404) con una llamada de prueba.
-- Si el deploy falla, revisar error de empaquetado/runtime y corregir (importes, sintaxis, vars).
+```
+POST .../storage/v1/object/sign/campaign-presentations/...
+Status: 400 → "new row violates row-level security policy"
+```
 
-2) Endurecer la Edge Function para evitar falsos CORS
-- Mantener handler `OPTIONS` devolviendo 200 con CORS.
-- Garantizar que todas las respuestas (éxito y error) incluyan CORS headers.
-- Añadir validación explícita de secretos requeridos (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, y el usado para validar JWT) y devolver error controlado JSON.
-- Mejorar logs estructurados en la función para distinguir:
-  - auth inválida
-  - usuario sin rol admin
-  - error de upload storage
-  - error de configuración (secrets)
+Esto afecta a **3 operaciones** en `ProcessSendStep.tsx`:
+1. `StudyPdfViewerModal` (previsualizar estudio) — linea 235
+2. `downloadStudy` (descargar estudio) — linea 627
+3. `remove` en `useCampaignPresentations.ts` — linea 267
 
-3) Fortalecer el cliente para diagnóstico claro
-- En `safeStorageUpload`, mapear `FunctionsFetchError`/404 a mensaje explícito:
-  - “La función de subida no está disponible (deploy pendiente o fallo de backend)”.
-- Mantener trazas mínimas útiles (`functionName`, `path`, `error.name`, `status` si existe).
-- No tocar la lógica de negocio de campaña ni matching.
+La solucion es la misma que funciono para uploads: usar una Edge Function con `service_role`.
 
-4) Validación técnica (obligatoria)
-- Probar invoke de la función tras deploy:
-  - `OPTIONS` (CORS preflight OK)
-  - `POST` sin body (debe devolver 400 controlado, no 404/500 opaco)
-  - `POST` real con archivo desde UI (debe devolver 200 y `path`)
-- Confirmar en logs de función que entra la request y que sube al bucket.
-- Confirmar en UI:
-  - aparece `campaign_presentations` actualizado
-  - desaparece `FunctionsFetchError`
+## Plan
 
-5) Contingencia si vuelve a fallar
-- Si sigue 404: problema de deploy/publicación del function slug (nombre o entorno).
-- Si pasa a 401/403: ajustar validación de JWT/rol dentro de la función.
-- Si pasa a 500 con logs: corregir error puntual según stacktrace.
-- Solo si todo lo anterior falla, activar fallback temporal a subida directa con RLS (ya no recomendado como ruta principal).
+### 1. Ampliar la Edge Function existente
 
-Archivos involucrados
-- `supabase/functions/upload-campaign-presentation/index.ts` (robustez CORS/logs/validación)
-- `src/utils/campaignPresentationStorage.ts` (manejo de errores más preciso)
-- Sin cambios de esquema DB/RLS para esta iteración (el bloqueo actual no está en policies).
+Extender `upload-campaign-presentation` (o crear una nueva `campaign-presentation-ops`) para soportar dos operaciones adicionales:
 
-Resultado esperado
-- La subida deja de fallar por CORS/preflight.
-- La función responde de forma consistente y observable.
-- Errores futuros se diagnostican en minutos con mensajes y logs claros en lugar de `Failed to fetch`.
+- **`sign`**: Recibe `path` por JSON, devuelve `signedUrl` generada con `service_role`
+- **`delete`**: Recibe `path` por JSON, elimina el archivo con `service_role`
+
+La operacion se determina por un campo `action` en el body (`upload` | `sign` | `delete`). El upload sigue usando FormData; sign y delete usan JSON.
+
+### 2. Crear helper en el cliente
+
+Añadir a `campaignPresentationStorage.ts`:
+
+- `safeCreateSignedUrl(path)`: invoca la Edge Function con `action: 'sign'`, devuelve la URL firmada
+- `safeStorageDelete(path)`: invoca la Edge Function con `action: 'delete'`
+
+### 3. Reemplazar llamadas directas
+
+- `ProcessSendStep.tsx` linea 235: usar `safeCreateSignedUrl` en vez de `supabase.storage.from(...).createSignedUrl(...)`
+- `ProcessSendStep.tsx` linea 627: idem
+- `useCampaignPresentations.ts` linea 267: usar `safeStorageDelete` en vez de `supabase.storage.from(...).remove(...)`
+
+### Archivos afectados
+- `supabase/functions/upload-campaign-presentation/index.ts` (ampliar con sign/delete)
+- `src/utils/campaignPresentationStorage.ts` (nuevos helpers)
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` (2 reemplazos)
+- `src/hooks/useCampaignPresentations.ts` (1 reemplazo)
+
