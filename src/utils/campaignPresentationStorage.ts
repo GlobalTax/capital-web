@@ -148,3 +148,59 @@ export const safeStorageUpload = async (
   console.log('[safeStorageUpload] OK via Edge Function:', fnData?.path);
   return { data: { path: fnData?.path || path }, error: null };
 };
+
+/**
+ * Creates a signed URL for a file in campaign-presentations via Edge Function (bypasses RLS).
+ */
+export const safeCreateSignedUrl = async (
+  storagePath: string,
+): Promise<{ signedUrl: string | null; error: Error | null }> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) return { signedUrl: null, error: new Error('No hay sesión activa.') };
+  }
+
+  const { data: fnData, error: fnError } = await supabase.functions.invoke(
+    'upload-campaign-presentation',
+    { body: { action: 'sign', path: storagePath } },
+  );
+
+  if (fnError) {
+    console.error('[safeCreateSignedUrl] error', fnError.message);
+    return { signedUrl: null, error: new Error(fnError.message) };
+  }
+  if (fnData?.error) {
+    return { signedUrl: null, error: new Error(fnData.error) };
+  }
+
+  return { signedUrl: fnData?.signedUrl ?? null, error: null };
+};
+
+/**
+ * Deletes a file from campaign-presentations via Edge Function (bypasses RLS).
+ */
+export const safeStorageDelete = async (
+  storagePath: string,
+): Promise<{ error: Error | null }> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) return { error: new Error('No hay sesión activa.') };
+  }
+
+  const { data: fnData, error: fnError } = await supabase.functions.invoke(
+    'upload-campaign-presentation',
+    { body: { action: 'delete', path: storagePath } },
+  );
+
+  if (fnError) {
+    console.error('[safeStorageDelete] error', fnError.message);
+    return { error: new Error(fnError.message) };
+  }
+  if (fnData?.error) {
+    return { error: new Error(fnData.error) };
+  }
+
+  return { error: null };
+};
