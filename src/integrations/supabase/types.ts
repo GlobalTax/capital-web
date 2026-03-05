@@ -11874,6 +11874,42 @@ export type Database = {
           },
         ]
       }
+      kanban_stages: {
+        Row: {
+          color: string
+          created_at: string | null
+          id: string
+          is_discard: boolean | null
+          is_system: boolean | null
+          mandate_type: string
+          name: string
+          position: number
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string
+          created_at?: string | null
+          id?: string
+          is_discard?: boolean | null
+          is_system?: boolean | null
+          mandate_type: string
+          name: string
+          position: number
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string
+          created_at?: string | null
+          id?: string
+          is_discard?: boolean | null
+          is_system?: boolean | null
+          mandate_type?: string
+          name?: string
+          position?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       key_statistics: {
         Row: {
           display_locations: string[] | null
