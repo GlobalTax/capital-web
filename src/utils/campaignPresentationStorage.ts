@@ -99,10 +99,12 @@ export const isValidCampaignPresentationPath = (storagePath: string): boolean =>
 };
 
 /**
- * Ensures an active authenticated session exists before performing a storage upload.
- * If the session is missing or expired, attempts a refresh. Throws a descriptive error
- * if the user is not authenticated — preventing the SDK from silently falling back to
- * the anon key and hitting RLS violations.
+ * Uploads a file to campaign-presentations storage via the Edge Function
+ * `upload-campaign-presentation`, which uses `service_role` to bypass
+ * Storage RLS policies that don't cooperate with upsert operations.
+ *
+ * Falls back to direct storage upload only if the Edge Function call fails
+ * for infrastructure reasons (e.g. function not deployed).
  */
 export const safeStorageUpload = async (
   bucket: string,
@@ -114,7 +116,6 @@ export const safeStorageUpload = async (
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    // 2. Try refreshing
     console.warn('[safeStorageUpload] No session found — attempting refresh…');
     const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
     if (refreshError || !refreshData.session) {
@@ -124,17 +125,31 @@ export const safeStorageUpload = async (
     console.log('[safeStorageUpload] Session refreshed OK');
   }
 
-  // 3. Log auth state for diagnostics
-  const { data: { session: currentSession } } = await supabase.auth.getSession();
-  console.log('[safeStorageUpload] Auth state', {
-    hasSession: !!currentSession,
-    role: currentSession?.user?.role,
-    expiresAt: currentSession?.expires_at,
-    bucket,
-    path,
-  });
+  // 2. Try uploading via Edge Function (service_role bypasses Storage RLS)
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('storagePath', path);
 
-  // 4. Perform the upload
+    const { data: fnData, error: fnError } = await supabase.functions.invoke(
+      'upload-campaign-presentation',
+      { body: formData },
+    );
+
+    if (fnError) {
+      console.warn('[safeStorageUpload] Edge Function error, falling back to direct upload', fnError.message);
+    } else if (fnData?.error) {
+      console.warn('[safeStorageUpload] Edge Function returned error, falling back', fnData.error);
+    } else if (fnData?.path) {
+      console.log('[safeStorageUpload] Upload via Edge Function OK:', fnData.path);
+      return { data: { path: fnData.path }, error: null };
+    }
+  } catch (e) {
+    console.warn('[safeStorageUpload] Edge Function unavailable, falling back to direct upload', e);
+  }
+
+  // 3. Fallback: direct storage upload
+  console.log('[safeStorageUpload] Using direct storage upload fallback', { bucket, path });
   const { data, error } = await supabase.storage
     .from(bucket)
     .upload(path, file, {

@@ -118,33 +118,60 @@ export function useCampaignPresentations(campaignId: string | undefined) {
 
             if (insertError) {
               console.error('[ERROR BD]', insertError);
-              // Retry once
-              console.log(`Reintentando insert para ${file.name}...`);
-              const { data: retryData, error: retryError } = await supabase
-                .from('campaign_presentations')
-                .insert({
-                  campaign_id: campaignId,
-                  file_name: file.name,
-                  storage_path: storagePath,
-                  status: 'unassigned',
-                })
-                .select('id')
-                .single();
 
-              if (retryError) {
-                console.error('[ERROR BD]', retryError);
-                result.errors.push({ file: file.name, reason: `Archivo subido pero no registrado en BD: ${retryError.message}` });
-                continue;
+              // If unique constraint violation, the record already exists — update it
+              if ((insertError as any).code === '23505') {
+                console.log(`Registro ya existe para ${file.name}, actualizando...`);
+                const { data: existingRow } = await supabase
+                  .from('campaign_presentations')
+                  .select('id')
+                  .eq('campaign_id', campaignId)
+                  .eq('file_name', file.name)
+                  .maybeSingle();
+
+                if (existingRow?.id) {
+                  const { error: fallbackUpdateError } = await supabase
+                    .from('campaign_presentations')
+                    .update({ storage_path: storagePath, updated_at: new Date().toISOString() })
+                    .eq('id', existingRow.id);
+
+                  if (fallbackUpdateError) {
+                    console.error('[ERROR BD]', fallbackUpdateError);
+                    result.errors.push({ file: file.name, reason: `Error actualizando registro existente: ${fallbackUpdateError.message}` });
+                    continue;
+                  }
+                  console.log('[BD] OK (update tras constraint):', existingRow.id);
+                } else {
+                  result.errors.push({ file: file.name, reason: `Archivo subido pero no registrado en BD: ${insertError.message}` });
+                  continue;
+                }
+              } else {
+                // Retry once for non-constraint errors
+                console.log(`Reintentando insert para ${file.name}...`);
+                const { data: retryData, error: retryError } = await supabase
+                  .from('campaign_presentations')
+                  .insert({
+                    campaign_id: campaignId,
+                    file_name: file.name,
+                    storage_path: storagePath,
+                    status: 'unassigned',
+                  })
+                  .select('id')
+                  .single();
+
+                if (retryError) {
+                  console.error('[ERROR BD]', retryError);
+                  result.errors.push({ file: file.name, reason: `Archivo subido pero no registrado en BD: ${retryError.message}` });
+                  continue;
+                }
+                console.log('[BD] OK:', retryData.id);
               }
-              console.log('[BD] OK:', retryData.id);
             } else {
               console.log('[BD] OK:', inserted.id);
             }
           }
 
           result.success++;
-          // Invalidate after each file for real-time updates
-          queryClient.invalidateQueries({ queryKey });
         } catch (err: any) {
           console.error(`ERROR archivo ${file.name}: ${err.message}`);
           result.errors.push({ file: file.name, reason: err.message });
@@ -264,7 +291,10 @@ export function useCampaignPresentations(campaignId: string | undefined) {
       const pres = presentations.find(p => p.id === presentationId);
       if (pres) {
         const normalizedPath = normalizeCampaignPresentationPath(pres.storage_path);
-        await supabase.storage.from('campaign-presentations').remove([normalizedPath]);
+        const { error: storageError } = await supabase.storage.from('campaign-presentations').remove([normalizedPath]);
+        if (storageError) {
+          console.warn('[DELETE] Error eliminando archivo de storage (continuando con BD):', storageError.message);
+        }
       }
       const { error } = await supabase
         .from('campaign_presentations')
