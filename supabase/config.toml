@@ -314,3 +314,6 @@ verify_jwt = false
 
 [functions.run-alerts-cron]
 verify_jwt = false
+
+[functions.match-presentations]
+verify_jwt = false

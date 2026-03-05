@@ -188,12 +188,37 @@ export function useCampaignPresentations(campaignId: string | undefined) {
       const unassigned = presentations.filter(p => p.status === 'unassigned');
       let matched = 0;
 
+      // Prepare a slim company list for the AI
+      const companyList = companies.map(c => ({ id: c.id, name: (c as any).company_name || (c as any).name || '', cif: (c as any).cif || '' }));
+
       for (let i = 0; i < unassigned.length; i++) {
         const pres = unassigned[i];
         setMatchProgress({ current: i + 1, total: unassigned.length, currentFile: pres.file_name });
 
         const extracted = extractCompanyName(pres.file_name);
-        const result = findBestMatch(extracted, companies);
+        let result: { companyId: string | null; confidence: number; status: string };
+
+        try {
+          // Try AI matching via edge function
+          const { data: aiResult, error: fnError } = await supabase.functions.invoke('match-presentations', {
+            body: { extractedName: extracted, companies: companyList },
+          });
+
+          if (fnError || !aiResult || aiResult.error) {
+            console.warn(`AI match failed for ${pres.file_name}, falling back to local`, fnError?.message || aiResult?.error);
+            result = findBestMatch(extracted, companies);
+          } else {
+            const confidence = aiResult.confidence ?? 0;
+            result = {
+              companyId: confidence >= 0.75 ? aiResult.company_id : null,
+              confidence,
+              status: confidence >= 0.75 ? 'assigned' : 'unassigned',
+            };
+          }
+        } catch (err: any) {
+          console.warn(`AI match exception for ${pres.file_name}, falling back to local`, err.message);
+          result = findBestMatch(extracted, companies);
+        }
 
         const { error } = await supabase
           .from('campaign_presentations')
