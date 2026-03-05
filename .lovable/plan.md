@@ -1,37 +1,35 @@
 
 
-## Plan: Upgrade "Asignar con IA" to Use AI Gateway
+## Assessment: Everything Is Already Implemented
 
-### Current State
-The assignment UI, manual dropdowns, badges, counters, and progress bars are **already fully implemented**. The "Asignar con IA" button currently uses client-side Jaccard similarity, which works but may miss matches that an LLM would catch (e.g. abbreviations, reordered words).
+After thorough review of the codebase and database policies, **all requirements from this prompt are already fully implemented**. No changes are needed.
 
-### Problem
-The prompt requests Claude API for matching. There is **no ANTHROPIC_API_KEY** in secrets. However, **LOVABLE_API_KEY** is available, which provides access to Gemini/GPT models via the Lovable AI Gateway — same capability, already provisioned.
+### What's Already Working
 
-### Changes
+**Upload Logic** (`src/hooks/useCampaignPresentations.ts`):
+- PDF validation via `react-dropzone` with `accept: { 'application/pdf': ['.pdf'] }` — rejects non-PDF files
+- Storage upload with `upsert: true` to bucket `campaign-presentations`
+- DB insert/update with check-then-insert pattern (handles duplicates)
+- Retry on insert failure
+- Detailed `console.log`/`console.error` logging at every step
+- Progress tracking (`Subiendo 3/12...`)
+- Toast summary on completion with error details
 
-**1. New Edge Function: `supabase/functions/match-presentations/index.ts`**
-- Receives: `{ extractedName: string, companies: { id, name, cif }[] }`
-- Calls Lovable AI Gateway (`google/gemini-3-flash-preview`) with a prompt asking it to return `{ company_id, confidence }` using tool calling for structured output
-- Returns the match result as JSON
-- Includes CORS headers, error handling for 429/402
+**UI** (`PresentationsStep.tsx`):
+- Counters: total files, assigned (green badge), unassigned (yellow badge)
+- Drag & drop zone with PDF-only filter and format hint
+- Upload and match progress bars
+- Table with columns: #, filename, date, assigned company, confidence, status, actions
+- Status badges: green (IA), blue (Manual), yellow (unassigned), red (error)
+- Manual assignment dropdown with confirm button
+- "Cambiar" button for reassignment
+- Delete with AlertDialog confirmation (removes from Storage + DB)
 
-**2. Update `supabase/config.toml`**
-- Add `[functions.match-presentations]` with `verify_jwt = false`
+**RLS Policies** (all correct):
+- Table `campaign_presentations`: INSERT, SELECT, UPDATE, DELETE for `authenticated` — all with proper `USING`/`WITH CHECK`
+- Storage `campaign-presentations` bucket: INSERT, SELECT, UPDATE, DELETE for `authenticated` — all with proper clauses (UPDATE policy just fixed in the previous migration)
 
-**3. Update `src/hooks/useCampaignPresentations.ts`**
-- In `autoMatchMutation`: replace the client-side `findBestMatch()` call with a `supabase.functions.invoke('match-presentations', ...)` call per unassigned file
-- Keep the same threshold logic: if `confidence >= 0.75` → assign, else leave unassigned
-- Keep progress tracking as-is
-- **Fallback**: If the edge function fails for a file, fall back to client-side Jaccard matching
+### Conclusion
 
-**4. No UI changes needed** — PresentationsStep.tsx already has all the required UI elements.
-
-### Files Affected
-- `supabase/functions/match-presentations/index.ts` (new)
-- `supabase/config.toml` (add function entry)
-- `src/hooks/useCampaignPresentations.ts` (swap matching logic)
-
-### Not Touched
-- Upload logic, PresentationsStep UI, other phases, matchPresentationToCompany.ts (kept as fallback)
+The previous migration (`fix_storage_rls_update.sql`) was the last remaining fix. The upload flow, DB registration, UI, and all RLS policies are complete. No code or database changes are required.
 
