@@ -25,6 +25,7 @@ import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath } from '@/utils/campaignPresentationStorage';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
@@ -227,11 +228,12 @@ function StudyPdfViewerModal({ companyName, storagePath, onClose }: StudyPdfView
     let cancelled = false;
     (async () => {
       try {
+        const normalizedPath = normalizeCampaignPresentationPath(storagePath);
         const { data, error: signError } = await supabase.storage
           .from('campaign-presentations')
-          .createSignedUrl(storagePath, 3600);
+          .createSignedUrl(normalizedPath, 3600);
         if (signError) throw signError;
-        if (!cancelled) setUrl(data.signedUrl);
+        if (!cancelled) setUrl(encodeURI(data.signedUrl));
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Error obteniendo PDF');
       } finally {
@@ -322,10 +324,13 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
     if (!file) return;
     setUploading(true);
     try {
-      const storagePath = `${campaignId}/${file.name}`;
+      const storagePath = buildCampaignPresentationPath(campaignId, file.name);
       const { error: uploadError } = await supabase.storage
         .from('campaign-presentations')
-        .upload(storagePath, file, { upsert: true });
+        .upload(storagePath, file, {
+          upsert: true,
+          contentType: 'application/pdf',
+        });
       if (uploadError) throw uploadError;
 
       if (currentPresentation) {
@@ -611,12 +616,13 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   // ── Download study ──
   const downloadStudy = useCallback(async (presentation: CampaignPresentation) => {
     try {
+      const normalizedPath = normalizeCampaignPresentationPath(presentation.storage_path);
       const { data, error } = await supabase.storage
         .from('campaign-presentations')
-        .createSignedUrl(presentation.storage_path, 3600);
+        .createSignedUrl(normalizedPath, 3600);
       if (error) throw error;
       const a = document.createElement('a');
-      a.href = data.signedUrl;
+      a.href = encodeURI(data.signedUrl);
       a.download = presentation.file_name;
       a.target = '_blank';
       document.body.appendChild(a);

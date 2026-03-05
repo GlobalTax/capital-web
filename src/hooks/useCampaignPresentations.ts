@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { extractCompanyName, findBestMatch, CompanyCandidate } from '@/utils/matchPresentationToCompany';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath } from '@/utils/campaignPresentationStorage';
 
 export interface CampaignPresentation {
   id: string;
@@ -58,22 +59,25 @@ export function useCampaignPresentations(campaignId: string | undefined) {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         setUploadProgress({ current: i + 1, total: files.length, currentFile: file.name });
-        console.log(`Subiendo archivo: ${file.name}`);
+        console.log(`[SUBIDA] Iniciando: ${file.name}`);
 
         try {
-          const storagePath = `${campaignId}/${file.name}`;
+          const storagePath = buildCampaignPresentationPath(campaignId, file.name);
 
           // Upload to storage (upsert)
           const { error: uploadError } = await supabase.storage
             .from('campaign-presentations')
-            .upload(storagePath, file, { upsert: true });
+            .upload(storagePath, file, {
+              upsert: true,
+              contentType: 'application/pdf',
+            });
 
           if (uploadError) {
-            console.error(`ERROR archivo ${file.name}: Storage - ${uploadError.message}`);
+            console.error('[ERROR STORAGE]', uploadError);
             result.errors.push({ file: file.name, reason: `Error Storage: ${uploadError.message}` });
             continue;
           }
-          console.log(`Storage OK: ${storagePath}`);
+          console.log(`[STORAGE] OK: ${storagePath}`);
 
           // Check if record already exists
           const { data: existing } = await supabase
@@ -91,11 +95,11 @@ export function useCampaignPresentations(campaignId: string | undefined) {
               .eq('id', existing.id);
 
             if (updateError) {
-              console.error(`ERROR archivo ${file.name}: BD update - ${updateError.message}`);
+              console.error('[ERROR BD]', updateError);
               result.errors.push({ file: file.name, reason: `Error BD: ${updateError.message}` });
               continue;
             }
-            console.log(`BD update OK: ${existing.id}`);
+            console.log('[BD] OK:', existing.id);
           } else {
             // Insert new
             const { data: inserted, error: insertError } = await supabase
@@ -110,7 +114,7 @@ export function useCampaignPresentations(campaignId: string | undefined) {
               .single();
 
             if (insertError) {
-              console.error(`ERROR archivo ${file.name}: BD insert - ${insertError.message}`);
+              console.error('[ERROR BD]', insertError);
               // Retry once
               console.log(`Reintentando insert para ${file.name}...`);
               const { data: retryData, error: retryError } = await supabase
@@ -125,13 +129,13 @@ export function useCampaignPresentations(campaignId: string | undefined) {
                 .single();
 
               if (retryError) {
-                console.error(`ERROR archivo ${file.name}: BD retry - ${retryError.message}`);
+                console.error('[ERROR BD]', retryError);
                 result.errors.push({ file: file.name, reason: `Archivo subido pero no registrado en BD: ${retryError.message}` });
                 continue;
               }
-              console.log(`BD insert OK (retry): ${retryData.id}`);
+              console.log('[BD] OK:', retryData.id);
             } else {
-              console.log(`BD insert OK: ${inserted.id}`);
+              console.log('[BD] OK:', inserted.id);
             }
           }
 
@@ -256,7 +260,8 @@ export function useCampaignPresentations(campaignId: string | undefined) {
     mutationFn: async (presentationId: string) => {
       const pres = presentations.find(p => p.id === presentationId);
       if (pres) {
-        await supabase.storage.from('campaign-presentations').remove([pres.storage_path]);
+        const normalizedPath = normalizeCampaignPresentationPath(pres.storage_path);
+        await supabase.storage.from('campaign-presentations').remove([normalizedPath]);
       }
       const { error } = await supabase
         .from('campaign_presentations')
