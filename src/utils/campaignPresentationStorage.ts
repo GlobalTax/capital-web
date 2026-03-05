@@ -132,8 +132,12 @@ export const safeStorageUpload = async (
   );
 
   if (fnError) {
-    console.error('[safeStorageUpload] Edge Function error', fnError.message);
-    return { data: null, error: fnError };
+    const isFetchError = fnError.name === 'FunctionsFetchError' || fnError.message?.includes('Failed to send');
+    const friendlyMsg = isFetchError
+      ? 'La función de subida no está disponible. Contacta al administrador o reintenta en unos minutos.'
+      : fnError.message;
+    console.error('[safeStorageUpload] Edge Function error', { name: fnError.name, message: fnError.message, path });
+    return { data: null, error: new Error(friendlyMsg) };
   }
 
   if (fnData?.error) {

@@ -5,43 +5,55 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const jsonResponse = (body: Record<string, unknown>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // 1. Verify the caller is authenticated
+    // 0. Validate required env vars
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+      console.error('[upload-campaign-presentation] Missing env vars:', {
+        hasUrl: !!supabaseUrl,
+        hasAnon: !!anonKey,
+        hasService: !!serviceRoleKey,
+      });
+      return jsonResponse({ error: 'Server configuration error' }, 500);
+    }
+
+    // 1. Verify auth
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      console.warn('[upload-campaign-presentation] No valid Authorization header');
+      return jsonResponse({ error: 'Unauthorized' }, 401);
     }
-
-    const anonClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } },
-    );
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const anonClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: userError } = await anonClient.auth.getUser(token);
+    if (userError || !user) {
+      console.warn('[upload-campaign-presentation] Invalid token:', userError?.message);
+      return jsonResponse({ error: 'Invalid token' }, 401);
     }
 
-    const userId = claimsData.claims.sub as string;
+    const userId = user.id;
+    console.log('[upload-campaign-presentation] Authenticated user:', userId);
 
-    // 2. Verify admin role using service_role client
-    const serviceClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
+    // 2. Verify admin role
+    const serviceClient = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: adminRow } = await serviceClient
       .from('admin_users')
@@ -51,10 +63,8 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!adminRow) {
-      return new Response(JSON.stringify({ error: 'Forbidden: not an admin user' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      console.warn('[upload-campaign-presentation] Not admin:', userId);
+      return jsonResponse({ error: 'Forbidden: not an admin user' }, 403);
     }
 
     // 3. Parse multipart form data
@@ -63,11 +73,11 @@ Deno.serve(async (req) => {
     const storagePath = formData.get('path') as string | null;
 
     if (!file || !storagePath) {
-      return new Response(JSON.stringify({ error: 'Missing file or path' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      console.warn('[upload-campaign-presentation] Missing file or path');
+      return jsonResponse({ error: 'Missing file or path' }, 400);
     }
+
+    console.log('[upload-campaign-presentation] Uploading:', storagePath, 'size:', file.size);
 
     // 4. Upload using service_role (bypasses RLS)
     const { data, error: uploadError } = await serviceClient.storage
@@ -79,23 +89,13 @@ Deno.serve(async (req) => {
 
     if (uploadError) {
       console.error('[upload-campaign-presentation] Storage error:', uploadError.message);
-      return new Response(JSON.stringify({ error: uploadError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: uploadError.message }, 500);
     }
 
     console.log('[upload-campaign-presentation] OK:', data.path);
-
-    return new Response(JSON.stringify({ path: data.path }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ path: data.path });
   } catch (err) {
     console.error('[upload-campaign-presentation] Unexpected error:', err);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'Internal server error' }, 500);
   }
 });
