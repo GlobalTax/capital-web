@@ -45,7 +45,10 @@ export function useCampaignPresentations(campaignId: string | undefined) {
         .eq('campaign_id', campaignId)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return (data || []) as CampaignPresentation[];
+      return ((data || []) as CampaignPresentation[]).map((presentation) => ({
+        ...presentation,
+        storage_path: normalizeCampaignPresentationPath(presentation.storage_path),
+      }));
     },
     enabled: !!campaignId,
   });
