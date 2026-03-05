@@ -1,29 +1,25 @@
 
 
-## Assignment Logic for "Presentaciones" — Review
+## Fix RLS Error on Campaign Presentations Upload
 
-The assignment functionality is **already implemented** from the previous approved plan. The current code includes:
+### Root Cause
+The storage UPDATE policy for `campaign-presentations` bucket has `USING` but is **missing `WITH CHECK`**. When the code uploads with `upsert: true`, Supabase tries UPDATE on existing files, which fails because the UPDATE policy can't validate the new row without a `WITH CHECK` clause.
 
-- **Auto-match with IA** button, progress bar, and summary toast
-- **Manual assignment** dropdowns with "Cambiar" button for reassignment  
-- **Status badges** (IA green, Manual blue, Unassigned orange)
-- **Counters** updated in real-time
+The `campaign_presentations` **table** RLS is fine -- all 4 policies are correctly in place. The issue is solely in the storage layer.
 
-### Only Change Needed
+### Fix
 
-**`src/utils/matchPresentationToCompany.ts`** — line 75-77: Change threshold from `0.5` to `0.75`
+**Single migration** to drop and recreate the storage UPDATE policy with proper `WITH CHECK`:
 
-```typescript
-// Current (line 75):
-companyId: bestScore > 0.5 ? bestId : null,
-// Change to:
-companyId: bestScore >= 0.75 ? bestId : null,
+```sql
+DROP POLICY "Authenticated users can update campaign presentations" ON storage.objects;
 
-// Current (line 77):
-status: bestScore > 0.5 ? 'assigned' : 'unassigned',
-// Change to:
-status: bestScore >= 0.75 ? 'assigned' : 'unassigned',
+CREATE POLICY "Authenticated users can update campaign presentations"
+  ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'campaign-presentations')
+  WITH CHECK (bucket_id = 'campaign-presentations');
 ```
 
-This is the only gap between the current implementation and the requirements in this prompt. Everything else (upload, table UI, manual assignment, delete with confirmation, progress bars, logging) is already in place.
+### Files Changed
+- 1 new migration file only. No code changes needed.
 
