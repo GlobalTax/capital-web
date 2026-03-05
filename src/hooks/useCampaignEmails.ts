@@ -7,6 +7,15 @@ import { replaceVariables } from '@/utils/campaignEmailTemplateEngine';
 
 const QUERY_KEY = 'campaign-emails';
 
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (typeof error === 'string') return error;
+  if (error && typeof error === 'object') {
+    const e = error as any;
+    return e.message || e.error_description || e.details || fallback;
+  }
+  return fallback;
+};
+
 export interface CampaignEmail {
   id: string;
   campaign_id: string;
@@ -73,38 +82,80 @@ export function useCampaignEmails(campaignId: string | undefined) {
       if (!campaignId) throw new Error('No campaign');
 
       const existingMap = new Map(emails.map(e => [e.company_id, e]));
-      const upserts: any[] = [];
+      const companyIdsSeen = new Set<string>();
+
+      const updates: { id: string; data: Record<string, any> }[] = [];
+      const inserts: Record<string, any>[] = [];
 
       for (const company of companies) {
-        const existing = existingMap.get(company.id);
+        const companyId = company?.id;
+        if (!companyId || companyIdsSeen.has(companyId)) continue;
+        companyIdsSeen.add(companyId);
+
+        const existing = existingMap.get(companyId);
         if (existing?.is_manually_edited && !overwriteManual) continue;
 
-        upserts.push({
-          id: existing?.id || undefined,
-          campaign_id: campaignId,
-          company_id: company.id,
-          subject: replaceVariables(subjectTemplate, company, campaign),
-          body: replaceVariables(bodyTemplate, company, campaign),
-          is_manually_edited: false,
-          status: existing?.status === 'sent' ? 'sent' : 'pending',
-          sent_at: existing?.sent_at || null,
-          updated_at: new Date().toISOString(),
-        });
+        const subject = replaceVariables(subjectTemplate, company, campaign);
+        const body = replaceVariables(bodyTemplate, company, campaign);
+        const updated_at = new Date().toISOString();
+
+        if (existing?.id) {
+          updates.push({
+            id: existing.id,
+            data: {
+              subject,
+              body,
+              is_manually_edited: false,
+              status: existing.status === 'sent' ? 'sent' : 'pending',
+              sent_at: existing.sent_at || null,
+              updated_at,
+            },
+          });
+        } else {
+          inserts.push({
+            campaign_id: campaignId,
+            company_id: companyId,
+            subject,
+            body,
+            is_manually_edited: false,
+            status: 'pending',
+            sent_at: null,
+            updated_at,
+          });
+        }
       }
 
-      if (upserts.length === 0) return 0;
+      const total = updates.length + inserts.length;
+      if (total === 0) return 0;
 
-      const { error } = await (supabase as any)
-        .from('campaign_emails')
-        .upsert(upserts, { onConflict: 'id' });
-      if (error) throw error;
-      return upserts.length;
+      if (updates.length > 0) {
+        const updateResults = await Promise.all(
+          updates.map((item) =>
+            (supabase as any)
+              .from('campaign_emails')
+              .update(item.data)
+              .eq('id', item.id)
+          )
+        );
+
+        const updateError = updateResults.find(r => r.error)?.error;
+        if (updateError) throw updateError;
+      }
+
+      if (inserts.length > 0) {
+        const { error } = await (supabase as any)
+          .from('campaign_emails')
+          .insert(inserts);
+        if (error) throw error;
+      }
+
+      return total;
     },
     onSuccess: (count) => {
       invalidate();
       if (count) toast.success(`${count} emails generados correctamente`);
     },
-    onError: () => toast.error('Error al generar emails'),
+    onError: (error) => toast.error(getErrorMessage(error, 'Error al generar emails')),
   });
 
   const updateEmailMutation = useMutation({
