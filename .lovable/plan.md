@@ -1,79 +1,72 @@
 
 
-## Diagnóstico: RLS falla en TODAS las subidas de Storage
+## Diagnostico profundo y plan de fix definitivo
 
 ### Hallazgo clave
 
-He verificado que las políticas RLS del bucket `campaign-presentations` en `storage.objects` **están correctamente configuradas** en la base de datos (INSERT, SELECT, UPDATE, DELETE — todas `TO authenticated`). Sin embargo, el error persiste.
+He verificado exhaustivamente:
+- Las 4 politicas RLS para `campaign-presentations` existen y son correctas (`TO authenticated`, `WITH CHECK bucket_id = 'campaign-presentations'`)
+- El JWT del usuario ES valido (role=authenticated, sub=5e522cb6...)
+- El bucket existe, acepta PDFs, no hay triggers ni constraints
+- No hay politicas restrictivas
+- Los postgres_logs no muestran el error (lo que sugiere que el Storage service lo maneja internamente)
 
-El problema real es que **el cliente Supabase está enviando las peticiones de Storage con el `anon key` en lugar del JWT del usuario autenticado**. Esto ocurre porque la sesión de auth no se está adjuntando correctamente a las peticiones de Storage.
+Sin embargo, el bucket `operation-documents` usa un patron diferente que SI funciona:
 
-### Causa raíz
+```text
+operation-documents (FUNCIONA):
+  FOR ALL TO authenticated
+  USING (bucket_id = 'operation-documents' AND EXISTS(SELECT 1 FROM admin_users WHERE user_id = auth.uid() AND is_active AND role IN (...)))
+  WITH CHECK (misma condicion)
 
-En `src/integrations/supabase/optimizedClient.ts`, el cliente Supabase usa una configuración de `lock` que es un no-op:
-
-```typescript
-lock: async (_name, _acquireTimeout, fn) => await fn()
+campaign-presentations (FALLA):
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'campaign-presentations')
 ```
 
-Esto puede causar race conditions en el refresh de tokens. Combinado con el `storageKey` personalizado `capittal-auth-token`, hay momentos en los que el SDK no tiene un token JWT válido y cae al anon key para las operaciones de Storage.
+La diferencia clave: `operation-documents` usa `FOR ALL` (una sola politica combinada) con verificacion explicita de `admin_users`, mientras que `campaign-presentations` usa politicas separadas sin verificacion de admin.
 
-### Plan de corrección
+### Plan
 
-**1. Verificar sesión antes de cada upload** (en `useCampaignPresentations.ts` y `ProcessSendStep.tsx`)
+**Paso 1: Migración SQL** -- Reemplazar las 4 politicas actuales con UNA sola politica `FOR ALL` que replica exactamente el patron del bucket `operation-documents` (que funciona):
 
-Antes de llamar a `supabase.storage.upload()`, verificar que hay una sesión activa y, si no, refrescarla:
+```sql
+DROP POLICY IF EXISTS "campaign_presentations_insert" ON storage.objects;
+DROP POLICY IF EXISTS "campaign_presentations_select" ON storage.objects;
+DROP POLICY IF EXISTS "campaign_presentations_update" ON storage.objects;
+DROP POLICY IF EXISTS "campaign_presentations_delete" ON storage.objects;
 
-```typescript
-const { data: { session } } = await supabase.auth.getSession();
-if (!session) {
-  throw new Error('No hay sesión activa. Inicia sesión de nuevo.');
-}
+CREATE POLICY "Admin users can manage campaign presentations"
+ON storage.objects
+FOR ALL
+TO authenticated
+USING (
+  bucket_id = 'campaign-presentations'
+  AND EXISTS (
+    SELECT 1 FROM admin_users
+    WHERE user_id = auth.uid()
+      AND is_active = true
+      AND role IN ('super_admin', 'admin', 'editor', 'viewer')
+  )
+)
+WITH CHECK (
+  bucket_id = 'campaign-presentations'
+  AND EXISTS (
+    SELECT 1 FROM admin_users
+    WHERE user_id = auth.uid()
+      AND is_active = true
+      AND role IN ('super_admin', 'admin', 'editor', 'viewer')
+  )
+);
 ```
 
-**2. Logging detallado del estado de auth en uploads**
+**Paso 2: No se requieren cambios de código** -- El wrapper `safeStorageUpload` ya verifica sesion y loguea el estado de auth.
 
-Añadir logs que capturen el token actual y el role para poder diagnosticar si el problema es el token o la política:
+### Por qué deberia funcionar
 
-```typescript
-console.log('[AUTH CHECK]', {
-  hasSession: !!session,
-  role: session?.user?.role,
-  tokenExpiry: session?.expires_at,
-});
-```
+Esta es la replica exacta del patron que funciona para `operation-documents` -- el unico bucket privado con uploads confirmados funcionando. Al usar `FOR ALL` con verificacion explicita de `admin_users`, eliminamos cualquier ambiguedad en como el Storage service de Supabase evalua las politicas.
 
-**3. Usar `getSession()` explícitamente para Storage** (fix definitivo)
+### Si sigue sin funcionar
 
-Para Storage operations, crear el cliente con el header de Authorization explícito usando el access_token actual, evitando depender del mecanismo automático del SDK:
-
-```typescript
-const { data: { session } } = await supabase.auth.getSession();
-if (!session?.access_token) throw new Error('Sesión expirada');
-
-// El SDK debería usar el token automáticamente, pero lo verificamos
-const { error } = await supabase.storage
-  .from('campaign-presentations')
-  .upload(storagePath, file, { upsert: true, contentType: 'application/pdf' });
-```
-
-**4. Wrapper reutilizable para uploads seguros**
-
-Crear un helper `safeStorageUpload` que:
-- Verifica sesión activa
-- Si está expirada, intenta refresh
-- Si el refresh falla, lanza error descriptivo
-- Solo entonces ejecuta el upload
-
-Esto se aplicará a TODOS los puntos de upload: `useCampaignPresentations.ts` y `ProcessSendStep.tsx` > `ReuploadStudyModal`.
-
-### Archivos a modificar
-
-1. `src/hooks/useCampaignPresentations.ts` — añadir verificación de sesión antes de upload
-2. `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — ídem en ReuploadStudyModal
-3. `src/utils/campaignPresentationStorage.ts` — añadir helper `safeStorageUpload`
-
-### Resultado esperado
-
-Si el problema es que la sesión no está activa o el token no se envía, el usuario verá un mensaje claro ("Sesión expirada, inicia sesión de nuevo") en lugar del críptico error de RLS. Si la sesión SÍ está activa pero el upload sigue fallando, los logs nos darán la información exacta del estado de auth para identificar la causa definitiva.
+Si este cambio tambien falla, significara que el problema NO es de RLS y esta en la capa del servicio de Storage de Supabase. En ese caso, la unica solucion sera usar una Edge Function con `service_role` para hacer las subidas (bypass completo de RLS).
 
