@@ -1,3 +1,5 @@
+import { supabase } from '@/integrations/supabase/client';
+
 export const CAMPAIGN_PRESENTATIONS_BUCKET = 'campaign-presentations';
 
 const PDF_EXTENSION_REGEX = /\.pdf$/i;
@@ -94,4 +96,55 @@ export const normalizeCampaignPresentationPath = (storagePath: string): string =
 export const isValidCampaignPresentationPath = (storagePath: string): boolean => {
   const normalized = normalizeCampaignPresentationPath(storagePath);
   return PDF_EXTENSION_REGEX.test(normalized);
+};
+
+/**
+ * Ensures an active authenticated session exists before performing a storage upload.
+ * If the session is missing or expired, attempts a refresh. Throws a descriptive error
+ * if the user is not authenticated — preventing the SDK from silently falling back to
+ * the anon key and hitting RLS violations.
+ */
+export const safeStorageUpload = async (
+  bucket: string,
+  path: string,
+  file: File | Blob,
+  options?: { upsert?: boolean; contentType?: string },
+): Promise<{ data: { path: string } | null; error: Error | null }> => {
+  // 1. Check current session
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    // 2. Try refreshing
+    console.warn('[safeStorageUpload] No session found — attempting refresh…');
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshData.session) {
+      console.error('[safeStorageUpload] Refresh failed', refreshError?.message);
+      throw new Error('No hay sesión activa. Cierra sesión e inicia sesión de nuevo.');
+    }
+    console.log('[safeStorageUpload] Session refreshed OK');
+  }
+
+  // 3. Log auth state for diagnostics
+  const { data: { session: currentSession } } = await supabase.auth.getSession();
+  console.log('[safeStorageUpload] Auth state', {
+    hasSession: !!currentSession,
+    role: currentSession?.user?.role,
+    expiresAt: currentSession?.expires_at,
+    bucket,
+    path,
+  });
+
+  // 4. Perform the upload
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(path, file, {
+      upsert: options?.upsert ?? false,
+      contentType: options?.contentType,
+    });
+
+  if (error) {
+    console.error('[safeStorageUpload] Upload error', { bucket, path, message: error.message });
+  }
+
+  return { data, error };
 };

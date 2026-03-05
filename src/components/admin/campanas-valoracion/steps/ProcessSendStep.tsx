@@ -25,7 +25,7 @@ import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
-import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath } from '@/utils/campaignPresentationStorage';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
@@ -328,12 +328,12 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
     setUploading(true);
     try {
       const storagePath = buildCampaignPresentationPath(campaignId, file.name);
-      const { error: uploadError } = await supabase.storage
-        .from('campaign-presentations')
-        .upload(storagePath, file, {
-          upsert: true,
-          contentType: 'application/pdf',
-        });
+      const { error: uploadError } = await safeStorageUpload(
+        CAMPAIGN_PRESENTATIONS_BUCKET,
+        storagePath,
+        file,
+        { upsert: true, contentType: 'application/pdf' },
+      );
       if (uploadError) throw uploadError;
 
       if (currentPresentation) {

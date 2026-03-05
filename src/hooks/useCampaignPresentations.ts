@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { extractCompanyName, findBestMatch, CompanyCandidate } from '@/utils/matchPresentationToCompany';
-import { buildCampaignPresentationPath, normalizeCampaignPresentationPath } from '@/utils/campaignPresentationStorage';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, safeStorageUpload, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 
 export interface CampaignPresentation {
   id: string;
@@ -67,13 +67,13 @@ export function useCampaignPresentations(campaignId: string | undefined) {
         try {
           const storagePath = buildCampaignPresentationPath(campaignId, file.name);
 
-          // Upload to storage (upsert)
-          const { error: uploadError } = await supabase.storage
-            .from('campaign-presentations')
-            .upload(storagePath, file, {
-              upsert: true,
-              contentType: 'application/pdf',
-            });
+          // Upload to storage (upsert) — with session verification
+          const { error: uploadError } = await safeStorageUpload(
+            CAMPAIGN_PRESENTATIONS_BUCKET,
+            storagePath,
+            file,
+            { upsert: true, contentType: 'application/pdf' },
+          );
 
           if (uploadError) {
             console.error('[ERROR STORAGE]', uploadError);
