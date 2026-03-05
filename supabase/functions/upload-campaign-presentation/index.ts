@@ -11,91 +11,129 @@ const jsonResponse = (body: Record<string, unknown>, status = 200) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 
+const BUCKET = 'campaign-presentations';
+
+async function verifyAdmin(req: Request) {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+    throw { status: 500, message: 'Server configuration error' };
+  }
+
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw { status: 401, message: 'Unauthorized' };
+  }
+
+  const token = authHeader.replace('Bearer ', '');
+  const anonClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+
+  const { data: { user }, error: userError } = await anonClient.auth.getUser(token);
+  if (userError || !user) {
+    throw { status: 401, message: 'Invalid token' };
+  }
+
+  const serviceClient = createClient(supabaseUrl, serviceRoleKey);
+
+  const { data: adminRow } = await serviceClient
+    .from('admin_users')
+    .select('role, is_active')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (!adminRow) {
+    throw { status: 403, message: 'Forbidden: not an admin user' };
+  }
+
+  return { serviceClient, userId: user.id };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // 0. Validate required env vars
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const contentType = req.headers.get('content-type') || '';
 
-    if (!supabaseUrl || !anonKey || !serviceRoleKey) {
-      console.error('[upload-campaign-presentation] Missing env vars:', {
-        hasUrl: !!supabaseUrl,
-        hasAnon: !!anonKey,
-        hasService: !!serviceRoleKey,
-      });
-      return jsonResponse({ error: 'Server configuration error' }, 500);
+    // Detect action: FormData = upload, JSON = sign/delete
+    if (contentType.includes('multipart/form-data') || contentType.includes('form-data')) {
+      // ── UPLOAD ──
+      const { serviceClient } = await verifyAdmin(req);
+      const formData = await req.formData();
+      const file = formData.get('file') as File | null;
+      const storagePath = formData.get('path') as string | null;
+
+      if (!file || !storagePath) {
+        return jsonResponse({ error: 'Missing file or path' }, 400);
+      }
+
+      console.log('[upload] path:', storagePath, 'size:', file.size);
+
+      const { data, error: uploadError } = await serviceClient.storage
+        .from(BUCKET)
+        .upload(storagePath, file, { upsert: true, contentType: file.type || 'application/pdf' });
+
+      if (uploadError) {
+        console.error('[upload] error:', uploadError.message);
+        return jsonResponse({ error: uploadError.message }, 500);
+      }
+
+      return jsonResponse({ path: data.path });
     }
 
-    // 1. Verify auth
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.warn('[upload-campaign-presentation] No valid Authorization header');
-      return jsonResponse({ error: 'Unauthorized' }, 401);
+    // ── JSON actions: sign / delete ──
+    let body: { action?: string; path?: string };
+    try {
+      body = await req.json();
+    } catch {
+      return jsonResponse({ error: 'Invalid JSON body' }, 400);
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const anonClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error: userError } = await anonClient.auth.getUser(token);
-    if (userError || !user) {
-      console.warn('[upload-campaign-presentation] Invalid token:', userError?.message);
-      return jsonResponse({ error: 'Invalid token' }, 401);
+    const { action, path } = body;
+    if (!action || !path) {
+      return jsonResponse({ error: 'Missing action or path' }, 400);
     }
 
-    const userId = user.id;
-    console.log('[upload-campaign-presentation] Authenticated user:', userId);
+    const { serviceClient } = await verifyAdmin(req);
 
-    // 2. Verify admin role
-    const serviceClient = createClient(supabaseUrl, serviceRoleKey);
+    if (action === 'sign') {
+      const { data, error } = await serviceClient.storage
+        .from(BUCKET)
+        .createSignedUrl(path, 3600);
 
-    const { data: adminRow } = await serviceClient
-      .from('admin_users')
-      .select('role, is_active')
-      .eq('user_id', userId)
-      .eq('is_active', true)
-      .maybeSingle();
+      if (error) {
+        console.error('[sign] error:', error.message);
+        return jsonResponse({ error: error.message }, 500);
+      }
 
-    if (!adminRow) {
-      console.warn('[upload-campaign-presentation] Not admin:', userId);
-      return jsonResponse({ error: 'Forbidden: not an admin user' }, 403);
+      return jsonResponse({ signedUrl: data.signedUrl });
     }
 
-    // 3. Parse multipart form data
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
-    const storagePath = formData.get('path') as string | null;
+    if (action === 'delete') {
+      const { error } = await serviceClient.storage
+        .from(BUCKET)
+        .remove([path]);
 
-    if (!file || !storagePath) {
-      console.warn('[upload-campaign-presentation] Missing file or path');
-      return jsonResponse({ error: 'Missing file or path' }, 400);
+      if (error) {
+        console.error('[delete] error:', error.message);
+        return jsonResponse({ error: error.message }, 500);
+      }
+
+      return jsonResponse({ message: 'Deleted' });
     }
 
-    console.log('[upload-campaign-presentation] Uploading:', storagePath, 'size:', file.size);
-
-    // 4. Upload using service_role (bypasses RLS)
-    const { data, error: uploadError } = await serviceClient.storage
-      .from('campaign-presentations')
-      .upload(storagePath, file, {
-        upsert: true,
-        contentType: file.type || 'application/pdf',
-      });
-
-    if (uploadError) {
-      console.error('[upload-campaign-presentation] Storage error:', uploadError.message);
-      return jsonResponse({ error: uploadError.message }, 500);
+    return jsonResponse({ error: `Unknown action: ${action}` }, 400);
+  } catch (err: any) {
+    if (err?.status && err?.message) {
+      return jsonResponse({ error: err.message }, err.status);
     }
-
-    console.log('[upload-campaign-presentation] OK:', data.path);
-    return jsonResponse({ path: data.path });
-  } catch (err) {
-    console.error('[upload-campaign-presentation] Unexpected error:', err);
+    console.error('[upload-campaign-presentation] Unexpected:', err);
     return jsonResponse({ error: 'Internal server error' }, 500);
   }
 });

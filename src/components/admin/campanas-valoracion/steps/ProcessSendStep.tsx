@@ -25,7 +25,7 @@ import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
-import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, safeCreateSignedUrl, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
@@ -232,11 +232,9 @@ function StudyPdfViewerModal({ companyName, storagePath, onClose }: StudyPdfView
         if (!isValidCampaignPresentationPath(normalizedPath)) {
           throw new Error('Ruta de estudio inválida');
         }
-        const { data, error: signError } = await supabase.storage
-          .from('campaign-presentations')
-          .createSignedUrl(normalizedPath, 3600);
+        const { signedUrl, error: signError } = await safeCreateSignedUrl(normalizedPath);
         if (signError) throw signError;
-        if (!cancelled) setUrl(encodeURI(data.signedUrl));
+        if (!cancelled && signedUrl) setUrl(encodeURI(signedUrl));
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Error obteniendo PDF');
       } finally {
@@ -624,12 +622,10 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         throw new Error('Ruta de estudio inválida');
       }
 
-      const { data, error } = await supabase.storage
-        .from('campaign-presentations')
-        .createSignedUrl(normalizedPath, 3600);
+      const { signedUrl, error } = await safeCreateSignedUrl(normalizedPath);
       if (error) throw error;
       const a = document.createElement('a');
-      a.href = encodeURI(data.signedUrl);
+      a.href = encodeURI(signedUrl!);
       a.download = presentation.file_name;
       a.target = '_blank';
       document.body.appendChild(a);
