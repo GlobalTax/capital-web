@@ -516,6 +516,12 @@ export function MailStep({ campaignId, campaign }: Props) {
   const handleSaveAndGenerate = async (subject: string, body: string, overwriteManual: boolean) => {
     try {
       await saveTemplate({ subject, body });
+    } catch (error: any) {
+      const message = error?.message || 'No se pudo guardar el template';
+      toast.error(`${message}. Continuamos con la generación...`);
+    }
+
+    try {
       await generateEmails({
         subjectTemplate: subject,
         bodyTemplate: body,
@@ -524,7 +530,7 @@ export function MailStep({ campaignId, campaign }: Props) {
         overwriteManual,
       });
     } catch (error: any) {
-      const message = error?.message || 'No se pudo guardar/generar emails';
+      const message = error?.message || 'No se pudo generar emails';
       toast.error(message);
     }
   };

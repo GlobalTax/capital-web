@@ -128,25 +128,33 @@ export function useCampaignEmails(campaignId: string | undefined) {
       const total = updates.length + inserts.length;
       if (total === 0) return 0;
 
-      if (updates.length > 0) {
-        const updateResults = await Promise.all(
-          updates.map((item) =>
-            (supabase as any)
-              .from('campaign_emails')
-              .update(item.data)
-              .eq('id', item.id)
-          )
-        );
+      const batchSize = 50;
 
-        const updateError = updateResults.find(r => r.error)?.error;
-        if (updateError) throw updateError;
+      if (updates.length > 0) {
+        for (let i = 0; i < updates.length; i += batchSize) {
+          const batch = updates.slice(i, i + batchSize);
+          const updateResults = await Promise.all(
+            batch.map((item) =>
+              (supabase as any)
+                .from('campaign_emails')
+                .update(item.data)
+                .eq('id', item.id)
+            )
+          );
+
+          const updateError = updateResults.find(r => r.error)?.error;
+          if (updateError) throw updateError;
+        }
       }
 
       if (inserts.length > 0) {
-        const { error } = await (supabase as any)
-          .from('campaign_emails')
-          .insert(inserts);
-        if (error) throw error;
+        for (let i = 0; i < inserts.length; i += batchSize) {
+          const batch = inserts.slice(i, i + batchSize);
+          const { error } = await (supabase as any)
+            .from('campaign_emails')
+            .insert(batch);
+          if (error) throw error;
+        }
       }
 
       return total;
