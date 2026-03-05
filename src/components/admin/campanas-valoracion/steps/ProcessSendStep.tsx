@@ -335,8 +335,7 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
       if (uploadError) throw uploadError;
 
       if (currentPresentation) {
-        // Update existing record
-        await supabase
+        const { error: dbError } = await supabase
           .from('campaign_presentations' as any)
           .update({
             file_name: file.name,
@@ -344,9 +343,9 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
             updated_at: new Date().toISOString(),
           } as any)
           .eq('id', currentPresentation.id);
+        if (dbError) throw new Error(`Error actualizando registro: ${dbError.message}`);
       } else {
-        // Create new record
-        await supabase
+        const { error: dbError } = await supabase
           .from('campaign_presentations' as any)
           .insert({
             campaign_id: campaignId,
@@ -357,6 +356,7 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
             assigned_manually: true,
             match_confidence: 1,
           } as any);
+        if (dbError) throw new Error(`Error creando registro: ${dbError.message}`);
       }
 
       toast.success(`Estudio actualizado correctamente para ${companyName}`);
