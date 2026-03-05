@@ -1,72 +1,57 @@
 
+Objetivo: desbloquear la subida de PDFs corrigiendo el fallo real actual (no es RLS ahora, es invocación de Edge Function).
 
-## Diagnostico profundo y plan de fix definitivo
+Diagnóstico confirmado (con evidencia):
+- La llamada actual falla en preflight/CORS con `FunctionsFetchError`.
+- La función `upload-campaign-presentation` existe en código y en `config.toml`, pero en runtime responde como no existente.
+- Prueba directa al endpoint de funciones devuelve `404 NOT_FOUND: Requested function was not found`.
+- No hay logs de esa función en Supabase, lo que confirma que no está desplegada/activa en ese proyecto.
 
-### Hallazgo clave
+Plan de implementación
 
-He verificado exhaustivamente:
-- Las 4 politicas RLS para `campaign-presentations` existen y son correctas (`TO authenticated`, `WITH CHECK bucket_id = 'campaign-presentations'`)
-- El JWT del usuario ES valido (role=authenticated, sub=5e522cb6...)
-- El bucket existe, acepta PDFs, no hay triggers ni constraints
-- No hay politicas restrictivas
-- Los postgres_logs no muestran el error (lo que sugiere que el Storage service lo maneja internamente)
+1) Restaurar disponibilidad de la función (prioridad alta)
+- Desplegar explícitamente `upload-campaign-presentation`.
+- Verificar inmediatamente que ya responde (no 404) con una llamada de prueba.
+- Si el deploy falla, revisar error de empaquetado/runtime y corregir (importes, sintaxis, vars).
 
-Sin embargo, el bucket `operation-documents` usa un patron diferente que SI funciona:
+2) Endurecer la Edge Function para evitar falsos CORS
+- Mantener handler `OPTIONS` devolviendo 200 con CORS.
+- Garantizar que todas las respuestas (éxito y error) incluyan CORS headers.
+- Añadir validación explícita de secretos requeridos (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, y el usado para validar JWT) y devolver error controlado JSON.
+- Mejorar logs estructurados en la función para distinguir:
+  - auth inválida
+  - usuario sin rol admin
+  - error de upload storage
+  - error de configuración (secrets)
 
-```text
-operation-documents (FUNCIONA):
-  FOR ALL TO authenticated
-  USING (bucket_id = 'operation-documents' AND EXISTS(SELECT 1 FROM admin_users WHERE user_id = auth.uid() AND is_active AND role IN (...)))
-  WITH CHECK (misma condicion)
+3) Fortalecer el cliente para diagnóstico claro
+- En `safeStorageUpload`, mapear `FunctionsFetchError`/404 a mensaje explícito:
+  - “La función de subida no está disponible (deploy pendiente o fallo de backend)”.
+- Mantener trazas mínimas útiles (`functionName`, `path`, `error.name`, `status` si existe).
+- No tocar la lógica de negocio de campaña ni matching.
 
-campaign-presentations (FALLA):
-  FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'campaign-presentations')
-```
+4) Validación técnica (obligatoria)
+- Probar invoke de la función tras deploy:
+  - `OPTIONS` (CORS preflight OK)
+  - `POST` sin body (debe devolver 400 controlado, no 404/500 opaco)
+  - `POST` real con archivo desde UI (debe devolver 200 y `path`)
+- Confirmar en logs de función que entra la request y que sube al bucket.
+- Confirmar en UI:
+  - aparece `campaign_presentations` actualizado
+  - desaparece `FunctionsFetchError`
 
-La diferencia clave: `operation-documents` usa `FOR ALL` (una sola politica combinada) con verificacion explicita de `admin_users`, mientras que `campaign-presentations` usa politicas separadas sin verificacion de admin.
+5) Contingencia si vuelve a fallar
+- Si sigue 404: problema de deploy/publicación del function slug (nombre o entorno).
+- Si pasa a 401/403: ajustar validación de JWT/rol dentro de la función.
+- Si pasa a 500 con logs: corregir error puntual según stacktrace.
+- Solo si todo lo anterior falla, activar fallback temporal a subida directa con RLS (ya no recomendado como ruta principal).
 
-### Plan
+Archivos involucrados
+- `supabase/functions/upload-campaign-presentation/index.ts` (robustez CORS/logs/validación)
+- `src/utils/campaignPresentationStorage.ts` (manejo de errores más preciso)
+- Sin cambios de esquema DB/RLS para esta iteración (el bloqueo actual no está en policies).
 
-**Paso 1: Migración SQL** -- Reemplazar las 4 politicas actuales con UNA sola politica `FOR ALL` que replica exactamente el patron del bucket `operation-documents` (que funciona):
-
-```sql
-DROP POLICY IF EXISTS "campaign_presentations_insert" ON storage.objects;
-DROP POLICY IF EXISTS "campaign_presentations_select" ON storage.objects;
-DROP POLICY IF EXISTS "campaign_presentations_update" ON storage.objects;
-DROP POLICY IF EXISTS "campaign_presentations_delete" ON storage.objects;
-
-CREATE POLICY "Admin users can manage campaign presentations"
-ON storage.objects
-FOR ALL
-TO authenticated
-USING (
-  bucket_id = 'campaign-presentations'
-  AND EXISTS (
-    SELECT 1 FROM admin_users
-    WHERE user_id = auth.uid()
-      AND is_active = true
-      AND role IN ('super_admin', 'admin', 'editor', 'viewer')
-  )
-)
-WITH CHECK (
-  bucket_id = 'campaign-presentations'
-  AND EXISTS (
-    SELECT 1 FROM admin_users
-    WHERE user_id = auth.uid()
-      AND is_active = true
-      AND role IN ('super_admin', 'admin', 'editor', 'viewer')
-  )
-);
-```
-
-**Paso 2: No se requieren cambios de código** -- El wrapper `safeStorageUpload` ya verifica sesion y loguea el estado de auth.
-
-### Por qué deberia funcionar
-
-Esta es la replica exacta del patron que funciona para `operation-documents` -- el unico bucket privado con uploads confirmados funcionando. Al usar `FOR ALL` con verificacion explicita de `admin_users`, eliminamos cualquier ambiguedad en como el Storage service de Supabase evalua las politicas.
-
-### Si sigue sin funcionar
-
-Si este cambio tambien falla, significara que el problema NO es de RLS y esta en la capa del servicio de Storage de Supabase. En ese caso, la unica solucion sera usar una Edge Function con `service_role` para hacer las subidas (bypass completo de RLS).
-
+Resultado esperado
+- La subida deja de fallar por CORS/preflight.
+- La función responde de forma consistente y observable.
+- Errores futuros se diagnostican en minutos con mensajes y logs claros en lugar de `Failed to fetch`.
