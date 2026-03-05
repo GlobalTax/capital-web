@@ -514,14 +514,19 @@ export function MailStep({ campaignId, campaign }: Props) {
   const [editingEmail, setEditingEmail] = useState<{ email: CampaignEmail; company: CampaignCompany } | null>(null);
 
   const handleSaveAndGenerate = async (subject: string, body: string, overwriteManual: boolean) => {
-    await saveTemplate({ subject, body });
-    await generateEmails({
-      subjectTemplate: subject,
-      bodyTemplate: body,
-      companies,
-      campaign,
-      overwriteManual,
-    });
+    try {
+      await saveTemplate({ subject, body });
+      await generateEmails({
+        subjectTemplate: subject,
+        bodyTemplate: body,
+        companies,
+        campaign,
+        overwriteManual,
+      });
+    } catch (error: any) {
+      const message = error?.message || 'No se pudo guardar/generar emails';
+      toast.error(message);
+    }
   };
 
   const handleRestore = async (emailId: string, company: CampaignCompany) => {

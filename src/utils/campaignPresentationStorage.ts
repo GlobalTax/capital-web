@@ -90,3 +90,8 @@ export const normalizeCampaignPresentationPath = (storagePath: string): string =
 
   return trimPdfBoundary(withoutQuery).replace(/^\/+/, '');
 };
+
+export const isValidCampaignPresentationPath = (storagePath: string): boolean => {
+  const normalized = normalizeCampaignPresentationPath(storagePath);
+  return PDF_EXTENSION_REGEX.test(normalized);
+};
