@@ -25,7 +25,7 @@ import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
-import { buildCampaignPresentationPath, normalizeCampaignPresentationPath } from '@/utils/campaignPresentationStorage';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath } from '@/utils/campaignPresentationStorage';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
@@ -229,6 +229,9 @@ function StudyPdfViewerModal({ companyName, storagePath, onClose }: StudyPdfView
     (async () => {
       try {
         const normalizedPath = normalizeCampaignPresentationPath(storagePath);
+        if (!isValidCampaignPresentationPath(normalizedPath)) {
+          throw new Error('Ruta de estudio inválida');
+        }
         const { data, error: signError } = await supabase.storage
           .from('campaign-presentations')
           .createSignedUrl(normalizedPath, 3600);
@@ -617,6 +620,10 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const downloadStudy = useCallback(async (presentation: CampaignPresentation) => {
     try {
       const normalizedPath = normalizeCampaignPresentationPath(presentation.storage_path);
+      if (!isValidCampaignPresentationPath(normalizedPath)) {
+        throw new Error('Ruta de estudio inválida');
+      }
+
       const { data, error } = await supabase.storage
         .from('campaign-presentations')
         .createSignedUrl(normalizedPath, 3600);
@@ -629,7 +636,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       a.click();
       document.body.removeChild(a);
     } catch (e: any) {
-      toast.error('PDF no disponible para esta empresa');
+      toast.error(e?.message || 'PDF no disponible para esta empresa');
     }
   }, []);
 
