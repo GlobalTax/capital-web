@@ -2,6 +2,41 @@ export const CAMPAIGN_PRESENTATIONS_BUCKET = 'campaign-presentations';
 
 const PDF_EXTENSION_REGEX = /\.pdf$/i;
 
+const decodeSafely = (value: string): string => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+const decodeRecursively = (value: string, rounds = 3): string => {
+  let decoded = value;
+  for (let i = 0; i < rounds; i++) {
+    const next = decodeSafely(decoded);
+    if (next === decoded) break;
+    decoded = next;
+  }
+  return decoded;
+};
+
+const trimPdfBoundary = (value: string): string => {
+  const lower = value.toLowerCase();
+  const pdfIndex = lower.indexOf('.pdf');
+  if (pdfIndex === -1) return value;
+  return value.slice(0, pdfIndex + 4);
+};
+
+const extractFromJsonLike = (value: string): string => {
+  const jsonStoragePathMatch = value.match(/"storage_path"\s*:\s*"([^"]+)"/i);
+  if (jsonStoragePathMatch?.[1]) return jsonStoragePathMatch[1];
+
+  const bucketPathMatch = value.match(new RegExp(`${CAMPAIGN_PRESENTATIONS_BUCKET}/([^"\\s,}]+)`, 'i'));
+  if (bucketPathMatch?.[1]) return bucketPathMatch[1];
+
+  return value;
+};
+
 export const sanitizePdfFileName = (fileName: string): string => {
   const rawBaseName = fileName.replace(PDF_EXTENSION_REGEX, '');
 
@@ -24,36 +59,34 @@ export const normalizeCampaignPresentationPath = (storagePath: string): string =
   const safePath = (storagePath || '').trim();
   if (!safePath) return safePath;
 
-  const decode = (value: string) => {
-    try {
-      return decodeURIComponent(value);
-    } catch {
-      return value;
-    }
-  };
+  const decodedInput = decodeRecursively(safePath);
+  const fromJsonLike = extractFromJsonLike(decodedInput);
+  const decodedPath = decodeRecursively(fromJsonLike).replace(/^['"`]+|['"`]+$/g, '');
 
-  if (safePath.startsWith('http://') || safePath.startsWith('https://')) {
+  if (decodedPath.startsWith('http://') || decodedPath.startsWith('https://')) {
     try {
-      const url = new URL(safePath);
-      const pathname = decode(url.pathname);
-      const match = pathname.match(new RegExp(`/storage/v1/object/(?:sign|public)/${CAMPAIGN_PRESENTATIONS_BUCKET}/(.+)$`));
+      const url = new URL(decodedPath);
+      const pathOnly = decodeRecursively(url.pathname);
+      const match = pathOnly.match(new RegExp(`/storage/v1/object/(?:sign|public)/${CAMPAIGN_PRESENTATIONS_BUCKET}/(.+)$`));
       if (match?.[1]) {
-        return match[1].replace(/^\/+/, '');
+        return trimPdfBoundary(match[1]).replace(/^\/+/, '');
       }
     } catch {
-      // Fallback to non-URL parsing below
+      // fallback below
     }
   }
 
+  const withoutQuery = decodedPath.split('?')[0].split('#')[0];
   const bucketPrefix = `${CAMPAIGN_PRESENTATIONS_BUCKET}/`;
-  if (safePath.startsWith(bucketPrefix)) {
-    return decode(safePath.slice(bucketPrefix.length)).replace(/^\/+/, '');
+
+  if (withoutQuery.startsWith(bucketPrefix)) {
+    return trimPdfBoundary(withoutQuery.slice(bucketPrefix.length)).replace(/^\/+/, '');
   }
 
-  const genericMatch = decode(safePath).match(new RegExp(`${CAMPAIGN_PRESENTATIONS_BUCKET}/(.+)$`));
+  const genericMatch = withoutQuery.match(new RegExp(`${CAMPAIGN_PRESENTATIONS_BUCKET}/(.+)$`, 'i'));
   if (genericMatch?.[1]) {
-    return genericMatch[1].replace(/^\/+/, '');
+    return trimPdfBoundary(genericMatch[1]).replace(/^\/+/, '');
   }
 
-  return decode(safePath).replace(/^\/+/, '');
+  return trimPdfBoundary(withoutQuery).replace(/^\/+/, '');
 };
