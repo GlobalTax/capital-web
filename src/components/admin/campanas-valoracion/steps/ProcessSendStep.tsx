@@ -1178,16 +1178,28 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                               </DropdownMenuItem>
                             </>
                           )}
+                          {canResend && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => sendSingle(c, true)}
+                                disabled={isRowSending}
+                              >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                Reenviar email
+                              </DropdownMenuItem>
+                            </>
+                          )}
                           {isFailed && (
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => sendSingle(c)}
+                                onClick={() => sendSingle(c, true)}
                                 disabled={isRowSending}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <RefreshCw className="h-4 w-4 mr-2" />
-                                Reenviar
+                                Reintentar envío
                               </DropdownMenuItem>
                             </>
                           )}
