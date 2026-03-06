@@ -2,47 +2,36 @@
 
 ## Diagnostico
 
-Las llamadas `createSignedUrl` y `remove` sobre el bucket `campaign-presentations` se hacen directamente con el cliente Supabase (anon key), lo que activa las mismas politicas RLS que ya bloqueaban los uploads. El error en red es:
+El problema esta en `src/hooks/useCampaignEmails.ts`, lineas 213-247. Tanto `sendEmailMutation` como `sendAllPendingMutation` solo hacen un UPDATE en la tabla `campaign_emails` marcando `status: 'sent'`, pero **nunca invocan una Edge Function para enviar el email real via Resend**. El propio codigo tiene el comentario: *"For now, just mark as sent. Real delivery via edge function later."*
 
-```
-POST .../storage/v1/object/sign/campaign-presentations/...
-Status: 400 → "new row violates row-level security policy"
-```
-
-Esto afecta a **3 operaciones** en `ProcessSendStep.tsx`:
-1. `StudyPdfViewerModal` (previsualizar estudio) — linea 235
-2. `downloadStudy` (descargar estudio) — linea 627
-3. `remove` en `useCampaignPresentations.ts` — linea 267
-
-La solucion es la misma que funciono para uploads: usar una Edge Function con `service_role`.
+No existe ninguna Edge Function dedicada al envio de emails de campanas outbound.
 
 ## Plan
 
-### 1. Ampliar la Edge Function existente
+### 1. Crear Edge Function `send-campaign-outbound-email`
 
-Extender `upload-campaign-presentation` (o crear una nueva `campaign-presentation-ops`) para soportar dos operaciones adicionales:
+Nueva funcion en `supabase/functions/send-campaign-outbound-email/index.ts` que:
+- Reciba `email_id` (o array de `email_ids`) por JSON
+- Consulte `campaign_emails` + `campaign_companies` + `campaign_presentations` + `valuation_campaigns` con `service_role`
+- Construya el email HTML con el `subject` y `body` ya personalizados del registro
+- Adjunte los PDFs de valoracion y estudio si existen (via signed URLs internas con `service_role`)
+- Envie via Resend desde `samuel@capittal.es` con CC a los destinatarios activos de `email_recipients_config`
+- Actualice `status: 'sent'` y `sent_at` en exito, o `status: 'error'` + `error_message` en fallo
+- CORS y auth estandar del proyecto
 
-- **`sign`**: Recibe `path` por JSON, devuelve `signedUrl` generada con `service_role`
-- **`delete`**: Recibe `path` por JSON, elimina el archivo con `service_role`
+### 2. Actualizar `useCampaignEmails.ts`
 
-La operacion se determina por un campo `action` en el body (`upload` | `sign` | `delete`). El upload sigue usando FormData; sign y delete usan JSON.
+- `sendEmailMutation`: invocar `supabase.functions.invoke('send-campaign-outbound-email', { body: { email_ids: [emailId] } })` en lugar del UPDATE directo
+- `sendAllPendingMutation`: invocar la misma funcion con todos los IDs pendientes
+- Gestionar errores parciales (algunos enviados, otros fallidos)
 
-### 2. Crear helper en el cliente
+### 3. Configuracion
 
-Añadir a `campaignPresentationStorage.ts`:
-
-- `safeCreateSignedUrl(path)`: invoca la Edge Function con `action: 'sign'`, devuelve la URL firmada
-- `safeStorageDelete(path)`: invoca la Edge Function con `action: 'delete'`
-
-### 3. Reemplazar llamadas directas
-
-- `ProcessSendStep.tsx` linea 235: usar `safeCreateSignedUrl` en vez de `supabase.storage.from(...).createSignedUrl(...)`
-- `ProcessSendStep.tsx` linea 627: idem
-- `useCampaignPresentations.ts` linea 267: usar `safeStorageDelete` en vez de `supabase.storage.from(...).remove(...)`
+- Añadir entrada en `supabase/config.toml` con `verify_jwt = false`
+- Desplegar y verificar con test
 
 ### Archivos afectados
-- `supabase/functions/upload-campaign-presentation/index.ts` (ampliar con sign/delete)
-- `src/utils/campaignPresentationStorage.ts` (nuevos helpers)
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` (2 reemplazos)
-- `src/hooks/useCampaignPresentations.ts` (1 reemplazo)
+- `supabase/functions/send-campaign-outbound-email/index.ts` (nuevo)
+- `supabase/config.toml` (nueva entrada)
+- `src/hooks/useCampaignEmails.ts` (conectar envio real)
 
