@@ -212,38 +212,39 @@ export function useCampaignEmails(campaignId: string | undefined) {
 
   const sendEmailMutation = useMutation({
     mutationFn: async (emailId: string) => {
-      // For now, just mark as sent. Real delivery via edge function later.
-      const { error } = await (supabase as any)
-        .from('campaign_emails')
-        .update({ status: 'sent', sent_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-        .eq('id', emailId);
+      const { data, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
+        body: { email_ids: [emailId] },
+      });
       if (error) throw error;
+      if (data?.failed > 0) {
+        const failedResult = data.results?.find((r: any) => r.status === 'error');
+        throw new Error(failedResult?.error || 'Error al enviar email');
+      }
     },
     onSuccess: () => {
       invalidate();
-      toast.success('Email marcado como enviado');
+      toast.success('Email enviado correctamente');
     },
-    onError: () => toast.error('Error al enviar email'),
+    onError: (error) => toast.error(getErrorMessage(error, 'Error al enviar email')),
   });
 
   const sendAllPendingMutation = useMutation({
     mutationFn: async () => {
       const pending = emails.filter(e => e.status === 'pending');
-      if (pending.length === 0) return 0;
-      const now = new Date().toISOString();
-      const { error } = await (supabase as any)
-        .from('campaign_emails')
-        .update({ status: 'sent', sent_at: now, updated_at: now })
-        .eq('campaign_id', campaignId)
-        .eq('status', 'pending');
+      if (pending.length === 0) return { sent: 0, failed: 0 };
+      const ids = pending.map(e => e.id);
+      const { data, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
+        body: { email_ids: ids },
+      });
       if (error) throw error;
-      return pending.length;
+      return { sent: data?.sent || 0, failed: data?.failed || 0 };
     },
-    onSuccess: (count) => {
+    onSuccess: (result) => {
       invalidate();
-      if (count) toast.success(`${count} emails enviados`);
+      if (result.sent > 0) toast.success(`${result.sent} emails enviados correctamente`);
+      if (result.failed > 0) toast.error(`${result.failed} emails fallaron al enviar`);
     },
-    onError: () => toast.error('Error al enviar emails'),
+    onError: (error) => toast.error(getErrorMessage(error, 'Error al enviar emails')),
   });
 
   return {
