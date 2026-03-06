@@ -105,6 +105,44 @@ export function useCampaigns() {
     onError: (e: Error) => toast.error('Error al eliminar campaña: ' + e.message),
   });
 
+  const duplicateMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: original, error: fetchError } = await (supabase as any)
+        .from('valuation_campaigns')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (fetchError) throw fetchError;
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { id: _id, created_at, updated_at, total_companies, total_created, total_sent, total_errors, total_valuation, ...config } = original;
+
+      const { data, error } = await (supabase as any)
+        .from('valuation_campaigns')
+        .insert([{
+          ...config,
+          name: `${original.name} (copia)`,
+          status: 'draft',
+          created_by: user?.id,
+          total_companies: 0,
+          total_created: 0,
+          total_sent: 0,
+          total_errors: 0,
+          total_valuation: 0,
+        }])
+        .select()
+        .single();
+      if (error) throw error;
+      return data as ValuationCampaign;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+      toast.success('Campaña duplicada');
+    },
+    onError: (e: Error) => toast.error('Error al duplicar campaña: ' + e.message),
+  });
+
   return {
     campaigns: campaigns || [],
     isLoading,
@@ -113,9 +151,11 @@ export function useCampaigns() {
     createCampaign: createMutation.mutateAsync,
     updateCampaign: updateMutation.mutateAsync,
     deleteCampaign: deleteMutation.mutateAsync,
+    duplicateCampaign: duplicateMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isDuplicating: duplicateMutation.isPending,
   };
 }
 

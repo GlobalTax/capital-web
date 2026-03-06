@@ -1,50 +1,36 @@
 
 
-## Analisis: Duplicar Campañas de Valoracion Outbound
+## Diagnostico
 
-### Estado actual
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-La pagina `/admin/campanas-valoracion` (tabla `valuation_campaigns`) **no tiene funcionalidad de duplicar**. Solo hay botones de Editar y Eliminar.
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
 
-Existe un `duplicateCampaign` en `useCampaignRegistry.ts`, pero ese pertenece al sistema de **Registry de campañas de marketing** (tabla `campaigns`), no al sistema de valoracion outbound.
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
-### Datos involucrados en una campaña outbound
+## Plan
 
-Una campaña outbound tiene 3 capas de datos:
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-```text
-valuation_campaigns          ← Config: sector, multiples, advisor, templates
-  └─ valuation_campaign_companies  ← Empresas: datos financieros, AI strengths/weaknesses, status
-       └─ campaign_presentations   ← PDFs: valoraciones y estudios subidos
-```
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-### Estrategia de duplicacion
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-**Duplicar solo la configuracion** (no las empresas ni presentaciones):
-- Copia todos los campos de `valuation_campaigns` excepto `id`, timestamps y contadores
-- Nombre: `"{original.name} (copia)"`
-- Status: `draft` (siempre empieza como borrador)
-- Contadores reseteados: `total_companies=0`, `total_sent=0`, `total_errors=0`, `total_valuation=0`
+### 2. Prerequisito: emails generados
 
-Las empresas y presentaciones NO se copian porque:
-1. Las empresas tienen estados de envio (`sent`, `failed`) que no tienen sentido en una copia
-2. Los PDFs generados son especificos de cada valoracion
-3. El flujo natural es: duplicar config → importar nuevo Excel de empresas → procesar
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-### Cambios necesarios
+### 3. Conectar datos
 
-**1. `src/hooks/useCampaigns.ts`** — Añadir mutation `duplicateCampaign`:
-- Leer la campaña original por ID
-- Insertar nueva fila copiando: `name`, `sector`, `valuation_type`, `custom_multiple`, `multiple_low`, `multiple_high`, `valuation_context`, `strengths_template`, `weaknesses_template`, `comparables_text`, `include_comparables`, `ai_personalize`, `advisor_*`, `use_custom_advisor`, `lead_source`, `service_type`, `financial_years`, `years_mode`
-- Resetear contadores a 0, status a `draft`
-- Navegar a la nueva campaña
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
-**2. `src/pages/admin/CampanasValoracion.tsx`** — Añadir boton Duplicar:
-- Icono `Copy` en la columna de acciones junto a Editar/Eliminar
-- Click duplica y navega a `/admin/campanas-valoracion/{newId}`
-
-### Alcance
-- Sin migraciones de DB (usa tablas existentes)
-- Solo 2 archivos modificados
-- Funcionalidad simple y predecible
+### Archivos afectados
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 
