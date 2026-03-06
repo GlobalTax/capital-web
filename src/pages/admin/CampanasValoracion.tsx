@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit } from 'lucide-react';
-import { useCampaigns, ValuationCampaign } from '@/hooks/useCampaigns';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy } from 'lucide-react';
+import { useCampaigns } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -17,7 +17,7 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 
 export default function CampanasValoracion() {
   const navigate = useNavigate();
-  const { campaigns, isLoading, deleteCampaign, isDeleting } = useCampaigns();
+  const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
 
   const totalCompanies = campaigns.reduce((s, c) => s + c.total_companies, 0);
   const totalSent = campaigns.reduce((s, c) => s + c.total_sent, 0);
@@ -111,10 +111,17 @@ export default function CampanasValoracion() {
                       <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('es-ES')}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); navigate(`/admin/campanas-valoracion/${c.id}`); }}>
+                          <Button variant="ghost" size="icon" title="Editar" onClick={(e) => { e.stopPropagation(); navigate(`/admin/campanas-valoracion/${c.id}`); }}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" disabled={isDeleting} onClick={(e) => {
+                          <Button variant="ghost" size="icon" title="Duplicar" disabled={isDuplicating} onClick={async (e) => {
+                            e.stopPropagation();
+                            const newCampaign = await duplicateCampaign(c.id);
+                            if (newCampaign?.id) navigate(`/admin/campanas-valoracion/${newCampaign.id}`);
+                          }}>
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" title="Eliminar" disabled={isDeleting} onClick={(e) => {
                             e.stopPropagation();
                             if (confirm('¿Eliminar esta campaña y todas sus empresas?')) deleteCampaign(c.id);
                           }}>
