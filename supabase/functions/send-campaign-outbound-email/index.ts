@@ -187,6 +187,20 @@ serve(async (req) => {
 });
 
 /**
+ * Convert Uint8Array to base64 safely using chunked processing
+ * Avoids call stack overflow with large files (>100KB)
+ */
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  const CHUNK_SIZE = 0x8000; // 32KB chunks
+  let result = '';
+  for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+    const chunk = bytes.subarray(i, Math.min(i + CHUNK_SIZE, bytes.length));
+    result += String.fromCharCode.apply(null, chunk as unknown as number[]);
+  }
+  return btoa(result);
+}
+
+/**
  * Download PDF from a public URL (e.g. valuation PDF stored in public 'valuations' bucket)
  */
 async function downloadPdfFromUrl(
@@ -196,16 +210,17 @@ async function downloadPdfFromUrl(
   try {
     const res = await fetch(url);
     if (!res.ok) {
-      console.warn(`Could not download PDF from ${url}: ${res.status}`);
+      console.warn(`[ATTACHMENT] Could not download PDF from ${url}: ${res.status}`);
       return null;
     }
     const arrayBuffer = await res.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    // Sanitize filename
+    console.log(`[ATTACHMENT] Downloaded valuation PDF: ${arrayBuffer.byteLength} bytes`);
+    const base64 = uint8ArrayToBase64(new Uint8Array(arrayBuffer));
+    console.log(`[ATTACHMENT] Base64 encoded valuation PDF: ${base64.length} chars`);
     const safeName = filename.replace(/[^a-zA-Z0-9_.\-áéíóúñÁÉÍÓÚÑ ]/g, "_");
     return { filename: safeName, content: base64 };
   } catch (e: any) {
-    console.warn(`Attachment download error for ${url}:`, e.message);
+    console.error(`[ATTACHMENT] Failed to process valuation PDF from ${url}:`, e.message);
     return null;
   }
 }
@@ -227,22 +242,24 @@ async function downloadPdfFromStorage(
       .createSignedUrl(cleanPath, 300);
 
     if (signErr || !signedData?.signedUrl) {
-      console.warn(`Could not sign ${cleanPath}:`, signErr?.message);
+      console.warn(`[ATTACHMENT] Could not sign presentation ${cleanPath}:`, signErr?.message);
       return null;
     }
 
     const res = await fetch(signedData.signedUrl);
     if (!res.ok) {
-      console.warn(`Could not download ${cleanPath}: ${res.status}`);
+      console.warn(`[ATTACHMENT] Could not download presentation ${cleanPath}: ${res.status}`);
       return null;
     }
 
     const arrayBuffer = await res.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    console.log(`[ATTACHMENT] Downloaded presentation PDF: ${arrayBuffer.byteLength} bytes from ${cleanPath}`);
+    const base64 = uint8ArrayToBase64(new Uint8Array(arrayBuffer));
+    console.log(`[ATTACHMENT] Base64 encoded presentation PDF: ${base64.length} chars`);
     const safeName = filename.replace(/[^a-zA-Z0-9_.\-áéíóúñÁÉÍÓÚÑ ]/g, "_");
     return { filename: safeName, content: base64 };
   } catch (e: any) {
-    console.warn(`Storage attachment error for ${storagePath}:`, e.message);
+    console.error(`[ATTACHMENT] Failed to process presentation PDF from ${storagePath}:`, e.message);
     return null;
   }
 }
