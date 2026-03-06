@@ -533,56 +533,31 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     if (!c.client_email) { toast.error('Esta empresa no tiene email'); return; }
     setRowSending(c.id);
 
-    let pdfBase64: string | undefined;
     try {
-      const blob = await generatePdfBlob(c, campaign);
-      const arrayBuffer = await blob.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      let binary = '';
-      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-      pdfBase64 = btoa(binary);
-    } catch (pdfErr: any) {
-      console.error('[SINGLE_SEND PDF ERROR]', c.client_company, pdfErr);
-      toast.error(`PDF falló para ${c.client_company}. Email se enviará sin adjunto.`);
-    }
+      // Find the campaign_email record for this company
+      const { data: emailRecord, error: emailLookupError } = await (supabase as any)
+        .from('campaign_emails')
+        .select('id')
+        .eq('campaign_id', campaignId)
+        .eq('company_id', c.id)
+        .maybeSingle();
 
-    try {
-      const { data: responseData, error } = await supabase.functions.invoke('send-professional-valuation-email', {
-        body: {
-          recipientEmail: c.client_email,
-          recipientName: c.client_name,
-          pdfBase64,
-          valuationData: {
-            clientCompany: c.client_company,
-            clientName: c.client_name || '',
-            clientCif: c.client_cif || undefined,
-            valuationCentral: c.valuation_central,
-            valuationLow: c.valuation_low,
-            valuationHigh: c.valuation_high,
-            sector: campaign.sector,
-            normalizedEbitda: c.normalized_ebitda || c.ebitda,
-            ebitdaMultipleUsed: c.multiple_used,
-            financialYears: c.financial_years_data?.length
-              ? c.financial_years_data
-              : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }],
-            strengths: c.ai_strengths || campaign.strengths_template || undefined,
-            weaknesses: c.ai_weaknesses || campaign.weaknesses_template || undefined,
-            valuationContext: c.ai_context || campaign.valuation_context || undefined,
-            comparablesFormattedText: campaign.comparables_text || undefined,
-            includeComparables: campaign.include_comparables,
-          },
-          advisorName: campaign.advisor_name || undefined,
-          advisorEmail: campaign.advisor_email || undefined,
-          advisorPhone: campaign.advisor_phone || undefined,
-          advisorRole: campaign.advisor_role || undefined,
-          useCustomAdvisor: campaign.use_custom_advisor,
-        },
+      if (emailLookupError) throw emailLookupError;
+      if (!emailRecord) {
+        toast.error(`No hay email generado para ${c.client_company}. Ve al paso Mail primero.`);
+        setRowSending(null);
+        return;
+      }
+
+      const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
+        body: { email_ids: [emailRecord.id] },
       });
       if (error) throw error;
-      const pdfUrl = responseData?.pdfUrl || responseData?.pdf_url;
+      if (responseData?.failed > 0) throw new Error(responseData.results?.[0]?.error || 'Error al enviar');
+
       await (supabase as any)
         .from('valuation_campaign_companies')
-        .update({ status: 'sent', ...(pdfUrl ? { pdf_url: pdfUrl } : {}) })
+        .update({ status: 'sent' })
         .eq('id', c.id);
       await refetch();
       toast.success(`Email enviado a ${c.client_company}`);
@@ -597,7 +572,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     } finally {
       setRowSending(null);
     }
-  }, [campaign, refetch]);
+  }, [campaignId, refetch]);
 
   // ── Individual download ──
   const downloadSingle = useCallback(async (c: CampaignCompany) => {
@@ -754,58 +729,39 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     let sent = 0;
     for (const c of readyToSend) {
       if (pauseRef.current) break;
-      setSendingProgress(p => ({ ...p, current: sent + 1, name: c.client_company, phase: 'Generando PDF' }));
-
-      let pdfBase64: string | undefined;
-      try {
-        const pdfData = mapToPdfData(c, campaign);
-        pdfBase64 = await generatePdfBase64(pdfData, campaign);
-      } catch (pdfErr: any) {
-        console.error('[CAMPAIGN PDF ERROR]', c.client_company, pdfErr?.message || pdfErr);
-        toast.error(`PDF falló para ${c.client_company}. El email se enviará sin adjunto.`);
-      }
-
-      setSendingProgress(p => ({ ...p, phase: 'Enviando email' }));
+      setSendingProgress(p => ({ ...p, current: sent + 1, name: c.client_company, phase: 'Buscando email' }));
 
       try {
-        const { data: responseData, error } = await supabase.functions.invoke('send-professional-valuation-email', {
-          body: {
-            recipientEmail: c.client_email,
-            recipientName: c.client_name,
-            pdfBase64,
-            valuationData: {
-              clientCompany: c.client_company,
-              clientName: c.client_name || '',
-              clientCif: c.client_cif || undefined,
-              valuationCentral: c.valuation_central,
-              valuationLow: c.valuation_low,
-              valuationHigh: c.valuation_high,
-              sector: campaign.sector,
-              normalizedEbitda: c.normalized_ebitda || c.ebitda,
-              ebitdaMultipleUsed: c.multiple_used,
-              financialYears: c.financial_years_data?.length
-                ? c.financial_years_data
-                : [{ year: c.financial_year, revenue: c.revenue || 0, ebitda: c.ebitda }],
-              strengths: c.ai_strengths || campaign.strengths_template || undefined,
-              weaknesses: c.ai_weaknesses || campaign.weaknesses_template || undefined,
-              valuationContext: c.ai_context || campaign.valuation_context || undefined,
-              comparablesFormattedText: campaign.comparables_text || undefined,
-              includeComparables: campaign.include_comparables,
-            },
-            advisorName: campaign.advisor_name || undefined,
-            advisorEmail: campaign.advisor_email || undefined,
-            advisorPhone: campaign.advisor_phone || undefined,
-            advisorRole: campaign.advisor_role || undefined,
-            useCustomAdvisor: campaign.use_custom_advisor,
-          },
+        // Find campaign_email record for this company
+        const { data: emailRecord, error: emailLookupError } = await (supabase as any)
+          .from('campaign_emails')
+          .select('id')
+          .eq('campaign_id', campaignId)
+          .eq('company_id', c.id)
+          .maybeSingle();
+
+        if (emailLookupError) throw emailLookupError;
+        if (!emailRecord) {
+          console.warn(`No campaign_email for ${c.client_company}, skipping`);
+          await (supabase as any)
+            .from('valuation_campaign_companies')
+            .update({ status: 'failed', error_message: 'No hay email generado. Ve al paso Mail.' })
+            .eq('id', c.id);
+          continue;
+        }
+
+        setSendingProgress(p => ({ ...p, phase: 'Enviando email' }));
+
+        const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
+          body: { email_ids: [emailRecord.id] },
         });
 
         if (error) throw error;
+        if (responseData?.failed > 0) throw new Error(responseData.results?.[0]?.error || 'Error al enviar');
 
-        const pdfUrl = responseData?.pdfUrl || responseData?.pdf_url;
         await (supabase as any)
           .from('valuation_campaign_companies')
-          .update({ status: 'sent', ...(pdfUrl ? { pdf_url: pdfUrl } : {}) })
+          .update({ status: 'sent' })
           .eq('id', c.id);
 
         sent++;
