@@ -23446,6 +23446,33 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_all_mandatos_checklist_progress: {
+        Args: never
+        Returns: {
+          completed_tasks: number
+          mandato_id: string
+          progress_pct: number
+          total_tasks: number
+        }[]
+      }
+      get_all_mandatos_current_subfase: {
+        Args: never
+        Returns: {
+          current_subfase: string
+          mandato_id: string
+        }[]
+      }
+      get_all_mandatos_phase_progress: {
+        Args: never
+        Returns: {
+          completed_tasks: number
+          fase: string
+          in_progress_tasks: number
+          mandato_id: string
+          progress_pct: number
+          total_tasks: number
+        }[]
+      }
       get_brevo_queue_stats: {
         Args: never
         Returns: {
