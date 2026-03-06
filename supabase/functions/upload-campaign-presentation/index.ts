@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -16,7 +16,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // 1. Verify JWT — authenticate the caller
+    // 1. Verify JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -36,7 +36,7 @@ serve(async (req) => {
       );
     }
 
-    // 2. Verify the user is an admin
+    // 2. Verify admin
     const { data: adminRow, error: adminError } = await adminClient
       .from("admin_users")
       .select("id")
@@ -50,7 +50,68 @@ serve(async (req) => {
       );
     }
 
-    // 3. Parse FormData
+    // 3. Determine request type based on Content-Type
+    const contentType = req.headers.get("content-type") || "";
+    const isFormData = contentType.includes("multipart/form-data");
+
+    if (!isFormData) {
+      // JSON request — handle sign / delete actions
+      const body = await req.json();
+      const action = body.action as string;
+      const path = body.path as string;
+
+      if (!action || !path) {
+        return new Response(
+          JSON.stringify({ error: "Faltan campos: action, path" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      if (action === "sign") {
+        const { data, error } = await adminClient.storage
+          .from("campaign-presentations")
+          .createSignedUrl(path, 3600);
+
+        if (error) {
+          console.error("[upload-campaign-presentation] Sign error:", error.message);
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ signedUrl: data.signedUrl }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      if (action === "delete") {
+        const { error } = await adminClient.storage
+          .from("campaign-presentations")
+          .remove([path]);
+
+        if (error) {
+          console.error("[upload-campaign-presentation] Delete error:", error.message);
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: `Acción no soportada: ${action}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // 4. FormData request — handle file upload
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const storagePath = formData.get("storagePath") as string | null;
@@ -62,7 +123,6 @@ serve(async (req) => {
       );
     }
 
-    // 4. Upload using service_role (bypasses Storage RLS)
     const { data, error: uploadError } = await adminClient.storage
       .from("campaign-presentations")
       .upload(storagePath, file, {
