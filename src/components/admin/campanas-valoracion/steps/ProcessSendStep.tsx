@@ -923,10 +923,17 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
               Descargar {downloadableCompanies.length} PDFs ({estimateZipSize(downloadableCompanies.length)})
             </Button>
 
+            {sentCompanies.length > 0 && (
+              <Button variant="outline" onClick={() => handleSendSelected(sentCompanies.map(c => c.id))} disabled={isBusy}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Reenviar {sentCompanies.length} enviados
+              </Button>
+            )}
+
             {failedCompanies.length > 0 && (
               <Button variant="outline" onClick={handleRetryFailed} disabled={isBusy}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reenviar {failedCompanies.length} errores
+                Reintentar {failedCompanies.length} errores
               </Button>
             )}
           </div>
