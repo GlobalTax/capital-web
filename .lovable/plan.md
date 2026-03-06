@@ -2,36 +2,35 @@
 
 ## Diagnostico
 
-El problema esta en `src/hooks/useCampaignEmails.ts`, lineas 213-247. Tanto `sendEmailMutation` como `sendAllPendingMutation` solo hacen un UPDATE en la tabla `campaign_emails` marcando `status: 'sent'`, pero **nunca invocan una Edge Function para enviar el email real via Resend**. El propio codigo tiene el comentario: *"For now, just mark as sent. Real delivery via edge function later."*
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-No existe ninguna Edge Function dedicada al envio de emails de campanas outbound.
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
+
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
 ## Plan
 
-### 1. Crear Edge Function `send-campaign-outbound-email`
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-Nueva funcion en `supabase/functions/send-campaign-outbound-email/index.ts` que:
-- Reciba `email_id` (o array de `email_ids`) por JSON
-- Consulte `campaign_emails` + `campaign_companies` + `campaign_presentations` + `valuation_campaigns` con `service_role`
-- Construya el email HTML con el `subject` y `body` ya personalizados del registro
-- Adjunte los PDFs de valoracion y estudio si existen (via signed URLs internas con `service_role`)
-- Envie via Resend desde `samuel@capittal.es` con CC a los destinatarios activos de `email_recipients_config`
-- Actualice `status: 'sent'` y `sent_at` en exito, o `status: 'error'` + `error_message` en fallo
-- CORS y auth estandar del proyecto
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-### 2. Actualizar `useCampaignEmails.ts`
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-- `sendEmailMutation`: invocar `supabase.functions.invoke('send-campaign-outbound-email', { body: { email_ids: [emailId] } })` en lugar del UPDATE directo
-- `sendAllPendingMutation`: invocar la misma funcion con todos los IDs pendientes
-- Gestionar errores parciales (algunos enviados, otros fallidos)
+### 2. Prerequisito: emails generados
 
-### 3. Configuracion
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-- Añadir entrada en `supabase/config.toml` con `verify_jwt = false`
-- Desplegar y verificar con test
+### 3. Conectar datos
+
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
 ### Archivos afectados
-- `supabase/functions/send-campaign-outbound-email/index.ts` (nuevo)
-- `supabase/config.toml` (nueva entrada)
-- `src/hooks/useCampaignEmails.ts` (conectar envio real)
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 
