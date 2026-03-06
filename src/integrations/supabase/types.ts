@@ -3910,6 +3910,45 @@ export type Database = {
         }
         Relationships: []
       }
+      checklist_task_assignees: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_task_assignees_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_checklist_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checklist_task_assignees_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "task_time_summary"
+            referencedColumns: ["task_id"]
+          },
+        ]
+      }
       collaborator_applications: {
         Row: {
           acquisition_channel_id: string | null
@@ -14053,6 +14092,70 @@ export type Database = {
           },
           {
             foreignKeyName: "mandato_empresas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "vw_mandate_pipeline"
+            referencedColumns: ["mandato_id"]
+          },
+        ]
+      }
+      mandato_equipo: {
+        Row: {
+          created_at: string | null
+          id: string
+          mandato_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mandato_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mandato_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mandato_equipo_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_equipo_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_equipo_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_equipo_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_equipo_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_equipo_mandato_id_fkey"
             columns: ["mandato_id"]
             isOneToOne: false
             referencedRelation: "vw_mandate_pipeline"
