@@ -53,7 +53,7 @@ serve(async (req) => {
       return jsonResponse({ error: "email_ids array required" }, 400);
     }
 
-    // Fetch emails
+    // Fetch email records from campaign_emails
     const { data: emailRows, error: fetchErr } = await serviceClient
       .from("campaign_emails")
       .select("*")
@@ -63,82 +63,64 @@ serve(async (req) => {
       return jsonResponse({ error: "No emails found" }, 404);
     }
 
-    // Get campaign config for CC recipients
-    const campaignIds = [...new Set(emailRows.map((e: any) => e.campaign_id))];
-    const { data: campaigns } = await serviceClient
-      .from("valuation_campaigns")
-      .select("id, email_recipients_config")
-      .in("id", campaignIds);
-    const campaignMap = new Map((campaigns || []).map((c: any) => [c.id, c]));
-
-    // Get company data for attachments
+    // Get company data from valuation_campaign_companies (correct table)
     const companyIds = [...new Set(emailRows.map((e: any) => e.company_id))];
     const { data: companyRows } = await serviceClient
-      .from("campaign_companies")
-      .select("id, company_name, presentation_id")
+      .from("valuation_campaign_companies")
+      .select("id, client_company, client_name, client_email, pdf_url, campaign_id")
       .in("id", companyIds);
     const companyMap = new Map((companyRows || []).map((c: any) => [c.id, c]));
 
-    // Get presentations for PDF attachments
-    const presentationIds = (companyRows || [])
-      .map((c: any) => c.presentation_id)
-      .filter(Boolean);
-    let presentationMap = new Map();
-    if (presentationIds.length > 0) {
-      const { data: presentations } = await serviceClient
-        .from("campaign_presentations")
-        .select("id, valuation_pdf_path, study_pdf_path")
-        .in("id", presentationIds);
-      presentationMap = new Map((presentations || []).map((p: any) => [p.id, p]));
-    }
+    // Get study/presentation PDFs from campaign_presentations (by campaign_id + company_id, status = 'assigned')
+    const campaignIds = [...new Set(emailRows.map((e: any) => e.campaign_id))];
+    const { data: presentations } = await serviceClient
+      .from("campaign_presentations")
+      .select("id, campaign_id, company_id, storage_path, file_name, status")
+      .in("campaign_id", campaignIds)
+      .in("company_id", companyIds)
+      .eq("status", "assigned");
+    // Map by company_id for quick lookup
+    const presentationMap = new Map(
+      (presentations || []).map((p: any) => [p.company_id, p])
+    );
+
+    // Get CC recipients from email_recipients_config (active + default copy)
+    const { data: ccRecipients } = await serviceClient
+      .from("email_recipients_config")
+      .select("email")
+      .eq("is_active", true)
+      .eq("is_default_copy", true);
+    const ccList = (ccRecipients || []).map((r: any) => r.email).filter(Boolean);
 
     const results: { id: string; status: string; error?: string }[] = [];
 
     for (const email of emailRows) {
       try {
         const company = companyMap.get(email.company_id);
-        const campaign = campaignMap.get(email.campaign_id);
 
-        // Build CC list from campaign config
-        const ccList: string[] = [];
-        if (campaign?.email_recipients_config) {
-          const config = typeof campaign.email_recipients_config === "string"
-            ? JSON.parse(campaign.email_recipients_config)
-            : campaign.email_recipients_config;
-          if (Array.isArray(config)) {
-            for (const r of config) {
-              if (r.active && r.email) ccList.push(r.email);
-            }
-          }
-        }
-
-        // Get recipient email from campaign_companies
-        const { data: companyFull } = await serviceClient
-          .from("campaign_companies")
-          .select("contact_email")
-          .eq("id", email.company_id)
-          .maybeSingle();
-
-        const toEmail = companyFull?.contact_email;
+        // Get recipient email from valuation_campaign_companies.client_email
+        const toEmail = company?.client_email;
         if (!toEmail) {
-          throw new Error(`No contact_email for company ${email.company_id}`);
+          throw new Error(`No client_email for company ${email.company_id}`);
         }
 
-        // Build attachments from PDFs
+        // Build attachments
         const attachments: { filename: string; content: string }[] = [];
-        if (company?.presentation_id) {
-          const pres = presentationMap.get(company.presentation_id);
-          if (pres?.valuation_pdf_path) {
-            const att = await downloadPdfAsAttachment(serviceClient, pres.valuation_pdf_path, "Valoracion.pdf");
-            if (att) attachments.push(att);
-          }
-          if (pres?.study_pdf_path) {
-            const att = await downloadPdfAsAttachment(serviceClient, pres.study_pdf_path, "Estudio.pdf");
-            if (att) attachments.push(att);
-          }
+
+        // 1. Valuation PDF from valuation_campaign_companies.pdf_url (public URL in 'valuations' bucket)
+        if (company?.pdf_url) {
+          const att = await downloadPdfFromUrl(company.pdf_url, `Valoracion_${company.client_company || "empresa"}.pdf`);
+          if (att) attachments.push(att);
         }
 
-        // Convert body (which may have newlines) to simple HTML
+        // 2. Study/Presentation PDF from campaign_presentations.storage_path (private bucket)
+        const pres = presentationMap.get(email.company_id);
+        if (pres?.storage_path) {
+          const att = await downloadPdfFromStorage(serviceClient, pres.storage_path, pres.file_name || "Estudio.pdf");
+          if (att) attachments.push(att);
+        }
+
+        // Convert body to HTML
         const htmlBody = `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">
             ${email.body.replace(/\n/g, "<br/>")}
@@ -159,6 +141,8 @@ serve(async (req) => {
         if (attachments.length > 0) {
           resendPayload.attachments = attachments;
         }
+
+        console.log(`Sending email ${email.id} to ${toEmail} with ${attachments.length} attachment(s)`);
 
         const resendRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -202,14 +186,41 @@ serve(async (req) => {
   }
 });
 
-async function downloadPdfAsAttachment(
-  client: any,
-  path: string,
+/**
+ * Download PDF from a public URL (e.g. valuation PDF stored in public 'valuations' bucket)
+ */
+async function downloadPdfFromUrl(
+  url: string,
   filename: string
 ): Promise<{ filename: string; content: string } | null> {
   try {
-    // Clean path
-    const cleanPath = path.split(".pdf")[0] + ".pdf";
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.warn(`Could not download PDF from ${url}: ${res.status}`);
+      return null;
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    // Sanitize filename
+    const safeName = filename.replace(/[^a-zA-Z0-9_.\-áéíóúñÁÉÍÓÚÑ ]/g, "_");
+    return { filename: safeName, content: base64 };
+  } catch (e: any) {
+    console.warn(`Attachment download error for ${url}:`, e.message);
+    return null;
+  }
+}
+
+/**
+ * Download PDF from private Supabase Storage using signed URL (campaign-presentations bucket)
+ */
+async function downloadPdfFromStorage(
+  client: any,
+  storagePath: string,
+  filename: string
+): Promise<{ filename: string; content: string } | null> {
+  try {
+    // Clean path: truncate at .pdf to remove any metadata
+    const cleanPath = storagePath.split(".pdf")[0] + ".pdf";
 
     const { data: signedData, error: signErr } = await client.storage
       .from("campaign-presentations")
@@ -228,10 +239,10 @@ async function downloadPdfAsAttachment(
 
     const arrayBuffer = await res.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-    return { filename, content: base64 };
+    const safeName = filename.replace(/[^a-zA-Z0-9_.\-áéíóúñÁÉÍÓÚÑ ]/g, "_");
+    return { filename: safeName, content: base64 };
   } catch (e: any) {
-    console.warn(`Attachment error for ${path}:`, e.message);
+    console.warn(`Storage attachment error for ${storagePath}:`, e.message);
     return null;
   }
 }

@@ -1,67 +1,36 @@
 
 
-## Revision completa del sistema de envio de correos outbound
+## Diagnostico
 
-### Estado actual y problemas encontrados
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-El sistema tiene **5 bugs criticos** en la Edge Function `send-campaign-outbound-email` que impiden que los emails se envien correctamente con los adjuntos esperados:
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
 
----
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
-### Bug 1: Campo de email incorrecto (`contact_email` no existe)
+## Plan
 
-La Edge Function (linea 117-120) busca `contact_email` en la tabla `campaign_companies`:
-```typescript
-const { data: companyFull } = await serviceClient
-  .from("campaign_companies")
-  .select("contact_email")  // ← NO EXISTE
-```
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-La tabla real (`valuation_campaign_companies`) tiene el campo `client_email`, no `contact_email`. Ademas, la tabla se llama `valuation_campaign_companies`, no `campaign_companies`.
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-**Resultado**: Siempre falla con "No contact_email for company..."
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-### Bug 2: Tabla incorrecta para empresas
+### 2. Prerequisito: emails generados
 
-Linea 77-78: La funcion consulta `campaign_companies` pero la tabla real es `valuation_campaign_companies`. Esto afecta tanto al fetch de datos como a la busqueda de `presentation_id` (que tampoco existe como columna).
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-### Bug 3: Logica de adjuntos rota — `presentation_id`, `valuation_pdf_path`, `study_pdf_path` no existen
+### 3. Conectar datos
 
-La funcion asume un modelo de datos inexistente:
-- `campaign_companies.presentation_id` → **no existe** en la tabla
-- `campaign_presentations.valuation_pdf_path` → **no existe**
-- `campaign_presentations.study_pdf_path` → **no existe**
-
-La tabla `campaign_presentations` tiene: `storage_path` (ruta del estudio/presentacion PDF) y `file_name`. Para el PDF de valoracion, la ruta esta en `valuation_campaign_companies.pdf_url`.
-
-### Bug 4: Todos los emails se marcaron como "sent" sin enviar
-
-Los registros actuales en `campaign_emails` tienen todos el mismo `sent_at` (08:17:52.826), lo que indica que fueron marcados por el codigo anterior (placeholder) sin envio real.
-
-### Bug 5: CC recipients mal resuelto
-
-La funcion busca `email_recipients_config` en `valuation_campaigns`, pero deberia consultar la tabla `email_recipients_config` directamente (los destinatarios activos por defecto).
-
----
-
-### Plan de correccion
-
-#### 1. Reescribir la Edge Function `send-campaign-outbound-email`
-
-Corregir todos los nombres de tablas y campos:
-
-- **Tabla correcta**: `valuation_campaign_companies` (no `campaign_companies`)
-- **Email destinatario**: `client_email` (no `contact_email`)
-- **Adjuntos**:
-  - **PDF Valoracion**: Descargar desde `valuation_campaign_companies.pdf_url` (URL publica del bucket `valuations`)
-  - **PDF Estudio**: Buscar en `campaign_presentations` por `campaign_id` + `company_id` + `status = 'assigned'`, usar `storage_path` con signed URL via `service_role`
-- **CC**: Consultar tabla `email_recipients_config` donde `is_active = true` AND `is_default_copy = true`
-
-#### 2. Resetear emails falsos
-
-Actualizar los registros de `campaign_emails` con `status = 'sent'` que nunca se enviaron realmente (todos los de la campana actual) a `status = 'pending'` para poder reenviarlos con el sistema corregido.
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
 ### Archivos afectados
-- `supabase/functions/send-campaign-outbound-email/index.ts` — reescribir con tablas/campos correctos
-- Migracion SQL: resetear `campaign_emails.status` a `pending` para la campana activa
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 
