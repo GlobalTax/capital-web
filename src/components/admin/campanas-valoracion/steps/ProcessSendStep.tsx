@@ -700,9 +700,10 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     for (let i = 0; i < targets.length; i++) {
       if (pauseRef.current) break;
       const c = targets[i];
-      setSendingProgress(p => ({ ...p, current: i + 1, name: c.client_company, phase: 'Enviando' }));
+      const isResend = c.status === 'sent' || c.status === 'failed';
+      setSendingProgress(p => ({ ...p, current: i + 1, name: c.client_company, phase: isResend ? 'Reenviando' : 'Enviando' }));
       try {
-        await sendSingle(c);
+        await sendSingle(c, isResend);
         sent++;
         await new Promise(r => setTimeout(r, 1000));
       } catch {
@@ -1022,6 +1023,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 const isRowDownloading = rowDownloading === c.id;
                 const isRowSending = rowSending === c.id;
                 const canSend = !!c.client_email && c.status !== 'sent';
+                const canResend = !!c.client_email && c.status === 'sent';
                 const isFailed = c.status === 'failed';
                 const isSelected = selectedIds.includes(c.id);
                 const hasValuation = ['calculated', 'sent'].includes(c.status);
