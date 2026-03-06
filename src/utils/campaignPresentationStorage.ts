@@ -149,25 +149,21 @@ export const safeStorageUpload = async (
   }
 
   // 3. Fallback: direct storage upload
-  console.log('[safeStorageUpload] Using direct storage upload fallback', { bucket, path });
+  console.log('[safeStorageUpload] Using direct storage upload fallback', { _bucket, path });
   const { data, error } = await supabase.storage
-    .from(bucket)
+    .from(_bucket)
     .upload(path, file, {
-      upsert: options?.upsert ?? false,
-      contentType: options?.contentType,
+      upsert: _options?.upsert ?? false,
+      contentType: _options?.contentType,
     });
 
   if (error) {
-    console.error('[safeStorageUpload] Upload error', { bucket, path, message: error.message });
+    console.error('[safeStorageUpload] Upload error', { _bucket, path, message: error.message });
+    return { data: null, error };
   }
 
-  if (fnData?.error) {
-    console.error('[safeStorageUpload] Upload rejected', fnData.error);
-    return { data: null, error: new Error(fnData.error) };
-  }
-
-  console.log('[safeStorageUpload] OK via Edge Function:', fnData?.path);
-  return { data: { path: fnData?.path || path }, error: null };
+  console.log('[safeStorageUpload] OK via direct upload:', data?.path);
+  return { data: { path: data?.path || path }, error: null };
 };
 
 /**

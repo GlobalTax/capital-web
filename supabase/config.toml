@@ -318,5 +318,8 @@ verify_jwt = false
 [functions.match-presentations]
 verify_jwt = false
 
+[functions.send-campaign-outbound-email]
+verify_jwt = false
+
 [functions.upload-campaign-presentation]
 verify_jwt = false
