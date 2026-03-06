@@ -528,12 +528,26 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const isAllSelected = filteredCompanies.length > 0 && filteredIds.every(id => selectedIds.includes(id));
   const isIndeterminate = !isAllSelected && filteredIds.some(id => selectedIds.includes(id));
 
-  // ── Individual send ──
-  const sendSingle = useCallback(async (c: CampaignCompany) => {
+  // ── Reset campaign_email to pending (for resend) ──
+  const resetEmailToPending = useCallback(async (companyId: string) => {
+    await (supabase as any)
+      .from('campaign_emails')
+      .update({ status: 'pending', sent_at: null, error_message: null, updated_at: new Date().toISOString() })
+      .eq('campaign_id', campaignId)
+      .eq('company_id', companyId);
+  }, [campaignId]);
+
+  // ── Individual send (works for both first send and resend) ──
+  const sendSingle = useCallback(async (c: CampaignCompany, isResend = false) => {
     if (!c.client_email) { toast.error('Esta empresa no tiene email'); return; }
     setRowSending(c.id);
 
     try {
+      // If resending, reset the email record to pending first
+      if (isResend) {
+        await resetEmailToPending(c.id);
+      }
+
       // Find the campaign_email record for this company
       const { data: emailRecord, error: emailLookupError } = await (supabase as any)
         .from('campaign_emails')
@@ -560,7 +574,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         .update({ status: 'sent' })
         .eq('id', c.id);
       await refetch();
-      toast.success(`Email enviado a ${c.client_company}`);
+      toast.success(`Email ${isResend ? 're' : ''}enviado a ${c.client_company}`);
     } catch (e: any) {
       console.error('[SINGLE_SEND EMAIL ERROR]', c.client_company, e);
       await (supabase as any)
@@ -572,7 +586,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     } finally {
       setRowSending(null);
     }
-  }, [campaignId, refetch]);
+  }, [campaignId, refetch, resetEmailToPending]);
 
   // ── Individual download ──
   const downloadSingle = useCallback(async (c: CampaignCompany) => {
@@ -675,9 +689,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     }
   }, [companies, campaign]);
 
-  // ── Send selected ──
+  // ── Send selected (includes resend for sent/failed) ──
   const handleSendSelected = useCallback(async (ids: string[]) => {
-    const targets = companies.filter(c => ids.includes(c.id) && !!c.client_email && c.status !== 'sent');
+    const targets = companies.filter(c => ids.includes(c.id) && !!c.client_email);
     if (targets.length === 0) { toast.info('No hay empresas con email seleccionadas'); return; }
     setSendingProgress({ active: true, current: 0, total: targets.length, name: '', phase: '' });
     pauseRef.current = false;
