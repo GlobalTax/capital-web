@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { callAI, parseAIJson, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,20 +18,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { 
-      fund_id, 
-      operation_id,
-      person_id,
-      buyer_profile,
-      teaser,
-      sender 
-    } = await req.json();
+    const { fund_id, operation_id, person_id, buyer_profile, teaser, sender } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Build buyer profile if not provided
     let buyerProfileData = buyer_profile;
     if (!buyerProfileData && fund_id) {
       const { data: fund } = await supabase
@@ -52,7 +45,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Build teaser if not provided
     let teaserData = teaser;
     if (!teaserData && operation_id) {
       const { data: operation } = await supabase
@@ -76,7 +68,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Sender defaults
     const senderData = sender || {
       my_name: "Equipo Capittal",
       my_firm: "Capittal",
@@ -91,15 +82,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    const openaiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiKey) {
-      return new Response(
-        JSON.stringify({ error: "OPENAI_API_KEY not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get prompt from database
     const { data: promptData } = await supabase
       .from("sf_ai_prompts")
       .select("system_prompt, user_prompt_template, model, temperature, max_tokens")
@@ -132,55 +114,42 @@ Devuelve JSON:
   "email_body": string
 }`;
 
-    const startTime = Date.now();
-
-    // Call OpenAI
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openaiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: promptData?.model || "gpt-4o",
-        messages: [
+    let aiResponse;
+    try {
+      aiResponse = await callAI(
+        [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: promptData?.temperature || 0.5,
-        max_tokens: promptData?.max_tokens || 800,
-        response_format: { type: "json_object" },
-      }),
-    });
-
-    if (!openaiResponse.ok) {
-      const error = await openaiResponse.text();
-      console.error("OpenAI error:", error);
-      throw new Error(`OpenAI API error: ${openaiResponse.status}`);
+        {
+          preferOpenAI: true,
+          model: promptData?.model || undefined,
+          temperature: promptData?.temperature || 0.5,
+          maxTokens: promptData?.max_tokens || 800,
+          jsonMode: true,
+          functionName: 'sf-generate-outreach',
+        }
+      );
+    } catch (error) {
+      return aiErrorResponse(error, corsHeaders);
     }
-
-    const openaiData = await openaiResponse.json();
-    const duration = Date.now() - startTime;
-    const tokensUsed = openaiData.usage?.total_tokens || 0;
 
     let result: OutreachResult;
     try {
-      result = JSON.parse(openaiData.choices[0].message.content);
-    } catch (e) {
+      result = parseAIJson(aiResponse.content);
+    } catch {
       throw new Error("Failed to parse AI response as JSON");
     }
 
-    // Log the AI execution
     await supabase.from("sf_ai_logs").insert({
       prompt_key: "generate-outreach",
       input_data: { fund_id, operation_id, buyer_name: buyerProfileData.name },
       output_data: result,
-      tokens_used: tokensUsed,
-      duration_ms: duration,
+      tokens_used: aiResponse.tokensUsed,
+      duration_ms: aiResponse.durationMs,
       success: true,
     });
 
-    // Create outreach draft in sf_outreach if fund_id provided
     let outreachId = null;
     if (fund_id) {
       const { data: outreach } = await supabase
@@ -203,7 +172,6 @@ Devuelve JSON:
         })
         .select("id")
         .single();
-
       outreachId = outreach?.id;
     }
 
@@ -212,8 +180,8 @@ Devuelve JSON:
         success: true,
         outreach: result,
         outreach_id: outreachId,
-        tokens_used: tokensUsed,
-        duration_ms: duration,
+        tokens_used: aiResponse.tokensUsed,
+        duration_ms: aiResponse.durationMs,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
