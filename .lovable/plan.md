@@ -1,187 +1,194 @@
 
 
-# Analisis en Profundidad: Uso de IA en Capittal
-
-## Resumen Ejecutivo
-
-El proyecto utiliza **3 proveedores de IA** y **1 servicio de scraping** a traves de **39+ Edge Functions** que consumen IA. La arquitectura sigue un patron hibrido centralizado en `_shared/ai-helper.ts`.
+# Analisis Detallado: 4 Mejoras del Sistema de IA
 
 ---
 
-## 1. Proveedores y Arquitectura
+## Mejora 1: Migrar funciones al helper centralizado (`ai-helper.ts`)
 
-### Proveedores activos
+### Estado actual
+- **Solo 2 funciones** usan el helper: `leads-company-enrich` y `cr-people-enrich`
+- **38 funciones** llaman directamente a `ai.gateway.lovable.dev` (210 ocurrencias)
+- **31 funciones** llaman directamente a `api.openai.com` (155 ocurrencias)
+- Cada una reimplementa: headers, error handling, rate limit checks, JSON parsing
 
-| Proveedor | Gateway | Modelo por defecto | Uso principal |
-|-----------|---------|-------------------|---------------|
-| **Lovable AI** | `ai.gateway.lovable.dev` | `google/gemini-2.5-flash` | Clasificacion, generacion de contenido, tareas de volumen |
-| **OpenAI** | `api.openai.com` | `gpt-4o-mini` | Extraccion JSON precisa, analisis estructurado |
-| **Firecrawl** | `api.firecrawl.dev` | N/A | Scraping web, busqueda de informacion publica |
-
-**Nota**: Anthropic NO se usa (no hay `ANTHROPIC_API_KEY` en ninguna funcion).
-
-### Modulo centralizado: `_shared/ai-helper.ts`
-
+### Que se duplica en cada funcion
+Cada funcion repite este patron ~15-20 lineas:
 ```text
-callAI(messages, config)
-  ├── config.preferOpenAI = true?
-  │     ├── OpenAI (gpt-4o-mini) → fallback a Lovable AI
-  │     └── Lovable AI (gemini-2.5-flash) si OpenAI falla
-  └── Default: Lovable AI → fallback a OpenAI
+const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify({ model: '...', messages: [...], temperature: 0.3 })
+});
+if (!response.ok) { /* manejo de 429/402 duplicado */ }
+const data = await response.json();
+const content = data.choices?.[0]?.message?.content;
 ```
 
-Expone: `callAI()`, `callLovableAI()`, `callOpenAI()`, `parseAIJson()`, `hasAIService()`
+### Que ganariamos
+- **Reduccion de codigo**: ~600-800 lineas eliminadas (15-20 lineas x 40 funciones)
+- **Error handling uniforme**: 429/402 manejado en un solo lugar
+- **Fallback automatico**: Todas las funciones tendrian fallback Lovable↔OpenAI sin codigo extra
+- **Facilidad de cambio**: Cambiar modelo default en 1 linea vs 40 archivos
+- **Metricas**: Un solo punto donde medir todas las llamadas
 
-Sin embargo, **muchas funciones NO usan el helper** y llaman directamente al gateway. Esto crea duplicacion e inconsistencia.
+### Funciones a migrar (lista completa)
 
----
+**Llamadas directas a Lovable AI (38 funciones):**
+`generate-sector-tags`, `translate-operations`, `generate-company-activity-description`, `translate-presentation-content`, `corporate-buyer-ai` (4 calls), `generate-blog-content`, `parse-contact-search`, `sf-generate-teaser`, `enrich-campaign-companies-data`, `dealsuite-extract-image`, `cr-weekly-news-scan`, `sf-execute-radar`, `generate-reengagement-template`, `sf-enrich-profile`, `potential-buyer-enrich`, `parse-campaign-screenshot`, `generate-content-calendar-ai`, `validate-presentation-content`, `generate-presentation-content`, `refine-presentation-content`, `process-news-ai`, `fund-search-news`, `enrich-campaign-company`, `match-presentations`, `rewrite-comparables`, `generate-exit-readiness-report`, `generate-newsletter-variants`, `process-blog-quick-create`, `sf-generate-followup`, `sf-monitor-changes`, `corporate-buyer-auto-config`, `generate-lead-ai-report`
 
-## 2. Mapa Completo de Funciones con IA (por dominio)
+**Llamadas directas a OpenAI (sin fallback, 15 funciones):**
+`corporate-buyer-enrich`, `classify-sector-pe`, `sf-ai-matching`, `cr-extract-portfolio`, `ai-predictive-analytics`, `sf-relevance-filter`, `cr-extract-portfolio-from-text`, `corporate-buyer-batch-enrich`, `sf-generate-outreach`, `generate-lead-ai-report`, `generate-job-offer-ai`, `sf-extract-profile`, `dealsuite-scrape-wanted`, `sf-extract-portfolio`, `generate-blog-ai-content`
 
-### CRM y Fondos (12 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `cr-extract-portfolio` | OpenAI + Firecrawl | Extraer portfolio de fondos desde URLs |
-| `cr-extract-portfolio-from-text` | OpenAI | Extraer portfolio desde texto pegado |
-| `cr-funds-enrich` | OpenAI + Firecrawl | Enriquecer perfil de fondos (web scraping + AI) |
-| `cr-people-enrich` | Lovable AI | Enriquecer contactos de fondos |
-| `cr-portfolio-enrich` | Lovable AI + Firecrawl | Enriquecer empresas del portfolio |
-| `cr-portfolio-news-scan` | Lovable/OpenAI + Firecrawl | Buscar noticias sobre portfolio |
-| `cr-weekly-news-scan` | Lovable/OpenAI + Firecrawl | Scan semanal de noticias de fondos |
-| `cr-portfolio-diff-scan` | Firecrawl | Detectar cambios en portfolios |
-| `cr-batch-news-scan` | Lovable AI | Scan masivo de noticias |
-| `cr-apollo-search-import` | Apollo API | Importar contactos de Apollo |
-| `classify-sector-pe` | OpenAI | Clasificar sector PE de empresas |
-| `link-valuations-crm` | - | Vincular valoraciones con CRM |
-
-### Search Funds (10 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `sf-execute-radar` | Lovable/OpenAI + Firecrawl | Ejecutar busquedas de radar automaticas |
-| `sf-weekly-news-scan` | Lovable/OpenAI + Firecrawl | Scan semanal de noticias SF |
-| `sf-enrich-profile` | Lovable AI | Enriquecer perfiles de SF |
-| `sf-extract-portfolio` | OpenAI | Extraer portfolios de SF |
-| `sf-extract-profile` | OpenAI | Extraer perfil estructurado |
-| `sf-generate-teaser` | Lovable AI | Generar teasers para SF |
-| `sf-generate-outreach` | Lovable AI | Generar emails de outreach |
-| `sf-generate-followup` | Lovable AI | Generar follow-ups |
-| `sf-monitor-changes` | Lovable AI | Monitorizar cambios en webs |
-| `sf-ai-matching` | Lovable AI | Matching inteligente SF-empresas |
-| `sf-batch-enrich-funds` | Apollo API | Enriquecer fondos desde Apollo |
-| `sf-relevance-filter` | Lovable AI | Filtrar relevancia de resultados |
-
-### Campañas Outbound (6 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `enrich-campaign-company` | Lovable AI | Generar strengths/weaknesses con IA |
-| `enrich-campaign-companies-data` | Lovable AI + Firecrawl | Completar datos de contacto |
-| `match-presentations` | Lovable AI | Matching inteligente de PDFs a empresas |
-| `parse-campaign-screenshot` | Lovable AI (Vision) | Extraer datos de capturas de pantalla |
-| `rewrite-comparables` | Lovable AI | Reescribir textos de comparables |
-| `send-campaign-outbound-email` | - | Envio de emails (sin IA directa) |
-
-### Corporate Buyers (5 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `corporate-buyer-ai` | Lovable AI | Buscar, analizar y recomendar compradores |
-| `corporate-buyer-enrich` | OpenAI + Firecrawl | Enriquecer perfil de comprador |
-| `corporate-buyer-batch-enrich` | OpenAI + Firecrawl | Enriquecimiento masivo |
-| `corporate-buyer-profile-import` | Firecrawl | Importar perfiles desde LinkedIn |
-| `corporate-buyer-auto-config` | Lovable AI | Auto-configurar busqueda |
-
-### Contenido y Blog (6 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `ai-content-studio` | OpenAI | Generacion de contenido M&A |
-| `generate-blog-ai-content` | OpenAI | Contenido de blog |
-| `generate-blog-content` | OpenAI | Contenido de blog (alternativo) |
-| `process-blog-quick-create` | Lovable AI | Creacion rapida de posts |
-| `generate-content-calendar-ai` | Lovable AI | Planificacion editorial con IA |
-| `generate-newsletter-variants` | Lovable AI | Variantes de newsletter |
-
-### Noticias M&A (3 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `fetch-ma-news` | Firecrawl | Buscar noticias M&A |
-| `process-news-ai` | Lovable AI | Clasificar y resumir noticias |
-| `auto-publish-news` | - | Publicar noticias procesadas |
-
-### Presentaciones y Documentos (4 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `generate-presentation-content` | Lovable AI | Generar slides de presentacion |
-| `refine-presentation-content` | Lovable AI | Refinar contenido de slides |
-| `translate-presentation-content` | Lovable AI | Traducir presentaciones |
-| `validate-presentation-content` | Lovable AI | Validar calidad del contenido |
-
-### Otros (8 funciones)
-| Funcion | Proveedor | Proposito |
-|---------|-----------|-----------|
-| `generate-sector-dossier` | OpenAI | Dossiers sectoriales completos |
-| `generate-sector-tags` | Lovable AI | Tags sectoriales automaticos |
-| `generate-exit-readiness-report` | Lovable AI | Informes de exit readiness |
-| `generate-company-summary` | OpenAI/Lovable | Resumenes de empresas |
-| `generate-reengagement-template` | Lovable AI | Templates de reengagement |
-| `generate-job-offer-ai` | OpenAI | Ofertas de empleo |
-| `ai-predictive-analytics` | OpenAI | Analytics predictivos |
-| `dealsuite-extract-image` | Lovable AI (Vision) | Extraer datos de capturas Dealsuite |
-| `translate-operations` | Lovable AI | Traducir operaciones |
-| `potential-buyer-enrich` | Lovable/OpenAI + Firecrawl | Enriquecer compradores potenciales |
-| `generate-lead-ai-report` | Lovable AI | Informes de leads |
-| `leads-company-enrich` | Firecrawl | Enriquecer datos de empresas de leads |
-| `fund-search-news` | Lovable/OpenAI + Firecrawl | Buscar noticias de fondos |
+### Complejidad y riesgo
+- **Alta**: Son 40+ archivos. Cada uno tiene contexto especifico (vision, tool calling, temperaturas distintas).
+- **Riesgo medio**: Algunas funciones usan features no soportadas por el helper actual (vision con image_url, tool calling con `tools[]`). El helper necesitaria ampliarse para soportar:
+  - `tools` y `tool_choice` (para corporate-buyer-ai, process-blog-quick-create)
+  - `content` como array con `image_url` (para dealsuite-extract-image, parse-campaign-screenshot)
+  - `response_format` con schema (para algunas funciones OpenAI)
 
 ---
 
-## 3. Patrones de Uso Identificados
+## Mejora 2: Migrar funciones legacy de OpenAI a Lovable AI
 
-### Vision (imagenes)
-- `dealsuite-extract-image`: Analiza capturas de pantalla de deals
-- `parse-campaign-screenshot`: Extrae datos de screenshots de campañas
-- `potential-buyer-enrich`: Analiza logos/imagenes de compradores
+### Funciones que usan OpenAI sin fallback
+Estas 15 funciones llaman SOLO a OpenAI. Si la API key falla o se agota, no hay recuperacion:
 
-### Tool Calling (JSON estructurado)
-- `corporate-buyer-ai`: Usa `tools[]` para extraer compradores estructurados
-- `process-blog-quick-create`: Tool calling para metadata de posts
+| Funcion | Razon original de usar OpenAI | Migrable a Lovable? |
+|---------|-------------------------------|---------------------|
+| `ai-content-studio` | Legacy, GPT-4o-mini | Si - generacion de texto |
+| `generate-blog-ai-content` | Legacy, GPT-4o-mini | Si - generacion de texto |
+| `generate-sector-dossier` | GPT-4o-mini | Si - generacion de texto |
+| `classify-sector-pe` | JSON precision | Parcial - Gemini ha mejorado en JSON |
+| `ai-predictive-analytics` | GPT-4o-mini | Si |
+| `generate-job-offer-ai` | GPT-4o-mini | Si |
+| `generate-lead-ai-report` | GPT-4o-mini | Si |
+| `sf-ai-matching` | JSON precision | Parcial |
+| `sf-relevance-filter` | JSON precision | Parcial |
+| `sf-generate-outreach` | GPT-4o-mini | Si |
+| `sf-extract-profile` | JSON precision | Parcial |
+| `sf-extract-portfolio` | JSON precision | Parcial |
+| `cr-extract-portfolio` | JSON precision | Parcial |
+| `cr-extract-portfolio-from-text` | JSON precision | Parcial |
+| `corporate-buyer-enrich` | GPT-4o-mini + Firecrawl | Si |
+| `corporate-buyer-batch-enrich` | GPT-4o-mini | Si |
+| `dealsuite-scrape-wanted` | GPT-4o-mini | Si |
 
-### Streaming
-- No se usa streaming SSE en ninguna funcion actual. Todas las llamadas son request/response sincrono.
+### Ahorro potencial
+- **Costes**: Lovable AI (Gemini) es significativamente mas barato que OpenAI GPT-4o-mini
+- **Simplificacion**: Una sola API key necesaria (LOVABLE_API_KEY auto-provisioned)
+- **Fiabilidad**: Fallback bidireccional via ai-helper
 
-### Batch Processing
-- `corporate-buyer-batch-enrich`: Lotes con delays de 2s
-- `enrich-campaign-companies-data`: Lotes de 3 con delay 1.5s
-- `sf-batch-enrich-funds`: Procesamiento secuencial con Apollo
-
----
-
-## 4. Inconsistencias y Oportunidades de Mejora
-
-### Problema 1: Llamadas directas vs Helper
-- **~25 funciones** llaman directamente a `ai.gateway.lovable.dev` sin usar `ai-helper.ts`
-- Solo las funciones de SF/CRM news scan usan el helper consistentemente
-- **Riesgo**: Logica de fallback, rate limiting y error handling duplicada
-
-### Problema 2: Funciones legacy con OpenAI directo
-- `ai-content-studio`, `generate-blog-ai-content`, `generate-sector-dossier`, `classify-sector-pe` llaman a OpenAI directamente sin fallback a Lovable
-- Estas podrian migrarse a Lovable AI para reducir costes
-
-### Problema 3: Sin metricas centralizadas
-- No hay tracking de tokens consumidos, costes o latencia por funcion
-- El campo `usage` en ai-helper devuelve datos pero no se persisten
-
-### Problema 4: Sin rate limiting global
-- Cada funcion maneja 429/402 de forma independiente
-- No hay circuit breaker ni cola de reintentos
+### Riesgo
+- Las funciones marcadas "Parcial" dependen de precision JSON. Gemini 2.5 Flash ha mejorado mucho pero podria haber regresiones en extraccion estructurada compleja.
+- Solucion: usar `callAI({ preferOpenAI: true })` para estas, manteniendo OpenAI como primario pero con fallback.
 
 ---
 
-## 5. Resumen de APIs Externas Integradas
+## Mejora 3: Tabla `ai_usage_logs` + Dashboard de consumo
 
-| Servicio | API Key | Proposito |
-|----------|---------|-----------|
-| Lovable AI Gateway | `LOVABLE_API_KEY` | IA principal (Gemini) |
-| OpenAI | `OPENAI_API_KEY` | IA precision (GPT-4o-mini) |
-| Firecrawl | `FIRECRAWL_API_KEY` | Web scraping y busqueda |
-| Apollo.io | `APOLLO_API_KEY` | Enriquecimiento de contactos |
-| Brevo | `BREVO_API_KEY` | Email marketing |
+### Estado actual
+- **Zero tracking**: No existe ninguna tabla ni log de uso de IA
+- El helper `ai-helper.ts` devuelve `tokensUsed` y `durationMs` pero nadie los persiste
+- No hay forma de saber cuanto se gasta por funcion, por dia, ni por proveedor
+- No hay alertas de consumo excesivo
+
+### Que se necesita
+
+**1. Tabla en Supabase:**
+```text
+ai_usage_logs
+├── id (uuid)
+├── created_at (timestamptz)
+├── function_name (text)        -- ej: "enrich-campaign-company"
+├── provider (text)             -- "lovable" | "openai"
+├── model (text)                -- "google/gemini-2.5-flash"
+├── tokens_input (int)
+├── tokens_output (int)
+├── tokens_total (int)
+├── duration_ms (int)
+├── estimated_cost_usd (numeric) -- calculo aproximado
+├── status (text)               -- "success" | "error" | "rate_limited"
+├── error_message (text)
+├── metadata (jsonb)            -- datos extra opcionales
+```
+
+**2. Logging automatico en ai-helper.ts:**
+Despues de cada llamada exitosa o fallida, insertar un registro. Esto solo funciona si todas las funciones usan el helper (depende de Mejora 1).
+
+**3. Dashboard en /admin:**
+- Consumo diario/semanal/mensual por proveedor
+- Top 10 funciones por tokens consumidos
+- Coste estimado acumulado
+- Alertas cuando se superen umbrales
+- Grafico de tendencia temporal (Recharts)
+
+### Dependencia
+- **Requiere Mejora 1** para ser efectivo. Si las funciones no pasan por el helper, no se loguean.
+- Alternativa parcial: loguear directamente en cada funcion (mas trabajo, menos consistente).
+
+---
+
+## Mejora 4: Rate limiting global y circuit breaker
+
+### Estado actual
+- **Rate limiting fragmentado**: Cada funcion maneja 429/402 de forma independiente
+- Algunos ponen delays (`setTimeout 1500ms` en enrich-campaign-companies-data, `2000ms` en corporate-buyer-batch-enrich)
+- El hook `useEdgeFunctionOptimizer` existe en frontend pero **no se usa en ningun componente**
+- No hay circuit breaker: si Lovable AI cae, las 40 funciones siguen intentando hasta fallar individualmente
+- No hay cola global: procesos batch de distintos modulos pueden saturar simultaneamente
+
+### Que se necesita
+
+**1. Rate limiter en ai-helper.ts (backend):**
+```text
+- Contador en memoria de llamadas por minuto
+- Si se supera el umbral (ej: 30/min), encolar en vez de rechazar
+- Exponential backoff automatico en 429
+- Log de rate limits a ai_usage_logs
+```
+
+**2. Circuit breaker por proveedor:**
+```text
+Estado: CLOSED → OPEN → HALF_OPEN
+- CLOSED: Normal, todas las llamadas pasan
+- OPEN: Tras 3 errores consecutivos (429/500/timeout), bloquear proveedor 60s
+  → Redirigir automaticamente al fallback
+- HALF_OPEN: Tras 60s, permitir 1 llamada de prueba
+  → Si OK → CLOSED | Si falla → OPEN otros 60s
+```
+
+**3. Cola de prioridades:**
+```text
+Priority: critical > high > medium > low
+- critical: Siempre pasan (envio de emails, operaciones de usuario)
+- high: Procesados inmediatamente si hay capacidad
+- medium: Encolados con delay minimo
+- low: Batch, procesados en ventanas de baja carga
+```
+
+### Limitaciones en Edge Functions
+- Edge Functions son **stateless**: no hay memoria compartida entre invocaciones
+- El rate limiter en memoria solo funciona DENTRO de una misma invocacion (ej: batch processing)
+- Para rate limiting global real se necesitaria:
+  - Tabla en Supabase como contador (lento pero persistente)
+  - O Redis/KV store (no disponible en Supabase Edge Functions)
+- **Solucion pragmatica**: Rate limiting por invocacion (para batches) + logging en `ai_usage_logs` + alertas reactivas
+
+### Complejidad
+- **Alta**: El circuit breaker con estado persistente es complejo en un entorno stateless
+- **Recomendacion**: Empezar con rate limiting simple en batches + logging, y escalar si se detectan problemas reales
+
+---
+
+## Orden recomendado de implementacion
+
+```text
+1. Mejora 1 (Helper centralizado)  ← Base para todo lo demas
+2. Mejora 3 (ai_usage_logs)        ← Visibilidad inmediata de costes
+3. Mejora 2 (Migrar OpenAI→Lovable) ← Reduccion de costes
+4. Mejora 4 (Rate limiting)         ← Solo si se detectan problemas con datos de Mejora 3
+```
+
+La Mejora 1 es prerequisito de las demas. Sin ella, las mejoras 2-4 requieren cambios en 40+ archivos individualmente.
 
