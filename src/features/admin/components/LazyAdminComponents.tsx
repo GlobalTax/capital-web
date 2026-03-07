@@ -135,6 +135,9 @@ export const LazyFundIntelligencePage = lazy(() => import('@/pages/admin/FundInt
 // === API USAGE DASHBOARD ===
 export const LazyApiUsageDashboard = lazy(() => import('@/components/admin/ApiUsageDashboard').then(m => ({ default: m.ApiUsageDashboard })));
 
+// === AI USAGE DASHBOARD ===
+export const LazyAIUsageDashboard = lazy(() => import('@/components/admin/AIUsageDashboard').then(m => ({ default: m.AIUsageDashboard })));
+
 // === DATA ENRICHMENT ===
 export const LazyDataEnrichmentPanel = lazy(() => import('@/components/admin/DataEnrichmentPanel').then(m => ({ default: m.DataEnrichmentPanel })));
 

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
+import { callAI, extractToolCallArgs, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,7 +8,6 @@ const corsHeaders = {
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
 const SYSTEM_PROMPT_IDEAS = `Eres un estratega de contenidos experto en Private Equity y M&A para el mercado español. Trabajas para Capittal, una firma de asesoramiento en valoración y venta de empresas.
 
@@ -21,7 +21,7 @@ Para cada idea genera un JSON con esta estructura:
       "title": "Título atractivo y concreto",
       "channel": "linkedin_company|linkedin_personal|blog|newsletter",
       "content_type": "linkedin_post|carousel|article|newsletter_edition|sector_brief",
-      "linkedin_format": "carousel|long_text|infographic|opinion|storytelling|data_highlight" (solo si channel es linkedin_*),
+      "linkedin_format": "carousel|long_text|infographic|opinion|storytelling|data_highlight",
       "target_audience": "sellers|buyers|advisors",
       "priority": "low|medium|high|urgent",
       "category": "Categoría del sector PE",
@@ -37,7 +37,6 @@ Para cada idea genera un JSON con esta estructura:
 IMPORTANTE:
 - Genera entre 5 y 10 ideas variadas por canal
 - Usa datos concretos y verificables del contexto del sector
-- Adapta el tono: LinkedIn empresa = profesional con datos; LinkedIn personal = opinión y storytelling; Blog = SEO y autoridad; Newsletter = resumen ejecutivo
 - Prioriza temas que atraigan vendedores (empresarios que consideren vender)
 - Incluye siempre implicación para España`;
 
@@ -45,34 +44,12 @@ const SYSTEM_PROMPT_DRAFT = `Eres un redactor experto en contenido de Private Eq
 
 Redacta contenido de alta calidad según el canal:
 
-**LinkedIn empresa** (fórmula obligatoria):
-1. GANCHO (1ª línea): Dato sorprendente o pregunta provocadora
-2. CONTEXTO (3-5 líneas): Explicar el "por qué" con datos
-3. IMPLICACIÓN LOCAL (2-3 líneas): Conectar con España
-4. CTA: Pregunta que invite a comentar o contactar
+**LinkedIn empresa**: GANCHO + CONTEXTO + IMPLICACIÓN LOCAL + CTA
+**LinkedIn personal**: Tono humano, anécdotas, "Llevo X años en M&A..."
+**Blog** (1.500-2.500 palabras): Titular + Resumen + Contexto + Compradores + Múltiplos + Implicación + CTA
+**Newsletter** (5 secciones): Dato de la quincena + Sector en foco + Operación destacada + Pregunta del mes + CTA
 
-**LinkedIn personal**:
-- Tono más humano y reflexivo
-- Anécdotas y opiniones personales
-- "Llevo X años en M&A y..."
-
-**Blog** (1.500-2.500 palabras):
-1. Titular con dato impactante + keyword SEO
-2. Resumen ejecutivo (100 palabras)
-3. Contexto del mercado: global → Europa → España
-4. Compradores activos: nombres, fondos, operaciones
-5. Múltiplos de referencia: tabla con rangos
-6. Qué significa para tu empresa
-7. CTA: valoración gratuita
-
-**Newsletter** (5 secciones):
-1. Dato de la quincena (2-3 frases)
-2. Sector en foco (200-300 palabras)
-3. Operación destacada (100-150 palabras)
-4. Pregunta del mes (100 palabras)
-5. CTA (1 frase + botón)
-
-Escribe siempre en español de España. Usa Markdown para formato.`;
+Escribe siempre en español de España. Usa Markdown.`;
 
 const SYSTEM_PROMPT_SEO = `Eres un experto en SEO para contenido de M&A y Private Equity en español. Genera:
 - meta_title: máximo 60 caracteres, con keyword principal
@@ -81,75 +58,120 @@ const SYSTEM_PROMPT_SEO = `Eres un experto en SEO para contenido de M&A y Privat
 
 Devuelve JSON: { "meta_title": "", "meta_description": "", "target_keywords": [] }`;
 
-const SYSTEM_PROMPT_SMART_PLAN = `Eres un estratega de contenidos experto en Private Equity y M&A para Capittal (España). Recibes IDEAS AMPLIAS o conceptuales del usuario y TÚ las descompones en un plan editorial completo con piezas de contenido concretas.
+const SYSTEM_PROMPT_SMART_PLAN = `Eres un estratega de contenidos experto en Private Equity y M&A para Capittal (España). Recibes IDEAS AMPLIAS del usuario y TÚ las descompones en un plan editorial completo.
 
-TU ROL:
-- Interpretar ideas amplias (ej: "campaña sobre consolidación en certificación") y descomponerlas en 5-10 piezas de contenido específicas
-- Crear una narrativa coherente: las piezas deben seguir una secuencia lógica (de lo general a lo específico, o cronológica)
-- Decidir autónomamente fechas, canales, formatos y frecuencia
-- Si el usuario da varias ideas, generar contenidos para TODAS ellas
+TU ROL: Interpretar ideas amplias y descomponerlas en 5-10 piezas de contenido específicas. Crear narrativa coherente. Decidir fechas, canales, formatos y frecuencia autónomamente.
 
-REGLAS DE PLANIFICACIÓN:
-- La fecha de inicio es MAÑANA (el día siguiente a la fecha actual proporcionada)
-- LinkedIn empresa: máximo 3 posts/semana, mejores días martes-jueves
-- LinkedIn personal: 2-3 posts/semana, mejores días lunes/miércoles/viernes
-- Blog: 1-2 artículos/mes, publicar martes o miércoles
-- Newsletter: quincenal o mensual, enviar martes o jueves
-- NUNCA programar más de 1 contenido por canal por día
-- Alternar formatos (carrusel, texto largo, dato destacado) para variedad
-- Priorizar temas temporales/urgentes antes en el calendario
+REGLAS: Fecha inicio MAÑANA. LinkedIn empresa máx 3/semana (mar-jue). LinkedIn personal 2-3/semana (lun/mié/vie). Blog 1-2/mes (mar o mié). Newsletter quincenal/mensual (mar o jue). NUNCA más de 1 por canal por día.`;
 
-DESCOMPOSICIÓN DE IDEAS:
-- Idea simple (1 concepto) → 5-7 piezas de contenido
-- Idea amplia (campaña completa) → 8-12 piezas de contenido
-- Múltiples ideas → 5-8 piezas por idea
-- Cada pieza debe aportar un ángulo diferente: dato, opinión, caso práctico, guía, tendencia, etc.
+const SYSTEM_PROMPT_AUTO_SCHEDULE = `Eres un planificador editorial experto. Tu tarea es ASIGNAR FECHAS ÓPTIMAS a contenidos existentes sin fecha.
 
-SELECCIÓN DE CANAL (tú decides según el contenido):
-- Dato impactante / estadística → LinkedIn empresa (data_highlight o infographic)
-- Reflexión personal / lección → LinkedIn personal (opinion o storytelling)
-- Guía larga / contenido evergreen → Blog (article)
-- Resumen ejecutivo / curación → Newsletter (newsletter_edition)
-- Caso de éxito / proceso → LinkedIn personal (storytelling) o Blog
-- Carrusel visual / lista → LinkedIn empresa (carousel)
-- Educativo / explicativo → LinkedIn empresa (long_text)
+REGLAS: LinkedIn empresa máx 3/semana mar-jue. LinkedIn personal 2-3/semana lun/mié/vie. Blog 1-2/mes mar o mié. Newsletter quincenal/mensual mar o jue. No solapar canales por día. Respetar items ya programados. Priorizar urgentes al inicio. No programar fines de semana.`;
 
-Para cada pieza genera:
-- title: título optimizado y atractivo
-- channel: linkedin_company | linkedin_personal | blog | newsletter
-- content_type: linkedin_post | carousel | article | newsletter_edition | sector_brief
-- linkedin_format: carousel | long_text | infographic | opinion | storytelling | data_highlight (solo si LinkedIn)
-- target_audience: sellers | buyers | advisors
-- priority: low | medium | high | urgent
-- category: categoría temática
-- notes: brief de 2-3 líneas con enfoque y ángulo
-- key_data: dato cuantitativo clave (si aplica)
-- target_keywords: 3-5 keywords SEO
-- scheduled_date: fecha YYYY-MM-DD según las reglas de planificación
+// Tool definitions
+const TOOL_IDEAS = {
+  type: 'function' as const,
+  function: {
+    name: "return_content_ideas",
+    description: "Return generated content ideas",
+    parameters: {
+      type: "object",
+      properties: {
+        ideas: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" }, channel: { type: "string", enum: ["linkedin_company", "linkedin_personal", "blog", "newsletter"] },
+              content_type: { type: "string" }, linkedin_format: { type: "string" },
+              target_audience: { type: "string", enum: ["sellers", "buyers", "advisors"] },
+              priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
+              category: { type: "string" }, notes: { type: "string" }, key_data: { type: "string" },
+              target_keywords: { type: "array", items: { type: "string" } },
+              meta_title: { type: "string" }, meta_description: { type: "string" },
+            },
+            required: ["title", "channel", "content_type", "priority", "category", "notes"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["ideas"], additionalProperties: false,
+    },
+  },
+};
 
-Distribuye las fechas de forma inteligente. NO necesitas que el usuario te diga frecuencia ni canales, tú eres el estratega.`;
+const TOOL_SEO = {
+  type: 'function' as const,
+  function: {
+    name: "return_seo_data",
+    description: "Return SEO optimization data",
+    parameters: {
+      type: "object",
+      properties: {
+        meta_title: { type: "string" }, meta_description: { type: "string" },
+        target_keywords: { type: "array", items: { type: "string" } },
+      },
+      required: ["meta_title", "meta_description", "target_keywords"], additionalProperties: false,
+    },
+  },
+};
 
-const SYSTEM_PROMPT_AUTO_SCHEDULE = `Eres un planificador editorial experto en Private Equity y M&A para Capittal (España). Tu tarea es ASIGNAR FECHAS ÓPTIMAS a contenidos existentes que aún no tienen fecha programada.
+const TOOL_PLAN = {
+  type: 'function' as const,
+  function: {
+    name: "return_editorial_plan",
+    description: "Return the complete editorial plan with scheduled dates",
+    parameters: {
+      type: "object",
+      properties: {
+        plan: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" }, channel: { type: "string", enum: ["linkedin_company", "linkedin_personal", "blog", "newsletter"] },
+              content_type: { type: "string", enum: ["linkedin_post", "carousel", "article", "newsletter_edition", "sector_brief"] },
+              linkedin_format: { type: "string", enum: ["carousel", "long_text", "infographic", "opinion", "storytelling", "data_highlight"] },
+              target_audience: { type: "string", enum: ["sellers", "buyers", "advisors"] },
+              priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
+              category: { type: "string" }, notes: { type: "string" }, key_data: { type: "string" },
+              target_keywords: { type: "array", items: { type: "string" } },
+              scheduled_date: { type: "string", description: "YYYY-MM-DD format" },
+            },
+            required: ["title", "channel", "content_type", "priority", "category", "notes", "scheduled_date"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["plan"], additionalProperties: false,
+    },
+  },
+};
 
-RECIBES:
-- Una lista de items existentes (cada uno con id, título, canal, tipo, prioridad, notas)
-- Un rango de fechas (inicio y fin) para distribuir los contenidos
-- Items que YA están programados en ese rango (para evitar solapamientos)
-
-REGLAS DE PROGRAMACIÓN:
-1. LinkedIn empresa: máximo 3 posts/semana, mejores días martes-jueves
-2. LinkedIn personal: 2-3 posts/semana, mejores días lunes/miércoles/viernes
-3. Blog: 1-2 artículos/mes, publicar martes o miércoles
-4. Newsletter: quincenal o mensual, enviar martes o jueves
-5. CRM interno: cualquier día laborable
-6. NUNCA programar 2 contenidos del mismo canal en el mismo día
-7. Respetar los items ya programados: no poner nada en fechas/canales ya ocupados
-8. Priorizar items con prioridad "urgent" y "high" más al inicio del rango
-9. Alternar formatos y canales para variedad editorial
-10. No programar en sábados ni domingos
-11. Distribuir de forma equilibrada a lo largo del horizonte temporal
-
-IMPORTANTE: Devuelve EXACTAMENTE el mismo número de items que recibiste, cada uno con su id original y la fecha asignada.`;
+const TOOL_SCHEDULE = {
+  type: 'function' as const,
+  function: {
+    name: "return_schedule",
+    description: "Return the scheduled dates for each item",
+    parameters: {
+      type: "object",
+      properties: {
+        schedule: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              item_id: { type: "string", description: "The original item ID" },
+              scheduled_date: { type: "string", description: "YYYY-MM-DD format" },
+            },
+            required: ["item_id", "scheduled_date"], additionalProperties: false,
+          },
+        },
+      },
+      required: ["schedule"], additionalProperties: false,
+    },
+  },
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -157,7 +179,6 @@ serve(async (req) => {
   }
 
   try {
-    // Validate JWT
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "No autorizado" }), {
@@ -173,48 +194,43 @@ serve(async (req) => {
       });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
     const { mode, sector_context, item_data, channel_filter, topics, idea, start_date, frequency, preferred_channels, items_to_schedule, already_scheduled, end_date } = await req.json();
 
     let systemPrompt: string;
     let userPrompt: string;
-    let useToolCalling = false;
+    let tools: any[] | undefined;
+    let tool_choice: any | undefined;
 
     if (mode === "generate_ideas") {
       systemPrompt = SYSTEM_PROMPT_IDEAS;
       const sectorInfo = sector_context
-        ? `CONTEXTO DEL SECTOR:\n- Sector: ${sector_context.sector}\n- Subsector: ${sector_context.subsector}\n- Vertical: ${sector_context.vertical || 'N/A'}\n- Tesis PE: ${sector_context.pe_thesis || 'N/A'}\n- Datos cuantitativos: ${sector_context.quantitative_data || 'N/A'}\n- Firmas activas: ${sector_context.active_pe_firms || 'N/A'}\n- Múltiplos: ${sector_context.multiples_valuations || 'N/A'}\n- Fase consolidación: ${sector_context.consolidation_phase || 'N/A'}\n- Geografía: ${sector_context.geography || 'N/A'}`
-        : "Genera ideas generales sobre Private Equity y M&A en España, cubriendo múltiples sectores.";
-      
+        ? `CONTEXTO DEL SECTOR:\n- Sector: ${sector_context.sector}\n- Subsector: ${sector_context.subsector}\n- Vertical: ${sector_context.vertical || 'N/A'}\n- Tesis PE: ${sector_context.pe_thesis || 'N/A'}\n- Datos: ${sector_context.quantitative_data || 'N/A'}\n- Firmas activas: ${sector_context.active_pe_firms || 'N/A'}\n- Múltiplos: ${sector_context.multiples_valuations || 'N/A'}\n- Consolidación: ${sector_context.consolidation_phase || 'N/A'}\n- Geografía: ${sector_context.geography || 'N/A'}`
+        : "Genera ideas generales sobre Private Equity y M&A en España.";
       const channelInstruction = channel_filter && channel_filter !== 'all'
         ? `Genera ideas SOLO para el canal: ${channel_filter}`
-        : "Genera ideas variadas para todos los canales (LinkedIn empresa, LinkedIn personal, Blog, Newsletter)";
-
-      userPrompt = `${sectorInfo}\n\n${channelInstruction}\n\nGenera entre 5 y 10 ideas de contenido de alta calidad.`;
-      useToolCalling = true;
+        : "Genera ideas variadas para todos los canales";
+      userPrompt = `${sectorInfo}\n\n${channelInstruction}\n\nGenera entre 5 y 10 ideas de contenido.`;
+      tools = [TOOL_IDEAS];
+      tool_choice = { type: "function", function: { name: "return_content_ideas" } };
 
     } else if (mode === "generate_draft") {
       systemPrompt = SYSTEM_PROMPT_DRAFT;
-      userPrompt = `Redacta un contenido completo para:\n\n- Título: ${item_data.title}\n- Canal: ${item_data.channel}\n- Tipo: ${item_data.content_type}\n- Formato LinkedIn: ${item_data.linkedin_format || 'N/A'}\n- Audiencia: ${item_data.target_audience || 'sellers'}\n- Brief/Notas: ${item_data.notes || 'Sin notas adicionales'}\n- Dato clave: ${item_data.key_data || 'N/A'}\n- Keywords: ${item_data.target_keywords?.join(', ') || 'N/A'}\n- Categoría/Sector: ${item_data.category || 'General'}\n\nRedacta el contenido completo en Markdown.`;
+      userPrompt = `Redacta contenido completo para:\n- Título: ${item_data.title}\n- Canal: ${item_data.channel}\n- Tipo: ${item_data.content_type}\n- Formato LinkedIn: ${item_data.linkedin_format || 'N/A'}\n- Audiencia: ${item_data.target_audience || 'sellers'}\n- Brief: ${item_data.notes || 'Sin notas'}\n- Dato clave: ${item_data.key_data || 'N/A'}\n- Keywords: ${item_data.target_keywords?.join(', ') || 'N/A'}\n- Categoría: ${item_data.category || 'General'}\n\nRedacta en Markdown.`;
 
     } else if (mode === "optimize_seo") {
       systemPrompt = SYSTEM_PROMPT_SEO;
-      userPrompt = `Optimiza el SEO para este contenido:\n\n- Título: ${item_data.title}\n- Canal: ${item_data.channel || 'blog'}\n- Categoría: ${item_data.category || 'M&A'}\n- Notas: ${item_data.notes || ''}\n- Contenido actual: ${(item_data.ai_generated_content || '').substring(0, 2000)}`;
-      useToolCalling = true;
+      userPrompt = `Optimiza SEO:\n- Título: ${item_data.title}\n- Canal: ${item_data.channel || 'blog'}\n- Categoría: ${item_data.category || 'M&A'}\n- Notas: ${item_data.notes || ''}\n- Contenido: ${(item_data.ai_generated_content || '').substring(0, 2000)}`;
+      tools = [TOOL_SEO];
+      tool_choice = { type: "function", function: { name: "return_seo_data" } };
 
     } else if (mode === "smart_plan") {
-      // Accept either 'idea' (free-form string) or 'topics' (array) for backward compat
       const userIdea = idea || (topics && Array.isArray(topics) ? topics.join('\n') : null);
-      if (!userIdea) {
-        throw new Error("Se requiere al menos una idea o tema");
-      }
+      if (!userIdea) throw new Error("Se requiere al menos una idea o tema");
       systemPrompt = SYSTEM_PROMPT_SMART_PLAN;
       const today = new Date().toISOString().split('T')[0];
-
-      userPrompt = `FECHA ACTUAL: ${today}\n\nIDEAS DEL USUARIO:\n${userIdea}\n\nDescompón estas ideas en piezas de contenido concretas y genera un plan editorial completo. Tú decides las fechas óptimas (empezando desde mañana), la frecuencia ideal, y el canal más apropiado para cada pieza.`;
-      useToolCalling = true;
+      userPrompt = `FECHA ACTUAL: ${today}\n\nIDEAS DEL USUARIO:\n${userIdea}\n\nDescompón en piezas de contenido concretas con plan editorial completo.`;
+      tools = [TOOL_PLAN];
+      tool_choice = { type: "function", function: { name: "return_editorial_plan" } };
 
     } else if (mode === "auto_schedule") {
       if (!items_to_schedule || !Array.isArray(items_to_schedule) || items_to_schedule.length === 0) {
@@ -222,203 +238,42 @@ serve(async (req) => {
       }
       systemPrompt = SYSTEM_PROMPT_AUTO_SCHEDULE;
       const today = new Date().toISOString().split('T')[0];
-
       const itemsList = items_to_schedule.map((it: any, idx: number) =>
-        `${idx + 1}. [ID: ${it.id}] "${it.title}" | Canal: ${it.channel} | Tipo: ${it.content_type} | Prioridad: ${it.priority} | Categoría: ${it.category || 'N/A'} | Notas: ${it.notes || 'N/A'}`
+        `${idx + 1}. [ID: ${it.id}] "${it.title}" | Canal: ${it.channel} | Tipo: ${it.content_type} | Prioridad: ${it.priority} | Categoría: ${it.category || 'N/A'}`
       ).join('\n');
-
       const scheduledList = (already_scheduled || []).map((it: any) =>
         `- ${it.scheduled_date} | Canal: ${it.channel}`
       ).join('\n') || 'Ninguno';
-
-      userPrompt = `FECHA ACTUAL: ${today}\nRANGO DE PROGRAMACIÓN: ${start_date || today} a ${end_date || 'sin límite'}\n\nITEMS YA PROGRAMADOS EN ESTE RANGO:\n${scheduledList}\n\nITEMS A PROGRAMAR (${items_to_schedule.length}):\n${itemsList}\n\nAsigna una fecha óptima a cada item respetando las reglas editoriales.`;
-      useToolCalling = true;
+      userPrompt = `FECHA ACTUAL: ${today}\nRANGO: ${start_date || today} a ${end_date || 'sin límite'}\n\nYA PROGRAMADOS:\n${scheduledList}\n\nITEMS A PROGRAMAR (${items_to_schedule.length}):\n${itemsList}`;
+      tools = [TOOL_SCHEDULE];
+      tool_choice = { type: "function", function: { name: "return_schedule" } };
 
     } else {
       throw new Error(`Modo no válido: ${mode}`);
     }
 
-    const body: any = {
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-    };
-
-    if (useToolCalling) {
-      if (mode === "generate_ideas") {
-        body.tools = [{
-          type: "function",
-          function: {
-            name: "return_content_ideas",
-            description: "Return generated content ideas",
-            parameters: {
-              type: "object",
-              properties: {
-                ideas: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string" },
-                      channel: { type: "string", enum: ["linkedin_company", "linkedin_personal", "blog", "newsletter"] },
-                      content_type: { type: "string" },
-                      linkedin_format: { type: "string" },
-                      target_audience: { type: "string", enum: ["sellers", "buyers", "advisors"] },
-                      priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
-                      category: { type: "string" },
-                      notes: { type: "string" },
-                      key_data: { type: "string" },
-                      target_keywords: { type: "array", items: { type: "string" } },
-                      meta_title: { type: "string" },
-                      meta_description: { type: "string" },
-                    },
-                    required: ["title", "channel", "content_type", "priority", "category", "notes"],
-                    additionalProperties: false,
-                  },
-                },
-              },
-              required: ["ideas"],
-              additionalProperties: false,
-            },
-          },
-        }];
-        body.tool_choice = { type: "function", function: { name: "return_content_ideas" } };
-      } else if (mode === "optimize_seo") {
-        body.tools = [{
-          type: "function",
-          function: {
-            name: "return_seo_data",
-            description: "Return SEO optimization data",
-            parameters: {
-              type: "object",
-              properties: {
-                meta_title: { type: "string" },
-                meta_description: { type: "string" },
-                target_keywords: { type: "array", items: { type: "string" } },
-              },
-              required: ["meta_title", "meta_description", "target_keywords"],
-              additionalProperties: false,
-            },
-          },
-        }];
-        body.tool_choice = { type: "function", function: { name: "return_seo_data" } };
-      } else if (mode === "smart_plan") {
-        body.tools = [{
-          type: "function",
-          function: {
-            name: "return_editorial_plan",
-            description: "Return the complete editorial plan with scheduled dates",
-            parameters: {
-              type: "object",
-              properties: {
-                plan: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string" },
-                      channel: { type: "string", enum: ["linkedin_company", "linkedin_personal", "blog", "newsletter"] },
-                      content_type: { type: "string", enum: ["linkedin_post", "carousel", "article", "newsletter_edition", "sector_brief"] },
-                      linkedin_format: { type: "string", enum: ["carousel", "long_text", "infographic", "opinion", "storytelling", "data_highlight"] },
-                      target_audience: { type: "string", enum: ["sellers", "buyers", "advisors"] },
-                      priority: { type: "string", enum: ["low", "medium", "high", "urgent"] },
-                      category: { type: "string" },
-                      notes: { type: "string" },
-                      key_data: { type: "string" },
-                      target_keywords: { type: "array", items: { type: "string" } },
-                      scheduled_date: { type: "string", description: "YYYY-MM-DD format" },
-                    },
-                    required: ["title", "channel", "content_type", "priority", "category", "notes", "scheduled_date"],
-                    additionalProperties: false,
-                  },
-                },
-              },
-              required: ["plan"],
-              additionalProperties: false,
-            },
-          },
-        }];
-        body.tool_choice = { type: "function", function: { name: "return_editorial_plan" } };
-      } else if (mode === "auto_schedule") {
-        body.tools = [{
-          type: "function",
-          function: {
-            name: "return_schedule",
-            description: "Return the scheduled dates for each item",
-            parameters: {
-              type: "object",
-              properties: {
-                schedule: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      item_id: { type: "string", description: "The original item ID" },
-                      scheduled_date: { type: "string", description: "YYYY-MM-DD format" },
-                    },
-                    required: ["item_id", "scheduled_date"],
-                    additionalProperties: false,
-                  },
-                },
-              },
-              required: ["schedule"],
-              additionalProperties: false,
-            },
-          },
-        }];
-        body.tool_choice = { type: "function", function: { name: "return_schedule" } };
-      }
+    let aiResponse;
+    try {
+      aiResponse = await callAI(
+        [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
+        {
+          model: "google/gemini-2.5-flash",
+          tools: tools as any,
+          tool_choice,
+          functionName: 'generate-content-calendar-ai',
+        }
+      );
+    } catch (error) {
+      return aiErrorResponse(error, corsHeaders);
     }
-
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!aiResponse.ok) {
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Intenta de nuevo en unos segundos." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes. Añade créditos en Settings > Workspace > Usage." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errText = await aiResponse.text();
-      console.error("AI gateway error:", aiResponse.status, errText);
-      throw new Error(`AI gateway error: ${aiResponse.status}`);
-    }
-
-    const aiData = await aiResponse.json();
 
     let result: any;
-    if (useToolCalling) {
-      const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-      if (toolCall?.function?.arguments) {
-        try {
-          result = JSON.parse(toolCall.function.arguments);
-        } catch (parseErr) {
-          console.error("Failed to parse AI response:", toolCall.function.arguments);
-          throw new Error("La IA devolvió un formato inválido. Inténtalo de nuevo.");
-        }
-      } else {
-        throw new Error("No tool call response from AI");
-      }
-      // Validate structure based on mode
-      if (mode === "generate_ideas" && !Array.isArray(result?.ideas)) {
-        result = { ideas: [] };
-      }
-      if (mode === "smart_plan" && !Array.isArray(result?.plan)) {
-        result = { plan: [] };
-      }
+    if (tools) {
+      result = extractToolCallArgs(aiResponse);
+      if (!result) throw new Error("No tool call response from AI");
+
+      if (mode === "generate_ideas" && !Array.isArray(result?.ideas)) result = { ideas: [] };
+      if (mode === "smart_plan" && !Array.isArray(result?.plan)) result = { plan: [] };
       if (mode === "optimize_seo") {
         result = {
           meta_title: result?.meta_title || "",
@@ -426,34 +281,20 @@ serve(async (req) => {
           target_keywords: Array.isArray(result?.target_keywords) ? result.target_keywords : [],
         };
       }
-      if (mode === "auto_schedule" && !Array.isArray(result?.schedule)) {
-        result = { schedule: [] };
-      }
+      if (mode === "auto_schedule" && !Array.isArray(result?.schedule)) result = { schedule: [] };
     } else {
-      // Draft mode: return the text content directly
-      const content = aiData.choices?.[0]?.message?.content || "";
-      result = { content };
+      result = { content: aiResponse.content };
     }
 
     return new Response(JSON.stringify({
-      success: true,
-      mode,
-      result,
-      metadata: {
-        model: aiData.model || "google/gemini-3-flash-preview",
-        usage: aiData.usage,
-      },
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      success: true, mode, result,
+      metadata: { model: aiResponse.model, usage: { total_tokens: aiResponse.tokensUsed } },
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (e) {
     console.error("generate-content-calendar-ai error:", e);
     return new Response(JSON.stringify({
       error: e instanceof Error ? e.message : "Error desconocido",
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
