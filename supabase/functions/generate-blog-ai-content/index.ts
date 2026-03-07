@@ -1,5 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { callAI, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,16 +7,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
-  }
-
-  if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405, 
-      headers: corsHeaders 
-    });
   }
 
   try {
@@ -29,12 +21,6 @@ serve(async (req) => {
       });
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    // Build system prompt based on parameters
     let systemPrompt = `Eres un experto redactor de contenido especializado en M&A (fusiones y adquisiciones), valoraciones empresariales y consultoría financiera para la empresa Capittal.
 
 CONTEXTO DE CAPITTAL:
@@ -50,75 +36,35 @@ INSTRUCCIONES:
 - Usa un enfoque educativo pero comercial sutil
 - Termina siempre con una mención de Capittal como expertos en el tema`;
 
-    if (category) {
-      systemPrompt += `\n- Enfócate específicamente en: ${category}`;
-    }
-
-    if (tone) {
-      systemPrompt += `\n- Usa un tono: ${tone}`;
-    }
-
+    if (category) systemPrompt += `\n- Enfócate específicamente en: ${category}`;
+    if (tone) systemPrompt += `\n- Usa un tono: ${tone}`;
     if (length) {
-      const lengthGuide = {
+      const lengthGuide: Record<string, string> = {
         'corto': '800-1200 palabras',
-        'medio': '1500-2500 palabras', 
+        'medio': '1500-2500 palabras',
         'largo': '3000-4500 palabras'
       };
-      systemPrompt += `\n- Longitud aproximada: ${lengthGuide[length as keyof typeof lengthGuide] || '1500-2500 palabras'}`;
+      systemPrompt += `\n- Longitud aproximada: ${lengthGuide[length] || '1500-2500 palabras'}`;
     }
 
-    const messages = [
-      {
-        role: 'system',
-        content: systemPrompt
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ];
+    const response = await callAI(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt }
+      ],
+      { functionName: 'generate-blog-ai-content', maxTokens: 4000 }
+    );
 
-    console.log('Generating content with OpenAI...');
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
-        messages: messages,
-        max_completion_tokens: 4000,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API error:', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
-
-    console.log('Content generated successfully');
-
-    return new Response(JSON.stringify({ 
-      content: generatedContent,
+    return new Response(JSON.stringify({
+      content: response.content,
       type: type || 'content',
-      usage: data.usage 
+      usage: { total_tokens: response.tokensUsed }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Error in generate-blog-ai-content function:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message || 'Failed to generate content' 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('Error in generate-blog-ai-content:', error);
+    return aiErrorResponse(error, corsHeaders);
   }
 });
