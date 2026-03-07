@@ -83,6 +83,7 @@ import {
   LazyCRPortfolioListPage,
   LazyFundIntelligencePage,
   LazyApiUsageDashboard,
+  LazyAIUsageDashboard,
   LazyDataEnrichmentPanel,
   LazyCorporateBuyersPage,
   LazyCorporateBuyerDetailPage,
@@ -239,6 +240,7 @@ const AdminRouter = () => {
           <Route path="/settings/topbar" element={<LazyTopBarSettings />} />
           <Route path="/settings/sidebar" element={<LazySidebarSettings />} />
           <Route path="/settings/api-usage" element={<LazyApiUsageDashboard />} />
+          <Route path="/settings/ai-usage" element={<LazyAIUsageDashboard />} />
           <Route path="/data-enrichment" element={<LazyDataEnrichmentPanel />} />
           
           {/* Search Funds Intelligence */}
