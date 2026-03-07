@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { callAI, parseAIJson, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,120 +25,64 @@ interface EnrichmentResult {
   error?: string;
 }
 
-// Detect input type
 function detectInputType(query: string): { type: 'url' | 'domain' | 'name'; value: string } {
   const trimmed = query.trim();
-  
-  // Check if it's a full URL
   if (trimmed.match(/^https?:\/\//i)) {
     const url = new URL(trimmed);
     return { type: 'url', value: url.hostname.replace(/^www\./, '') };
   }
-  
-  // Check if it's a domain
   if (trimmed.match(/^(?:www\.)?[a-z0-9\-]+\.[a-z]{2,}$/i)) {
     return { type: 'domain', value: trimmed.replace(/^www\./, '') };
   }
-  
-  // Otherwise treat as company name
   return { type: 'name', value: trimmed };
 }
 
-// Try to get logo using Clearbit
 async function getLogoUrl(domain: string): Promise<string | null> {
   try {
     const testUrl = `https://logo.clearbit.com/${domain}`;
     const response = await fetch(testUrl, { method: 'HEAD' });
-    if (response.ok) {
-      return testUrl;
-    }
-  } catch (e) {
-    console.log('[potential-buyer-enrich] Logo not found for:', domain);
-  }
+    if (response.ok) return testUrl;
+  } catch (e) { /* ignore */ }
   return null;
 }
 
-// Try to find domain from company name
 async function findDomainFromName(companyName: string): Promise<string | null> {
-  const cleanName = companyName
-    .toLowerCase()
-    .replace(/[.,\-_]/g, '')
-    .replace(/\s+(sl|sa|slu|sau|sll|scoop|sociedad\s+limitada|sociedad\s+anonima)$/i, '')
-    .trim()
-    .replace(/\s+/g, '');
-  
-  const possibleDomains = [
-    `${cleanName}.es`,
-    `${cleanName}.com`,
-    `${cleanName}.eu`,
-    `${cleanName}.net`,
-  ];
-  
-  for (const domain of possibleDomains) {
-    const logoUrl = await getLogoUrl(domain);
-    if (logoUrl) {
-      return domain;
-    }
+  const cleanName = companyName.toLowerCase().replace(/[.,\-_]/g, '').replace(/\s+(sl|sa|slu|sau|sll|scoop|sociedad\s+limitada|sociedad\s+anonima)$/i, '').trim().replace(/\s+/g, '');
+  for (const ext of ['.es', '.com', '.eu', '.net']) {
+    const logoUrl = await getLogoUrl(`${cleanName}${ext}`);
+    if (logoUrl) return `${cleanName}${ext}`;
   }
-  
   return null;
 }
 
-// Scrape website using Firecrawl
 async function scrapeWebsite(url: string, firecrawlKey: string): Promise<string | null> {
   try {
     const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${firecrawlKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url,
-        formats: ['markdown'],
-        onlyMainContent: true,
-        waitFor: 2000,
-      }),
+      headers: { 'Authorization': `Bearer ${firecrawlKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, formats: ['markdown'], onlyMainContent: true, waitFor: 2000 }),
     });
-    
     const data = await response.json();
-    if (data.success && data.data?.markdown) {
-      // Limit content to avoid token issues
-      return data.data.markdown.substring(0, 8000);
-    }
-  } catch (e) {
-    console.error('[potential-buyer-enrich] Firecrawl error:', e);
-  }
+    if (data.success && data.data?.markdown) return data.data.markdown.substring(0, 8000);
+  } catch (e) { console.error('[potential-buyer-enrich] Firecrawl error:', e); }
   return null;
 }
 
-// Use AI to analyze content and generate description
-async function analyzeWithAI(
-  companyName: string,
-  websiteContent: string | null,
-  lovableKey: string
-): Promise<{ 
-  description: string; 
-  sector_focus: string[]; 
-  revenue_range: string | null;
-  revenue: number | null;
-  ebitda: number | null;
-  employees: number | null;
-}> {
-  const systemPrompt = `Eres un analista de M&A especializado en el mercado español. Analiza la información proporcionada sobre una empresa y genera:
-1. Una descripción profesional y concisa (2-3 frases máximo) destacando su actividad principal, productos/servicios y mercados.
-2. Los sectores de actividad de la empresa (máximo 3 sectores, usar terminología estándar M&A).
-3. Si es posible inferir el rango de facturación basado en el contenido (empleados, oficinas, etc.), indícalo.
-4. Si hay cifras numéricas de facturación, EBITDA o empleados, inclúyelas.
+async function analyzeWithAI(companyName: string, websiteContent: string | null): Promise<{ description: string; sector_focus: string[]; revenue_range: string | null; revenue: number | null; ebitda: number | null; employees: number | null }> {
+  const systemPrompt = `Eres un analista de M&A especializado en el mercado español. Analiza la información y genera:
+1. Descripción profesional (2-3 frases)
+2. Sectores de actividad (máximo 3)
+3. Rango de facturación si es inferible
+4. Cifras numéricas si hay
 
-Responde SOLO con un JSON válido con este formato:
+Responde SOLO con JSON válido:
 {
-  "description": "Descripción profesional de la empresa...",
+  "description": "...",
   "sector_focus": ["Sector 1", "Sector 2"],
-  "revenue_range": "1M-5M", // o null si no se puede inferir. Opciones: 0-1M, 1M-5M, 5M-10M, 10M-50M, 50M+
-  "revenue": 1500000, // facturación en euros como número, o null
-  "ebitda": 250000, // EBITDA en euros como número, o null
-  "employees": 45 // número de empleados, o null
+  "revenue_range": "1M-5M" o null,
+  "revenue": 1500000 o null,
+  "ebitda": 250000 o null,
+  "employees": 45 o null
 }`;
 
   const userContent = websiteContent 
@@ -144,172 +90,75 @@ Responde SOLO con un JSON válido con este formato:
     : `Empresa: ${companyName}\n\nNo hay contenido web disponible. Genera una descripción genérica basada en el nombre.`;
 
   try {
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent },
-        ],
-        temperature: 0.3,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('[potential-buyer-enrich] AI error:', response.status);
-      return { description: '', sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    
-    // Extract JSON from response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return {
-        description: parsed.description || '',
-        sector_focus: Array.isArray(parsed.sector_focus) ? parsed.sector_focus : [],
-        revenue_range: parsed.revenue_range || null,
-        revenue: typeof parsed.revenue === 'number' ? parsed.revenue : null,
-        ebitda: typeof parsed.ebitda === 'number' ? parsed.ebitda : null,
-        employees: typeof parsed.employees === 'number' ? parsed.employees : null,
-      };
-    }
-  } catch (e) {
-    console.error('[potential-buyer-enrich] AI parsing error:', e);
-  }
-  
+    const response = await callAI(
+      [{ role: 'system', content: systemPrompt }, { role: 'user', content: userContent }],
+      { functionName: 'potential-buyer-enrich', temperature: 0.3 }
+    );
+    const parsed = parseAIJson<any>(response.content);
+    return {
+      description: parsed.description || '',
+      sector_focus: Array.isArray(parsed.sector_focus) ? parsed.sector_focus : [],
+      revenue_range: parsed.revenue_range || null,
+      revenue: typeof parsed.revenue === 'number' ? parsed.revenue : null,
+      ebitda: typeof parsed.ebitda === 'number' ? parsed.ebitda : null,
+      employees: typeof parsed.employees === 'number' ? parsed.employees : null,
+    };
+  } catch (e) { console.error('[potential-buyer-enrich] AI error:', e); }
   return { description: '', sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
 }
 
-// Analyze image with GPT-4o Vision via OpenAI
-async function analyzeImageWithVision(
-  imageBase64: string,
-  openaiKey: string
-): Promise<{
-  name: string | null;
-  website: string | null;
-  description: string | null;
-  sector_focus: string[];
-  revenue_range: string | null;
-  revenue: number | null;
-  ebitda: number | null;
-  employees: number | null;
-}> {
-  const systemPrompt = `Eres un analista de M&A experto. Analiza esta imagen que puede ser:
-- Un logo de empresa
-- Una tarjeta de visita
-- Un informe financiero o documento contable
-- Una captura de web corporativa
-- Cualquier documento empresarial
-
-EXTRAE la siguiente información de la imagen:
+async function analyzeImageWithVision(imageBase64: string): Promise<{ name: string | null; website: string | null; description: string | null; sector_focus: string[]; revenue_range: string | null; revenue: number | null; ebitda: number | null; employees: number | null }> {
+  const systemPrompt = `Eres un analista de M&A experto. Analiza esta imagen y EXTRAE:
 1. Nombre de la empresa (OBLIGATORIO)
-2. Dominio web si es visible (ejemplo: empresa.es)
-3. Sector de actividad (usa terminología M&A estándar, máximo 3 sectores)
-4. Descripción breve de la actividad si se puede inferir (2-3 frases)
-5. Rango de facturación si hay datos financieros visibles
-6. CIFRAS NUMÉRICAS EXACTAS de facturación, EBITDA y empleados si son visibles
+2. Dominio web si visible
+3. Sector de actividad (máx 3)
+4. Descripción breve si inferible
+5. Rango de facturación si hay datos financieros
+6. Cifras numéricas exactas de facturación, EBITDA y empleados si visibles
 
-Responde SOLO con un JSON válido:
-{
-  "name": "Nombre de la empresa",
-  "website": "https://www.ejemplo.es" o null,
-  "description": "Descripción de la actividad..." o null,
-  "sector_focus": ["Sector 1", "Sector 2"],
-  "revenue_range": "1M-5M" o null,
-  "revenue": 1500000, // facturación en euros como número, o null
-  "ebitda": 250000, // EBITDA en euros como número, o null  
-  "employees": 45 // número de empleados, o null
-}
+Responde SOLO con JSON:
+{ "name": "...", "website": null, "description": null, "sector_focus": [], "revenue_range": null, "revenue": null, "ebitda": null, "employees": null }`;
 
-IMPORTANTE: 
-- Si ves cifras de facturación/ventas/ingresos, extrae el número exacto en revenue Y calcula el rango
-- Si ves EBITDA o beneficio, extrae el número en ebitda
-- Si ves número de empleados o plantilla, extrae en employees
-- El nombre de la empresa es OBLIGATORIO`;
+  let imageUrl = imageBase64;
+  if (!imageBase64.startsWith('data:')) {
+    imageUrl = `data:image/jpeg;base64,${imageBase64}`;
+  }
 
   try {
-    // Determine the image format
-    let imageUrl = imageBase64;
-    if (!imageBase64.startsWith('data:')) {
-      // Assume it's raw base64, add data URL prefix
-      imageUrl = `data:image/jpeg;base64,${imageBase64}`;
-    }
+    const response = await callAI(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: [
+          { type: 'text', text: 'Analiza esta imagen y extrae la información de la empresa:' },
+          { type: 'image_url', image_url: { url: imageUrl, detail: 'high' } },
+        ] },
+      ],
+      { functionName: 'potential-buyer-enrich-vision', preferOpenAI: true, maxTokens: 1000, temperature: 0.2 }
+    );
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: 'Analiza esta imagen y extrae la información de la empresa:' },
-              { type: 'image_url', image_url: { url: imageUrl, detail: 'high' } },
-            ],
-          },
-        ],
-        max_tokens: 1000,
-        temperature: 0.2,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[potential-buyer-enrich] Vision API error:', response.status, errorText);
-      return { name: null, website: null, description: null, sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    console.log('[potential-buyer-enrich] Vision response:', content);
-    
-    // Extract JSON from response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
-      return {
-        name: parsed.name || null,
-        website: parsed.website || null,
-        description: parsed.description || null,
-        sector_focus: Array.isArray(parsed.sector_focus) ? parsed.sector_focus : [],
-        revenue_range: parsed.revenue_range || null,
-        revenue: typeof parsed.revenue === 'number' ? parsed.revenue : null,
-        ebitda: typeof parsed.ebitda === 'number' ? parsed.ebitda : null,
-        employees: typeof parsed.employees === 'number' ? parsed.employees : null,
-      };
-    }
-  } catch (e) {
-    console.error('[potential-buyer-enrich] Vision parsing error:', e);
-  }
-  
+    const parsed = parseAIJson<any>(response.content);
+    return {
+      name: parsed.name || null,
+      website: parsed.website || null,
+      description: parsed.description || null,
+      sector_focus: Array.isArray(parsed.sector_focus) ? parsed.sector_focus : [],
+      revenue_range: parsed.revenue_range || null,
+      revenue: typeof parsed.revenue === 'number' ? parsed.revenue : null,
+      ebitda: typeof parsed.ebitda === 'number' ? parsed.ebitda : null,
+      employees: typeof parsed.employees === 'number' ? parsed.employees : null,
+    };
+  } catch (e) { console.error('[potential-buyer-enrich] Vision error:', e); }
   return { name: null, website: null, description: null, sector_focus: [], revenue_range: null, revenue: null, ebitda: null, employees: null };
 }
 
-// Extract domain from URL or website string
 function extractDomain(website: string | null): string | null {
   if (!website) return null;
   try {
     let url = website;
-    if (!url.match(/^https?:\/\//)) {
-      url = 'https://' + url;
-    }
+    if (!url.match(/^https?:\/\//)) url = 'https://' + url;
     const parsed = new URL(url);
     return parsed.hostname.replace(/^www\./, '');
   } catch {
-    // Try to extract domain pattern
     const match = website.match(/(?:www\.)?([a-z0-9\-]+\.[a-z]{2,})/i);
     return match ? match[1] : null;
   }
@@ -322,73 +171,31 @@ serve(async (req) => {
 
   try {
     let body;
-    try {
-      body = await req.json();
-    } catch {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Cuerpo de solicitud inválido' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    try { body = await req.json(); } catch {
+      return new Response(JSON.stringify({ success: false, error: 'Cuerpo de solicitud inválido' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const { mode = 'text', query, imageBase64 } = body;
-
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-    const openaiKey = Deno.env.get('OPENAI_API_KEY');
-
-    if (!lovableKey) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'LOVABLE_API_KEY no configurada' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
     // ============ IMAGE MODE ============
     if (mode === 'image') {
       if (!imageBase64) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Se requiere una imagen en base64' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ success: false, error: 'Se requiere una imagen en base64' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
-      if (!openaiKey) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'OPENAI_API_KEY no configurada para análisis de imágenes' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      console.log('[potential-buyer-enrich] Processing image mode, size:', imageBase64.length);
-
-      // Step 1: Analyze image with GPT-4o Vision
-      const visionResult = await analyzeImageWithVision(imageBase64, openaiKey);
+      const visionResult = await analyzeImageWithVision(imageBase64);
       
       if (!visionResult.name) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'No se pudo detectar una empresa en la imagen' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ success: false, error: 'No se pudo detectar una empresa en la imagen' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
-      console.log('[potential-buyer-enrich] Vision extracted:', visionResult);
-
-      // Step 2: Try to get logo if we have a website
       let logoUrl: string | null = null;
       let domain = extractDomain(visionResult.website);
       
-      if (domain) {
-        logoUrl = await getLogoUrl(domain);
-      } else {
-        // Try to find domain from company name
-        domain = await findDomainFromName(visionResult.name);
-        if (domain) {
-          logoUrl = await getLogoUrl(domain);
-        }
-      }
+      if (domain) { logoUrl = await getLogoUrl(domain); }
+      else { domain = await findDomainFromName(visionResult.name); if (domain) logoUrl = await getLogoUrl(domain); }
 
-      // Step 3: If no description from image, use AI to generate one
       let description = visionResult.description;
       let sectorFocus = visionResult.sector_focus;
       let revenueRange = visionResult.revenue_range;
@@ -397,12 +204,9 @@ serve(async (req) => {
       let employees = visionResult.employees;
 
       if (!description && domain && firecrawlKey) {
-        // Try to scrape website for better description
-        const websiteUrl = `https://www.${domain}`;
-        console.log('[potential-buyer-enrich] Scraping for description:', websiteUrl);
-        const websiteContent = await scrapeWebsite(websiteUrl, firecrawlKey);
+        const websiteContent = await scrapeWebsite(`https://www.${domain}`, firecrawlKey);
         if (websiteContent) {
-          const aiResult = await analyzeWithAI(visionResult.name, websiteContent, lovableKey);
+          const aiResult = await analyzeWithAI(visionResult.name, websiteContent);
           description = aiResult.description || description;
           sectorFocus = aiResult.sector_focus.length > 0 ? aiResult.sector_focus : sectorFocus;
           revenueRange = aiResult.revenue_range || revenueRange;
@@ -412,79 +216,40 @@ serve(async (req) => {
         }
       }
 
-      // Build source string
       const sources: string[] = ['vision'];
       if (logoUrl) sources.push('clearbit');
       if (description && description !== visionResult.description) sources.push('firecrawl+ai');
 
-      const result: EnrichmentResult = {
+      return new Response(JSON.stringify({
         success: true,
-        data: {
-          name: visionResult.name,
-          logo_url: logoUrl,
-          website: visionResult.website || (domain ? `https://www.${domain}` : null),
-          description: description,
-          sector_focus: sectorFocus,
-          revenue_range: revenueRange,
-          revenue: revenue,
-          ebitda: ebitda,
-          employees: employees,
-          source: sources.join('+'),
-        },
-      };
-
-      console.log('[potential-buyer-enrich] Image mode result:', result);
-
-      return new Response(
-        JSON.stringify(result),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        data: { name: visionResult.name, logo_url: logoUrl, website: visionResult.website || (domain ? `https://www.${domain}` : null), description, sector_focus: sectorFocus, revenue_range: revenueRange, revenue, ebitda, employees, source: sources.join('+') },
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // ============ TEXT MODE (existing logic) ============
+    // ============ TEXT MODE ============
     if (!query || typeof query !== 'string' || query.trim().length < 2) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Se requiere un nombre de empresa, dominio o URL' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ success: false, error: 'Se requiere un nombre de empresa, dominio o URL' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    console.log('[potential-buyer-enrich] Processing text mode, query:', query);
-
-    // Step 1: Detect input type
     const { type, value } = detectInputType(query);
-    console.log('[potential-buyer-enrich] Input type:', type, 'value:', value);
-
     let domain: string | null = null;
     let companyName = query.trim();
     let logoUrl: string | null = null;
     let websiteUrl: string | null = null;
 
-    // Step 2: Determine domain and get logo
     if (type === 'url' || type === 'domain') {
       domain = value;
       logoUrl = await getLogoUrl(domain);
       websiteUrl = `https://www.${domain}`;
-      // Use domain as fallback name, capitalize first letter
       companyName = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
     } else {
-      // Try to find domain from company name
       domain = await findDomainFromName(value);
-      if (domain) {
-        logoUrl = await getLogoUrl(domain);
-        websiteUrl = `https://www.${domain}`;
-      }
+      if (domain) { logoUrl = await getLogoUrl(domain); websiteUrl = `https://www.${domain}`; }
     }
 
-    console.log('[potential-buyer-enrich] Domain:', domain, 'Logo:', logoUrl);
-
-    // Step 3: Scrape website if we have domain and Firecrawl key
     let websiteContent: string | null = null;
     if (websiteUrl && firecrawlKey) {
-      console.log('[potential-buyer-enrich] Scraping website:', websiteUrl);
       websiteContent = await scrapeWebsite(websiteUrl, firecrawlKey);
-      
-      // Try to extract company name from content if we only had domain
       if (websiteContent && (type === 'url' || type === 'domain')) {
         const titleMatch = websiteContent.match(/^#\s*(.+?)(?:\n|$)/);
         if (titleMatch && titleMatch[1].length > 3 && titleMatch[1].length < 100) {
@@ -493,47 +258,20 @@ serve(async (req) => {
       }
     }
 
-    // Step 4: Use AI to analyze and generate description
-    console.log('[potential-buyer-enrich] Analyzing with AI...');
-    const aiResult = await analyzeWithAI(companyName, websiteContent, lovableKey);
+    const aiResult = await analyzeWithAI(companyName, websiteContent);
 
-    // Build source string
     const sources: string[] = [];
     if (logoUrl) sources.push('clearbit');
     if (websiteContent) sources.push('firecrawl');
     sources.push('ai');
 
-    const result: EnrichmentResult = {
+    return new Response(JSON.stringify({
       success: true,
-      data: {
-        name: companyName,
-        logo_url: logoUrl,
-        website: websiteUrl,
-        description: aiResult.description,
-        sector_focus: aiResult.sector_focus,
-        revenue_range: aiResult.revenue_range,
-        revenue: aiResult.revenue,
-        ebitda: aiResult.ebitda,
-        employees: aiResult.employees,
-        source: sources.join('+'),
-      },
-    };
-
-    console.log('[potential-buyer-enrich] Result:', result);
-
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      data: { name: companyName, logo_url: logoUrl, website: websiteUrl, description: aiResult.description, sector_focus: aiResult.sector_focus, revenue_range: aiResult.revenue_range, revenue: aiResult.revenue, ebitda: aiResult.ebitda, employees: aiResult.employees, source: sources.join('+') },
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
     console.error('[potential-buyer-enrich] Error:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Error desconocido' 
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return aiErrorResponse(error, corsHeaders);
   }
 });

@@ -1,5 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { callAI, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -86,7 +86,6 @@ PRIORIZA SIEMPRE la información del registro mercantil.
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -101,7 +100,6 @@ serve(async (req) => {
       );
     }
 
-    // Build user prompt with available data
     const inputData: string[] = [];
     if (company_name) inputData.push(`Nombre de empresa: ${company_name}`);
     if (website) inputData.push(`Web: ${website}`);
@@ -110,109 +108,36 @@ serve(async (req) => {
     if (cif) inputData.push(`CIF: ${cif}`);
     if (country) inputData.push(`País: ${country}`);
 
-    // Build dynamic system prompt with CIF priority if available
     const dynamicSystemPrompt = SYSTEM_PROMPT + getCIFPriorityInstructions(cif);
-
     const userPrompt = `Analiza la siguiente empresa y genera el resumen estructurado:\n\n${inputData.join('\n')}`;
 
-    // Try OpenAI first, fallback to Lovable AI
-    const openAIKey = Deno.env.get('OPENAI_API_KEY');
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-
-    let response;
-    let model = 'gpt-4o-mini';
-
-    if (openAIKey) {
-      console.log('Using OpenAI API');
-      response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: dynamicSystemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          max_tokens: 2000,
-          temperature: 0.3,
-        }),
-      });
-    } else if (lovableKey) {
-      console.log('Using Lovable AI Gateway');
-      model = 'google/gemini-2.5-flash';
-      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${lovableKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            { role: 'system', content: dynamicSystemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-        }),
-      });
-    } else {
-      return new Response(
-        JSON.stringify({ error: 'No API key configured (OPENAI_API_KEY or LOVABLE_API_KEY)' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    // Use preferOpenAI for structured data extraction precision
+    const response = await callAI(
+      [
+        { role: 'system', content: dynamicSystemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      {
+        functionName: 'generate-company-summary',
+        preferOpenAI: true,
+        maxTokens: 2000,
+        temperature: 0.3,
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      return new Response(
-        JSON.stringify({ error: 'AI API error', details: errorText }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    );
 
-    const data = await response.json();
-    const summary = data.choices?.[0]?.message?.content;
-
-    if (!summary) {
-      return new Response(
-        JSON.stringify({ error: 'No summary generated' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('Summary generated successfully using model:', model);
+    console.log('Summary generated successfully using model:', response.model);
 
     return new Response(
       JSON.stringify({ 
-        summary, 
+        summary: response.content, 
         generated_at: new Date().toISOString(),
-        model 
+        model: response.model
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in generate-company-summary:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return aiErrorResponse(error, corsHeaders);
   }
 });

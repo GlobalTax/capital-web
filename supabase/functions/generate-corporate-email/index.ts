@@ -5,6 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAI, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,7 +29,6 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { 
@@ -127,31 +127,16 @@ ${custom_context ? `CONTEXTO ADICIONAL: ${custom_context}` : ''}
 
 Genera un email personalizado y convincente.`;
 
-    // Call AI
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.7,
-      }),
-    });
+    // Call AI using centralized helper
+    const aiResponse = await callAI(
+      [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      { functionName: 'generate-corporate-email', temperature: 0.7 }
+    );
 
-    if (!aiResponse.ok) {
-      const error = await aiResponse.text();
-      console.error("AI API error:", error);
-      throw new Error("Failed to generate email");
-    }
-
-    const aiData = await aiResponse.json();
-    const generatedBody = aiData.choices?.[0]?.message?.content || "";
+    const generatedBody = aiResponse.content;
 
     // Generate subject based on purpose
     let suggestedSubject = "";
@@ -177,10 +162,7 @@ Genera un email personalizado y convincente.`;
 
   } catch (error: any) {
     console.error("Error in generate-corporate-email:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return aiErrorResponse(error, corsHeaders);
   }
 };
 

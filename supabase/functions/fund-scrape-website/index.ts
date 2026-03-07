@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAI, parseAIJson, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,7 +40,6 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get fund data
     const tableName = fund_type === 'sf' ? 'sf_funds' : 'cr_funds';
     const { data: fund, error: fundError } = await supabase
       .from(tableName)
@@ -62,7 +62,6 @@ serve(async (req) => {
       );
     }
 
-    // Format URL
     let formattedUrl = websiteUrl.trim();
     if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
       formattedUrl = `https://${formattedUrl}`;
@@ -99,83 +98,38 @@ serve(async (req) => {
     const links = scrapeData.data?.links || scrapeData.links || [];
 
     // Use AI to extract structured data
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
     let extractedData = null;
 
-    if (openaiApiKey && markdown) {
+    if (markdown) {
       const extractionPrompt = fund_type === 'sf' 
         ? `Analiza esta página web de un Search Fund y extrae la siguiente información en JSON:
 {
-  "investment_criteria": {
-    "sectors": ["lista de sectores de interés"],
-    "geography": ["regiones/países objetivo"],
-    "revenue_range": { "min": number, "max": number, "currency": "EUR" },
-    "ebitda_range": { "min": number, "max": number, "currency": "EUR" }
-  },
-  "team": [
-    { "name": "nombre", "role": "rol", "linkedin": "url si está" }
-  ],
-  "backers": ["lista de inversores/sponsors"],
-  "portfolio": [
-    { "company": "nombre", "sector": "sector", "year": number }
-  ],
-  "contact": {
-    "email": "email si está",
-    "phone": "teléfono si está",
-    "address": "dirección si está"
-  },
-  "description": "descripción breve del fondo"
+  "investment_criteria": { "sectors": [], "geography": [], "revenue_range": { "min": null, "max": null, "currency": "EUR" }, "ebitda_range": { "min": null, "max": null, "currency": "EUR" } },
+  "team": [{ "name": "", "role": "", "linkedin": "" }],
+  "backers": [],
+  "portfolio": [{ "company": "", "sector": "", "year": null }],
+  "contact": { "email": "", "phone": "", "address": "" },
+  "description": ""
 }`
         : `Analiza esta página web de un fondo de Capital Riesgo y extrae la siguiente información en JSON:
 {
-  "investment_criteria": {
-    "sectors": ["lista de sectores de interés"],
-    "geography": ["regiones/países objetivo"],
-    "ticket_size": { "min": number, "max": number, "currency": "EUR" },
-    "fund_size": number,
-    "stage": ["seed", "series_a", "growth", etc]
-  },
-  "team": [
-    { "name": "nombre", "role": "rol", "linkedin": "url si está" }
-  ],
-  "portfolio": [
-    { "company": "nombre", "sector": "sector", "status": "active/exited" }
-  ],
-  "contact": {
-    "email": "email si está",
-    "phone": "teléfono si está",
-    "address": "dirección si está"
-  },
-  "description": "descripción breve del fondo"
+  "investment_criteria": { "sectors": [], "geography": [], "ticket_size": { "min": null, "max": null, "currency": "EUR" }, "fund_size": null, "stage": [] },
+  "team": [{ "name": "", "role": "", "linkedin": "" }],
+  "portfolio": [{ "company": "", "sector": "", "status": "" }],
+  "contact": { "email": "", "phone": "", "address": "" },
+  "description": ""
 }`;
 
       try {
-        const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openaiApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: 'Eres un experto en análisis de fondos de inversión. Extrae información estructurada de páginas web. Responde SOLO con JSON válido, sin markdown.' },
-              { role: 'user', content: `${extractionPrompt}\n\nContenido de la web:\n${markdown.substring(0, 15000)}` }
-            ],
-            temperature: 0.1,
-          }),
-        });
+        const aiResponse = await callAI(
+          [
+            { role: 'system', content: 'Eres un experto en análisis de fondos de inversión. Extrae información estructurada de páginas web. Responde SOLO con JSON válido, sin markdown.' },
+            { role: 'user', content: `${extractionPrompt}\n\nContenido de la web:\n${markdown.substring(0, 15000)}` }
+          ],
+          { functionName: 'fund-scrape-website', preferOpenAI: true, temperature: 0.1 }
+        );
 
-        const aiData = await aiResponse.json();
-        const content = aiData.choices?.[0]?.message?.content;
-        
-        if (content) {
-          try {
-            extractedData = JSON.parse(content.replace(/```json\n?|\n?```/g, ''));
-          } catch (e) {
-            console.error('Failed to parse AI response:', e);
-          }
-        }
+        extractedData = parseAIJson(aiResponse.content);
       } catch (aiError) {
         console.error('AI extraction failed:', aiError);
       }
@@ -185,23 +139,13 @@ serve(async (req) => {
     const updateData: Record<string, unknown> = {
       last_scraped_at: new Date().toISOString(),
       scrape_source_urls: [formattedUrl],
+      scrape_data: {
+        markdown_preview: markdown?.substring(0, 2000),
+        links_count: links.length,
+        extracted: extractedData,
+        scraped_at: new Date().toISOString(),
+      },
     };
-
-    if (fund_type === 'sf') {
-      updateData.scrape_data = {
-        markdown_preview: markdown?.substring(0, 2000),
-        links_count: links.length,
-        extracted: extractedData,
-        scraped_at: new Date().toISOString(),
-      };
-    } else {
-      updateData.scrape_data = {
-        markdown_preview: markdown?.substring(0, 2000),
-        links_count: links.length,
-        extracted: extractedData,
-        scraped_at: new Date().toISOString(),
-      };
-    }
 
     const { error: updateError } = await supabase
       .from(tableName)
@@ -227,11 +171,8 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in fund-scrape-website:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: error.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return aiErrorResponse(error, corsHeaders);
   }
 });

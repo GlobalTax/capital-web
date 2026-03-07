@@ -1,7 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+import { callAI, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +16,6 @@ serve(async (req) => {
     
     console.log('AI Content Studio request:', { type, model, template, options });
 
-    // Construir el system message basado en el template o tipo
     let systemMessage = '';
     let userMessage = '';
 
@@ -31,406 +28,149 @@ serve(async (req) => {
       userMessage = buildUserMessage(promptConfig.user, prompt, context);
     }
 
-    // Seleccionar parámetros del modelo
     const modelConfig = getModelConfig(model, type);
 
-    // Realizar la llamada a OpenAI
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: userMessage }
-        ],
+    // Use centralized AI helper instead of direct OpenAI call
+    const aiResponse = await callAI(
+      [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: userMessage }
+      ],
+      {
+        functionName: 'ai-content-studio',
+        preferOpenAI: true,
         temperature: options.temperature || modelConfig.temperature,
-        max_tokens: options.maxTokens || modelConfig.maxTokens,
-        top_p: 0.9,
-        frequency_penalty: 0.3,
-        presence_penalty: 0.1
-      }),
-    });
+        maxTokens: options.maxTokens || modelConfig.maxTokens,
+      }
+    );
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
-    
-    // Calcular métricas básicas
+    const generatedContent = aiResponse.content;
     const metrics = calculateContentMetrics(generatedContent, type);
-    
-    // Generar sugerencias de mejora
     const suggestions = generateSuggestions(generatedContent, type, context);
 
     const result = {
       content: generatedContent,
       type,
-      model,
+      model: aiResponse.model,
       usage: {
-        tokens: data.usage?.total_tokens || 0,
-        cost: calculateCost(data.usage?.total_tokens || 0, model),
+        tokens: aiResponse.tokensUsed,
+        cost: calculateCost(aiResponse.tokensUsed, aiResponse.model),
       },
       confidence: calculateConfidence(generatedContent, type),
       suggestions,
       metrics
     };
 
-    console.log('Generation completed successfully:', { type, model, tokens: result.usage.tokens });
+    console.log('Generation completed:', { type, model: aiResponse.model, tokens: result.usage.tokens });
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    console.error('Error in ai-content-studio function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  } catch (error: any) {
+    console.error('Error in ai-content-studio:', error);
+    return aiErrorResponse(error, corsHeaders);
   }
 });
 
 function getSystemMessageForTemplate(template: string, type: string): string {
   const templates: Record<string, string> = {
-    'ma-article-expert': `Eres el consultor M&A más prestigioso de España, con 20+ años de experiencia. Escribes para directivos, empresarios y profesionales financieros. Tu estilo es profesional pero accesible, usando datos reales del mercado español/europeo. Siempre incluyes ejemplos prácticos y casos reales cuando es apropiado.
+    'ma-article-expert': `Eres el consultor M&A más prestigioso de España, con 20+ años de experiencia. Escribes para directivos, empresarios y profesionales financieros. Tu estilo es profesional pero accesible, usando datos reales del mercado español/europeo.
 
 Estructura tus artículos así:
-1. Hook inicial que conecte con el lector
-2. Introducción que establezca el contexto y valor
-3. 3-4 secciones principales con subtítulos claros
-4. Ejemplos prácticos o casos reales
-5. Conclusión con llamada a la acción
-6. Longitud: 1500-2000 palabras
-
-Usa un tono: Experto pero accesible, con autoridad pero sin ser intimidante.`,
-    'title-optimizer': `Eres un experto en marketing digital y SEO especializado en contenido M&A. Creas títulos que:
-- Capturan la atención inmediata
-- Están optimizados para SEO
-- Generan curiosidad y clicks
-- Son específicos del sector M&A
-- Incluyen números o datos cuando es apropiado`,
-    'research-assistant': `Eres un analista financiero experto que realiza investigaciones profundas sobre el mercado M&A. Proporcionas:
-- Datos actuales y verificados
-- Tendencias del mercado
-- Análisis comparativo
-- Fuentes confiables
-- Contexto relevante para España/Europa`,
-    'sector-report-generator': `Eres un consultor senior especializado en análisis sectoriales y M&A con 25+ años de experiencia. Generas reports profesionales específicos por sector que son utilizados por inversores, empresarios y directivos para tomar decisiones estratégicas.
-
-ESTRUCTURA DE REPORTS SECTORIALES:
-1. **RESUMEN EJECUTIVO** (10-15% del contenido)
-   - Síntesis de los hallazgos clave
-   - Recomendaciones principales
-   - Métricas destacadas
-
-2. **ANÁLISIS DE MERCADO** (40-50% del contenido)
-   - Tamaño y crecimiento del mercado
-   - Principales jugadores
-   - Tendencias disruptivas
-   - Drivers de crecimiento
-   - Barreras de entrada
-
-3. **OPORTUNIDADES** (25-30% del contenido)
-   - Oportunidades de inversión
-   - Segmentos atractivos
-   - Consolidación del mercado
-   - Expansión internacional
-
-4. **CONCLUSIONES Y RECOMENDACIONES** (15-20% del contenido)
-   - Outlook del sector
-   - Estrategias recomendadas
-   - Timeline de oportunidades
-   - Riesgos a considerar
-
-PRINCIPIOS:
-- Usa datos concretos y métricas específicas
-- Incluye ejemplos de empresas reales cuando sea apropiado
-- Mantén un tono profesional pero accesible
-- Estructura clara con subtítulos y bullet points
-- Enfoque práctico orientado a la acción
-- Contexto español/europeo cuando sea relevante`,
-
-    // Newsletter templates
-    'newsletter-subject': `Eres un experto en email marketing para el sector M&A y finanzas corporativas. Creas asuntos de email que:
-- Son concisos (máximo 50 caracteres)
-- Generan curiosidad y apertura
-- Son profesionales pero atractivos
-- Evitan palabras spam
-- Personalizan cuando es posible
-Responde SOLO con el asunto, sin explicaciones ni comillas.`,
-
-    'newsletter-intro': `Eres un redactor experto en email marketing B2B para el sector financiero y M&A. Escribes textos introductorios para newsletters que:
-- Son breves y directos (2-3 frases máximo)
-- Generan interés inmediato
-- Tienen tono profesional pero cercano
-- Invitan a seguir leyendo
-Responde SOLO con el texto introductorio, sin explicaciones.`,
-
-    'newsletter-text-block': `Eres un redactor especializado en contenido financiero y M&A para newsletters de empresa. Creas bloques de texto que:
-- Son informativos y de valor
-- Tienen tono profesional pero accesible
-- Son concisos pero completos
-- Incluyen datos o insights relevantes
-- Se adaptan al contexto del newsletter
-Responde SOLO con el contenido del bloque, sin explicaciones ni títulos.`,
-
-    'newsletter-improve': `Eres un editor profesional especializado en contenido B2B financiero. Tu trabajo es:
-- Mejorar la claridad y fluidez del texto
-- Mantener un tono profesional pero cercano
-- Hacer el texto más conciso sin perder significado
-- Corregir errores gramaticales o de estilo
-- Añadir punch y engagement
-Responde SOLO con el texto mejorado, sin explicaciones.`
+1. Hook inicial
+2. Introducción con contexto y valor
+3. 3-4 secciones con subtítulos
+4. Ejemplos prácticos
+5. Conclusión con CTA
+6. 1500-2000 palabras`,
+    'title-optimizer': `Eres un experto en marketing digital y SEO especializado en contenido M&A. Creas títulos que capturan la atención, están optimizados para SEO, y son específicos del sector M&A.`,
+    'research-assistant': `Eres un analista financiero experto que investiga el mercado M&A. Proporcionas datos actuales, tendencias, análisis comparativo, y contexto para España/Europa.`,
+    'sector-report-generator': `Eres un consultor senior especializado en análisis sectoriales y M&A con 25+ años de experiencia. Generas reports profesionales con: Resumen Ejecutivo, Análisis de Mercado, Oportunidades, Conclusiones y Recomendaciones.`,
+    'newsletter-subject': `Eres un experto en email marketing M&A. Crea asuntos de email concisos (máx 50 chars), profesionales y que evitan spam. Responde SOLO con el asunto.`,
+    'newsletter-intro': `Eres un redactor de email marketing B2B financiero. Escribe textos intro breves (2-3 frases), directos y profesionales. Responde SOLO con el texto.`,
+    'newsletter-text-block': `Eres un redactor de contenido financiero para newsletters. Crea bloques informativos, profesionales y concisos. Responde SOLO con el contenido.`,
+    'newsletter-improve': `Eres un editor de contenido B2B financiero. Mejora claridad, fluidez, concisión y engagement. Responde SOLO con el texto mejorado.`
   };
-  
   return templates[template] || getDefaultPromptConfig(type).system;
 }
 
 function buildUserMessageFromTemplate(template: string, prompt: string, context: any): string {
   if (template === 'sector-report-generator') {
-    const reportTypeLabels = {
-      'market-analysis': 'Análisis de Mercado',
-      'ma-trends': 'Tendencias M&A',
-      'valuation-multiples': 'Múltiplos de Valoración',
-      'due-diligence': 'Guía de Due Diligence'
-    };
-
-    const depthLabels = {
-      'basic': 'básico (2,000-2,500 palabras)',
-      'intermediate': 'intermedio (3,500-4,000 palabras)',
-      'advanced': 'avanzado (5,000-6,000 palabras)'
-    };
-
-    const audienceLabels = {
-      'investors': 'inversores profesionales',
-      'entrepreneurs': 'empresarios y fundadores',
-      'advisors': 'asesores financieros',
-      'executives': 'directivos y C-level'
-    };
-
-    let sectorDataInfo = '';
-    if (context.sectorData && context.sectorData !== 'undefined') {
-      try {
-        const data = JSON.parse(context.sectorData);
-        sectorDataInfo = `
-DATOS DISPONIBLES DEL SECTOR:
-- Múltiplos de valoración: ${data.multiples?.length || 0} registros
-- Casos de éxito: ${data.caseStudies?.length || 0} casos
-- Estadísticas clave: ${data.statistics?.length || 0} métricas
-
-MÚLTIPLOS RELEVANTES:
-${data.multiples?.map(m => `- ${m.sector_name}: ${m.multiple_range} (mediana: ${m.median_multiple})`).join('\n') || 'No disponibles'}
-
-CASOS DE ÉXITO RELEVANTES:
-${data.caseStudies?.map(c => `- ${c.title}: ${c.description?.substring(0, 100)}...`).join('\n') || 'No disponibles'}
-`;
-      } catch (e) {
-        console.log('Error parsing sector data:', e);
-      }
-    }
-
-    return `Genera un reporte sectorial completo para el sector ${context.sector.toUpperCase()}.
-
-ESPECIFICACIONES DEL REPORTE:
-- Tipo: ${reportTypeLabels[context.reportType as keyof typeof reportTypeLabels]}
-- Profundidad: ${depthLabels[context.depth as keyof typeof depthLabels]}
-- Audiencia: ${audienceLabels[context.targetAudience as keyof typeof audienceLabels]}  
-- Período de análisis: ${context.period}
-- Enfoque personalizado: ${context.customFocus || 'Enfoque general del sector'}
-
-${sectorDataInfo}
-
-INSTRUCCIONES ESPECÍFICAS:
-1. Usa la estructura definida en el system prompt
-2. Incluye datos concretos y métricas específicas
-3. Menciona empresas españolas/europeas relevantes del sector cuando sea apropiado
-4. Si incluyes datos proporcionados, referéncialos de forma natural
-5. Mantén un tono profesional adaptado a la audiencia objetivo
-6. Genera contenido original basado en conocimiento del mercado
-7. Incluye subtítulos claros y numeración cuando sea apropiado
-
-El reporte debe ser exhaustivo, práctico y orientado a la toma de decisiones estratégicas.`;
+    const reportTypeLabels: Record<string, string> = { 'market-analysis': 'Análisis de Mercado', 'ma-trends': 'Tendencias M&A', 'valuation-multiples': 'Múltiplos de Valoración', 'due-diligence': 'Guía de Due Diligence' };
+    const depthLabels: Record<string, string> = { 'basic': 'básico (2,000-2,500 palabras)', 'intermediate': 'intermedio (3,500-4,000 palabras)', 'advanced': 'avanzado (5,000-6,000 palabras)' };
+    const audienceLabels: Record<string, string> = { 'investors': 'inversores', 'entrepreneurs': 'empresarios', 'advisors': 'asesores financieros', 'executives': 'directivos C-level' };
+    
+    return `Genera un reporte sectorial para ${context.sector?.toUpperCase() || 'el sector'}.
+Tipo: ${reportTypeLabels[context.reportType] || context.reportType}
+Profundidad: ${depthLabels[context.depth] || context.depth}
+Audiencia: ${audienceLabels[context.targetAudience] || context.targetAudience}
+Enfoque: ${context.customFocus || 'General'}`;
   }
-  
   return buildUserMessage(prompt, prompt, context);
 }
 
 function getDefaultPromptConfig(type: string) {
-  const configs = {
-    title: {
-      system: 'Eres un experto en marketing digital y M&A que crea títulos atractivos para artículos de blog sobre fusiones, adquisiciones, valoraciones empresariales y finanzas corporativas. Los títulos deben ser profesionales pero atractivos, específicos del sector, y optimizados para SEO.',
-      user: 'Genera 3 títulos atractivos para un artículo sobre: {prompt}. Los títulos deben ser específicos del sector M&A/finanzas, profesionales y optimizados para búsquedas. Contexto: {context}'
-    },
-    content: {
-      system: 'Eres un consultor experto en M&A y finanzas corporativas que escribe artículos profesionales. Tu audiencia son empresarios, directivos financieros y profesionales del sector. Escribes en español con un tono profesional pero accesible, usando ejemplos prácticos y datos del mercado cuando sea apropiado.',
-      user: `Escribe un artículo completo en formato markdown sobre: {prompt}. 
-
-Estructura requerida:
-- Introducción que enganche al lector
-- 3-4 secciones principales con subtítulos
-- Ejemplos prácticos o casos reales cuando sea posible
-- Conclusión con llamada a la acción
-- Longitud: 1500-2000 palabras
-- Incluye datos y tendencias del mercado español/europeo cuando sea relevante
-- Tono: profesional pero accesible
-- Audiencia: empresarios y directivos que consideran operaciones M&A
-
-Contexto adicional: {context}`
-    },
-    excerpt: {
-      system: 'Eres un experto en marketing de contenidos que crea extractos atractivos para artículos de blog sobre M&A y finanzas corporativas.',
-      user: 'Basándote en este título y contenido, crea un extracto de 150-200 caracteres que sea atractivo y resuma el valor del artículo para empresarios interesados en M&A. Título: {title}, Contenido: {prompt}'
-    },
-    seo: {
-      system: 'Eres un especialista en SEO para el sector financiero y M&A. Creas meta títulos y descripciones optimizadas para búsquedas relacionadas con fusiones, adquisiciones, valoraciones y finanzas corporativas.',
-      user: `Para un artículo titulado "{title}", crea:
-1. Meta título (máximo 60 caracteres) optimizado para SEO
-2. Meta descripción (máximo 160 caracteres) que incluya palabras clave relevantes del sector M&A
-
-Palabras clave a considerar: fusiones, adquisiciones, valoración empresarial, due diligence, M&A, finanzas corporativas, empresa, valorar empresa`
-    },
-    tags: {
-      system: 'Eres un experto en taxonomía de contenidos para el sector M&A y finanzas corporativas.',
-      user: 'Basándote en este título y contenido, sugiere 5-7 tags relevantes para el artículo. Los tags deben ser específicos del sector M&A, valoraciones, finanzas corporativas, y términos que usarían profesionales del sector. Título: {title}, Contenido: {prompt}'
-    },
-    research: {
-      system: 'Eres un analista financiero experto especializado en M&A que investiga y proporciona datos actuales del mercado. Siempre incluyes fuentes y contexto relevante para el mercado español y europeo.',
-      user: `Investiga y proporciona información actualizada sobre: {prompt}
-
-Incluye:
-1. Datos y estadísticas recientes (últimos 12 meses)
-2. Tendencias del mercado M&A en España/Europa
-3. Análisis del sector específico
-4. Comparativas regionales cuando sea relevante
-5. Implicaciones para empresarios y directivos
-6. Fuentes de información confiables
-
-Contexto: {context}`
-    }
+  const configs: Record<string, { system: string; user: string }> = {
+    title: { system: 'Eres un experto en marketing digital y M&A que crea títulos atractivos para artículos de blog.', user: 'Genera 3 títulos para: {prompt}. Contexto: {context}' },
+    content: { system: 'Eres un consultor experto en M&A que escribe artículos profesionales.', user: 'Escribe un artículo completo sobre: {prompt}. Contexto: {context}' },
+    excerpt: { system: 'Eres un experto en marketing de contenidos M&A.', user: 'Crea un extracto de 150-200 chars. Título: {title}, Contenido: {prompt}' },
+    seo: { system: 'Eres un especialista en SEO para M&A.', user: 'Para "{title}", crea meta título (<60 chars) y meta descripción (<160 chars).' },
+    tags: { system: 'Eres un experto en taxonomía M&A.', user: 'Sugiere 5-7 tags. Título: {title}, Contenido: {prompt}' },
+    research: { system: 'Eres un analista financiero experto en M&A.', user: 'Investiga: {prompt}. Incluye datos, tendencias, análisis. Contexto: {context}' }
   };
-  
-  return configs[type as keyof typeof configs] || configs.content;
+  return configs[type] || configs.content;
 }
 
 function buildUserMessage(template: string, prompt: string, context: any): string {
-  let message = template.replace('{prompt}', prompt);
-  message = message.replace('{title}', context.title || prompt);
-  message = message.replace('{context}', JSON.stringify(context, null, 2));
-  return message;
+  return template.replace('{prompt}', prompt).replace('{title}', context.title || prompt).replace('{context}', JSON.stringify(context, null, 2));
 }
 
 function getModelConfig(model: string, type: string) {
-  const baseConfig = {
-    temperature: 0.7,
-    maxTokens: type === 'content' ? 3000 : 800
-  };
-  
-  // Configuraciones específicas por modelo
-  const modelConfigs = {
-    'gpt-4o': { temperature: 0.6, maxTokens: type === 'content' ? 4000 : 1000 },
-    'gpt-4o-mini': { temperature: 0.7, maxTokens: type === 'content' ? 3000 : 800 },
-    'claude-3-5-sonnet-20241022': { temperature: 0.5, maxTokens: type === 'content' ? 4000 : 1000 }
-  };
-  
-  return { ...baseConfig, ...(modelConfigs[model as keyof typeof modelConfigs] || {}) };
+  return { temperature: 0.7, maxTokens: type === 'content' ? 3000 : 800 };
 }
 
 function calculateContentMetrics(content: string, type: string) {
   const wordCount = content.split(/\s+/).length;
-  const readability = calculateReadabilityScore(content);
-  const seoScore = calculateSEOScore(content, type);
-  
-  return {
-    wordCount,
-    readability: Math.round(readability * 100) / 100,
-    seoScore: Math.round(seoScore * 100) / 100,
-    engagement: calculateEngagementScore(content, type)
-  };
-}
-
-function calculateReadabilityScore(content: string): number {
-  // Fórmula simplificada de legibilidad
   const sentences = content.split(/[.!?]+/).length;
-  const words = content.split(/\s+/).length;
-  const avgWordsPerSentence = words / sentences;
+  const avgWords = wordCount / sentences;
+  const readability = Math.max(0, Math.min(10, 10 - (avgWords - 15) / 5));
   
-  // Score inverso - menos palabras por oración = mayor legibilidad
-  return Math.max(0, Math.min(10, 10 - (avgWordsPerSentence - 15) / 5));
-}
-
-function calculateSEOScore(content: string, type: string): number {
-  let score = 5; // Score base
-  
-  // Verificar palabras clave M&A
+  let seoScore = 5;
   const maKeywords = ['fusión', 'adquisición', 'valoración', 'due diligence', 'M&A', 'empresa'];
-  const keywordCount = maKeywords.filter(keyword => 
-    content.toLowerCase().includes(keyword.toLowerCase())
-  ).length;
-  
-  score += keywordCount * 0.5;
-  
-  // Longitud apropiada
-  const wordCount = content.split(/\s+/).length;
-  if (type === 'content' && wordCount >= 1500 && wordCount <= 2500) score += 1;
-  if (type === 'title' && content.length >= 30 && content.length <= 60) score += 2;
-  
-  return Math.min(10, score);
+  seoScore += maKeywords.filter(k => content.toLowerCase().includes(k.toLowerCase())).length * 0.5;
+  if (type === 'content' && wordCount >= 1500 && wordCount <= 2500) seoScore += 1;
+
+  let engagement = 5;
+  if (content.includes('?')) engagement += 0.5;
+  if (content.includes('ejemplo')) engagement += 0.5;
+  if (/\d+/.test(content)) engagement += 0.5;
+  if (content.includes('€') || content.includes('%')) engagement += 0.5;
+
+  return { wordCount, readability: Math.round(readability * 100) / 100, seoScore: Math.round(Math.min(10, seoScore) * 100) / 100, engagement: Math.min(10, engagement) };
 }
 
-function calculateEngagementScore(content: string, type: string): number {
-  let score = 5;
-  
-  // Elementos que aumentan engagement
-  if (content.includes('?')) score += 0.5; // Preguntas
-  if (content.includes('ejemplo')) score += 0.5; // Ejemplos
-  if (/\d+/.test(content)) score += 0.5; // Números/datos
-  if (content.includes('€') || content.includes('%')) score += 0.5; // Métricas financieras
-  
-  return Math.min(10, score);
-}
-
-function generateSuggestions(content: string, type: string, context: any): string[] {
-  const suggestions = [];
-  
+function generateSuggestions(content: string, type: string, _context: any): string[] {
+  const suggestions: string[] = [];
   if (type === 'content') {
-    const wordCount = content.split(/\s+/).length;
-    if (wordCount < 1000) suggestions.push('Considera expandir el contenido para mayor profundidad');
-    if (!content.includes('ejemplo')) suggestions.push('Añadir ejemplos prácticos mejoraría el artículo');
-    if (!/\d+/.test(content)) suggestions.push('Incluir datos o estadísticas aumentaría la credibilidad');
+    if (content.split(/\s+/).length < 1000) suggestions.push('Considera expandir el contenido');
+    if (!content.includes('ejemplo')) suggestions.push('Añadir ejemplos prácticos');
+    if (!/\d+/.test(content)) suggestions.push('Incluir datos o estadísticas');
   }
-  
-  if (type === 'title') {
-    if (content.length > 60) suggestions.push('Considera acortar el título para mejor SEO');
-    if (!content.includes('M&A') && !content.includes('fusión') && !content.includes('adquisición')) {
-      suggestions.push('Incluir términos específicos de M&A mejoraría la relevancia');
-    }
-  }
-  
+  if (type === 'title' && content.length > 60) suggestions.push('Considera acortar el título');
   return suggestions;
 }
 
 function calculateConfidence(content: string, type: string): number {
-  let confidence = 0.8; // Base confidence
-  
-  // Factores que aumentan la confianza
+  let confidence = 0.8;
   if (content.length > 100) confidence += 0.05;
   if (content.includes('€') || content.includes('%')) confidence += 0.05;
-  if (type === 'content' && content.split('\n').length > 5) confidence += 0.05; // Estructura
-  
+  if (type === 'content' && content.split('\n').length > 5) confidence += 0.05;
   return Math.min(0.95, confidence);
 }
 
 function calculateCost(tokens: number, model: string): number {
-  const costs = {
-    'gpt-4o-mini': 0.00015,
-    'gpt-4o': 0.03,
-    'claude-3-5-sonnet-20241022': 0.003
-  };
-  
-  return (tokens * (costs[model as keyof typeof costs] || 0.00015)) / 1000;
+  if (model.includes('gpt-4o')) return (tokens / 1000000) * 2.5;
+  if (model.includes('gpt-4o-mini')) return (tokens / 1000000) * 0.15;
+  if (model.includes('gemini')) return (tokens / 1000000) * 0.075;
+  return (tokens / 1000000) * 0.15;
 }
