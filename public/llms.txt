@@ -1,0 +1,59 @@
+# Capittal
+
+> Asesores especializados en valoración y venta de empresas en España. Firma de asesoramiento financiero M&A (fusiones y adquisiciones) con sede en Barcelona.
+
+Capittal ofrece servicios integrales de asesoramiento para la compraventa de empresas, valoraciones profesionales, due diligence, planificación fiscal y reestructuraciones. Operamos en el mercado español (mid-market) con foco en empresas con facturación entre 1M€ y 50M€.
+
+## Servicios Principales
+
+- [Venta de Empresas](https://capittal.es/venta-empresas): Asesoramiento completo para la venta de tu empresa, desde la valoración inicial hasta el cierre de la operación.
+- [Compra de Empresas](https://capittal.es/compra-empresas): Identificación y adquisición de oportunidades estratégicas para compradores corporativos y financieros.
+- [Valoraciones](https://capittal.es/servicios/valoraciones): Valoraciones precisas y profesionales de empresas utilizando múltiples metodologías (DCF, múltiplos comparables, transacciones precedentes).
+- [Valoración de Empresas](https://capittal.es/valoracion-empresas): Guía completa de métodos y herramientas de valoración empresarial.
+- [Search Funds](https://capittal.es/servicios/search-funds): Conectamos empresas con emprendedores que las harán crecer mediante el modelo de search fund.
+
+## Servicios Especializados
+
+- [Asesoramiento Legal en Compraventas](https://capittal.es/servicios/asesoramiento-legal): Asesoramiento jurídico integral en operaciones M&A, incluyendo contratos SPA, due diligence legal y negociación.
+- [Planificación Fiscal](https://capittal.es/servicios/planificacion-fiscal): Optimización tributaria en operaciones empresariales para minimizar el impacto fiscal de la venta.
+- [Due Diligence](https://capittal.es/servicios/due-diligence): Análisis exhaustivo de riesgos y oportunidades antes de una adquisición o inversión.
+- [Reestructuraciones](https://capittal.es/servicios/reestructuraciones): Reestructuración empresarial y financiera para empresas en dificultades o en proceso de transformación.
+
+## Sectores
+
+- [Industrial](https://capittal.es/sectores/industrial): Fabricación, manufactura y maquinaria.
+- [Construcción](https://capittal.es/sectores/construccion): Obra civil, rehabilitación y pavimentos.
+- [Healthcare](https://capittal.es/sectores/healthcare): Salud, biotecnología y distribución sanitaria.
+- [Seguridad](https://capittal.es/sectores/seguridad): Vigilancia, alarmas y protección contra incendios.
+- [Medio Ambiente](https://capittal.es/sectores/medio-ambiente): Residuos, reciclaje y demoliciones.
+- [Tecnología](https://capittal.es/sectores/tecnologia): SaaS, consultoría TIC y telecomunicaciones.
+- [Retail y Consumo](https://capittal.es/sectores/retail-consumer): Distribución, turismo y hostelería.
+- [Alimentación](https://capittal.es/sectores/alimentacion): Producción, distribución y HORECA.
+- [Energía](https://capittal.es/sectores/energia): Renovables, solar, eólica y almacenamiento.
+- [Logística](https://capittal.es/sectores/logistica): Transporte, operadores y última milla.
+
+## Herramientas Gratuitas
+
+- [Calculadora de Valoración](https://capittal.es/lp/calculadora): Obtén una valoración inicial de tu empresa en menos de 2 minutos, basada en múltiplos sectoriales y datos financieros.
+- [Calculadora Fiscal](https://capittal.es/lp/calculadora-fiscal): Calcula el impacto fiscal de la venta de tu empresa (IRPF, Impuesto de Sociedades, plusvalías).
+- [Test Exit-Ready](https://capittal.es/recursos/test-exit-ready): Evalúa si tu empresa está preparada para la venta.
+
+## Recursos
+
+- [Blog](https://capittal.es/recursos/blog): Últimas noticias y análisis del mercado M&A español.
+- [Informes M&A](https://capittal.es/recursos/informes-ma): Informes trimestrales del mercado M&A con datos propietarios y múltiplos sectoriales.
+- [Case Studies](https://capittal.es/recursos/case-studies): Casos de éxito reales de operaciones completadas.
+- [Newsletter](https://capittal.es/recursos/newsletter): Boletín mensual con tendencias del mercado M&A.
+- [Webinars](https://capittal.es/recursos/webinars): Seminarios web con expertos del sector.
+- [Marketplace](https://capittal.es/oportunidades): Oportunidades de compra y venta de empresas.
+
+## Contacto
+
+- Web: https://capittal.es/contacto
+- Idiomas: Español, Catalán, Inglés
+- Sede: Barcelona, España
+- Mercado objetivo: España (mid-market, 1M€–50M€ facturación)
+
+## Optional
+
+- [llms-full.txt](https://capittal.es/llms-full.txt): Versión extendida con descripciones detalladas de servicios, metodologías y FAQs.

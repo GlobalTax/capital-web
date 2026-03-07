@@ -1,75 +1,36 @@
 
 
-# Implementar llms.txt para Capittal
+## Diagnostico
 
-## Que es llms.txt
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-El estandar [llms.txt](https://llmstxt.org/) proporciona un archivo en texto plano en `/llms.txt` que describe tu sitio web de forma optimizada para LLMs, similar a como `robots.txt` es para crawlers y `sitemap.xml` para buscadores. Opcionalmente se puede incluir `/llms-full.txt` con contenido mas detallado.
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
 
-## Archivos a crear
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
-### 1. `public/llms.txt` - Version concisa
-Contenido estructurado en Markdown siguiendo el estandar:
-- Titulo y descripcion de Capittal
-- Servicios principales (valoraciones, venta/compra empresas, due diligence, asesoramiento legal, reestructuraciones, planificacion fiscal)
-- Sectores cubiertos (tecnologia, healthcare, seguridad, construccion, industrial, retail, energia, logistica, alimentacion, medio ambiente)
-- Herramientas (calculadora de valoracion, calculadora fiscal)
-- Recursos (blog, noticias, casos de estudio)
-- Contacto e informacion corporativa
-- Links a las paginas principales
+## Plan
 
-### 2. `public/llms-full.txt` - Version extendida
-Contenido mas detallado incluyendo:
-- Descripciones completas de cada servicio
-- Metodologia de valoracion
-- Proceso de venta de empresas
-- Informacion sobre el equipo
-- Detalles de cada sector
-- FAQs comunes
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-### 3. Actualizar `public/robots.txt`
-Anadir referencia a `llms.txt`:
-```
-# LLMs
-Sitemap: https://capittal.es/llms.txt
-```
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-## Contenido de llms.txt (estructura)
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-```text
-# Capittal
+### 2. Prerequisito: emails generados
 
-> Asesores especializados en valoracion y venta de empresas en Espana.
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-Capittal es una firma de asesoramiento financiero...
+### 3. Conectar datos
 
-## Servicios
-- [Valoraciones](https://capittal.es/servicios/valoraciones): ...
-- [Venta de Empresas](https://capittal.es/servicios/venta-empresas): ...
-- [Due Diligence](https://capittal.es/servicios/due-diligence): ...
-- [Asesoramiento Legal](https://capittal.es/servicios/asesoramiento-legal): ...
-- [Reestructuraciones](https://capittal.es/servicios/reestructuraciones): ...
-- [Planificacion Fiscal](https://capittal.es/servicios/planificacion-fiscal): ...
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
-## Herramientas
-- [Calculadora de Valoracion](https://capittal.es/lp/calculadora): ...
-- [Calculadora Fiscal](https://capittal.es/lp/calculadora-fiscal): ...
-
-## Sectores
-- [Tecnologia](https://capittal.es/sectores/tecnologia)
-- [Healthcare](https://capittal.es/sectores/healthcare)
-- ...
-
-## Recursos
-- [Blog](https://capittal.es/recursos/blog)
-- [Noticias](https://capittal.es/recursos/noticias)
-- [Casos de Estudio](https://capittal.es/recursos/case-studies)
-
-## Contacto
-- Web: https://capittal.es/contacto
-- Idiomas: Espanol, Catalan, Ingles
-```
-
-## Complejidad
-Baja. Son 2-3 archivos estaticos en `public/`.
+### Archivos afectados
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 
