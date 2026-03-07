@@ -1,5 +1,5 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { callAI, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,23 +34,7 @@ Devuelve ÚNICAMENTE el párrafo descriptivo, sin ningún encabezado, título ni
 
 const getCIFPriorityInstructions = (cif: string | undefined) => {
   if (!cif) return '';
-  return `
-
-⚠️ PRIORIDAD ABSOLUTA - SE HA PROPORCIONADO CIF: ${cif}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DEBES priorizar OBLIGATORIAMENTE estas fuentes en este orden:
-1. Registro Mercantil Central (BORME) - Buscar por CIF
-2. Directorios empresariales españoles (Empresite, Infocif, Einforma, Axesor)
-3. Base de datos de la AEAT / Hacienda
-4. Listados de sociedades (eInforma, Expansión)
-
-El CIF es el identificador fiscal OFICIAL. Úsalo para:
-- Validar el nombre mercantil completo
-- Confirmar la actividad real registrada
-- Verificar el CNAE principal
-
-Si encuentras discrepancias entre fuentes, PRIORIZA SIEMPRE la información del registro mercantil.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+  return `\n\n⚠️ PRIORIDAD ABSOLUTA - SE HA PROPORCIONADO CIF: ${cif}\nDEBES priorizar OBLIGATORIAMENTE fuentes oficiales (BORME, Empresite, Infocif, Einforma, Axesor) para validar la actividad real.`;
 };
 
 serve(async (req) => {
@@ -68,118 +52,30 @@ serve(async (req) => {
       );
     }
 
-    // Build user prompt
     let userPrompt = `Nombre mercantil: ${company_name}`;
-    if (cif) {
-      userPrompt += `\nCIF: ${cif}`;
-    }
+    if (cif) userPrompt += `\nCIF: ${cif}`;
 
-    // Build dynamic system prompt with CIF priority if available
     const dynamicSystemPrompt = SYSTEM_PROMPT + getCIFPriorityInstructions(cif);
 
-    // Try OpenAI first (better for structured/precise output), fallback to Lovable AI
-    const openAIKey = Deno.env.get('OPENAI_API_KEY');
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY');
+    const response = await callAI(
+      [
+        { role: 'system', content: dynamicSystemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      { functionName: 'generate-company-activity-description', preferOpenAI: true, maxTokens: 500, temperature: 0.3 }
+    );
 
-    let response;
-    let model = 'gpt-4o-mini';
-
-    if (openAIKey) {
-      console.log('Using OpenAI API for activity description');
-      response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: dynamicSystemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          max_tokens: 500,
-          temperature: 0.3,
-        }),
-      });
-    } else if (lovableKey) {
-      console.log('Using Lovable AI Gateway for activity description');
-      model = 'google/gemini-3-flash-preview';
-      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${lovableKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-3-flash-preview',
-          messages: [
-            { role: 'system', content: dynamicSystemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-        }),
-      });
-    } else {
-      return new Response(
-        JSON.stringify({ error: 'No API key configured (OPENAI_API_KEY or LOVABLE_API_KEY)' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Límite de solicitudes excedido. Inténtalo de nuevo más tarde.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Se requiere añadir créditos a la cuenta.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      return new Response(
-        JSON.stringify({ error: 'Error del servicio de IA', details: errorText }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const data = await response.json();
-    let description = data.choices?.[0]?.message?.content;
-
-    if (!description) {
-      return new Response(
-        JSON.stringify({ error: 'No se pudo generar la descripción' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Clean up the description - remove any headers like "Descripción de la actividad"
-    description = description
+    let description = response.content
       .replace(/^(Descripción de la actividad|Descripción|Actividad)[\s:]*\n*/i, '')
       .trim();
 
-    console.log('Activity description generated successfully using model:', model);
-
     return new Response(
-      JSON.stringify({ 
-        description, 
-        generated_at: new Date().toISOString(),
-        model 
-      }),
+      JSON.stringify({ description, generated_at: new Date().toISOString(), model: response.model }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in generate-company-activity-description:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Error desconocido' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return aiErrorResponse(error, corsHeaders);
   }
 });
