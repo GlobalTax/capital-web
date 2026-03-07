@@ -1,0 +1,260 @@
+# Capittal — Documentación Completa
+
+> Asesores especializados en valoración y venta de empresas en España. Firma de asesoramiento financiero M&A (fusiones y adquisiciones) con sede en Barcelona.
+
+Capittal es una firma de asesoramiento financiero especializada en operaciones de fusiones y adquisiciones (M&A) en el mercado español. Nos enfocamos en el segmento mid-market, trabajando con empresas que facturan entre 1 y 50 millones de euros. Nuestro equipo combina experiencia financiera, legal y sectorial para ofrecer un asesoramiento integral que maximice el valor de cada operación.
+
+---
+
+## Servicios Principales
+
+### Venta de Empresas
+**URL**: https://capittal.es/venta-empresas
+
+Asesoramos a propietarios y accionistas en todo el proceso de venta de su empresa. Nuestro enfoque incluye:
+
+- **Preparación**: Análisis de la empresa, identificación de puntos fuertes y áreas de mejora, preparación de documentación (Information Memorandum, Teaser).
+- **Valoración**: Determinación del valor justo de mercado mediante múltiples metodologías.
+- **Búsqueda de compradores**: Identificación y contacto confidencial con compradores estratégicos y financieros, tanto nacionales como internacionales.
+- **Negociación**: Gestión del proceso competitivo, negociación de términos y condiciones (LOI, SPA).
+- **Cierre**: Coordinación del due diligence, asistencia en la firma y post-cierre.
+
+El proceso típico dura entre 6 y 12 meses. Trabajamos con un mandato de exclusividad y cobramos un success fee basado en el valor de la transacción.
+
+### Compra de Empresas
+**URL**: https://capittal.es/compra-empresas
+
+Ayudamos a compradores corporativos, fondos de inversión y emprendedores a identificar y adquirir empresas que se ajusten a su estrategia de crecimiento:
+
+- **Definición de criterios**: Sector, tamaño, ubicación geográfica, perfil financiero.
+- **Búsqueda proactiva**: Identificación de targets mediante nuestra red de contactos y bases de datos propietarias.
+- **Análisis y valoración**: Evaluación financiera y estratégica de cada oportunidad.
+- **Negociación y cierre**: Gestión integral del proceso de adquisición.
+
+### Valoraciones de Empresas
+**URL**: https://capittal.es/servicios/valoraciones
+
+Realizamos valoraciones profesionales e independientes utilizando metodologías reconocidas internacionalmente:
+
+- **Descuento de Flujos de Caja (DCF)**: Proyección de flujos futuros descontados a valor presente.
+- **Múltiplos Comparables**: Análisis de transacciones y empresas comparables del sector (EV/EBITDA, EV/Revenue, P/E).
+- **Múltiplos por Rango de EBITDA**: Utilizamos tablas propietarias de múltiplos segmentados por tamaño de empresa y sector.
+- **Valor Patrimonial Ajustado**: Valoración basada en activos netos ajustados a valor de mercado.
+
+Cada informe de valoración incluye un rango de valor (mínimo, mediano, máximo) y un análisis de sensibilidad.
+
+#### Metodología de Múltiplos por Sector
+
+Mantenemos una base de datos actualizada de múltiplos de valoración para los principales sectores del mercado español, segmentados por:
+
+- Rango de facturación
+- Rango de EBITDA
+- Rango de beneficio neto
+
+Los múltiplos se actualizan trimestralmente basándose en transacciones completadas y datos de mercado.
+
+### Search Funds
+**URL**: https://capittal.es/servicios/search-funds
+
+El modelo de search fund conecta a emprendedores con empresas establecidas que buscan un relevo generacional o una nueva etapa de crecimiento. Capittal actúa como intermediario entre ambas partes, facilitando la identificación, negociación y cierre de la operación.
+
+---
+
+## Servicios Especializados
+
+### Asesoramiento Legal en Compraventas
+**URL**: https://capittal.es/servicios/asesoramiento-legal
+
+Proporcionamos asesoramiento jurídico integral en todas las fases de una operación M&A:
+
+- Redacción y negociación de LOIs (Letters of Intent)
+- Contratos de compraventa (SPA - Share Purchase Agreement)
+- Pactos de socios y acuerdos de accionistas
+- Due diligence legal (laboral, fiscal, mercantil, regulatoria)
+- Cláusulas de garantías y representaciones (reps & warranties)
+- Earn-outs y mecanismos de ajuste de precio
+
+### Planificación Fiscal
+**URL**: https://capittal.es/servicios/planificacion-fiscal
+
+Optimizamos la estructura fiscal de la operación para minimizar la carga tributaria:
+
+- Análisis del impacto fiscal de la venta (IRPF, Impuesto de Sociedades, plusvalías)
+- Estructuración de la operación (venta de acciones vs. activos)
+- Planificación de la reinversión de la plusvalía
+- Asesoramiento sobre exenciones y bonificaciones aplicables
+- Coordinación con la asesoría fiscal del cliente
+
+### Due Diligence
+**URL**: https://capittal.es/servicios/due-diligence
+
+Realizamos análisis exhaustivos previos a una adquisición o inversión:
+
+- **Due Diligence Financiera**: Análisis de estados financieros, calidad de beneficios, working capital, deuda neta, CAPEX.
+- **Due Diligence Fiscal**: Revisión de contingencias fiscales, cumplimiento tributario.
+- **Due Diligence Legal**: Contratos, litigios, propiedad intelectual, cumplimiento normativo.
+- **Due Diligence Comercial**: Análisis de mercado, competencia, clientes, proveedores.
+- **Due Diligence Operativa**: Procesos, tecnología, recursos humanos, sistemas.
+
+### Reestructuraciones
+**URL**: https://capittal.es/servicios/reestructuraciones
+
+Asesoramos a empresas en dificultades o en proceso de transformación:
+
+- Planes de viabilidad y reestructuración financiera
+- Negociación con acreedores (bancos, proveedores, administraciones públicas)
+- Procesos concursales y pre-concursales
+- Desinversiones y venta de unidades de negocio
+- Refinanciación de deuda
+
+---
+
+## Sectores
+
+### Industrial
+**URL**: https://capittal.es/sectores/industrial
+
+Fabricación, manufactura y maquinaria. Incluye empresas de componentes industriales, automatización, ingeniería y subcontratación industrial. Los múltiplos de valoración típicos oscilan entre 4x y 7x EBITDA dependiendo del tamaño y especialización.
+
+### Construcción
+**URL**: https://capittal.es/sectores/construccion
+
+Obra civil, rehabilitación, pavimentos y servicios de construcción. Incluye empresas de instalaciones, mantenimiento y reformas. Sector con fuerte componente de cartera de pedidos y recurrencia de contratos públicos.
+
+### Healthcare
+**URL**: https://capittal.es/sectores/healthcare
+
+Salud, biotecnología y distribución sanitaria. Incluye clínicas, laboratorios, empresas de dispositivos médicos y farmacéuticas. Sector con múltiplos premium por su naturaleza defensiva y crecimiento estructural.
+
+### Seguridad
+**URL**: https://capittal.es/sectores/seguridad
+
+Vigilancia, alarmas y protección contra incendios. Sector con alta recurrencia de ingresos (contratos de mantenimiento) y tendencia a la consolidación, lo que genera múltiplos atractivos para vendedores.
+
+### Medio Ambiente
+**URL**: https://capittal.es/sectores/medio-ambiente
+
+Residuos, reciclaje y demoliciones. Incluye gestión de residuos industriales, tratamiento de aguas y economía circular. Sector en crecimiento por regulación ambiental creciente.
+
+### Tecnología
+**URL**: https://capittal.es/sectores/tecnologia
+
+SaaS, consultoría TIC y telecomunicaciones. Las empresas de software y tecnología suelen valorarse con múltiplos de ingresos (Revenue multiples) además de EBITDA. Fuerte actividad M&A por parte de fondos de inversión y compradores estratégicos.
+
+### Retail y Consumo
+**URL**: https://capittal.es/sectores/retail-consumer
+
+Distribución, turismo y hostelería. Incluye cadenas de retail, franquicias, e-commerce y empresas de restauración. Sector diverso con múltiplos que varían significativamente según el modelo de negocio.
+
+### Alimentación
+**URL**: https://capittal.es/sectores/alimentacion
+
+Producción, distribución y HORECA. Incluye empresas de alimentación y bebidas, distribución alimentaria y food service. Sector defensivo con interés creciente de fondos de inversión.
+
+### Energía
+**URL**: https://capittal.es/sectores/energia
+
+Renovables, solar, eólica y almacenamiento. Incluye generación, distribución y servicios energéticos. Sector en fuerte crecimiento por la transición energética con múltiplos premium.
+
+### Logística
+**URL**: https://capittal.es/sectores/logistica
+
+Transporte, operadores logísticos y última milla. Incluye transporte por carretera, almacenamiento, distribución y logística especializada. Sector en consolidación con creciente actividad M&A.
+
+---
+
+## Herramientas Gratuitas
+
+### Calculadora de Valoración de Empresas
+**URL**: https://capittal.es/lp/calculadora
+
+Herramienta online gratuita que permite obtener una estimación del valor de una empresa en menos de 2 minutos. Utiliza múltiplos sectoriales actualizados y datos financieros básicos (facturación, EBITDA, beneficio neto) para calcular un rango de valoración. El resultado incluye:
+
+- Valoración por múltiplo de EBITDA
+- Valoración por múltiplo de ingresos
+- Valoración por múltiplo de beneficio neto
+- Rango de valoración (mínimo, mediano, máximo)
+- Informe PDF descargable
+
+### Calculadora Fiscal
+**URL**: https://capittal.es/lp/calculadora-fiscal
+
+Calcula el impacto fiscal de la venta de una empresa, incluyendo IRPF sobre la plusvalía, Impuesto de Sociedades y otros tributos aplicables. Permite simular diferentes escenarios de estructuración (venta de acciones vs. activos).
+
+### Test Exit-Ready
+**URL**: https://capittal.es/recursos/test-exit-ready
+
+Evaluación rápida que analiza si una empresa está preparada para la venta, considerando factores como dependencia del propietario, recurrencia de ingresos, documentación financiera y situación legal.
+
+---
+
+## Recursos y Contenido
+
+### Blog
+**URL**: https://capittal.es/recursos/blog
+
+Artículos de análisis sobre el mercado M&A español, tendencias sectoriales, guías prácticas para empresarios y noticias del sector. Publicación regular con contenido original.
+
+### Informes M&A
+**URL**: https://capittal.es/recursos/informes-ma
+
+Informes trimestrales del mercado M&A español con datos propietarios. Incluyen:
+- Volumen y valor de transacciones por sector
+- Evolución de múltiplos de valoración
+- Tendencias de inversión extranjera
+- Análisis de actividad de private equity
+
+### Case Studies
+**URL**: https://capittal.es/recursos/case-studies
+
+Casos de éxito reales de operaciones completadas por Capittal. Cada caso detalla el reto, el proceso y el resultado obtenido, con métricas cuantificables.
+
+### Newsletter
+**URL**: https://capittal.es/recursos/newsletter
+
+Boletín mensual con las principales novedades del mercado M&A, operaciones destacadas y contenido exclusivo para suscriptores.
+
+### Webinars
+**URL**: https://capittal.es/recursos/webinars
+
+Seminarios web con expertos del sector sobre temas como valoración de empresas, planificación fiscal, due diligence y tendencias del mercado.
+
+### Marketplace de Oportunidades
+**URL**: https://capittal.es/oportunidades
+
+Plataforma donde publicamos oportunidades de compra y venta de empresas verificadas. Los interesados pueden solicitar información adicional previa firma de un NDA.
+
+---
+
+## Preguntas Frecuentes
+
+### ¿Cuánto vale mi empresa?
+El valor de una empresa depende de múltiples factores: sector, tamaño, rentabilidad, crecimiento, posición competitiva y condiciones de mercado. En el mid-market español, los múltiplos típicos oscilan entre 3x y 8x EBITDA. Puedes obtener una estimación inicial con nuestra [Calculadora de Valoración](https://capittal.es/lp/calculadora).
+
+### ¿Cuánto tiempo tarda en venderse una empresa?
+El proceso completo suele durar entre 6 y 12 meses desde la firma del mandato hasta el cierre. Los tiempos varían según la complejidad de la operación, el sector y las condiciones de mercado.
+
+### ¿Qué impuestos se pagan al vender una empresa?
+La fiscalidad depende de la estructura de la operación (venta de acciones o activos) y del tipo de vendedor (persona física o jurídica). Para personas físicas, la plusvalía tributa en el IRPF entre el 19% y el 28%. Para sociedades, en el Impuesto de Sociedades al 25%. Existen exenciones y bonificaciones aplicables en ciertos casos.
+
+### ¿Qué es un múltiplo de EBITDA?
+Es un método de valoración que calcula el valor de la empresa (Enterprise Value) como un múltiplo del EBITDA (beneficio antes de intereses, impuestos, depreciación y amortización). Por ejemplo, si una empresa tiene un EBITDA de 1M€ y el múltiplo del sector es 5x, el Enterprise Value sería 5M€.
+
+### ¿Qué es el due diligence?
+Es un proceso de análisis exhaustivo que el comprador realiza antes de formalizar la adquisición. Abarca áreas financiera, fiscal, legal, laboral, comercial y operativa. Su objetivo es identificar riesgos, contingencias y confirmar que la empresa es lo que dice ser.
+
+### ¿Capittal trabaja solo en España?
+Sí, nuestro foco principal es el mercado español (mid-market). Sin embargo, colaboramos con una red de asesores internacionales para operaciones cross-border cuando el comprador o vendedor es extranjero.
+
+### ¿Qué tamaño de empresa asesora Capittal?
+Nos especializamos en el segmento mid-market: empresas con facturación entre 1 y 50 millones de euros. Este segmento representa la mayoría del tejido empresarial español y es donde aportamos mayor valor diferencial.
+
+---
+
+## Contacto
+
+- **Web**: https://capittal.es/contacto
+- **Sede**: Barcelona, España
+- **Idiomas**: Español, Catalán, Inglés
+- **Mercado**: España (mid-market, 1M€–50M€ facturación)
+- **Especialidad**: M&A, valoraciones, due diligence, planificación fiscal
