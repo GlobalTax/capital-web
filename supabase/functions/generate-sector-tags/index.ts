@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { callAI, parseAIJson, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,15 +81,6 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      console.error('LOVABLE_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'Servicio de IA no configurado' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const userPrompt = `Analiza la siguiente empresa y genera las etiquetas de sector:
 
 ${company_name ? `Nombre de la empresa: ${company_name}` : ''}
@@ -100,64 +92,33 @@ Genera el JSON con sector, tags (12-20), tags negativos, tags de modelo de negoc
 
     console.log('Generating sector tags for:', company_name || 'Unknown company');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
+    let aiResponse;
+    try {
+      aiResponse = await callAI(
+        [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.3,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Límite de solicitudes excedido. Inténtalo de nuevo en unos minutos.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Créditos de IA agotados. Contacta con el administrador.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: 'Error en el servicio de IA' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { model: 'google/gemini-3-flash-preview', temperature: 0.3, functionName: 'generate-sector-tags' }
       );
+    } catch (error) {
+      return aiErrorResponse(error, corsHeaders);
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-
-    if (!content) {
-      console.error('No content in AI response');
+    if (!aiResponse.content) {
       return new Response(
         JSON.stringify({ error: 'Respuesta vacía del servicio de IA' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse JSON from response (handle markdown code blocks)
     let result;
     try {
-      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-      const jsonStr = jsonMatch ? jsonMatch[1].trim() : content.trim();
-      result = JSON.parse(jsonStr);
+      result = parseAIJson(aiResponse.content);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
+      console.error('Failed to parse AI response:', aiResponse.content);
       return new Response(
-        JSON.stringify({ error: 'Error al procesar la respuesta de IA', raw: content }),
+        JSON.stringify({ error: 'Error al procesar la respuesta de IA', raw: aiResponse.content }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -176,31 +137,20 @@ Genera el JSON con sector, tags (12-20), tags negativos, tags de modelo de negoc
     result.negative_tags = Array.isArray(result.negative_tags) ? result.negative_tags : [];
     result.business_model_tags = Array.isArray(result.business_model_tags) ? result.business_model_tags : [];
 
-    // Normalize tags (lowercase, no accents, snake_case)
+    // Normalize tags
     const normalizeTag = (tag: string): string => {
-      return tag
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9_]/g, '_')
-        .replace(/_+/g, '_')
-        .replace(/^_|_$/g, '');
+      return tag.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
     };
 
     result.tags = result.tags.map(normalizeTag).filter((t: string) => t.length > 1);
     result.negative_tags = result.negative_tags.map(normalizeTag).filter((t: string) => t.length > 1);
     result.business_model_tags = result.business_model_tags.map(normalizeTag).filter((t: string) => t.length > 1);
 
-    // Ensure minimum tags
     if (result.tags.length < 12) {
       result.tags.push('needs_validation');
     }
 
-    console.log('Generated sector tags:', {
-      sector: result.sector_pe,
-      confidence: result.confidence,
-      tags_count: result.tags.length
-    });
+    console.log('Generated sector tags:', { sector: result.sector_pe, confidence: result.confidence, tags_count: result.tags.length });
 
     return new Response(
       JSON.stringify(result),
