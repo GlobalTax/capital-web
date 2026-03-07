@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callAI, extractToolCallArgs, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,64 +12,31 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth verification — validate JWT via Supabase
+  // Auth verification
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
-    return new Response(
-      JSON.stringify({ error: 'No autorizado' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const token = authHeader.replace("Bearer ", "");
   const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
   if (authError || !user) {
-    return new Response(
-      JSON.stringify({ error: 'Token inválido o expirado' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Token inválido o expirado' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 
   try {
     let body: any;
-    try {
-      body = await req.json();
-    } catch {
-      return new Response(
-        JSON.stringify({ error: 'Cuerpo de la petición inválido' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    try { body = await req.json(); } catch {
+      return new Response(JSON.stringify({ error: 'Cuerpo de la petición inválido' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const {
-      companyName,
-      sector,
-      revenue,
-      ebitda,
-      financialYear,
-      valuationCentral,
-      campaignStrengthsTemplate,
-      campaignWeaknessesTemplate,
-      campaignContextTemplate,
-    } = body;
+    const { companyName, sector, revenue, ebitda, financialYear, valuationCentral, campaignStrengthsTemplate, campaignWeaknessesTemplate, campaignContextTemplate } = body;
 
     console.log('[enrich-campaign-company] Empresa:', companyName, '| Sector:', sector);
 
     if (!companyName || !ebitda) {
-      return new Response(
-        JSON.stringify({ error: 'Se requiere nombre de empresa y EBITDA' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+      return new Response(JSON.stringify({ error: 'Se requiere nombre de empresa y EBITDA' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const ebitdaMargin = revenue && revenue > 0 ? ((ebitda / revenue) * 100).toFixed(1) : 'N/A';
@@ -83,8 +51,7 @@ REGLAS:
 - Si el margen es bajo (<8%), inclúyelo como debilidad
 - Si la facturación es alta pero el EBITDA bajo, menciona oportunidades de optimización
 - Mantén un tono profesional y específico, evitando generalidades
-- Máximo 5 puntos por sección
-- Responde SOLO con el JSON solicitado, sin texto adicional`;
+- Máximo 5 puntos por sección`;
 
     const userPrompt = `Datos de la empresa:
 - Empresa: ${companyName}
@@ -105,89 +72,47 @@ ${campaignContextTemplate || 'No proporcionada'}
 
 Genera fortalezas, debilidades y contexto personalizados para esta empresa.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "enrich_company",
-              description: "Devuelve fortalezas, debilidades y contexto personalizados para una empresa",
-              parameters: {
-                type: "object",
-                properties: {
-                  strengths: {
-                    type: "string",
-                    description: "5 fortalezas personalizadas, separadas por saltos de línea, cada una comenzando con •"
+    let aiResponse;
+    try {
+      aiResponse = await callAI(
+        [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+        {
+          model: 'google/gemini-3-flash-preview',
+          functionName: 'enrich-campaign-company',
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "enrich_company",
+                description: "Devuelve fortalezas, debilidades y contexto personalizados para una empresa",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    strengths: { type: "string", description: "5 fortalezas personalizadas, separadas por saltos de línea, cada una comenzando con •" },
+                    weaknesses: { type: "string", description: "5 debilidades/riesgos personalizados, separados por saltos de línea, cada uno comenzando con •" },
+                    context: { type: "string", description: "1 párrafo de contexto de valoración personalizado (máximo 100 palabras)" },
                   },
-                  weaknesses: {
-                    type: "string",
-                    description: "5 debilidades/riesgos personalizados, separados por saltos de línea, cada uno comenzando con •"
-                  },
-                  context: {
-                    type: "string",
-                    description: "1 párrafo de contexto de valoración personalizado (máximo 100 palabras)"
-                  },
+                  required: ["strengths", "weaknesses", "context"],
+                  additionalProperties: false,
                 },
-                required: ["strengths", "weaknesses", "context"],
-                additionalProperties: false,
               },
             },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "enrich_company" } },
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[enrich-campaign-company] AI error:', response.status, errorText);
-
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Límite de peticiones excedido. Inténtalo de nuevo en unos segundos." }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos agotados. Contacta con el administrador." }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      throw new Error(`Error de IA: ${response.status}`);
+          ],
+          tool_choice: { type: "function", function: { name: "enrich_company" } },
+        }
+      );
+    } catch (error) {
+      return aiErrorResponse(error, corsHeaders);
     }
 
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    const result = extractToolCallArgs(aiResponse);
+    if (!result) throw new Error("No se recibió respuesta estructurada de la IA");
 
-    if (!toolCall?.function?.arguments) {
-      throw new Error("No se recibió respuesta estructurada de la IA");
-    }
-
-    const result = JSON.parse(toolCall.function.arguments);
     console.log('[enrich-campaign-company] Enriquecimiento completado para:', companyName);
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify(result), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('[enrich-campaign-company] Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Error interno del servidor.' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Error interno del servidor.' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

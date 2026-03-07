@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { callAI, extractToolCallArgs, aiErrorResponse } from "../_shared/ai-helper.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,14 +13,6 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const { extractedName, companies } = await req.json();
 
     if (!extractedName || !companies?.length) {
@@ -32,93 +25,51 @@ serve(async (req) => {
       .map((c: { id: string; name: string; cif: string }) => `- ID: ${c.id} | Nombre: ${c.name} | CIF: ${c.cif}`)
       .join("\n");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
+    let aiResponse;
+    try {
+      aiResponse = await callAI(
+        [
           {
             role: "system",
-            content:
-              "You are a company name matcher. Given a filename-derived company name and a list of companies, find the best match. Consider abbreviations, word reordering, missing legal suffixes (SL, SA, SLU), underscores vs spaces, and partial matches. Use the match_company tool to return your answer.",
+            content: "You are a company name matcher. Given a filename-derived company name and a list of companies, find the best match. Consider abbreviations, word reordering, missing legal suffixes (SL, SA, SLU), underscores vs spaces, and partial matches. Use the match_company tool to return your answer.",
           },
           {
             role: "user",
             content: `Filename-derived name: "${extractedName}"\n\nCompanies:\n${companiesList}`,
           },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "match_company",
-              description: "Return the best matching company ID and confidence score",
-              parameters: {
-                type: "object",
-                properties: {
-                  company_id: {
-                    type: "string",
-                    description: "UUID of the matched company, or null if no match",
-                    nullable: true,
+        {
+          model: "google/gemini-3-flash-preview",
+          functionName: "match-presentations",
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "match_company",
+                description: "Return the best matching company ID and confidence score",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    company_id: { type: "string", description: "UUID of the matched company, or null if no match" },
+                    confidence: { type: "number", description: "Confidence score between 0 and 1" },
                   },
-                  confidence: {
-                    type: "number",
-                    description: "Confidence score between 0 and 1",
-                  },
+                  required: ["company_id", "confidence"],
+                  additionalProperties: false,
                 },
-                required: ["company_id", "confidence"],
-                additionalProperties: false,
               },
             },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "match_company" } },
-      }),
-    });
-
-    if (!response.ok) {
-      const status = response.status;
-      const body = await response.text();
-      console.error(`AI gateway error [${status}]:`, body);
-
-      if (status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+          ],
+          tool_choice: { type: "function", function: { name: "match_company" } },
+        }
+      );
+    } catch (error) {
+      return aiErrorResponse(error, corsHeaders);
     }
 
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    const result = extractToolCallArgs<{ company_id: string | null; confidence: number }>(aiResponse);
 
-    if (!toolCall?.function?.arguments) {
-      console.error("No tool call in response:", JSON.stringify(data));
-      return new Response(JSON.stringify({ company_id: null, confidence: 0 }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    let result;
-    try {
-      result = JSON.parse(toolCall.function.arguments);
-    } catch {
-      console.error("Failed to parse tool call arguments:", toolCall.function.arguments);
+    if (!result) {
+      console.error("No tool call in response");
       return new Response(JSON.stringify({ company_id: null, confidence: 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -141,8 +92,7 @@ serve(async (req) => {
   } catch (e) {
     console.error("match-presentations error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
