@@ -1453,6 +1453,54 @@ export type Database = {
           },
         ]
       }
+      ai_usage_logs: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          error_message: string | null
+          estimated_cost_usd: number
+          function_name: string
+          id: string
+          metadata: Json | null
+          model: string
+          provider: string
+          status: string
+          tokens_input: number
+          tokens_output: number
+          tokens_total: number
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          error_message?: string | null
+          estimated_cost_usd?: number
+          function_name: string
+          id?: string
+          metadata?: Json | null
+          model: string
+          provider: string
+          status?: string
+          tokens_input?: number
+          tokens_output?: number
+          tokens_total?: number
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          error_message?: string | null
+          estimated_cost_usd?: number
+          function_name?: string
+          id?: string
+          metadata?: Json | null
+          model?: string
+          provider?: string
+          status?: string
+          tokens_input?: number
+          tokens_output?: number
+          tokens_total?: number
+        }
+        Relationships: []
+      }
       analytics_config: {
         Row: {
           config_key: string
