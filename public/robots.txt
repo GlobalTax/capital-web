@@ -29,6 +29,51 @@ User-agent: Googlebot-Image
 Allow: /assets/
 Allow: /images/
 
+# AI Crawlers - Allowed
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+Disallow: /api/private/
+Disallow: /operaciones/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+Disallow: /api/private/
+Disallow: /operaciones/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+Disallow: /api/private/
+Disallow: /operaciones/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+Disallow: /api/private/
+Disallow: /operaciones/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /admin-login/
+Disallow: /auth/
+Disallow: /api/private/
+Disallow: /operaciones/
+
+# AI Crawlers - Blocked (massive scraping)
+User-agent: CCBot
+Disallow: /
+
 Sitemap: https://capittal.es/sitemap.xml
 
 # LLMs.txt - AI-friendly site description
