@@ -28,6 +28,10 @@ export interface CampaignEmail {
   error_message: string | null;
   created_at: string;
   updated_at: string;
+  email_message_id: string | null;
+  email_opened: boolean;
+  email_opened_at: string | null;
+  delivery_status: string | null;
 }
 
 export function useCampaignEmails(campaignId: string | undefined) {
