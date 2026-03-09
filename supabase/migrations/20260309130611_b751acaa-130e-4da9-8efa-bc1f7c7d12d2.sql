@@ -1,0 +1,2 @@
+UPDATE campaign_emails SET delivery_status = 'sent' WHERE status = 'sent' AND delivery_status = 'pending';
+UPDATE campaign_followup_sends SET delivery_status = 'sent' WHERE status = 'sent' AND delivery_status = 'pending';

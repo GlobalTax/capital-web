@@ -51,6 +51,7 @@ export function useCampaignEmails(campaignId: string | undefined) {
       return (data || []) as CampaignEmail[];
     },
     enabled: !!campaignId,
+    refetchInterval: 30000,
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey });
