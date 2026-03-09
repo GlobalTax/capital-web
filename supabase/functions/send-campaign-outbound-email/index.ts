@@ -226,7 +226,6 @@ serve(async (req) => {
           .eq("id", email.id);
         results.push({ id: email.id, status: "error", error: errMsg });
       }
-      }
     }
 
     const sent = results.filter((r) => r.status === "sent").length;
