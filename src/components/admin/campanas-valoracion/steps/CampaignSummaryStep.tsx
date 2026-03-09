@@ -346,6 +346,11 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                       {c.status === 'sent' ? 'Enviado' : c.status === 'failed' ? 'Error' : c.status === 'created' ? 'Creada' : c.status}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-center text-xs text-muted-foreground">
+                    {emailSentMap.get(c.id)
+                      ? new Date(emailSentMap.get(c.id)!).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                      : '—'}
+                  </TableCell>
                   <TableCell className="text-center">
                     <SeguimientoBadge company={c} campaignId={campaignId} />
                   </TableCell>
