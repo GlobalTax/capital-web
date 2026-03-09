@@ -501,7 +501,7 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
           companies={companies}
           followups={followups}
           onSendFollowup={sendFollowup}
-          onSendAll={async () => { await sendAllPending(); }}
+          onSendAll={async () => { await sendAllPending(undefined); }}
           isSendingAll={isSendingAll}
         />
       </TabsContent>
