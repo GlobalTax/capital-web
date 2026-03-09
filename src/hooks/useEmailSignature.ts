@@ -39,7 +39,7 @@ export function generateSignatureHtml(data: Omit<EmailSignatureData, 'id' | 'use
     ? `<tr><td style="padding-bottom:10px;"><img src="${data.logo_url}" alt="Capittal" style="height:60px;display:block;"></td></tr>`
     : '';
 
-  return `<table style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;color:#222;width:500px;">
+  return `<table style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;color:#222;width:100%;max-width:500px;">
   <tr>
     <td style="padding-bottom:8px;">
       <strong style="font-size:14px;">${data.full_name}</strong><br>
