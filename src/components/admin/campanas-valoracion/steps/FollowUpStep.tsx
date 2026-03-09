@@ -551,7 +551,7 @@ function SendList({
                     <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
-                        <FUSeguimientoBadge company={c} campaignId={campaignId} onChanged={onSeguimientoChanged} />
+                        <FUSeguimientoBadge company={c} campaignId={campaignId} sequenceId={sequence.id} sendRecord={send} onChanged={onSeguimientoChanged} />
                         <FUNotasPopover company={c} campaignId={campaignId} />
                       </div>
                     </TableCell>
