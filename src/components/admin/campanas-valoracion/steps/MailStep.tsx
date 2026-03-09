@@ -46,6 +46,7 @@ function TemplateEditorSection({
   emails,
   isGenerating,
   onSaveAndGenerate,
+  signatureHtml,
 }: {
   campaignId: string;
   campaign: ValuationCampaign;
@@ -53,6 +54,7 @@ function TemplateEditorSection({
   emails: CampaignEmail[];
   isGenerating: boolean;
   onSaveAndGenerate: (subject: string, body: string, overwriteManual: boolean) => Promise<void>;
+  signatureHtml: string | null;
 }) {
   const [subject, setSubject] = useState((campaign as any).email_subject_template || '');
   const [body, setBody] = useState((campaign as any).email_body_template || '');
