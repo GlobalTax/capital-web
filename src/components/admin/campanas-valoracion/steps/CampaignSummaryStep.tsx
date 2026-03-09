@@ -177,6 +177,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
   const { companies, stats } = useCampaignCompanies(campaignId);
   const { emails } = useCampaignEmails(campaignId);
+  const { sequences, allSends } = useFollowupSequences(campaignId);
   const emailSentMap = useMemo(() => {
     const map = new Map<string, string | null>();
     for (const e of emails) {
@@ -184,6 +185,25 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     }
     return map;
   }, [emails]);
+
+  // Build followup label per company: "FU1 · FU2" etc
+  const followupLabels = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of companies) {
+      const sentForCompany = allSends
+        .filter(s => s.company_id === c.id && s.status === 'sent')
+        .map(s => {
+          const seq = sequences.find(sq => sq.id === s.sequence_id);
+          return seq ? { num: seq.sequence_number, date: s.sent_at } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => a!.num - b!.num);
+      if (sentForCompany.length > 0) {
+        map.set(c.id, sentForCompany.map(s => `FU${s!.num}`).join(' · '));
+      }
+    }
+    return map;
+  }, [companies, allSends, sequences]);
 
   const sentCount = companies.filter(c => c.status === 'sent').length;
   const createdCount = companies.filter(c => ['created', 'sent'].includes(c.status)).length;
