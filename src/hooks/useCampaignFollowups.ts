@@ -223,23 +223,9 @@ export function useCampaignFollowups(campaignId: string | undefined) {
           if (error) throw error;
           if (data?.failed > 0) throw new Error('Send failed');
 
-          await (supabase as any)
-            .from('campaign_followups')
-            .update({ status: 'sent', sent_at: new Date().toISOString() })
-            .eq('id', followup.id);
-
-          await (supabase as any)
-            .from('valuation_campaign_companies')
-            .update({ followup_enviado: true, followup_sent_at: new Date().toISOString() })
-            .eq('id', followup.company_id);
-
           sentCount++;
         } catch (err: any) {
           failedCount++;
-          await (supabase as any)
-            .from('campaign_followups')
-            .update({ status: 'error', error_message: err?.message || 'Unknown error' })
-            .eq('id', followup.id);
         }
         onProgress?.(sentCount + failedCount, pending.length);
       }
