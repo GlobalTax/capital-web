@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -17,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Send, Loader2, Eye, Mail, MoreVertical, FileText, CheckCircle2, Clock, AlertCircle,
-  Edit3, RotateCcw, Building2,
+  Edit3, RotateCcw, Building2, Save, Upload, Pen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -25,6 +28,8 @@ import { useCampaignPresentations } from '@/hooks/useCampaignPresentations';
 import { useCampaignEmails, CampaignEmail } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { getAvailableVariables, replaceVariables } from '@/utils/campaignEmailTemplateEngine';
+import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml, EmailSignatureData } from '@/hooks/useEmailSignature';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
