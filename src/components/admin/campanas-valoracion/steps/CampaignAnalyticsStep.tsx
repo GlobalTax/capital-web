@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Building2, Mail, Send, CheckCircle2, Users, CalendarCheck,
-  TrendingUp, TrendingDown, MessageCircle, ArrowRight, Target,
+  TrendingUp, TrendingDown, MessageCircle, ArrowRight, Target, Eye,
 } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
