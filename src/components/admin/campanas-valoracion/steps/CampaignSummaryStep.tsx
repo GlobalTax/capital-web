@@ -380,6 +380,27 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                       {c.status === 'sent' ? 'Enviado' : c.status === 'failed' ? 'Error' : c.status === 'created' ? 'Creada' : c.status}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-center">
+                    {(() => {
+                      const tracking = emailTrackingMap.get(c.id);
+                      if (!tracking || !tracking.delivery_status || tracking.delivery_status === 'pending') {
+                        return <span className="text-xs text-muted-foreground">—</span>;
+                      }
+                      if (tracking.email_opened) {
+                        return <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">Abierto</Badge>;
+                      }
+                      if (tracking.delivery_status === 'delivered') {
+                        return <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">Entregado</Badge>;
+                      }
+                      if (tracking.delivery_status === 'bounced') {
+                        return <Badge variant="destructive" className="text-[10px]">Rebotado</Badge>;
+                      }
+                      if (tracking.delivery_status === 'sent') {
+                        return <Badge variant="outline" className="text-[10px]">Enviado</Badge>;
+                      }
+                      return <Badge variant="outline" className="text-[10px]">{tracking.delivery_status}</Badge>;
+                    })()}
+                  </TableCell>
                   <TableCell className="text-center text-xs text-muted-foreground">
                     {emailSentMap.get(c.id)
                       ? new Date(emailSentMap.get(c.id)!).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
