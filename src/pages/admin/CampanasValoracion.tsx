@@ -24,6 +24,56 @@ export default function CampanasValoracion() {
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Fetch operational stage per campaign
+  const campaignIds = campaigns.map(c => c.id);
+  const { data: stageData } = useQuery({
+    queryKey: ['campaign-stages', campaignIds.join(',')],
+    queryFn: async () => {
+      if (campaignIds.length === 0) return {};
+
+      // Get emails sent per campaign
+      const { data: emailCounts } = await (supabase as any)
+        .from('campaign_emails')
+        .select('campaign_id, status')
+        .in('campaign_id', campaignIds)
+        .eq('status', 'sent');
+
+      // Get followup sends with sequence numbers
+      const { data: followupData } = await (supabase as any)
+        .from('campaign_followup_sends')
+        .select('company_id, status, sequence_id, campaign_followup_sequences!inner(campaign_id, sequence_number)')
+        .in('campaign_followup_sequences.campaign_id', campaignIds)
+        .eq('status', 'sent');
+
+      const stages: Record<string, { emailsSent: number; maxFollowup: number }> = {};
+      for (const id of campaignIds) {
+        stages[id] = { emailsSent: 0, maxFollowup: 0 };
+      }
+
+      for (const e of (emailCounts || [])) {
+        if (stages[e.campaign_id]) stages[e.campaign_id].emailsSent++;
+      }
+
+      for (const f of (followupData || [])) {
+        const campId = f.campaign_followup_sequences?.campaign_id;
+        const seqNum = f.campaign_followup_sequences?.sequence_number || 0;
+        if (campId && stages[campId]) {
+          stages[campId].maxFollowup = Math.max(stages[campId].maxFollowup, seqNum);
+        }
+      }
+
+      return stages;
+    },
+    enabled: campaignIds.length > 0,
+  });
+
+  const getStageLabel = (campaignId: string): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
+    const stage = stageData?.[campaignId];
+    if (!stage || stage.emailsSent === 0) return { label: 'Borrador', variant: 'secondary' };
+    if (stage.maxFollowup > 0) return { label: `Follow Up ${stage.maxFollowup}`, variant: 'default' };
+    return { label: '1r Envío', variant: 'outline' };
+  };
+
   const filteredCampaigns = useMemo(() => {
     if (!searchQuery.trim()) return campaigns;
     const q = searchQuery.toLowerCase();
