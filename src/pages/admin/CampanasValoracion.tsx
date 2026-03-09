@@ -1,10 +1,12 @@
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy } from 'lucide-react';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 
@@ -18,6 +20,16 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 export default function CampanasValoracion() {
   const navigate = useNavigate();
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCampaigns = useMemo(() => {
+    if (!searchQuery.trim()) return campaigns;
+    const q = searchQuery.toLowerCase();
+    return campaigns.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.sector?.toLowerCase().includes(q)
+    );
+  }, [campaigns, searchQuery]);
 
   const totalCompanies = campaigns.reduce((s, c) => s + c.total_companies, 0);
   const totalSent = campaigns.reduce((s, c) => s + c.total_sent, 0);
@@ -73,6 +85,17 @@ export default function CampanasValoracion() {
 
       {/* Table */}
       <Card>
+        <CardHeader className="pb-3">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre o sector..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-8 text-sm"
+            />
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           {campaigns.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -83,6 +106,8 @@ export default function CampanasValoracion() {
                 <Plus className="h-4 w-4 mr-2" />Nueva Campaña
               </Button>
             </div>
+          ) : filteredCampaigns.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground text-sm">No se encontraron campañas</div>
           ) : (
             <Table>
               <TableHeader>
@@ -98,7 +123,7 @@ export default function CampanasValoracion() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {campaigns.map((c) => {
+                {filteredCampaigns.map((c) => {
                   const st = statusConfig[c.status] || statusConfig.draft;
                   return (
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
