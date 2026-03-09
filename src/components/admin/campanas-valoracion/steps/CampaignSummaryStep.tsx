@@ -175,6 +175,14 @@ function NotasPopover({ company, campaignId }: { company: CampaignCompany; campa
 export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
   const { companies, stats } = useCampaignCompanies(campaignId);
+  const { emails } = useCampaignEmails(campaignId);
+  const emailSentMap = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const e of emails) {
+      map.set(e.company_id, e.sent_at);
+    }
+    return map;
+  }, [emails]);
 
   const sentCount = companies.filter(c => c.status === 'sent').length;
   const createdCount = companies.filter(c => ['created', 'sent'].includes(c.status)).length;
