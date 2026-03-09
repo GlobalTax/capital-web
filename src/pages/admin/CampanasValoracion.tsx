@@ -176,7 +176,7 @@ export default function CampanasValoracion() {
               </TableHeader>
               <TableBody>
                 {filteredCampaigns.map((c) => {
-                  const st = statusConfig[c.status] || statusConfig.draft;
+                  const stage = getStageLabel(c.id);
                   return (
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
                       <TableCell className="font-medium">{c.name}</TableCell>
