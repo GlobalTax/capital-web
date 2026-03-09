@@ -536,10 +536,10 @@ function SendList({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button size="sm" variant={isSent ? 'ghost' : 'outline'} className="h-7 text-xs"
-                        disabled={isSent || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
+                      <Button size="sm" variant={isSent || !canSend ? 'ghost' : 'outline'} className="h-7 text-xs"
+                        disabled={!canSend || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
                         {isSending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
-                        {isSent ? 'Enviado' : 'Enviar'}
+                        {isSent ? 'Enviado' : !isSinRespuesta ? '—' : 'Enviar'}
                       </Button>
                     </TableCell>
                   </TableRow>
