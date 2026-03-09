@@ -28,6 +28,7 @@ export default function CampanasValoracion() {
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   // Fetch operational stage per campaign
   const campaignIds = campaigns.map(c => c.id);
