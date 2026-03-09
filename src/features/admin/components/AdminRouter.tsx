@@ -229,6 +229,7 @@ const AdminRouter = () => {
           <Route path="/settings/sector-migration" element={<LazySectorMigrationPage />} />
           <Route path="/configuracion/destinatarios-email" element={<LazyEmailRecipientsConfig />} />
           <Route path="/configuracion/firma-pdf" element={<LazyPdfSignatureConfig />} />
+          <Route path="/configuracion/firma-email" element={<LazyEmailSignatureConfig />} />
           <Route path="/configuracion/workflow-templates" element={<LazyWorkflowTemplatesPage />} />
           <Route path="/newsletter" element={<LazyNewsletterPage />} />
           <Route path="/campaign-costs" element={<LazyCampaignCostsPage />} />
