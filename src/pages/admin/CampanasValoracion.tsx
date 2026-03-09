@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search } from 'lucide-react';
 import { useCampaigns } from '@/hooks/useCampaigns';
+import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -21,6 +23,56 @@ export default function CampanasValoracion() {
   const navigate = useNavigate();
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch operational stage per campaign
+  const campaignIds = campaigns.map(c => c.id);
+  const { data: stageData } = useQuery({
+    queryKey: ['campaign-stages', campaignIds.join(',')],
+    queryFn: async () => {
+      if (campaignIds.length === 0) return {};
+
+      // Get emails sent per campaign
+      const { data: emailCounts } = await (supabase as any)
+        .from('campaign_emails')
+        .select('campaign_id, status')
+        .in('campaign_id', campaignIds)
+        .eq('status', 'sent');
+
+      // Get followup sends with sequence numbers
+      const { data: followupData } = await (supabase as any)
+        .from('campaign_followup_sends')
+        .select('company_id, status, sequence_id, campaign_followup_sequences!inner(campaign_id, sequence_number)')
+        .in('campaign_followup_sequences.campaign_id', campaignIds)
+        .eq('status', 'sent');
+
+      const stages: Record<string, { emailsSent: number; maxFollowup: number }> = {};
+      for (const id of campaignIds) {
+        stages[id] = { emailsSent: 0, maxFollowup: 0 };
+      }
+
+      for (const e of (emailCounts || [])) {
+        if (stages[e.campaign_id]) stages[e.campaign_id].emailsSent++;
+      }
+
+      for (const f of (followupData || [])) {
+        const campId = f.campaign_followup_sequences?.campaign_id;
+        const seqNum = f.campaign_followup_sequences?.sequence_number || 0;
+        if (campId && stages[campId]) {
+          stages[campId].maxFollowup = Math.max(stages[campId].maxFollowup, seqNum);
+        }
+      }
+
+      return stages;
+    },
+    enabled: campaignIds.length > 0,
+  });
+
+  const getStageLabel = (campaignId: string): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
+    const stage = stageData?.[campaignId];
+    if (!stage || stage.emailsSent === 0) return { label: 'Borrador', variant: 'secondary' };
+    if (stage.maxFollowup > 0) return { label: `Follow Up ${stage.maxFollowup}`, variant: 'default' };
+    return { label: '1r Envío', variant: 'outline' };
+  };
 
   const filteredCampaigns = useMemo(() => {
     if (!searchQuery.trim()) return campaigns;
@@ -124,7 +176,7 @@ export default function CampanasValoracion() {
               </TableHeader>
               <TableBody>
                 {filteredCampaigns.map((c) => {
-                  const st = statusConfig[c.status] || statusConfig.draft;
+                  const stage = getStageLabel(c.id);
                   return (
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
                       <TableCell className="font-medium">{c.name}</TableCell>
@@ -132,7 +184,7 @@ export default function CampanasValoracion() {
                       <TableCell className="text-center">{c.total_companies}</TableCell>
                       <TableCell className="text-center">{c.total_sent}</TableCell>
                       <TableCell className="text-right">{c.total_valuation > 0 ? formatCurrencyEUR(c.total_valuation) : '—'}</TableCell>
-                      <TableCell className="text-center"><Badge variant={st.variant}>{st.label}</Badge></TableCell>
+                      <TableCell className="text-center"><Badge variant={stage.variant}>{stage.label}</Badge></TableCell>
                       <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('es-ES')}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
