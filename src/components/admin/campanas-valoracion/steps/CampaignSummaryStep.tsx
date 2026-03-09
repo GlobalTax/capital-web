@@ -186,6 +186,18 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     return map;
   }, [emails]);
 
+  // Delivery/open tracking map
+  const emailTrackingMap = useMemo(() => {
+    const map = new Map<string, { delivery_status: string | null; email_opened: boolean }>();
+    for (const e of emails) {
+      map.set(e.company_id, {
+        delivery_status: (e as any).delivery_status || null,
+        email_opened: (e as any).email_opened || false,
+      });
+    }
+    return map;
+  }, [emails]);
+
   // Build followup label per company: "FU1 · FU2" etc
   const followupLabels = useMemo(() => {
     const map = new Map<string, string>();
@@ -345,6 +357,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead>Email</TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Entrega</TableHead>
                 <TableHead className="text-center">Fecha envío</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Follow Up</TableHead>
@@ -366,6 +379,27 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                     } className="text-xs">
                       {c.status === 'sent' ? 'Enviado' : c.status === 'failed' ? 'Error' : c.status === 'created' ? 'Creada' : c.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {(() => {
+                      const tracking = emailTrackingMap.get(c.id);
+                      if (!tracking || !tracking.delivery_status || tracking.delivery_status === 'pending') {
+                        return <span className="text-xs text-muted-foreground">—</span>;
+                      }
+                      if (tracking.email_opened) {
+                        return <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">Abierto</Badge>;
+                      }
+                      if (tracking.delivery_status === 'delivered') {
+                        return <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">Entregado</Badge>;
+                      }
+                      if (tracking.delivery_status === 'bounced') {
+                        return <Badge variant="destructive" className="text-[10px]">Rebotado</Badge>;
+                      }
+                      if (tracking.delivery_status === 'sent') {
+                        return <Badge variant="outline" className="text-[10px]">Enviado</Badge>;
+                      }
+                      return <Badge variant="outline" className="text-[10px]">{tracking.delivery_status}</Badge>;
+                    })()}
                   </TableCell>
                   <TableCell className="text-center text-xs text-muted-foreground">
                     {emailSentMap.get(c.id)
