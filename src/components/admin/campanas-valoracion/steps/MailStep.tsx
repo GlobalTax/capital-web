@@ -185,15 +185,21 @@ function TemplateEditorSection({
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Previsualización — {previewCompany?.client_company || 'N/A'}</DialogTitle>
-            <DialogDescription>Vista previa con datos de la primera empresa</DialogDescription>
+            <DialogDescription>Vista previa con datos de la primera empresa (incluye firma)</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
               <span className="text-xs font-medium text-muted-foreground">Asunto:</span>
               <p className="text-sm font-medium">{previewSubject}</p>
             </div>
-            <div className="border rounded-md p-4 bg-muted/30">
+            <div className="border rounded-md p-4 bg-white">
               <pre className="text-sm whitespace-pre-wrap font-sans">{previewBody}</pre>
+              {signatureHtml && (
+                <>
+                  <hr className="my-4 border-t border-gray-200" />
+                  <div dangerouslySetInnerHTML={{ __html: signatureHtml }} />
+                </>
+              )}
             </div>
           </div>
         </DialogContent>
