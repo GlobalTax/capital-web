@@ -84,6 +84,7 @@ export function useFollowupSequences(campaignId: string | undefined) {
       return (data || []) as FollowupSequence[];
     },
     enabled: !!campaignId,
+    refetchInterval: 30000,
   });
 
   // ── All sends for this campaign ───────────────────────────────────────
