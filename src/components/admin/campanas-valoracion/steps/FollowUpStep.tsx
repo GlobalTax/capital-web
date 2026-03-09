@@ -657,74 +657,147 @@ function SendList({
       {visible.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground text-sm">No hay empresas elegibles (sin respuesta).</div>
       ) : (
-        <div className="border rounded-lg overflow-auto max-h-[55vh]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">#</TableHead>
-                <TableHead>Empresa</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Valoración</TableHead>
-                <TableHead className="text-center">Seguimiento</TableHead>
-                <TableHead className="text-center">Estado envío</TableHead>
-                <TableHead className="text-center">Entrega</TableHead>
-                <TableHead className="w-[100px]">Acción</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visible.map((c, i) => {
-                const send = sendMap.get(c.id);
-                const isSent = send?.status === 'sent';
-                const isError = send?.status === 'error';
-                const isSending = sendingId === c.id;
-                const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
-                const canSend = roundEstado === 'sin_respuesta' && !isSent;
-                return (
-                  <TableRow key={c.id}>
-                    <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
-                    <TableCell className="font-medium text-sm max-w-[180px] truncate">{c.client_company}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
-                    <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-1">
-                        <FUSeguimientoBadge company={c} campaignId={campaignId} sequenceId={sequence.id} sendRecord={send} onChanged={onSeguimientoChanged} />
-                        <FUNotasPopover company={c} campaignId={campaignId} />
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {isSent ? (
-                        <div>
-                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">Enviado</Badge>
-                          {send?.sent_at && <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(send.sent_at).toLocaleDateString('es-ES')}</p>}
-                        </div>
-                      ) : isError ? (
-                        <Badge variant="secondary" className="text-xs bg-red-100 text-red-800" title={send?.error_message || ''}>Error</Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground">Pendiente</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {(() => {
-                        if (!send || !isSent) return <span className="text-muted-foreground text-xs">—</span>;
-                        if (send.email_opened) return <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">📩 Abierto</Badge>;
-                        if (send.delivery_status === 'delivered') return <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">✓ Entregado</Badge>;
-                        if (send.delivery_status === 'bounced') return <Badge variant="secondary" className="text-[10px] bg-red-50 text-red-600 border-red-200">✗ Rebotado</Badge>;
-                        if (send.delivery_status === 'sent') return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">Enviado</Badge>;
-                        return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">—</Badge>;
-                      })()}
-                    </TableCell>
-                    <TableCell>
-                      <Button size="sm" variant={isSent || !canSend ? 'ghost' : 'outline'} className="h-7 text-xs"
-                        disabled={!canSend || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
-                        {isSending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
-                        {isSent ? 'Enviado' : !canSend ? '—' : 'Enviar'}
-                      </Button>
+        <div className="space-y-3">
+          {/* Search + Filters */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar empresa o email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-8 text-sm"
+              />
+            </div>
+
+            <Select value={filterEstadoEnvio || 'all'} onValueChange={(v) => setFilterEstadoEnvio(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="Estado envío" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos estados</SelectItem>
+                <SelectItem value="sent">Enviado</SelectItem>
+                <SelectItem value="pending">Pendiente</SelectItem>
+                <SelectItem value="error">Error</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterEntrega || 'all'} onValueChange={(v) => setFilterEntrega(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="Entrega" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toda entrega</SelectItem>
+                <SelectItem value="opened">Abierto</SelectItem>
+                <SelectItem value="delivered">Entregado</SelectItem>
+                <SelectItem value="sent">Enviado</SelectItem>
+                <SelectItem value="bounced">Rebotado</SelectItem>
+                <SelectItem value="pending">Pendiente</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterSeguimiento || 'all'} onValueChange={(v) => setFilterSeguimiento(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue placeholder="Seguimiento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todo seguimiento</SelectItem>
+                <SelectItem value="sin_respuesta">Sin respuesta</SelectItem>
+                <SelectItem value="interesado">Interesado</SelectItem>
+                <SelectItem value="no_interesado">No interesado</SelectItem>
+                <SelectItem value="reunion_agendada">Reunión agendada</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
+                <X className="h-3 w-3 mr-1" />
+                Limpiar
+              </Button>
+            )}
+          </div>
+
+          {hasActiveFilters && (
+            <p className="text-xs text-muted-foreground">
+              Mostrando {filteredVisible.length} de {visible.length} empresas
+            </p>
+          )}
+
+          <div className="border rounded-lg overflow-auto max-h-[55vh]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">#</TableHead>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Valoración</TableHead>
+                  <TableHead className="text-center">Seguimiento</TableHead>
+                  <TableHead className="text-center">Estado envío</TableHead>
+                  <TableHead className="text-center">Entrega</TableHead>
+                  <TableHead className="w-[100px]">Acción</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredVisible.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      No se encontraron empresas con los filtros aplicados
                     </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                ) : filteredVisible.map((c, i) => {
+                  const send = sendMap.get(c.id);
+                  const isSent = send?.status === 'sent';
+                  const isError = send?.status === 'error';
+                  const isSending = sendingId === c.id;
+                  const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
+                  const canSend = roundEstado === 'sin_respuesta' && !isSent;
+                  return (
+                    <TableRow key={c.id}>
+                      <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="font-medium text-sm max-w-[180px] truncate">{c.client_company}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
+                      <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-1">
+                          <FUSeguimientoBadge company={c} campaignId={campaignId} sequenceId={sequence.id} sendRecord={send} onChanged={onSeguimientoChanged} />
+                          <FUNotasPopover company={c} campaignId={campaignId} />
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {isSent ? (
+                          <div>
+                            <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">Enviado</Badge>
+                            {send?.sent_at && <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(send.sent_at).toLocaleDateString('es-ES')}</p>}
+                          </div>
+                        ) : isError ? (
+                          <Badge variant="secondary" className="text-xs bg-red-100 text-red-800" title={send?.error_message || ''}>Error</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground">Pendiente</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {(() => {
+                          if (!send || !isSent) return <span className="text-muted-foreground text-xs">—</span>;
+                          if (send.email_opened) return <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">📩 Abierto</Badge>;
+                          if (send.delivery_status === 'delivered') return <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">✓ Entregado</Badge>;
+                          if (send.delivery_status === 'bounced') return <Badge variant="secondary" className="text-[10px] bg-red-50 text-red-600 border-red-200">✗ Rebotado</Badge>;
+                          if (send.delivery_status === 'sent') return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">Enviado</Badge>;
+                          return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">—</Badge>;
+                        })()}
+                      </TableCell>
+                      <TableCell>
+                        <Button size="sm" variant={isSent || !canSend ? 'ghost' : 'outline'} className="h-7 text-xs"
+                          disabled={!canSend || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
+                          {isSending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
+                          {isSent ? 'Enviado' : !canSend ? '—' : 'Enviar'}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 
