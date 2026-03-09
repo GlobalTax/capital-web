@@ -123,7 +123,7 @@ export default function CampanasValoracion() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {campaigns.map((c) => {
+                {filteredCampaigns.map((c) => {
                   const st = statusConfig[c.status] || statusConfig.draft;
                   return (
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
