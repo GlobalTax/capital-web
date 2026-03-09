@@ -288,6 +288,11 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                   </TableCell>
                   <TableCell className="text-center font-bold">{s.sent}</TableCell>
                   <TableCell className="text-center">
+                    <span className={cn("text-sm font-medium", s.openRate > 0 ? 'text-blue-600' : 'text-muted-foreground')}>
+                      {s.opened}/{s.sent} ({s.openRate.toFixed(0)}%)
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
                     <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">{s.sinRespuesta}</Badge>
                   </TableCell>
                   <TableCell className="text-center">
