@@ -411,9 +411,6 @@ function SendList({
   const [showConfirmAll, setShowConfirmAll] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ sent: number; total: number } | null>(null);
 
-  const eligible = companies.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
-  const excluded = companies.length - eligible.length;
-
   const sendMap = useMemo(() => {
     const m = new Map<string, FollowupSend>();
     for (const s of sends) {
@@ -422,9 +419,19 @@ function SendList({
     return m;
   }, [sends, sequence.id]);
 
-  const pendingCompanies = eligible.filter(c => {
+  // Visible: sin_respuesta OR has any send record in THIS round (so they stay visible after status change)
+  const visible = companies.filter(c => {
+    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
+    const hasRoundRecord = sendMap.has(c.id);
+    return isSinRespuesta || hasRoundRecord;
+  });
+  const excluded = companies.length - visible.length;
+
+  // Only sin_respuesta AND not yet sent in this round can receive email
+  const pendingCompanies = visible.filter(c => {
+    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
     const s = sendMap.get(c.id);
-    return !s || s.status !== 'sent';
+    return isSinRespuesta && (!s || s.status !== 'sent');
   });
 
   const handleSendOne = async (company: CampaignCompany) => {
