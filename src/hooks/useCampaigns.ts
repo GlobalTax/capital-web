@@ -158,7 +158,7 @@ export function useCampaigns() {
           source: c.source,
           custom_multiple: c.custom_multiple,
           normalized_ebitda: c.normalized_ebitda,
-          status: 'imported',
+          status: 'pending',
           pdf_url: null,
           error_message: null,
           ai_strengths: null,
