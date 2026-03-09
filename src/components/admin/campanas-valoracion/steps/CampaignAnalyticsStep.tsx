@@ -110,8 +110,10 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
     const totalReunion = stages.reduce((s, st) => s + st.reunionAgendada, 0);
     const totalNoInteresado = stages.reduce((s, st) => s + st.noInteresado, 0);
     const totalSent = stages.reduce((s, st) => s + st.sent, 0);
+    const totalOpened = stages.reduce((s, st) => s + st.opened, 0);
+    const totalDelivered = stages.reduce((s, st) => s + st.delivered, 0);
     const totalResponded = totalInteresado + totalReunion + totalNoInteresado;
-    return { totalInteresado, totalReunion, totalNoInteresado, totalSent, totalResponded };
+    return { totalInteresado, totalReunion, totalNoInteresado, totalSent, totalResponded, totalOpened, totalDelivered };
   }, [stages]);
 
   // Chart data for funnel
