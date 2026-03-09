@@ -504,11 +504,13 @@ function SendList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {eligible.map((c, i) => {
+              {visible.map((c, i) => {
                 const send = sendMap.get(c.id);
                 const isSent = send?.status === 'sent';
                 const isError = send?.status === 'error';
                 const isSending = sendingId === c.id;
+                const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
+                const canSend = isSinRespuesta && !isSent;
                 return (
                   <TableRow key={c.id}>
                     <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
