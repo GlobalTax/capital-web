@@ -20598,6 +20598,51 @@ export type Database = {
         }
         Relationships: []
       }
+      team_schedules: {
+        Row: {
+          block_order: number
+          break_minutes: number
+          created_at: string
+          created_by: string | null
+          end_time: string
+          id: string
+          is_day_off: boolean
+          notes: string | null
+          schedule_date: string
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          block_order?: number
+          break_minutes?: number
+          created_at?: string
+          created_by?: string | null
+          end_time?: string
+          id?: string
+          is_day_off?: boolean
+          notes?: string | null
+          schedule_date: string
+          start_time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          block_order?: number
+          break_minutes?: number
+          created_at?: string
+          created_by?: string | null
+          end_time?: string
+          id?: string
+          is_day_off?: boolean
+          notes?: string | null
+          schedule_date?: string
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       teaser_campaigns: {
         Row: {
           completed_at: string | null
