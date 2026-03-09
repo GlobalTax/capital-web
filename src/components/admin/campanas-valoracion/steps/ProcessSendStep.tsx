@@ -455,6 +455,16 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const queryClient = useQueryClient();
   const { presentations, isLoading: presentationsLoading } = useCampaignPresentations(campaignId);
   const { updateCampaign } = useCampaigns();
+  const { emails: campaignEmails } = useCampaignEmails(campaignId);
+
+  // Email tracking map: company_id -> { delivery_status, email_opened }
+  const emailTrackingMap = useMemo(() => {
+    const m = new Map<string, { delivery_status: string | null; email_opened: boolean }>();
+    for (const e of campaignEmails) {
+      m.set(e.company_id, { delivery_status: e.delivery_status, email_opened: e.email_opened });
+    }
+    return m;
+  }, [campaignEmails]);
 
   // Send progress
   const [sendingProgress, setSendingProgress] = useState({ active: false, current: 0, total: 0, name: '', phase: '' });
