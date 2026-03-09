@@ -82,17 +82,22 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
       const noInter = sentSends.filter(s => s.seguimiento_estado === 'no_interesado').length;
       const reunion = sentSends.filter(s => s.seguimiento_estado === 'reunion_agendada').length;
       const responded = inter + noInter + reunion;
+      const roundOpened = sentSends.filter(s => s.email_opened).length;
+      const roundDelivered = sentSends.filter(s => s.delivery_status === 'delivered' || s.delivery_status === 'opened' || s.email_opened).length;
 
       result.push({
         label: seq.label || `Follow up ${seq.sequence_number}`,
         total: roundSends.length,
         sent: sentSends.length,
+        delivered: roundDelivered,
+        opened: roundOpened,
         sinRespuesta: sinResp,
         interesado: inter,
         noInteresado: noInter,
         reunionAgendada: reunion,
         responseRate: sentSends.length > 0 ? (responded / sentSends.length) * 100 : 0,
         interestRate: sentSends.length > 0 ? ((inter + reunion) / sentSends.length) * 100 : 0,
+        openRate: sentSends.length > 0 ? (roundOpened / sentSends.length) * 100 : 0,
       });
     }
 
