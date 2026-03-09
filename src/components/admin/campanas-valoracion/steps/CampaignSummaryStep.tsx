@@ -11,6 +11,7 @@ import {
   Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2
 } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
+import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -174,6 +175,14 @@ function NotasPopover({ company, campaignId }: { company: CampaignCompany; campa
 export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
   const { companies, stats } = useCampaignCompanies(campaignId);
+  const { emails } = useCampaignEmails(campaignId);
+  const emailSentMap = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const e of emails) {
+      map.set(e.company_id, e.sent_at);
+    }
+    return map;
+  }, [emails]);
 
   const sentCount = companies.filter(c => c.status === 'sent').length;
   const createdCount = companies.filter(c => ['created', 'sent'].includes(c.status)).length;
@@ -315,6 +324,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead>Email</TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Fecha envío</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Follow Up</TableHead>
                 <TableHead className="text-center w-[40px]">Notas</TableHead>
@@ -335,6 +345,11 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                     } className="text-xs">
                       {c.status === 'sent' ? 'Enviado' : c.status === 'failed' ? 'Error' : c.status === 'created' ? 'Creada' : c.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-center text-xs text-muted-foreground">
+                    {emailSentMap.get(c.id)
+                      ? new Date(emailSentMap.get(c.id)!).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                      : '—'}
                   </TableCell>
                   <TableCell className="text-center">
                     <SeguimientoBadge company={c} campaignId={campaignId} />
