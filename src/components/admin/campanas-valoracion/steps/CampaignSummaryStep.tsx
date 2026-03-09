@@ -8,8 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign,
-  Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2
+  Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2,
+  Search, X
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences } from '@/hooks/useFollowupSequences';
@@ -217,13 +219,66 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     return map;
   }, [companies, allSends, sequences]);
 
+  // ─── Filters ───────────────────────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterEstado, setFilterEstado] = useState<string | null>(null);
+  const [filterEntrega, setFilterEntrega] = useState<string | null>(null);
+  const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
+
+  const filteredCompanies = useMemo(() => {
+    let result = companies;
+
+    // Text search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c =>
+        c.client_company?.toLowerCase().includes(q) ||
+        c.client_email?.toLowerCase().includes(q)
+      );
+    }
+
+    // Estado filter
+    if (filterEstado) {
+      result = result.filter(c => c.status === filterEstado);
+    }
+
+    // Entrega filter
+    if (filterEntrega) {
+      result = result.filter(c => {
+        const tracking = emailTrackingMap.get(c.id);
+        if (filterEntrega === 'opened') return tracking?.email_opened === true;
+        if (filterEntrega === 'delivered') return tracking?.delivery_status === 'delivered' && !tracking?.email_opened;
+        if (filterEntrega === 'bounced') return tracking?.delivery_status === 'bounced';
+        if (filterEntrega === 'sent') return tracking?.delivery_status === 'sent';
+        if (filterEntrega === 'pending') return !tracking?.delivery_status || tracking?.delivery_status === 'pending';
+        return true;
+      });
+    }
+
+    // Seguimiento filter
+    if (filterSeguimiento) {
+      result = result.filter(c => (c.seguimiento_estado || 'sin_respuesta') === filterSeguimiento);
+    }
+
+    return result;
+  }, [companies, searchQuery, filterEstado, filterEntrega, filterSeguimiento, emailTrackingMap]);
+
+  const hasActiveFilters = !!searchQuery || !!filterEstado || !!filterEntrega || !!filterSeguimiento;
+
+  const clearAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setFilterEstado(null);
+    setFilterEntrega(null);
+    setFilterSeguimiento(null);
+  }, []);
+
   const sentCount = companies.filter(c => c.status === 'sent').length;
   const createdCount = companies.filter(c => ['created', 'sent'].includes(c.status)).length;
   const failedCount = companies.filter(c => c.status === 'failed').length;
   const successRate = stats.total > 0 ? ((sentCount / stats.total) * 100).toFixed(0) : '0';
   const avgValuation = createdCount > 0 ? stats.totalValuation / createdCount : 0;
 
-  // Seguimiento stats (from new columns)
+  // Seguimiento stats
   const followUpCount = companies.filter(c => (c.seguimiento_estado || 'sin_respuesta') !== 'sin_respuesta').length;
   const interestedCount = companies.filter(c => c.seguimiento_estado === 'interesado').length;
   const meetingCount = companies.filter(c => c.seguimiento_estado === 'reunion_agendada').length;
@@ -348,7 +403,75 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
 
       {/* Summary Table */}
       <Card>
-        <CardHeader><CardTitle className="text-base">Resumen de empresas</CardTitle></CardHeader>
+        <CardHeader>
+          <div className="flex flex-col gap-3">
+            <CardTitle className="text-base">Resumen de empresas</CardTitle>
+            
+            {/* Search + Filters */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar empresa o email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8 text-sm"
+                />
+              </div>
+
+              <Select value={filterEstado || 'all'} onValueChange={(v) => setFilterEstado(v === 'all' ? null : v)}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos estados</SelectItem>
+                  <SelectItem value="created">Creada</SelectItem>
+                  <SelectItem value="sent">Enviado</SelectItem>
+                  <SelectItem value="failed">Error</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterEntrega || 'all'} onValueChange={(v) => setFilterEntrega(v === 'all' ? null : v)}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Entrega" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toda entrega</SelectItem>
+                  <SelectItem value="opened">Abierto</SelectItem>
+                  <SelectItem value="delivered">Entregado</SelectItem>
+                  <SelectItem value="sent">Enviado</SelectItem>
+                  <SelectItem value="bounced">Rebotado</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterSeguimiento || 'all'} onValueChange={(v) => setFilterSeguimiento(v === 'all' ? null : v)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs">
+                  <SelectValue placeholder="Seguimiento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo seguimiento</SelectItem>
+                  {SEGUIMIENTO_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-xs">{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
+                  <X className="h-3 w-3 mr-1" />
+                  Limpiar
+                </Button>
+              )}
+            </div>
+
+            {hasActiveFilters && (
+              <p className="text-xs text-muted-foreground">
+                Mostrando {filteredCompanies.length} de {companies.length} empresas
+              </p>
+            )}
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -365,7 +488,13 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {companies.map(c => (
+              {filteredCompanies.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                    No se encontraron empresas con los filtros aplicados
+                  </TableCell>
+                </TableRow>
+              ) : filteredCompanies.map(c => (
                 <TableRow key={c.id} className={c.professional_valuation_id ? 'cursor-pointer hover:bg-muted/50' : ''}
                   onClick={() => c.professional_valuation_id && navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}>
                   <TableCell className="font-medium">{c.client_company}</TableCell>
