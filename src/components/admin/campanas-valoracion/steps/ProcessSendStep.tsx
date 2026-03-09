@@ -1032,6 +1032,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-center">PDF Valoración</TableHead>
                 <TableHead className="text-center">PDF Estudio</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Entrega</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center w-10"></TableHead>
               </TableRow>
