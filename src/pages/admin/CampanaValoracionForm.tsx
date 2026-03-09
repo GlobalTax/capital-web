@@ -13,6 +13,7 @@ import { ProcessSendStep } from '@/components/admin/campanas-valoracion/steps/Pr
 import { CampaignSummaryStep } from '@/components/admin/campanas-valoracion/steps/CampaignSummaryStep';
 import { MailStep } from '@/components/admin/campanas-valoracion/steps/MailStep';
 import { FollowUpStep } from '@/components/admin/campanas-valoracion/steps/FollowUpStep';
+import { CampaignAnalyticsStep } from '@/components/admin/campanas-valoracion/steps/CampaignAnalyticsStep';
 import { cn } from '@/lib/utils';
 
 const STEPS = [
