@@ -20,6 +20,16 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 export default function CampanasValoracion() {
   const navigate = useNavigate();
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCampaigns = useMemo(() => {
+    if (!searchQuery.trim()) return campaigns;
+    const q = searchQuery.toLowerCase();
+    return campaigns.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.sector?.toLowerCase().includes(q)
+    );
+  }, [campaigns, searchQuery]);
 
   const totalCompanies = campaigns.reduce((s, c) => s + c.total_companies, 0);
   const totalSent = campaigns.reduce((s, c) => s + c.total_sent, 0);
