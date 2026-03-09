@@ -165,14 +165,42 @@ export function CampaignConfigStep({ data, updateField }: Props) {
             </div>
             <div className="space-y-2">
               <Label>Sector *</Label>
-              <Select value={data.sector || ''} onValueChange={v => updateField('sector', v)}>
-                <SelectTrigger><SelectValue placeholder="Seleccionar sector" /></SelectTrigger>
-                <SelectContent>
-                  {VALUATION_SECTORS.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={sectorOpen} onOpenChange={setSectorOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" aria-expanded={sectorOpen} className="w-full justify-between font-normal">
+                    {data.sector || 'Seleccionar sector'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput placeholder="Buscar o escribir sector..." value={sectorSearch} onValueChange={setSectorSearch} />
+                    <CommandList>
+                      <CommandEmpty>
+                        <button
+                          type="button"
+                          className="w-full text-left px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded"
+                          onClick={() => { updateField('sector', sectorSearch); setSectorOpen(false); setSectorSearch(''); }}
+                        >
+                          Usar "<span className="font-medium">{sectorSearch}</span>" como sector
+                        </button>
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {VALUATION_SECTORS.filter(s => s.toLowerCase().includes(sectorSearch.toLowerCase())).map(s => (
+                          <CommandItem
+                            key={s}
+                            value={s}
+                            onSelect={() => { updateField('sector', s); setSectorOpen(false); setSectorSearch(''); }}
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", data.sector === s ? "opacity-100" : "opacity-0")} />
+                            {s}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <div className="flex gap-2 mt-1">
                 <Button variant="outline" size="sm" onClick={handleSaveTemplate} disabled={!data.sector}>
                   <Save className="h-3 w-3 mr-1" />Guardar como plantilla
