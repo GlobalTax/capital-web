@@ -780,6 +780,7 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
                 emailSentMap={emailSentMap}
                 onSave={handleSaveTemplate}
                 signatureHtml={signatureHtml}
+                signature={signature || null}
               />
             </TabsContent>
 
