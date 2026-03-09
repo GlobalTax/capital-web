@@ -3595,6 +3595,48 @@ export type Database = {
           },
         ]
       }
+      campaign_followups: {
+        Row: {
+          body: string
+          campaign_id: string
+          company_id: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          is_manually_edited: boolean | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          body: string
+          campaign_id: string
+          company_id: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_manually_edited?: boolean | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          body?: string
+          campaign_id?: string
+          company_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_manually_edited?: boolean | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       campaign_leads_mapping: {
         Row: {
           campaign_id: string | null
@@ -21506,6 +21548,8 @@ export type Database = {
           financial_years_data: Json | null
           follow_up_count: number | null
           follow_up_status: string | null
+          followup_enviado: boolean | null
+          followup_sent_at: string | null
           id: string
           is_auto_assigned: boolean | null
           last_interaction_at: string | null
@@ -21543,6 +21587,8 @@ export type Database = {
           financial_years_data?: Json | null
           follow_up_count?: number | null
           follow_up_status?: string | null
+          followup_enviado?: boolean | null
+          followup_sent_at?: string | null
           id?: string
           is_auto_assigned?: boolean | null
           last_interaction_at?: string | null
@@ -21580,6 +21626,8 @@ export type Database = {
           financial_years_data?: Json | null
           follow_up_count?: number | null
           follow_up_status?: string | null
+          followup_enviado?: boolean | null
+          followup_sent_at?: string | null
           id?: string
           is_auto_assigned?: boolean | null
           last_interaction_at?: string | null
@@ -21628,6 +21676,8 @@ export type Database = {
           email_body_template: string | null
           email_subject_template: string | null
           financial_years: number[] | null
+          followup_body_template: string | null
+          followup_subject_template: string | null
           id: string
           include_comparables: boolean | null
           lead_source: string | null
@@ -21663,6 +21713,8 @@ export type Database = {
           email_body_template?: string | null
           email_subject_template?: string | null
           financial_years?: number[] | null
+          followup_body_template?: string | null
+          followup_subject_template?: string | null
           id?: string
           include_comparables?: boolean | null
           lead_source?: string | null
@@ -21698,6 +21750,8 @@ export type Database = {
           email_body_template?: string | null
           email_subject_template?: string | null
           financial_years?: number[] | null
+          followup_body_template?: string | null
+          followup_subject_template?: string | null
           id?: string
           include_comparables?: boolean | null
           lead_source?: string | null
