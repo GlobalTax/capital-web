@@ -186,6 +186,18 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     return map;
   }, [emails]);
 
+  // Delivery/open tracking map
+  const emailTrackingMap = useMemo(() => {
+    const map = new Map<string, { delivery_status: string | null; email_opened: boolean }>();
+    for (const e of emails) {
+      map.set(e.company_id, {
+        delivery_status: (e as any).delivery_status || null,
+        email_opened: (e as any).email_opened || false,
+      });
+    }
+    return map;
+  }, [emails]);
+
   // Build followup label per company: "FU1 · FU2" etc
   const followupLabels = useMemo(() => {
     const map = new Map<string, string>();
