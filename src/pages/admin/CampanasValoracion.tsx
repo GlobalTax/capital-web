@@ -85,6 +85,17 @@ export default function CampanasValoracion() {
 
       {/* Table */}
       <Card>
+        <CardHeader className="pb-3">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre o sector..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-8 text-sm"
+            />
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           {campaigns.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
