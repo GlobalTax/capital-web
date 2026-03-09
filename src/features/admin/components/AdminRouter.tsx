@@ -62,6 +62,7 @@ import {
   LazyBookingsPage,
   LazyNotificationsPage,
   LazyAcquisitionChannelsSettings,
+  LazyEmailSignatureConfig,
   LazyBrevoSyncDashboard,
   LazyBrevoContactsImport,
   LazyEmailOutboxPanel,
