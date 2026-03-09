@@ -403,7 +403,75 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
 
       {/* Summary Table */}
       <Card>
-        <CardHeader><CardTitle className="text-base">Resumen de empresas</CardTitle></CardHeader>
+        <CardHeader>
+          <div className="flex flex-col gap-3">
+            <CardTitle className="text-base">Resumen de empresas</CardTitle>
+            
+            {/* Search + Filters */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar empresa o email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8 text-sm"
+                />
+              </div>
+
+              <Select value={filterEstado || 'all'} onValueChange={(v) => setFilterEstado(v === 'all' ? null : v)}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos estados</SelectItem>
+                  <SelectItem value="created">Creada</SelectItem>
+                  <SelectItem value="sent">Enviado</SelectItem>
+                  <SelectItem value="failed">Error</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterEntrega || 'all'} onValueChange={(v) => setFilterEntrega(v === 'all' ? null : v)}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Entrega" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toda entrega</SelectItem>
+                  <SelectItem value="opened">Abierto</SelectItem>
+                  <SelectItem value="delivered">Entregado</SelectItem>
+                  <SelectItem value="sent">Enviado</SelectItem>
+                  <SelectItem value="bounced">Rebotado</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterSeguimiento || 'all'} onValueChange={(v) => setFilterSeguimiento(v === 'all' ? null : v)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs">
+                  <SelectValue placeholder="Seguimiento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo seguimiento</SelectItem>
+                  {SEGUIMIENTO_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-xs">{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
+                  <X className="h-3 w-3 mr-1" />
+                  Limpiar
+                </Button>
+              )}
+            </div>
+
+            {hasActiveFilters && (
+              <p className="text-xs text-muted-foreground">
+                Mostrando {filteredCompanies.length} de {companies.length} empresas
+              </p>
+            )}
+          </div>
+        </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
@@ -420,7 +488,13 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {companies.map(c => (
+              {filteredCompanies.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                    No se encontraron empresas con los filtros aplicados
+                  </TableCell>
+                </TableRow>
+              ) : filteredCompanies.map(c => (
                 <TableRow key={c.id} className={c.professional_valuation_id ? 'cursor-pointer hover:bg-muted/50' : ''}
                   onClick={() => c.professional_valuation_id && navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}>
                   <TableCell className="font-medium">{c.client_company}</TableCell>
