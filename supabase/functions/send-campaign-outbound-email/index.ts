@@ -187,6 +187,11 @@ serve(async (req) => {
           htmlBody += `<div style="width:100%;max-width:600px;margin:0 auto;padding:0 12px;box-sizing:border-box;"><hr style="border:none;border-top:1px solid #ddd;margin:20px 0">${signatureHtml}</div>`;
         }
 
+        // Embed tracking pixel for open detection (uses email.id as mid — will be updated to resend message ID after send)
+        const trackingPixelUrl = `${SUPABASE_URL}/functions/v1/email-open?mid=${email.id}&t=${Date.now()}`;
+        htmlBody += `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;width:1px;height:1px;border:0;" alt="" />`;
+        }
+
         // Send via Resend
         const resendPayload: Record<string, unknown> = {
           from: "Samuel Navarro <samuel@capittal.es>",
