@@ -6,6 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
@@ -14,7 +17,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  Send, Loader2, Eye, Mail, Trash2, Plus, CheckCircle2, AlertCircle,
+  Send, Loader2, Eye, Mail, Trash2, Plus, CheckCircle2, AlertCircle, MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -25,6 +28,20 @@ import { getAvailableVariables, replaceVariables } from '@/utils/campaignEmailTe
 import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml } from '@/hooks/useEmailSignature';
 import { toast } from 'sonner';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+
+// Seguimiento config (same as CampaignSummaryStep)
+const SEGUIMIENTO_OPTIONS = [
+  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
+  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
+  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
+] as const;
+
+function getSeguimientoOption(value: string | null) {
+  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
+}
 
 interface Props {
   campaignId: string;
@@ -229,24 +246,166 @@ function SignatureSection() {
   );
 }
 
+// ─── Seguimiento Badge for Follow Up ────────────────────────────────────
+function FUSeguimientoBadge({
+  company,
+  campaignId,
+  onChanged,
+}: {
+  company: CampaignCompany;
+  campaignId: string;
+  onChanged: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const current = getSeguimientoOption(company.seguimiento_estado);
+
+  const handleChange = useCallback(async (newValue: string) => {
+    if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
+    setSaving(true);
+    try {
+      // 1. Update seguimiento_estado
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ seguimiento_estado: newValue })
+        .eq('id', company.id);
+      if (error) throw error;
+
+      // 2. If no longer sin_respuesta, cancel all pending sends for this company
+      if (newValue !== 'sin_respuesta') {
+        await (supabase as any)
+          .from('campaign_followup_sends')
+          .update({ status: 'cancelled' })
+          .eq('campaign_id', campaignId)
+          .eq('company_id', company.id)
+          .eq('status', 'pending');
+      }
+
+      // 3. Invalidate all relevant caches
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+      queryClient.invalidateQueries({ queryKey: ['followup-sends', campaignId] });
+      onChanged();
+    } catch (e: any) {
+      toast.error('Error al guardar seguimiento: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [company.id, company.seguimiento_estado, campaignId, queryClient, onChanged]);
+
+  return (
+    <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+      {saving ? (
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      ) : (
+        <Select value={company.seguimiento_estado || 'sin_respuesta'} onValueChange={handleChange}>
+          <SelectTrigger className={cn(
+            "h-7 text-[10px] font-medium px-2 py-0 border rounded-full w-auto min-w-[110px] gap-1",
+            current.className
+          )}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SEGUIMIENTO_OPTIONS.map(opt => (
+              <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span className={cn("w-2 h-2 rounded-full", {
+                    'bg-muted-foreground': opt.value === 'sin_respuesta',
+                    'bg-emerald-500': opt.value === 'interesado',
+                    'bg-red-400': opt.value === 'no_interesado',
+                    'bg-violet-500': opt.value === 'reunion_agendada',
+                  })} />
+                  {opt.label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
+
+// ─── Notes Popover for Follow Up ────────────────────────────────────────
+function FUNotasPopover({ company, campaignId }: { company: CampaignCompany; campaignId: string }) {
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState(company.seguimiento_notas || '');
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const hasNotes = !!(company.seguimiento_notas && company.seguimiento_notas.trim());
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ seguimiento_notas: notes })
+        .eq('id', company.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+      toast.success('Notas guardadas');
+      setOpen(false);
+    } catch (e: any) {
+      toast.error('Error al guardar notas: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [notes, company.id, campaignId, queryClient]);
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) setNotes(company.seguimiento_notas || ''); }}>
+      <PopoverTrigger asChild>
+        <button
+          onClick={e => e.stopPropagation()}
+          className="relative p-1 rounded hover:bg-muted/50 transition-colors"
+          title={hasNotes ? 'Ver/editar notas' : 'Añadir nota'}
+        >
+          <MessageCircle className={cn("h-4 w-4", hasNotes ? 'text-primary' : 'text-muted-foreground')} />
+          {hasNotes && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="end" onClick={e => e.stopPropagation()}>
+        <p className="text-xs font-medium text-muted-foreground mb-2">Notas — {company.client_company}</p>
+        <Textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="Escribe notas sobre esta empresa..."
+          className="text-sm min-h-[80px] resize-none"
+        />
+        <div className="flex justify-end mt-2">
+          <Button size="sm" onClick={handleSave} disabled={saving} className="text-xs h-7">
+            {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+            Guardar notas
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 // ─── Send List ──────────────────────────────────────────────────────────
 
 function SendList({
   sequence,
   campaign,
+  campaignId,
   companies,
   sends,
   emailSentMap,
   onSend,
   isSendingOne,
+  onSeguimientoChanged,
 }: {
   sequence: FollowupSequence;
   campaign: ValuationCampaign;
+  campaignId: string;
   companies: CampaignCompany[];
   sends: FollowupSend[];
   emailSentMap: Map<string, string | null>;
   onSend: (company: CampaignCompany) => Promise<void>;
   isSendingOne: boolean;
+  onSeguimientoChanged: () => void;
 }) {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [showConfirmAll, setShowConfirmAll] = useState(false);
@@ -332,6 +491,7 @@ function SendList({
                 <TableHead>Empresa</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Valoración</TableHead>
+                <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Estado envío</TableHead>
                 <TableHead className="w-[100px]">Acción</TableHead>
               </TableRow>
@@ -348,6 +508,12 @@ function SendList({
                     <TableCell className="font-medium text-sm max-w-[180px] truncate">{c.client_company}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
                     <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-1">
+                        <FUSeguimientoBadge company={c} campaignId={campaignId} onChanged={onSeguimientoChanged} />
+                        <FUNotasPopover company={c} campaignId={campaignId} />
+                      </div>
+                    </TableCell>
                     <TableCell className="text-center">
                       {isSent ? (
                         <div>
@@ -563,11 +729,13 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
               <SendList
                 sequence={selectedSeq}
                 campaign={campaign}
+                campaignId={campaignId}
                 companies={companies}
                 sends={allSends}
                 emailSentMap={emailSentMap}
                 onSend={handleSendCompany}
                 isSendingOne={isSendingOne}
+                onSeguimientoChanged={invalidate}
               />
             </TabsContent>
           </Tabs>
