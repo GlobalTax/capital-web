@@ -1109,6 +1109,19 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                          combinedStatus === 'no_study' ? 'Sin estudio' :
                          'Sin valoración'}
                       </Badge>
+                     </TableCell>
+                    <TableCell className="text-center">
+                      {(() => {
+                        const tracking = emailTrackingMap.get(c.id);
+                        if (!tracking || c.status !== 'sent') return <span className="text-muted-foreground text-xs">—</span>;
+                        const { delivery_status, email_opened } = tracking;
+                        if (email_opened) return <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">📩 Abierto</Badge>;
+                        if (delivery_status === 'delivered') return <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">✓ Entregado</Badge>;
+                        if (delivery_status === 'bounced') return <Badge variant="secondary" className="text-[10px] bg-red-50 text-red-600 border-red-200">✗ Rebotado</Badge>;
+                        if (delivery_status === 'complained') return <Badge variant="secondary" className="text-[10px] bg-orange-50 text-orange-600 border-orange-200">⚠ Queja</Badge>;
+                        if (delivery_status === 'sent') return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">Enviado</Badge>;
+                        return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">Pendiente</Badge>;
+                      })()}
                     </TableCell>
                     <TableCell className="text-center">
                       {(() => {
