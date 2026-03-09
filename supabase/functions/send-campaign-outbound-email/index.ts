@@ -128,12 +128,17 @@ serve(async (req) => {
           if (att) attachments.push(att);
         }
 
-        // Convert body to HTML
-        const htmlBody = `
+        // Convert body to HTML and append signature
+        let htmlBody = `
           <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; line-height: 1.6;">
             ${email.body.replace(/\n/g, "<br/>")}
           </div>
         `;
+
+        // Append email signature if available
+        if (signatureHtml) {
+          htmlBody += `<hr style="border:none;border-top:1px solid #ddd;margin:20px 0">${signatureHtml}`;
+        }
 
         // Send via Resend
         const resendPayload: Record<string, unknown> = {
