@@ -168,6 +168,9 @@ export default function CampanaValoracionForm() {
         {currentStep === 8 && campaignId && (
           <FollowUpStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
         )}
+        {currentStep === 9 && campaignId && (
+          <CampaignAnalyticsStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
+        )}
       </div>
 
       {/* Navigation */}
