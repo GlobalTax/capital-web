@@ -645,6 +645,16 @@ function SendList({
                         <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground">Pendiente</Badge>
                       )}
                     </TableCell>
+                    <TableCell className="text-center">
+                      {(() => {
+                        if (!send || !isSent) return <span className="text-muted-foreground text-xs">—</span>;
+                        if (send.email_opened) return <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">📩 Abierto</Badge>;
+                        if (send.delivery_status === 'delivered') return <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">✓ Entregado</Badge>;
+                        if (send.delivery_status === 'bounced') return <Badge variant="secondary" className="text-[10px] bg-red-50 text-red-600 border-red-200">✗ Rebotado</Badge>;
+                        if (send.delivery_status === 'sent') return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">Enviado</Badge>;
+                        return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">—</Badge>;
+                      })()}
+                    </TableCell>
                     <TableCell>
                       <Button size="sm" variant={isSent || !canSend ? 'ghost' : 'outline'} className="h-7 text-xs"
                         disabled={!canSend || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
