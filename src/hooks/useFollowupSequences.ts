@@ -101,6 +101,7 @@ export function useFollowupSequences(campaignId: string | undefined) {
       return (data || []) as FollowupSend[];
     },
     enabled: !!campaignId,
+    refetchInterval: 30000,
   });
 
   const invalidate = () => {
