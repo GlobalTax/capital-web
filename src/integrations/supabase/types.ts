@@ -21515,6 +21515,8 @@ export type Database = {
           professional_valuation_id: string | null
           range_label: string | null
           revenue: number | null
+          seguimiento_estado: string | null
+          seguimiento_notas: string | null
           source: string | null
           status: string | null
           valuation_central: number | null
@@ -21550,6 +21552,8 @@ export type Database = {
           professional_valuation_id?: string | null
           range_label?: string | null
           revenue?: number | null
+          seguimiento_estado?: string | null
+          seguimiento_notas?: string | null
           source?: string | null
           status?: string | null
           valuation_central?: number | null
@@ -21585,6 +21589,8 @@ export type Database = {
           professional_valuation_id?: string | null
           range_label?: string | null
           revenue?: number | null
+          seguimiento_estado?: string | null
+          seguimiento_notas?: string | null
           source?: string | null
           status?: string | null
           valuation_central?: number | null

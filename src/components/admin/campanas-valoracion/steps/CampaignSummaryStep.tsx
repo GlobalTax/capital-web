@@ -2,14 +2,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign, Calendar, MessageSquarePlus, Users, CalendarCheck } from 'lucide-react';
-import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
+import {
+  Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign,
+  Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2
+} from 'lucide-react';
+import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { useMemo } from 'react';
-import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
+import { useMemo, useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
 
 interface Props {
   campaignId: string;
@@ -34,6 +43,134 @@ const CHART_COLORS = [
   'hsl(var(--primary) / 0.25)',
 ];
 
+// Seguimiento states config
+const SEGUIMIENTO_OPTIONS = [
+  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
+  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
+  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
+] as const;
+
+function getSeguimientoOption(value: string | null) {
+  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
+}
+
+// ─── Inline Seguimiento Badge Select ────────────────────────────────────
+function SeguimientoBadge({ company, campaignId }: { company: CampaignCompany; campaignId: string }) {
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const current = getSeguimientoOption(company.seguimiento_estado);
+
+  const handleChange = useCallback(async (newValue: string) => {
+    if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ seguimiento_estado: newValue })
+        .eq('id', company.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+    } catch (e: any) {
+      toast.error('Error al guardar seguimiento: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [company.id, company.seguimiento_estado, campaignId, queryClient]);
+
+  return (
+    <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+      {saving ? (
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      ) : (
+        <Select value={company.seguimiento_estado || 'sin_respuesta'} onValueChange={handleChange}>
+          <SelectTrigger className={cn(
+            "h-7 text-[10px] font-medium px-2 py-0 border rounded-full w-auto min-w-[120px] gap-1",
+            current.className
+          )}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SEGUIMIENTO_OPTIONS.map(opt => (
+              <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span className={cn("w-2 h-2 rounded-full", {
+                    'bg-muted-foreground': opt.value === 'sin_respuesta',
+                    'bg-emerald-500': opt.value === 'interesado',
+                    'bg-red-400': opt.value === 'no_interesado',
+                    'bg-violet-500': opt.value === 'reunion_agendada',
+                  })} />
+                  {opt.label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
+
+// ─── Notes Popover ──────────────────────────────────────────────────────
+function NotasPopover({ company, campaignId }: { company: CampaignCompany; campaignId: string }) {
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState(company.seguimiento_notas || '');
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const hasNotes = !!(company.seguimiento_notas && company.seguimiento_notas.trim());
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ seguimiento_notas: notes })
+        .eq('id', company.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+      toast.success('Notas guardadas');
+      setOpen(false);
+    } catch (e: any) {
+      toast.error('Error al guardar notas: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [notes, company.id, campaignId, queryClient]);
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) setNotes(company.seguimiento_notas || ''); }}>
+      <PopoverTrigger asChild>
+        <button
+          onClick={e => e.stopPropagation()}
+          className="relative p-1 rounded hover:bg-muted/50 transition-colors"
+          title={hasNotes ? 'Ver/editar notas' : 'Añadir nota'}
+        >
+          <MessageCircle className={cn("h-4 w-4", hasNotes ? 'text-primary' : 'text-muted-foreground')} />
+          {hasNotes && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="end" onClick={e => e.stopPropagation()}>
+        <p className="text-xs font-medium text-muted-foreground mb-2">Notas — {company.client_company}</p>
+        <Textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="Escribe notas sobre esta empresa..."
+          className="text-sm min-h-[80px] resize-none"
+        />
+        <div className="flex justify-end mt-2">
+          <Button size="sm" onClick={handleSave} disabled={saving} className="text-xs h-7">
+            {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+            Guardar notas
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── Main Component ─────────────────────────────────────────────────────
 export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
   const { companies, stats } = useCampaignCompanies(campaignId);
@@ -44,15 +181,14 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const successRate = stats.total > 0 ? ((sentCount / stats.total) * 100).toFixed(0) : '0';
   const avgValuation = createdCount > 0 ? stats.totalValuation / createdCount : 0;
 
-  // Follow-up stats
-  const followUpCount = companies.filter(c => (c as any).follow_up_count > 0).length;
-  const interestedCount = companies.filter(c => (c as any).follow_up_status === 'interested').length;
-  const meetingCount = companies.filter(c => (c as any).follow_up_status === 'meeting_scheduled').length;
+  // Seguimiento stats (from new columns)
+  const followUpCount = companies.filter(c => (c.seguimiento_estado || 'sin_respuesta') !== 'sin_respuesta').length;
+  const interestedCount = companies.filter(c => c.seguimiento_estado === 'interesado').length;
+  const meetingCount = companies.filter(c => c.seguimiento_estado === 'reunion_agendada').length;
 
   const distributionData = useMemo(() => {
     const companiesWithValuation = companies.filter(c => c.valuation_central && c.valuation_central > 0);
     if (companiesWithValuation.length === 0) return [];
-
     return VALUATION_RANGES.map(range => ({
       name: range.label,
       count: companiesWithValuation.filter(c => c.valuation_central! >= range.min && c.valuation_central! < range.max).length,
@@ -180,6 +316,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
+                <TableHead className="text-center w-[40px]">Notas</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -199,12 +336,10 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    {(() => {
-                      const fus = (c as any).follow_up_status || 'none';
-                      const fusInfo = FOLLOW_UP_STATUSES.find(s => s.value === fus);
-                      if (fus === 'none') return <span className="text-muted-foreground text-xs">—</span>;
-                      return <Badge variant={fusInfo?.variant || 'secondary'} className="text-[10px]">{fusInfo?.label || fus}</Badge>;
-                    })()}
+                    <SeguimientoBadge company={c} campaignId={campaignId} />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <NotasPopover company={c} campaignId={campaignId} />
                   </TableCell>
                 </TableRow>
               ))}
