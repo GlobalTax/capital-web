@@ -543,7 +543,6 @@ function SendList({
                 const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
                 const canSend = roundEstado === 'sin_respuesta' && !isSent;
                 return (
-                return (
                   <TableRow key={c.id}>
                     <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
                     <TableCell className="font-medium text-sm max-w-[180px] truncate">{c.client_company}</TableCell>
