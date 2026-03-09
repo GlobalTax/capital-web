@@ -57,6 +57,7 @@ function TemplateEditor({
   emailSentMap,
   onSave,
   signatureHtml,
+  signature,
 }: {
   sequence: FollowupSequence;
   campaign: ValuationCampaign;
@@ -64,11 +65,11 @@ function TemplateEditor({
   emailSentMap: Map<string, string | null>;
   onSave: (subject: string, body: string) => Promise<void>;
   signatureHtml: string | null;
+  signature: EmailSignatureData | null;
 }) {
   const [subject, setSubject] = useState(sequence.subject);
   const [body, setBody] = useState(sequence.body_html);
   const [saving, setSaving] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
   const [lastFocused, setLastFocused] = useState<'subject' | 'body'>('body');
@@ -107,20 +108,29 @@ function TemplateEditor({
     }
   }, [lastFocused]);
 
-  // Preview
+  // Resolve variables using signature data for firmante fields
   const previewCompany = eligible[0];
   const previewSentAt = previewCompany ? emailSentMap.get(previewCompany.id) || null : null;
 
-  function resolvePreview(tpl: string) {
-    if (!previewCompany) return tpl;
-    let r = replaceVariables(tpl, previewCompany, campaign);
+  const resolvePreview = useCallback((tpl: string) => {
+    if (!tpl) return '';
+    let r = tpl;
+    if (previewCompany) {
+      r = replaceVariables(r, previewCompany, campaign);
+    }
+    // Override firmante variables with signature data
+    if (signature) {
+      r = r.replace(/\{\{firmante_nombre\}\}/g, signature.full_name || '');
+      r = r.replace(/\{\{firmante_cargo\}\}/g, signature.job_title || '');
+      r = r.replace(/\{\{firmante_telefono\}\}/g, signature.phone || '');
+    }
     const dias = previewSentAt
       ? String(Math.max(1, Math.floor((Date.now() - new Date(previewSentAt).getTime()) / 86400000)))
       : 'varios';
     r = r.replace(/\{\{dias_desde_primer_envio\}\}/g, dias);
     r = r.replace(/\{\{numero_followup\}\}/g, String(sequence.sequence_number));
     return r;
-  }
+  }, [previewCompany, campaign, signature, previewSentAt, sequence.sequence_number]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -137,6 +147,9 @@ function TemplateEditor({
     acc[v.category].push(v);
     return acc;
   }, {} as Record<string, typeof variables>);
+
+  const resolvedSubject = resolvePreview(subject);
+  const resolvedBody = resolvePreview(body);
 
   return (
     <div className="space-y-4">
@@ -170,44 +183,53 @@ function TemplateEditor({
         </CardContent>
       </Card>
 
-      <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Asunto</Label>
-        <Input ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)}
-          onFocus={() => setLastFocused('subject')} placeholder="Seguimiento — {{company}}" className="font-mono text-sm" />
-      </div>
+      {/* Side-by-side: Editor + Live Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left: Editor */}
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Asunto</Label>
+            <Input ref={subjectRef} value={subject} onChange={e => setSubject(e.target.value)}
+              onFocus={() => setLastFocused('subject')} placeholder="Seguimiento — {{company}}" className="font-mono text-sm" />
+          </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Cuerpo del follow up</Label>
-        <textarea ref={bodyRef} value={body} onChange={e => setBody(e.target.value)}
-          onFocus={() => setLastFocused('body')} rows={14}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
-          placeholder={`Hola {{first_name}},\n\nHan pasado {{dias_desde_primer_envio}} días desde nuestro contacto inicial sobre {{company}}...\n\nUn saludo,\n{{firmante_nombre}}`}
-        />
-      </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">Cuerpo del follow up</Label>
+            <textarea ref={bodyRef} value={body} onChange={e => setBody(e.target.value)}
+              onFocus={() => setLastFocused('body')} rows={14}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
+              placeholder={`Hola {{first_name}},\n\nHan pasado {{dias_desde_primer_envio}} días desde nuestro contacto inicial sobre {{company}}...\n\nUn saludo,\n{{firmante_nombre}}`}
+            />
+          </div>
 
-      <div className="flex items-center gap-2">
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-          Guardar template
-        </Button>
-        <Button variant="outline" onClick={() => setShowPreview(true)} disabled={!previewCompany}>
-          <Eye className="h-4 w-4 mr-2" />Previsualizar
-        </Button>
-      </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+              Guardar template
+            </Button>
+          </div>
+        </div>
 
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Previsualización — {previewCompany?.client_company || 'N/A'}</DialogTitle>
-            <DialogDescription>Vista previa del follow up (incluye firma)</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <span className="text-xs font-medium text-muted-foreground">Asunto:</span>
-              <p className="text-sm font-medium">{resolvePreview(subject)}</p>
+        {/* Right: Live Preview */}
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium flex items-center gap-1.5">
+            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+            Vista previa en tiempo real
+            {previewCompany && (
+              <span className="text-xs font-normal text-muted-foreground">— {previewCompany.client_company}</span>
+            )}
+          </Label>
+          <div className="border rounded-md bg-white overflow-hidden">
+            <div className="px-4 py-2.5 border-b bg-muted/30">
+              <span className="text-xs text-muted-foreground">Asunto:</span>
+              <p className="text-sm font-medium truncate">{resolvedSubject || <span className="text-muted-foreground italic">Sin asunto</span>}</p>
             </div>
-            <div className="border rounded-md p-4 bg-white">
-              <pre className="text-sm whitespace-pre-wrap font-sans">{resolvePreview(body)}</pre>
+            <div className="p-4 max-h-[400px] overflow-y-auto">
+              {resolvedBody ? (
+                <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed">{resolvedBody}</pre>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Escribe el cuerpo del email para ver la vista previa...</p>
+              )}
               {signatureHtml && (
                 <>
                   <hr className="my-4 border-t border-gray-200" />
@@ -216,8 +238,8 @@ function TemplateEditor({
               )}
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
     </div>
   );
 }
