@@ -170,7 +170,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
       </div>
 
       {/* Global KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
         <Card>
           <CardContent className="pt-4 text-center">
             <Building2 className="h-5 w-5 mx-auto text-muted-foreground" />
@@ -183,6 +183,23 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
             <Mail className="h-5 w-5 mx-auto text-blue-500" />
             <p className="text-2xl font-bold mt-1">{totals.totalSent}</p>
             <p className="text-xs text-muted-foreground">Emails enviados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 text-center">
+            <CheckCircle2 className="h-5 w-5 mx-auto text-green-500" />
+            <p className="text-2xl font-bold mt-1">{totals.totalDelivered}</p>
+            <p className="text-xs text-muted-foreground">Entregados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 text-center">
+            <Eye className="h-5 w-5 mx-auto text-blue-600" />
+            <p className="text-2xl font-bold mt-1">{totals.totalOpened}</p>
+            <p className="text-xs text-muted-foreground">Abiertos</p>
+            <p className="text-[10px] text-muted-foreground">
+              {totals.totalSent > 0 ? ((totals.totalOpened / totals.totalSent) * 100).toFixed(1) : 0}%
+            </p>
           </CardContent>
         </Card>
         <Card>
