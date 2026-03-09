@@ -25,7 +25,7 @@ import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences, FollowupSequence, FollowupSend } from '@/hooks/useFollowupSequences';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { getAvailableVariables, replaceVariables } from '@/utils/campaignEmailTemplateEngine';
-import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml } from '@/hooks/useEmailSignature';
+import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml, EmailSignatureData } from '@/hooks/useEmailSignature';
 import { toast } from 'sonner';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { supabase } from '@/integrations/supabase/client';
