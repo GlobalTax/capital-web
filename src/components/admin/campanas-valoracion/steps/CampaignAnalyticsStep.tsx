@@ -268,6 +268,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
               <TableRow>
                 <TableHead>Etapa</TableHead>
                 <TableHead className="text-center">Enviados</TableHead>
+                <TableHead className="text-center">% Apertura</TableHead>
                 <TableHead className="text-center">Sin respuesta</TableHead>
                 <TableHead className="text-center">Interesados</TableHead>
                 <TableHead className="text-center">No interesados</TableHead>
