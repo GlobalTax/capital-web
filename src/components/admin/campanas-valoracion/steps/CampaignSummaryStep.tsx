@@ -8,8 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign,
-  Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2
+  Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2,
+  Search, X
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences } from '@/hooks/useFollowupSequences';
