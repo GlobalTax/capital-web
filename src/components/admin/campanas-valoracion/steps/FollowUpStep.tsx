@@ -405,6 +405,7 @@ function SendList({
   campaignId,
   companies,
   sends,
+  sequences,
   emailSentMap,
   onSend,
   isSendingOne,
@@ -415,6 +416,7 @@ function SendList({
   campaignId: string;
   companies: CampaignCompany[];
   sends: FollowupSend[];
+  sequences: FollowupSequence[];
   emailSentMap: Map<string, string | null>;
   onSend: (company: CampaignCompany) => Promise<void>;
   isSendingOne: boolean;
@@ -424,6 +426,7 @@ function SendList({
   const [showConfirmAll, setShowConfirmAll] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ sent: number; total: number } | null>(null);
 
+  // Send records for THIS round
   const sendMap = useMemo(() => {
     const m = new Map<string, FollowupSend>();
     for (const s of sends) {
@@ -432,19 +435,34 @@ function SendList({
     return m;
   }, [sends, sequence.id]);
 
-  // Visible: sin_respuesta OR has any send record in THIS round (so they stay visible after status change)
+  // Companies marked as responded in PREVIOUS rounds (sequence_number < current)
+  const respondedInPreviousRounds = useMemo(() => {
+    const previousSeqIds = new Set(
+      sequences.filter(s => s.sequence_number < sequence.sequence_number).map(s => s.id)
+    );
+    const responded = new Set<string>();
+    for (const s of sends) {
+      if (previousSeqIds.has(s.sequence_id) && s.seguimiento_estado && s.seguimiento_estado !== 'sin_respuesta') {
+        responded.add(s.company_id);
+      }
+    }
+    return responded;
+  }, [sends, sequences, sequence.sequence_number]);
+
+  // Visible in this round: not responded in previous rounds, AND (sin_respuesta globally OR has record in this round)
   const visible = companies.filter(c => {
-    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
+    if (respondedInPreviousRounds.has(c.id)) return false;
+    const globalOk = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
     const hasRoundRecord = sendMap.has(c.id);
-    return isSinRespuesta || hasRoundRecord;
+    return globalOk || hasRoundRecord;
   });
   const excluded = companies.length - visible.length;
 
-  // Only sin_respuesta AND not yet sent in this round can receive email
+  // Pending: visible + per-round seguimiento is sin_respuesta + not already sent
   const pendingCompanies = visible.filter(c => {
-    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
-    const s = sendMap.get(c.id);
-    return isSinRespuesta && (!s || s.status !== 'sent');
+    const send = sendMap.get(c.id);
+    const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
+    return roundEstado === 'sin_respuesta' && (!send || send.status !== 'sent');
   });
 
   const handleSendOne = async (company: CampaignCompany) => {
