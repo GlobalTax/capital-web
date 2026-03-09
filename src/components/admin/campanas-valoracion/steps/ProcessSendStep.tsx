@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignPresentations, CampaignPresentation } from '@/hooks/useCampaignPresentations';
+import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { CampaignCompanyInteractionDialog } from '@/components/admin/campanas-valoracion/CampaignCompanyInteractionDialog';
 import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
