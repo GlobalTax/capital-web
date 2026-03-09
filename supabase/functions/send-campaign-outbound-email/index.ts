@@ -49,19 +49,38 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { email_ids, followup_ids, is_followup } = body;
+    const { email_ids, followup_ids, is_followup, followup_send_ids, is_followup_send } = body;
 
+    const isFollowupSendMode = is_followup_send && Array.isArray(followup_send_ids) && followup_send_ids.length > 0;
     const isFollowupMode = is_followup && Array.isArray(followup_ids) && followup_ids.length > 0;
     const isEmailMode = Array.isArray(email_ids) && email_ids.length > 0;
 
-    if (!isFollowupMode && !isEmailMode) {
-      return jsonResponse({ error: "email_ids or followup_ids array required" }, 400);
+    if (!isFollowupSendMode && !isFollowupMode && !isEmailMode) {
+      return jsonResponse({ error: "email_ids, followup_ids, or followup_send_ids array required" }, 400);
     }
 
     let emailRows: any[];
 
-    if (isFollowupMode) {
-      // Fetch followup records from campaign_followups
+    if (isFollowupSendMode) {
+      // New multi-round followup system: campaign_followup_sends
+      const { data: sendRows, error: fetchErr } = await serviceClient
+        .from("campaign_followup_sends")
+        .select("*")
+        .in("id", followup_send_ids);
+      if (fetchErr) throw fetchErr;
+      if (!sendRows || sendRows.length === 0) {
+        return jsonResponse({ error: "No followup sends found" }, 404);
+      }
+      emailRows = sendRows.map((f: any) => ({
+        id: f.id,
+        campaign_id: f.campaign_id,
+        company_id: f.company_id,
+        subject: f.subject_resolved,
+        body: f.body_resolved || '',
+        _is_followup_send: true,
+      }));
+    } else if (isFollowupMode) {
+      // Legacy single-round followup: campaign_followups
       const { data: followupRows, error: fetchErr } = await serviceClient
         .from("campaign_followups")
         .select("*")
@@ -70,7 +89,6 @@ serve(async (req) => {
       if (!followupRows || followupRows.length === 0) {
         return jsonResponse({ error: "No followups found" }, 404);
       }
-      // Map followup rows to same shape as email rows for processing
       emailRows = followupRows.map((f: any) => ({
         id: f.id,
         campaign_id: f.campaign_id,
@@ -80,7 +98,7 @@ serve(async (req) => {
         _is_followup: true,
       }));
     } else {
-      // Fetch email records from campaign_emails
+      // Standard campaign emails
       const { data, error: fetchErr } = await serviceClient
         .from("campaign_emails")
         .select("*")
@@ -201,13 +219,20 @@ serve(async (req) => {
         }
 
         const now = new Date().toISOString();
-        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
+        let updateTable: string;
+        if (email._is_followup_send) updateTable = "campaign_followup_sends";
+        else if (email._is_followup) updateTable = "campaign_followups";
+        else updateTable = "campaign_emails";
+
+        const updateData: Record<string, any> = { status: "sent", sent_at: now, error_message: null };
+        if (!email._is_followup_send) updateData.updated_at = now;
+
         await serviceClient
           .from(updateTable)
-          .update({ status: "sent", sent_at: now, updated_at: now, error_message: null })
+          .update(updateData)
           .eq("id", email.id);
 
-        // If followup, also mark the company
+        // Legacy followup: mark company
         if (email._is_followup) {
           await serviceClient
             .from("valuation_campaign_companies")
@@ -219,10 +244,17 @@ serve(async (req) => {
       } catch (sendErr: any) {
         const errMsg = sendErr?.message || "Unknown send error";
         console.error(`Failed to send email ${email.id}:`, errMsg);
-        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
+        let updateTable: string;
+        if (email._is_followup_send) updateTable = "campaign_followup_sends";
+        else if (email._is_followup) updateTable = "campaign_followups";
+        else updateTable = "campaign_emails";
+
+        const errData: Record<string, any> = { status: "error", error_message: errMsg };
+        if (!email._is_followup_send) errData.updated_at = new Date().toISOString();
+
         await serviceClient
           .from(updateTable)
-          .update({ status: "error", error_message: errMsg, updated_at: new Date().toISOString() })
+          .update(errData)
           .eq("id", email.id);
         results.push({ id: email.id, status: "error", error: errMsg });
       }
