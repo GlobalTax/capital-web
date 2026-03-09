@@ -1,36 +1,42 @@
 
 
-## Diagnostico
+## Diagnosis: Open Tracking for Campaign Emails
 
-El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
+The Resend dashboard shows "Opened" / "Delivered" / "Suppressed" statuses for campaign emails, but this data **never reaches your app**. Here's why and what to build:
 
-Lo que debería ocurrir es:
-1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
-2. Adjunta el **PDF de valoración** (generado o almacenado)
-3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
+### Current State
+- `email-open` Edge Function exists but only tracks opens for CRM tables (`contact_leads`, `company_valuations`, `collaborator_applications`)
+- `campaign_emails` and `campaign_followup_sends` lack tracking columns (`email_message_id`, `email_opened`, `email_opened_at`)
+- `send-campaign-outbound-email` doesn't store Resend's message ID or embed a tracking pixel
+- No Resend webhook is configured to push delivery/open events back to Supabase
 
-La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
+### Plan
 
-## Plan
+**1. Database: Add tracking columns**
+- `campaign_emails`: add `email_message_id TEXT`, `email_opened BOOLEAN DEFAULT false`, `email_opened_at TIMESTAMPTZ`, `delivery_status TEXT DEFAULT 'pending'`
+- `campaign_followup_sends`: add `email_message_id TEXT`, `email_opened BOOLEAN DEFAULT false`, `email_opened_at TIMESTAMPTZ`, `delivery_status TEXT DEFAULT 'pending'`
 
-### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
+**2. Edge Function: `send-campaign-outbound-email`**
+- After successful Resend send, parse the response to extract `id` (Resend message ID)
+- Store it in `email_message_id` column alongside the `status: 'sent'` update
+- Embed a tracking pixel `<img src="https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/email-open?mid={resend_message_id}">` in the HTML body
 
-Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
+**3. Edge Function: `email-open`**
+- Add `campaign_emails` and `campaign_followup_sends` to the list of tables it updates when a pixel is hit
+- Match by `email_message_id`
 
-- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
-- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
-- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
+**4. Resend Webhook (optional but recommended)**
+- Create a new Edge Function `resend-webhook` to receive Resend webhook events (delivered, opened, bounced, complained)
+- Update `delivery_status` in the corresponding table based on the event type
+- This gives you "Delivered" / "Bounced" / "Suppressed" statuses in addition to pixel-based opens
 
-### 2. Prerequisito: emails generados
+**5. UI: Show open/delivery status in campaign steps**
+- In **Step 7 (1r Envio)**, **Step 8 (Follow Up)** send lists, and **Step 9 (Analisis)**: add a column/badge showing delivery + open status
+- Badges: "Delivered" green, "Opened" blue with eye icon, "Bounced" red, "Pending" gray
+- In **Step 9 (Analisis)**: add open rate and delivery rate KPIs per stage
 
-Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
-
-### 3. Conectar datos
-
-ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
-- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
-- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
-
-### Archivos afectados
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
+### Technical Notes
+- Resend returns `{ id: "msg_xxx" }` on successful send - this is already available in the fetch response but currently discarded
+- The tracking pixel approach works independently of Resend webhooks (belt + suspenders)
+- Resend webhooks need a signing secret configured in Edge Function secrets
 
