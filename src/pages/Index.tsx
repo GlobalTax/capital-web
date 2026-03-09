@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
-import { getOrganizationSchema, getWebPageSchema } from '@/utils/seo';
+import { getOrganizationSchema, getWebPageSchema, getFinancialServiceSchema } from '@/utils/seo';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import Hero from '@/components/Hero';
 import SocialProofCompact from '@/components/SocialProofCompact';
