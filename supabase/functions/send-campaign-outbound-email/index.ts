@@ -92,6 +92,14 @@ serve(async (req) => {
       .eq("is_default_copy", true);
     const ccList = (ccRecipients || []).map((r: any) => r.email).filter(Boolean);
 
+    // Fetch sender's email signature
+    const { data: signatureRow } = await serviceClient
+      .from("email_signatures")
+      .select("html_preview")
+      .eq("user_id", userData.user.id)
+      .maybeSingle();
+    const signatureHtml = signatureRow?.html_preview || null;
+
     const results: { id: string; status: string; error?: string }[] = [];
 
     for (const email of emailRows) {
