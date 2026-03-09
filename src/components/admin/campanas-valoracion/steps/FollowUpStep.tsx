@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Send, Loader2, Eye, Mail, Trash2, Plus, CheckCircle2, AlertCircle, MessageCircle,
-  Building2, Clock, Calendar,
+  Building2, Clock, Calendar, Search, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
