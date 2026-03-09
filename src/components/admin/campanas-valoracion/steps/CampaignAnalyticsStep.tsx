@@ -325,6 +325,9 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                   </div>
                 </TableCell>
                 <TableCell className="text-center">{totals.totalSent}</TableCell>
+                <TableCell className="text-center text-blue-600 font-medium">
+                  {totals.totalOpened}/{totals.totalSent} ({totals.totalSent > 0 ? ((totals.totalOpened / totals.totalSent) * 100).toFixed(0) : 0}%)
+                </TableCell>
                 <TableCell className="text-center">—</TableCell>
                 <TableCell className="text-center">
                   <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">{totals.totalInteresado}</Badge>
