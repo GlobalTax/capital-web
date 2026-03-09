@@ -55,6 +55,8 @@ interface Props {
 export function CampaignConfigStep({ data, updateField }: Props) {
   const [generatingComparables, setGeneratingComparables] = useState(false);
   const [hasTemplateForSector, setHasTemplateForSector] = useState(false);
+  const [sectorOpen, setSectorOpen] = useState(false);
+  const [sectorSearch, setSectorSearch] = useState('');
 
   // Check if template exists when sector changes
   useEffect(() => {
