@@ -357,6 +357,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead>Email</TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Entrega</TableHead>
                 <TableHead className="text-center">Fecha envío</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Follow Up</TableHead>
