@@ -31,6 +31,10 @@ export interface FollowupSend {
   error_message: string | null;
   created_at: string;
   seguimiento_estado: string | null;
+  email_message_id: string | null;
+  email_opened: boolean;
+  email_opened_at: string | null;
+  delivery_status: string | null;
 }
 
 // ─── Variable resolution ────────────────────────────────────────────────

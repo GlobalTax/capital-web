@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignPresentations, CampaignPresentation } from '@/hooks/useCampaignPresentations';
+import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { CampaignCompanyInteractionDialog } from '@/components/admin/campanas-valoracion/CampaignCompanyInteractionDialog';
 import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
@@ -455,6 +456,16 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const queryClient = useQueryClient();
   const { presentations, isLoading: presentationsLoading } = useCampaignPresentations(campaignId);
   const { updateCampaign } = useCampaigns();
+  const { emails: campaignEmails } = useCampaignEmails(campaignId);
+
+  // Email tracking map: company_id -> { delivery_status, email_opened }
+  const emailTrackingMap = useMemo(() => {
+    const m = new Map<string, { delivery_status: string | null; email_opened: boolean }>();
+    for (const e of campaignEmails) {
+      m.set(e.company_id, { delivery_status: e.delivery_status, email_opened: e.email_opened });
+    }
+    return m;
+  }, [campaignEmails]);
 
   // Send progress
   const [sendingProgress, setSendingProgress] = useState({ active: false, current: 0, total: 0, name: '', phase: '' });
@@ -1021,6 +1032,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-center">PDF Valoración</TableHead>
                 <TableHead className="text-center">PDF Estudio</TableHead>
                 <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="text-center">Entrega</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center w-10"></TableHead>
               </TableRow>
@@ -1097,6 +1109,19 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                          combinedStatus === 'no_study' ? 'Sin estudio' :
                          'Sin valoración'}
                       </Badge>
+                     </TableCell>
+                    <TableCell className="text-center">
+                      {(() => {
+                        const tracking = emailTrackingMap.get(c.id);
+                        if (!tracking || c.status !== 'sent') return <span className="text-muted-foreground text-xs">—</span>;
+                        const { delivery_status, email_opened } = tracking;
+                        if (email_opened) return <Badge variant="secondary" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">📩 Abierto</Badge>;
+                        if (delivery_status === 'delivered') return <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 border-green-200">✓ Entregado</Badge>;
+                        if (delivery_status === 'bounced') return <Badge variant="secondary" className="text-[10px] bg-red-50 text-red-600 border-red-200">✗ Rebotado</Badge>;
+                        if (delivery_status === 'complained') return <Badge variant="secondary" className="text-[10px] bg-orange-50 text-orange-600 border-orange-200">⚠ Queja</Badge>;
+                        if (delivery_status === 'sent') return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">Enviado</Badge>;
+                        return <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">Pendiente</Badge>;
+                      })()}
                     </TableCell>
                     <TableCell className="text-center">
                       {(() => {

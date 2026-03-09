@@ -47,15 +47,30 @@ serve(async (req) => {
       "contact_leads",
       "company_valuations",
       "collaborator_applications",
+      "campaign_emails",
+      "campaign_followup_sends",
     ];
 
+    const now = new Date().toISOString();
+
     for (const table of tables) {
-      const { error } = await supabase
+      // Try matching by email_message_id (Resend ID) first, then by id (fallback for tracking pixel mid)
+      const { error, count } = await supabase
         .from(table)
-        .update({ email_opened: true, email_opened_at: new Date().toISOString() })
+        .update({ email_opened: true, email_opened_at: now })
         .eq("email_message_id", messageId)
         .is("email_opened", false);
       if (error) console.error(`[email-open] update error on ${table}:`, error);
+
+      // Fallback: for campaign tables, the mid might be the record id (before resend ID is stored)
+      if ((table === "campaign_emails" || table === "campaign_followup_sends") && (!count || count === 0)) {
+        const { error: fallbackErr } = await supabase
+          .from(table)
+          .update({ email_opened: true, email_opened_at: now })
+          .eq("id", messageId)
+          .is("email_opened", false);
+        if (fallbackErr) console.error(`[email-open] fallback update error on ${table}:`, fallbackErr);
+      }
     }
 
     return pixelResponse;

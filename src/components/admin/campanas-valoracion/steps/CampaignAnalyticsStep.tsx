@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Building2, Mail, Send, CheckCircle2, Users, CalendarCheck,
-  TrendingUp, TrendingDown, MessageCircle, ArrowRight, Target,
+  TrendingUp, TrendingDown, MessageCircle, ArrowRight, Target, Eye,
 } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
@@ -25,12 +25,15 @@ interface StageMetrics {
   label: string;
   total: number;
   sent: number;
+  delivered: number;
+  opened: number;
   sinRespuesta: number;
   interesado: number;
   noInteresado: number;
   reunionAgendada: number;
   responseRate: number;
   interestRate: number;
+  openRate: number;
 }
 
 export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
@@ -50,16 +53,23 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
     const globalReunion = sentCompanies.filter(c => c.seguimiento_estado === 'reunion_agendada').length;
     const globalResponded = globalInteresado + globalNoInteresado + globalReunion;
 
+    // Count opens from campaign emails
+    const emailsOpened = emails.filter(e => e.email_opened).length;
+    const emailsDelivered = emails.filter(e => e.delivery_status === 'delivered' || e.delivery_status === 'opened' || e.email_opened).length;
+
     result.push({
       label: '1r Envío',
       total: companies.length,
       sent: sentCompanies.length,
+      delivered: emailsDelivered,
+      opened: emailsOpened,
       sinRespuesta: globalSinRespuesta,
       interesado: globalInteresado,
       noInteresado: globalNoInteresado,
       reunionAgendada: globalReunion,
       responseRate: sentCompanies.length > 0 ? (globalResponded / sentCompanies.length) * 100 : 0,
       interestRate: sentCompanies.length > 0 ? ((globalInteresado + globalReunion) / sentCompanies.length) * 100 : 0,
+      openRate: sentCompanies.length > 0 ? (emailsOpened / sentCompanies.length) * 100 : 0,
     });
 
     // Follow-up stages
@@ -72,17 +82,22 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
       const noInter = sentSends.filter(s => s.seguimiento_estado === 'no_interesado').length;
       const reunion = sentSends.filter(s => s.seguimiento_estado === 'reunion_agendada').length;
       const responded = inter + noInter + reunion;
+      const roundOpened = sentSends.filter(s => s.email_opened).length;
+      const roundDelivered = sentSends.filter(s => s.delivery_status === 'delivered' || s.delivery_status === 'opened' || s.email_opened).length;
 
       result.push({
         label: seq.label || `Follow up ${seq.sequence_number}`,
         total: roundSends.length,
         sent: sentSends.length,
+        delivered: roundDelivered,
+        opened: roundOpened,
         sinRespuesta: sinResp,
         interesado: inter,
         noInteresado: noInter,
         reunionAgendada: reunion,
         responseRate: sentSends.length > 0 ? (responded / sentSends.length) * 100 : 0,
         interestRate: sentSends.length > 0 ? ((inter + reunion) / sentSends.length) * 100 : 0,
+        openRate: sentSends.length > 0 ? (roundOpened / sentSends.length) * 100 : 0,
       });
     }
 
@@ -95,8 +110,10 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
     const totalReunion = stages.reduce((s, st) => s + st.reunionAgendada, 0);
     const totalNoInteresado = stages.reduce((s, st) => s + st.noInteresado, 0);
     const totalSent = stages.reduce((s, st) => s + st.sent, 0);
+    const totalOpened = stages.reduce((s, st) => s + st.opened, 0);
+    const totalDelivered = stages.reduce((s, st) => s + st.delivered, 0);
     const totalResponded = totalInteresado + totalReunion + totalNoInteresado;
-    return { totalInteresado, totalReunion, totalNoInteresado, totalSent, totalResponded };
+    return { totalInteresado, totalReunion, totalNoInteresado, totalSent, totalResponded, totalOpened, totalDelivered };
   }, [stages]);
 
   // Chart data for funnel
@@ -153,7 +170,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
       </div>
 
       {/* Global KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
         <Card>
           <CardContent className="pt-4 text-center">
             <Building2 className="h-5 w-5 mx-auto text-muted-foreground" />
@@ -166,6 +183,23 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
             <Mail className="h-5 w-5 mx-auto text-blue-500" />
             <p className="text-2xl font-bold mt-1">{totals.totalSent}</p>
             <p className="text-xs text-muted-foreground">Emails enviados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 text-center">
+            <CheckCircle2 className="h-5 w-5 mx-auto text-green-500" />
+            <p className="text-2xl font-bold mt-1">{totals.totalDelivered}</p>
+            <p className="text-xs text-muted-foreground">Entregados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-4 text-center">
+            <Eye className="h-5 w-5 mx-auto text-blue-600" />
+            <p className="text-2xl font-bold mt-1">{totals.totalOpened}</p>
+            <p className="text-xs text-muted-foreground">Abiertos</p>
+            <p className="text-[10px] text-muted-foreground">
+              {totals.totalSent > 0 ? ((totals.totalOpened / totals.totalSent) * 100).toFixed(1) : 0}%
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -234,6 +268,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
               <TableRow>
                 <TableHead>Etapa</TableHead>
                 <TableHead className="text-center">Enviados</TableHead>
+                <TableHead className="text-center">% Apertura</TableHead>
                 <TableHead className="text-center">Sin respuesta</TableHead>
                 <TableHead className="text-center">Interesados</TableHead>
                 <TableHead className="text-center">No interesados</TableHead>
@@ -252,6 +287,11 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                     </div>
                   </TableCell>
                   <TableCell className="text-center font-bold">{s.sent}</TableCell>
+                  <TableCell className="text-center">
+                    <span className={cn("text-sm font-medium", s.openRate > 0 ? 'text-blue-600' : 'text-muted-foreground')}>
+                      {s.opened}/{s.sent} ({s.openRate.toFixed(0)}%)
+                    </span>
+                  </TableCell>
                   <TableCell className="text-center">
                     <Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground">{s.sinRespuesta}</Badge>
                   </TableCell>
@@ -285,6 +325,9 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                   </div>
                 </TableCell>
                 <TableCell className="text-center">{totals.totalSent}</TableCell>
+                <TableCell className="text-center text-blue-600 font-medium">
+                  {totals.totalOpened}/{totals.totalSent} ({totals.totalSent > 0 ? ((totals.totalOpened / totals.totalSent) * 100).toFixed(0) : 0}%)
+                </TableCell>
                 <TableCell className="text-center">—</TableCell>
                 <TableCell className="text-center">
                   <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">{totals.totalInteresado}</Badge>

@@ -187,6 +187,10 @@ serve(async (req) => {
           htmlBody += `<div style="width:100%;max-width:600px;margin:0 auto;padding:0 12px;box-sizing:border-box;"><hr style="border:none;border-top:1px solid #ddd;margin:20px 0">${signatureHtml}</div>`;
         }
 
+        // Embed tracking pixel for open detection (uses email.id as mid — will be updated to resend message ID after send)
+        const trackingPixelUrl = `${SUPABASE_URL}/functions/v1/email-open?mid=${email.id}&t=${Date.now()}`;
+        htmlBody += `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;width:1px;height:1px;border:0;" alt="" />`;
+
         // Send via Resend
         const resendPayload: Record<string, unknown> = {
           from: "Samuel Navarro <samuel@capittal.es>",
@@ -218,6 +222,11 @@ serve(async (req) => {
           throw new Error(`Resend ${resendRes.status}: ${errBody}`);
         }
 
+        // Extract Resend message ID from response
+        const resendData = await resendRes.json();
+        const resendMessageId = resendData?.id || null;
+        console.log(`[TRACKING] Resend message ID for ${email.id}: ${resendMessageId}`);
+
         const now = new Date().toISOString();
         let updateTable: string;
         if (email._is_followup_send) updateTable = "campaign_followup_sends";
@@ -226,6 +235,12 @@ serve(async (req) => {
 
         const updateData: Record<string, any> = { status: "sent", sent_at: now, error_message: null };
         if (!email._is_followup_send) updateData.updated_at = now;
+
+        // Store Resend message ID and delivery status for tracking
+        if (updateTable === "campaign_emails" || updateTable === "campaign_followup_sends") {
+          if (resendMessageId) updateData.email_message_id = resendMessageId;
+          updateData.delivery_status = "sent";
+        }
 
         await serviceClient
           .from(updateTable)

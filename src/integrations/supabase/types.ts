@@ -3544,6 +3544,10 @@ export type Database = {
           campaign_id: string
           company_id: string
           created_at: string | null
+          delivery_status: string | null
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
           error_message: string | null
           id: string
           is_manually_edited: boolean | null
@@ -3557,6 +3561,10 @@ export type Database = {
           campaign_id: string
           company_id: string
           created_at?: string | null
+          delivery_status?: string | null
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           error_message?: string | null
           id?: string
           is_manually_edited?: boolean | null
@@ -3570,6 +3578,10 @@ export type Database = {
           campaign_id?: string
           company_id?: string
           created_at?: string | null
+          delivery_status?: string | null
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           error_message?: string | null
           id?: string
           is_manually_edited?: boolean | null
@@ -3601,6 +3613,10 @@ export type Database = {
           campaign_id: string
           company_id: string
           created_at: string | null
+          delivery_status: string | null
+          email_message_id: string | null
+          email_opened: boolean | null
+          email_opened_at: string | null
           error_message: string | null
           id: string
           seguimiento_estado: string | null
@@ -3615,6 +3631,10 @@ export type Database = {
           campaign_id: string
           company_id: string
           created_at?: string | null
+          delivery_status?: string | null
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           error_message?: string | null
           id?: string
           seguimiento_estado?: string | null
@@ -3629,6 +3649,10 @@ export type Database = {
           campaign_id?: string
           company_id?: string
           created_at?: string | null
+          delivery_status?: string | null
+          email_message_id?: string | null
+          email_opened?: boolean | null
+          email_opened_at?: string | null
           error_message?: string | null
           id?: string
           seguimiento_estado?: string | null
