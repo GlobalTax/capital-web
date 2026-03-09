@@ -82,6 +82,7 @@ export const LazyValoracionProForm = lazy(() => import('@/pages/admin/Valoracion
 export const LazyEmailRecipientsConfig = lazy(() => import('@/pages/admin/EmailRecipientsConfig'));
 export const LazyPdfSignatureConfig = lazy(() => import('@/pages/admin/PdfSignatureConfigPage'));
 export const LazyAcquisitionChannelsSettings = lazy(() => import('@/pages/admin/AcquisitionChannelsSettings'));
+export const LazyEmailSignatureConfig = lazy(() => import('@/pages/admin/EmailSignatureConfigPage'));
 export const LazyEmailOutboxPanel = lazy(() => import('@/components/admin/EmailOutboxPanel'));
 
 // === MARKETPLACE ANALYTICS ===

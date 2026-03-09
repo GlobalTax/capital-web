@@ -571,6 +571,12 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestión de destinatarios de emails"
       },
       { 
+        title: "Firma de Email", 
+        url: "/admin/configuracion/firma-email", 
+        icon: Mail,
+        description: "Configura tu firma personal para emails outbound"
+      },
+      { 
         title: "Ajustes", 
         url: "/admin/settings", 
         icon: Settings,

@@ -8880,6 +8880,57 @@ export type Database = {
         }
         Relationships: []
       }
+      email_signatures: {
+        Row: {
+          confidentiality_note: string
+          created_at: string | null
+          extra_note: string
+          full_name: string
+          html_preview: string | null
+          id: string
+          job_title: string
+          linkedin_url: string
+          logo_url: string | null
+          phone: string
+          privacy_note: string
+          updated_at: string | null
+          user_id: string
+          website_url: string
+        }
+        Insert: {
+          confidentiality_note?: string
+          created_at?: string | null
+          extra_note?: string
+          full_name?: string
+          html_preview?: string | null
+          id?: string
+          job_title?: string
+          linkedin_url?: string
+          logo_url?: string | null
+          phone?: string
+          privacy_note?: string
+          updated_at?: string | null
+          user_id: string
+          website_url?: string
+        }
+        Update: {
+          confidentiality_note?: string
+          created_at?: string | null
+          extra_note?: string
+          full_name?: string
+          html_preview?: string | null
+          id?: string
+          job_title?: string
+          linkedin_url?: string
+          logo_url?: string | null
+          phone?: string
+          privacy_note?: string
+          updated_at?: string | null
+          user_id?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           created_at: string | null
