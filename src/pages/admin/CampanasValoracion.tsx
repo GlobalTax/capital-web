@@ -28,6 +28,7 @@ export default function CampanasValoracion() {
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   // Fetch operational stage per campaign
   const campaignIds = campaigns.map(c => c.id);
@@ -221,27 +222,43 @@ export default function CampanasValoracion() {
       </Card>
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeleteConfirmText(''); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
               Eliminar campaña
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro de que quieres eliminar <strong>"{deleteTarget?.name}"</strong>? Se borrarán todas las empresas, valoraciones, emails y follow ups asociados. Esta acción no se puede deshacer.
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  ¿Estás seguro de que quieres eliminar <strong>"{deleteTarget?.name}"</strong>? Se borrarán todas las empresas, valoraciones, emails y follow ups asociados. Esta acción no se puede deshacer.
+                </p>
+                <p className="text-sm">
+                  Escribe <strong className="text-destructive">CONFIRMAR</strong> para proceder:
+                </p>
+                <Input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Escribe CONFIRMAR"
+                  className="text-sm"
+                  autoFocus
+                />
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setDeleteConfirmText('')}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteConfirmText !== 'CONFIRMAR'}
               onClick={() => {
                 if (deleteTarget) deleteCampaign(deleteTarget.id);
                 setDeleteTarget(null);
+                setDeleteConfirmText('');
               }}
             >
-              Sí, eliminar
+              Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
