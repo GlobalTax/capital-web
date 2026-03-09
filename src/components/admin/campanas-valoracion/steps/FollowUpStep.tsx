@@ -448,6 +448,10 @@ function SendList({
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [showConfirmAll, setShowConfirmAll] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ sent: number; total: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterEstadoEnvio, setFilterEstadoEnvio] = useState<string | null>(null);
+  const [filterEntrega, setFilterEntrega] = useState<string | null>(null);
+  const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
@@ -479,6 +483,59 @@ function SendList({
     const hasRoundRecord = sendMap.has(c.id);
     return globalOk || hasRoundRecord;
   });
+
+  // Filtered visible
+  const filteredVisible = useMemo(() => {
+    let result = visible;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c =>
+        c.client_company?.toLowerCase().includes(q) ||
+        c.client_email?.toLowerCase().includes(q)
+      );
+    }
+
+    if (filterEstadoEnvio) {
+      result = result.filter(c => {
+        const send = sendMap.get(c.id);
+        if (filterEstadoEnvio === 'sent') return send?.status === 'sent';
+        if (filterEstadoEnvio === 'error') return send?.status === 'error';
+        if (filterEstadoEnvio === 'pending') return !send || send.status !== 'sent';
+        return true;
+      });
+    }
+
+    if (filterEntrega) {
+      result = result.filter(c => {
+        const send = sendMap.get(c.id);
+        if (filterEntrega === 'opened') return send?.email_opened === true;
+        if (filterEntrega === 'delivered') return send?.delivery_status === 'delivered' && !send?.email_opened;
+        if (filterEntrega === 'bounced') return send?.delivery_status === 'bounced';
+        if (filterEntrega === 'sent') return send?.delivery_status === 'sent';
+        if (filterEntrega === 'pending') return !send?.delivery_status || send?.delivery_status === 'pending';
+        return true;
+      });
+    }
+
+    if (filterSeguimiento) {
+      result = result.filter(c => {
+        const send = sendMap.get(c.id);
+        const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
+        return roundEstado === filterSeguimiento;
+      });
+    }
+
+    return result;
+  }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, sendMap]);
+
+  const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento;
+  const clearAllFilters = useCallback(() => {
+    setSearchQuery('');
+    setFilterEstadoEnvio(null);
+    setFilterEntrega(null);
+    setFilterSeguimiento(null);
+  }, []);
   const excluded = companies.length - visible.length;
 
   // Pending: visible + per-round seguimiento is sin_respuesta + not already sent
