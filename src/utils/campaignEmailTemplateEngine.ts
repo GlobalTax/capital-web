@@ -16,10 +16,6 @@ const VARIABLE_DEFINITIONS: TemplateVariable[] = [
   { key: 'sector', label: 'Sector', category: 'Valoración' },
   { key: 'valoracion_min', label: 'Valoración mín.', category: 'Valoración' },
   { key: 'valoracion_max', label: 'Valoración máx.', category: 'Valoración' },
-  { key: 'firmante_nombre', label: 'Nombre firmante', category: 'Firmante' },
-  { key: 'firmante_cargo', label: 'Cargo firmante', category: 'Firmante' },
-  { key: 'firmante_email', label: 'Email firmante', category: 'Firmante' },
-  { key: 'firmante_telefono', label: 'Teléfono firmante', category: 'Firmante' },
 ];
 
 type VariableResolver = (company: CampaignCompany, campaign: ValuationCampaign) => string;
