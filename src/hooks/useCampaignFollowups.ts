@@ -194,18 +194,6 @@ export function useCampaignFollowups(campaignId: string | undefined) {
         const failedResult = data.results?.find((r: any) => r.status === 'error');
         throw new Error(failedResult?.error || 'Error al enviar follow up');
       }
-
-      // Mark followup as sent
-      await (supabase as any)
-        .from('campaign_followups')
-        .update({ status: 'sent', sent_at: new Date().toISOString() })
-        .eq('id', followupId);
-
-      // Mark company as followup_enviado
-      await (supabase as any)
-        .from('valuation_campaign_companies')
-        .update({ followup_enviado: true, followup_sent_at: new Date().toISOString() })
-        .eq('id', followup.company_id);
     },
     onSuccess: () => {
       invalidate();
