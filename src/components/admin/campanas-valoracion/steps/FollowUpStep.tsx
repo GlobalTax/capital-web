@@ -540,8 +540,9 @@ function SendList({
                 const isSent = send?.status === 'sent';
                 const isError = send?.status === 'error';
                 const isSending = sendingId === c.id;
-                const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
-                const canSend = isSinRespuesta && !isSent;
+                const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
+                const canSend = roundEstado === 'sin_respuesta' && !isSent;
+                return (
                 return (
                   <TableRow key={c.id}>
                     <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
