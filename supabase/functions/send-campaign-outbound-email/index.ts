@@ -48,19 +48,48 @@ serve(async (req) => {
       return jsonResponse({ error: "Forbidden – admin only" }, 403);
     }
 
-    const { email_ids } = await req.json();
-    if (!Array.isArray(email_ids) || email_ids.length === 0) {
-      return jsonResponse({ error: "email_ids array required" }, 400);
+    const body = await req.json();
+    const { email_ids, followup_ids, is_followup } = body;
+
+    const isFollowupMode = is_followup && Array.isArray(followup_ids) && followup_ids.length > 0;
+    const isEmailMode = Array.isArray(email_ids) && email_ids.length > 0;
+
+    if (!isFollowupMode && !isEmailMode) {
+      return jsonResponse({ error: "email_ids or followup_ids array required" }, 400);
     }
 
-    // Fetch email records from campaign_emails
-    const { data: emailRows, error: fetchErr } = await serviceClient
-      .from("campaign_emails")
-      .select("*")
-      .in("id", email_ids);
-    if (fetchErr) throw fetchErr;
-    if (!emailRows || emailRows.length === 0) {
-      return jsonResponse({ error: "No emails found" }, 404);
+    let emailRows: any[];
+
+    if (isFollowupMode) {
+      // Fetch followup records from campaign_followups
+      const { data: followupRows, error: fetchErr } = await serviceClient
+        .from("campaign_followups")
+        .select("*")
+        .in("id", followup_ids);
+      if (fetchErr) throw fetchErr;
+      if (!followupRows || followupRows.length === 0) {
+        return jsonResponse({ error: "No followups found" }, 404);
+      }
+      // Map followup rows to same shape as email rows for processing
+      emailRows = followupRows.map((f: any) => ({
+        id: f.id,
+        campaign_id: f.campaign_id,
+        company_id: f.company_id,
+        subject: f.subject,
+        body: f.body || '',
+        _is_followup: true,
+      }));
+    } else {
+      // Fetch email records from campaign_emails
+      const { data, error: fetchErr } = await serviceClient
+        .from("campaign_emails")
+        .select("*")
+        .in("id", email_ids!);
+      if (fetchErr) throw fetchErr;
+      if (!data || data.length === 0) {
+        return jsonResponse({ error: "No emails found" }, 404);
+      }
+      emailRows = data;
     }
 
     // Get company data from valuation_campaign_companies (correct table)
@@ -172,17 +201,27 @@ serve(async (req) => {
         }
 
         const now = new Date().toISOString();
+        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
         await serviceClient
-          .from("campaign_emails")
+          .from(updateTable)
           .update({ status: "sent", sent_at: now, updated_at: now, error_message: null })
           .eq("id", email.id);
+
+        // If followup, also mark the company
+        if (email._is_followup) {
+          await serviceClient
+            .from("valuation_campaign_companies")
+            .update({ followup_enviado: true, followup_sent_at: now })
+            .eq("id", email.company_id);
+        }
 
         results.push({ id: email.id, status: "sent" });
       } catch (sendErr: any) {
         const errMsg = sendErr?.message || "Unknown send error";
         console.error(`Failed to send email ${email.id}:`, errMsg);
+        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
         await serviceClient
-          .from("campaign_emails")
+          .from(updateTable)
           .update({ status: "error", error_message: errMsg, updated_at: new Date().toISOString() })
           .eq("id", email.id);
         results.push({ id: email.id, status: "error", error: errMsg });
