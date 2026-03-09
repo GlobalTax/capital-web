@@ -76,6 +76,9 @@ Disallow: /
 
 Sitemap: https://capittal.es/sitemap.xml
 
+# AI structured data
+# https://capittal.es/ai.txt
+
 # LLMs.txt - AI-friendly site description
 # https://llmstxt.org/
 Sitemap: https://capittal.es/llms.txt

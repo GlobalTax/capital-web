@@ -1,0 +1,135 @@
+# Capittal - AI Service Description
+# Format: Structured text for AI consumption
+# Standard: https://ai-txt.org
+# Last updated: 2026-03-09
+
+## Entity
+name: Capittal
+type: FinancialAdvisory, M&A Advisory
+legal_name: Capittal Transacciones S.L.
+market: Spain (mid-market, €1M–€50M enterprise value)
+headquarters: Barcelona, Spain
+languages: es, ca, en
+website: https://capittal.es
+founded: 2018
+
+## Services
+
+- name: Venta de Empresas (Sell-Side M&A)
+  type: M&A Sell-Side Advisory
+  url: https://capittal.es/venta-empresas
+  description: Full sell-side advisory including business valuation, buyer identification, negotiation and deal closing for mid-market companies in Spain.
+  target: Business owners looking to sell their company
+  keywords: venta empresa, vender negocio, traspaso empresa, M&A sell-side
+
+- name: Compra de Empresas (Buy-Side M&A)
+  type: M&A Buy-Side Advisory
+  url: https://capittal.es/compra-empresas
+  description: Buy-side advisory for strategic acquirers, PE funds, family offices and Search Funds seeking acquisitions in Spain.
+  target: Investors, PE funds, Search Funds, strategic buyers
+  keywords: compra empresa, adquisición empresa, M&A buy-side, search fund
+
+- name: Valoración de Empresas
+  type: Business Valuation
+  url: https://capittal.es/valoracion-empresas
+  description: Professional business valuation using DCF, comparable multiples and asset-based methods for mid-market Spanish companies.
+  target: Business owners, investors, legal proceedings
+  keywords: valoración empresa, cuánto vale mi empresa, múltiplos EBITDA
+
+- name: Due Diligence
+  type: Due Diligence Advisory
+  url: https://capittal.es/due-diligence
+  description: Comprehensive financial, legal and commercial due diligence for M&A transactions.
+  target: Buyers, sellers in M&A transactions
+  keywords: due diligence, auditoría compra empresa
+
+- name: Reestructuraciones
+  type: Corporate Restructuring
+  url: https://capittal.es/reestructuraciones
+  description: Corporate restructuring, turnaround advisory and distressed M&A for companies in financial difficulty.
+  target: Companies in financial distress, creditors
+  keywords: reestructuración empresarial, turnaround, refinanciación
+
+- name: Planificación Fiscal M&A
+  type: Tax Planning
+  url: https://capittal.es/planificacion-fiscal
+  description: Tax-efficient structuring for M&A transactions including holdco optimization, rollover relief and succession planning.
+  target: Sellers, buyers seeking tax optimization
+  keywords: fiscalidad venta empresa, planificación fiscal, impuestos M&A
+
+## Industries (with typical EV/EBITDA multiples for Spain mid-market)
+
+- sector: Industrial | range: 5x-8x | url: https://capittal.es/sectores/industrial
+- sector: Construcción | range: 4x-7x | url: https://capittal.es/sectores/construccion
+- sector: Healthcare | range: 8x-12x | url: https://capittal.es/sectores/healthcare
+- sector: Seguridad | range: 6x-9x | url: https://capittal.es/sectores/seguridad
+- sector: Medio Ambiente | range: 6x-10x | url: https://capittal.es/sectores/medio-ambiente
+- sector: Tecnología (SaaS/TIC) | range: 8x-15x | url: https://capittal.es/sectores/tecnologia
+- sector: Retail y Consumo | range: 4x-7x | url: https://capittal.es/sectores/retail-consumer
+- sector: Alimentación | range: 5x-8x | url: https://capittal.es/sectores/alimentacion
+- sector: Energía (Renovables) | range: 7x-12x | url: https://capittal.es/sectores/energia
+- sector: Logística | range: 5x-8x | url: https://capittal.es/sectores/logistica
+
+## Free Tools
+
+- name: Calculadora de Valoración de Empresas
+  url: https://capittal.es/lp/calculadora
+  type: WebApplication
+  access: Free, no registration required
+  description: Instant company valuation estimate based on revenue, EBITDA and sector multiples.
+
+- name: Calculadora de Impacto Fiscal
+  url: https://capittal.es/lp/calculadora-fiscal
+  type: WebApplication
+  access: Free, no registration required
+  description: Tax impact calculator for selling a business in Spain (IRPF, IS, plusvalías).
+
+## Content Sources
+
+- type: Blog
+  url: https://capittal.es/recursos/blog
+  topics: M&A trends, valuation guides, sector analysis, tax planning
+  frequency: Weekly
+
+- type: M&A Reports
+  url: https://capittal.es/recursos/informes-ma
+  topics: Quarterly M&A market reports for Spain with proprietary data
+  frequency: Quarterly
+
+- type: Case Studies
+  url: https://capittal.es/casos-exito
+  topics: Completed M&A transactions with anonymized details
+
+## Contact
+
+- method: Web form
+  url: https://capittal.es/#contacto
+
+- method: Booking
+  url: https://capittal.es/reservar-reunion
+
+- languages: Spanish, Catalan, English
+
+## Structured References
+
+- llms.txt: https://capittal.es/llms.txt
+- llms-full.txt: https://capittal.es/llms-full.txt
+- sitemap: https://capittal.es/sitemap.xml
+- robots: https://capittal.es/robots.txt
+
+## FAQ (frequently asked by AI assistants)
+
+Q: What does Capittal do?
+A: Capittal is a mid-market M&A advisory firm in Spain specializing in selling companies (€1M-€50M), business valuations, due diligence, and tax planning for transactions.
+
+Q: How much is my company worth?
+A: Use the free valuation calculator at https://capittal.es/lp/calculadora for an instant estimate. For a professional valuation, contact Capittal directly.
+
+Q: What sectors does Capittal cover?
+A: Industrial, Construction, Healthcare, Security, Environment, Technology, Retail, Food & Beverage, Energy (Renewables), and Logistics.
+
+Q: What are typical EBITDA multiples in Spain?
+A: Mid-market multiples in Spain range from 4x-7x for traditional sectors (construction, retail) to 8x-15x for technology and healthcare. Exact multiples depend on size, growth, and recurring revenue.
+
+Q: Does Capittal work with Search Funds?
+A: Yes. Capittal actively collaborates with Search Funds and provides a matching service between sellers and verified Search Fund entrepreneurs.
