@@ -53,16 +53,23 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
     const globalReunion = sentCompanies.filter(c => c.seguimiento_estado === 'reunion_agendada').length;
     const globalResponded = globalInteresado + globalNoInteresado + globalReunion;
 
+    // Count opens from campaign emails
+    const emailsOpened = emails.filter(e => e.email_opened).length;
+    const emailsDelivered = emails.filter(e => e.delivery_status === 'delivered' || e.delivery_status === 'opened' || e.email_opened).length;
+
     result.push({
       label: '1r Envío',
       total: companies.length,
       sent: sentCompanies.length,
+      delivered: emailsDelivered,
+      opened: emailsOpened,
       sinRespuesta: globalSinRespuesta,
       interesado: globalInteresado,
       noInteresado: globalNoInteresado,
       reunionAgendada: globalReunion,
       responseRate: sentCompanies.length > 0 ? (globalResponded / sentCompanies.length) * 100 : 0,
       interestRate: sentCompanies.length > 0 ? ((globalInteresado + globalReunion) / sentCompanies.length) * 100 : 0,
+      openRate: sentCompanies.length > 0 ? (emailsOpened / sentCompanies.length) * 100 : 0,
     });
 
     // Follow-up stages
