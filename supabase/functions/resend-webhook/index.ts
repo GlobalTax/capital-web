@@ -13,7 +13,41 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
+    // Verify Resend webhook signature
+    const svixId = req.headers.get("svix-id");
+    const svixTimestamp = req.headers.get("svix-timestamp");
+    const svixSignature = req.headers.get("svix-signature");
+    const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET");
+
+    const rawBody = await req.text();
+
+    if (webhookSecret && svixId && svixTimestamp && svixSignature) {
+      const encoder = new TextEncoder();
+      const toSign = `${svixId}.${svixTimestamp}.${rawBody}`;
+      const secretBytes = Uint8Array.from(
+        atob(webhookSecret.replace("whsec_", "")),
+        (c) => c.charCodeAt(0)
+      );
+      const key = await crypto.subtle.importKey(
+        "raw", secretBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+      );
+      const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(toSign));
+      const expected = btoa(String.fromCharCode(...new Uint8Array(sig)));
+      
+      const signatures = svixSignature.split(" ").map((s: string) => s.replace("v1,", ""));
+      if (!signatures.includes(expected)) {
+        console.error("[resend-webhook] Invalid signature");
+        return new Response(JSON.stringify({ error: "Invalid signature" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.log("[resend-webhook] Signature verified ✓");
+    } else {
+      console.warn("[resend-webhook] No signature verification (missing headers or secret)");
+    }
+
+    const body = JSON.parse(rawBody);
     const { type, data } = body;
 
     if (!type || !data) {
