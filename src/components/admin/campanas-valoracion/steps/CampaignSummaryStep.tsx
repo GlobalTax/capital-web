@@ -11,6 +11,7 @@ import {
   Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2
 } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
+import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
