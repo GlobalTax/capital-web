@@ -735,6 +735,7 @@ export function MailStep({ campaignId, campaign }: Props) {
           isGenerating={isGenerating}
           onSaveAndGenerate={handleSaveAndGenerate}
           signatureHtml={signatureHtml}
+          signature={signature || null}
         />
       </TabsContent>
 
