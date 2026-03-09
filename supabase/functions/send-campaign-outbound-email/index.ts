@@ -201,20 +201,31 @@ serve(async (req) => {
         }
 
         const now = new Date().toISOString();
+        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
         await serviceClient
-          .from("campaign_emails")
+          .from(updateTable)
           .update({ status: "sent", sent_at: now, updated_at: now, error_message: null })
           .eq("id", email.id);
+
+        // If followup, also mark the company
+        if (email._is_followup) {
+          await serviceClient
+            .from("valuation_campaign_companies")
+            .update({ followup_enviado: true, followup_sent_at: now })
+            .eq("id", email.company_id);
+        }
 
         results.push({ id: email.id, status: "sent" });
       } catch (sendErr: any) {
         const errMsg = sendErr?.message || "Unknown send error";
         console.error(`Failed to send email ${email.id}:`, errMsg);
+        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
         await serviceClient
-          .from("campaign_emails")
+          .from(updateTable)
           .update({ status: "error", error_message: errMsg, updated_at: new Date().toISOString() })
           .eq("id", email.id);
         results.push({ id: email.id, status: "error", error: errMsg });
+      }
       }
     }
 
