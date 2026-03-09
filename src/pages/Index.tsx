@@ -63,7 +63,8 @@ const Index = () => {
             t('home.seo.title'),
             t('home.seo.description'),
             "https://capittal.es/"
-          )
+          ),
+          getFinancialServiceSchema()
         ]}
       />
       <Hero />

@@ -263,7 +263,148 @@ export const getProfessionalServiceSchema = (
 /**
  * WebApplication schema for online tools (calculators, etc.)
  */
+/**
+ * FinancialService schema with OfferCatalog for AEO
+ */
+export const getFinancialServiceSchema = () => ({
+  "@context": "https://schema.org",
+  "@type": "FinancialService",
+  "name": "Capittal - M&A Advisory",
+  "url": "https://capittal.es",
+  "logo": "https://capittal.es/logo.png",
+  "description": "Firma de asesoramiento en M&A especializada en el mid-market español. Valoración, venta y compra de empresas, due diligence, reestructuraciones y planificación fiscal.",
+  "areaServed": {
+    "@type": "Country",
+    "name": "Spain"
+  },
+  "serviceArea": {
+    "@type": "GeoShape",
+    "name": "España"
+  },
+  "knowsAbout": [
+    "Mergers and Acquisitions",
+    "Business Valuation",
+    "Due Diligence",
+    "Corporate Restructuring",
+    "Tax Planning for M&A",
+    "Search Funds",
+    "Sell-Side Advisory",
+    "Buy-Side Advisory",
+    "EBITDA Multiples",
+    "Mid-Market M&A Spain"
+  ],
+  "makesOffer": [
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Venta de Empresas",
+        "description": "Asesoramiento integral sell-side: valoración, identificación de compradores, negociación y cierre",
+        "url": "https://capittal.es/venta-empresas"
+      }
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Compra de Empresas",
+        "description": "Asesoramiento buy-side para inversores, fondos PE y Search Funds",
+        "url": "https://capittal.es/compra-empresas"
+      }
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Valoración de Empresas",
+        "description": "Valoración profesional mediante DCF, múltiplos comparables y métodos patrimoniales",
+        "url": "https://capittal.es/valoracion-empresas"
+      }
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Due Diligence",
+        "description": "Due diligence financiera, legal y comercial para transacciones M&A",
+        "url": "https://capittal.es/due-diligence"
+      }
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Reestructuraciones",
+        "description": "Reestructuración corporativa y turnaround advisory",
+        "url": "https://capittal.es/reestructuraciones"
+      }
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Planificación Fiscal M&A",
+        "description": "Estructuración fiscal eficiente para transacciones de compraventa",
+        "url": "https://capittal.es/planificacion-fiscal"
+      }
+    }
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Servicios de M&A y Asesoramiento Financiero",
+    "itemListElement": [
+      {
+        "@type": "OfferCatalog",
+        "name": "M&A Advisory",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Venta de Empresas (Sell-Side)" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Compra de Empresas (Buy-Side)" } }
+        ]
+      },
+      {
+        "@type": "OfferCatalog",
+        "name": "Servicios Transaccionales",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Valoración de Empresas" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Due Diligence" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Reestructuraciones" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Planificación Fiscal" } }
+        ]
+      }
+    ]
+  },
+  "sameAs": [
+    "https://www.linkedin.com/company/capittal-transacciones",
+    "https://twitter.com/capittal_es"
+  ]
+});
+
+/**
+ * WebApplication schema for online tools (calculators, etc.)
+ */
 export const getWebApplicationSchema = (
+  name: string,
+  description: string,
+  url: string,
+  applicationCategory: string = "BusinessApplication"
+) => ({
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": name,
+  "description": description,
+  "url": url,
+  "applicationCategory": applicationCategory,
+  "operatingSystem": "All",
+  "browserRequirements": "Requires JavaScript",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+  },
+  "provider": getOrganizationSchema(),
+  "inLanguage": ["es", "ca", "en"],
+  "isAccessibleForFree": true
+});
   name: string,
   description: string,
   url: string,
