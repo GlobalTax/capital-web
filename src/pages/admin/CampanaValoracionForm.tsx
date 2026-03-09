@@ -184,7 +184,7 @@ export default function CampanaValoracionForm() {
               <Save className="h-4 w-4 mr-2" />{campaignId ? 'Guardar' : 'Crear'}
             </Button>
           )}
-          {currentStep < 8 && (
+          {currentStep < 9 && (
             <Button onClick={handleNext} disabled={
               (currentStep === 1 && (!campaignData.name || !campaignData.sector)) ||
               (currentStep === 2 && companies.length === 0)
