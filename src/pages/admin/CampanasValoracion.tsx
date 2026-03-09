@@ -7,7 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search } from 'lucide-react';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
@@ -23,6 +27,7 @@ export default function CampanasValoracion() {
   const navigate = useNavigate();
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Fetch operational stage per campaign
   const campaignIds = campaigns.map(c => c.id);
@@ -200,7 +205,7 @@ export default function CampanasValoracion() {
                           </Button>
                           <Button variant="ghost" size="icon" title="Eliminar" disabled={isDeleting} onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm('¿Eliminar esta campaña y todas sus empresas?')) deleteCampaign(c.id);
+                            setDeleteTarget({ id: c.id, name: c.name });
                           }}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
@@ -214,6 +219,33 @@ export default function CampanasValoracion() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Eliminar campaña
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que quieres eliminar <strong>"{deleteTarget?.name}"</strong>? Se borrarán todas las empresas, valoraciones, emails y follow ups asociados. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteTarget) deleteCampaign(deleteTarget.id);
+                setDeleteTarget(null);
+              }}
+            >
+              Sí, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
