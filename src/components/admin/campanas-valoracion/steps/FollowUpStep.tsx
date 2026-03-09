@@ -411,9 +411,6 @@ function SendList({
   const [showConfirmAll, setShowConfirmAll] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ sent: number; total: number } | null>(null);
 
-  const eligible = companies.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
-  const excluded = companies.length - eligible.length;
-
   const sendMap = useMemo(() => {
     const m = new Map<string, FollowupSend>();
     for (const s of sends) {
@@ -422,9 +419,19 @@ function SendList({
     return m;
   }, [sends, sequence.id]);
 
-  const pendingCompanies = eligible.filter(c => {
+  // Visible: sin_respuesta OR has any send record in THIS round (so they stay visible after status change)
+  const visible = companies.filter(c => {
+    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
+    const hasRoundRecord = sendMap.has(c.id);
+    return isSinRespuesta || hasRoundRecord;
+  });
+  const excluded = companies.length - visible.length;
+
+  // Only sin_respuesta AND not yet sent in this round can receive email
+  const pendingCompanies = visible.filter(c => {
+    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
     const s = sendMap.get(c.id);
-    return !s || s.status !== 'sent';
+    return isSinRespuesta && (!s || s.status !== 'sent');
   });
 
   const handleSendOne = async (company: CampaignCompany) => {
@@ -480,7 +487,7 @@ function SendList({
         </Button>
       )}
 
-      {eligible.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground text-sm">No hay empresas elegibles (sin respuesta).</div>
       ) : (
         <div className="border rounded-lg overflow-auto max-h-[55vh]">
@@ -497,11 +504,13 @@ function SendList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {eligible.map((c, i) => {
+              {visible.map((c, i) => {
                 const send = sendMap.get(c.id);
                 const isSent = send?.status === 'sent';
                 const isError = send?.status === 'error';
                 const isSending = sendingId === c.id;
+                const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
+                const canSend = isSinRespuesta && !isSent;
                 return (
                   <TableRow key={c.id}>
                     <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
@@ -527,10 +536,10 @@ function SendList({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button size="sm" variant={isSent ? 'ghost' : 'outline'} className="h-7 text-xs"
-                        disabled={isSent || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
+                      <Button size="sm" variant={isSent || !canSend ? 'ghost' : 'outline'} className="h-7 text-xs"
+                        disabled={!canSend || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
                         {isSending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
-                        {isSent ? 'Enviado' : 'Enviar'}
+                        {isSent ? 'Enviado' : !isSinRespuesta ? '—' : 'Enviar'}
                       </Button>
                     </TableCell>
                   </TableRow>
