@@ -205,8 +205,10 @@ export default function CampanasValoracion() {
                           </Button>
                           <Button variant="ghost" size="icon" title="Eliminar" disabled={isDeleting} onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm('¿Eliminar esta campaña y todas sus empresas?')) deleteCampaign(c.id);
+                            setDeleteTarget({ id: c.id, name: c.name });
                           }}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
