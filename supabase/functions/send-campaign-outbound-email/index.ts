@@ -218,6 +218,11 @@ serve(async (req) => {
           throw new Error(`Resend ${resendRes.status}: ${errBody}`);
         }
 
+        // Extract Resend message ID from response
+        const resendData = await resendRes.json();
+        const resendMessageId = resendData?.id || null;
+        console.log(`[TRACKING] Resend message ID for ${email.id}: ${resendMessageId}`);
+
         const now = new Date().toISOString();
         let updateTable: string;
         if (email._is_followup_send) updateTable = "campaign_followup_sends";
@@ -226,6 +231,12 @@ serve(async (req) => {
 
         const updateData: Record<string, any> = { status: "sent", sent_at: now, error_message: null };
         if (!email._is_followup_send) updateData.updated_at = now;
+
+        // Store Resend message ID and delivery status for tracking
+        if (updateTable === "campaign_emails" || updateTable === "campaign_followup_sends") {
+          if (resendMessageId) updateData.email_message_id = resendMessageId;
+          updateData.delivery_status = "sent";
+        }
 
         await serviceClient
           .from(updateTable)
