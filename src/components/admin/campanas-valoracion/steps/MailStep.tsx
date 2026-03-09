@@ -47,6 +47,7 @@ function TemplateEditorSection({
   isGenerating,
   onSaveAndGenerate,
   signatureHtml,
+  signature,
 }: {
   campaignId: string;
   campaign: ValuationCampaign;
@@ -55,10 +56,10 @@ function TemplateEditorSection({
   isGenerating: boolean;
   onSaveAndGenerate: (subject: string, body: string, overwriteManual: boolean) => Promise<void>;
   signatureHtml: string | null;
+  signature: EmailSignatureData | null;
 }) {
   const [subject, setSubject] = useState((campaign as any).email_subject_template || '');
   const [body, setBody] = useState((campaign as any).email_body_template || '');
-  const [showPreview, setShowPreview] = useState(false);
   const [showOverwriteWarning, setShowOverwriteWarning] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
@@ -104,9 +105,21 @@ function TemplateEditorSection({
     }
   };
 
+  // Resolve preview with signature data for firmante variables
   const previewCompany = companies[0];
-  const previewSubject = previewCompany ? replaceVariables(subject, previewCompany, campaign) : subject;
-  const previewBody = previewCompany ? replaceVariables(body, previewCompany, campaign) : body;
+  const resolvePreview = useCallback((tpl: string) => {
+    if (!tpl) return '';
+    let r = previewCompany ? replaceVariables(tpl, previewCompany, campaign) : tpl;
+    if (signature) {
+      r = r.replace(/\{\{firmante_nombre\}\}/g, signature.full_name || '');
+      r = r.replace(/\{\{firmante_cargo\}\}/g, signature.job_title || '');
+      r = r.replace(/\{\{firmante_telefono\}\}/g, signature.phone || '');
+    }
+    return r;
+  }, [previewCompany, campaign, signature]);
+
+  const resolvedSubject = resolvePreview(subject);
+  const resolvedBody = resolvePreview(body);
 
   // Group variables by category
   const categories = variables.reduce((acc, v) => {
@@ -144,58 +157,63 @@ function TemplateEditorSection({
         </CardContent>
       </Card>
 
-      {/* Subject */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">Asunto</label>
-        <Input
-          ref={subjectRef}
-          value={subject}
-          onChange={e => setSubject(e.target.value)}
-          onFocus={() => setLastFocused('subject')}
-          placeholder="Análisis de mercado para {{company}} — {{sector}}"
-          className="font-mono text-sm"
-        />
-      </div>
+      {/* Side-by-side: Editor + Live Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left: Editor */}
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Asunto</label>
+            <Input
+              ref={subjectRef}
+              value={subject}
+              onChange={e => setSubject(e.target.value)}
+              onFocus={() => setLastFocused('subject')}
+              placeholder="Análisis de mercado para {{company}} — {{sector}}"
+              className="font-mono text-sm"
+            />
+          </div>
 
-      {/* Body */}
-      <div className="space-y-1.5">
-        <label className="text-sm font-medium">Cuerpo del email</label>
-        <textarea
-          ref={bodyRef}
-          value={body}
-          onChange={e => setBody(e.target.value)}
-          onFocus={() => setLastFocused('body')}
-          rows={14}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
-          placeholder={`Hola {{first_name}},\n\nMe llamo {{firmante_nombre}} y...\n\nUn abrazo,\n{{firmante_nombre}}\n{{firmante_cargo}}`}
-        />
-      </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Cuerpo del email</label>
+            <textarea
+              ref={bodyRef}
+              value={body}
+              onChange={e => setBody(e.target.value)}
+              onFocus={() => setLastFocused('body')}
+              rows={14}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
+              placeholder={`Hola {{first_name}},\n\nMe llamo {{firmante_nombre}} y...\n\nUn abrazo,\n{{firmante_nombre}}\n{{firmante_cargo}}`}
+            />
+          </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-2">
-        <Button onClick={handleSave} disabled={isGenerating}>
-          {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-          Guardar template y generar emails
-        </Button>
-        <Button variant="outline" onClick={() => setShowPreview(true)} disabled={!previewCompany}>
-          <Eye className="h-4 w-4 mr-2" />Previsualizar
-        </Button>
-      </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleSave} disabled={isGenerating}>
+              {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+              Guardar template y generar emails
+            </Button>
+          </div>
+        </div>
 
-      {/* Preview modal */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Previsualización — {previewCompany?.client_company || 'N/A'}</DialogTitle>
-            <DialogDescription>Vista previa con datos de la primera empresa (incluye firma)</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <span className="text-xs font-medium text-muted-foreground">Asunto:</span>
-              <p className="text-sm font-medium">{previewSubject}</p>
+        {/* Right: Live Preview */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium flex items-center gap-1.5">
+            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+            Vista previa en tiempo real
+            {previewCompany && (
+              <span className="text-xs font-normal text-muted-foreground">— {previewCompany.client_company}</span>
+            )}
+          </label>
+          <div className="border rounded-md bg-white overflow-hidden">
+            <div className="px-4 py-2.5 border-b bg-muted/30">
+              <span className="text-xs text-muted-foreground">Asunto:</span>
+              <p className="text-sm font-medium truncate">{resolvedSubject || <span className="text-muted-foreground italic">Sin asunto</span>}</p>
             </div>
-            <div className="border rounded-md p-4 bg-white">
-              <pre className="text-sm whitespace-pre-wrap font-sans">{previewBody}</pre>
+            <div className="p-4 max-h-[400px] overflow-y-auto">
+              {resolvedBody ? (
+                <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed">{resolvedBody}</pre>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">Escribe el cuerpo del email para ver la vista previa...</p>
+              )}
               {signatureHtml && (
                 <>
                   <hr className="my-4 border-t border-gray-200" />
@@ -204,8 +222,8 @@ function TemplateEditorSection({
               )}
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
 
       {/* Overwrite warning */}
       <AlertDialog open={showOverwriteWarning} onOpenChange={setShowOverwriteWarning}>
@@ -717,6 +735,7 @@ export function MailStep({ campaignId, campaign }: Props) {
           isGenerating={isGenerating}
           onSaveAndGenerate={handleSaveAndGenerate}
           signatureHtml={signatureHtml}
+          signature={signature || null}
         />
       </TabsContent>
 
