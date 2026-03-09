@@ -323,3 +323,6 @@ verify_jwt = false
 
 [functions.upload-campaign-presentation]
 verify_jwt = false
+
+[functions.resend-webhook]
+verify_jwt = false
