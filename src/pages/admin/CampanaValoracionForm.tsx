@@ -12,6 +12,7 @@ import { PresentationsStep } from '@/components/admin/campanas-valoracion/steps/
 import { ProcessSendStep } from '@/components/admin/campanas-valoracion/steps/ProcessSendStep';
 import { CampaignSummaryStep } from '@/components/admin/campanas-valoracion/steps/CampaignSummaryStep';
 import { MailStep } from '@/components/admin/campanas-valoracion/steps/MailStep';
+import { FollowUpStep } from '@/components/admin/campanas-valoracion/steps/FollowUpStep';
 import { cn } from '@/lib/utils';
 
 const STEPS = [
@@ -22,6 +23,7 @@ const STEPS = [
   { id: 5, title: 'Procesamiento', description: 'Crear y enviar valoraciones' },
   { id: 6, title: 'Mail', description: 'Plantilla y envío de emails' },
   { id: 7, title: 'Resumen', description: 'KPIs y resultados' },
+  { id: 8, title: 'Follow Up', description: 'Seguimiento post-envío' },
 ];
 
 export default function CampanaValoracionForm() {
@@ -80,7 +82,7 @@ export default function CampanaValoracionForm() {
       const savedId = await saveCampaign();
       if (!savedId) return;
     }
-    if (currentStep < 7) setCurrentStep(prev => prev + 1);
+    if (currentStep < 8) setCurrentStep(prev => prev + 1);
   };
 
   const handlePrev = () => {
@@ -161,6 +163,9 @@ export default function CampanaValoracionForm() {
         {currentStep === 7 && campaignId && (
           <CampaignSummaryStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
         )}
+        {currentStep === 8 && campaignId && (
+          <FollowUpStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
+        )}
       </div>
 
       {/* Navigation */}
@@ -174,7 +179,7 @@ export default function CampanaValoracionForm() {
               <Save className="h-4 w-4 mr-2" />{campaignId ? 'Guardar' : 'Crear'}
             </Button>
           )}
-          {currentStep < 7 && (
+          {currentStep < 8 && (
             <Button onClick={handleNext} disabled={
               (currentStep === 1 && (!campaignData.name || !campaignData.sector)) ||
               (currentStep === 2 && companies.length === 0)

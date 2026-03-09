@@ -46,6 +46,8 @@ export interface CampaignCompany {
   is_auto_assigned: boolean;
   seguimiento_estado: string | null;
   seguimiento_notas: string | null;
+  followup_enviado: boolean;
+  followup_sent_at: string | null;
 }
 
 export type CampaignCompanyInsert = Omit<CampaignCompany, 'id' | 'created_at'>;
