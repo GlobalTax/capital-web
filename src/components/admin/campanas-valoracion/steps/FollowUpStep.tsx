@@ -729,11 +729,13 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
               <SendList
                 sequence={selectedSeq}
                 campaign={campaign}
+                campaignId={campaignId}
                 companies={companies}
                 sends={allSends}
                 emailSentMap={emailSentMap}
                 onSend={handleSendCompany}
                 isSendingOne={isSendingOne}
+                onSeguimientoChanged={invalidate}
               />
             </TabsContent>
           </Tabs>
