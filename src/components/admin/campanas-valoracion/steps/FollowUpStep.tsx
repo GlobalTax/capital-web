@@ -246,43 +246,56 @@ function SignatureSection() {
   );
 }
 
-// ─── Seguimiento Badge for Follow Up ────────────────────────────────────
+// ─── Seguimiento Badge for Follow Up (per-round, independent) ───────────
 function FUSeguimientoBadge({
   company,
   campaignId,
+  sequenceId,
+  sendRecord,
   onChanged,
 }: {
   company: CampaignCompany;
   campaignId: string;
+  sequenceId: string;
+  sendRecord: FollowupSend | undefined;
   onChanged: () => void;
 }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const current = getSeguimientoOption(company.seguimiento_estado);
+
+  // Per-round state: use send record's seguimiento, fallback to sin_respuesta
+  const currentValue = sendRecord?.seguimiento_estado || 'sin_respuesta';
+  const current = getSeguimientoOption(currentValue);
 
   const handleChange = useCallback(async (newValue: string) => {
-    if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
+    if (newValue === currentValue) return;
     setSaving(true);
     try {
-      // 1. Update seguimiento_estado
-      const { error } = await (supabase as any)
-        .from('valuation_campaign_companies')
-        .update({ seguimiento_estado: newValue })
-        .eq('id', company.id);
-      if (error) throw error;
-
-      // 2. If no longer sin_respuesta, cancel all pending sends for this company
-      if (newValue !== 'sin_respuesta') {
-        await (supabase as any)
+      if (sendRecord) {
+        // Update existing send record's seguimiento
+        const { error } = await (supabase as any)
           .from('campaign_followup_sends')
-          .update({ status: 'cancelled' })
-          .eq('campaign_id', campaignId)
-          .eq('company_id', company.id)
-          .eq('status', 'pending');
+          .update({ seguimiento_estado: newValue })
+          .eq('id', sendRecord.id);
+        if (error) throw error;
+      } else {
+        // Create a send record just for tracking (status = pending, no email sent)
+        const { error } = await (supabase as any)
+          .from('campaign_followup_sends')
+          .insert({
+            sequence_id: sequenceId,
+            campaign_id: campaignId,
+            company_id: company.id,
+            to_email: company.client_email || '',
+            subject_resolved: '',
+            body_resolved: '',
+            status: 'pending',
+            seguimiento_estado: newValue,
+          });
+        if (error) throw error;
       }
 
-      // 3. Invalidate all relevant caches
-      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+      // Only invalidate FU sends cache — do NOT touch global seguimiento_estado
       queryClient.invalidateQueries({ queryKey: ['followup-sends', campaignId] });
       onChanged();
     } catch (e: any) {
@@ -290,14 +303,14 @@ function FUSeguimientoBadge({
     } finally {
       setSaving(false);
     }
-  }, [company.id, company.seguimiento_estado, campaignId, queryClient, onChanged]);
+  }, [currentValue, sendRecord, sequenceId, company.id, company.client_email, campaignId, queryClient, onChanged]);
 
   return (
     <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
       {saving ? (
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       ) : (
-        <Select value={company.seguimiento_estado || 'sin_respuesta'} onValueChange={handleChange}>
+        <Select value={currentValue} onValueChange={handleChange}>
           <SelectTrigger className={cn(
             "h-7 text-[10px] font-medium px-2 py-0 border rounded-full w-auto min-w-[110px] gap-1",
             current.className
@@ -392,6 +405,7 @@ function SendList({
   campaignId,
   companies,
   sends,
+  sequences,
   emailSentMap,
   onSend,
   isSendingOne,
@@ -402,6 +416,7 @@ function SendList({
   campaignId: string;
   companies: CampaignCompany[];
   sends: FollowupSend[];
+  sequences: FollowupSequence[];
   emailSentMap: Map<string, string | null>;
   onSend: (company: CampaignCompany) => Promise<void>;
   isSendingOne: boolean;
@@ -411,6 +426,7 @@ function SendList({
   const [showConfirmAll, setShowConfirmAll] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<{ sent: number; total: number } | null>(null);
 
+  // Send records for THIS round
   const sendMap = useMemo(() => {
     const m = new Map<string, FollowupSend>();
     for (const s of sends) {
@@ -419,19 +435,34 @@ function SendList({
     return m;
   }, [sends, sequence.id]);
 
-  // Visible: sin_respuesta OR has any send record in THIS round (so they stay visible after status change)
+  // Companies marked as responded in PREVIOUS rounds (sequence_number < current)
+  const respondedInPreviousRounds = useMemo(() => {
+    const previousSeqIds = new Set(
+      sequences.filter(s => s.sequence_number < sequence.sequence_number).map(s => s.id)
+    );
+    const responded = new Set<string>();
+    for (const s of sends) {
+      if (previousSeqIds.has(s.sequence_id) && s.seguimiento_estado && s.seguimiento_estado !== 'sin_respuesta') {
+        responded.add(s.company_id);
+      }
+    }
+    return responded;
+  }, [sends, sequences, sequence.sequence_number]);
+
+  // Visible in this round: not responded in previous rounds, AND (sin_respuesta globally OR has record in this round)
   const visible = companies.filter(c => {
-    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
+    if (respondedInPreviousRounds.has(c.id)) return false;
+    const globalOk = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
     const hasRoundRecord = sendMap.has(c.id);
-    return isSinRespuesta || hasRoundRecord;
+    return globalOk || hasRoundRecord;
   });
   const excluded = companies.length - visible.length;
 
-  // Only sin_respuesta AND not yet sent in this round can receive email
+  // Pending: visible + per-round seguimiento is sin_respuesta + not already sent
   const pendingCompanies = visible.filter(c => {
-    const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
-    const s = sendMap.get(c.id);
-    return isSinRespuesta && (!s || s.status !== 'sent');
+    const send = sendMap.get(c.id);
+    const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
+    return roundEstado === 'sin_respuesta' && (!send || send.status !== 'sent');
   });
 
   const handleSendOne = async (company: CampaignCompany) => {
@@ -509,8 +540,8 @@ function SendList({
                 const isSent = send?.status === 'sent';
                 const isError = send?.status === 'error';
                 const isSending = sendingId === c.id;
-                const isSinRespuesta = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
-                const canSend = isSinRespuesta && !isSent;
+                const roundEstado = send?.seguimiento_estado || 'sin_respuesta';
+                const canSend = roundEstado === 'sin_respuesta' && !isSent;
                 return (
                   <TableRow key={c.id}>
                     <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
@@ -519,7 +550,7 @@ function SendList({
                     <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center gap-1">
-                        <FUSeguimientoBadge company={c} campaignId={campaignId} onChanged={onSeguimientoChanged} />
+                        <FUSeguimientoBadge company={c} campaignId={campaignId} sequenceId={sequence.id} sendRecord={send} onChanged={onSeguimientoChanged} />
                         <FUNotasPopover company={c} campaignId={campaignId} />
                       </div>
                     </TableCell>
@@ -539,7 +570,7 @@ function SendList({
                       <Button size="sm" variant={isSent || !canSend ? 'ghost' : 'outline'} className="h-7 text-xs"
                         disabled={!canSend || isSending || !!bulkProgress} onClick={() => handleSendOne(c)}>
                         {isSending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
-                        {isSent ? 'Enviado' : !isSinRespuesta ? '—' : 'Enviar'}
+                        {isSent ? 'Enviado' : !canSend ? '—' : 'Enviar'}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -741,6 +772,7 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
                 campaignId={campaignId}
                 companies={companies}
                 sends={allSends}
+                sequences={sequences}
                 emailSentMap={emailSentMap}
                 onSend={handleSendCompany}
                 isSendingOne={isSendingOne}

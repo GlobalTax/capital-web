@@ -3603,6 +3603,7 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           id: string
+          seguimiento_estado: string | null
           sent_at: string | null
           sequence_id: string
           status: string | null
@@ -3616,6 +3617,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
+          seguimiento_estado?: string | null
           sent_at?: string | null
           sequence_id: string
           status?: string | null
@@ -3629,6 +3631,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
+          seguimiento_estado?: string | null
           sent_at?: string | null
           sequence_id?: string
           status?: string | null

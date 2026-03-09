@@ -30,6 +30,7 @@ export interface FollowupSend {
   sent_at: string | null;
   error_message: string | null;
   created_at: string;
+  seguimiento_estado: string | null;
 }
 
 // ─── Variable resolution ────────────────────────────────────────────────
