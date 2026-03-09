@@ -515,8 +515,64 @@ function SendList({
     if (failedCount > 0) toast.error(`${failedCount} fallaron`);
   };
 
+  // KPI stats for this round
+  const sentInRound = visible.filter(c => sendMap.get(c.id)?.status === 'sent').length;
+  const errorInRound = visible.filter(c => sendMap.get(c.id)?.status === 'error').length;
+  const respondedInRound = visible.filter(c => {
+    const s = sendMap.get(c.id);
+    return s?.seguimiento_estado && s.seguimiento_estado !== 'sin_respuesta';
+  }).length;
+  const interestedInRound = visible.filter(c => sendMap.get(c.id)?.seguimiento_estado === 'interesado').length;
+  const meetingsInRound = visible.filter(c => sendMap.get(c.id)?.seguimiento_estado === 'reunion_agendada').length;
+
   return (
     <div className="space-y-4">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <Card>
+          <CardContent className="pt-3 pb-3 text-center">
+            <Building2 className="h-4 w-4 mx-auto text-muted-foreground" />
+            <p className="text-xl font-bold mt-1">{visible.length}</p>
+            <p className="text-[10px] text-muted-foreground">Elegibles</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-3 pb-3 text-center">
+            <Send className="h-4 w-4 mx-auto text-blue-500" />
+            <p className="text-xl font-bold mt-1">{sentInRound}</p>
+            <p className="text-[10px] text-muted-foreground">Enviados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-3 pb-3 text-center">
+            <Clock className="h-4 w-4 mx-auto text-muted-foreground" />
+            <p className="text-xl font-bold mt-1">{pendingCompanies.length}</p>
+            <p className="text-[10px] text-muted-foreground">Pendientes</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-3 pb-3 text-center">
+            <MessageCircle className="h-4 w-4 mx-auto text-orange-500" />
+            <p className="text-xl font-bold mt-1">{respondedInRound}</p>
+            <p className="text-[10px] text-muted-foreground">Con respuesta</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-3 pb-3 text-center">
+            <CheckCircle2 className="h-4 w-4 mx-auto text-emerald-500" />
+            <p className="text-xl font-bold mt-1">{interestedInRound}</p>
+            <p className="text-[10px] text-muted-foreground">Interesados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-3 pb-3 text-center">
+            <Calendar className="h-4 w-4 mx-auto text-violet-500" />
+            <p className="text-xl font-bold mt-1">{meetingsInRound}</p>
+            <p className="text-[10px] text-muted-foreground">Reuniones</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-sm">
         <p className="font-medium text-blue-800">
           Se enviará este follow up a <strong>{pendingCompanies.length}</strong> empresa(s) pendiente(s).
