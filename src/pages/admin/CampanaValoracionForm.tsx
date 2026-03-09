@@ -84,7 +84,7 @@ export default function CampanaValoracionForm() {
       const savedId = await saveCampaign();
       if (!savedId) return;
     }
-    if (currentStep < 8) setCurrentStep(prev => prev + 1);
+    if (currentStep < 9) setCurrentStep(prev => prev + 1);
   };
 
   const handlePrev = () => {
