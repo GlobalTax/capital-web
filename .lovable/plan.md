@@ -1,36 +1,60 @@
 
 
-## Diagnostico
+## Diagnosis: Why "Opened" status never appears
 
-El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
+**Root cause**: All 3 sent campaign emails have `email_message_id = NULL` and `delivery_status = 'pending'`. This means the emails were sent **before** the tracking code was deployed to the `send-campaign-outbound-email` function.
 
-Lo que debería ocurrir es:
-1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
-2. Adjunta el **PDF de valoración** (generado o almacenado)
-3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
+Evidence from the database:
+```
+campaign_emails (status = 'sent'):
+- email_message_id: NULL  ← Resend ID never stored
+- email_opened: false     ← Can't match opens
+- delivery_status: pending ← Never updated to 'sent'
+```
 
-La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
+Meanwhile, the `resend-webhook` IS working (signature verified, processing events), but it matches by `email_message_id` — which is NULL, so updates silently fail.
 
-## Plan
+The tracking pixel embedded in emails uses `email.id` as fallback `mid`, and `email-open` has a fallback matching by `id`. But if the function wasn't deployed when those emails were sent, no pixel was embedded either.
 
-### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
+---
 
-Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
+## Fix Plan
 
-- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
-- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
-- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
+### 1. Redeploy edge functions
+The code is correct but needs redeployment so all future sends:
+- Store Resend message ID in `email_message_id`
+- Set `delivery_status = 'sent'` on send
+- Embed tracking pixel in HTML body
 
-### 2. Prerequisito: emails generados
+Functions to redeploy:
+- `send-campaign-outbound-email` (tracking pixel + message ID capture)
+- `email-open` (campaign table support)
 
-Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
+### 2. Backfill existing sent emails (SQL migration)
+For the 3 already-sent emails with `delivery_status = 'pending'`, update them to `'sent'` so the UI shows "Enviado" correctly instead of "Pendiente":
 
-### 3. Conectar datos
+```sql
+UPDATE campaign_emails 
+SET delivery_status = 'sent' 
+WHERE status = 'sent' AND delivery_status = 'pending';
+```
 
-ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
-- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
-- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
+### 3. Add auto-refresh polling for tracking data
+Currently the UI only shows tracking status on page load. Add a polling interval (every 30s) to the `useCampaignEmails` hook so open/delivery statuses update in near-real-time without manual refresh.
 
-### Archivos afectados
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
+### 4. Verify Resend webhook configuration
+The webhook is already receiving events (`email.delivered`, `email.clicked`). Need to ensure `email.opened` events are also subscribed in the Resend dashboard. The `resend-webhook` already handles `email.opened` → sets `email_opened = true`.
+
+---
+
+## Summary of changes
+
+| File | Change |
+|------|--------|
+| SQL migration | Backfill `delivery_status = 'sent'` for existing sent emails |
+| `useCampaignEmails.ts` | Add `refetchInterval: 30000` for polling |
+| `useFollowupSequences.ts` | Add same polling for follow-up tracking |
+| Edge functions | Redeploy `send-campaign-outbound-email` and `email-open` |
+
+After this, all future sends will track opens/delivery in real-time, and the UI column "Entrega" will update automatically.
 
