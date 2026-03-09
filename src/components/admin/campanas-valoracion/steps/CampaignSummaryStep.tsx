@@ -340,6 +340,15 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                     <SeguimientoBadge company={c} campaignId={campaignId} />
                   </TableCell>
                   <TableCell className="text-center">
+                    {(c as any).followup_enviado ? (
+                      <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                        Enviado {(c as any).followup_sent_at ? new Date((c as any).followup_sent_at).toLocaleDateString('es-ES') : ''}
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center">
                     <NotasPopover company={c} campaignId={campaignId} />
                   </TableCell>
                 </TableRow>
