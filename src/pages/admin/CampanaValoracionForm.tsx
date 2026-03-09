@@ -25,6 +25,7 @@ const STEPS = [
   { id: 6, title: 'Mail', description: 'Plantilla y envío de emails' },
   { id: 7, title: '1r Envío', description: 'KPIs y resultados' },
   { id: 8, title: 'Follow Up', description: 'Seguimiento post-envío' },
+  { id: 9, title: 'Análisis', description: 'Resumen y métricas' },
 ];
 
 export default function CampanaValoracionForm() {
