@@ -246,43 +246,56 @@ function SignatureSection() {
   );
 }
 
-// ─── Seguimiento Badge for Follow Up ────────────────────────────────────
+// ─── Seguimiento Badge for Follow Up (per-round, independent) ───────────
 function FUSeguimientoBadge({
   company,
   campaignId,
+  sequenceId,
+  sendRecord,
   onChanged,
 }: {
   company: CampaignCompany;
   campaignId: string;
+  sequenceId: string;
+  sendRecord: FollowupSend | undefined;
   onChanged: () => void;
 }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const current = getSeguimientoOption(company.seguimiento_estado);
+
+  // Per-round state: use send record's seguimiento, fallback to sin_respuesta
+  const currentValue = sendRecord?.seguimiento_estado || 'sin_respuesta';
+  const current = getSeguimientoOption(currentValue);
 
   const handleChange = useCallback(async (newValue: string) => {
-    if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
+    if (newValue === currentValue) return;
     setSaving(true);
     try {
-      // 1. Update seguimiento_estado
-      const { error } = await (supabase as any)
-        .from('valuation_campaign_companies')
-        .update({ seguimiento_estado: newValue })
-        .eq('id', company.id);
-      if (error) throw error;
-
-      // 2. If no longer sin_respuesta, cancel all pending sends for this company
-      if (newValue !== 'sin_respuesta') {
-        await (supabase as any)
+      if (sendRecord) {
+        // Update existing send record's seguimiento
+        const { error } = await (supabase as any)
           .from('campaign_followup_sends')
-          .update({ status: 'cancelled' })
-          .eq('campaign_id', campaignId)
-          .eq('company_id', company.id)
-          .eq('status', 'pending');
+          .update({ seguimiento_estado: newValue })
+          .eq('id', sendRecord.id);
+        if (error) throw error;
+      } else {
+        // Create a send record just for tracking (status = pending, no email sent)
+        const { error } = await (supabase as any)
+          .from('campaign_followup_sends')
+          .insert({
+            sequence_id: sequenceId,
+            campaign_id: campaignId,
+            company_id: company.id,
+            to_email: company.client_email || '',
+            subject_resolved: '',
+            body_resolved: '',
+            status: 'pending',
+            seguimiento_estado: newValue,
+          });
+        if (error) throw error;
       }
 
-      // 3. Invalidate all relevant caches
-      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+      // Only invalidate FU sends cache — do NOT touch global seguimiento_estado
       queryClient.invalidateQueries({ queryKey: ['followup-sends', campaignId] });
       onChanged();
     } catch (e: any) {
@@ -290,14 +303,14 @@ function FUSeguimientoBadge({
     } finally {
       setSaving(false);
     }
-  }, [company.id, company.seguimiento_estado, campaignId, queryClient, onChanged]);
+  }, [currentValue, sendRecord, sequenceId, company.id, company.client_email, campaignId, queryClient, onChanged]);
 
   return (
     <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
       {saving ? (
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       ) : (
-        <Select value={company.seguimiento_estado || 'sin_respuesta'} onValueChange={handleChange}>
+        <Select value={currentValue} onValueChange={handleChange}>
           <SelectTrigger className={cn(
             "h-7 text-[10px] font-medium px-2 py-0 border rounded-full w-auto min-w-[110px] gap-1",
             current.className
