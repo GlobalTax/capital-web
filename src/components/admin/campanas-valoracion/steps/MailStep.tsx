@@ -515,6 +515,136 @@ function MailListSection({
   );
 }
 
+// ─── Inline Signature Editor ────────────────────────────────────────────
+type SignatureFormData = Omit<EmailSignatureData, 'id' | 'user_id' | 'html_preview'>;
+
+function SignatureEditorSection() {
+  const { user } = useAdminAuth();
+  const { signature, isLoading, saveSignature, isSaving, uploadLogo, isUploadingLogo } = useEmailSignature();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getDefaults = (): SignatureFormData => ({
+    ...DEFAULT_SIGNATURE,
+    full_name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
+  });
+
+  const [form, setForm] = useState<SignatureFormData>(getDefaults());
+
+  useEffect(() => {
+    if (signature) {
+      setForm({
+        full_name: signature.full_name || '',
+        job_title: signature.job_title || '',
+        phone: signature.phone || '',
+        website_url: signature.website_url || '',
+        linkedin_url: signature.linkedin_url || '',
+        logo_url: signature.logo_url || null,
+        confidentiality_note: signature.confidentiality_note || '',
+        privacy_note: signature.privacy_note || '',
+        extra_note: signature.extra_note || '',
+      });
+    } else if (!isLoading) {
+      setForm(getDefaults());
+    }
+  }, [signature, isLoading]);
+
+  const update = (field: keyof SignatureFormData, value: string | null) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('Máximo 2MB'); return; }
+    const url = await uploadLogo(file);
+    if (url) update('logo_url', url);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const previewHtml = generateSignatureHtml(form);
+
+  if (isLoading) {
+    return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Form */}
+      <div className="space-y-4">
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Datos personales</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div><Label className="text-xs">Nombre completo</Label><Input value={form.full_name} onChange={e => update('full_name', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">Cargo</Label><Input value={form.job_title} onChange={e => update('job_title', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">Teléfono</Label><Input value={form.phone} onChange={e => update('phone', e.target.value)} className="h-8 text-sm" /></div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Empresa</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div><Label className="text-xs">URL Web</Label><Input value={form.website_url} onChange={e => update('website_url', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">URL LinkedIn</Label><Input value={form.linkedin_url} onChange={e => update('linkedin_url', e.target.value)} className="h-8 text-sm" /></div>
+            <div>
+              <Label className="text-xs">Logo</Label>
+              <div className="flex items-center gap-2 mt-1">
+                {form.logo_url && <img src={form.logo_url} alt="Logo" className="h-10 border rounded" />}
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => fileInputRef.current?.click()} disabled={isUploadingLogo}>
+                  {isUploadingLogo ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />}
+                  {form.logo_url ? 'Cambiar' : 'Subir'}
+                </Button>
+                {form.logo_url && <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive" onClick={() => update('logo_url', null)}>Quitar</Button>}
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleLogoUpload} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Textos legales</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div><Label className="text-xs">Nota de confidencialidad</Label><Textarea value={form.confidentiality_note} onChange={e => update('confidentiality_note', e.target.value)} rows={3} className="text-xs" /></div>
+            <div><Label className="text-xs">Política de privacidad</Label><Textarea value={form.privacy_note} onChange={e => update('privacy_note', e.target.value)} rows={3} className="text-xs" /></div>
+            <div><Label className="text-xs">Nota ambiental</Label><Input value={form.extra_note} onChange={e => update('extra_note', e.target.value)} className="h-8 text-sm" /></div>
+          </CardContent>
+        </Card>
+
+        <div className="flex gap-2">
+          <Button onClick={async () => { await saveSignature(form); }} disabled={isSaving} size="sm">
+            {isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+            Guardar firma
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setForm(getDefaults())}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />Restaurar valores
+          </Button>
+        </div>
+      </div>
+
+      {/* Live preview */}
+      <div className="lg:sticky lg:top-4">
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium">Vista previa de la firma</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="border rounded-md p-4 bg-white">
+              <div className="text-sm text-muted-foreground italic mb-3">[...cuerpo del email...]</div>
+              <hr className="my-3 border-t border-gray-200" />
+              <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main MailStep ──────────────────────────────────────────────────────
 export function MailStep({ campaignId, campaign }: Props) {
   const { companies } = useCampaignCompanies(campaignId);
@@ -523,8 +653,15 @@ export function MailStep({ campaignId, campaign }: Props) {
     emails, isLoading, saveTemplate, generateEmails, isGenerating,
     updateEmail, restoreTemplate, sendEmail, sendAllPending, isSendingAll,
   } = useCampaignEmails(campaignId);
+  const { signature } = useEmailSignature();
 
   const [editingEmail, setEditingEmail] = useState<{ email: CampaignEmail; company: CampaignCompany } | null>(null);
+
+  // Get current signature HTML for preview
+  const signatureHtml = signature?.html_preview || generateSignatureHtml({
+    ...DEFAULT_SIGNATURE,
+    full_name: signature?.full_name || '',
+  });
 
   const handleSaveAndGenerate = async (subject: string, body: string, overwriteManual: boolean) => {
     try {
@@ -560,6 +697,9 @@ export function MailStep({ campaignId, campaign }: Props) {
         <TabsTrigger value="template">
           <Edit3 className="h-3.5 w-3.5 mr-1.5" />Template
         </TabsTrigger>
+        <TabsTrigger value="signature">
+          <Pen className="h-3.5 w-3.5 mr-1.5" />Firma
+        </TabsTrigger>
         <TabsTrigger value="list">
           <Mail className="h-3.5 w-3.5 mr-1.5" />Lista de emails
           {emails.length > 0 && (
@@ -576,7 +716,12 @@ export function MailStep({ campaignId, campaign }: Props) {
           emails={emails}
           isGenerating={isGenerating}
           onSaveAndGenerate={handleSaveAndGenerate}
+          signatureHtml={signatureHtml}
         />
+      </TabsContent>
+
+      <TabsContent value="signature">
+        <SignatureEditorSection />
       </TabsContent>
 
       <TabsContent value="list">
