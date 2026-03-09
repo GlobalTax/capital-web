@@ -610,6 +610,7 @@ function SendList({
                 <TableHead>Valoración</TableHead>
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Estado envío</TableHead>
+                <TableHead className="text-center">Entrega</TableHead>
                 <TableHead className="w-[100px]">Acción</TableHead>
               </TableRow>
             </TableHeader>
