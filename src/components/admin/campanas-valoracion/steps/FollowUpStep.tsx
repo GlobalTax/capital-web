@@ -772,6 +772,7 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
                 campaignId={campaignId}
                 companies={companies}
                 sends={allSends}
+                sequences={sequences}
                 emailSentMap={emailSentMap}
                 onSend={handleSendCompany}
                 isSendingOne={isSendingOne}
