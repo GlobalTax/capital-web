@@ -3595,6 +3595,89 @@ export type Database = {
           },
         ]
       }
+      campaign_followup_sends: {
+        Row: {
+          body_resolved: string
+          campaign_id: string
+          company_id: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          sent_at: string | null
+          sequence_id: string
+          status: string | null
+          subject_resolved: string
+          to_email: string
+        }
+        Insert: {
+          body_resolved: string
+          campaign_id: string
+          company_id: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          sequence_id: string
+          status?: string | null
+          subject_resolved: string
+          to_email: string
+        }
+        Update: {
+          body_resolved?: string
+          campaign_id?: string
+          company_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          sequence_id?: string
+          status?: string | null
+          subject_resolved?: string
+          to_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_followup_sends_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_followup_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_followup_sequences: {
+        Row: {
+          body_html: string
+          campaign_id: string
+          created_at: string | null
+          id: string
+          label: string
+          sequence_number: number
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          body_html?: string
+          campaign_id: string
+          created_at?: string | null
+          id?: string
+          label?: string
+          sequence_number: number
+          subject?: string
+          updated_at?: string | null
+        }
+        Update: {
+          body_html?: string
+          campaign_id?: string
+          created_at?: string | null
+          id?: string
+          label?: string
+          sequence_number?: number
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       campaign_followups: {
         Row: {
           body: string
