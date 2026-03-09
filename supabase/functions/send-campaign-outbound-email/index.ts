@@ -219,13 +219,20 @@ serve(async (req) => {
         }
 
         const now = new Date().toISOString();
-        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
+        let updateTable: string;
+        if (email._is_followup_send) updateTable = "campaign_followup_sends";
+        else if (email._is_followup) updateTable = "campaign_followups";
+        else updateTable = "campaign_emails";
+
+        const updateData: Record<string, any> = { status: "sent", sent_at: now, error_message: null };
+        if (!email._is_followup_send) updateData.updated_at = now;
+
         await serviceClient
           .from(updateTable)
-          .update({ status: "sent", sent_at: now, updated_at: now, error_message: null })
+          .update(updateData)
           .eq("id", email.id);
 
-        // If followup, also mark the company
+        // Legacy followup: mark company
         if (email._is_followup) {
           await serviceClient
             .from("valuation_campaign_companies")
@@ -237,12 +244,20 @@ serve(async (req) => {
       } catch (sendErr: any) {
         const errMsg = sendErr?.message || "Unknown send error";
         console.error(`Failed to send email ${email.id}:`, errMsg);
-        const updateTable = email._is_followup ? "campaign_followups" : "campaign_emails";
+        let updateTable: string;
+        if (email._is_followup_send) updateTable = "campaign_followup_sends";
+        else if (email._is_followup) updateTable = "campaign_followups";
+        else updateTable = "campaign_emails";
+
+        const errData: Record<string, any> = { status: "error", error_message: errMsg };
+        if (!email._is_followup_send) errData.updated_at = new Date().toISOString();
+
         await serviceClient
           .from(updateTable)
-          .update({ status: "error", error_message: errMsg, updated_at: new Date().toISOString() })
+          .update(errData)
           .eq("id", email.id);
         results.push({ id: email.id, status: "error", error: errMsg });
+      }
       }
     }
 
