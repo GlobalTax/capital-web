@@ -405,25 +405,3 @@ export const getWebApplicationSchema = (
   "inLanguage": ["es", "ca", "en"],
   "isAccessibleForFree": true
 });
-  name: string,
-  description: string,
-  url: string,
-  applicationCategory: string = "BusinessApplication"
-) => ({
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": name,
-  "description": description,
-  "url": url,
-  "applicationCategory": applicationCategory,
-  "operatingSystem": "All",
-  "browserRequirements": "Requires JavaScript",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "EUR"
-  },
-  "provider": getOrganizationSchema(),
-  "inLanguage": ["es", "ca", "en"],
-  "isAccessibleForFree": true
-});
