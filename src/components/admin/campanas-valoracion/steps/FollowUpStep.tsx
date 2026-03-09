@@ -6,6 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
@@ -14,7 +17,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  Send, Loader2, Eye, Mail, Trash2, Plus, CheckCircle2, AlertCircle,
+  Send, Loader2, Eye, Mail, Trash2, Plus, CheckCircle2, AlertCircle, MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -25,6 +28,20 @@ import { getAvailableVariables, replaceVariables } from '@/utils/campaignEmailTe
 import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml } from '@/hooks/useEmailSignature';
 import { toast } from 'sonner';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+
+// Seguimiento config (same as CampaignSummaryStep)
+const SEGUIMIENTO_OPTIONS = [
+  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
+  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
+  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
+] as const;
+
+function getSeguimientoOption(value: string | null) {
+  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
+}
 
 interface Props {
   campaignId: string;
