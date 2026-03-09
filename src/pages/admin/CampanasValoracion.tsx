@@ -106,6 +106,8 @@ export default function CampanasValoracion() {
                 <Plus className="h-4 w-4 mr-2" />Nueva Campaña
               </Button>
             </div>
+          ) : filteredCampaigns.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground text-sm">No se encontraron campañas</div>
           ) : (
             <Table>
               <TableHeader>
