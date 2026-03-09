@@ -25,12 +25,15 @@ interface StageMetrics {
   label: string;
   total: number;
   sent: number;
+  delivered: number;
+  opened: number;
   sinRespuesta: number;
   interesado: number;
   noInteresado: number;
   reunionAgendada: number;
   responseRate: number;
   interestRate: number;
+  openRate: number;
 }
 
 export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
