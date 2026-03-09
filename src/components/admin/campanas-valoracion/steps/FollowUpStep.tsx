@@ -487,7 +487,7 @@ function SendList({
         </Button>
       )}
 
-      {eligible.length === 0 ? (
+      {visible.length === 0 ? (
         <div className="text-center py-10 text-muted-foreground text-sm">No hay empresas elegibles (sin respuesta).</div>
       ) : (
         <div className="border rounded-lg overflow-auto max-h-[55vh]">
