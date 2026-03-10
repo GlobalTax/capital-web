@@ -1,5 +1,5 @@
 // ============= VIRTUAL CONTACTS TABLE =============
-// Virtualized table using CSS height inheritance
+// Virtualized table with keyboard navigation (Ctrl+Arrows, Enter, Space)
 
 import React, { useRef, useEffect, useState, useCallback, memo } from 'react';
 import { FixedSizeList as List } from 'react-window';
@@ -19,6 +19,7 @@ interface VirtualContactsTableProps {
 
 const ROW_HEIGHT = 40;
 const HEADER_HEIGHT = 32;
+const PAGE_JUMP = 10;
 
 const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
   contacts,
@@ -29,7 +30,9 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
   isLoading = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<List>(null);
   const [listHeight, setListHeight] = useState(400);
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
 
   // Read container height once on mount and when it changes
   useEffect(() => {
@@ -41,18 +44,78 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
         }
       }
     };
-
-    // Initial update
     updateHeight();
-
-    // Use ResizeObserver for dynamic updates
     const observer = new ResizeObserver(updateHeight);
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
-
     return () => observer.disconnect();
   }, []);
+
+  // Scroll to focused row
+  useEffect(() => {
+    if (focusedIndex >= 0 && listRef.current) {
+      listRef.current.scrollToItem(focusedIndex, 'smart');
+    }
+  }, [focusedIndex]);
+
+  // Reset focus when contacts list changes significantly
+  useEffect(() => {
+    setFocusedIndex(prev => (prev >= contacts.length ? -1 : prev));
+  }, [contacts.length]);
+
+  // Keyboard handler
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    // Skip if user is typing in an input/select inside the table
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    const max = contacts.length - 1;
+    if (max < 0) return;
+
+    let handled = true;
+
+    if (e.key === 'ArrowDown' || e.key === 'j') {
+      if (e.ctrlKey || e.metaKey) {
+        // Ctrl+Down: jump PAGE_JUMP rows
+        setFocusedIndex(prev => Math.min(prev + PAGE_JUMP, max));
+      } else {
+        // Down: next row
+        setFocusedIndex(prev => (prev < 0 ? 0 : Math.min(prev + 1, max)));
+      }
+    } else if (e.key === 'ArrowUp' || e.key === 'k') {
+      if (e.ctrlKey || e.metaKey) {
+        // Ctrl+Up: jump PAGE_JUMP rows
+        setFocusedIndex(prev => Math.max(prev - PAGE_JUMP, 0));
+      } else {
+        // Up: previous row
+        setFocusedIndex(prev => (prev <= 0 ? 0 : prev - 1));
+      }
+    } else if (e.key === 'Home') {
+      setFocusedIndex(0);
+    } else if (e.key === 'End') {
+      setFocusedIndex(max);
+    } else if (e.key === 'Enter') {
+      // Open details for focused row
+      if (focusedIndex >= 0 && contacts[focusedIndex]) {
+        onViewDetails(contacts[focusedIndex]);
+      }
+    } else if (e.key === ' ') {
+      // Toggle selection for focused row
+      if (focusedIndex >= 0 && contacts[focusedIndex]) {
+        onSelect(contacts[focusedIndex].id);
+      }
+    } else if (e.key === 'Escape') {
+      setFocusedIndex(-1);
+    } else {
+      handled = false;
+    }
+
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, [contacts, focusedIndex, onSelect, onViewDetails]);
 
   const allSelected = contacts.length > 0 && selectedIds.length === contacts.length;
   const someSelected = selectedIds.length > 0 && selectedIds.length < contacts.length;
@@ -66,12 +129,13 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
         key={contact.id}
         contact={contact}
         isSelected={selectedIds.includes(contact.id)}
+        isFocused={index === focusedIndex}
         onSelect={() => onSelect(contact.id)}
         onViewDetails={() => onViewDetails(contact)}
         style={style}
       />
     );
-  }, [contacts, selectedIds, onSelect, onViewDetails]);
+  }, [contacts, selectedIds, focusedIndex, onSelect, onViewDetails]);
 
   if (isLoading) {
     return (
@@ -90,7 +154,12 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
   }
 
   return (
-    <div ref={containerRef} className="h-full flex flex-col bg-background border border-border rounded-lg overflow-hidden">
+    <div
+      ref={containerRef}
+      className="h-full flex flex-col bg-background border border-border rounded-lg overflow-hidden focus:outline-none"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
       {/* Header */}
       <div 
         className="flex items-center gap-2 px-3 border-b border-border bg-muted/30 shrink-0"
@@ -121,8 +190,16 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
         </div>
       </div>
 
+      {/* Hint */}
+      {focusedIndex >= 0 && (
+        <div className="absolute top-1 right-2 z-10 text-[10px] text-muted-foreground/50 pointer-events-none">
+          ↑↓ navegar · Ctrl+↑↓ saltar · Enter abrir · Espacio seleccionar · Esc salir
+        </div>
+      )}
+
       {/* Virtualized List */}
       <List
+        ref={listRef}
         height={listHeight}
         itemCount={contacts.length}
         itemSize={ROW_HEIGHT}
