@@ -205,7 +205,7 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
       {/* Hint */}
       {focusedIndex >= 0 && (
         <div className="absolute top-1 right-2 z-10 text-[10px] text-muted-foreground/50 pointer-events-none">
-          ↑↓ navegar · Ctrl+↑↓ saltar · Enter abrir · Espacio seleccionar · Esc salir
+          ↑↓ navegar · Ctrl+↑↓ seleccionar rápido · Enter abrir · Espacio seleccionar · Esc salir
         </div>
       )}
 
