@@ -1,8 +1,7 @@
 // ============= CONTACT ROW =============
-// Simplified contact row for the virtualized table
-// Uses local state for instant UI feedback on inline edits
+// Optimistic updates via patchContact from parent state
 
-import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Contact } from './types';
 import { cn } from '@/lib/utils';
@@ -20,6 +19,7 @@ interface ContactRowProps {
   isFocused?: boolean;
   onSelect: () => void;
   onViewDetails: () => void;
+  onPatchContact?: (id: string, updates: Partial<Contact>) => void;
   style: React.CSSProperties;
 }
 
@@ -73,26 +73,13 @@ const ContactRow: React.FC<ContactRowProps> = ({
   isFocused = false,
   onSelect,
   onViewDetails,
+  onPatchContact,
   style,
 }) => {
   const { update: updateField } = useContactInlineUpdate();
   const { activeStatuses } = useContactStatuses();
   const { channels } = useAcquisitionChannels();
   const { activeForms, displayNameGroups } = useLeadForms();
-
-  // ---- LOCAL STATE for instant UI feedback ----
-  // These track the *current displayed values* independently from the parent prop,
-  // so the label updates immediately on user interaction without waiting for refetch.
-  const [localStatus, setLocalStatus] = useState(contact.lead_status_crm ?? null);
-  const [localChannelId, setLocalChannelId] = useState(contact.acquisition_channel_id ?? null);
-  const [localFormId, setLocalFormId] = useState(contact.lead_form ?? null);
-  const [localDate, setLocalDate] = useState(contact.lead_received_at || contact.created_at);
-
-  // Sync local state when parent prop changes (e.g., after full refetch or realtime event)
-  useEffect(() => { setLocalStatus(contact.lead_status_crm ?? null); }, [contact.lead_status_crm]);
-  useEffect(() => { setLocalChannelId(contact.acquisition_channel_id ?? null); }, [contact.acquisition_channel_id]);
-  useEffect(() => { setLocalFormId(contact.lead_form ?? null); }, [contact.lead_form]);
-  useEffect(() => { setLocalDate(contact.lead_received_at || contact.created_at); }, [contact.lead_received_at, contact.created_at]);
 
   // --- STATUS OPTIONS ---
   const statusOptions = useMemo((): SelectOption[] => {
@@ -130,26 +117,35 @@ const ContactRow: React.FC<ContactRowProps> = ({
     }));
   }, [displayNameGroups]);
 
-  // --- HANDLERS: update local state first, then persist ---
+  // --- HANDLERS: patch parent state immediately, then persist to DB ---
   const handleStatusChange = useCallback(async (newValue: string | null) => {
-    setLocalStatus(newValue);
+    onPatchContact?.(contact.id, { lead_status_crm: newValue });
     await updateField(contact.id, contact.origin, 'lead_status_crm', newValue);
-  }, [contact.id, contact.origin, updateField]);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
 
   const handleChannelChange = useCallback(async (newValue: string | null) => {
-    setLocalChannelId(newValue);
+    const selectedChannel = channels.find(ch => ch.id === newValue);
+    onPatchContact?.(contact.id, {
+      acquisition_channel_id: newValue ?? undefined,
+      acquisition_channel_name: selectedChannel?.name,
+    });
     await updateField(contact.id, contact.origin, 'acquisition_channel_id', newValue);
-  }, [contact.id, contact.origin, updateField]);
+  }, [contact.id, contact.origin, channels, updateField, onPatchContact]);
 
   const handleFormChange = useCallback(async (newValue: string | null) => {
-    setLocalFormId(newValue);
+    const selectedForm = activeForms.find(f => f.id === newValue);
+    onPatchContact?.(contact.id, {
+      lead_form: newValue ?? undefined,
+      lead_form_name: selectedForm?.name,
+      lead_form_display_name: selectedForm?.display_name || selectedForm?.name,
+    });
     await updateField(contact.id, contact.origin, 'lead_form', newValue);
-  }, [contact.id, contact.origin, updateField]);
+  }, [contact.id, contact.origin, activeForms, updateField, onPatchContact]);
 
   const handleDateChange = useCallback(async (newDate: string) => {
-    setLocalDate(newDate);
+    onPatchContact?.(contact.id, { lead_received_at: newDate });
     await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
-  }, [contact.id, contact.origin, updateField]);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
 
   return (
     <div
@@ -186,7 +182,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
         {/* 2. Status */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableSelect
-            value={localStatus}
+            value={contact.lead_status_crm || null}
             options={statusOptions}
             onSave={handleStatusChange}
             placeholder="Estado"
@@ -204,7 +200,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
         {/* 4. Channel */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableSelect
-            value={localChannelId}
+            value={contact.acquisition_channel_id || null}
             options={channelOptions}
             onSave={handleChannelChange}
             placeholder="Canal"
@@ -217,7 +213,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
         {/* 5. Form */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableSelect
-            value={localFormId}
+            value={contact.lead_form || null}
             options={formOptions}
             onSave={handleFormChange}
             placeholder="Form"
@@ -245,7 +241,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
         {/* 9. Date */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableDateCell
-            value={localDate}
+            value={contact.lead_received_at || contact.created_at}
             onSave={handleDateChange}
             displayFormat="d MMM yy"
             displayClassName="text-muted-foreground text-xs"

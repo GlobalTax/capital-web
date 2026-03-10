@@ -261,6 +261,11 @@ export const useContacts = () => {
     };
   }, [contacts, filters.includeProspects, prospectKeys]);
 
+  // Optimistic patch: update a single contact field locally without full refetch
+  const patchContact = useCallback((id: string, updates: Partial<Contact>) => {
+    setContacts(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+  }, []);
+
   return {
     contacts: filteredContacts,
     allContacts: contacts,
@@ -269,6 +274,7 @@ export const useContacts = () => {
     filters,
     applyFilters: setFilters,
     refetch: fetchContacts,
+    patchContact,
   };
 };
 
