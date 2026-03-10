@@ -74,26 +74,13 @@ const ContactRow: React.FC<ContactRowProps> = ({
   isFocused = false,
   onSelect,
   onViewDetails,
+  onPatchContact,
   style,
 }) => {
   const { update: updateField } = useContactInlineUpdate();
   const { activeStatuses } = useContactStatuses();
   const { channels } = useAcquisitionChannels();
   const { activeForms, displayNameGroups } = useLeadForms();
-
-  // ---- LOCAL STATE for instant UI feedback ----
-  // These track the *current displayed values* independently from the parent prop,
-  // so the label updates immediately on user interaction without waiting for refetch.
-  const [localStatus, setLocalStatus] = useState(contact.lead_status_crm ?? null);
-  const [localChannelId, setLocalChannelId] = useState(contact.acquisition_channel_id ?? null);
-  const [localFormId, setLocalFormId] = useState(contact.lead_form ?? null);
-  const [localDate, setLocalDate] = useState(contact.lead_received_at || contact.created_at);
-
-  // Sync local state when parent prop changes (e.g., after full refetch or realtime event)
-  useEffect(() => { setLocalStatus(contact.lead_status_crm ?? null); }, [contact.lead_status_crm]);
-  useEffect(() => { setLocalChannelId(contact.acquisition_channel_id ?? null); }, [contact.acquisition_channel_id]);
-  useEffect(() => { setLocalFormId(contact.lead_form ?? null); }, [contact.lead_form]);
-  useEffect(() => { setLocalDate(contact.lead_received_at || contact.created_at); }, [contact.lead_received_at, contact.created_at]);
 
   // --- STATUS OPTIONS ---
   const statusOptions = useMemo((): SelectOption[] => {
