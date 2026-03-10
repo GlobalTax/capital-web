@@ -73,12 +73,12 @@ export const useContacts = () => {
       ] = await Promise.all([
         supabase
           .from('contact_leads')
-          .select('*, empresas:empresa_id(nombre, facturacion), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
           .order('created_at', { ascending: false }),
         supabase
           .from('company_valuations')
-          .select('*, empresas:empresa_id(nombre, facturacion), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
           .order('created_at', { ascending: false }),
         supabase
