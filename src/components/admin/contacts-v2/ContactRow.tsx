@@ -17,6 +17,7 @@ import { useLeadForms } from '@/hooks/useLeadForms';
 interface ContactRowProps {
   contact: Contact;
   isSelected: boolean;
+  isFocused?: boolean;
   onSelect: () => void;
   onViewDetails: () => void;
   style: React.CSSProperties;
@@ -40,6 +41,7 @@ const CATEGORY_HEX: Record<string, string> = {
 const ContactRow: React.FC<ContactRowProps> = ({
   contact,
   isSelected,
+  isFocused = false,
   onSelect,
   onViewDetails,
   style,
@@ -122,6 +124,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
       style={style}
       className={cn(
         'flex items-center gap-2 px-3 border-b border-border/50 cursor-pointer transition-colors',
+        isFocused ? 'bg-accent/20 ring-1 ring-inset ring-primary/30' :
         isSelected ? 'bg-primary/5' : 'hover:bg-muted/30'
       )}
       onClick={onViewDetails}
