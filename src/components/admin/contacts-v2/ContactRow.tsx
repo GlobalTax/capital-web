@@ -20,6 +20,7 @@ interface ContactRowProps {
   isFocused?: boolean;
   onSelect: () => void;
   onViewDetails: () => void;
+  onPatchContact?: (id: string, updates: Partial<Contact>) => void;
   style: React.CSSProperties;
 }
 
