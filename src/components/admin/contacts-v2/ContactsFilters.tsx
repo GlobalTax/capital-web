@@ -244,6 +244,13 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
               Todos
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem
+              checked={filters.leadFormId === '__none__'}
+              onCheckedChange={() => onFiltersChange({ ...filters, leadFormId: '__none__' })}
+            >
+              <span className="text-muted-foreground italic">Sin asignar</span>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
             {displayNameGroups.map(group => (
               <DropdownMenuCheckboxItem
                 key={group.displayName}
