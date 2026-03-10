@@ -1,8 +1,7 @@
 // ============= CONTACT ROW =============
-// Simplified contact row for the virtualized table
-// Uses local state for instant UI feedback on inline edits
+// Optimistic updates via patchContact from parent state
 
-import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Contact } from './types';
 import { cn } from '@/lib/utils';
