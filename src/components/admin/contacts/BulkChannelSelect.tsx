@@ -27,9 +27,10 @@ interface BulkChannelSelectProps {
   selectedIds: string[];
   contacts: UnifiedContact[];
   onSuccess?: () => void;
+  onPatchContacts?: (ids: string[], updates: Record<string, any>) => void;
 }
 
-export function BulkChannelSelect({ selectedIds, contacts, onSuccess }: BulkChannelSelectProps) {
+export function BulkChannelSelect({ selectedIds, contacts, onSuccess, onPatchContacts }: BulkChannelSelectProps) {
   const [selectedChannel, setSelectedChannel] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
