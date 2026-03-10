@@ -5959,7 +5959,7 @@ export type Database = {
           capittal_synced_at: string | null
           cargo: string | null
           created_at: string | null
-          email: string
+          email: string | null
           empresa_principal_id: string | null
           external_capittal_id: string | null
           id: string
@@ -5986,7 +5986,7 @@ export type Database = {
           capittal_synced_at?: string | null
           cargo?: string | null
           created_at?: string | null
-          email: string
+          email?: string | null
           empresa_principal_id?: string | null
           external_capittal_id?: string | null
           id?: string
@@ -6013,7 +6013,7 @@ export type Database = {
           capittal_synced_at?: string | null
           cargo?: string | null
           created_at?: string | null
-          email?: string
+          email?: string | null
           empresa_principal_id?: string | null
           external_capittal_id?: string | null
           id?: string
@@ -24252,6 +24252,8 @@ export type Database = {
         | "Financiero"
         | "Legal"
         | "Otro"
+        | "Datapack"
+        | "IM"
       lead_status:
         | "nuevo"
         | "contactando"
@@ -24492,6 +24494,8 @@ export const Constants = {
         "Financiero",
         "Legal",
         "Otro",
+        "Datapack",
+        "IM",
       ],
       lead_status: [
         "nuevo",
