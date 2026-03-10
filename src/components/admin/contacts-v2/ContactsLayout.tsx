@@ -131,6 +131,7 @@ const ContactsLayout: React.FC = () => {
           selectedIds={selectedIds}
           contacts={displayedContacts}
           onClearSelection={clearSelection}
+          onPatchContacts={patchContacts}
         />
 
         {/* Row 2: Filters (only for directory and favorites with content) */}

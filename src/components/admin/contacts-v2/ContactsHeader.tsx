@@ -98,18 +98,21 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
             selectedIds={selectedIds}
             contacts={contacts as any}
             onSuccess={onClearSelection}
+            onPatchContacts={onPatchContacts}
           />
 
           <BulkChannelSelect
             selectedIds={selectedIds}
             contacts={contacts as any}
             onSuccess={onClearSelection}
+            onPatchContacts={onPatchContacts}
           />
 
           <BulkLeadFormSelect
             selectedIds={selectedIds}
             contacts={contacts as any}
             onSuccess={onClearSelection}
+            onPatchContacts={onPatchContacts}
           />
 
           <BulkDateSelect
