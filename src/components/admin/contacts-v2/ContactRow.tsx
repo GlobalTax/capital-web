@@ -1,7 +1,8 @@
 // ============= CONTACT ROW =============
 // Simplified contact row for the virtualized table
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Contact } from './types';
@@ -11,6 +12,8 @@ import { EditableDateCell } from '../shared/EditableDateCell';
 import { EditableSelect, SelectOption } from '../shared/EditableSelect';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
+import { useAcquisitionChannels, CATEGORY_COLORS, type ChannelCategory } from '@/hooks/useAcquisitionChannels';
+import { useLeadForms } from '@/hooks/useLeadForms';
 
 interface ContactRowProps {
   contact: Contact;
@@ -20,30 +23,19 @@ interface ContactRowProps {
   style: React.CSSProperties;
 }
 
-// Color mappings for acquisition channels
-const CHANNEL_COLORS: Record<string, string> = {
-  'Google Ads': 'bg-red-500/10 text-red-700 border-red-500/20',
-  'Meta Ads': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  'Meta ads - Formulario instantáneo': 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  'LinkedIn Ads': 'bg-sky-500/10 text-sky-700 border-sky-500/20',
-  'SEO Orgánico': 'bg-green-500/10 text-green-700 border-green-500/20',
-  'Email Marketing': 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  'Referido': 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-  'Directo': 'bg-slate-500/10 text-slate-700 border-slate-500/20',
-  'Evento/Feria': 'bg-cyan-500/10 text-cyan-700 border-cyan-500/20',
-  'Marketplace': 'bg-pink-500/10 text-pink-700 border-pink-500/20',
-};
-
-const getChannelColor = (channel?: string): string => {
-  if (!channel) return 'bg-slate-500/10 text-slate-700 border-slate-500/20';
-  return CHANNEL_COLORS[channel] || 'bg-slate-500/10 text-slate-700 border-slate-500/20';
-};
-
 const formatCurrency = (value?: number) => {
   if (!value) return '-';
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M€`;
   if (value >= 1000) return `${(value / 1000).toFixed(0)}k€`;
   return `${value}€`;
+};
+
+const CATEGORY_HEX: Record<string, string> = {
+  paid: '#e11d48',
+  organic: '#10b981',
+  referral: '#3b82f6',
+  direct: '#f59e0b',
+  other: '#6b7280',
 };
 
 const ContactRow: React.FC<ContactRowProps> = ({
@@ -53,9 +45,13 @@ const ContactRow: React.FC<ContactRowProps> = ({
   onViewDetails,
   style,
 }) => {
+  const queryClient = useQueryClient();
   const { update: updateField } = useContactInlineUpdate();
   const { activeStatuses } = useContactStatuses();
+  const { channels } = useAcquisitionChannels();
+  const { activeForms, displayNameGroups } = useLeadForms();
 
+  // --- STATUS OPTIONS ---
   const statusOptions = useMemo((): SelectOption[] => {
     const colorToCss: Record<string, string> = {
       blue: '#3b82f6', purple: '#8b5cf6', green: '#22c55e', amber: '#f59e0b',
@@ -70,7 +66,67 @@ const ContactRow: React.FC<ContactRowProps> = ({
       color: colorToCss[s.color] || '#6b7280',
     }));
   }, [activeStatuses]);
-  
+
+  // --- CHANNEL OPTIONS ---
+  const channelOptions = useMemo((): SelectOption[] => {
+    return channels.map(ch => ({
+      value: ch.id,
+      label: ch.name,
+      color: CATEGORY_HEX[ch.category] || '#6b7280',
+    }));
+  }, [channels]);
+
+  // --- FORM OPTIONS (by display_name groups) ---
+  const formOptions = useMemo((): SelectOption[] => {
+    return displayNameGroups.map(g => ({
+      value: g.formIds[0], // Use first form ID as representative
+      label: g.displayName,
+    }));
+  }, [displayNameGroups]);
+
+  // --- HANDLERS with optimistic display name patching ---
+  const handleChannelChange = useCallback(async (newValue: string | null) => {
+    // Find channel name for optimistic update
+    const selectedChannel = channels.find(ch => ch.id === newValue);
+    
+    // Optimistically patch display fields in cache
+    queryClient.setQueryData(['unified-contacts'], (old: any[] = []) =>
+      old.map((item: any) =>
+        item.id === contact.id
+          ? {
+              ...item,
+              acquisition_channel_id: newValue,
+              acquisition_channel_name: selectedChannel?.name || null,
+            }
+          : item
+      )
+    );
+
+    await updateField(contact.id, contact.origin, 'acquisition_channel_id', newValue);
+  }, [contact.id, contact.origin, channels, queryClient, updateField]);
+
+  const handleFormChange = useCallback(async (newValue: string | null) => {
+    // Find form display name for optimistic update
+    const selectedForm = activeForms.find(f => f.id === newValue);
+    const displayName = selectedForm?.display_name || selectedForm?.name || null;
+
+    // Optimistically patch display fields in cache
+    queryClient.setQueryData(['unified-contacts'], (old: any[] = []) =>
+      old.map((item: any) =>
+        item.id === contact.id
+          ? {
+              ...item,
+              lead_form: newValue,
+              lead_form_name: selectedForm?.name || null,
+              lead_form_display_name: displayName,
+            }
+          : item
+      )
+    );
+
+    await updateField(contact.id, contact.origin, 'lead_form', newValue);
+  }, [contact.id, contact.origin, activeForms, queryClient, updateField]);
+
   return (
     <div
       style={style}
@@ -122,23 +178,30 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.empresa_nombre || contact.company || '-'}
         </div>
 
-        {/* 4. Channel - with color badge */}
-        <div>
-          {contact.acquisition_channel_name ? (
-            <Badge 
-              variant="outline" 
-              className={cn('text-[10px] px-1.5 py-0 h-5 border truncate max-w-full', getChannelColor(contact.acquisition_channel_name))}
-            >
-              {contact.acquisition_channel_name}
-            </Badge>
-          ) : (
-            <span className="text-muted-foreground/60">-</span>
-          )}
+        {/* 4. Channel - inline editable select */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableSelect
+            value={contact.acquisition_channel_id || null}
+            options={channelOptions}
+            onSave={handleChannelChange}
+            placeholder="Canal"
+            emptyText="—"
+            allowClear
+            displayClassName="h-6 text-[11px] px-1.5 min-w-[80px] [&>span]:max-w-[90px]"
+          />
         </div>
 
-        {/* 5. Form - show display_name */}
-        <div className="truncate text-muted-foreground text-[11px]">
-          {contact.lead_form_display_name || contact.lead_form_name || '-'}
+        {/* 5. Form - inline editable select */}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableSelect
+            value={contact.lead_form || null}
+            options={formOptions}
+            onSave={handleFormChange}
+            placeholder="Form"
+            emptyText="—"
+            allowClear
+            displayClassName="h-6 text-[11px] px-1.5 min-w-[70px] [&>span]:max-w-[90px]"
+          />
         </div>
 
         {/* 6. Revenue/Facturación */}
