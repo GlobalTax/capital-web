@@ -22,6 +22,7 @@ interface ContactsHeaderProps {
   selectedIds: string[];
   contacts: Contact[];
   onClearSelection: () => void;
+  onPatchContacts?: (ids: string[], updates: Partial<Contact>) => void;
 }
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
@@ -31,6 +32,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   selectedIds,
   contacts,
   onClearSelection,
+  onPatchContacts,
 }) => {
   const { syncBulkContacts, isSyncing } = useBrevoSync();
   const { bulkSoftDelete, bulkHardDelete } = useContactActions();
