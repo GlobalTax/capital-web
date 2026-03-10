@@ -30,12 +30,41 @@ const formatCurrency = (value?: number) => {
   return `${value}€`;
 };
 
+// Per-channel colors for visual distinction
+const CHANNEL_COLOR_MAP: Record<string, string> = {
+  'Google Ads': '#ea4335',
+  'Meta Ads': '#1877f2',
+  'Meta ads - Formulario instantáneo': '#0668e1',
+  'LinkedIn Ads': '#0a66c2',
+  'SEO Orgánico': '#16a34a',
+  'Email Marketing': '#f59e0b',
+  'Referido': '#8b5cf6',
+  'Directo': '#64748b',
+  'Evento/Feria': '#06b6d4',
+  'Marketplace': '#ec4899',
+  'Brevo': '#0b996e',
+  'Colaborador': '#a855f7',
+};
+
+// Fallback by category
 const CATEGORY_HEX: Record<string, string> = {
   paid: '#e11d48',
   organic: '#10b981',
-  referral: '#3b82f6',
-  direct: '#f59e0b',
+  referral: '#8b5cf6',
+  direct: '#64748b',
   other: '#6b7280',
+};
+
+// Per-form colors for visual distinction
+const FORM_COLOR_MAP: Record<string, string> = {
+  'Valoración': '#6366f1',
+  'Compras': '#0ea5e9',
+  'Ventas': '#f97316',
+  'Contacto': '#64748b',
+  'Colaborador': '#a855f7',
+  'Asesor': '#14b8a6',
+  'Newsletter': '#84cc16',
+  'General': '#6b7280',
 };
 
 const ContactRow: React.FC<ContactRowProps> = ({
