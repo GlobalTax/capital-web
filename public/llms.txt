@@ -46,10 +46,23 @@ Capittal ofrece servicios integrales de asesoramiento para la compraventa de emp
 - [Newsletter](https://capittal.es/recursos/newsletter): Boletín mensual con tendencias del mercado M&A.
 - [Webinars](https://capittal.es/recursos/webinars): Seminarios web con expertos del sector.
 - [Marketplace](https://capittal.es/oportunidades): Oportunidades de compra y venta de empresas.
+- [Empleos](https://capittal.es/oportunidades/empleo): Ofertas de trabajo en el sector M&A.
+
+## Nosotros
+
+- [De Looper a Capittal](https://capittal.es/de-looper-a-capittal): Nuestra evolución y mejoras como firma.
+- [Por Qué Elegirnos](https://capittal.es/por-que-elegirnos): Nuestra experiencia y metodología única.
+- [Equipo](https://capittal.es/equipo): Conoce a nuestro equipo de expertos en M&A.
+- [Casos de Éxito](https://capittal.es/casos-exito): Historias de éxito de nuestros clientes.
+
+## Colaboradores
+
+- [Programa de Colaboradores](https://capittal.es/programa-colaboradores): Únete a nuestra red de colaboradores y asesores.
 
 ## Contacto
 
-- Web: https://capittal.es/contacto
+- Web: https://capittal.es/#contacto
+- Reservar reunión: https://capittal.es/reservar-reunion
 - Idiomas: Español, Catalán, Inglés
 - Sede: Barcelona, España
 - Mercado objetivo: España (mid-market, 1M€–50M€ facturación)
@@ -57,3 +70,4 @@ Capittal ofrece servicios integrales de asesoramiento para la compraventa de emp
 ## Optional
 
 - [llms-full.txt](https://capittal.es/llms-full.txt): Versión extendida con descripciones detalladas de servicios, metodologías y FAQs.
+- [ai.txt](https://capittal.es/ai.txt): Versión estructurada para consumo por asistentes de IA.

@@ -53,6 +53,11 @@ Mantenemos una base de datos actualizada de múltiplos de valoración para los p
 
 Los múltiplos se actualizan trimestralmente basándose en transacciones completadas y datos de mercado.
 
+### Valoración de Empresas (Guía)
+**URL**: https://capittal.es/valoracion-empresas
+
+Guía completa de métodos y herramientas de valoración empresarial para el mercado español, incluyendo explicaciones detalladas de cada metodología y su aplicación práctica.
+
 ### Search Funds
 **URL**: https://capittal.es/servicios/search-funds
 
@@ -224,6 +229,44 @@ Seminarios web con expertos del sector sobre temas como valoración de empresas,
 
 Plataforma donde publicamos oportunidades de compra y venta de empresas verificadas. Los interesados pueden solicitar información adicional previa firma de un NDA.
 
+### Empleos
+**URL**: https://capittal.es/oportunidades/empleo
+
+Ofertas de trabajo en el sector M&A. Oportunidades laborales en Capittal y en empresas de nuestro ecosistema.
+
+---
+
+## Nosotros
+
+### De Looper a Capittal
+**URL**: https://capittal.es/de-looper-a-capittal
+
+La historia de la evolución y rebranding de la firma, desde sus orígenes como Looper hasta convertirse en Capittal.
+
+### Por Qué Elegirnos
+**URL**: https://capittal.es/por-que-elegirnos
+
+Nuestra experiencia, metodología única y ventajas competitivas como firma de asesoramiento M&A especializada en el mid-market español.
+
+### Equipo
+**URL**: https://capittal.es/equipo
+
+Conoce a nuestro equipo multidisciplinar de expertos en finanzas corporativas, M&A, derecho mercantil y fiscalidad.
+
+### Casos de Éxito
+**URL**: https://capittal.es/casos-exito
+
+Historias de éxito reales de nuestros clientes, con detalles anonimizados de las operaciones completadas.
+
+---
+
+## Colaboradores
+
+### Programa de Colaboradores
+**URL**: https://capittal.es/programa-colaboradores
+
+Red de colaboradores y asesores que refieren oportunidades de M&A. El programa permite a profesionales del sector (abogados, gestorías, consultores, banca privada) colaborar con Capittal y beneficiarse de comisiones por referidos.
+
 ---
 
 ## Preguntas Frecuentes
@@ -235,7 +278,7 @@ El valor de una empresa depende de múltiples factores: sector, tamaño, rentabi
 El proceso completo suele durar entre 6 y 12 meses desde la firma del mandato hasta el cierre. Los tiempos varían según la complejidad de la operación, el sector y las condiciones de mercado.
 
 ### ¿Qué impuestos se pagan al vender una empresa?
-La fiscalidad depende de la estructura de la operación (venta de acciones o activos) y del tipo de vendedor (persona física o jurídica). Para personas físicas, la plusvalía tributa en el IRPF entre el 19% y el 28%. Para sociedades, en el Impuesto de Sociedades al 25%. Existen exenciones y bonificaciones aplicables en ciertos casos.
+La fiscalidad depende de la estructura de la operación (venta de acciones o activos) y del tipo de vendedor (persona física o jurídica). Para personas físicas, la plusvalía tributa en el IRPF entre el 19% y el 28%. Para sociedades, en el Impuesto de Sociedades al 25%. Existen exenciones y bonificaciones aplicables en ciertos casos. Usa nuestra [Calculadora Fiscal](https://capittal.es/lp/calculadora-fiscal) para estimar el impacto.
 
 ### ¿Qué es un múltiplo de EBITDA?
 Es un método de valoración que calcula el valor de la empresa (Enterprise Value) como un múltiplo del EBITDA (beneficio antes de intereses, impuestos, depreciación y amortización). Por ejemplo, si una empresa tiene un EBITDA de 1M€ y el múltiplo del sector es 5x, el Enterprise Value sería 5M€.
@@ -249,11 +292,15 @@ Sí, nuestro foco principal es el mercado español (mid-market). Sin embargo, co
 ### ¿Qué tamaño de empresa asesora Capittal?
 Nos especializamos en el segmento mid-market: empresas con facturación entre 1 y 50 millones de euros. Este segmento representa la mayoría del tejido empresarial español y es donde aportamos mayor valor diferencial.
 
+### ¿Cómo puedo contactar con Capittal?
+A través del formulario de contacto en https://capittal.es/#contacto o reservando una reunión en https://capittal.es/reservar-reunion. Atendemos en español, catalán e inglés.
+
 ---
 
 ## Contacto
 
-- **Web**: https://capittal.es/contacto
+- **Web**: https://capittal.es/#contacto
+- **Reservar reunión**: https://capittal.es/reservar-reunion
 - **Sede**: Barcelona, España
 - **Idiomas**: Español, Catalán, Inglés
 - **Mercado**: España (mid-market, 1M€–50M€ facturación)
