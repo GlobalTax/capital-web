@@ -219,18 +219,22 @@ export const useContacts = () => {
     // valuationType filter removed - no longer needed
 
     if (filters.acquisitionChannelId) {
-      result = result.filter(c => c.acquisition_channel_id === filters.acquisitionChannelId);
+      if (filters.acquisitionChannelId === '__none__') {
+        result = result.filter(c => !c.acquisition_channel_id);
+      } else {
+        result = result.filter(c => c.acquisition_channel_id === filters.acquisitionChannelId);
+      }
     }
 
     if (filters.leadFormId) {
-      // leadFormId is now a display_name; resolve to all matching form IDs
-      result = result.filter(c => {
-        if (!c.lead_form) return false;
-        const formDisplayName = c.lead_form_name; // raw name from DB
-        // Check if display_name matches (will be resolved via displayNameMap in ContactRow)
-        // For filtering, we match against the lead_form_name or display_name
-        return c.lead_form_display_name === filters.leadFormId;
-      });
+      if (filters.leadFormId === '__none__') {
+        result = result.filter(c => !c.lead_form);
+      } else {
+        result = result.filter(c => {
+          if (!c.lead_form) return false;
+          return c.lead_form_display_name === filters.leadFormId;
+        });
+      }
     }
 
     return result;
