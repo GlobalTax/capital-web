@@ -121,9 +121,12 @@ const ContactRow: React.FC<ContactRowProps> = ({
 
   // --- FORM OPTIONS (by display_name groups) ---
   const formOptions = useMemo((): SelectOption[] => {
-    return displayNameGroups.map(g => ({
+    // Assign distinct colors based on display name
+    const palette = ['#6366f1', '#0ea5e9', '#f97316', '#64748b', '#a855f7', '#14b8a6', '#84cc16', '#ec4899'];
+    return displayNameGroups.map((g, i) => ({
       value: g.formIds[0],
       label: g.displayName,
+      color: FORM_COLOR_MAP[g.displayName] || palette[i % palette.length],
     }));
   }, [displayNameGroups]);
 
