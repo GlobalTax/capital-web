@@ -52,6 +52,13 @@ export function BulkChannelSelect({ selectedIds, contacts, onSuccess, onPatchCon
   };
 
   const handleConfirm = () => {
+    // Optimistic local patch
+    onPatchContacts?.(selectedIds, {
+      acquisition_channel_id: selectedChannel,
+      acquisition_channel_name: selectedChannelData?.name,
+      acquisition_channel_category: selectedChannelData?.category,
+    });
+
     updateChannel(
       { contactIds: fullContactIds, channelId: selectedChannel },
       {
