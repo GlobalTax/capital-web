@@ -146,10 +146,11 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
         isFocused={index === focusedIndex}
         onSelect={() => onSelect(contact.id)}
         onViewDetails={() => onViewDetails(contact)}
+        onPatchContact={onPatchContact}
         style={style}
       />
     );
-  }, [contacts, selectedIds, focusedIndex, onSelect, onViewDetails]);
+  }, [contacts, selectedIds, focusedIndex, onSelect, onViewDetails, onPatchContact]);
 
   if (isLoading) {
     return (
