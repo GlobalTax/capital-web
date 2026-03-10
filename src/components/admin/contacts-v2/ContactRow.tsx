@@ -17,6 +17,7 @@ import { useLeadForms } from '@/hooks/useLeadForms';
 interface ContactRowProps {
   contact: Contact;
   isSelected: boolean;
+  isFocused?: boolean;
   onSelect: () => void;
   onViewDetails: () => void;
   style: React.CSSProperties;
