@@ -115,7 +115,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
     return channels.map(ch => ({
       value: ch.id,
       label: ch.name,
-      color: CATEGORY_HEX[ch.category] || '#6b7280',
+      color: CHANNEL_COLOR_MAP[ch.name] || CATEGORY_HEX[ch.category] || '#6b7280',
     }));
   }, [channels]);
 
