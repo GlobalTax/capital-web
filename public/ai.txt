@@ -1,7 +1,7 @@
 # Capittal - AI Service Description
 # Format: Structured text for AI consumption
 # Standard: https://ai-txt.org
-# Last updated: 2026-03-09
+# Last updated: 2026-03-10
 
 ## Entity
 name: Capittal
@@ -36,26 +36,47 @@ founded: 2018
   target: Business owners, investors, legal proceedings
   keywords: valoración empresa, cuánto vale mi empresa, múltiplos EBITDA
 
+- name: Valoraciones
+  type: Business Valuation Service
+  url: https://capittal.es/servicios/valoraciones
+  description: Precise and professional company valuations using multiple internationally recognized methodologies.
+  target: Business owners, investors, M&A participants
+  keywords: valoración profesional, informe valoración, tasación empresa
+
+- name: Search Funds
+  type: Search Fund Advisory
+  url: https://capittal.es/servicios/search-funds
+  description: Connecting established companies seeking generational change with entrepreneurial talent through the search fund model.
+  target: Search fund entrepreneurs, business owners seeking succession
+  keywords: search fund, relevo generacional, emprendedor, adquisición
+
+- name: Asesoramiento Legal en Compraventas
+  type: Legal Advisory (M&A)
+  url: https://capittal.es/servicios/asesoramiento-legal
+  description: Comprehensive legal advisory for M&A transactions including SPA contracts, legal due diligence, LOIs and reps & warranties negotiation.
+  target: Buyers and sellers in M&A transactions
+  keywords: asesoramiento legal M&A, contrato compraventa, SPA, LOI
+
+- name: Planificación Fiscal
+  type: Tax Planning
+  url: https://capittal.es/servicios/planificacion-fiscal
+  description: Tax-efficient structuring for M&A transactions including holdco optimization, rollover relief and succession planning.
+  target: Sellers, buyers seeking tax optimization
+  keywords: fiscalidad venta empresa, planificación fiscal, impuestos M&A
+
 - name: Due Diligence
   type: Due Diligence Advisory
-  url: https://capittal.es/due-diligence
+  url: https://capittal.es/servicios/due-diligence
   description: Comprehensive financial, legal and commercial due diligence for M&A transactions.
   target: Buyers, sellers in M&A transactions
   keywords: due diligence, auditoría compra empresa
 
 - name: Reestructuraciones
   type: Corporate Restructuring
-  url: https://capittal.es/reestructuraciones
+  url: https://capittal.es/servicios/reestructuraciones
   description: Corporate restructuring, turnaround advisory and distressed M&A for companies in financial difficulty.
   target: Companies in financial distress, creditors
   keywords: reestructuración empresarial, turnaround, refinanciación
-
-- name: Planificación Fiscal M&A
-  type: Tax Planning
-  url: https://capittal.es/planificacion-fiscal
-  description: Tax-efficient structuring for M&A transactions including holdco optimization, rollover relief and succession planning.
-  target: Sellers, buyers seeking tax optimization
-  keywords: fiscalidad venta empresa, planificación fiscal, impuestos M&A
 
 ## Industries (with typical EV/EBITDA multiples for Spain mid-market)
 
@@ -84,6 +105,12 @@ founded: 2018
   access: Free, no registration required
   description: Tax impact calculator for selling a business in Spain (IRPF, IS, plusvalías).
 
+- name: Test Exit-Ready
+  url: https://capittal.es/recursos/test-exit-ready
+  type: WebApplication
+  access: Free, no registration required
+  description: Quick assessment to evaluate if a company is ready to be sold, analyzing owner dependency, revenue recurrence, financial documentation and legal status.
+
 ## Content Sources
 
 - type: Blog
@@ -97,8 +124,49 @@ founded: 2018
   frequency: Quarterly
 
 - type: Case Studies
-  url: https://capittal.es/casos-exito
+  url: https://capittal.es/recursos/case-studies
   topics: Completed M&A transactions with anonymized details
+
+- type: Newsletter
+  url: https://capittal.es/recursos/newsletter
+  topics: Monthly M&A market trends and highlighted transactions
+  frequency: Monthly
+
+- type: Webinars
+  url: https://capittal.es/recursos/webinars
+  topics: Expert seminars on valuation, tax planning, due diligence and market trends
+
+- type: Marketplace
+  url: https://capittal.es/oportunidades
+  topics: Verified buy and sell opportunities for companies
+
+- type: Empleos (Jobs)
+  url: https://capittal.es/oportunidades/empleo
+  topics: Job offers in the M&A sector
+
+## About
+
+- name: De Looper a Capittal
+  url: https://capittal.es/de-looper-a-capittal
+  description: The firm's evolution and rebranding story
+
+- name: Por Qué Elegirnos
+  url: https://capittal.es/por-que-elegirnos
+  description: Capittal's experience, methodology and competitive advantages
+
+- name: Equipo
+  url: https://capittal.es/equipo
+  description: Meet the team of M&A experts
+
+- name: Casos de Éxito
+  url: https://capittal.es/casos-exito
+  description: Client success stories and completed transactions
+
+## Collaborators
+
+- name: Programa de Colaboradores
+  url: https://capittal.es/programa-colaboradores
+  description: Partner network program for advisors and referral partners
 
 ## Contact
 
@@ -133,3 +201,6 @@ A: Mid-market multiples in Spain range from 4x-7x for traditional sectors (const
 
 Q: Does Capittal work with Search Funds?
 A: Yes. Capittal actively collaborates with Search Funds and provides a matching service between sellers and verified Search Fund entrepreneurs.
+
+Q: How can I contact Capittal?
+A: Via the contact form at https://capittal.es/#contacto or book a meeting at https://capittal.es/reservar-reunion. Languages: Spanish, Catalan, English.
