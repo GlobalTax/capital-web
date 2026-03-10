@@ -27,9 +27,10 @@ interface BulkStatusSelectProps {
   selectedIds: string[];
   contacts: UnifiedContact[];
   onSuccess?: () => void;
+  onPatchContacts?: (ids: string[], updates: Record<string, any>) => void;
 }
 
-export function BulkStatusSelect({ selectedIds, contacts, onSuccess }: BulkStatusSelectProps) {
+export function BulkStatusSelect({ selectedIds, contacts, onSuccess, onPatchContacts }: BulkStatusSelectProps) {
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
@@ -51,6 +52,12 @@ export function BulkStatusSelect({ selectedIds, contacts, onSuccess }: BulkStatu
   };
 
   const handleConfirm = () => {
+    // Optimistic local patch
+    onPatchContacts?.(selectedIds, {
+      lead_status_crm: selectedStatus,
+      status: selectedStatusData?.label || selectedStatus,
+    });
+
     updateStatus(
       { 
         contactIds: fullContactIds, 

@@ -266,6 +266,12 @@ export const useContacts = () => {
     setContacts(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
   }, []);
 
+  // Bulk optimistic patch: update multiple contacts at once
+  const patchContacts = useCallback((ids: string[], updates: Partial<Contact>) => {
+    const idSet = new Set(ids);
+    setContacts(prev => prev.map(c => idSet.has(c.id) ? { ...c, ...updates } : c));
+  }, []);
+
   return {
     contacts: filteredContacts,
     allContacts: contacts,
@@ -275,6 +281,7 @@ export const useContacts = () => {
     applyFilters: setFilters,
     refetch: fetchContacts,
     patchContact,
+    patchContacts,
   };
 };
 

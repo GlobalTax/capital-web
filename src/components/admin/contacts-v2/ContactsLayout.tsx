@@ -17,7 +17,7 @@ import { ContactsStatsPanel } from '@/features/contacts/components/stats/Contact
 
 const ContactsLayout: React.FC = () => {
   const navigate = useNavigate();
-  const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact } = useContacts();
+  const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact, patchContacts } = useContacts();
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
   
   const [activeTab, setActiveTab] = useState<TabType>('favorites');
@@ -131,6 +131,7 @@ const ContactsLayout: React.FC = () => {
           selectedIds={selectedIds}
           contacts={displayedContacts}
           onClearSelection={clearSelection}
+          onPatchContacts={patchContacts}
         />
 
         {/* Row 2: Filters (only for directory and favorites with content) */}

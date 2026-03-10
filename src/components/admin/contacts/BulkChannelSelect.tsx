@@ -27,9 +27,10 @@ interface BulkChannelSelectProps {
   selectedIds: string[];
   contacts: UnifiedContact[];
   onSuccess?: () => void;
+  onPatchContacts?: (ids: string[], updates: Record<string, any>) => void;
 }
 
-export function BulkChannelSelect({ selectedIds, contacts, onSuccess }: BulkChannelSelectProps) {
+export function BulkChannelSelect({ selectedIds, contacts, onSuccess, onPatchContacts }: BulkChannelSelectProps) {
   const [selectedChannel, setSelectedChannel] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
@@ -51,6 +52,13 @@ export function BulkChannelSelect({ selectedIds, contacts, onSuccess }: BulkChan
   };
 
   const handleConfirm = () => {
+    // Optimistic local patch
+    onPatchContacts?.(selectedIds, {
+      acquisition_channel_id: selectedChannel,
+      acquisition_channel_name: selectedChannelData?.name,
+      acquisition_channel_category: selectedChannelData?.category,
+    });
+
     updateChannel(
       { contactIds: fullContactIds, channelId: selectedChannel },
       {

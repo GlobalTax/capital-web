@@ -26,9 +26,10 @@ interface BulkLeadFormSelectProps {
   selectedIds: string[];
   contacts: UnifiedContact[];
   onSuccess?: () => void;
+  onPatchContacts?: (ids: string[], updates: Record<string, any>) => void;
 }
 
-export function BulkLeadFormSelect({ selectedIds, contacts, onSuccess }: BulkLeadFormSelectProps) {
+export function BulkLeadFormSelect({ selectedIds, contacts, onSuccess, onPatchContacts }: BulkLeadFormSelectProps) {
   const [selectedForm, setSelectedForm] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
@@ -50,6 +51,12 @@ export function BulkLeadFormSelect({ selectedIds, contacts, onSuccess }: BulkLea
   };
 
   const handleConfirm = () => {
+    // Optimistic local patch
+    onPatchContacts?.(selectedIds, {
+      lead_form: selectedForm,
+      lead_form_name: selectedFormData?.name,
+    });
+
     updateForm(
       { 
         contactIds: fullContactIds, 
