@@ -73,12 +73,12 @@ export const useContacts = () => {
       ] = await Promise.all([
         supabase
           .from('contact_leads')
-          .select('*, empresas:empresa_id(nombre, facturacion), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
           .order('created_at', { ascending: false }),
         supabase
           .from('company_valuations')
-          .select('*, empresas:empresa_id(nombre, facturacion), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
           .order('created_at', { ascending: false }),
         supabase
@@ -306,6 +306,12 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
     empresa_id: lead.empresa_id,
     empresa_nombre: lead.empresas?.nombre,
     empresa_facturacion: lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+    cif: lead.cif,
+    industry: lead.industry || lead.sectors_of_interest,
+    employee_range: lead.employee_range || lead.company_size,
     acquisition_channel_id: lead.acquisition_channel_id,
     acquisition_channel_name: lead.acquisition_channel?.name,
     lead_form: lead.lead_form,
@@ -335,8 +341,8 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>): 
     industry: lead.industry,
     employee_range: lead.employee_range,
     final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
-    revenue: lead.revenue ? Number(lead.revenue) : undefined,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
     location: lead.location,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
