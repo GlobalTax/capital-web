@@ -77,18 +77,30 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
 
     if (e.key === 'ArrowDown' || e.key === 'j') {
       if (e.ctrlKey || e.metaKey) {
-        // Ctrl+Down: jump PAGE_JUMP rows
-        setFocusedIndex(prev => Math.min(prev + PAGE_JUMP, max));
+        // Ctrl+Down: move focus AND select all rows in between
+        const newIndex = Math.min(focusedIndex < 0 ? 0 : focusedIndex + PAGE_JUMP, max);
+        const from = Math.max(focusedIndex, 0);
+        for (let i = from; i <= newIndex; i++) {
+          if (contacts[i] && !selectedIds.includes(contacts[i].id)) {
+            onSelect(contacts[i].id);
+          }
+        }
+        setFocusedIndex(newIndex);
       } else {
-        // Down: next row
         setFocusedIndex(prev => (prev < 0 ? 0 : Math.min(prev + 1, max)));
       }
     } else if (e.key === 'ArrowUp' || e.key === 'k') {
       if (e.ctrlKey || e.metaKey) {
-        // Ctrl+Up: jump PAGE_JUMP rows
-        setFocusedIndex(prev => Math.max(prev - PAGE_JUMP, 0));
+        // Ctrl+Up: move focus AND select all rows in between
+        const newIndex = Math.max(focusedIndex <= 0 ? 0 : focusedIndex - PAGE_JUMP, 0);
+        const from = Math.min(focusedIndex, max);
+        for (let i = from; i >= newIndex; i--) {
+          if (contacts[i] && !selectedIds.includes(contacts[i].id)) {
+            onSelect(contacts[i].id);
+          }
+        }
+        setFocusedIndex(newIndex);
       } else {
-        // Up: previous row
         setFocusedIndex(prev => (prev <= 0 ? 0 : prev - 1));
       }
     } else if (e.key === 'Home') {
@@ -193,7 +205,7 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
       {/* Hint */}
       {focusedIndex >= 0 && (
         <div className="absolute top-1 right-2 z-10 text-[10px] text-muted-foreground/50 pointer-events-none">
-          ↑↓ navegar · Ctrl+↑↓ saltar · Enter abrir · Espacio seleccionar · Esc salir
+          ↑↓ navegar · Ctrl+↑↓ seleccionar rápido · Enter abrir · Espacio seleccionar · Esc salir
         </div>
       )}
 
