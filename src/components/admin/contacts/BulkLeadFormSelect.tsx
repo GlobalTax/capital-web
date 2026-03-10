@@ -51,6 +51,12 @@ export function BulkLeadFormSelect({ selectedIds, contacts, onSuccess, onPatchCo
   };
 
   const handleConfirm = () => {
+    // Optimistic local patch
+    onPatchContacts?.(selectedIds, {
+      lead_form: selectedForm,
+      lead_form_name: selectedFormData?.name,
+    });
+
     updateForm(
       { 
         contactIds: fullContactIds, 

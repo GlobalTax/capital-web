@@ -52,6 +52,12 @@ export function BulkStatusSelect({ selectedIds, contacts, onSuccess, onPatchCont
   };
 
   const handleConfirm = () => {
+    // Optimistic local patch
+    onPatchContacts?.(selectedIds, {
+      lead_status_crm: selectedStatus,
+      status: selectedStatusData?.label || selectedStatus,
+    });
+
     updateStatus(
       { 
         contactIds: fullContactIds, 
