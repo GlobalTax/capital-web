@@ -1,10 +1,9 @@
 // ============= CONTACT ROW =============
 // Simplified contact row for the virtualized table
+// Uses local state for instant UI feedback on inline edits
 
-import React, { memo, useMemo, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import React, { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import { Contact } from './types';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
@@ -12,7 +11,7 @@ import { EditableDateCell } from '../shared/EditableDateCell';
 import { EditableSelect, SelectOption } from '../shared/EditableSelect';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
-import { useAcquisitionChannels, CATEGORY_COLORS, type ChannelCategory } from '@/hooks/useAcquisitionChannels';
+import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
 import { useLeadForms } from '@/hooks/useLeadForms';
 
 interface ContactRowProps {
@@ -45,11 +44,24 @@ const ContactRow: React.FC<ContactRowProps> = ({
   onViewDetails,
   style,
 }) => {
-  const queryClient = useQueryClient();
   const { update: updateField } = useContactInlineUpdate();
   const { activeStatuses } = useContactStatuses();
   const { channels } = useAcquisitionChannels();
   const { activeForms, displayNameGroups } = useLeadForms();
+
+  // ---- LOCAL STATE for instant UI feedback ----
+  // These track the *current displayed values* independently from the parent prop,
+  // so the label updates immediately on user interaction without waiting for refetch.
+  const [localStatus, setLocalStatus] = useState(contact.lead_status_crm ?? null);
+  const [localChannelId, setLocalChannelId] = useState(contact.acquisition_channel_id ?? null);
+  const [localFormId, setLocalFormId] = useState(contact.lead_form ?? null);
+  const [localDate, setLocalDate] = useState(contact.lead_received_at || contact.created_at);
+
+  // Sync local state when parent prop changes (e.g., after full refetch or realtime event)
+  useEffect(() => { setLocalStatus(contact.lead_status_crm ?? null); }, [contact.lead_status_crm]);
+  useEffect(() => { setLocalChannelId(contact.acquisition_channel_id ?? null); }, [contact.acquisition_channel_id]);
+  useEffect(() => { setLocalFormId(contact.lead_form ?? null); }, [contact.lead_form]);
+  useEffect(() => { setLocalDate(contact.lead_received_at || contact.created_at); }, [contact.lead_received_at, contact.created_at]);
 
   // --- STATUS OPTIONS ---
   const statusOptions = useMemo((): SelectOption[] => {
@@ -79,53 +91,31 @@ const ContactRow: React.FC<ContactRowProps> = ({
   // --- FORM OPTIONS (by display_name groups) ---
   const formOptions = useMemo((): SelectOption[] => {
     return displayNameGroups.map(g => ({
-      value: g.formIds[0], // Use first form ID as representative
+      value: g.formIds[0],
       label: g.displayName,
     }));
   }, [displayNameGroups]);
 
-  // --- HANDLERS with optimistic display name patching ---
-  const handleChannelChange = useCallback(async (newValue: string | null) => {
-    // Find channel name for optimistic update
-    const selectedChannel = channels.find(ch => ch.id === newValue);
-    
-    // Optimistically patch display fields in cache
-    queryClient.setQueryData(['unified-contacts'], (old: any[] = []) =>
-      old.map((item: any) =>
-        item.id === contact.id
-          ? {
-              ...item,
-              acquisition_channel_id: newValue,
-              acquisition_channel_name: selectedChannel?.name || null,
-            }
-          : item
-      )
-    );
+  // --- HANDLERS: update local state first, then persist ---
+  const handleStatusChange = useCallback(async (newValue: string | null) => {
+    setLocalStatus(newValue);
+    await updateField(contact.id, contact.origin, 'lead_status_crm', newValue);
+  }, [contact.id, contact.origin, updateField]);
 
+  const handleChannelChange = useCallback(async (newValue: string | null) => {
+    setLocalChannelId(newValue);
     await updateField(contact.id, contact.origin, 'acquisition_channel_id', newValue);
-  }, [contact.id, contact.origin, channels, queryClient, updateField]);
+  }, [contact.id, contact.origin, updateField]);
 
   const handleFormChange = useCallback(async (newValue: string | null) => {
-    // Find form display name for optimistic update
-    const selectedForm = activeForms.find(f => f.id === newValue);
-    const displayName = selectedForm?.display_name || selectedForm?.name || null;
-
-    // Optimistically patch display fields in cache
-    queryClient.setQueryData(['unified-contacts'], (old: any[] = []) =>
-      old.map((item: any) =>
-        item.id === contact.id
-          ? {
-              ...item,
-              lead_form: newValue,
-              lead_form_name: selectedForm?.name || null,
-              lead_form_display_name: displayName,
-            }
-          : item
-      )
-    );
-
+    setLocalFormId(newValue);
     await updateField(contact.id, contact.origin, 'lead_form', newValue);
-  }, [contact.id, contact.origin, activeForms, queryClient, updateField]);
+  }, [contact.id, contact.origin, updateField]);
+
+  const handleDateChange = useCallback(async (newDate: string) => {
+    setLocalDate(newDate);
+    await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
+  }, [contact.id, contact.origin, updateField]);
 
   return (
     <div
@@ -145,7 +135,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
         />
       </div>
 
-      {/* Grid Content - Order: Nombre, Estado, Empresa, Canal, Formulario, Facturación, EBITDA, Valoración, Fecha, Sector, Teléfono */}
+      {/* Grid Content */}
       <div className="flex-1 grid grid-cols-[2fr_1fr_1.5fr_1fr_100px_80px_80px_80px_1fr_100px_90px] gap-2 text-xs items-center min-w-0">
         {/* 1. Name + Email */}
         <div className="flex items-center gap-1.5 min-w-0">
@@ -158,14 +148,12 @@ const ContactRow: React.FC<ContactRowProps> = ({
           </div>
         </div>
 
-        {/* 2. Status - inline editable select */}
+        {/* 2. Status */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableSelect
-            value={contact.lead_status_crm || null}
+            value={localStatus}
             options={statusOptions}
-            onSave={async (newValue) => {
-              await updateField(contact.id, contact.origin, 'lead_status_crm', newValue);
-            }}
+            onSave={handleStatusChange}
             placeholder="Estado"
             emptyText="—"
             allowClear
@@ -178,10 +166,10 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.empresa_nombre || contact.company || '-'}
         </div>
 
-        {/* 4. Channel - inline editable select */}
+        {/* 4. Channel */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableSelect
-            value={contact.acquisition_channel_id || null}
+            value={localChannelId}
             options={channelOptions}
             onSave={handleChannelChange}
             placeholder="Canal"
@@ -191,10 +179,10 @@ const ContactRow: React.FC<ContactRowProps> = ({
           />
         </div>
 
-        {/* 5. Form - inline editable select */}
+        {/* 5. Form */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableSelect
-            value={contact.lead_form || null}
+            value={localFormId}
             options={formOptions}
             onSave={handleFormChange}
             placeholder="Form"
@@ -204,7 +192,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
           />
         </div>
 
-        {/* 6. Revenue/Facturación */}
+        {/* 6. Revenue */}
         <div className="text-right text-muted-foreground">
           {formatCurrency(contact.revenue || contact.empresa_facturacion)}
         </div>
@@ -222,10 +210,8 @@ const ContactRow: React.FC<ContactRowProps> = ({
         {/* 9. Date */}
         <div onClick={(e) => e.stopPropagation()}>
           <EditableDateCell
-            value={contact.lead_received_at || contact.created_at}
-            onSave={async (newDate) => {
-              await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
-            }}
+            value={localDate}
+            onSave={handleDateChange}
             displayFormat="d MMM yy"
             displayClassName="text-muted-foreground text-xs"
             emptyText="—"
