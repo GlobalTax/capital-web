@@ -41,6 +41,7 @@ const CATEGORY_HEX: Record<string, string> = {
 const ContactRow: React.FC<ContactRowProps> = ({
   contact,
   isSelected,
+  isFocused = false,
   onSelect,
   onViewDetails,
   style,
