@@ -207,6 +207,13 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
               Todos
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem
+              checked={filters.acquisitionChannelId === '__none__'}
+              onCheckedChange={() => onFiltersChange({ ...filters, acquisitionChannelId: '__none__' })}
+            >
+              <span className="text-muted-foreground italic">Sin asignar</span>
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
             {(channels || []).map(ch => (
               <DropdownMenuCheckboxItem
                 key={ch.id}
