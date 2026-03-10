@@ -17,7 +17,7 @@ import { ContactsStatsPanel } from '@/features/contacts/components/stats/Contact
 
 const ContactsLayout: React.FC = () => {
   const navigate = useNavigate();
-  const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch } = useContacts();
+  const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact } = useContacts();
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
   
   const [activeTab, setActiveTab] = useState<TabType>('favorites');
