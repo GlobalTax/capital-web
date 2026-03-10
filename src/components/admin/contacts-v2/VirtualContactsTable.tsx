@@ -28,6 +28,7 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
   onSelect,
   onSelectAll,
   onViewDetails,
+  onPatchContact,
   isLoading = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
