@@ -14483,6 +14483,79 @@ export type Database = {
         }
         Relationships: []
       }
+      mandato_plataformas: {
+        Row: {
+          created_at: string
+          fecha_subida: string | null
+          id: string
+          mandato_id: string
+          plataforma: string
+          subido: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fecha_subida?: string | null
+          id?: string
+          mandato_id: string
+          plataforma: string
+          subido?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fecha_subida?: string | null
+          id?: string
+          mandato_id?: string
+          plataforma?: string
+          subido?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mandato_plataformas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_plataformas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_plataformas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "mandato_plataformas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_plataformas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "v_mandatos_winloss"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mandato_plataformas_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: false
+            referencedRelation: "vw_mandate_pipeline"
+            referencedColumns: ["mandato_id"]
+          },
+        ]
+      }
       mandato_scoring_history: {
         Row: {
           ai_confidence: number | null
