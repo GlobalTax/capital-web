@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { buildCampaignPresentationPath, normalizeCampaignPresentationPath } from '@/utils/campaignPresentationStorage';
 
 const QUERY_KEY = 'valuation-campaigns';
 
@@ -187,6 +188,71 @@ export function useCampaigns() {
           .from('valuation_campaigns')
           .update({ total_companies: companies.length })
           .eq('id', newCampaign.id);
+      }
+
+      // Copy presentations (studies + any uploaded files)
+      const { data: presentations, error: presError } = await supabase
+        .from('campaign_presentations')
+        .select('*')
+        .eq('campaign_id', id);
+
+      if (!presError && presentations && presentations.length > 0) {
+        // Fetch old and new companies once for mapping
+        const { data: origCompanies } = await (supabase as any)
+          .from('valuation_campaign_companies')
+          .select('id, client_company, client_cif')
+          .eq('campaign_id', id);
+
+        const { data: newCompanies } = await (supabase as any)
+          .from('valuation_campaign_companies')
+          .select('id, client_company, client_cif')
+          .eq('campaign_id', newCampaign.id);
+
+        // Build old→new company ID map
+        const companyIdMap = new Map<string, string>();
+        if (origCompanies && newCompanies) {
+          for (const oldComp of origCompanies) {
+            const match = newCompanies.find((nc: any) =>
+              (oldComp.client_cif && nc.client_cif && oldComp.client_cif === nc.client_cif) ||
+              oldComp.client_company === nc.client_company
+            );
+            if (match) companyIdMap.set(oldComp.id, match.id);
+          }
+        }
+
+        for (const pres of presentations) {
+          try {
+            const originalPath = normalizeCampaignPresentationPath(pres.storage_path || '');
+            const newStoragePath = buildCampaignPresentationPath(newCampaign.id, pres.file_name);
+
+            // Copy file in storage via edge function
+            if (originalPath) {
+              const copyRes = await supabase.functions.invoke('upload-campaign-presentation', {
+                body: { action: 'copy', path: originalPath, destinationPath: newStoragePath },
+              });
+              if (copyRes.error) {
+                console.warn(`[duplicateCampaign] Failed to copy file ${pres.file_name}:`, copyRes.error);
+              }
+            }
+
+            const newCompanyId = pres.company_id ? (companyIdMap.get(pres.company_id) || null) : null;
+
+            // Insert presentation record
+            await supabase
+              .from('campaign_presentations')
+              .insert({
+                campaign_id: newCampaign.id,
+                company_id: newCompanyId,
+                file_name: pres.file_name,
+                storage_path: newStoragePath,
+                match_confidence: pres.match_confidence,
+                status: pres.company_id && newCompanyId ? pres.status : 'unassigned',
+                assigned_manually: pres.assigned_manually,
+              });
+          } catch (copyErr) {
+            console.warn(`[duplicateCampaign] Error copying presentation ${pres.file_name}:`, copyErr);
+          }
+        }
       }
 
       return newCampaign as ValuationCampaign;
