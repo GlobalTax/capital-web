@@ -283,7 +283,7 @@ function TemplateEditorSection({
             </Button>
             <AlertDialogAction onClick={async () => {
               setShowOverwriteWarning(false);
-              await onSaveAndGenerate(subject, body, true);
+              await onGenerateEmails(subject, body, true);
             }}>
               Regenerar todos
             </AlertDialogAction>
