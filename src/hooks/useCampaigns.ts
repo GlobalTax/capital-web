@@ -265,11 +265,100 @@ export function useCampaigns() {
         }
       }
 
+      // ── Copy campaign_emails (clean: keep content, reset operational state) ──
+      // Reuse companyIdMap built above for presentations
+      let emailCompanyIdMap = new Map<string, string>();
+
+      // Build map if not already built (when there were no presentations)
+      if (companyIdMap && companyIdMap.size > 0) {
+        emailCompanyIdMap = companyIdMap;
+      } else {
+        const { data: origComps } = await (supabase as any)
+          .from('valuation_campaign_companies')
+          .select('id, client_company, client_cif')
+          .eq('campaign_id', id);
+        const { data: newComps } = await (supabase as any)
+          .from('valuation_campaign_companies')
+          .select('id, client_company, client_cif')
+          .eq('campaign_id', newCampaign.id);
+        if (origComps && newComps) {
+          for (const oldC of origComps) {
+            const match = newComps.find((nc: any) =>
+              (oldC.client_cif && nc.client_cif && oldC.client_cif === nc.client_cif) ||
+              oldC.client_company === nc.client_company
+            );
+            if (match) emailCompanyIdMap.set(oldC.id, match.id);
+          }
+        }
+      }
+
+      const { data: originalEmails, error: emailsFetchErr } = await (supabase as any)
+        .from('campaign_emails')
+        .select('*')
+        .eq('campaign_id', id);
+
+      if (!emailsFetchErr && originalEmails && originalEmails.length > 0) {
+        const cleanEmails = originalEmails
+          .map((email: any) => {
+            const newCompanyId = email.company_id ? emailCompanyIdMap.get(email.company_id) : null;
+            if (email.company_id && !newCompanyId) return null; // skip unmapped
+            return {
+              campaign_id: newCampaign.id,
+              company_id: newCompanyId,
+              subject: email.subject,
+              body: email.body,
+              is_manually_edited: email.is_manually_edited || false,
+              // Reset all operational fields
+              status: 'pending',
+              sent_at: null,
+              error_message: null,
+              email_message_id: null,
+              email_opened: false,
+              email_opened_at: null,
+              delivery_status: null,
+            };
+          })
+          .filter(Boolean);
+
+        if (cleanEmails.length > 0) {
+          const { error: emailsInsertErr } = await (supabase as any)
+            .from('campaign_emails')
+            .insert(cleanEmails);
+          if (emailsInsertErr) {
+            console.warn('[duplicateCampaign] Error copying emails:', emailsInsertErr);
+          }
+        }
+      }
+
+      // ── Copy campaign_followup_sequences (templates only, no sends) ──
+      const { data: originalSequences, error: seqFetchErr } = await (supabase as any)
+        .from('campaign_followup_sequences')
+        .select('*')
+        .eq('campaign_id', id)
+        .order('sequence_number', { ascending: true });
+
+      if (!seqFetchErr && originalSequences && originalSequences.length > 0) {
+        const cleanSequences = originalSequences.map((seq: any) => ({
+          campaign_id: newCampaign.id,
+          sequence_number: seq.sequence_number,
+          label: seq.label,
+          subject: seq.subject,
+          body_html: seq.body_html,
+        }));
+
+        const { error: seqInsertErr } = await (supabase as any)
+          .from('campaign_followup_sequences')
+          .insert(cleanSequences);
+        if (seqInsertErr) {
+          console.warn('[duplicateCampaign] Error copying followup sequences:', seqInsertErr);
+        }
+      }
+
       return newCampaign as ValuationCampaign;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-      toast.success('Campaña duplicada');
+      toast.success('Campaña duplicada con todo su contenido');
     },
     onError: (e: Error) => toast.error('Error al duplicar campaña: ' + e.message),
   });
