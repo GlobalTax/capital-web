@@ -92,7 +92,7 @@ const getColumnWidth = (columnKey: string): number => {
   return COLUMN_WIDTHS[columnKey] || 100;
 };
 
-// Calculate total width of visible columns
+// Calculate total width of visible columns (minimum width)
 const calculateTotalWidth = (visibleColumns: EmpresaTableColumn[]): number => {
   return visibleColumns.reduce((sum, col) => sum + getColumnWidth(col.column_key), 0);
 };
