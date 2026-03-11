@@ -224,7 +224,7 @@ export const useContactListCampaigns = (listId: string | undefined) => {
     queryFn: async () => {
       const { data, error } = await supabase.from(TB_CAMPAIGNS).select('*').eq('list_id', listId!).order('fecha_vinculacion', { ascending: false });
       if (error) throw error;
-      return data as ContactListCampaign[];
+      return data as unknown as ContactListCampaign[];
     },
   });
 

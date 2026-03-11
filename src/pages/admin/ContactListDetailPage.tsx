@@ -318,7 +318,7 @@ export default function ContactListDetailPage() {
   // ===== ESTADO CHANGE =====
   const handleEstadoChange = async (newEstado: string) => {
     if (!listId) return;
-    await supabase.from('contact_lists').update({ estado: newEstado, updated_at: new Date().toISOString() }).eq('id', listId);
+    await supabase.from('outbound_lists' as any).update({ estado: newEstado, updated_at: new Date().toISOString() }).eq('id', listId);
     queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
     queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
   };
