@@ -189,6 +189,8 @@ function buildMappableFields(years: number[], is1Year: boolean): { value: string
     { value: 'client_email', label: 'Email' },
     { value: 'client_phone', label: 'Teléfono' },
     { value: 'client_cif', label: 'CIF' },
+    { value: 'client_website', label: 'Web' },
+    { value: 'client_provincia', label: 'Provincia' },
     { value: 'revenue', label: `Facturación ${years[0] || ''}` },
     { value: 'ebitda', label: `EBITDA ${years[0] || ''}` },
   ];
