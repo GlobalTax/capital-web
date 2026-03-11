@@ -276,10 +276,18 @@ export default function CampanasValoracion() {
                           </Button>
                           <Button variant="ghost" size="icon" title="Duplicar" disabled={isDuplicating} onClick={async (e) => {
                             e.stopPropagation();
-                            const newCampaign = await duplicateCampaign(c.id);
+                            const newCampaign = await duplicateCampaign({ id: c.id });
                             if (newCampaign?.id) navigate(`/admin/campanas-valoracion/${newCampaign.id}`);
                           }}>
                             <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" title={activeTab === 'valuation' ? 'Duplicar como Documento' : 'Duplicar como Valoración'} disabled={isDuplicating} onClick={async (e) => {
+                            e.stopPropagation();
+                            const targetType = activeTab === 'valuation' ? 'document' : 'valuation';
+                            const newCampaign = await duplicateCampaign({ id: c.id, asType: targetType });
+                            if (newCampaign?.id) navigate(`/admin/campanas-valoracion/${newCampaign.id}`);
+                          }}>
+                            <ArrowRightLeft className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" title="Eliminar" disabled={isDeleting} onClick={(e) => {
                             e.stopPropagation();
