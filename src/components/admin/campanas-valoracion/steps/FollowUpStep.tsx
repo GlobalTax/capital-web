@@ -21,6 +21,7 @@ import {
   Building2, Clock, Calendar, Search, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences, FollowupSequence, FollowupSend } from '@/hooks/useFollowupSequences';
