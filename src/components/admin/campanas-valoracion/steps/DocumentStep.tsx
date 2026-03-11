@@ -42,9 +42,13 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
 
       // Upload via edge function (bypasses RLS)
       const arrayBuffer = await file.arrayBuffer();
-      const base64 = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
+      const bytes = new Uint8Array(arrayBuffer);
+      const chunkSize = 32768;
+      let binaryString = '';
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binaryString += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+      }
+      const base64 = btoa(binaryString);
 
       const { error: uploadError } = await supabase.functions.invoke('upload-campaign-presentation', {
         body: {
