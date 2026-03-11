@@ -69,13 +69,32 @@ function buildMissingFieldsDescription(company: any, fields: string[]): string[]
   return missing;
 }
 
+function domainFromEmail(email: string): string | null {
+  const match = email.match(/@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/);
+  if (!match) return null;
+  const domain = match[1].toLowerCase();
+  // Skip generic email providers
+  const generic = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.es', 'hotmail.es', 'live.com', 'icloud.com', 'protonmail.com', 'aol.com', 'msn.com', 'telefonica.net', 'ono.com', 'orange.es', 'movistar.es'];
+  if (generic.includes(domain)) return null;
+  return domain;
+}
+
 function extractUpdates(company: any, extracted: any, fields: string[]): Record<string, string> {
   const updates: Record<string, string> = {};
   if (fields.includes('client_email') && !company.client_email && extracted.contact_email) updates.client_email = extracted.contact_email;
   if (fields.includes('client_name') && !company.client_name && extracted.contact_name) updates.client_name = extracted.contact_name;
   if (fields.includes('client_phone') && !company.client_phone && extracted.contact_phone) updates.client_phone = extracted.contact_phone;
   if (fields.includes('client_cif') && !company.client_cif && extracted.cif) updates.client_cif = extracted.cif;
-  if (fields.includes('client_website') && !company.client_website && extracted.website) updates.client_website = extracted.website;
+  if (fields.includes('client_website') && !company.client_website) {
+    if (extracted.website) {
+      updates.client_website = extracted.website;
+    } else {
+      // Derive website from email domain (existing or just extracted)
+      const email = company.client_email || extracted?.contact_email || '';
+      const domain = domainFromEmail(email);
+      if (domain) updates.client_website = domain;
+    }
+  }
   if (fields.includes('client_provincia') && !company.client_provincia && extracted.provincia) updates.client_provincia = extracted.provincia;
   return updates;
 }
