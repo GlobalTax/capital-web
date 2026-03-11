@@ -280,6 +280,7 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
               })}
             </TableBody>
           </Table>
+
         </div>
       )}
     </div>

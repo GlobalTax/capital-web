@@ -1028,6 +1028,33 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           </div>
         </CardHeader>
         <CardContent className="p-0">
+          {/* Search */}
+          <div className="p-4 pb-0 flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={`Buscar entre ${companies.length} empresas...`}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            {searchQuery && (
+              <span className="text-sm text-muted-foreground">
+                {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
+              </span>
+            )}
+          </div>
           <Table>
             <TableHeader>
               <TableRow>

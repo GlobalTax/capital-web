@@ -920,6 +920,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                     </TableRow>
                   );
                 })}
+
               </TableBody>
             </Table>
           )}
