@@ -108,7 +108,7 @@ export function useCampaigns() {
   });
 
   const duplicateMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, asType }: { id: string; asType?: 'valuation' | 'document' }) => {
       const { data: original, error: fetchError } = await (supabase as any)
         .from('valuation_campaigns')
         .select('*')
@@ -120,12 +120,16 @@ export function useCampaigns() {
 
       const { id: _id, created_at, updated_at, total_companies, total_created, total_sent, total_errors, total_valuation, ...config } = original;
 
+      const targetType = asType || original.campaign_type || 'valuation';
+      const suffix = asType && asType !== original.campaign_type ? ` (${asType === 'document' ? 'documento' : 'valoración'})` : ' (copia)';
+
       const { data: newCampaign, error } = await (supabase as any)
         .from('valuation_campaigns')
         .insert([{
           ...config,
-          name: `${original.name} (copia)`,
+          name: `${original.name}${suffix}`,
           status: 'draft',
+          campaign_type: targetType,
           created_by: user?.id,
           total_companies: 0,
           total_created: 0,
