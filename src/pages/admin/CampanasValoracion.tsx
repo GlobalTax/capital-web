@@ -161,10 +161,10 @@ export default function CampanasValoracion() {
       </Tabs>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 gap-4 ${activeTab === 'valuation' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Campañas</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{campaigns.length}</p></CardContent>
+          <CardContent><p className="text-2xl font-bold">{campaignsByType.length}</p></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Building2 className="h-4 w-4" />Empresas</CardTitle></CardHeader>
