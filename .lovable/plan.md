@@ -1,43 +1,36 @@
 
 
-# Fix: Valuation PDF not attaching on send (RLS block)
+## Diagnostico
 
-## Root Cause
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-The function `ensureValuationPdfUploaded` in `ProcessSendStep.tsx` uploads the generated valuation PDF directly to the `valuations` bucket using the **anon client**, which is blocked by RLS policies. 
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
 
-For "campaña para pruebas" it works because those companies already had `pdf_url` populated (line 137 skips upload), so no upload was needed. For all other campaigns, `pdf_url` is null → upload attempt → RLS error → no valuation PDF attached.
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
-The error from console confirms: `new row violates row-level security policy`.
+## Plan
 
-## Fix
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-### 1. Extend Edge Function `upload-campaign-presentation` to support `valuations` bucket
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-Add a new action `upload_blob` that accepts a bucket name, storage path, and base64 file content via JSON. This reuses the existing admin verification and service_role client.
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-**File:** `supabase/functions/upload-campaign-presentation/index.ts`
+### 2. Prerequisito: emails generados
 
-Add handler for `action === "upload_blob"`:
-- Accept `{ action: "upload_blob", bucket: string, path: string, base64: string }`
-- Validate bucket is one of `["campaign-presentations", "valuations"]`
-- Decode base64 to Uint8Array, upload via `adminClient.storage.from(bucket).upload(path, ...)`
-- Return `{ success: true, path }`
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-### 2. Modify `ensureValuationPdfUploaded` in `ProcessSendStep.tsx`
+### 3. Conectar datos
 
-Instead of `supabase.storage.from('valuations').upload(...)`, convert blob to base64 and invoke the Edge Function:
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
-```typescript
-const base64 = arrayBufferToBase64(await blob.arrayBuffer());
-const { data } = await supabase.functions.invoke('upload-campaign-presentation', {
-  body: { action: 'upload_blob', bucket: 'valuations', path: storagePath, base64 }
-});
-```
-
-Then construct the public URL from the known Supabase URL + bucket + path, and update `valuation_campaign_companies.pdf_url`.
-
-### Files affected
-- `supabase/functions/upload-campaign-presentation/index.ts` — add `upload_blob` action
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactor `ensureValuationPdfUploaded`
+### Archivos afectados
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 
