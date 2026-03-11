@@ -331,7 +331,7 @@ export default function EmpresasPage() {
             emptyMessage="No hay empresas favoritas"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={450}
+            height={600}
           />
         </TabsContent>
 
@@ -346,7 +346,7 @@ export default function EmpresasPage() {
             emptyActionLabel="Crear primera empresa"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={500}
+            height={600}
           />
         </TabsContent>
 
@@ -359,7 +359,7 @@ export default function EmpresasPage() {
             emptyMessage="No hay empresas de valoraciones"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={450}
+            height={600}
           />
         </TabsContent>
 
@@ -372,7 +372,7 @@ export default function EmpresasPage() {
             emptyMessage="No hay empresas marcadas como target"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={450}
+            height={600}
           />
         </TabsContent>
       </Tabs>
