@@ -30,6 +30,7 @@ export interface ValuationCampaign {
   lead_source: string;
   service_type: string;
   valuation_type: 'ebitda_multiple' | 'revenue_multiple';
+  campaign_type: 'valuation' | 'document';
   financial_years: number[] | null;
   years_mode: string;
   total_companies: number;
