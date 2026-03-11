@@ -722,10 +722,6 @@ function SendList({
 
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            <div className="flex items-center gap-1 border-l pl-2">
-              <SortableHeader label="Fact." field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
-              <SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
-            </div>
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
@@ -748,6 +744,8 @@ function SendList({
                   <TableHead className="w-10">#</TableHead>
                   <TableHead>Empresa</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
+                  <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                   <TableHead>Valoración</TableHead>
                   <TableHead className="text-center">Seguimiento</TableHead>
                   <TableHead className="text-center">Estado envío</TableHead>
@@ -758,7 +756,7 @@ function SendList({
               <TableBody>
                 {filteredVisible.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                       No se encontraron empresas con los filtros aplicados
                     </TableCell>
                   </TableRow>
@@ -774,6 +772,8 @@ function SendList({
                       <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-medium text-sm max-w-[180px] truncate">{c.client_company}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm">{c.revenue ? formatCurrencyEUR(c.revenue) : '—'}</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm">{c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}</TableCell>
                       <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">

@@ -1060,10 +1060,6 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </div>
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            <div className="flex items-center gap-1 border-l pl-2">
-              <SortableHeader label="Fact." field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
-              <SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
-            </div>
             {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
@@ -1088,6 +1084,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                   />
                 </TableHead>
                 <TableHead>Empresa</TableHead>
+                <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
+                <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">PDF Valoración</TableHead>
                 <TableHead className="text-center">PDF Estudio</TableHead>
@@ -1131,6 +1129,12 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                         </span>
                       ) : c.client_company}
                       <div className="text-xs text-muted-foreground">{c.client_email || '—'}</div>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-sm">
+                      {c.revenue ? formatCurrencyEUR(c.revenue) : '—'}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-sm">
+                      {c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}
