@@ -22023,6 +22023,7 @@ export type Database = {
           advisor_phone: string | null
           advisor_role: string | null
           ai_personalize: boolean | null
+          campaign_type: string
           comparables_text: string | null
           created_at: string
           created_by: string | null
@@ -22060,6 +22061,7 @@ export type Database = {
           advisor_phone?: string | null
           advisor_role?: string | null
           ai_personalize?: boolean | null
+          campaign_type?: string
           comparables_text?: string | null
           created_at?: string
           created_by?: string | null
@@ -22097,6 +22099,7 @@ export type Database = {
           advisor_phone?: string | null
           advisor_role?: string | null
           ai_personalize?: boolean | null
+          campaign_type?: string
           comparables_text?: string | null
           created_at?: string
           created_by?: string | null
