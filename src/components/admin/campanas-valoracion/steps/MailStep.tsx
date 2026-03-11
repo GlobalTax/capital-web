@@ -726,7 +726,12 @@ export function MailStep({ campaignId, campaign }: Props) {
     full_name: signature?.full_name || '',
   });
 
-  const handleSaveAndGenerate = async (subject: string, body: string, overwriteManual: boolean) => {
+  const handleSaveTemplate = useCallback(async (subject: string, body: string) => {
+    await saveTemplate({ subject, body });
+  }, [saveTemplate]);
+
+  const handleGenerateEmails = async (subject: string, body: string, overwriteManual: boolean) => {
+    // Save template first
     try {
       await saveTemplate({ subject, body });
     } catch (error: any) {
@@ -778,7 +783,8 @@ export function MailStep({ campaignId, campaign }: Props) {
           companies={companies}
           emails={emails}
           isGenerating={isGenerating}
-          onSaveAndGenerate={handleSaveAndGenerate}
+          onSaveTemplate={handleSaveTemplate}
+          onGenerateEmails={handleGenerateEmails}
           signatureHtml={signatureHtml}
           signature={signature || null}
         />
