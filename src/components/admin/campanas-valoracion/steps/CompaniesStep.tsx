@@ -914,6 +914,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                   <TableHead>Contacto</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>CIF</TableHead>
+                  <TableHead>Web</TableHead>
+                  <TableHead>Provincia</TableHead>
                   <TableHead className="text-right">Facturación</TableHead>
                   <TableHead className="text-right">EBITDA</TableHead>
                   <TableHead className="text-center">Años</TableHead>
