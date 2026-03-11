@@ -276,7 +276,7 @@ function TemplateEditorSection({
               variant="outline"
               onClick={async () => {
                 setShowOverwriteWarning(false);
-                await onSaveAndGenerate(subject, body, false);
+                await onGenerateEmails(subject, body, false);
               }}
             >
               Mantener editados
