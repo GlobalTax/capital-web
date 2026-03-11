@@ -490,6 +490,8 @@ function SendList({
   // Filtered visible
   const filteredVisible = useMemo(() => {
     let result = visible;
+    const revenueRange = parseRangeFilter(filterRevenue);
+    const ebitdaRange = parseRangeFilter(filterEbitda);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -529,15 +531,20 @@ function SendList({
       });
     }
 
-    return result;
-  }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, sendMap]);
+    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
+    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
 
-  const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento;
+    return result;
+  }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, sendMap]);
+
+  const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || !!filterRevenue || !!filterEbitda;
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
     setFilterEstadoEnvio(null);
     setFilterEntrega(null);
     setFilterSeguimiento(null);
+    setFilterRevenue(null);
+    setFilterEbitda(null);
   }, []);
   const excluded = companies.length - visible.length;
 
