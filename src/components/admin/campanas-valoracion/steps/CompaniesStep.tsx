@@ -633,11 +633,13 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     const baseRow1: Record<string, any> = {
       Empresa: 'Empresa Ejemplo S.L.', Contacto: 'Juan Garcia', Email: 'juan@ejemplo.com',
       Telefono: '+34 612 345 678', CIF: 'B12345678',
+      Web: 'www.empresaejemplo.com', Provincia: 'Madrid',
       [`Facturacion ${YEAR_1}`]: 5000000, [`EBITDA ${YEAR_1}`]: 800000,
     };
     const baseRow2: Record<string, any> = {
       Empresa: 'Industrias Demo S.A.', Contacto: 'Ana Lopez', Email: 'ana@demo.com',
       Telefono: '+34 698 765 432', CIF: 'A87654321',
+      Web: 'www.industriasdemo.com', Provincia: 'Barcelona',
       [`Facturacion ${YEAR_1}`]: 12000000, [`EBITDA ${YEAR_1}`]: 2500000,
     };
 
