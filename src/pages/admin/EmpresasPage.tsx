@@ -94,9 +94,9 @@ export default function EmpresasPage() {
       result = result.filter(e => !e.es_target);
     }
 
-    // Source filter
+    // Origen filter
     if (sourceFilter !== 'all') {
-      result = result.filter(e => e.source === sourceFilter);
+      result = result.filter(e => (e.origen || e.source || '').toLowerCase() === sourceFilter.toLowerCase());
     }
 
     // Quick filters
