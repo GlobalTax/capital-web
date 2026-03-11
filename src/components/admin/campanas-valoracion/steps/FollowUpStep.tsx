@@ -456,6 +456,7 @@ function SendList({
   const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
