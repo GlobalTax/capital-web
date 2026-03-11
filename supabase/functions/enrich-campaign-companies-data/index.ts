@@ -18,35 +18,109 @@ async function searchFirecrawl(query: string, apiKey: string): Promise<string> {
   } catch { return ''; }
 }
 
+// Default fields (backward compat)
+const CONTACT_FIELDS = ['client_email', 'client_name', 'client_phone', 'client_cif'];
+
+function buildSearchQuery(company: any, fields: string[]): string {
+  const name = `"${company.client_company}"`;
+  const cifPart = company.client_cif ? ` ${company.client_cif}` : '';
+
+  const hasContact = fields.some(f => CONTACT_FIELDS.includes(f));
+  const hasWebsite = fields.includes('client_website');
+  const hasProvincia = fields.includes('client_provincia');
+
+  const parts: string[] = [name];
+  if (cifPart) parts.push(cifPart);
+
+  if (hasContact) parts.push('contacto email teléfono');
+  if (hasWebsite) parts.push('sitio web oficial');
+  if (hasProvincia) parts.push('ubicación sede provincia');
+  if (!hasContact && !hasWebsite && !hasProvincia) parts.push('empresa España');
+
+  parts.push('site:.es');
+  return parts.join(' ');
+}
+
+function buildToolProperties(fields: string[]) {
+  const props: Record<string, any> = {};
+  const required: string[] = [];
+
+  if (fields.includes('client_name')) { props.contact_name = { type: "string" }; required.push('contact_name'); }
+  if (fields.includes('client_email')) { props.contact_email = { type: "string" }; required.push('contact_email'); }
+  if (fields.includes('client_phone')) { props.contact_phone = { type: "string" }; required.push('contact_phone'); }
+  if (fields.includes('client_cif')) { props.cif = { type: "string" }; required.push('cif'); }
+  if (fields.includes('client_website')) { props.website = { type: "string", description: "URL del sitio web oficial de la empresa" }; required.push('website'); }
+  if (fields.includes('client_provincia')) { props.provincia = { type: "string", description: "Provincia o comunidad autónoma donde tiene su sede la empresa" }; required.push('provincia'); }
+
+  props.confidence = { type: "string", enum: ["high", "medium", "low"] };
+  required.push('confidence');
+
+  return { props, required };
+}
+
+function buildMissingFieldsDescription(company: any, fields: string[]): string[] {
+  const missing: string[] = [];
+  if (fields.includes('client_email') && !company.client_email) missing.push('contact_email');
+  if (fields.includes('client_name') && !company.client_name) missing.push('contact_name');
+  if (fields.includes('client_phone') && !company.client_phone) missing.push('contact_phone');
+  if (fields.includes('client_cif') && !company.client_cif) missing.push('cif');
+  if (fields.includes('client_website') && !company.client_website) missing.push('website');
+  if (fields.includes('client_provincia') && !company.client_provincia) missing.push('provincia');
+  return missing;
+}
+
+function extractUpdates(company: any, extracted: any, fields: string[]): Record<string, string> {
+  const updates: Record<string, string> = {};
+  if (fields.includes('client_email') && !company.client_email && extracted.contact_email) updates.client_email = extracted.contact_email;
+  if (fields.includes('client_name') && !company.client_name && extracted.contact_name) updates.client_name = extracted.contact_name;
+  if (fields.includes('client_phone') && !company.client_phone && extracted.contact_phone) updates.client_phone = extracted.contact_phone;
+  if (fields.includes('client_cif') && !company.client_cif && extracted.cif) updates.client_cif = extracted.cif;
+  if (fields.includes('client_website') && !company.client_website && extracted.website) updates.client_website = extracted.website;
+  if (fields.includes('client_provincia') && !company.client_provincia && extracted.provincia) updates.client_provincia = extracted.provincia;
+  return updates;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { companies } = await req.json();
+    const { companies, fields } = await req.json();
     if (!companies?.length) return new Response(JSON.stringify({ error: 'companies required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+    // Default to contact fields for backward compat
+    const activeFields: string[] = fields && fields.length > 0 ? fields : CONTACT_FIELDS;
 
     const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY');
     if (!FIRECRAWL_API_KEY) throw new Error('Firecrawl not configured');
 
+    const { props, required } = buildToolProperties(activeFields);
+
     const results = [];
     for (const company of companies) {
-      const cifPart = company.client_cif ? ` ${company.client_cif}` : '';
-      let searchContent = await searchFirecrawl(`"${company.client_company}"${cifPart} contacto email teléfono site:.es`, FIRECRAWL_API_KEY);
-      if (searchContent.length < 200) searchContent += '\n---\n' + await searchFirecrawl(`"${company.client_company}" empresa España contacto`, FIRECRAWL_API_KEY);
+      const missingFields = buildMissingFieldsDescription(company, activeFields);
 
-      const missingFields = [];
-      if (!company.client_email) missingFields.push('contact_email');
-      if (!company.client_name) missingFields.push('contact_name');
-      if (!company.client_phone) missingFields.push('contact_phone');
-      if (!company.client_cif) missingFields.push('cif');
+      if (missingFields.length === 0) {
+        results.push({ id: company.id, data: {}, found: false });
+        continue;
+      }
+
+      const query = buildSearchQuery(company, activeFields);
+      let searchContent = await searchFirecrawl(query, FIRECRAWL_API_KEY);
+      if (searchContent.length < 200) {
+        searchContent += '\n---\n' + await searchFirecrawl(`"${company.client_company}" empresa España`, FIRECRAWL_API_KEY);
+      }
 
       let found = false;
       let updates = {};
 
       if (searchContent) {
+        const systemPrompt = activeFields.includes('client_website') || activeFields.includes('client_provincia')
+          ? "Extraes datos empresariales de España de contenido web. Para website, devuelve la URL del sitio oficial. Para provincia, devuelve la provincia española donde tiene su sede."
+          : "Extraes datos de contacto empresarial de España de contenido web.";
+
         const response = await callAI(
           [
-            { role: "system", content: "Extraes datos de contacto empresarial de España de contenido web." },
+            { role: "system", content: systemPrompt },
             { role: "user", content: `Empresa: "${company.client_company}"\nCampos: ${missingFields.join(', ')}\n\nContenido:\n${searchContent || 'N/A'}` },
           ],
           {
@@ -56,8 +130,8 @@ serve(async (req) => {
               function: {
                 name: "extract_contact_data",
                 parameters: {
-                  type: "object", properties: { contact_name: { type: "string" }, contact_email: { type: "string" }, contact_phone: { type: "string" }, cif: { type: "string" }, confidence: { type: "string", enum: ["high", "medium", "low"] } },
-                  required: ["contact_name", "contact_email", "contact_phone", "cif", "confidence"], additionalProperties: false,
+                  type: "object", properties: props,
+                  required, additionalProperties: false,
                 }
               }
             }],
@@ -67,11 +141,7 @@ serve(async (req) => {
 
         const extracted = extractToolCallArgs<any>(response);
         if (extracted) {
-          updates = {};
-          if (!company.client_email && extracted.contact_email) (updates as any).client_email = extracted.contact_email;
-          if (!company.client_name && extracted.contact_name) (updates as any).client_name = extracted.contact_name;
-          if (!company.client_phone && extracted.contact_phone) (updates as any).client_phone = extracted.contact_phone;
-          if (!company.client_cif && extracted.cif) (updates as any).client_cif = extracted.cif;
+          updates = extractUpdates(company, extracted, activeFields);
           found = Object.keys(updates).length > 0;
         }
       }

@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X, Search } from 'lucide-react';
+import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X, Search, ChevronDown } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { useCampaignCompanies, CampaignCompanyInsert, CampaignCompany, FinancialYearData } from '@/hooks/useCampaignCompanies';
@@ -327,26 +328,32 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   // AI Enrichment state
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 });
+  const [enrichLabel, setEnrichLabel] = useState('');
 
-  const companiesNeedingEnrich = companies.filter(
+  const companiesNeedingContact = companies.filter(
     c => !c.client_email || !c.client_name || !c.client_phone || !c.client_cif
   );
+  const companiesNeedingWeb = companies.filter(c => !c.client_website);
+  const companiesNeedingProvincia = companies.filter(c => !c.client_provincia);
+  // Keep backward compat alias
+  const companiesNeedingEnrich = companiesNeedingContact;
 
-  const handleEnrichWithAI = async () => {
-    if (companiesNeedingEnrich.length === 0) return;
+  const handleEnrichByFields = async (fields: string[], targetCompanies: CampaignCompany[], label: string) => {
+    if (targetCompanies.length === 0) return;
     setIsEnriching(true);
-    const total = companiesNeedingEnrich.length;
+    setEnrichLabel(label);
+    const total = targetCompanies.length;
     setEnrichProgress({ current: 0, total });
     let enrichedCount = 0;
 
-    // Process in batches of 3
     const BATCH_SIZE = 3;
     for (let i = 0; i < total; i += BATCH_SIZE) {
-      const batch = companiesNeedingEnrich.slice(i, i + BATCH_SIZE);
+      const batch = targetCompanies.slice(i, i + BATCH_SIZE);
 
       try {
         const { data, error } = await (supabase.functions as any).invoke('enrich-campaign-companies-data', {
           body: {
+            fields,
             companies: batch.map(c => ({
               id: c.id,
               client_company: c.client_company,
@@ -354,6 +361,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
               client_name: c.client_name,
               client_email: c.client_email,
               client_phone: c.client_phone,
+              client_website: c.client_website,
+              client_provincia: c.client_provincia,
             })),
           },
         });
@@ -382,8 +391,15 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     }
 
     setIsEnriching(false);
+    setEnrichLabel('');
     toast.success(`Enriquecimiento completado: ${enrichedCount} de ${total} empresas actualizadas`);
   };
+
+  const handleEnrichWithAI = () => handleEnrichByFields(
+    ['client_email', 'client_name', 'client_phone', 'client_cif'],
+    companiesNeedingContact,
+    'Contacto'
+  );
 
   // Manual form state
   const [manual, setManual] = useState({
@@ -822,21 +838,57 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
             <div className="flex gap-2 items-center text-xs font-normal">
               <Badge variant="outline">{stats.withEmail} con email</Badge>
               {stats.withoutEbitda > 0 && <Badge variant="destructive">{stats.withoutEbitda} sin EBITDA</Badge>}
-              {companiesNeedingEnrich.length > 0 && companies.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEnrichWithAI}
-                  disabled={isEnriching}
-                  className="ml-2"
-                >
-                  {isEnriching ? (
+              {companies.length > 0 && (
+                isEnriching ? (
+                  <Button variant="outline" size="sm" disabled className="ml-2">
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-1" />
-                  )}
-                  {isEnriching ? `Enriqueciendo ${enrichProgress.current}/${enrichProgress.total}` : `Enriquecer con IA (${companiesNeedingEnrich.length})`}
-                </Button>
+                    {enrichLabel} {enrichProgress.current}/{enrichProgress.total}
+                  </Button>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="ml-2">
+                        <Sparkles className="h-4 w-4 mr-1" />
+                        Enriquecer con IA
+                        <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-2" align="end">
+                      <div className="space-y-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between"
+                          disabled={companiesNeedingContact.length === 0}
+                          onClick={() => handleEnrichByFields(['client_email', 'client_name', 'client_phone', 'client_cif'], companiesNeedingContact, 'Contacto')}
+                        >
+                          <span>Contacto (email, tel, CIF)</span>
+                          <Badge variant="secondary" className="ml-2">{companiesNeedingContact.length}</Badge>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between"
+                          disabled={companiesNeedingWeb.length === 0}
+                          onClick={() => handleEnrichByFields(['client_website'], companiesNeedingWeb, 'Web')}
+                        >
+                          <span>Web</span>
+                          <Badge variant="secondary" className="ml-2">{companiesNeedingWeb.length}</Badge>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between"
+                          disabled={companiesNeedingProvincia.length === 0}
+                          onClick={() => handleEnrichByFields(['client_provincia'], companiesNeedingProvincia, 'Provincia')}
+                        >
+                          <span>Provincia</span>
+                          <Badge variant="secondary" className="ml-2">{companiesNeedingProvincia.length}</Badge>
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )
               )}
             </div>
           </CardTitle>
