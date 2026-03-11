@@ -652,7 +652,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
 
     const data = [baseRow1, baseRow2];
     const ws = XLSX.utils.json_to_sheet(data);
-    const colWidths = [{ wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 }, { wch: 12 }, { wch: 16 }, { wch: 14 }];
+    const colWidths = [{ wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 }, { wch: 12 }, { wch: 25 }, { wch: 16 }, { wch: 16 }, { wch: 14 }];
     if (!is1Year) {
       colWidths.push({ wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 14 });
     }
