@@ -43,7 +43,7 @@ export default function CampanasValoracion() {
   const handleRenameSubmit = async (id: string) => {
     const trimmed = editingNameValue.trim();
     if (trimmed && trimmed !== campaigns.find(c => c.id === id)?.name) {
-      await updateCampaign({ id, name: trimmed });
+      await updateCampaign({ id, data: { name: trimmed } });
     }
     setEditingNameId(null);
   };
