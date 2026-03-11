@@ -1,44 +1,36 @@
 
 
-# Plan: Duplicación completa de campañas outbound (incluyendo presentaciones y valoraciones)
+## Diagnostico
 
-## Diagnóstico
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-La función `duplicateCampaign` en `useCampaigns.ts` ya copia presentaciones del bucket `campaign-presentations`, pero tiene dos problemas:
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
 
-1. **PDFs de valoración no se copian**: `pdf_url` se fuerza a `null` y los archivos en el bucket `valuations` no se duplican.
-2. **Datos de empresa se resetean**: Campos como `ai_strengths`, `ai_weaknesses`, `ai_context`, `valuation_low/central/high`, `multiple_used`, `range_label`, `client_website`, `client_provincia` se pierden al duplicar.
-3. **Campos faltantes**: `client_website` y `client_provincia` no se incluyen en el clone.
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
-## Cambios
+## Plan
 
-### Archivo: `src/hooks/useCampaigns.ts`
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-**Refactorizar `clonedCompanies`** (líneas 147-179) para preservar todos los datos:
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-- Copiar TODOS los campos excepto `id`, `campaign_id`, `created_at` y campos de seguimiento/envío
-- Mantener: `pdf_url`, `ai_strengths`, `ai_weaknesses`, `ai_context`, `ai_enriched`, `valuation_low`, `valuation_central`, `valuation_high`, `multiple_used`, `range_label`, `client_website`, `client_provincia`, `normalized_ebitda`, `custom_multiple`
-- Resetear solo: `status` → `'pending'`, `error_message` → `null`, `follow_up_status` → `null`, `follow_up_count` → `0`, `seguimiento_estado` → `null`, `seguimiento_notas` → `null`, `followup_enviado` → `false`, `followup_sent_at` → `null`, `last_interaction_at` → `null`, `is_auto_assigned` → `false`
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-**Añadir copia de PDFs de valoración** (tras insertar empresas):
+### 2. Prerequisito: emails generados
 
-- Iterar las empresas clonadas que tengan `pdf_url`
-- Construir la ruta nueva reemplazando el `campaign_id` viejo por el nuevo
-- Usar la Edge Function `upload-campaign-presentation` con `action: 'copy'` (usa el bucket `campaign-presentations`... necesito verificar si las valoraciones están en otro bucket)
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-Alternativa más limpia: como las valoraciones se almacenan en el bucket `valuations` con ruta basada en `professional_valuation_id`, y el campo `professional_valuation_id` se setea a `null`, copiar los archivos directamente en storage y actualizar `pdf_url` con la nueva ruta.
+### 3. Conectar datos
 
-**Necesito verificar**: ¿Dónde se guardan exactamente los PDFs de valoración? Si están en `valuations` bucket con path basado en company/campaign ID, la copia requiere una acción de storage adicional.
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
-### Edge Function: `upload-campaign-presentation`
-
-Si los PDFs de valoración están en un bucket diferente (`valuations`), extender la Edge Function para soportar copias entre buckets, o crear la lógica de copia directamente en el cliente usando signed URLs.
-
-### Resultado esperado
-
-Al duplicar una campaña, la nueva copia incluirá:
-- Todas las empresas con sus datos financieros, AI y de contacto intactos
-- Las presentaciones/estudios PDF copiados físicamente
-- Los PDFs de valoración copiados al nuevo path
-- Solo los campos de estado operativo (envío, seguimiento) reseteados
+### Archivos afectados
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 

@@ -144,39 +144,33 @@ export function useCampaigns() {
       if (companiesError) throw companiesError;
 
       if (companies && companies.length > 0) {
-        const clonedCompanies = companies.map((c: any) => ({
-          campaign_id: newCampaign.id,
-          client_company: c.client_company,
-          client_name: c.client_name,
-          client_email: c.client_email,
-          client_phone: c.client_phone,
-          client_cif: c.client_cif,
-          ebitda: c.ebitda,
-          revenue: c.revenue,
-          financial_year: c.financial_year,
-          financial_years_data: c.financial_years_data,
-          excel_row_number: c.excel_row_number,
-          source: c.source,
-          custom_multiple: c.custom_multiple,
-          normalized_ebitda: c.normalized_ebitda,
-          status: 'pending',
-          pdf_url: null,
-          error_message: null,
-          ai_strengths: null,
-          ai_weaknesses: null,
-          ai_context: null,
-          ai_enriched: false,
-          valuation_low: null,
-          valuation_central: null,
-          valuation_high: null,
-          multiple_used: null,
-          range_label: null,
-          follow_up_status: null,
-          follow_up_count: 0,
-          professional_valuation_id: null,
-          is_auto_assigned: false,
-          last_interaction_at: null,
-        }));
+        const clonedCompanies = companies.map((c: any) => {
+          // Destructure fields to exclude, keep everything else
+          const {
+            id: _compId,
+            campaign_id: _campId,
+            created_at: _createdAt,
+            ...rest
+          } = c;
+
+          return {
+            ...rest,
+            campaign_id: newCampaign.id,
+            // Preserve all data: pdf_url, ai_*, valuation_*, client_website, client_provincia, etc.
+            // Only reset operational/send status fields
+            status: 'pending',
+            error_message: null,
+            follow_up_status: null,
+            follow_up_count: 0,
+            followup_enviado: false,
+            followup_sent_at: null,
+            seguimiento_estado: null,
+            seguimiento_notas: null,
+            is_auto_assigned: false,
+            last_interaction_at: null,
+            professional_valuation_id: null,
+          };
+        });
 
         const { error: insertError } = await (supabase as any)
           .from('valuation_campaign_companies')
