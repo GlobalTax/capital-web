@@ -100,14 +100,22 @@ export default function CampanasValoracion() {
     return { label: '1r Envío', variant: 'outline' };
   };
 
+  const campaignsByType = useMemo(() => {
+    return campaigns.filter(c => (c as any).campaign_type === activeTab || (!((c as any).campaign_type) && activeTab === 'valuation'));
+  }, [campaigns, activeTab]);
+
   const filteredCampaigns = useMemo(() => {
-    if (!searchQuery.trim()) return campaigns;
+    if (!searchQuery.trim()) return campaignsByType;
     const q = searchQuery.toLowerCase();
-    return campaigns.filter(c =>
+    return campaignsByType.filter(c =>
       c.name.toLowerCase().includes(q) ||
       c.sector?.toLowerCase().includes(q)
     );
-  }, [campaigns, searchQuery]);
+  }, [campaignsByType, searchQuery]);
+
+  const totalCompanies = campaignsByType.reduce((s, c) => s + c.total_companies, 0);
+  const totalSent = campaignsByType.reduce((s, c) => s + c.total_sent, 0);
+  const totalValuation = campaignsByType.reduce((s, c) => s + c.total_valuation, 0);
 
   const totalCompanies = campaigns.reduce((s, c) => s + c.total_companies, 0);
   const totalSent = campaigns.reduce((s, c) => s + c.total_sent, 0);
