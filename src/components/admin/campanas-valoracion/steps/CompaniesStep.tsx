@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X, Search } from 'lucide-react';
+import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import { useCampaignCompanies, CampaignCompanyInsert, CampaignCompany, FinancialYearData } from '@/hooks/useCampaignCompanies';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
