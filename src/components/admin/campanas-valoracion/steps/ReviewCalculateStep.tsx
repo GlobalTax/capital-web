@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calculator, Sparkles, Loader2, Building2, Mail, TrendingUp, DollarSign, X, RefreshCw, Search } from 'lucide-react';
 import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
