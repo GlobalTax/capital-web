@@ -128,7 +128,7 @@ function TemplateEditorSection({
     }
   }, [lastFocused, subject, body]);
 
-  const handleSave = async () => {
+  const handleGenerate = async () => {
     if (!subject.trim() && !body.trim()) {
       toast.error('Escribe al menos un asunto o cuerpo');
       return;
@@ -136,7 +136,7 @@ function TemplateEditorSection({
     if (manuallyEdited > 0) {
       setShowOverwriteWarning(true);
     } else {
-      await onSaveAndGenerate(subject, body, true);
+      await onGenerateEmails(subject, body, true);
     }
   };
 
