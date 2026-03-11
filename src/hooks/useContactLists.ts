@@ -95,7 +95,7 @@ export const useContactLists = () => {
         .select('id')
         .single();
       if (error) throw error;
-      return data as { id: string };
+      return data as unknown as { id: string };
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['contact-lists'] }); toast.success('Lista creada'); },
     onError: (e: Error) => toast.error('Error al crear lista', { description: e.message }),
