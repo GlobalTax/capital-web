@@ -840,35 +840,15 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                   </Button>
                 )}
               </div>
-              <Select value={filterRevenue || 'all'} onValueChange={v => setFilterRevenue(v === 'all' ? null : v)}>
-                <SelectTrigger className="h-8 w-[150px] text-xs">
-                  <SelectValue placeholder="Facturación" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toda facturación</SelectItem>
-                  {FINANCIAL_RANGES.map(r => (
-                    <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={filterEbitda || 'all'} onValueChange={v => setFilterEbitda(v === 'all' ? null : v)}>
-                <SelectTrigger className="h-8 w-[140px] text-xs">
-                  <SelectValue placeholder="EBITDA" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todo EBITDA</SelectItem>
-                  {FINANCIAL_RANGES.map(r => (
-                    <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
+              <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
               {(searchQuery || hasFinancialFilters) && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">
                     {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                   </span>
                   {hasFinancialFilters && (
-                    <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue(null); setFilterEbitda(null); }}>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); }}>
                       <X className="h-3 w-3 mr-1" />Limpiar filtros
                     </Button>
                   )}

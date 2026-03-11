@@ -453,8 +453,8 @@ function SendList({
   const [filterEstadoEnvio, setFilterEstadoEnvio] = useState<string | null>(null);
   const [filterEntrega, setFilterEntrega] = useState<string | null>(null);
   const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
-  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
-  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
