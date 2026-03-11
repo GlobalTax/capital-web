@@ -517,11 +517,21 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const studyReadyCount = companies.filter(c => getPresentationForCompany(c.id) !== null).length;
   const studyMissingCount = companies.length - studyReadyCount;
 
-  const filteredCompanies = companies.filter(c => {
-    if (statusFilter !== 'all' && c.status !== statusFilter) return false;
-    if (followUpFilter !== 'all' && (c as any).follow_up_status !== followUpFilter) return false;
-    return true;
-  });
+  const filteredCompanies = useMemo(() => {
+    return companies.filter(c => {
+      if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+      if (followUpFilter !== 'all' && (c as any).follow_up_status !== followUpFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        if (
+          !c.client_company?.toLowerCase().includes(q) &&
+          !c.client_name?.toLowerCase().includes(q) &&
+          !c.client_email?.toLowerCase().includes(q)
+        ) return false;
+      }
+      return true;
+    });
+  }, [companies, statusFilter, followUpFilter, searchQuery]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
