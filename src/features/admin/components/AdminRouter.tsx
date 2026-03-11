@@ -110,6 +110,8 @@ const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApollo
 
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
+const LazyContactListsPage = React.lazy(() => import('@/pages/admin/ContactListsPage'));
+const LazyContactListDetailPage = React.lazy(() => import('@/pages/admin/ContactListDetailPage'));
 const LazyEmpresaDetailPage = React.lazy(() => import('@/pages/admin/EmpresaDetailPage'));
 const LazyProspectsPage = React.lazy(() => import('@/pages/admin/ProspectsPage'));
 const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisitorsPage'));
