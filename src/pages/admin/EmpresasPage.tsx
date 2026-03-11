@@ -359,7 +359,7 @@ export default function EmpresasPage() {
             emptyMessage="No hay empresas de valoraciones"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={450}
+            height={600}
           />
         </TabsContent>
 
