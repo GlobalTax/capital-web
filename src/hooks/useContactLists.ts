@@ -138,7 +138,7 @@ export const useContactLists = () => {
         if (insertErr) throw insertErr;
       }
 
-      return newList as { id: string };
+      return newList as unknown as { id: string };
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['contact-lists'] }); toast.success('Lista duplicada'); },
     onError: (e: Error) => toast.error('Error', { description: e.message }),
