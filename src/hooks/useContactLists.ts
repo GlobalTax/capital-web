@@ -157,7 +157,7 @@ export const useContactListCompanies = (listId: string | undefined) => {
     queryFn: async () => {
       const { data, error } = await supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false });
       if (error) throw error;
-      return data as ContactListCompany[];
+      return data as unknown as ContactListCompany[];
     },
   });
 
