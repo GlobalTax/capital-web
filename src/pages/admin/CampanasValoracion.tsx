@@ -136,15 +136,29 @@ export default function CampanasValoracion() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Megaphone className="h-6 w-6" />
-            Campañas de Valoración Outbound
+            Campañas Outbound
           </h1>
-          <p className="text-muted-foreground mt-1">Campañas masivas de valoración por sector</p>
+          <p className="text-muted-foreground mt-1">Campañas masivas de valoración y documentos por sector</p>
         </div>
-        <Button onClick={() => navigate('/admin/campanas-valoracion/nueva')}>
+        <Button onClick={() => navigate(`/admin/campanas-valoracion/nueva?type=${activeTab}`)}>
           <Plus className="h-4 w-4 mr-2" />
           Nueva Campaña
         </Button>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document')}>
+        <TabsList>
+          <TabsTrigger value="valuation" className="flex items-center gap-1.5">
+            <TrendingUp className="h-4 w-4" />
+            Valoración
+          </TabsTrigger>
+          <TabsTrigger value="document" className="flex items-center gap-1.5">
+            <FileText className="h-4 w-4" />
+            Documento PDF
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
