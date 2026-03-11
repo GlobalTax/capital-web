@@ -346,7 +346,7 @@ export default function EmpresasPage() {
             emptyActionLabel="Crear primera empresa"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={500}
+            height={600}
           />
         </TabsContent>
 
