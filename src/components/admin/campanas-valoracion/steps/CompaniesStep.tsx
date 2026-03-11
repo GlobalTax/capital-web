@@ -386,6 +386,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   // Manual form state
   const [manual, setManual] = useState({
     client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '',
+    client_website: '', client_provincia: '',
   });
   const [manualYears, setManualYears] = useState(
     is1Year
