@@ -294,7 +294,7 @@ export default function ContactListDetailPage() {
   // ===== SAVE CONFIG =====
   const handleSaveConfig = async () => {
     if (!listId) return;
-    await supabase.from('contact_lists').update({
+    await supabase.from('outbound_lists' as any).update({
       nombre: configName,
       descripcion: configDesc || null,
       sector: configSector || null,
