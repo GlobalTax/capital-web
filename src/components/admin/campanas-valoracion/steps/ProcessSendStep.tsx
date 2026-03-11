@@ -27,7 +27,7 @@ import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, safeCreateSignedUrl, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
-import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
+import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
@@ -498,8 +498,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [followUpFilter, setFollowUpFilter] = useState<string>('all');
-  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
-  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
 
   const toggleSelection = useCallback((id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]),
@@ -521,11 +521,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const studyMissingCount = companies.length - studyReadyCount;
 
   const filteredCompanies = useMemo(() => {
-    const revenueRange = parseRangeFilter(filterRevenue);
-    const ebitdaRange = parseRangeFilter(filterEbitda);
     return companies.filter(c => {
       if (statusFilter !== 'all' && c.status !== statusFilter) return false;
-      if (followUpFilter !== 'all' && (c as any).follow_up_status !== followUpFilter) return false;
+      if (followUpFilter !== 'all' && (c.follow_up_status || 'sin_respuesta') !== followUpFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         if (
@@ -534,8 +532,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           !c.client_email?.toLowerCase().includes(q)
         ) return false;
       }
-      if (!matchesRange(c.revenue, revenueRange)) return false;
-      if (!matchesRange(c.ebitda, ebitdaRange)) return false;
+      if (!matchesCustomRange(c.revenue, filterRevenue)) return false;
+      if (!matchesCustomRange(c.ebitda, filterEbitda)) return false;
       return true;
     });
   }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda]);
@@ -1056,35 +1054,15 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 </Button>
               )}
             </div>
-            <Select value={filterRevenue || 'all'} onValueChange={v => setFilterRevenue(v === 'all' ? null : v)}>
-              <SelectTrigger className="h-8 w-[150px] text-xs">
-                <SelectValue placeholder="Facturación" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toda facturación</SelectItem>
-                {FINANCIAL_RANGES.map(r => (
-                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={filterEbitda || 'all'} onValueChange={v => setFilterEbitda(v === 'all' ? null : v)}>
-              <SelectTrigger className="h-8 w-[140px] text-xs">
-                <SelectValue placeholder="EBITDA" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todo EBITDA</SelectItem>
-                {FINANCIAL_RANGES.map(r => (
-                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {(searchQuery || filterRevenue || filterEbitda) && (
+            <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
+            <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+            {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                 </span>
-                {(filterRevenue || filterEbitda) && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue(null); setFilterEbitda(null); }}>
+                {(filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null) && (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); }}>
                     <X className="h-3 w-3 mr-1" />Limpiar filtros
                   </Button>
                 )}

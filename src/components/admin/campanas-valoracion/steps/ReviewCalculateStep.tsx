@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calculator, Sparkles, Loader2, Building2, Mail, TrendingUp, DollarSign, X, RefreshCw, Search } from 'lucide-react';
-import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
+import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { calculateProfessionalValuation, formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
@@ -296,8 +296,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
   const [recalculating, setRecalculating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
-  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -305,13 +305,11 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(c => c.client_company?.toLowerCase().includes(q));
     }
-    const revenueRange = parseRangeFilter(filterRevenue);
-    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
-    const ebitdaRange = parseRangeFilter(filterEbitda);
-    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
+    result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
+    result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
     return result;
   }, [companies, searchQuery, filterRevenue, filterEbitda]);
-  const hasFinancialFilters = !!filterRevenue || !!filterEbitda;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
 
   const handleRecalculateAll = async () => {
     setRecalculating(true);
@@ -487,35 +485,15 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                 </Button>
               )}
             </div>
-            <Select value={filterRevenue || 'all'} onValueChange={v => setFilterRevenue(v === 'all' ? null : v)}>
-              <SelectTrigger className="h-8 w-[150px] text-xs">
-                <SelectValue placeholder="Facturación" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toda facturación</SelectItem>
-                {FINANCIAL_RANGES.map(r => (
-                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={filterEbitda || 'all'} onValueChange={v => setFilterEbitda(v === 'all' ? null : v)}>
-              <SelectTrigger className="h-8 w-[140px] text-xs">
-                <SelectValue placeholder="EBITDA" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todo EBITDA</SelectItem>
-                {FINANCIAL_RANGES.map(r => (
-                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
+            <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
             {(searchQuery || hasFinancialFilters) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                 </span>
                 {hasFinancialFilters && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue(null); setFilterEbitda(null); }}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); }}>
                     <X className="h-3 w-3 mr-1" />Limpiar filtros
                   </Button>
                 )}

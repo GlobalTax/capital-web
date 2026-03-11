@@ -21,7 +21,7 @@ import {
   Building2, Clock, Calendar, Search, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
+import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences, FollowupSequence, FollowupSend } from '@/hooks/useFollowupSequences';
@@ -453,8 +453,8 @@ function SendList({
   const [filterEstadoEnvio, setFilterEstadoEnvio] = useState<string | null>(null);
   const [filterEntrega, setFilterEntrega] = useState<string | null>(null);
   const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
-  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
-  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
@@ -490,8 +490,6 @@ function SendList({
   // Filtered visible
   const filteredVisible = useMemo(() => {
     let result = visible;
-    const revenueRange = parseRangeFilter(filterRevenue);
-    const ebitdaRange = parseRangeFilter(filterEbitda);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -531,20 +529,21 @@ function SendList({
       });
     }
 
-    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
-    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
+    result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
+    result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
 
     return result;
   }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, sendMap]);
 
-  const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || !!filterRevenue || !!filterEbitda;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
+  const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
     setFilterEstadoEnvio(null);
     setFilterEntrega(null);
     setFilterSeguimiento(null);
-    setFilterRevenue(null);
-    setFilterEbitda(null);
+    setFilterRevenue({ min: null, max: null });
+    setFilterEbitda({ min: null, max: null });
   }, []);
   const excluded = companies.length - visible.length;
 
@@ -719,29 +718,8 @@ function SendList({
               </SelectContent>
             </Select>
 
-            <Select value={filterRevenue || 'all'} onValueChange={v => setFilterRevenue(v === 'all' ? null : v)}>
-              <SelectTrigger className="h-8 w-[150px] text-xs">
-                <SelectValue placeholder="Facturación" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toda facturación</SelectItem>
-                {FINANCIAL_RANGES.map(r => (
-                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filterEbitda || 'all'} onValueChange={v => setFilterEbitda(v === 'all' ? null : v)}>
-              <SelectTrigger className="h-8 w-[140px] text-xs">
-                <SelectValue placeholder="EBITDA" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todo EBITDA</SelectItem>
-                {FINANCIAL_RANGES.map(r => (
-                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
+            <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
