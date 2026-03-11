@@ -263,26 +263,6 @@ export function useCampaigns() {
       }
 
       // ── Copy campaign_emails (clean: keep content, reset operational state) ──
-      {
-        const { data: origComps } = await (supabase as any)
-          .from('valuation_campaign_companies')
-          .select('id, client_company, client_cif')
-          .eq('campaign_id', id);
-        const { data: newComps } = await (supabase as any)
-          .from('valuation_campaign_companies')
-          .select('id, client_company, client_cif')
-          .eq('campaign_id', newCampaign.id);
-        if (origComps && newComps) {
-          for (const oldC of origComps) {
-            const match = newComps.find((nc: any) =>
-              (oldC.client_cif && nc.client_cif && oldC.client_cif === nc.client_cif) ||
-              oldC.client_company === nc.client_company
-            );
-            if (match) emailCompanyIdMap.set(oldC.id, match.id);
-          }
-        }
-      }
-
       const { data: originalEmails, error: emailsFetchErr } = await (supabase as any)
         .from('campaign_emails')
         .select('*')
@@ -291,7 +271,7 @@ export function useCampaigns() {
       if (!emailsFetchErr && originalEmails && originalEmails.length > 0) {
         const cleanEmails = originalEmails
           .map((email: any) => {
-            const newCompanyId = email.company_id ? emailCompanyIdMap.get(email.company_id) : null;
+            const newCompanyId = email.company_id ? companyIdMap.get(email.company_id) : null;
             if (email.company_id && !newCompanyId) return null; // skip unmapped
             return {
               campaign_id: newCampaign.id,
