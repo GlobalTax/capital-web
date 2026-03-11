@@ -124,6 +124,53 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Generate valuation PDF, upload to 'valuations' bucket, and update pdf_url on the company record.
+ * Returns the public URL of the uploaded PDF.
+ */
+async function ensureValuationPdfUploaded(
+  c: CampaignCompany,
+  campaign: ValuationCampaign,
+): Promise<string | null> {
+  try {
+    // Skip if pdf_url already exists
+    if (c.pdf_url) return c.pdf_url;
+
+    const blob = await generatePdfBlob(c, campaign);
+    const safeName = c.client_company.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const storagePath = `campaigns/${campaign.id}/${safeName}_${c.id.slice(0, 8)}.pdf`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('valuations')
+      .upload(storagePath, blob, { upsert: true, contentType: 'application/pdf' });
+
+    if (uploadError) {
+      console.error('[VALUATION_PDF_UPLOAD] Error uploading:', uploadError.message);
+      return null;
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('valuations')
+      .getPublicUrl(storagePath);
+
+    const publicUrl = publicData?.publicUrl || null;
+
+    if (publicUrl) {
+      await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ pdf_url: publicUrl })
+        .eq('id', c.id);
+      // Update in-memory reference
+      c.pdf_url = publicUrl;
+    }
+
+    return publicUrl;
+  } catch (e: any) {
+    console.error('[VALUATION_PDF_UPLOAD] Failed:', e.message);
+    return null;
+  }
+}
+
 // ─────────────────────────────────────────────
 // PDF Preview Modal (Valuation)
 // ─────────────────────────────────────────────
@@ -579,6 +626,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         await resetEmailToPending(c.id);
       }
 
+      // Ensure valuation PDF is uploaded before sending
+      await ensureValuationPdfUploaded(c, campaign);
+
       // Find the campaign_email record for this company
       const { data: emailRecord, error: emailLookupError } = await (supabase as any)
         .from('campaign_emails')
@@ -775,10 +825,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     let sent = 0;
     for (const c of readyToSend) {
       if (pauseRef.current) break;
-      setSendingProgress(p => ({ ...p, current: sent + 1, name: c.client_company, phase: 'Buscando email' }));
+      setSendingProgress(p => ({ ...p, current: sent + 1, name: c.client_company, phase: 'Generando PDF valoración' }));
 
       try {
+        // Ensure valuation PDF is uploaded before sending
+        await ensureValuationPdfUploaded(c, campaign);
+
         // Find campaign_email record for this company
+        setSendingProgress(p => ({ ...p, phase: 'Buscando email' }));
         const { data: emailRecord, error: emailLookupError } = await (supabase as any)
           .from('campaign_emails')
           .select('id')
