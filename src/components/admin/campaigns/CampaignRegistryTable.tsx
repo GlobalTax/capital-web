@@ -2,6 +2,7 @@
 // Tabla principal tipo Meta Ads para registro de campañas y snapshots
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -218,7 +219,7 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
     const snapshotEditable = !isHistorySource;
 
     switch (column.key) {
-      // Campaign name (non-editable in table, use modal)
+      // Campaign name (editable inline)
       case 'campaign_name':
         return (
           <div className="px-3 py-2.5 flex items-center gap-2">
@@ -226,8 +227,16 @@ export const CampaignRegistryTable: React.FC<CampaignRegistryTableProps> = ({
               "w-2 h-2 rounded-full shrink-0",
               campaign.delivery_status === 'active' ? 'bg-green-500' : 'bg-muted-foreground'
             )} />
-            <div className="min-w-0">
-              <div className="text-sm font-medium truncate">{campaign.name}</div>
+            <div className="min-w-0 flex-1">
+              <EditableCell
+                value={campaign.name}
+                onSave={async (newValue) => {
+                  if (!newValue.trim()) throw new Error('El nombre no puede estar vacío');
+                  await updateCampaignCell({ campaignId: campaign.id, field: 'name', value: newValue.trim() });
+                }}
+                displayClassName="font-medium"
+                emptyText="Sin nombre"
+              />
               <div className="text-[10px] text-muted-foreground">
                 {CHANNEL_LABELS[campaign.channel]}
               </div>
