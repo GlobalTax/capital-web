@@ -311,6 +311,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
         client_email: editForm.client_email || null,
         client_phone: editForm.client_phone || null,
         client_cif: editForm.client_cif || null,
+        client_website: editForm.client_website || null,
+        client_provincia: editForm.client_provincia || null,
         revenue: editForm.revenue,
         ebitda: editForm.ebitda,
         financial_year: editForm.financial_year,
