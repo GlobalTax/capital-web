@@ -130,6 +130,19 @@ function buildColumnMap(years: number[]): Record<string, string> {
     'cif/nif', 'tax number', 'vat number',
   ]);
 
+  // Website
+  addSynonyms('client_website', [
+    'web', 'website', 'pagina web', 'página web', 'sitio web',
+    'url', 'dominio', 'domain', 'web site', 'homepage',
+  ]);
+
+  // Provincia
+  addSynonyms('client_provincia', [
+    'provincia', 'province', 'estado', 'region', 'región',
+    'comunidad', 'comunidad autónoma', 'comunidad autonoma',
+    'ubicación', 'ubicacion', 'location', 'ciudad', 'city',
+  ]);
+
   // Legacy single-year (fallback)
   addSynonyms('revenue', [
     'facturación', 'facturacion', 'revenue', 'ventas', 'ingresos',
@@ -176,6 +189,8 @@ function buildMappableFields(years: number[], is1Year: boolean): { value: string
     { value: 'client_email', label: 'Email' },
     { value: 'client_phone', label: 'Teléfono' },
     { value: 'client_cif', label: 'CIF' },
+    { value: 'client_website', label: 'Web' },
+    { value: 'client_provincia', label: 'Provincia' },
     { value: 'revenue', label: `Facturación ${years[0] || ''}` },
     { value: 'ebitda', label: `EBITDA ${years[0] || ''}` },
   ];
@@ -266,6 +281,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const [editingCompany, setEditingCompany] = useState<CampaignCompany | null>(null);
   const [editForm, setEditForm] = useState({
     client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '',
+    client_website: '', client_provincia: '',
     revenue: 0, ebitda: 0, financial_year: YEAR_1,
   });
 
@@ -276,6 +292,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
       client_email: c.client_email || '',
       client_phone: c.client_phone || '',
       client_cif: c.client_cif || '',
+      client_website: c.client_website || '',
+      client_provincia: c.client_provincia || '',
       revenue: c.revenue || 0,
       ebitda: c.ebitda,
       financial_year: c.financial_year,
@@ -293,6 +311,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
         client_email: editForm.client_email || null,
         client_phone: editForm.client_phone || null,
         client_cif: editForm.client_cif || null,
+        client_website: editForm.client_website || null,
+        client_provincia: editForm.client_provincia || null,
         revenue: editForm.revenue,
         ebitda: editForm.ebitda,
         financial_year: editForm.financial_year,
@@ -366,6 +386,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   // Manual form state
   const [manual, setManual] = useState({
     client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '',
+    client_website: '', client_provincia: '',
   });
   const [manualYears, setManualYears] = useState(
     is1Year
@@ -408,6 +429,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
       client_email: manual.client_email || null,
       client_phone: manual.client_phone || null,
       client_cif: manual.client_cif || null,
+      client_website: manual.client_website || null,
+      client_provincia: manual.client_provincia || null,
       revenue: primaryYear.revenue,
       ebitda: primaryYear.ebitda,
       financial_year: primaryYear.year,
@@ -415,7 +438,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
       source: 'manual',
     } as Partial<CampaignCompanyInsert>);
 
-    setManual({ client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '' });
+    setManual({ client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '', client_website: '', client_provincia: '' });
     setManualYears(
       is1Year
         ? [{ year: YEAR_1, revenue: 0, ebitda: 0 }]
@@ -610,11 +633,13 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     const baseRow1: Record<string, any> = {
       Empresa: 'Empresa Ejemplo S.L.', Contacto: 'Juan Garcia', Email: 'juan@ejemplo.com',
       Telefono: '+34 612 345 678', CIF: 'B12345678',
+      Web: 'www.empresaejemplo.com', Provincia: 'Madrid',
       [`Facturacion ${YEAR_1}`]: 5000000, [`EBITDA ${YEAR_1}`]: 800000,
     };
     const baseRow2: Record<string, any> = {
       Empresa: 'Industrias Demo S.A.', Contacto: 'Ana Lopez', Email: 'ana@demo.com',
       Telefono: '+34 698 765 432', CIF: 'A87654321',
+      Web: 'www.industriasdemo.com', Provincia: 'Barcelona',
       [`Facturacion ${YEAR_1}`]: 12000000, [`EBITDA ${YEAR_1}`]: 2500000,
     };
 
@@ -627,7 +652,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
 
     const data = [baseRow1, baseRow2];
     const ws = XLSX.utils.json_to_sheet(data);
-    const colWidths = [{ wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 }, { wch: 12 }, { wch: 16 }, { wch: 14 }];
+    const colWidths = [{ wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 18 }, { wch: 12 }, { wch: 25 }, { wch: 16 }, { wch: 16 }, { wch: 14 }];
     if (!is1Year) {
       colWidths.push({ wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 14 });
     }
@@ -889,6 +914,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                   <TableHead>Contacto</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>CIF</TableHead>
+                  <TableHead>Web</TableHead>
+                  <TableHead>Provincia</TableHead>
                   <TableHead className="text-right">Facturación</TableHead>
                   <TableHead className="text-right">EBITDA</TableHead>
                   <TableHead className="text-center">Años</TableHead>
@@ -899,7 +926,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
               <TableBody>
                 {filteredCompanies.length === 0 && searchQuery ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                       No se encontraron empresas para "{searchQuery}"
                     </TableCell>
                   </TableRow>
@@ -919,6 +946,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                         {c.client_email || <span className="flex items-center gap-1 text-yellow-600 text-xs"><AlertTriangle className="h-3 w-3" />Sin email</span>}
                       </TableCell>
                       <TableCell>{c.client_cif || '—'}</TableCell>
+                      <TableCell className="text-xs max-w-[120px] truncate">{c.client_website || '—'}</TableCell>
+                      <TableCell className="text-xs">{c.client_provincia || '—'}</TableCell>
                       <TableCell className="text-right">{c.revenue ? formatCurrencyEUR(c.revenue) : '—'}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrencyEUR(c.ebitda)}</TableCell>
                       <TableCell className="text-center">
@@ -970,6 +999,14 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
               <div className="space-y-1">
                 <Label className="text-xs">CIF</Label>
                 <Input value={editForm.client_cif} onChange={e => setEditForm(p => ({ ...p, client_cif: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Web</Label>
+                <Input value={editForm.client_website} onChange={e => setEditForm(p => ({ ...p, client_website: e.target.value }))} placeholder="www.ejemplo.com" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Provincia</Label>
+                <Input value={editForm.client_provincia} onChange={e => setEditForm(p => ({ ...p, client_provincia: e.target.value }))} placeholder="Madrid" />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
