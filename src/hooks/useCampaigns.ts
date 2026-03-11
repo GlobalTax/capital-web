@@ -188,6 +188,94 @@ export function useCampaigns() {
           .from('valuation_campaigns')
           .update({ total_companies: companies.length })
           .eq('id', newCampaign.id);
+
+        // Build a map from old company IDs to new company IDs for presentation linking
+        const { data: newCompanies } = await (supabase as any)
+          .from('valuation_campaign_companies')
+          .select('id, client_company, client_cif')
+          .eq('campaign_id', newCampaign.id);
+
+        const companyIdMap = new Map<string, string>();
+        if (newCompanies) {
+          for (const oldComp of companies) {
+            const match = newCompanies.find((nc: any) =>
+              (oldComp.client_cif && nc.client_cif && oldComp.client_cif === nc.client_cif) ||
+              oldComp.client_company === nc.client_company
+            );
+            if (match) {
+              companyIdMap.set(oldComp.id, match.id);
+            }
+          }
+        }
+      }
+
+      // Copy presentations (studies + any uploaded files)
+      const { data: presentations, error: presError } = await supabase
+        .from('campaign_presentations')
+        .select('*')
+        .eq('campaign_id', id);
+
+      if (!presError && presentations && presentations.length > 0) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        for (const pres of presentations) {
+          try {
+            const originalPath = normalizeCampaignPresentationPath(pres.storage_path || '');
+            const newStoragePath = buildCampaignPresentationPath(newCampaign.id, pres.file_name);
+
+            // Copy the file in storage via edge function
+            if (originalPath && token) {
+              const copyRes = await supabase.functions.invoke('upload-campaign-presentation', {
+                body: { action: 'copy', path: originalPath, destinationPath: newStoragePath },
+              });
+
+              if (copyRes.error) {
+                console.warn(`[duplicateCampaign] Failed to copy file ${pres.file_name}:`, copyRes.error);
+              }
+            }
+
+            // Find corresponding new company_id
+            let newCompanyId: string | null = null;
+            if (pres.company_id) {
+              // Look up from companies we copied
+              const { data: origCompanies } = await (supabase as any)
+                .from('valuation_campaign_companies')
+                .select('id, client_company, client_cif')
+                .eq('campaign_id', id);
+
+              if (origCompanies) {
+                const origComp = origCompanies.find((c: any) => c.id === pres.company_id);
+                if (origComp) {
+                  const { data: newComps } = await (supabase as any)
+                    .from('valuation_campaign_companies')
+                    .select('id')
+                    .eq('campaign_id', newCampaign.id)
+                    .or(`client_cif.eq.${origComp.client_cif},client_company.eq.${origComp.client_company}`)
+                    .limit(1);
+                  if (newComps?.[0]) {
+                    newCompanyId = newComps[0].id;
+                  }
+                }
+              }
+            }
+
+            // Insert presentation record
+            await supabase
+              .from('campaign_presentations')
+              .insert({
+                campaign_id: newCampaign.id,
+                company_id: newCompanyId,
+                file_name: pres.file_name,
+                storage_path: newStoragePath,
+                match_confidence: pres.match_confidence,
+                status: pres.company_id && newCompanyId ? pres.status : 'unassigned',
+                assigned_manually: pres.assigned_manually,
+              });
+          } catch (copyErr) {
+            console.warn(`[duplicateCampaign] Error copying presentation ${pres.file_name}:`, copyErr);
+          }
+        }
       }
 
       return newCampaign as ValuationCampaign;
