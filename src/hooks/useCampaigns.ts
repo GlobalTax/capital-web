@@ -188,25 +188,6 @@ export function useCampaigns() {
           .from('valuation_campaigns')
           .update({ total_companies: companies.length })
           .eq('id', newCampaign.id);
-
-        // Build a map from old company IDs to new company IDs for presentation linking
-        const { data: newCompanies } = await (supabase as any)
-          .from('valuation_campaign_companies')
-          .select('id, client_company, client_cif')
-          .eq('campaign_id', newCampaign.id);
-
-        const companyIdMap = new Map<string, string>();
-        if (newCompanies) {
-          for (const oldComp of companies) {
-            const match = newCompanies.find((nc: any) =>
-              (oldComp.client_cif && nc.client_cif && oldComp.client_cif === nc.client_cif) ||
-              oldComp.client_company === nc.client_company
-            );
-            if (match) {
-              companyIdMap.set(oldComp.id, match.id);
-            }
-          }
-        }
       }
 
       // Copy presentations (studies + any uploaded files)
