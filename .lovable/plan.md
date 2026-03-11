@@ -1,36 +1,71 @@
 
+Objetivo: arreglar la duplicación completa de campañas para que no falle al copiar empresas aunque ya existan en CRM.
 
-## Diagnostico
+Diagnóstico profundo:
+- El error real no viene del botón ni de React; ocurre al insertar en `valuation_campaign_companies` durante la duplicación.
+- Esa inserción dispara el trigger `trg_sync_campaign_company_to_empresas`.
+- En producción, la función activa `sync_campaign_company_to_empresas()` hace esto:
+  - inserta en `empresas`
+  - solo resuelve conflicto por `cif`
+- Pero la tabla `empresas` también tiene un índice único adicional:
+  - `idx_empresas_nombre_normalized`
+  - `UNIQUE (normalize_company_name(nombre))`
+- Resultado:
+  - si la empresa ya existe en CRM con el mismo nombre normalizado, pero sin CIF coincidente o con CIF vacío, el trigger intenta insertar una nueva fila
+  - Postgres rechaza la inserción con `duplicate key value violates unique constraint "idx_empresas_nombre_normalized"`
+  - la transacción completa falla y la campaña no se duplica
 
-El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
+Por qué algunas campañas sí duplican:
+- La campaña “campaña para pruebas” probablemente no choca con nombres ya existentes en `empresas`.
+- Las campañas grandes sí chocan porque contienen empresas ya sincronizadas previamente en CRM.
 
-Lo que debería ocurrir es:
-1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
-2. Adjunta el **PDF de valoración** (generado o almacenado)
-3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
+Prueba que confirma la causa:
+- En código, `duplicateMutation` inserta primero todas las filas en `valuation_campaign_companies`.
+- En base de datos, el trigger activo está desactualizado respecto a la versión más robusta que existe en migraciones del repo.
+- El índice único conflictivo existe realmente en producción: `idx_empresas_nombre_normalized`.
 
-La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
+Plan de solución:
+1. Corregir la función SQL `public.sync_campaign_company_to_empresas()` mediante migración.
+2. Hacer que el trigger:
+   - busque primero por CIF normalizado si existe
+   - si no encuentra, busque por `normalize_company_name(nombre)`
+   - si encuentra empresa existente, haga `UPDATE`
+   - solo haga `INSERT` cuando no exista ninguna coincidencia
+3. Mantener la sincronización financiera desde campañas hacia CRM, pero sin crear duplicados por nombre.
+4. Preservar `origen/source` de forma segura para no romper trazabilidad.
+5. Verificar que la duplicación actual de frontend no necesita cambios estructurales; el fallo principal está en DB.
 
-## Plan
+Implementación propuesta:
+- Crear una migración que reemplace la función del trigger con una versión robusta, similar a la lógica correcta ya vista en el repo pero mejorada para:
+  - comparar CIF con `lower(trim(cif))`
+  - comparar nombres con `normalize_company_name(nombre) = normalize_company_name(NEW.client_company)`
+  - actualizar campos financieros/website/provincia solo con `COALESCE`
+  - evitar insertar si ya existe una empresa equivalente
+- No tocar el índice único; ese índice es útil y correcto.
+- No eliminar el trigger; hay que arreglar su lógica.
+- Después, probar duplicación con una campaña que hoy falla.
 
-### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
+Detalles técnicos:
+```text
+Duplicar campaña
+  -> insert valuation_campaign_companies
+    -> trigger sync_campaign_company_to_empresas
+      -> buscar empresa existente por CIF
+      -> si no, buscar por nombre normalizado
+      -> UPDATE si existe
+      -> INSERT solo si no existe
+```
 
-Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
+Archivos previstos:
+- `supabase/migrations/...sql` — nueva migración para `sync_campaign_company_to_empresas()`
+- Posible revisión menor de `src/hooks/useCampaigns.ts` solo si detectamos necesidad de mejor manejo de errores, pero no parece ser la causa raíz
 
-- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
-- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
-- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
+Riesgos y consideraciones:
+- Hay campañas con empresas repetidas dentro de la misma campaña; eso no explica este error concreto, pero conviene revisar luego si quieres impedir duplicados internos.
+- Si existen registros históricos en `empresas` mal normalizados, la función corregida seguirá siendo mucho más tolerante que la actual.
+- No hace falta cambiar RLS para este problema.
 
-### 2. Prerequisito: emails generados
-
-Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
-
-### 3. Conectar datos
-
-ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
-- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
-- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
-
-### Archivos afectados
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
-
+Resultado esperado tras el fix:
+- El botón “Duplicar” podrá copiar campañas completas aunque sus empresas ya existan en CRM.
+- La campaña duplicada seguirá copiando empresas, presentaciones, emails y secuencias.
+- El CRM no generará duplicados por nombre normalizado al clonar campañas.
