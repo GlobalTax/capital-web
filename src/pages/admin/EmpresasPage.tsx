@@ -331,7 +331,7 @@ export default function EmpresasPage() {
             emptyMessage="No hay empresas favoritas"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={450}
+            height={600}
           />
         </TabsContent>
 
