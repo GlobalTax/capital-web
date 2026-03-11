@@ -14,6 +14,7 @@ interface DocumentStepProps {
 
 export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: documents, isLoading } = useQuery({
