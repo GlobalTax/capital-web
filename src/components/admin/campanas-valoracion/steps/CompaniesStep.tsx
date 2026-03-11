@@ -1001,8 +1001,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           )}
           {/* Bulk selection bar */}
           {selectedIds.length > 0 && (
-            <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 border-b">
-              <span className="text-sm font-medium">{selectedIds.length} seleccionada{selectedIds.length !== 1 ? 's' : ''}</span>
+            <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 border-b flex-wrap">
+              <span className="text-sm font-medium">{selectedIds.length} seleccionada{selectedIds.length !== 1 ? 's' : ''} de {companies.length}</span>
               <Button
                 variant="destructive"
                 size="sm"
@@ -1011,6 +1011,25 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
               >
                 {isBulkDeleting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Trash2 className="h-4 w-4 mr-1" />}
                 Eliminar seleccionadas
+              </Button>
+              {companies.length - selectedIds.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const unselectedIds = companies.filter(c => !selectedIds.includes(c.id)).map(c => c.id);
+                    setSelectedIds(unselectedIds);
+                    setShowDeleteConfirm(true);
+                  }}
+                  disabled={isBulkDeleting}
+                  className="border-destructive text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Eliminar las {companies.length - selectedIds.length} NO seleccionadas
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>
+                Deseleccionar todo
               </Button>
             </div>
           )}
