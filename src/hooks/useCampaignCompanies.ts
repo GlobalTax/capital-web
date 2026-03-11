@@ -48,6 +48,8 @@ export interface CampaignCompany {
   seguimiento_notas: string | null;
   followup_enviado: boolean;
   followup_sent_at: string | null;
+  client_website: string | null;
+  client_provincia: string | null;
 }
 
 export type CampaignCompanyInsert = Omit<CampaignCompany, 'id' | 'created_at'>;
