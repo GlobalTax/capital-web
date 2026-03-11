@@ -1,36 +1,47 @@
 
 
-## Diagnostico
+# Duplicación completa de campañas ("Copiar limpio")
 
-El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
+## Diagnóstico
 
-Lo que debería ocurrir es:
-1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
-2. Adjunta el **PDF de valoración** (generado o almacenado)
-3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
+La duplicación actual copia correctamente:
+- Configuración de campaña (incluyendo templates de email/followup)
+- Empresas (`valuation_campaign_companies`) con datos y valoraciones
+- Presentaciones (`campaign_presentations`) + archivos en storage
 
-La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
+Pero **no copia**:
+1. **`campaign_emails`** — los emails personalizados por empresa (subject + body generados en paso 6). Sin ellos, al abrir la campaña duplicada el paso Mail aparece vacío y hay que regenerar todos.
+2. **`campaign_followup_sequences`** — las rondas de follow-up con sus templates (subject, body_html). Sin ellas, el paso 8 aparece vacío.
 
-## Plan
+Dado que quieres "copiar limpio" (conservar contenido, reiniciar estado operativo), el plan es:
 
-### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
+## Cambios en `src/hooks/useCampaigns.ts` — función `duplicateMutation`
 
-Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
+### 1. Copiar `campaign_emails` (con reset de estado)
 
-- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
-- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
-- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
+Después de copiar empresas y tener el `companyIdMap`:
 
-### 2. Prerequisito: emails generados
+- Fetch todos los `campaign_emails` de la campaña original
+- Para cada email, insertar un nuevo registro con:
+  - `campaign_id` → nueva campaña
+  - `company_id` → mapeado via `companyIdMap`
+  - `subject`, `body`, `is_manually_edited` → conservados
+  - `status` → `'pending'`
+  - `sent_at`, `error_message`, `email_message_id`, `email_opened`, `email_opened_at`, `delivery_status` → reseteados a null/defaults
 
-Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
+### 2. Copiar `campaign_followup_sequences` (templates de ronda)
 
-### 3. Conectar datos
+- Fetch todas las `campaign_followup_sequences` de la campaña original
+- Insertar clones con `campaign_id` → nueva campaña, conservando `sequence_number`, `label`, `subject`, `body_html`
+- NO copiar `campaign_followup_sends` (son envíos operativos)
 
-ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
-- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
-- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
+### 3. NO copiar (decisión "copiar limpio")
 
-### Archivos afectados
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
+- `campaign_followups` (legacy, operativo)
+- `campaign_followup_sends` (envíos realizados)
+- `campaign_company_interactions` (historial de interacciones)
+
+## Archivo afectado
+
+- `src/hooks/useCampaigns.ts` — ampliar `duplicateMutation.mutationFn` con las 2 secciones adicionales de copia
 
