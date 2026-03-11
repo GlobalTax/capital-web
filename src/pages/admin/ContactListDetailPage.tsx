@@ -90,7 +90,7 @@ export default function ContactListDetailPage() {
     enabled: !!listId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('contact_lists')
+        .from('outbound_lists' as any)
         .select('*')
         .eq('id', listId!)
         .single();
