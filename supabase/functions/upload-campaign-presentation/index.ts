@@ -105,6 +105,50 @@ serve(async (req) => {
         );
       }
 
+      if (action === "copy") {
+        const destinationPath = body.destinationPath as string;
+        if (!destinationPath) {
+          return new Response(
+            JSON.stringify({ error: "Falta campo: destinationPath" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        // Download original file
+        const { data: fileData, error: downloadError } = await adminClient.storage
+          .from("campaign-presentations")
+          .download(path);
+
+        if (downloadError || !fileData) {
+          console.error("[upload-campaign-presentation] Copy download error:", downloadError?.message);
+          return new Response(
+            JSON.stringify({ error: downloadError?.message || "No se pudo descargar el archivo" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        // Upload to new path
+        const { data: uploadData, error: uploadCopyError } = await adminClient.storage
+          .from("campaign-presentations")
+          .upload(destinationPath, fileData, {
+            upsert: true,
+            contentType: "application/pdf",
+          });
+
+        if (uploadCopyError) {
+          console.error("[upload-campaign-presentation] Copy upload error:", uploadCopyError.message);
+          return new Response(
+            JSON.stringify({ error: uploadCopyError.message }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, path: uploadData.path }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       return new Response(
         JSON.stringify({ error: `Acción no soportada: ${action}` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
