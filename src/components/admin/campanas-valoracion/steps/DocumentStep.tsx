@@ -101,6 +101,32 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
     }
   }, [campaignId, queryClient]);
 
+  const deleteAll = useCallback(async () => {
+    if (!documents || documents.length === 0) return;
+    setIsDeletingAll(true);
+    try {
+      for (const doc of documents) {
+        try {
+          await supabase.functions.invoke('upload-campaign-presentation', {
+            body: { action: 'delete', path: doc.storage_path },
+          });
+        } catch { /* ignore storage errors */ }
+      }
+      // Delete all DB records for this campaign
+      await supabase
+        .from('campaign_presentations')
+        .delete()
+        .eq('campaign_id', campaignId);
+
+      toast.success(`${documents.length} documentos eliminados`);
+      queryClient.invalidateQueries({ queryKey: ['campaign-document', campaignId] });
+    } catch (err: any) {
+      toast.error('Error al eliminar: ' + err.message);
+    } finally {
+      setIsDeletingAll(false);
+    }
+  }, [documents, campaignId, queryClient]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (files) => files[0] && uploadFile(files[0]),
     accept: { 'application/pdf': ['.pdf'] },
