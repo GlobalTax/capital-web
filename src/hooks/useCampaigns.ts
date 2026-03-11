@@ -267,6 +267,7 @@ export function useCampaigns() {
           }
         }
       }
+      } // end: skip presentations for document campaigns
 
       // ── Copy campaign_emails (clean: keep content, reset operational state) ──
       const { data: originalEmails, error: emailsFetchErr } = await (supabase as any)
