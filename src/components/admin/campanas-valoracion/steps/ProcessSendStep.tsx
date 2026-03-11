@@ -521,6 +521,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const studyMissingCount = companies.length - studyReadyCount;
 
   const filteredCompanies = useMemo(() => {
+    const revenueRange = parseRangeFilter(filterRevenue);
+    const ebitdaRange = parseRangeFilter(filterEbitda);
     return companies.filter(c => {
       if (statusFilter !== 'all' && c.status !== statusFilter) return false;
       if (followUpFilter !== 'all' && (c as any).follow_up_status !== followUpFilter) return false;
@@ -532,9 +534,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           !c.client_email?.toLowerCase().includes(q)
         ) return false;
       }
+      if (!matchesRange(c.revenue, revenueRange)) return false;
+      if (!matchesRange(c.ebitda, ebitdaRange)) return false;
       return true;
     });
-  }, [companies, statusFilter, followUpFilter, searchQuery]);
+  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
