@@ -1000,6 +1000,14 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                 <Label className="text-xs">CIF</Label>
                 <Input value={editForm.client_cif} onChange={e => setEditForm(p => ({ ...p, client_cif: e.target.value }))} />
               </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Web</Label>
+                <Input value={editForm.client_website} onChange={e => setEditForm(p => ({ ...p, client_website: e.target.value }))} placeholder="www.ejemplo.com" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Provincia</Label>
+                <Input value={editForm.client_provincia} onChange={e => setEditForm(p => ({ ...p, client_provincia: e.target.value }))} placeholder="Madrid" />
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
