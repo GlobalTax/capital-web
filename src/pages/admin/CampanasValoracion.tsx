@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText } from 'lucide-react';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -276,10 +276,18 @@ export default function CampanasValoracion() {
                           </Button>
                           <Button variant="ghost" size="icon" title="Duplicar" disabled={isDuplicating} onClick={async (e) => {
                             e.stopPropagation();
-                            const newCampaign = await duplicateCampaign(c.id);
+                            const newCampaign = await duplicateCampaign({ id: c.id });
                             if (newCampaign?.id) navigate(`/admin/campanas-valoracion/${newCampaign.id}`);
                           }}>
                             <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" title={activeTab === 'valuation' ? 'Duplicar como Documento' : 'Duplicar como Valoración'} disabled={isDuplicating} onClick={async (e) => {
+                            e.stopPropagation();
+                            const targetType = activeTab === 'valuation' ? 'document' : 'valuation';
+                            const newCampaign = await duplicateCampaign({ id: c.id, asType: targetType });
+                            if (newCampaign?.id) navigate(`/admin/campanas-valoracion/${newCampaign.id}`);
+                          }}>
+                            <ArrowRightLeft className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon" title="Eliminar" disabled={isDeleting} onClick={(e) => {
                             e.stopPropagation();
