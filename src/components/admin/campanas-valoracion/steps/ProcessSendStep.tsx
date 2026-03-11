@@ -27,6 +27,7 @@ import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, safeCreateSignedUrl, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
+import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
