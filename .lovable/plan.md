@@ -1,36 +1,41 @@
 
+# Plan: Sincronizar empresas de campañas outbound a la tabla empresas
 
-## Diagnostico
-
-El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
-
-Lo que debería ocurrir es:
-1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
-2. Adjunta el **PDF de valoración** (generado o almacenado)
-3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
-
-La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
+## Situación actual
+- **797 empresas** en `valuation_campaign_companies` (596 nombres únicos)
+- **73** ya existen en `empresas` (por CIF o nombre)
+- **724** faltan — nunca se sincronizaron porque el trigger solo actúa en INSERTs nuevos
+- El campo `origen` existe en `empresas` pero ninguna tiene valor `'outbound'`
 
 ## Plan
 
-### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
+### Paso único: Ejecutar una query SQL de sincronización retroactiva
 
-Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
+Ejecutar un bloque PL/pgSQL que recorra todas las `valuation_campaign_companies` y aplique la misma lógica del trigger existente (`sync_campaign_company_to_empresas`):
 
-- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
-- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
-- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
+1. **Para empresas que ya existen** (match por CIF o nombre): actualizar datos financieros (`facturacion`, `revenue`, `ebitda`, `cif`, `sitio_web`, `ubicacion`) y marcar `origen = 'outbound'`, `source = 'outbound_campaign'`
+2. **Para empresas nuevas**: insertar con todos los campos disponibles (`nombre`, `cif`, `facturacion`, `revenue`, `ebitda`, `sitio_web`, `ubicacion`, `origen`, `source`, `source_id`)
+3. Usar deduplicación por `client_company` para evitar insertar duplicados (tomar la fila más reciente por empresa)
 
-### 2. Prerequisito: emails generados
+### Datos que se mapean
 
-Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
-
-### 3. Conectar datos
-
-ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
-- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
-- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
+| `valuation_campaign_companies` | `empresas` |
+|---|----|
+| `client_company` | `nombre` |
+| `client_cif` | `cif` |
+| `revenue` | `facturacion` + `revenue` |
+| `ebitda` | `ebitda` |
+| `client_website` | `sitio_web` |
+| `client_provincia` | `ubicacion` |
+| `financial_year` | `año_datos_financieros` |
+| — | `origen = 'outbound'` |
+| — | `source = 'outbound_campaign'` |
+| `campaign_id` | `source_id` |
 
 ### Archivos afectados
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
+- Ninguno. Solo una operación SQL de datos (no schema).
 
+### Resultado esperado
+- ~596 empresas únicas sincronizadas (73 actualizadas + ~523 nuevas insertadas)
+- Todas marcadas con `origen = 'outbound'`
+- Tabla `empresas` pasará de ~3506 a ~4029 registros
