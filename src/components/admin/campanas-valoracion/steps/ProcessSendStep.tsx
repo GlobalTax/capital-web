@@ -406,9 +406,10 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
           .eq('id', currentPresentation.id);
         if (dbError) throw new Error(`Error actualizando registro: ${dbError.message}`);
       } else {
+        // Use upsert to handle existing records (unique constraint on campaign_id + file_name)
         const { error: dbError } = await supabase
           .from('campaign_presentations' as any)
-          .insert({
+          .upsert({
             campaign_id: campaignId,
             company_id: companyId,
             file_name: file.name,
@@ -416,7 +417,8 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
             status: 'assigned',
             assigned_manually: true,
             match_confidence: 1,
-          } as any);
+            updated_at: new Date().toISOString(),
+          } as any, { onConflict: 'campaign_id,file_name' });
         if (dbError) throw new Error(`Error creando registro: ${dbError.message}`);
       }
 
