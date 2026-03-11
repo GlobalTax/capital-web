@@ -838,21 +838,57 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
             <div className="flex gap-2 items-center text-xs font-normal">
               <Badge variant="outline">{stats.withEmail} con email</Badge>
               {stats.withoutEbitda > 0 && <Badge variant="destructive">{stats.withoutEbitda} sin EBITDA</Badge>}
-              {companiesNeedingEnrich.length > 0 && companies.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleEnrichWithAI}
-                  disabled={isEnriching}
-                  className="ml-2"
-                >
-                  {isEnriching ? (
+              {companies.length > 0 && (
+                isEnriching ? (
+                  <Button variant="outline" size="sm" disabled className="ml-2">
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-1" />
-                  )}
-                  {isEnriching ? `Enriqueciendo ${enrichProgress.current}/${enrichProgress.total}` : `Enriquecer con IA (${companiesNeedingEnrich.length})`}
-                </Button>
+                    {enrichLabel} {enrichProgress.current}/{enrichProgress.total}
+                  </Button>
+                ) : (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="sm" className="ml-2">
+                        <Sparkles className="h-4 w-4 mr-1" />
+                        Enriquecer con IA
+                        <ChevronDown className="h-3 w-3 ml-1" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-2" align="end">
+                      <div className="space-y-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between"
+                          disabled={companiesNeedingContact.length === 0}
+                          onClick={() => handleEnrichByFields(['client_email', 'client_name', 'client_phone', 'client_cif'], companiesNeedingContact, 'Contacto')}
+                        >
+                          <span>Contacto (email, tel, CIF)</span>
+                          <Badge variant="secondary" className="ml-2">{companiesNeedingContact.length}</Badge>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between"
+                          disabled={companiesNeedingWeb.length === 0}
+                          onClick={() => handleEnrichByFields(['client_website'], companiesNeedingWeb, 'Web')}
+                        >
+                          <span>Web</span>
+                          <Badge variant="secondary" className="ml-2">{companiesNeedingWeb.length}</Badge>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between"
+                          disabled={companiesNeedingProvincia.length === 0}
+                          onClick={() => handleEnrichByFields(['client_provincia'], companiesNeedingProvincia, 'Provincia')}
+                        >
+                          <span>Provincia</span>
+                          <Badge variant="secondary" className="ml-2">{companiesNeedingProvincia.length}</Badge>
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )
               )}
             </div>
           </CardTitle>
