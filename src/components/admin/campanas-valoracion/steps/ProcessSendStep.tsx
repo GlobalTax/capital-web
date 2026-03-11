@@ -626,6 +626,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         await resetEmailToPending(c.id);
       }
 
+      // Ensure valuation PDF is uploaded before sending
+      await ensureValuationPdfUploaded(c, campaign);
+
       // Find the campaign_email record for this company
       const { data: emailRecord, error: emailLookupError } = await (supabase as any)
         .from('campaign_emails')
