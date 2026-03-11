@@ -359,7 +359,7 @@ export default function ContactListDetailPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
               {list.sector && <span>· {list.sector}</span>}
-              <span>· {list.total_empresas} empresas</span>
+              <span>· {list.contact_count} empresas</span>
               <span>· {new Date(list.created_at).toLocaleDateString('es-ES')}</span>
             </div>
           </div>
