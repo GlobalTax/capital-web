@@ -174,10 +174,12 @@ export default function CampanasValoracion() {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Mail className="h-4 w-4" />Enviadas</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-bold">{totalSent}</p></CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><TrendingUp className="h-4 w-4" />Valor Total</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{formatCurrencyEUR(totalValuation)}</p></CardContent>
-        </Card>
+        {activeTab === 'valuation' && (
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><TrendingUp className="h-4 w-4" />Valor Total</CardTitle></CardHeader>
+            <CardContent><p className="text-2xl font-bold">{formatCurrencyEUR(totalValuation)}</p></CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Table */}
