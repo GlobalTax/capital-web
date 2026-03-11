@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
@@ -9,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Upload, Sparkles, Check, AlertCircle, Trash2, FileText } from 'lucide-react';
+import { Upload, Sparkles, Check, AlertCircle, Trash2, FileText, Search, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCampaignPresentations } from '@/hooks/useCampaignPresentations';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
@@ -29,6 +30,16 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const { companies } = useCampaignCompanies(campaignId);
   const [manualAssignments, setManualAssignments] = useState<Record<string, string>>({});
   const [editingAssignment, setEditingAssignment] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPresentations = useMemo(() => {
+    if (!searchQuery.trim()) return presentations;
+    const q = searchQuery.toLowerCase().trim();
+    return presentations.filter(p =>
+      p.file_name?.toLowerCase().includes(q) ||
+      getCompanyName(p.company_id)?.toLowerCase().includes(q)
+    );
+  }, [presentations, searchQuery, companies]);
 
   const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
     if (rejectedFiles.length > 0) {
@@ -129,6 +140,33 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
       {/* Table */}
       {presentations.length > 0 && (
         <div className="border rounded-lg overflow-auto">
+          {/* Search */}
+          <div className="p-4 pb-0 flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={`Buscar entre ${presentations.length} archivos...`}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            {searchQuery && (
+              <span className="text-sm text-muted-foreground">
+                {filteredPresentations.length} {filteredPresentations.length === 1 ? 'resultado' : 'resultados'}
+              </span>
+            )}
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -142,7 +180,13 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {presentations.map((pres, idx) => {
+              {filteredPresentations.length === 0 && searchQuery ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No se encontraron archivos para "{searchQuery}"
+                  </TableCell>
+                </TableRow>
+              ) : filteredPresentations.map((pres, idx) => {
                 const isEditing = editingAssignment[pres.id];
                 const showDropdown = pres.status === 'unassigned' || isEditing;
 
@@ -236,6 +280,7 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
               })}
             </TableBody>
           </Table>
+
         </div>
       )}
     </div>

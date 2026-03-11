@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X } from 'lucide-react';
+import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X, Search } from 'lucide-react';
 import { useCampaignCompanies, CampaignCompanyInsert, CampaignCompany, FinancialYearData } from '@/hooks/useCampaignCompanies';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
@@ -220,6 +220,19 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const MAPPABLE_FIELDS = useMemo(() => buildMappableFields(years, is1Year), [years, is1Year]);
 
   const { companies, stats, addCompany, bulkAddCompanies, updateCompany, deleteCompany, bulkDeleteCompanies, isAdding, isBulkAdding, isUpdating, isDeleting, isBulkDeleting } = useCampaignCompanies(campaignId);
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredCompanies = useMemo(() => {
+    if (!searchQuery.trim()) return companies;
+    const q = searchQuery.toLowerCase().trim();
+    return companies.filter(c =>
+      c.client_company?.toLowerCase().includes(q) ||
+      c.client_name?.toLowerCase().includes(q) ||
+      c.client_email?.toLowerCase().includes(q) ||
+      c.client_cif?.toLowerCase().includes(q)
+    );
+  }, [companies, searchQuery]);
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -796,6 +809,35 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           )}
         </CardHeader>
         <CardContent className="p-0">
+          {/* Search bar */}
+          {companies.length > 0 && (
+            <div className="p-4 pb-0 flex items-center gap-3">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder={`Buscar entre ${companies.length} empresas...`}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              {searchQuery && (
+                <span className="text-sm text-muted-foreground">
+                  {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
+                </span>
+              )}
+            </div>
+          )}
           {/* Bulk selection bar */}
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-3 px-4 py-2 bg-blue-50 border-b">
@@ -837,7 +879,13 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {companies.map(c => {
+                {filteredCompanies.length === 0 && searchQuery ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                      No se encontraron empresas para "{searchQuery}"
+                    </TableCell>
+                  </TableRow>
+                ) : filteredCompanies.map(c => {
                   const yearsCount = getYearsCount(c);
                   return (
                     <TableRow key={c.id} className={!c.client_email ? 'bg-yellow-50/50' : ''}>
@@ -872,6 +920,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                     </TableRow>
                   );
                 })}
+
               </TableBody>
             </Table>
           )}

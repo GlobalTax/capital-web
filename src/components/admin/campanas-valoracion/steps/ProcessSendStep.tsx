@@ -15,7 +15,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2,
+  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2, Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -493,7 +493,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   // Multi-selection
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Status filter
+  // Search & filters
+  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [followUpFilter, setFollowUpFilter] = useState<string>('all');
 
@@ -516,11 +517,21 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const studyReadyCount = companies.filter(c => getPresentationForCompany(c.id) !== null).length;
   const studyMissingCount = companies.length - studyReadyCount;
 
-  const filteredCompanies = companies.filter(c => {
-    if (statusFilter !== 'all' && c.status !== statusFilter) return false;
-    if (followUpFilter !== 'all' && (c as any).follow_up_status !== followUpFilter) return false;
-    return true;
-  });
+  const filteredCompanies = useMemo(() => {
+    return companies.filter(c => {
+      if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+      if (followUpFilter !== 'all' && (c as any).follow_up_status !== followUpFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        if (
+          !c.client_company?.toLowerCase().includes(q) &&
+          !c.client_name?.toLowerCase().includes(q) &&
+          !c.client_email?.toLowerCase().includes(q)
+        ) return false;
+      }
+      return true;
+    });
+  }, [companies, statusFilter, followUpFilter, searchQuery]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
@@ -1017,6 +1028,33 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           </div>
         </CardHeader>
         <CardContent className="p-0">
+          {/* Search */}
+          <div className="p-4 pb-0 flex items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={`Buscar entre ${companies.length} empresas...`}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            {searchQuery && (
+              <span className="text-sm text-muted-foreground">
+                {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
+              </span>
+            )}
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
