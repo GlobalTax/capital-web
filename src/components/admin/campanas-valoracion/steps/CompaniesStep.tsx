@@ -879,7 +879,13 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {companies.map(c => {
+                {filteredCompanies.length === 0 && searchQuery ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                      No se encontraron empresas para "{searchQuery}"
+                    </TableCell>
+                  </TableRow>
+                ) : filteredCompanies.map(c => {
                   const yearsCount = getYearsCount(c);
                   return (
                     <TableRow key={c.id} className={!c.client_email ? 'bg-yellow-50/50' : ''}>
