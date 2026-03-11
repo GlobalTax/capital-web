@@ -203,7 +203,34 @@ export default function CampanasValoracion() {
                   const stage = getStageLabel(c.id);
                   return (
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {editingNameId === c.id ? (
+                          <Input
+                            ref={renameInputRef}
+                            value={editingNameValue}
+                            onChange={(e) => setEditingNameValue(e.target.value)}
+                            onBlur={() => handleRenameSubmit(c.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleRenameSubmit(c.id);
+                              if (e.key === 'Escape') setEditingNameId(null);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="h-7 text-sm"
+                          />
+                        ) : (
+                          <span
+                            className="cursor-text hover:underline decoration-dotted underline-offset-4"
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              setEditingNameId(c.id);
+                              setEditingNameValue(c.name);
+                            }}
+                            title="Doble clic para renombrar"
+                          >
+                            {c.name}
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell>{c.sector}</TableCell>
                       <TableCell className="text-center">{c.total_companies}</TableCell>
                       <TableCell className="text-center">{c.total_sent}</TableCell>
