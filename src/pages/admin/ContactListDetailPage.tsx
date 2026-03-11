@@ -309,7 +309,7 @@ export default function ContactListDetailPage() {
   // ===== DELETE LIST =====
   const handleDeleteList = async () => {
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
-    await supabase.from('contact_lists').delete().eq('id', listId!);
+    await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
     queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
     navigate('/admin/listas-contacto');
     toast.success('Lista eliminada');
