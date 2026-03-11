@@ -521,8 +521,10 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const studyReadyCount = companies.filter(c => getPresentationForCompany(c.id) !== null).length;
   const studyMissingCount = companies.length - studyReadyCount;
 
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
+
   const filteredCompanies = useMemo(() => {
-    return companies.filter(c => {
+    let result = companies.filter(c => {
       if (statusFilter !== 'all' && c.status !== statusFilter) return false;
       if (followUpFilter !== 'all' && (c.follow_up_status || 'sin_respuesta') !== followUpFilter) return false;
       if (searchQuery.trim()) {
@@ -537,7 +539,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       if (!matchesCustomRange(c.ebitda, filterEbitda)) return false;
       return true;
     });
-  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda]);
+    return applySortToList(result, sort);
+  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, sort]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
