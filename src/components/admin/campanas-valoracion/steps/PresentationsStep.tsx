@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
@@ -9,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Upload, Sparkles, Check, AlertCircle, Trash2, FileText } from 'lucide-react';
+import { Upload, Sparkles, Check, AlertCircle, Trash2, FileText, Search, X } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useCampaignPresentations } from '@/hooks/useCampaignPresentations';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
