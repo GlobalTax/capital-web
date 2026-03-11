@@ -205,30 +205,39 @@ export default function CampanasValoracion() {
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
                       <TableCell className="font-medium">
                         {editingNameId === c.id ? (
-                          <Input
-                            ref={renameInputRef}
-                            value={editingNameValue}
-                            onChange={(e) => setEditingNameValue(e.target.value)}
-                            onBlur={() => handleRenameSubmit(c.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleRenameSubmit(c.id);
-                              if (e.key === 'Escape') setEditingNameId(null);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="h-7 text-sm"
-                          />
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Input
+                              ref={renameInputRef}
+                              value={editingNameValue}
+                              onChange={(e) => setEditingNameValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleRenameSubmit(c.id);
+                                if (e.key === 'Escape') setEditingNameId(null);
+                              }}
+                              className="h-7 text-sm"
+                            />
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => handleRenameSubmit(c.id)}>
+                              <Check className="h-3.5 w-3.5 text-green-600" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEditingNameId(null)}>
+                              <X className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                          </div>
                         ) : (
-                          <span
-                            className="cursor-text hover:underline decoration-dotted underline-offset-4"
-                            onDoubleClick={(e) => {
-                              e.stopPropagation();
-                              setEditingNameId(c.id);
-                              setEditingNameValue(c.name);
-                            }}
-                            title="Doble clic para renombrar"
-                          >
-                            {c.name}
-                          </span>
+                          <div className="flex items-center gap-1.5 group">
+                            <span>{c.name}</span>
+                            <button
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingNameId(c.id);
+                                setEditingNameValue(c.name);
+                              }}
+                              title="Renombrar"
+                            >
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
+                          </div>
                         )}
                       </TableCell>
                       <TableCell>{c.sector}</TableCell>
