@@ -199,6 +199,22 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
                   </div>
                 </div>
               ))}
+              {documents.length > 1 && (
+                <div className="pt-2 flex justify-end">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={isDeletingAll}
+                    onClick={deleteAll}
+                  >
+                    {isDeletingAll ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Eliminando...</>
+                    ) : (
+                      <><Trash2 className="h-4 w-4 mr-1" />Eliminar todos ({documents.length})</>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-2">

@@ -227,7 +227,8 @@ export function useCampaigns() {
         }
       }
 
-      // Copy presentations (studies + any uploaded files)
+      // Copy presentations only for valuation campaigns (document campaigns start fresh)
+      if (targetType !== 'document') {
       const { data: presentations, error: presError } = await supabase
         .from('campaign_presentations')
         .select('*')
