@@ -249,9 +249,13 @@ export default function EmpresasPage() {
                 </SelectTrigger>
                 <SelectContent className="bg-background">
                   <SelectItem value="all">Todos los orígenes</SelectItem>
+                  <SelectItem value="outbound">Outbound</SelectItem>
+                  <SelectItem value="inbound">Inbound</SelectItem>
                   <SelectItem value="valuation">Valoraciones</SelectItem>
-                  <SelectItem value="manual">Manual</SelectItem>
+                  <SelectItem value="advisor">Asesor</SelectItem>
                   <SelectItem value="apollo">Apollo</SelectItem>
+                  <SelectItem value="campaign">Campaña</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
                 </SelectContent>
               </Select>
             </div>

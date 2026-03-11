@@ -660,11 +660,11 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   const listHeight = Math.min(height, empresas.length * ROW_HEIGHT);
 
   return (
-    <div className="border border-border rounded-lg overflow-hidden">
+    <div className="border border-border rounded-lg overflow-visible">
       {/* Scroll container for synchronized horizontal scroll */}
       <div 
         ref={scrollContainerRef}
-        className="overflow-x-auto"
+        className="overflow-x-auto overflow-y-visible"
       >
         {/* Inner container with fixed width */}
         <div style={{ minWidth: totalWidth }}>
@@ -686,7 +686,6 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
             itemSize={ROW_HEIGHT}
             itemData={itemData}
             overscanCount={5}
-            style={{ overflow: 'hidden' }}
           >
             {EmpresaRow}
           </List>
