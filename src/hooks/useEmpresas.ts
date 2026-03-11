@@ -50,49 +50,61 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
   const { data: empresas, isLoading, refetch } = useQuery({
     queryKey: ['empresas', filters],
     queryFn: async () => {
-      // Use view that calculates ultima_actividad
-      let query = supabase
-        .from('v_empresas_con_actividad' as any)
-        .select(`
-          *,
-          company_valuations:source_valuation_id (
-            final_valuation,
-            created_at
-          )
-        `)
-        .order('created_at', { ascending: false });
+      // Fetch all empresas in pages of 1000 to bypass Supabase default limit
+      const PAGE_SIZE = 1000;
+      let allData: any[] = [];
+      let page = 0;
+      let hasMore = true;
 
-      if (filters?.search) {
-        query = query.or(`nombre.ilike.%${filters.search}%,cif.ilike.%${filters.search}%`);
+      while (hasMore) {
+        let query = supabase
+          .from('v_empresas_con_actividad' as any)
+          .select(`
+            *,
+            company_valuations:source_valuation_id (
+              final_valuation,
+              created_at
+            )
+          `)
+          .order('created_at', { ascending: false })
+          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+        if (filters?.search) {
+          query = query.or(`nombre.ilike.%${filters.search}%,cif.ilike.%${filters.search}%`);
+        }
+
+        if (filters?.sector) {
+          query = query.eq('sector', filters.sector);
+        }
+
+        if (filters?.esTarget !== null && filters?.esTarget !== undefined) {
+          query = query.eq('es_target', filters.esTarget);
+        }
+
+        if (filters?.minFacturacion) {
+          query = query.gte('facturacion', filters.minFacturacion);
+        }
+
+        if (filters?.maxFacturacion) {
+          query = query.lte('facturacion', filters.maxFacturacion);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+
+        allData = allData.concat(data || []);
+        hasMore = (data?.length || 0) === PAGE_SIZE;
+        page++;
       }
-
-      if (filters?.sector) {
-        query = query.eq('sector', filters.sector);
-      }
-
-      if (filters?.esTarget !== null && filters?.esTarget !== undefined) {
-        query = query.eq('es_target', filters.esTarget);
-      }
-
-      if (filters?.minFacturacion) {
-        query = query.gte('facturacion', filters.minFacturacion);
-      }
-
-      if (filters?.maxFacturacion) {
-        query = query.lte('facturacion', filters.maxFacturacion);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
       
       // Map valuation data to empresa fields
-      return (data || []).map((empresa: any) => ({
+      return allData.map((empresa: any) => ({
         ...empresa,
         valoracion: empresa.company_valuations?.final_valuation ?? null,
         fecha_valoracion: empresa.company_valuations?.created_at ?? null,
         ultima_actividad: empresa.ultima_actividad ?? null,
-        company_valuations: undefined, // Remove nested object
+        company_valuations: undefined,
       })) as Empresa[];
     },
   });
