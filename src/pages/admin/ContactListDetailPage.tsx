@@ -121,8 +121,8 @@ export default function ContactListDetailPage() {
   // Sync config state when list loads
   React.useEffect(() => {
     if (list) {
-      setConfigName(list.nombre || '');
-      setConfigDesc(list.descripcion || '');
+      setConfigName(list.name || '');
+      setConfigDesc(list.description || '');
       setConfigSector(list.sector || '');
       setConfigEstado(list.estado || 'borrador');
     }
