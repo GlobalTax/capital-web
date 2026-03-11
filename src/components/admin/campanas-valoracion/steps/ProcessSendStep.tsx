@@ -124,6 +124,53 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Generate valuation PDF, upload to 'valuations' bucket, and update pdf_url on the company record.
+ * Returns the public URL of the uploaded PDF.
+ */
+async function ensureValuationPdfUploaded(
+  c: CampaignCompany,
+  campaign: ValuationCampaign,
+): Promise<string | null> {
+  try {
+    // Skip if pdf_url already exists
+    if (c.pdf_url) return c.pdf_url;
+
+    const blob = await generatePdfBlob(c, campaign);
+    const safeName = c.client_company.replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const storagePath = `campaigns/${campaign.id}/${safeName}_${c.id.slice(0, 8)}.pdf`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('valuations')
+      .upload(storagePath, blob, { upsert: true, contentType: 'application/pdf' });
+
+    if (uploadError) {
+      console.error('[VALUATION_PDF_UPLOAD] Error uploading:', uploadError.message);
+      return null;
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('valuations')
+      .getPublicUrl(storagePath);
+
+    const publicUrl = publicData?.publicUrl || null;
+
+    if (publicUrl) {
+      await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ pdf_url: publicUrl })
+        .eq('id', c.id);
+      // Update in-memory reference
+      c.pdf_url = publicUrl;
+    }
+
+    return publicUrl;
+  } catch (e: any) {
+    console.error('[VALUATION_PDF_UPLOAD] Failed:', e.message);
+    return null;
+  }
+}
+
 // ─────────────────────────────────────────────
 // PDF Preview Modal (Valuation)
 // ─────────────────────────────────────────────
