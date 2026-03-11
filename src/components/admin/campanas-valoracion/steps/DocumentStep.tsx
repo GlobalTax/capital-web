@@ -19,11 +19,11 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
   const { data: documents, isLoading } = useQuery({
     queryKey: ['campaign-document', campaignId],
     queryFn: async () => {
+      // For document campaigns, show ALL presentations (not per-company filtered)
       const { data, error } = await supabase
         .from('campaign_presentations')
         .select('*')
-        .eq('campaign_id', campaignId)
-        .is('company_id', null);
+        .eq('campaign_id', campaignId);
       if (error) throw error;
       return data || [];
     },
