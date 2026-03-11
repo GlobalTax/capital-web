@@ -372,7 +372,7 @@ export default function EmpresasPage() {
             emptyMessage="No hay empresas marcadas como target"
             onEdit={handleEdit}
             onDelete={handleDelete}
-            height={450}
+            height={600}
           />
         </TabsContent>
       </Tabs>
