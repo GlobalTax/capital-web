@@ -722,6 +722,10 @@ function SendList({
 
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+            <div className="flex items-center gap-1 border-l pl-2">
+              <SortableHeader label="Fact." field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
+              <SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
+            </div>
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
