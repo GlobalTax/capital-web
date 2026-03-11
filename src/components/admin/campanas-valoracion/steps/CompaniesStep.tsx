@@ -338,56 +338,101 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   // Keep backward compat alias
   const companiesNeedingEnrich = companiesNeedingContact;
 
+  // Derive website from email domain (skip generic providers)
+  const domainFromEmail = (email: string): string | null => {
+    const match = email.match(/@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/);
+    if (!match) return null;
+    const domain = match[1].toLowerCase();
+    const generic = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.es', 'hotmail.es', 'live.com', 'icloud.com', 'protonmail.com', 'aol.com', 'msn.com', 'telefonica.net', 'ono.com', 'orange.es', 'movistar.es'];
+    return generic.includes(domain) ? null : domain;
+  };
+
   const handleEnrichByFields = async (fields: string[], targetCompanies: CampaignCompany[], label: string) => {
     if (targetCompanies.length === 0) return;
     setIsEnriching(true);
     setEnrichLabel(label);
-    const total = targetCompanies.length;
-    setEnrichProgress({ current: 0, total });
     let enrichedCount = 0;
 
-    const BATCH_SIZE = 3;
-    for (let i = 0; i < total; i += BATCH_SIZE) {
-      const batch = targetCompanies.slice(i, i + BATCH_SIZE);
+    // For website enrichment: resolve email-domain cases locally first
+    const isWebOnly = fields.length === 1 && fields[0] === 'client_website';
+    let companiesForAPI = targetCompanies;
 
-      try {
-        const { data, error } = await (supabase.functions as any).invoke('enrich-campaign-companies-data', {
-          body: {
-            fields,
-            companies: batch.map(c => ({
-              id: c.id,
-              client_company: c.client_company,
-              client_cif: c.client_cif,
-              client_name: c.client_name,
-              client_email: c.client_email,
-              client_phone: c.client_phone,
-              client_website: c.client_website,
-              client_provincia: c.client_provincia,
-            })),
-          },
-        });
+    if (isWebOnly) {
+      const localResolved: CampaignCompany[] = [];
+      const needsAPI: CampaignCompany[] = [];
 
-        if (error) {
-          console.error('Enrich error:', error);
-          toast.error('Error en enriquecimiento: ' + error.message);
-          break;
-        }
-
-        if (data?.results) {
-          for (const result of data.results) {
-            if (result.found && Object.keys(result.data).length > 0) {
-              await updateCompany({ id: result.id, data: result.data });
-              enrichedCount++;
-            }
+      for (const c of targetCompanies) {
+        if (c.client_email) {
+          const domain = domainFromEmail(c.client_email);
+          if (domain) {
+            localResolved.push(c);
+            // Update directly without API call
+            await updateCompany({ id: c.id, data: { client_website: domain } });
+            enrichedCount++;
+          } else {
+            needsAPI.push(c);
           }
+        } else {
+          needsAPI.push(c);
         }
-      } catch (e: any) {
-        console.error('Enrich exception:', e);
-        toast.error('Error inesperado en enriquecimiento');
-        break;
       }
 
-      setEnrichProgress({ current: Math.min(i + BATCH_SIZE, total), total });
+      if (localResolved.length > 0) {
+        console.log(`[Enrich Web] ${localResolved.length} webs resueltas por dominio de email`);
+      }
+      companiesForAPI = needsAPI;
+    }
+
+    const total = targetCompanies.length;
+    setEnrichProgress({ current: enrichedCount, total });
+
+    // Process remaining companies via API
+    if (companiesForAPI.length > 0) {
+      const BATCH_SIZE = 3;
+      for (let i = 0; i < companiesForAPI.length; i += BATCH_SIZE) {
+        const batch = companiesForAPI.slice(i, i + BATCH_SIZE);
+
+        try {
+          const { data, error } = await (supabase.functions as any).invoke('enrich-campaign-companies-data', {
+            body: {
+              fields,
+              companies: batch.map(c => ({
+                id: c.id,
+                client_company: c.client_company,
+                client_cif: c.client_cif,
+                client_name: c.client_name,
+                client_email: c.client_email,
+                client_phone: c.client_phone,
+                client_website: c.client_website,
+                client_provincia: c.client_provincia,
+              })),
+            },
+          });
+
+          if (error) {
+            console.error('Enrich error:', error);
+            toast.error(`Error en batch ${Math.floor(i / BATCH_SIZE) + 1}: ${error.message}`);
+            // Continue with next batch instead of stopping
+            continue;
+          }
+
+          if (data?.results) {
+            for (const result of data.results) {
+              if (result.found && Object.keys(result.data).length > 0) {
+                await updateCompany({ id: result.id, data: result.data });
+                enrichedCount++;
+              }
+            }
+          }
+        } catch (e: any) {
+          console.error('Enrich exception:', e);
+          toast.error(`Error en batch ${Math.floor(i / BATCH_SIZE) + 1}`);
+          // Continue with next batch
+          continue;
+        }
+
+        setEnrichProgress({ current: enrichedCount, total });
+      }
     }
 
     setIsEnriching(false);
