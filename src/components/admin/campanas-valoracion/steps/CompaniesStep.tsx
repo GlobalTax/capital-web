@@ -429,6 +429,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
       client_email: manual.client_email || null,
       client_phone: manual.client_phone || null,
       client_cif: manual.client_cif || null,
+      client_website: manual.client_website || null,
+      client_provincia: manual.client_provincia || null,
       revenue: primaryYear.revenue,
       ebitda: primaryYear.ebitda,
       financial_year: primaryYear.year,
@@ -436,7 +438,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
       source: 'manual',
     } as Partial<CampaignCompanyInsert>);
 
-    setManual({ client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '' });
+    setManual({ client_company: '', client_name: '', client_email: '', client_phone: '', client_cif: '', client_website: '', client_provincia: '' });
     setManualYears(
       is1Year
         ? [{ year: YEAR_1, revenue: 0, ebitda: 0 }]
