@@ -299,6 +299,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -308,8 +309,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
     }
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
-    return result;
-  }, [companies, searchQuery, filterRevenue, filterEbitda]);
+    return applySortToList(result, sort);
+  }, [companies, searchQuery, filterRevenue, filterEbitda, sort]);
   const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
 
   const handleRecalculateAll = async () => {
