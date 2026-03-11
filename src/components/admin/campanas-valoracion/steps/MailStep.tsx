@@ -45,7 +45,8 @@ function TemplateEditorSection({
   companies,
   emails,
   isGenerating,
-  onSaveAndGenerate,
+  onSaveTemplate,
+  onGenerateEmails,
   signatureHtml,
   signature,
 }: {
@@ -54,16 +55,50 @@ function TemplateEditorSection({
   companies: CampaignCompany[];
   emails: CampaignEmail[];
   isGenerating: boolean;
-  onSaveAndGenerate: (subject: string, body: string, overwriteManual: boolean) => Promise<void>;
+  onSaveTemplate: (subject: string, body: string) => Promise<void>;
+  onGenerateEmails: (subject: string, body: string, overwriteManual: boolean) => Promise<void>;
   signatureHtml: string | null;
   signature: EmailSignatureData | null;
 }) {
   const [subject, setSubject] = useState((campaign as any).email_subject_template || '');
   const [body, setBody] = useState((campaign as any).email_body_template || '');
   const [showOverwriteWarning, setShowOverwriteWarning] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
   const [lastFocused, setLastFocused] = useState<'subject' | 'body'>('body');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-save template with debounce
+  const triggerAutoSave = useCallback((newSubject: string, newBody: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      if (!newSubject.trim() && !newBody.trim()) return;
+      setSaveStatus('saving');
+      try {
+        await onSaveTemplate(newSubject, newBody);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch {
+        setSaveStatus('idle');
+      }
+    }, 1500);
+  }, [onSaveTemplate]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
+
+  const handleSubjectChange = useCallback((val: string) => {
+    setSubject(val);
+    triggerAutoSave(val, body);
+  }, [body, triggerAutoSave]);
+
+  const handleBodyChange = useCallback((val: string) => {
+    setBody(val);
+    triggerAutoSave(subject, val);
+  }, [subject, triggerAutoSave]);
 
   const variables = getAvailableVariables();
   const manuallyEdited = emails.filter(e => e.is_manually_edited).length;
@@ -93,7 +128,7 @@ function TemplateEditorSection({
     }
   }, [lastFocused, subject, body]);
 
-  const handleSave = async () => {
+  const handleGenerate = async () => {
     if (!subject.trim() && !body.trim()) {
       toast.error('Escribe al menos un asunto o cuerpo');
       return;
@@ -101,7 +136,7 @@ function TemplateEditorSection({
     if (manuallyEdited > 0) {
       setShowOverwriteWarning(true);
     } else {
-      await onSaveAndGenerate(subject, body, true);
+      await onGenerateEmails(subject, body, true);
     }
   };
 
@@ -166,7 +201,7 @@ function TemplateEditorSection({
             <Input
               ref={subjectRef}
               value={subject}
-              onChange={e => setSubject(e.target.value)}
+              onChange={e => handleSubjectChange(e.target.value)}
               onFocus={() => setLastFocused('subject')}
               placeholder="Análisis de mercado para {{company}} — {{sector}}"
               className="font-mono text-sm"
@@ -178,7 +213,7 @@ function TemplateEditorSection({
             <textarea
               ref={bodyRef}
               value={body}
-              onChange={e => setBody(e.target.value)}
+              onChange={e => handleBodyChange(e.target.value)}
               onFocus={() => setLastFocused('body')}
               rows={14}
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
@@ -187,10 +222,20 @@ function TemplateEditorSection({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={handleSave} disabled={isGenerating}>
+            <Button onClick={handleGenerate} disabled={isGenerating}>
               {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-              Guardar template y generar emails
+              Generar emails
             </Button>
+            {saveStatus === 'saving' && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" /> Guardando...
+              </span>
+            )}
+            {saveStatus === 'saved' && (
+              <span className="text-xs text-green-600 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Guardado
+              </span>
+            )}
           </div>
         </div>
 
@@ -241,14 +286,14 @@ function TemplateEditorSection({
               variant="outline"
               onClick={async () => {
                 setShowOverwriteWarning(false);
-                await onSaveAndGenerate(subject, body, false);
+                await onGenerateEmails(subject, body, false);
               }}
             >
               Mantener editados
             </Button>
             <AlertDialogAction onClick={async () => {
               setShowOverwriteWarning(false);
-              await onSaveAndGenerate(subject, body, true);
+              await onGenerateEmails(subject, body, true);
             }}>
               Regenerar todos
             </AlertDialogAction>
@@ -681,7 +726,12 @@ export function MailStep({ campaignId, campaign }: Props) {
     full_name: signature?.full_name || '',
   });
 
-  const handleSaveAndGenerate = async (subject: string, body: string, overwriteManual: boolean) => {
+  const handleSaveTemplate = useCallback(async (subject: string, body: string) => {
+    await saveTemplate({ subject, body });
+  }, [saveTemplate]);
+
+  const handleGenerateEmails = async (subject: string, body: string, overwriteManual: boolean) => {
+    // Save template first
     try {
       await saveTemplate({ subject, body });
     } catch (error: any) {
@@ -733,7 +783,8 @@ export function MailStep({ campaignId, campaign }: Props) {
           companies={companies}
           emails={emails}
           isGenerating={isGenerating}
-          onSaveAndGenerate={handleSaveAndGenerate}
+          onSaveTemplate={handleSaveTemplate}
+          onGenerateEmails={handleGenerateEmails}
           signatureHtml={signatureHtml}
           signature={signature || null}
         />
