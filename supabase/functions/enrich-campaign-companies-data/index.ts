@@ -177,7 +177,7 @@ serve(async (req) => {
       }
 
       results.push({ id: company.id, data: updates, found });
-      if (companies.indexOf(company) < companies.length - 1) await new Promise(r => setTimeout(r, 1500));
+      if (companies.indexOf(company) < companies.length - 1) await new Promise(r => setTimeout(r, 500));
     }
 
     return new Response(JSON.stringify({ results, enrichedCount: results.filter(r => r.found).length, total: results.length }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
