@@ -130,6 +130,19 @@ function buildColumnMap(years: number[]): Record<string, string> {
     'cif/nif', 'tax number', 'vat number',
   ]);
 
+  // Website
+  addSynonyms('client_website', [
+    'web', 'website', 'pagina web', 'página web', 'sitio web',
+    'url', 'dominio', 'domain', 'web site', 'homepage',
+  ]);
+
+  // Provincia
+  addSynonyms('client_provincia', [
+    'provincia', 'province', 'estado', 'region', 'región',
+    'comunidad', 'comunidad autónoma', 'comunidad autonoma',
+    'ubicación', 'ubicacion', 'location', 'ciudad', 'city',
+  ]);
+
   // Legacy single-year (fallback)
   addSynonyms('revenue', [
     'facturación', 'facturacion', 'revenue', 'ventas', 'ingresos',
