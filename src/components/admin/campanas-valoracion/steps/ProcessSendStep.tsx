@@ -825,10 +825,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     let sent = 0;
     for (const c of readyToSend) {
       if (pauseRef.current) break;
-      setSendingProgress(p => ({ ...p, current: sent + 1, name: c.client_company, phase: 'Buscando email' }));
+      setSendingProgress(p => ({ ...p, current: sent + 1, name: c.client_company, phase: 'Generando PDF valoración' }));
 
       try {
+        // Ensure valuation PDF is uploaded before sending
+        await ensureValuationPdfUploaded(c, campaign);
+
         // Find campaign_email record for this company
+        setSendingProgress(p => ({ ...p, phase: 'Buscando email' }));
         const { data: emailRecord, error: emailLookupError } = await (supabase as any)
           .from('campaign_emails')
           .select('id')
