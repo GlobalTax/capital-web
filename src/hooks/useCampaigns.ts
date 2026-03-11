@@ -144,33 +144,49 @@ export function useCampaigns() {
       if (companiesError) throw companiesError;
 
       if (companies && companies.length > 0) {
-        const clonedCompanies = companies.map((c: any) => {
-          // Destructure fields to exclude, keep everything else
-          const {
-            id: _compId,
-            campaign_id: _campId,
-            created_at: _createdAt,
-            ...rest
-          } = c;
-
-          return {
-            ...rest,
-            campaign_id: newCampaign.id,
-            // Preserve all data: pdf_url, ai_*, valuation_*, client_website, client_provincia, etc.
-            // Only reset operational/send status fields
-            status: 'pending',
-            error_message: null,
-            follow_up_status: null,
-            follow_up_count: 0,
-            followup_enviado: false,
-            followup_sent_at: null,
-            seguimiento_estado: null,
-            seguimiento_notas: null,
-            is_auto_assigned: false,
-            last_interaction_at: null,
-            professional_valuation_id: null,
-          };
-        });
+        const clonedCompanies = companies.map((c: any) => ({
+          campaign_id: newCampaign.id,
+          // Preserve all company & financial data
+          client_company: c.client_company,
+          client_name: c.client_name,
+          client_email: c.client_email,
+          client_phone: c.client_phone,
+          client_cif: c.client_cif,
+          client_website: c.client_website,
+          client_provincia: c.client_provincia,
+          ebitda: c.ebitda,
+          revenue: c.revenue,
+          financial_year: c.financial_year,
+          financial_years_data: c.financial_years_data,
+          excel_row_number: c.excel_row_number,
+          source: c.source,
+          custom_multiple: c.custom_multiple,
+          normalized_ebitda: c.normalized_ebitda,
+          // Preserve AI enrichment
+          ai_strengths: c.ai_strengths,
+          ai_weaknesses: c.ai_weaknesses,
+          ai_context: c.ai_context,
+          ai_enriched: c.ai_enriched,
+          // Preserve valuation results & PDF
+          valuation_low: c.valuation_low,
+          valuation_central: c.valuation_central,
+          valuation_high: c.valuation_high,
+          multiple_used: c.multiple_used,
+          range_label: c.range_label,
+          pdf_url: c.pdf_url,
+          // Reset operational/send status fields only
+          status: 'pending',
+          error_message: null,
+          follow_up_status: null,
+          follow_up_count: 0,
+          followup_enviado: false,
+          followup_sent_at: null,
+          seguimiento_estado: null,
+          seguimiento_notas: null,
+          is_auto_assigned: false,
+          last_interaction_at: null,
+          professional_valuation_id: null,
+        }));
 
         const { error: insertError } = await (supabase as any)
           .from('valuation_campaign_companies')
