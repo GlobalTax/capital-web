@@ -200,26 +200,17 @@ export function useCampaigns() {
           .eq('id', newCampaign.id);
       }
 
-      // Copy presentations (studies + any uploaded files)
-      const { data: presentations, error: presError } = await supabase
-        .from('campaign_presentations')
-        .select('*')
-        .eq('campaign_id', id);
-
-      if (!presError && presentations && presentations.length > 0) {
-        // Fetch old and new companies once for mapping
+      // ── Build old→new company ID map (shared by presentations, emails, etc.) ──
+      const companyIdMap = new Map<string, string>();
+      {
         const { data: origCompanies } = await (supabase as any)
           .from('valuation_campaign_companies')
           .select('id, client_company, client_cif')
           .eq('campaign_id', id);
-
         const { data: newCompanies } = await (supabase as any)
           .from('valuation_campaign_companies')
           .select('id, client_company, client_cif')
           .eq('campaign_id', newCampaign.id);
-
-        // Build old→new company ID map
-        const companyIdMap = new Map<string, string>();
         if (origCompanies && newCompanies) {
           for (const oldComp of origCompanies) {
             const match = newCompanies.find((nc: any) =>
@@ -229,13 +220,20 @@ export function useCampaigns() {
             if (match) companyIdMap.set(oldComp.id, match.id);
           }
         }
+      }
 
+      // Copy presentations (studies + any uploaded files)
+      const { data: presentations, error: presError } = await supabase
+        .from('campaign_presentations')
+        .select('*')
+        .eq('campaign_id', id);
+
+      if (!presError && presentations && presentations.length > 0) {
         for (const pres of presentations) {
           try {
             const originalPath = normalizeCampaignPresentationPath(pres.storage_path || '');
             const newStoragePath = buildCampaignPresentationPath(newCampaign.id, pres.file_name);
 
-            // Copy file in storage via edge function
             if (originalPath) {
               const copyRes = await supabase.functions.invoke('upload-campaign-presentation', {
                 body: { action: 'copy', path: originalPath, destinationPath: newStoragePath },
@@ -247,7 +245,6 @@ export function useCampaigns() {
 
             const newCompanyId = pres.company_id ? (companyIdMap.get(pres.company_id) || null) : null;
 
-            // Insert presentation record
             await supabase
               .from('campaign_presentations')
               .insert({
@@ -266,13 +263,7 @@ export function useCampaigns() {
       }
 
       // ── Copy campaign_emails (clean: keep content, reset operational state) ──
-      // Reuse companyIdMap built above for presentations
-      let emailCompanyIdMap = new Map<string, string>();
-
-      // Build map if not already built (when there were no presentations)
-      if (companyIdMap && companyIdMap.size > 0) {
-        emailCompanyIdMap = companyIdMap;
-      } else {
+      {
         const { data: origComps } = await (supabase as any)
           .from('valuation_campaign_companies')
           .select('id, client_company, client_cif')
