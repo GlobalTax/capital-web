@@ -30,6 +30,16 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const { companies } = useCampaignCompanies(campaignId);
   const [manualAssignments, setManualAssignments] = useState<Record<string, string>>({});
   const [editingAssignment, setEditingAssignment] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPresentations = useMemo(() => {
+    if (!searchQuery.trim()) return presentations;
+    const q = searchQuery.toLowerCase().trim();
+    return presentations.filter(p =>
+      p.file_name?.toLowerCase().includes(q) ||
+      getCompanyName(p.company_id)?.toLowerCase().includes(q)
+    );
+  }, [presentations, searchQuery, companies]);
 
   const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
     if (rejectedFiles.length > 0) {
