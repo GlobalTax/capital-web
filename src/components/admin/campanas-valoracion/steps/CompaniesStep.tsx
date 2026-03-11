@@ -388,7 +388,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
 
     // Process remaining companies via API
     if (companiesForAPI.length > 0) {
-      const BATCH_SIZE = 3;
+      const BATCH_SIZE = 1; // 1 per call to avoid edge function timeouts
       for (let i = 0; i < companiesForAPI.length; i += BATCH_SIZE) {
         const batch = companiesForAPI.slice(i, i + BATCH_SIZE);
 
