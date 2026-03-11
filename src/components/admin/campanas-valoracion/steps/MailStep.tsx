@@ -213,7 +213,7 @@ function TemplateEditorSection({
             <textarea
               ref={bodyRef}
               value={body}
-              onChange={e => setBody(e.target.value)}
+              onChange={e => handleBodyChange(e.target.value)}
               onFocus={() => setLastFocused('body')}
               rows={14}
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
