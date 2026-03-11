@@ -25,10 +25,28 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 
 export default function CampanasValoracion() {
   const navigate = useNavigate();
-  const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
+  const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating, updateCampaign } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [editingNameValue, setEditingNameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingNameId && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [editingNameId]);
+
+  const handleRenameSubmit = async (id: string) => {
+    const trimmed = editingNameValue.trim();
+    if (trimmed && trimmed !== campaigns.find(c => c.id === id)?.name) {
+      await updateCampaign({ id, name: trimmed });
+    }
+    setEditingNameId(null);
+  };
 
   // Fetch operational stage per campaign
   const campaignIds = campaigns.map(c => c.id);
