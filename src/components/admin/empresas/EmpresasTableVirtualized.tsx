@@ -549,16 +549,38 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
     });
   }, []);
 
-  // Calculate column widths and total width
+  // Measure container width to stretch columns
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Calculate column widths, stretching to fill container
+  const minTotalWidth = useMemo(() => calculateTotalWidth(visibleColumns), [visibleColumns]);
+
   const columnWidths = useMemo(() => {
     const widths: Record<string, number> = {};
+    const availableWidth = Math.max(containerWidth, minTotalWidth);
+    const scale = minTotalWidth > 0 ? availableWidth / minTotalWidth : 1;
+
     visibleColumns.forEach(col => {
-      widths[col.column_key] = getColumnWidth(col.column_key);
+      widths[col.column_key] = Math.floor(getColumnWidth(col.column_key) * scale);
     });
     return widths;
-  }, [visibleColumns]);
+  }, [visibleColumns, containerWidth, minTotalWidth]);
 
-  const totalWidth = useMemo(() => calculateTotalWidth(visibleColumns), [visibleColumns]);
+  const totalWidth = useMemo(() => {
+    return Object.values(columnWidths).reduce((sum, w) => sum + w, 0);
+  }, [columnWidths]);
 
   // Sort empresas
   const sortedEmpresas = useMemo(() => {
