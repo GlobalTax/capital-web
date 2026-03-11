@@ -222,18 +222,28 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
 
   const { companies, stats, addCompany, bulkAddCompanies, updateCompany, deleteCompany, bulkDeleteCompanies, isAdding, isBulkAdding, isUpdating, isDeleting, isBulkDeleting } = useCampaignCompanies(campaignId);
 
-  // Search state
+  // Search & filter state
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
+  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
   const filteredCompanies = useMemo(() => {
-    if (!searchQuery.trim()) return companies;
-    const q = searchQuery.toLowerCase().trim();
-    return companies.filter(c =>
-      c.client_company?.toLowerCase().includes(q) ||
-      c.client_name?.toLowerCase().includes(q) ||
-      c.client_email?.toLowerCase().includes(q) ||
-      c.client_cif?.toLowerCase().includes(q)
-    );
-  }, [companies, searchQuery]);
+    let result = companies;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(c =>
+        c.client_company?.toLowerCase().includes(q) ||
+        c.client_name?.toLowerCase().includes(q) ||
+        c.client_email?.toLowerCase().includes(q) ||
+        c.client_cif?.toLowerCase().includes(q)
+      );
+    }
+    const revenueRange = parseRangeFilter(filterRevenue);
+    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
+    const ebitdaRange = parseRangeFilter(filterEbitda);
+    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
+    return result;
+  }, [companies, searchQuery, filterRevenue, filterEbitda]);
+  const hasFinancialFilters = !!filterRevenue || !!filterEbitda;
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
