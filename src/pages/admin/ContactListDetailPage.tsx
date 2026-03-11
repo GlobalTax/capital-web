@@ -248,7 +248,7 @@ export default function ContactListDetailPage() {
 
     await addCompanies.mutateAsync(rows);
     // Update list origen to 'excel'
-    await supabase.from('contact_lists').update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
+    await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
     queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
     setImportData([]);
     setImportMapping({});
