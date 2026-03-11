@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calculator, Sparkles, Loader2, Building2, Mail, TrendingUp, DollarSign, X, RefreshCw, Search } from 'lucide-react';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
+import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { calculateProfessionalValuation, formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
@@ -298,6 +299,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -307,8 +309,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
     }
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
-    return result;
-  }, [companies, searchQuery, filterRevenue, filterEbitda]);
+    return applySortToList(result, sort);
+  }, [companies, searchQuery, filterRevenue, filterEbitda, sort]);
   const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
 
   const handleRecalculateAll = async () => {
@@ -511,8 +513,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                 </TableHead>
                 <TableHead>#</TableHead>
                 <TableHead>Empresa</TableHead>
-                <TableHead className="text-right">Facturación</TableHead>
-                <TableHead className="text-right">EBITDA</TableHead>
+                <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
+                <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-center">Múltiplo</TableHead>
                 <TableHead className="text-right">Val. Baja</TableHead>
                 <TableHead className="text-right">Val. Central</TableHead>

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
+import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences, FollowupSequence, FollowupSend } from '@/hooks/useFollowupSequences';
@@ -455,6 +456,7 @@ function SendList({
   const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
@@ -532,8 +534,8 @@ function SendList({
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
 
-    return result;
-  }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, sendMap]);
+    return applySortToList(result, sort);
+  }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, sendMap, sort]);
 
   const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
   const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
@@ -720,6 +722,10 @@ function SendList({
 
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+            <div className="flex items-center gap-1 border-l pl-2">
+              <SortableHeader label="Fact." field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
+              <SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
+            </div>
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">

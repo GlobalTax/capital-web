@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X, Search } from 'lucide-react';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
+import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { useCampaignCompanies, CampaignCompanyInsert, CampaignCompany, FinancialYearData } from '@/hooks/useCampaignCompanies';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
@@ -241,6 +242,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
   const filteredCompanies = useMemo(() => {
     let result = companies;
     if (searchQuery.trim()) {
@@ -254,8 +256,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     }
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
-    return result;
-  }, [companies, searchQuery, filterRevenue, filterEbitda]);
+    return applySortToList(result, sort);
+  }, [companies, searchQuery, filterRevenue, filterEbitda, sort]);
   const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
 
   // Bulk selection state
@@ -916,8 +918,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                   <TableHead>CIF</TableHead>
                   <TableHead>Web</TableHead>
                   <TableHead>Provincia</TableHead>
-                  <TableHead className="text-right">Facturación</TableHead>
-                  <TableHead className="text-right">EBITDA</TableHead>
+                  <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
+                  <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                   <TableHead className="text-center">Años</TableHead>
                   <TableHead className="text-center">Origen</TableHead>
                   <TableHead className="w-10" />

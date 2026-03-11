@@ -28,6 +28,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, safeCreateSignedUrl, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
+import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
@@ -520,8 +521,10 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const studyReadyCount = companies.filter(c => getPresentationForCompany(c.id) !== null).length;
   const studyMissingCount = companies.length - studyReadyCount;
 
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
+
   const filteredCompanies = useMemo(() => {
-    return companies.filter(c => {
+    let result = companies.filter(c => {
       if (statusFilter !== 'all' && c.status !== statusFilter) return false;
       if (followUpFilter !== 'all' && (c.follow_up_status || 'sin_respuesta') !== followUpFilter) return false;
       if (searchQuery.trim()) {
@@ -536,7 +539,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       if (!matchesCustomRange(c.ebitda, filterEbitda)) return false;
       return true;
     });
-  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda]);
+    return applySortToList(result, sort);
+  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, sort]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
@@ -1056,6 +1060,10 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </div>
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+            <div className="flex items-center gap-1 border-l pl-2">
+              <SortableHeader label="Fact." field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
+              <SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} className="text-xs" />
+            </div>
             {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
