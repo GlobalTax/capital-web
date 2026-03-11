@@ -15,6 +15,7 @@ import { MailStep } from '@/components/admin/campanas-valoracion/steps/MailStep'
 import { FollowUpStep } from '@/components/admin/campanas-valoracion/steps/FollowUpStep';
 import { CampaignAnalyticsStep } from '@/components/admin/campanas-valoracion/steps/CampaignAnalyticsStep';
 import { DocumentStep } from '@/components/admin/campanas-valoracion/steps/DocumentStep';
+import { DocumentSendStep } from '@/components/admin/campanas-valoracion/steps/DocumentSendStep';
 import { cn } from '@/lib/utils';
 
 const VALUATION_STEPS = [
