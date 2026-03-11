@@ -328,26 +328,32 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   // AI Enrichment state
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 });
+  const [enrichLabel, setEnrichLabel] = useState('');
 
-  const companiesNeedingEnrich = companies.filter(
+  const companiesNeedingContact = companies.filter(
     c => !c.client_email || !c.client_name || !c.client_phone || !c.client_cif
   );
+  const companiesNeedingWeb = companies.filter(c => !c.client_website);
+  const companiesNeedingProvincia = companies.filter(c => !c.client_provincia);
+  // Keep backward compat alias
+  const companiesNeedingEnrich = companiesNeedingContact;
 
-  const handleEnrichWithAI = async () => {
-    if (companiesNeedingEnrich.length === 0) return;
+  const handleEnrichByFields = async (fields: string[], targetCompanies: CampaignCompany[], label: string) => {
+    if (targetCompanies.length === 0) return;
     setIsEnriching(true);
-    const total = companiesNeedingEnrich.length;
+    setEnrichLabel(label);
+    const total = targetCompanies.length;
     setEnrichProgress({ current: 0, total });
     let enrichedCount = 0;
 
-    // Process in batches of 3
     const BATCH_SIZE = 3;
     for (let i = 0; i < total; i += BATCH_SIZE) {
-      const batch = companiesNeedingEnrich.slice(i, i + BATCH_SIZE);
+      const batch = targetCompanies.slice(i, i + BATCH_SIZE);
 
       try {
         const { data, error } = await (supabase.functions as any).invoke('enrich-campaign-companies-data', {
           body: {
+            fields,
             companies: batch.map(c => ({
               id: c.id,
               client_company: c.client_company,
@@ -355,6 +361,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
               client_name: c.client_name,
               client_email: c.client_email,
               client_phone: c.client_phone,
+              client_website: c.client_website,
+              client_provincia: c.client_provincia,
             })),
           },
         });
@@ -383,8 +391,15 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     }
 
     setIsEnriching(false);
+    setEnrichLabel('');
     toast.success(`Enriquecimiento completado: ${enrichedCount} de ${total} empresas actualizadas`);
   };
+
+  const handleEnrichWithAI = () => handleEnrichByFields(
+    ['client_email', 'client_name', 'client_phone', 'client_cif'],
+    companiesNeedingContact,
+    'Contacto'
+  );
 
   // Manual form state
   const [manual, setManual] = useState({
