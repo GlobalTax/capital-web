@@ -13,6 +13,8 @@ const VARIABLE_DEFINITIONS: TemplateVariable[] = [
   { key: 'last_name', label: 'Apellido', category: 'Contacto' },
   { key: 'company', label: 'Empresa', category: 'Contacto' },
   { key: 'cargo', label: 'Cargo', category: 'Contacto' },
+  { key: 'web', label: 'Página web', category: 'Contacto' },
+  { key: 'provincia', label: 'Provincia', category: 'Contacto' },
   { key: 'sector', label: 'Sector', category: 'Valoración' },
   { key: 'valoracion_min', label: 'Valoración mín.', category: 'Valoración' },
   { key: 'valoracion_max', label: 'Valoración máx.', category: 'Valoración' },
