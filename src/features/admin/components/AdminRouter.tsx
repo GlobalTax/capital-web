@@ -110,6 +110,8 @@ const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApollo
 
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
+const LazyContactListsPage = React.lazy(() => import('@/pages/admin/ContactListsPage'));
+const LazyContactListDetailPage = React.lazy(() => import('@/pages/admin/ContactListDetailPage'));
 const LazyEmpresaDetailPage = React.lazy(() => import('@/pages/admin/EmpresaDetailPage'));
 const LazyProspectsPage = React.lazy(() => import('@/pages/admin/ProspectsPage'));
 const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisitorsPage'));
@@ -301,6 +303,10 @@ const AdminRouter = () => {
           <Route path="/campanas-valoracion" element={<LazyCampanasValoracion />} />
           <Route path="/campanas-valoracion/nueva" element={<LazyCampanaValoracionForm />} />
           <Route path="/campanas-valoracion/:id" element={<LazyCampanaValoracionForm />} />
+          
+          {/* Listas de Contacto */}
+          <Route path="/listas-contacto" element={<LazyContactListsPage />} />
+          <Route path="/listas-contacto/:id" element={<LazyContactListDetailPage />} />
           
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />

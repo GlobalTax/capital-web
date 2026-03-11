@@ -340,6 +340,12 @@ export const sidebarSections: SidebarSection[] = [
         description: "Campañas masivas de valoración por sector"
       },
       { 
+        title: "Listas de Contacto",
+        url: "/admin/listas-contacto", 
+        icon: ClipboardList,
+        description: "Gestiona y depura listas de empresas"
+      },
+      { 
         title: "Pipeline de Leads",
         url: "/admin/leads-pipeline", 
         icon: Kanban,
