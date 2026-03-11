@@ -304,6 +304,10 @@ const AdminRouter = () => {
           <Route path="/campanas-valoracion/nueva" element={<LazyCampanaValoracionForm />} />
           <Route path="/campanas-valoracion/:id" element={<LazyCampanaValoracionForm />} />
           
+          {/* Listas de Contacto */}
+          <Route path="/listas-contacto" element={<LazyContactListsPage />} />
+          <Route path="/listas-contacto/:id" element={<LazyContactListDetailPage />} />
+          
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
