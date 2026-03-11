@@ -1084,6 +1084,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                   />
                 </TableHead>
                 <TableHead>Empresa</TableHead>
+                <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
+                <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-right">Valoración</TableHead>
                 <TableHead className="text-center">PDF Valoración</TableHead>
                 <TableHead className="text-center">PDF Estudio</TableHead>
