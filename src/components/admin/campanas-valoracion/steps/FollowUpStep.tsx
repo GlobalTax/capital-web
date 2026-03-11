@@ -719,6 +719,30 @@ function SendList({
               </SelectContent>
             </Select>
 
+            <Select value={filterRevenue || 'all'} onValueChange={v => setFilterRevenue(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue placeholder="Facturación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toda facturación</SelectItem>
+                {FINANCIAL_RANGES.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterEbitda || 'all'} onValueChange={v => setFilterEbitda(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="EBITDA" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todo EBITDA</SelectItem>
+                {FINANCIAL_RANGES.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
                 <X className="h-3 w-3 mr-1" />
