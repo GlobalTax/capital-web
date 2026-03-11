@@ -295,12 +295,22 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
   const [recalculating, setRecalculating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
+  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
 
   const filteredCompanies = useMemo(() => {
-    if (!searchQuery.trim()) return companies;
-    const q = searchQuery.toLowerCase().trim();
-    return companies.filter(c => c.client_company?.toLowerCase().includes(q));
-  }, [companies, searchQuery]);
+    let result = companies;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(c => c.client_company?.toLowerCase().includes(q));
+    }
+    const revenueRange = parseRangeFilter(filterRevenue);
+    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
+    const ebitdaRange = parseRangeFilter(filterEbitda);
+    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
+    return result;
+  }, [companies, searchQuery, filterRevenue, filterEbitda]);
+  const hasFinancialFilters = !!filterRevenue || !!filterEbitda;
 
   const handleRecalculateAll = async () => {
     setRecalculating(true);
