@@ -222,10 +222,20 @@ function TemplateEditorSection({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button onClick={handleSave} disabled={isGenerating}>
+            <Button onClick={handleGenerate} disabled={isGenerating}>
               {isGenerating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-              Guardar template y generar emails
+              Generar emails
             </Button>
+            {saveStatus === 'saving' && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Loader2 className="h-3 w-3 animate-spin" /> Guardando...
+              </span>
+            )}
+            {saveStatus === 'saved' && (
+              <span className="text-xs text-green-600 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> Guardado
+              </span>
+            )}
           </div>
         </div>
 
