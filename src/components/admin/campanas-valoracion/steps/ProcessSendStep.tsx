@@ -1035,8 +1035,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {/* Search */}
-          <div className="p-4 pb-0 flex items-center gap-3">
+          {/* Search + financial filters */}
+          <div className="p-4 pb-0 flex flex-col sm:flex-row items-start sm:items-center gap-2">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -1056,10 +1056,39 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 </Button>
               )}
             </div>
-            {searchQuery && (
-              <span className="text-sm text-muted-foreground">
-                {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
-              </span>
+            <Select value={filterRevenue || 'all'} onValueChange={v => setFilterRevenue(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue placeholder="Facturación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toda facturación</SelectItem>
+                {FINANCIAL_RANGES.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterEbitda || 'all'} onValueChange={v => setFilterEbitda(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="EBITDA" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todo EBITDA</SelectItem>
+                {FINANCIAL_RANGES.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(searchQuery || filterRevenue || filterEbitda) && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
+                </span>
+                {(filterRevenue || filterEbitda) && (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue(null); setFilterEbitda(null); }}>
+                    <X className="h-3 w-3 mr-1" />Limpiar filtros
+                  </Button>
+                )}
+              </div>
             )}
           </div>
           <Table>
