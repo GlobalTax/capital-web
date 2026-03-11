@@ -1344,11 +1344,32 @@ const handler = async (req: Request): Promise<Response> => {
       ...formData
     });
 
+    // ====== STEP 3: Fetch dynamic recipients from email_recipients_config ======
+    let dynamicEmails: string[] = [];
+    let dynamicBccEmails: string[] = [];
+    try {
+      const { data: allActive } = await supabase
+        .from('email_recipients_config')
+        .select('email, is_default_copy')
+        .eq('is_active', true);
+      
+      if (allActive && allActive.length > 0) {
+        dynamicEmails = allActive.map((r: any) => r.email);
+        dynamicBccEmails = allActive.filter((r: any) => r.is_default_copy).map((r: any) => r.email);
+        console.log(`[dynamic] Fetched ${dynamicEmails.length} active recipients, ${dynamicBccEmails.length} with default_copy`);
+      }
+    } catch (e) {
+      console.error('[dynamic] Error fetching email_recipients_config, using hardcoded fallback:', e);
+    }
+
+    // Merge hardcoded + dynamic, deduplicate
+    const allAdminEmails = [...new Set([...ADMIN_EMAILS, ...dynamicEmails])];
+
     // Enviar emails a administradores con delay para respetar rate limit
-    console.log(`Enviando ${ADMIN_EMAILS.length} emails admin para submissionId=${submissionId}...`);
+    console.log(`Enviando ${allAdminEmails.length} emails admin para submissionId=${submissionId}...`);
     const adminEmailResults = [];
     
-    for (const adminEmail of ADMIN_EMAILS) {
+    for (const adminEmail of allAdminEmails) {
       try {
         const result = await resend.emails.send({
           from: "Capittal Forms <notificaciones@capittal.es>",
@@ -1376,11 +1397,13 @@ const handler = async (req: Request): Promise<Response> => {
       const isCampaignValuation = formType === 'campaign_valuation';
       
       // BCC interno para control de calidad (copia oculta al equipo)
-      const CONFIRMATION_BCC_EMAILS = [
+      // Hardcoded base + dynamic recipients with is_default_copy
+      const CONFIRMATION_BCC_BASE = [
         'samuel@capittal.es',
         'lluis@capittal.es',
         'oriol@capittal.es'
       ];
+      const CONFIRMATION_BCC_EMAILS = [...new Set([...CONFIRMATION_BCC_BASE, ...dynamicBccEmails])];
       
       const result = await resend.emails.send({
         from: isCampaignValuation 
