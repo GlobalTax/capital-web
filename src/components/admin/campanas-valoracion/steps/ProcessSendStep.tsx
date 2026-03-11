@@ -1130,6 +1130,12 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                       ) : c.client_company}
                       <div className="text-xs text-muted-foreground">{c.client_email || '—'}</div>
                     </TableCell>
+                    <TableCell className="text-right tabular-nums text-sm">
+                      {c.revenue ? formatCurrencyEUR(c.revenue) : '—'}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-sm">
+                      {c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}
                     </TableCell>
