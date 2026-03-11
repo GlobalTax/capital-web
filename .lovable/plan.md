@@ -1,99 +1,36 @@
 
 
-## Nuevo tipo de campaña: "Documento PDF" (sin valoración)
+## Diagnostico
 
-### Situación actual
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-El flujo actual de campañas outbound (9 pasos) está completamente acoplado a la generación de valoraciones:
-- **Paso 3** (Revisión): calcula EBITDA, múltiplos, valoraciones
-- **Paso 5** (Procesamiento): genera PDFs de valoración por empresa
-- **Paso 7-9**: KPIs, follow-ups, análisis — todos referencian datos de valoración
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
 
-La tabla `valuation_campaigns` no tiene un campo `campaign_type`; todo asume valoración.
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
-La Edge Function `send-campaign-outbound-email` adjunta hasta 2 PDFs:
-1. Valoración (de `pdf_url` en `valuation_campaign_companies`)
-2. Presentación/estudio (de `campaign_presentations`)
+## Plan
 
-### Lo que quieres
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-Una segunda modalidad de campaña donde:
-- **No generas valoración** por empresa
-- **Subes un PDF genérico** (ej: estudio sectorial, informe, propuesta)
-- Lo envías a una lista de empresas con un email personalizado
-- Mantienes follow-ups, tracking, análisis
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-### Enfoque propuesto
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-#### 1. Añadir columna `campaign_type` a la DB
+### 2. Prerequisito: emails generados
 
-```sql
-ALTER TABLE valuation_campaigns 
-ADD COLUMN campaign_type TEXT NOT NULL DEFAULT 'valuation' 
-CHECK (campaign_type IN ('valuation', 'document'));
-```
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-Esto no rompe nada existente — todas las campañas actuales quedan como `'valuation'`.
+### 3. Conectar datos
 
-#### 2. Tabs en la página de listado (`CampanasValoracion.tsx`)
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
-Añadir dos pestañas en la parte superior:
-- **Valoración** — muestra campañas con `campaign_type = 'valuation'` (las actuales)
-- **Documento PDF** — muestra campañas con `campaign_type = 'document'`
-
-Cada pestaña filtra la tabla. El botón "Nueva Campaña" pasa el tipo como parámetro de la URL o query param.
-
-#### 3. Flujo simplificado para campañas tipo "document"
-
-Reutilizar `CampanaValoracionForm.tsx` pero con **pasos reducidos** (5 en lugar de 9):
-
-```text
-Valoración (actual):     Config → Empresas → Revisión → Presentaciones → Procesamiento → Mail → 1r Envío → Follow Up → Análisis
-Documento PDF (nuevo):   Config → Empresas → Documento → Mail → Envío → Follow Up → Análisis
-```
-
-Pasos que se saltan/cambian:
-- **Sin Revisión** (no hay cálculo de valoración)
-- **Sin Presentaciones** (se reemplaza por subida de un único PDF)
-- **Sin Procesamiento** (no se genera PDF de valoración)
-- **Documento**: un paso nuevo y simple donde subes el PDF que se adjuntará a todos los emails
-
-#### 4. Nuevo paso "Documento" (componente ligero)
-
-Un componente `DocumentStep.tsx` que:
-- Permite subir un PDF (drag & drop)
-- Lo almacena en el bucket `campaign-presentations` bajo la campaña
-- Muestra preview del nombre/tamaño del archivo subido
-- Guarda la referencia en `campaign_presentations` como registro único de la campaña
-
-#### 5. Adaptación del envío
-
-La Edge Function `send-campaign-outbound-email` ya busca presentaciones en `campaign_presentations`. Para campañas tipo "document":
-- No habrá `pdf_url` de valoración → no adjunta valoración (ya maneja este caso con un null check)
-- Sí habrá presentación en `campaign_presentations` → se adjunta el PDF subido
-
-No hace falta tocar la Edge Function.
-
-#### 6. Adaptación del hook `useCampaigns`
-
-- Añadir `campaign_type` al tipo `ValuationCampaign`
-- El query del listado ya trae todos los campos; solo hay que filtrar en el frontend por tab activo
-- `createCampaign` recibirá el tipo
-
-### Archivos a crear/modificar
-
-| Archivo | Cambio |
-|---------|--------|
-| Nueva migración SQL | `ALTER TABLE` para añadir `campaign_type` |
-| `src/hooks/useCampaigns.ts` | Añadir `campaign_type` al tipo |
-| `src/pages/admin/CampanasValoracion.tsx` | Tabs para filtrar por tipo |
-| `src/pages/admin/CampanaValoracionForm.tsx` | Stepper condicional según tipo |
-| `src/components/admin/campanas-valoracion/steps/DocumentStep.tsx` | **Nuevo** — subida de PDF genérico |
-
-### Lo que NO se toca
-
-- Los 9 pasos existentes de campañas de valoración — intactos
-- La Edge Function de envío — ya es compatible
-- Las tablas de companies, emails, follow-ups — se reutilizan tal cual
-- El hook `useCampaignCompanies` — funciona igual sin valoración
+### Archivos afectados
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 

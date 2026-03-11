@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Save, ChevronLeft } from 'lucide-react';
 import { useCampaign, useCampaigns, ValuationCampaign } from '@/hooks/useCampaigns';
@@ -14,9 +14,10 @@ import { CampaignSummaryStep } from '@/components/admin/campanas-valoracion/step
 import { MailStep } from '@/components/admin/campanas-valoracion/steps/MailStep';
 import { FollowUpStep } from '@/components/admin/campanas-valoracion/steps/FollowUpStep';
 import { CampaignAnalyticsStep } from '@/components/admin/campanas-valoracion/steps/CampaignAnalyticsStep';
+import { DocumentStep } from '@/components/admin/campanas-valoracion/steps/DocumentStep';
 import { cn } from '@/lib/utils';
 
-const STEPS = [
+const VALUATION_STEPS = [
   { id: 1, title: 'Configuración', description: 'Nombre, sector y plantilla' },
   { id: 2, title: 'Empresas', description: 'Excel o entrada manual' },
   { id: 3, title: 'Revisión', description: 'Cálculo y enriquecimiento IA' },
@@ -28,14 +29,25 @@ const STEPS = [
   { id: 9, title: 'Análisis', description: 'Resumen y métricas' },
 ];
 
+const DOCUMENT_STEPS = [
+  { id: 1, title: 'Configuración', description: 'Nombre, sector y plantilla' },
+  { id: 2, title: 'Empresas', description: 'Excel o entrada manual' },
+  { id: 3, title: 'Documento', description: 'PDF a adjuntar' },
+  { id: 4, title: 'Mail', description: 'Plantilla y envío de emails' },
+  { id: 5, title: 'Envío', description: 'Enviar emails' },
+  { id: 6, title: 'Follow Up', description: 'Seguimiento post-envío' },
+  { id: 7, title: 'Análisis', description: 'Resumen y métricas' },
+];
+
 export default function CampanaValoracionForm() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isNew = !id || id === 'nueva';
+  const typeFromUrl = searchParams.get('type') as 'valuation' | 'document' | null;
 
   const { data: existingCampaign, isLoading: loadingCampaign } = useCampaign(isNew ? undefined : id);
   const { createCampaign, updateCampaign, isCreating, isUpdating } = useCampaigns();
-  const { companies, stats, refetch: refetchCompanies } = useCampaignCompanies(isNew ? undefined : id);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [campaignId, setCampaignId] = useState<string | undefined>(isNew ? undefined : id);
@@ -43,6 +55,7 @@ export default function CampanaValoracionForm() {
     name: '',
     sector: '',
     status: 'draft',
+    campaign_type: typeFromUrl || 'valuation',
     include_comparables: false,
     ai_personalize: false,
     use_custom_advisor: false,
@@ -51,6 +64,12 @@ export default function CampanaValoracionForm() {
     years_mode: '1_year',
     financial_years: [new Date().getFullYear() - 1],
   });
+
+  const { companies, refetch: refetchCompanies } = useCampaignCompanies(isNew ? undefined : campaignId);
+
+  const campaignType = campaignData.campaign_type || 'valuation';
+  const STEPS = campaignType === 'document' ? DOCUMENT_STEPS : VALUATION_STEPS;
+  const totalSteps = STEPS.length;
 
   useEffect(() => {
     if (existingCampaign) {
@@ -84,11 +103,45 @@ export default function CampanaValoracionForm() {
       const savedId = await saveCampaign();
       if (!savedId) return;
     }
-    if (currentStep < 9) setCurrentStep(prev => prev + 1);
+    if (currentStep < totalSteps) setCurrentStep(prev => prev + 1);
   };
 
   const handlePrev = () => {
     if (currentStep > 1) setCurrentStep(prev => prev - 1);
+  };
+
+  // Render step content based on campaign type
+  const renderStepContent = () => {
+    if (currentStep === 1) {
+      return <CampaignConfigStep data={campaignData} updateField={updateField} />;
+    }
+
+    if (!campaignId) return null;
+
+    if (campaignType === 'document') {
+      switch (currentStep) {
+        case 2: return <CompaniesStep campaignId={campaignId} financialYears={campaignData.financial_years || [new Date().getFullYear() - 1]} yearsMode={campaignData.years_mode || '1_year'} />;
+        case 3: return <DocumentStep campaignId={campaignId} />;
+        case 4: return <MailStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 5: return <ProcessSendStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 6: return <FollowUpStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 7: return <CampaignAnalyticsStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        default: return null;
+      }
+    } else {
+      // Valuation flow (original 9 steps)
+      switch (currentStep) {
+        case 2: return <CompaniesStep campaignId={campaignId} financialYears={campaignData.financial_years || [new Date().getFullYear() - 1]} yearsMode={campaignData.years_mode || '1_year'} />;
+        case 3: return <ReviewCalculateStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 4: return <PresentationsStep campaignId={campaignId} />;
+        case 5: return <ProcessSendStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 6: return <MailStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 7: return <CampaignSummaryStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 8: return <FollowUpStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 9: return <CampaignAnalyticsStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        default: return null;
+      }
+    }
   };
 
   if (!isNew && loadingCampaign) {
@@ -104,7 +157,9 @@ export default function CampanaValoracionForm() {
         </Button>
         <div>
           <h1 className="text-xl font-bold">{isNew ? 'Nueva Campaña' : (campaignData.name || 'Editar Campaña')}</h1>
-          <p className="text-sm text-muted-foreground">{campaignData.sector || 'Configura los detalles de la campaña'}</p>
+          <p className="text-sm text-muted-foreground">
+            {campaignType === 'document' ? '📄 Documento PDF' : '📊 Valoración'} — {campaignData.sector || 'Configura los detalles'}
+          </p>
         </div>
       </div>
 
@@ -144,33 +199,7 @@ export default function CampanaValoracionForm() {
 
       {/* Step Content */}
       <div className="min-h-[60vh]">
-        {currentStep === 1 && (
-          <CampaignConfigStep data={campaignData} updateField={updateField} />
-        )}
-        {currentStep === 2 && campaignId && (
-          <CompaniesStep campaignId={campaignId} financialYears={campaignData.financial_years || [new Date().getFullYear() - 1]} yearsMode={campaignData.years_mode || '1_year'} />
-        )}
-        {currentStep === 3 && campaignId && (
-          <ReviewCalculateStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
-        )}
-        {currentStep === 4 && campaignId && (
-          <PresentationsStep campaignId={campaignId} />
-        )}
-        {currentStep === 5 && campaignId && (
-          <ProcessSendStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
-        )}
-        {currentStep === 6 && campaignId && (
-          <MailStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
-        )}
-        {currentStep === 7 && campaignId && (
-          <CampaignSummaryStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
-        )}
-        {currentStep === 8 && campaignId && (
-          <FollowUpStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
-        )}
-        {currentStep === 9 && campaignId && (
-          <CampaignAnalyticsStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />
-        )}
+        {renderStepContent()}
       </div>
 
       {/* Navigation */}
@@ -184,7 +213,7 @@ export default function CampanaValoracionForm() {
               <Save className="h-4 w-4 mr-2" />{campaignId ? 'Guardar' : 'Crear'}
             </Button>
           )}
-          {currentStep < 9 && (
+          {currentStep < totalSteps && (
             <Button onClick={handleNext} disabled={
               (currentStep === 1 && (!campaignData.name || !campaignData.sector)) ||
               (currentStep === 2 && companies.length === 0)

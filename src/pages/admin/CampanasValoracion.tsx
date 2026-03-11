@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -27,6 +28,7 @@ export default function CampanasValoracion() {
   const navigate = useNavigate();
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating, updateCampaign } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'valuation' | 'document'>('valuation');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
@@ -98,18 +100,23 @@ export default function CampanasValoracion() {
     return { label: '1r Envío', variant: 'outline' };
   };
 
+  const campaignsByType = useMemo(() => {
+    return campaigns.filter(c => (c as any).campaign_type === activeTab || (!((c as any).campaign_type) && activeTab === 'valuation'));
+  }, [campaigns, activeTab]);
+
   const filteredCampaigns = useMemo(() => {
-    if (!searchQuery.trim()) return campaigns;
+    if (!searchQuery.trim()) return campaignsByType;
     const q = searchQuery.toLowerCase();
-    return campaigns.filter(c =>
+    return campaignsByType.filter(c =>
       c.name.toLowerCase().includes(q) ||
       c.sector?.toLowerCase().includes(q)
     );
-  }, [campaigns, searchQuery]);
+  }, [campaignsByType, searchQuery]);
 
-  const totalCompanies = campaigns.reduce((s, c) => s + c.total_companies, 0);
-  const totalSent = campaigns.reduce((s, c) => s + c.total_sent, 0);
-  const totalValuation = campaigns.reduce((s, c) => s + c.total_valuation, 0);
+  const totalCompanies = campaignsByType.reduce((s, c) => s + c.total_companies, 0);
+  const totalSent = campaignsByType.reduce((s, c) => s + c.total_sent, 0);
+  const totalValuation = campaignsByType.reduce((s, c) => s + c.total_valuation, 0);
+
 
   if (isLoading) {
     return (
@@ -129,21 +136,35 @@ export default function CampanasValoracion() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Megaphone className="h-6 w-6" />
-            Campañas de Valoración Outbound
+            Campañas Outbound
           </h1>
-          <p className="text-muted-foreground mt-1">Campañas masivas de valoración por sector</p>
+          <p className="text-muted-foreground mt-1">Campañas masivas de valoración y documentos por sector</p>
         </div>
-        <Button onClick={() => navigate('/admin/campanas-valoracion/nueva')}>
+        <Button onClick={() => navigate(`/admin/campanas-valoracion/nueva?type=${activeTab}`)}>
           <Plus className="h-4 w-4 mr-2" />
           Nueva Campaña
         </Button>
       </div>
 
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document')}>
+        <TabsList>
+          <TabsTrigger value="valuation" className="flex items-center gap-1.5">
+            <TrendingUp className="h-4 w-4" />
+            Valoración
+          </TabsTrigger>
+          <TabsTrigger value="document" className="flex items-center gap-1.5">
+            <FileText className="h-4 w-4" />
+            Documento PDF
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 gap-4 ${activeTab === 'valuation' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Campañas</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{campaigns.length}</p></CardContent>
+          <CardContent><p className="text-2xl font-bold">{campaignsByType.length}</p></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Building2 className="h-4 w-4" />Empresas</CardTitle></CardHeader>
@@ -153,10 +174,12 @@ export default function CampanasValoracion() {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Mail className="h-4 w-4" />Enviadas</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-bold">{totalSent}</p></CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><TrendingUp className="h-4 w-4" />Valor Total</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-bold">{formatCurrencyEUR(totalValuation)}</p></CardContent>
-        </Card>
+        {activeTab === 'valuation' && (
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><TrendingUp className="h-4 w-4" />Valor Total</CardTitle></CardHeader>
+            <CardContent><p className="text-2xl font-bold">{formatCurrencyEUR(totalValuation)}</p></CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Table */}
@@ -192,7 +215,7 @@ export default function CampanasValoracion() {
                   <TableHead>Sector</TableHead>
                   <TableHead className="text-center">Empresas</TableHead>
                   <TableHead className="text-center">Enviadas</TableHead>
-                  <TableHead className="text-right">Valor Total</TableHead>
+                  {activeTab === 'valuation' && <TableHead className="text-right">Valor Total</TableHead>}
                   <TableHead className="text-center">Estado</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -243,7 +266,7 @@ export default function CampanasValoracion() {
                       <TableCell>{c.sector}</TableCell>
                       <TableCell className="text-center">{c.total_companies}</TableCell>
                       <TableCell className="text-center">{c.total_sent}</TableCell>
-                      <TableCell className="text-right">{c.total_valuation > 0 ? formatCurrencyEUR(c.total_valuation) : '—'}</TableCell>
+                      {activeTab === 'valuation' && <TableCell className="text-right">{c.total_valuation > 0 ? formatCurrencyEUR(c.total_valuation) : '—'}</TableCell>}
                       <TableCell className="text-center"><Badge variant={stage.variant}>{stage.label}</Badge></TableCell>
                       <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('es-ES')}</TableCell>
                       <TableCell className="text-right">
