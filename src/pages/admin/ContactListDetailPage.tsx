@@ -342,7 +342,7 @@ export default function ContactListDetailPage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">{list.nombre}</h1>
+            <h1 className="text-2xl font-semibold">{list.name}</h1>
             <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
