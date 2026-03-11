@@ -45,7 +45,8 @@ function TemplateEditorSection({
   companies,
   emails,
   isGenerating,
-  onSaveAndGenerate,
+  onSaveTemplate,
+  onGenerateEmails,
   signatureHtml,
   signature,
 }: {
@@ -54,16 +55,50 @@ function TemplateEditorSection({
   companies: CampaignCompany[];
   emails: CampaignEmail[];
   isGenerating: boolean;
-  onSaveAndGenerate: (subject: string, body: string, overwriteManual: boolean) => Promise<void>;
+  onSaveTemplate: (subject: string, body: string) => Promise<void>;
+  onGenerateEmails: (subject: string, body: string, overwriteManual: boolean) => Promise<void>;
   signatureHtml: string | null;
   signature: EmailSignatureData | null;
 }) {
   const [subject, setSubject] = useState((campaign as any).email_subject_template || '');
   const [body, setBody] = useState((campaign as any).email_body_template || '');
   const [showOverwriteWarning, setShowOverwriteWarning] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const subjectRef = useRef<HTMLInputElement>(null);
   const [lastFocused, setLastFocused] = useState<'subject' | 'body'>('body');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-save template with debounce
+  const triggerAutoSave = useCallback((newSubject: string, newBody: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      if (!newSubject.trim() && !newBody.trim()) return;
+      setSaveStatus('saving');
+      try {
+        await onSaveTemplate(newSubject, newBody);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch {
+        setSaveStatus('idle');
+      }
+    }, 1500);
+  }, [onSaveTemplate]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
+
+  const handleSubjectChange = useCallback((val: string) => {
+    setSubject(val);
+    triggerAutoSave(val, body);
+  }, [body, triggerAutoSave]);
+
+  const handleBodyChange = useCallback((val: string) => {
+    setBody(val);
+    triggerAutoSave(subject, val);
+  }, [subject, triggerAutoSave]);
 
   const variables = getAvailableVariables();
   const manuallyEdited = emails.filter(e => e.is_manually_edited).length;
