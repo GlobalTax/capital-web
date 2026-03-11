@@ -21,6 +21,7 @@ import {
   Building2, Clock, Calendar, Search, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FINANCIAL_RANGES, parseRangeFilter, matchesRange } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences, FollowupSequence, FollowupSend } from '@/hooks/useFollowupSequences';
@@ -452,6 +453,8 @@ function SendList({
   const [filterEstadoEnvio, setFilterEstadoEnvio] = useState<string | null>(null);
   const [filterEntrega, setFilterEntrega] = useState<string | null>(null);
   const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
+  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
@@ -487,6 +490,8 @@ function SendList({
   // Filtered visible
   const filteredVisible = useMemo(() => {
     let result = visible;
+    const revenueRange = parseRangeFilter(filterRevenue);
+    const ebitdaRange = parseRangeFilter(filterEbitda);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -526,15 +531,20 @@ function SendList({
       });
     }
 
-    return result;
-  }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, sendMap]);
+    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
+    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
 
-  const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento;
+    return result;
+  }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, sendMap]);
+
+  const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || !!filterRevenue || !!filterEbitda;
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
     setFilterEstadoEnvio(null);
     setFilterEntrega(null);
     setFilterSeguimiento(null);
+    setFilterRevenue(null);
+    setFilterEbitda(null);
   }, []);
   const excluded = companies.length - visible.length;
 
@@ -706,6 +716,30 @@ function SendList({
                 <SelectItem value="interesado">Interesado</SelectItem>
                 <SelectItem value="no_interesado">No interesado</SelectItem>
                 <SelectItem value="reunion_agendada">Reunión agendada</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterRevenue || 'all'} onValueChange={v => setFilterRevenue(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue placeholder="Facturación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toda facturación</SelectItem>
+                {FINANCIAL_RANGES.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterEbitda || 'all'} onValueChange={v => setFilterEbitda(v === 'all' ? null : v)}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="EBITDA" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todo EBITDA</SelectItem>
+                {FINANCIAL_RANGES.map(r => (
+                  <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
