@@ -296,8 +296,8 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
 
   const [recalculating, setRecalculating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
-  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -305,13 +305,11 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(c => c.client_company?.toLowerCase().includes(q));
     }
-    const revenueRange = parseRangeFilter(filterRevenue);
-    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
-    const ebitdaRange = parseRangeFilter(filterEbitda);
-    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
+    result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
+    result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
     return result;
   }, [companies, searchQuery, filterRevenue, filterEbitda]);
-  const hasFinancialFilters = !!filterRevenue || !!filterEbitda;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
 
   const handleRecalculateAll = async () => {
     setRecalculating(true);
