@@ -926,7 +926,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
               <TableBody>
                 {filteredCompanies.length === 0 && searchQuery ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                       No se encontraron empresas para "{searchQuery}"
                     </TableCell>
                   </TableRow>
