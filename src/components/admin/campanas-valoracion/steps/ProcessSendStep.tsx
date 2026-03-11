@@ -493,7 +493,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   // Multi-selection
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // Status filter
+  // Search & filters
+  const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [followUpFilter, setFollowUpFilter] = useState<string>('all');
 
