@@ -153,6 +153,28 @@ const renderCellContent = (
         </div>
       );
 
+    case 'origen':
+      const origenValue = (empresa as any).origen;
+      if (!origenValue) return <EmptyCell />;
+      const origenMap: Record<string, { label: string; color: string }> = {
+        outbound: { label: 'Outbound', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+        inbound: { label: 'Inbound', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+        valuation: { label: 'Valoración', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+        advisor: { label: 'Asesor', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+        apollo: { label: 'Apollo', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+        import: { label: 'Import', color: 'bg-slate-50 text-slate-600 border-slate-200' },
+        manual: { label: 'Manual', color: 'bg-gray-50 text-gray-600 border-gray-200' },
+      };
+      const origenConfig = origenMap[origenValue.toLowerCase()] || { label: origenValue, color: 'bg-muted text-muted-foreground border-border' };
+      return (
+        <Badge 
+          variant="outline" 
+          className={cn("text-[10px] px-1.5 py-0 font-medium", origenConfig.color)}
+        >
+          {origenConfig.label}
+        </Badge>
+      );
+
     case 'sector':
       return empresa.sector ? (
         <span className="text-xs text-muted-foreground truncate block">
