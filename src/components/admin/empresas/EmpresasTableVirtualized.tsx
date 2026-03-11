@@ -70,6 +70,7 @@ const ROW_HEIGHT = 52;
 const COLUMN_WIDTHS: Record<string, number> = {
   favorito: 48,
   nombre: 240,
+  origen: 100,
   sector: 130,
   ubicacion: 120,
   empleados: 90,
