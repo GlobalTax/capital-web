@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,10 +25,28 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 
 export default function CampanasValoracion() {
   const navigate = useNavigate();
-  const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating } = useCampaigns();
+  const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating, updateCampaign } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [editingNameValue, setEditingNameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingNameId && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [editingNameId]);
+
+  const handleRenameSubmit = async (id: string) => {
+    const trimmed = editingNameValue.trim();
+    if (trimmed && trimmed !== campaigns.find(c => c.id === id)?.name) {
+      await updateCampaign({ id, data: { name: trimmed } });
+    }
+    setEditingNameId(null);
+  };
 
   // Fetch operational stage per campaign
   const campaignIds = campaigns.map(c => c.id);
@@ -185,7 +203,34 @@ export default function CampanasValoracion() {
                   const stage = getStageLabel(c.id);
                   return (
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {editingNameId === c.id ? (
+                          <Input
+                            ref={renameInputRef}
+                            value={editingNameValue}
+                            onChange={(e) => setEditingNameValue(e.target.value)}
+                            onBlur={() => handleRenameSubmit(c.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleRenameSubmit(c.id);
+                              if (e.key === 'Escape') setEditingNameId(null);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="h-7 text-sm"
+                          />
+                        ) : (
+                          <span
+                            className="cursor-text hover:underline decoration-dotted underline-offset-4"
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              setEditingNameId(c.id);
+                              setEditingNameValue(c.name);
+                            }}
+                            title="Doble clic para renombrar"
+                          >
+                            {c.name}
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell>{c.sector}</TableCell>
                       <TableCell className="text-center">{c.total_companies}</TableCell>
                       <TableCell className="text-center">{c.total_sent}</TableCell>
