@@ -16671,10 +16671,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          estado: string
           id: string
           is_active: boolean | null
           list_type: string
           name: string
+          origen: string
+          sector: string | null
           updated_at: string
         }
         Insert: {
@@ -16682,10 +16685,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          estado?: string
           id?: string
           is_active?: boolean | null
           list_type?: string
           name: string
+          origen?: string
+          sector?: string | null
           updated_at?: string
         }
         Update: {
@@ -16693,10 +16699,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          estado?: string
           id?: string
           is_active?: boolean | null
           list_type?: string
           name?: string
+          origen?: string
+          sector?: string | null
           updated_at?: string
         }
         Relationships: []

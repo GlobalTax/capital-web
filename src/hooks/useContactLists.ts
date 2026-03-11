@@ -9,12 +9,12 @@ import { toast } from 'sonner';
 
 export interface ContactList {
   id: string;
-  nombre: string;
-  descripcion: string | null;
+  name: string;
+  description: string | null;
   sector: string | null;
-  origen: 'excel' | 'manual' | 'filtro' | 'campana';
-  estado: 'borrador' | 'activa' | 'archivada';
-  total_empresas: number;
+  origen: string;
+  estado: string;
+  contact_count: number;
   created_at: string;
   updated_at: string;
   last_campaign_name?: string | null;
@@ -81,7 +81,15 @@ export const useContactLists = () => {
       }
 
       return (data || []).map((l: any) => ({
-        ...l,
+        id: l.id,
+        name: l.name,
+        description: l.description,
+        sector: l.sector,
+        origen: l.origen || 'manual',
+        estado: l.estado || 'borrador',
+        contact_count: l.contact_count || 0,
+        created_at: l.created_at,
+        updated_at: l.updated_at,
         last_campaign_name: campaignMap[l.id] || null,
       })) as ContactList[];
     },
@@ -91,7 +99,7 @@ export const useContactLists = () => {
     mutationFn: async (input: { nombre: string; descripcion?: string; sector?: string }) => {
       const { data, error } = await supabase
         .from(TB_LISTS)
-        .insert({ nombre: input.nombre, descripcion: input.descripcion || null, sector: input.sector || null, origen: 'manual', estado: 'borrador' })
+        .insert({ name: input.nombre, description: input.descripcion || null, sector: input.sector || null, origen: 'manual', estado: 'borrador' })
         .select('id')
         .single();
       if (error) throw error;
@@ -102,11 +110,11 @@ export const useContactLists = () => {
   });
 
   const updateList = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<ContactList> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
       const { error } = await supabase.from(TB_LISTS).update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['contact-lists'] }); toast.success('Lista actualizada'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['contact-lists'] }); },
     onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
@@ -126,7 +134,7 @@ export const useContactLists = () => {
 
       const { data: newList, error: createErr } = await supabase
         .from(TB_LISTS)
-        .insert({ nombre: `${(original as any).nombre} (copia)`, descripcion: (original as any).descripcion, sector: (original as any).sector, origen: (original as any).origen, estado: 'borrador' })
+        .insert({ name: `${(original as any).name} (copia)`, description: (original as any).description, sector: (original as any).sector, origen: (original as any).origen, estado: 'borrador' })
         .select('id')
         .single();
       if (createErr || !newList) throw createErr || new Error('Error al duplicar');
@@ -258,9 +266,9 @@ export const useCompanyListHistory = (empresaName: string | undefined) => {
 
       // Fetch list names
       const listIds = [...new Set((data || []).map((d: any) => d.list_id))];
-      const { data: lists } = await supabase.from(TB_LISTS).select('id, nombre').in('id', listIds);
+      const { data: lists } = await supabase.from(TB_LISTS).select('id, name').in('id', listIds);
       const listMap: Record<string, string> = {};
-      (lists || []).forEach((l: any) => { listMap[l.id] = l.nombre; });
+      (lists || []).forEach((l: any) => { listMap[l.id] = l.name; });
 
       return (data || []).map((d: any) => ({
         lista: listMap[d.list_id] || 'Desconocida',

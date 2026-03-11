@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
 } from 'lucide-react';
 import { useContactLists, ContactList } from '@/hooks/useContactLists';
+import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
 
 const ESTADO_BADGES: Record<string, { label: string; className: string }> = {
@@ -30,19 +31,11 @@ const ESTADO_BADGES: Record<string, { label: string; className: string }> = {
   archivada: { label: 'Archivada', className: 'bg-red-50 text-red-700 border-red-200' },
 };
 
-const ORIGEN_BADGES: Record<string, { label: string; className: string }> = {
-  excel: { label: 'Excel', className: 'bg-green-50 text-green-700 border-green-200' },
-  manual: { label: 'Manual', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  filtro: { label: 'Filtro', className: 'bg-purple-50 text-purple-700 border-purple-200' },
-  campana: { label: 'Campaña', className: 'bg-orange-50 text-orange-700 border-orange-200' },
-};
-
 export default function ContactListsPage() {
   const navigate = useNavigate();
   const { lists, isLoading, createList, deleteList, duplicateList, updateList } = useContactLists();
   const [search, setSearch] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('all');
-  const [origenFilter, setOrigenFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -52,12 +45,11 @@ export default function ContactListsPage() {
     let result = lists;
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(l => l.nombre.toLowerCase().includes(q));
+      result = result.filter(l => l.name.toLowerCase().includes(q));
     }
     if (estadoFilter !== 'all') result = result.filter(l => l.estado === estadoFilter);
-    if (origenFilter !== 'all') result = result.filter(l => l.origen === origenFilter);
     return result;
-  }, [lists, search, estadoFilter, origenFilter]);
+  }, [lists, search, estadoFilter]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -78,7 +70,7 @@ export default function ContactListsPage() {
   };
 
   const handleDelete = (list: ContactList) => {
-    if (confirm(`¿Eliminar la lista "${list.nombre}"? Se perderán todas las empresas asociadas.`)) {
+    if (confirm(`¿Eliminar la lista "${list.name}"? Se perderán todas las empresas asociadas.`)) {
       deleteList.mutate(list.id);
     }
   };
@@ -86,6 +78,10 @@ export default function ContactListsPage() {
   const handleDuplicate = (list: ContactList) => {
     duplicateList.mutate(list.id);
   };
+
+  const handleInlineSave = useCallback(async (listId: string, field: string, value: string) => {
+    await updateList.mutateAsync({ id: listId, [field]: value || null });
+  }, [updateList]);
 
   return (
     <div className="space-y-5">
@@ -125,18 +121,6 @@ export default function ContactListsPage() {
                 <SelectItem value="archivada">Archivada</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={origenFilter} onValueChange={setOrigenFilter}>
-              <SelectTrigger className="w-full md:w-[160px]">
-                <SelectValue placeholder="Origen" />
-              </SelectTrigger>
-              <SelectContent className="bg-background">
-                <SelectItem value="all">Todos los orígenes</SelectItem>
-                <SelectItem value="excel">Excel</SelectItem>
-                <SelectItem value="manual">Manual</SelectItem>
-                <SelectItem value="filtro">Filtro</SelectItem>
-                <SelectItem value="campana">Campaña</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
@@ -162,7 +146,6 @@ export default function ContactListsPage() {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Sector</TableHead>
-                  <TableHead>Origen</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead className="text-right">Nº Empresas</TableHead>
                   <TableHead>Campaña vinculada</TableHead>
@@ -173,22 +156,32 @@ export default function ContactListsPage() {
               <TableBody>
                 {filtered.map(list => {
                   const estado = ESTADO_BADGES[list.estado] || ESTADO_BADGES.borrador;
-                  const origen = ORIGEN_BADGES[list.origen] || ORIGEN_BADGES.manual;
                   return (
                     <TableRow
                       key={list.id}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => navigate(`/admin/listas-contacto/${list.id}`)}
                     >
-                      <TableCell className="font-medium">{list.nombre}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{list.sector || '—'}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('text-xs', origen.className)}>{origen.label}</Badge>
+                        <EditableCell
+                          value={list.name}
+                          onSave={async (val) => handleInlineSave(list.id, 'name', val)}
+                          placeholder="Nombre de la lista"
+                          displayClassName="font-medium"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <EditableCell
+                          value={list.sector}
+                          onSave={async (val) => handleInlineSave(list.id, 'sector', val)}
+                          placeholder="Sector"
+                          emptyText="—"
+                        />
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('text-xs', estado.className)}>{estado.label}</Badge>
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">{list.total_empresas}</TableCell>
+                      <TableCell className="text-right tabular-nums">{list.contact_count}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{list.last_campaign_name || '—'}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(list.created_at).toLocaleDateString('es-ES')}

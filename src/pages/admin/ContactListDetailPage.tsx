@@ -121,8 +121,8 @@ export default function ContactListDetailPage() {
   // Sync config state when list loads
   React.useEffect(() => {
     if (list) {
-      setConfigName(list.nombre || '');
-      setConfigDesc(list.descripcion || '');
+      setConfigName(list.name || '');
+      setConfigDesc(list.description || '');
       setConfigSector(list.sector || '');
       setConfigEstado(list.estado || 'borrador');
     }
@@ -272,7 +272,7 @@ export default function ContactListDetailPage() {
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
-    XLSX.writeFile(wb, `${list?.nombre || 'lista'}.xlsx`);
+    XLSX.writeFile(wb, `${list?.name || 'lista'}.xlsx`);
   };
 
   // ===== LINK CAMPAIGN =====
@@ -295,8 +295,8 @@ export default function ContactListDetailPage() {
   const handleSaveConfig = async () => {
     if (!listId) return;
     await supabase.from('outbound_lists' as any).update({
-      nombre: configName,
-      descripcion: configDesc || null,
+      name: configName,
+      description: configDesc || null,
       sector: configSector || null,
       estado: configEstado,
       updated_at: new Date().toISOString(),
@@ -342,7 +342,7 @@ export default function ContactListDetailPage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">{list.nombre}</h1>
+            <h1 className="text-2xl font-semibold">{list.name}</h1>
             <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -359,7 +359,7 @@ export default function ContactListDetailPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
               {list.sector && <span>· {list.sector}</span>}
-              <span>· {list.total_empresas} empresas</span>
+              <span>· {list.contact_count} empresas</span>
               <span>· {new Date(list.created_at).toLocaleDateString('es-ES')}</span>
             </div>
           </div>
