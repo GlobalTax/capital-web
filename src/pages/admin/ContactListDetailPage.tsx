@@ -272,7 +272,7 @@ export default function ContactListDetailPage() {
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
-    XLSX.writeFile(wb, `${list?.nombre || 'lista'}.xlsx`);
+    XLSX.writeFile(wb, `${list?.name || 'lista'}.xlsx`);
   };
 
   // ===== LINK CAMPAIGN =====
