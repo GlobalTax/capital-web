@@ -201,7 +201,7 @@ function TemplateEditorSection({
             <Input
               ref={subjectRef}
               value={subject}
-              onChange={e => setSubject(e.target.value)}
+              onChange={e => handleSubjectChange(e.target.value)}
               onFocus={() => setLastFocused('subject')}
               placeholder="Análisis de mercado para {{company}} — {{sector}}"
               className="font-mono text-sm"
