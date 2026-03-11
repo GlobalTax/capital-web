@@ -123,6 +123,17 @@ serve(async (req) => {
         continue;
       }
 
+      // Quick path: if only website is missing and we have an email, derive from domain
+      const onlyNeedsWebsite = missingFields.length === 1 && missingFields[0] === 'website';
+      if (onlyNeedsWebsite && company.client_email) {
+        const domain = domainFromEmail(company.client_email);
+        if (domain) {
+          console.log(`[enrich] ${company.client_company}: web derivada del email → ${domain}`);
+          results.push({ id: company.id, data: { client_website: domain }, found: true });
+          continue;
+        }
+      }
+
       const query = buildSearchQuery(company, activeFields);
       let searchContent = await searchFirecrawl(query, FIRECRAWL_API_KEY);
       if (searchContent.length < 200) {
@@ -130,7 +141,7 @@ serve(async (req) => {
       }
 
       let found = false;
-      let updates = {};
+      let updates: Record<string, string> = {};
 
       if (searchContent) {
         const systemPrompt = activeFields.includes('client_website') || activeFields.includes('client_provincia')
