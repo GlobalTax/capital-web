@@ -2,6 +2,7 @@
 // Tabla principal tipo Meta Ads para registro de campañas y snapshots
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
