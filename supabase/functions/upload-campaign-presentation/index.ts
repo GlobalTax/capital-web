@@ -105,6 +105,53 @@ serve(async (req) => {
         );
       }
 
+      if (action === "upload_blob") {
+        const bucket = body.bucket as string;
+        const base64 = body.base64 as string;
+        const allowedBuckets = ["campaign-presentations", "valuations"];
+
+        if (!bucket || !base64) {
+          return new Response(
+            JSON.stringify({ error: "Faltan campos: bucket, base64" }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        if (!allowedBuckets.includes(bucket)) {
+          return new Response(
+            JSON.stringify({ error: `Bucket no permitido: ${bucket}` }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        // Decode base64 to Uint8Array
+        const binaryString = atob(base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        const { data: uploadData, error: uploadBlobError } = await adminClient.storage
+          .from(bucket)
+          .upload(path, bytes, {
+            upsert: true,
+            contentType: "application/pdf",
+          });
+
+        if (uploadBlobError) {
+          console.error("[upload-campaign-presentation] upload_blob error:", uploadBlobError.message);
+          return new Response(
+            JSON.stringify({ error: uploadBlobError.message }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ success: true, path: uploadData.path }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       if (action === "copy") {
         const destinationPath = body.destinationPath as string;
         if (!destinationPath) {

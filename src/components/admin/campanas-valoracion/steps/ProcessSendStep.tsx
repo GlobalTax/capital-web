@@ -140,29 +140,40 @@ async function ensureValuationPdfUploaded(
     const safeName = c.client_company.replace(/[^a-zA-Z0-9_\-]/g, '_');
     const storagePath = `campaigns/${campaign.id}/${safeName}_${c.id.slice(0, 8)}.pdf`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('valuations')
-      .upload(storagePath, blob, { upsert: true, contentType: 'application/pdf' });
+    // Convert blob to base64 for Edge Function upload (bypasses RLS)
+    const arrayBuffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    const chunkSize = 32768;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binary += String.fromCharCode(...chunk);
+    }
+    const base64 = btoa(binary);
 
-    if (uploadError) {
-      console.error('[VALUATION_PDF_UPLOAD] Error uploading:', uploadError.message);
+    // Upload via Edge Function with service_role privileges
+    const { data: uploadResult, error: invokeError } = await supabase.functions.invoke(
+      'upload-campaign-presentation',
+      {
+        body: { action: 'upload_blob', bucket: 'valuations', path: storagePath, base64 },
+      }
+    );
+
+    if (invokeError || !uploadResult?.success) {
+      console.error('[VALUATION_PDF_UPLOAD] Edge Function error:', invokeError?.message || uploadResult?.error);
       return null;
     }
 
-    const { data: publicData } = supabase.storage
-      .from('valuations')
-      .getPublicUrl(storagePath);
+    // Construct public URL
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://fwhqtzkkvnjkazhaficj.supabase.co';
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/valuations/${storagePath}`;
 
-    const publicUrl = publicData?.publicUrl || null;
-
-    if (publicUrl) {
-      await (supabase as any)
-        .from('valuation_campaign_companies')
-        .update({ pdf_url: publicUrl })
-        .eq('id', c.id);
-      // Update in-memory reference
-      c.pdf_url = publicUrl;
-    }
+    await (supabase as any)
+      .from('valuation_campaign_companies')
+      .update({ pdf_url: publicUrl })
+      .eq('id', c.id);
+    // Update in-memory reference
+    c.pdf_url = publicUrl;
 
     return publicUrl;
   } catch (e: any) {
