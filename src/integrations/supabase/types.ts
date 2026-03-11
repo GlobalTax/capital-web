@@ -5741,146 +5741,6 @@ export type Database = {
           },
         ]
       }
-      contact_list_campaigns: {
-        Row: {
-          campaign_id: string | null
-          campaign_nombre: string | null
-          empresas_enviadas: number | null
-          fecha_vinculacion: string | null
-          id: string
-          list_id: string | null
-          notas: string | null
-        }
-        Insert: {
-          campaign_id?: string | null
-          campaign_nombre?: string | null
-          empresas_enviadas?: number | null
-          fecha_vinculacion?: string | null
-          id?: string
-          list_id?: string | null
-          notas?: string | null
-        }
-        Update: {
-          campaign_id?: string | null
-          campaign_nombre?: string | null
-          empresas_enviadas?: number | null
-          fecha_vinculacion?: string | null
-          id?: string
-          list_id?: string | null
-          notas?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contact_list_campaigns_campaign_id_fkey"
-            columns: ["campaign_id"]
-            isOneToOne: false
-            referencedRelation: "valuation_campaigns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_list_campaigns_list_id_fkey"
-            columns: ["list_id"]
-            isOneToOne: false
-            referencedRelation: "contact_lists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contact_list_companies: {
-        Row: {
-          anios_datos: number | null
-          cif: string | null
-          contacto: string | null
-          created_at: string | null
-          ebitda: number | null
-          email: string | null
-          empresa: string
-          facturacion: number | null
-          id: string
-          list_id: string | null
-          notas: string | null
-          provincia: string | null
-          telefono: string | null
-          web: string | null
-        }
-        Insert: {
-          anios_datos?: number | null
-          cif?: string | null
-          contacto?: string | null
-          created_at?: string | null
-          ebitda?: number | null
-          email?: string | null
-          empresa: string
-          facturacion?: number | null
-          id?: string
-          list_id?: string | null
-          notas?: string | null
-          provincia?: string | null
-          telefono?: string | null
-          web?: string | null
-        }
-        Update: {
-          anios_datos?: number | null
-          cif?: string | null
-          contacto?: string | null
-          created_at?: string | null
-          ebitda?: number | null
-          email?: string | null
-          empresa?: string
-          facturacion?: number | null
-          id?: string
-          list_id?: string | null
-          notas?: string | null
-          provincia?: string | null
-          telefono?: string | null
-          web?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contact_list_companies_list_id_fkey"
-            columns: ["list_id"]
-            isOneToOne: false
-            referencedRelation: "contact_lists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contact_lists: {
-        Row: {
-          contact_count: number | null
-          created_at: string
-          created_by: string | null
-          description: string | null
-          id: string
-          is_active: boolean | null
-          list_type: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          contact_count?: number | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          list_type?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          contact_count?: number | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          is_active?: boolean | null
-          list_type?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       contact_segments: {
         Row: {
           auto_update: boolean | null
@@ -16693,6 +16553,153 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      outbound_list_campaigns: {
+        Row: {
+          campaign_id: string | null
+          campaign_nombre: string | null
+          empresas_enviadas: number | null
+          fecha_vinculacion: string | null
+          id: string
+          list_id: string | null
+          notas: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_nombre?: string | null
+          empresas_enviadas?: number | null
+          fecha_vinculacion?: string | null
+          id?: string
+          list_id?: string | null
+          notas?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_nombre?: string | null
+          empresas_enviadas?: number | null
+          fecha_vinculacion?: string | null
+          id?: string
+          list_id?: string | null
+          notas?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_list_campaigns_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outbound_list_campaigns_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "valuation_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outbound_list_campaigns_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "outbound_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outbound_list_companies: {
+        Row: {
+          anios_datos: number | null
+          cif: string | null
+          contacto: string | null
+          created_at: string | null
+          ebitda: number | null
+          email: string | null
+          empresa: string
+          facturacion: number | null
+          id: string
+          list_id: string | null
+          notas: string | null
+          provincia: string | null
+          telefono: string | null
+          web: string | null
+        }
+        Insert: {
+          anios_datos?: number | null
+          cif?: string | null
+          contacto?: string | null
+          created_at?: string | null
+          ebitda?: number | null
+          email?: string | null
+          empresa: string
+          facturacion?: number | null
+          id?: string
+          list_id?: string | null
+          notas?: string | null
+          provincia?: string | null
+          telefono?: string | null
+          web?: string | null
+        }
+        Update: {
+          anios_datos?: number | null
+          cif?: string | null
+          contacto?: string | null
+          created_at?: string | null
+          ebitda?: number | null
+          email?: string | null
+          empresa?: string
+          facturacion?: number | null
+          id?: string
+          list_id?: string | null
+          notas?: string | null
+          provincia?: string | null
+          telefono?: string | null
+          web?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outbound_list_companies_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "outbound_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outbound_lists: {
+        Row: {
+          contact_count: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          list_type: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          list_type?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          contact_count?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          list_type?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       outbound_prospects: {
         Row: {
