@@ -21767,6 +21767,8 @@ export type Database = {
           client_email: string | null
           client_name: string | null
           client_phone: string | null
+          client_provincia: string | null
+          client_website: string | null
           created_at: string
           custom_multiple: number | null
           ebitda: number
@@ -21806,6 +21808,8 @@ export type Database = {
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
+          client_provincia?: string | null
+          client_website?: string | null
           created_at?: string
           custom_multiple?: number | null
           ebitda: number
@@ -21845,6 +21849,8 @@ export type Database = {
           client_email?: string | null
           client_name?: string | null
           client_phone?: string | null
+          client_provincia?: string | null
+          client_website?: string | null
           created_at?: string
           custom_multiple?: number | null
           ebitda?: number
