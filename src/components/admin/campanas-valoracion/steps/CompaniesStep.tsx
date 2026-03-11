@@ -334,6 +334,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     c => !c.client_email || !c.client_name || !c.client_phone || !c.client_cif
   );
   const companiesNeedingWeb = companies.filter(c => !c.client_website);
+  const companiesWebFromEmail = companies.filter(c => !c.client_website && c.client_email && domainFromEmail(c.client_email));
   const companiesNeedingProvincia = companies.filter(c => !c.client_provincia);
   // Keep backward compat alias
   const companiesNeedingEnrich = companiesNeedingContact;
@@ -914,10 +915,30 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                           variant="ghost"
                           size="sm"
                           className="w-full justify-between"
+                          disabled={companiesWebFromEmail.length === 0}
+                          onClick={async () => {
+                            let count = 0;
+                            for (const c of companiesWebFromEmail) {
+                              const domain = domainFromEmail(c.client_email!);
+                              if (domain) {
+                                await updateCompany({ id: c.id, data: { client_website: domain } });
+                                count++;
+                              }
+                            }
+                            toast.success(`${count} webs asignadas desde el dominio del email`);
+                          }}
+                        >
+                          <span>Web desde email</span>
+                          <Badge variant="secondary" className="ml-2">{companiesWebFromEmail.length}</Badge>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-between"
                           disabled={companiesNeedingWeb.length === 0}
                           onClick={() => handleEnrichByFields(['client_website'], companiesNeedingWeb, 'Web')}
                         >
-                          <span>Web</span>
+                          <span>Web (buscar con IA)</span>
                           <Badge variant="secondary" className="ml-2">{companiesNeedingWeb.length}</Badge>
                         </Button>
                         <Button
