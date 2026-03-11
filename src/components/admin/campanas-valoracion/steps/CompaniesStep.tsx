@@ -330,15 +330,6 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 });
   const [enrichLabel, setEnrichLabel] = useState('');
 
-  const companiesNeedingContact = companies.filter(
-    c => !c.client_email || !c.client_name || !c.client_phone || !c.client_cif
-  );
-  const companiesNeedingWeb = companies.filter(c => !c.client_website);
-  const companiesWebFromEmail = companies.filter(c => !c.client_website && c.client_email && domainFromEmail(c.client_email));
-  const companiesNeedingProvincia = companies.filter(c => !c.client_provincia);
-  // Keep backward compat alias
-  const companiesNeedingEnrich = companiesNeedingContact;
-
   // Derive website from email domain (skip generic providers)
   const domainFromEmail = (email: string): string | null => {
     const match = email.match(/@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/);
@@ -347,6 +338,13 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     const generic = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.es', 'hotmail.es', 'live.com', 'icloud.com', 'protonmail.com', 'aol.com', 'msn.com', 'telefonica.net', 'ono.com', 'orange.es', 'movistar.es'];
     return generic.includes(domain) ? null : domain;
   };
+
+  const companiesNeedingContact = companies.filter(
+    c => !c.client_email || !c.client_name || !c.client_phone || !c.client_cif
+  );
+  const companiesNeedingWeb = companies.filter(c => !c.client_website);
+  const companiesWebFromEmail = companies.filter(c => !c.client_website && c.client_email && domainFromEmail(c.client_email));
+  const companiesNeedingProvincia = companies.filter(c => !c.client_provincia);
 
   const handleEnrichByFields = async (fields: string[], targetCompanies: CampaignCompany[], label: string) => {
     if (targetCompanies.length === 0) return;
