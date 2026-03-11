@@ -334,6 +334,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
     c => !c.client_email || !c.client_name || !c.client_phone || !c.client_cif
   );
   const companiesNeedingWeb = companies.filter(c => !c.client_website);
+  const companiesWebFromEmail = companies.filter(c => !c.client_website && c.client_email && domainFromEmail(c.client_email));
   const companiesNeedingProvincia = companies.filter(c => !c.client_provincia);
   // Keep backward compat alias
   const companiesNeedingEnrich = companiesNeedingContact;
