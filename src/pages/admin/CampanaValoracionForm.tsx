@@ -124,7 +124,7 @@ export default function CampanaValoracionForm() {
         case 2: return <CompaniesStep campaignId={campaignId} financialYears={campaignData.financial_years || [new Date().getFullYear() - 1]} yearsMode={campaignData.years_mode || '1_year'} />;
         case 3: return <DocumentStep campaignId={campaignId} />;
         case 4: return <MailStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
-        case 5: return <ProcessSendStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
+        case 5: return <DocumentSendStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
         case 6: return <FollowUpStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
         case 7: return <CampaignAnalyticsStep campaignId={campaignId} campaign={campaignData as ValuationCampaign} />;
         default: return null;
