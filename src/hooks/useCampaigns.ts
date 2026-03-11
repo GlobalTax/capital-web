@@ -227,7 +227,8 @@ export function useCampaigns() {
         }
       }
 
-      // Copy presentations (studies + any uploaded files)
+      // Copy presentations only for valuation campaigns (document campaigns start fresh)
+      if (targetType !== 'document') {
       const { data: presentations, error: presError } = await supabase
         .from('campaign_presentations')
         .select('*')
@@ -266,6 +267,7 @@ export function useCampaigns() {
           }
         }
       }
+      } // end: skip presentations for document campaigns
 
       // ── Copy campaign_emails (clean: keep content, reset operational state) ──
       const { data: originalEmails, error: emailsFetchErr } = await (supabase as any)

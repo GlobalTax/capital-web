@@ -14,16 +14,17 @@ interface DocumentStepProps {
 
 export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: documents, isLoading } = useQuery({
     queryKey: ['campaign-document', campaignId],
     queryFn: async () => {
+      // For document campaigns, show ALL presentations (not per-company filtered)
       const { data, error } = await supabase
         .from('campaign_presentations')
         .select('*')
-        .eq('campaign_id', campaignId)
-        .is('company_id', null);
+        .eq('campaign_id', campaignId);
       if (error) throw error;
       return data || [];
     },
@@ -100,6 +101,32 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
     }
   }, [campaignId, queryClient]);
 
+  const deleteAll = useCallback(async () => {
+    if (!documents || documents.length === 0) return;
+    setIsDeletingAll(true);
+    try {
+      for (const doc of documents) {
+        try {
+          await supabase.functions.invoke('upload-campaign-presentation', {
+            body: { action: 'delete', path: doc.storage_path },
+          });
+        } catch { /* ignore storage errors */ }
+      }
+      // Delete all DB records for this campaign
+      await supabase
+        .from('campaign_presentations')
+        .delete()
+        .eq('campaign_id', campaignId);
+
+      toast.success(`${documents.length} documentos eliminados`);
+      queryClient.invalidateQueries({ queryKey: ['campaign-document', campaignId] });
+    } catch (err: any) {
+      toast.error('Error al eliminar: ' + err.message);
+    } finally {
+      setIsDeletingAll(false);
+    }
+  }, [documents, campaignId, queryClient]);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (files) => files[0] && uploadFile(files[0]),
     accept: { 'application/pdf': ['.pdf'] },
@@ -172,6 +199,22 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
                   </div>
                 </div>
               ))}
+              {documents.length > 1 && (
+                <div className="pt-2 flex justify-end">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={isDeletingAll}
+                    onClick={deleteAll}
+                  >
+                    {isDeletingAll ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Eliminando...</>
+                    ) : (
+                      <><Trash2 className="h-4 w-4 mr-1" />Eliminar todos ({documents.length})</>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-2">
