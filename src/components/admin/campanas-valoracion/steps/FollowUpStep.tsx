@@ -756,7 +756,7 @@ function SendList({
               <TableBody>
                 {filteredVisible.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                       No se encontraron empresas con los filtros aplicados
                     </TableCell>
                   </TableRow>
@@ -772,6 +772,8 @@ function SendList({
                       <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-medium text-sm max-w-[180px] truncate">{c.client_company}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm">{c.revenue ? formatCurrencyEUR(c.revenue) : '—'}</TableCell>
+                      <TableCell className="text-right tabular-nums text-sm">{c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}</TableCell>
                       <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
