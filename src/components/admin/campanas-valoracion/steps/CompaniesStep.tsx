@@ -1000,7 +1000,18 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                         {c.client_email || <span className="flex items-center gap-1 text-yellow-600 text-xs"><AlertTriangle className="h-3 w-3" />Sin email</span>}
                       </TableCell>
                       <TableCell>{c.client_cif || '—'}</TableCell>
-                      <TableCell className="text-xs max-w-[120px] truncate">{c.client_website || '—'}</TableCell>
+                      <TableCell className="text-xs max-w-[120px] truncate">
+                        {c.client_website ? (
+                          <a
+                            href={c.client_website.startsWith('http') ? c.client_website : `https://${c.client_website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline hover:text-primary/80"
+                          >
+                            {c.client_website}
+                          </a>
+                        ) : '—'}
+                      </TableCell>
                       <TableCell className="text-xs">{c.client_provincia || '—'}</TableCell>
                       <TableCell className="text-right">{c.revenue ? formatCurrencyEUR(c.revenue) : '—'}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrencyEUR(c.ebitda)}</TableCell>
