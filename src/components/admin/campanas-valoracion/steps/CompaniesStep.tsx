@@ -224,8 +224,8 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterRevenue, setFilterRevenue] = useState<string | null>(null);
-  const [filterEbitda, setFilterEbitda] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const filteredCompanies = useMemo(() => {
     let result = companies;
     if (searchQuery.trim()) {
@@ -237,13 +237,11 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
         c.client_cif?.toLowerCase().includes(q)
       );
     }
-    const revenueRange = parseRangeFilter(filterRevenue);
-    if (revenueRange) result = result.filter(c => matchesRange(c.revenue, revenueRange));
-    const ebitdaRange = parseRangeFilter(filterEbitda);
-    if (ebitdaRange) result = result.filter(c => matchesRange(c.ebitda, ebitdaRange));
+    result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
+    result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
     return result;
   }, [companies, searchQuery, filterRevenue, filterEbitda]);
-  const hasFinancialFilters = !!filterRevenue || !!filterEbitda;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
 
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
