@@ -353,6 +353,35 @@ export default function ContactListDetailPage() {
     toast.success('Lista eliminada');
   };
 
+  // ===== DEDUP =====
+  const duplicateGroups = useMemo(() => {
+    const groups: Record<string, ContactListCompany[]> = {};
+    companies.forEach(c => {
+      const key = (c.empresa || '').trim().toLowerCase();
+      if (!key) return;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(c);
+    });
+    return Object.entries(groups).filter(([, g]) => g.length > 1);
+  }, [companies]);
+
+  const handleDedup = async () => {
+    if (duplicateGroups.length === 0) return;
+    const idsToDelete: string[] = [];
+    for (const [, group] of duplicateGroups) {
+      const sorted = [...group].sort((a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      const toRemove = dedupKeep === 'newest' ? sorted.slice(0, -1) : sorted.slice(1);
+      toRemove.forEach(c => idsToDelete.push(c.id));
+    }
+    if (idsToDelete.length === 0) return;
+    await deleteCompanies.mutateAsync(idsToDelete);
+    queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+    setIsDedupModalOpen(false);
+    toast.success(`${idsToDelete.length} duplicados eliminados`);
+  };
+
   const handleEstadoChange = async (newEstado: string) => {
     if (!listId) return;
     await supabase.from('outbound_lists' as any).update({ estado: newEstado, updated_at: new Date().toISOString() }).eq('id', listId);
