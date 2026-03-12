@@ -1393,6 +1393,37 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           estimatedSize={estimateZipSize(selectedIds.length)}
         />
       )}
+
+      {/* Resend Confirmation Dialog */}
+      <AlertDialog open={!!resendConfirm} onOpenChange={(open) => !open && setResendConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>⚠️ Confirmar reenvío</AlertDialogTitle>
+            <AlertDialogDescription>
+              {resendConfirm?.type === 'single'
+                ? `¿Estás seguro de que quieres reenviar el email a "${resendConfirm.company?.client_company}"? El destinatario recibirá el mensaje otra vez.`
+                : `¿Estás seguro de que quieres reenviar ${resendConfirm?.count} emails? Todos los destinatarios recibirán el mensaje otra vez.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (resendConfirm?.type === 'single' && resendConfirm.company) {
+                  sendSingle(resendConfirm.company, true);
+                } else if (resendConfirm?.type === 'bulk' && resendConfirm.ids) {
+                  handleSendSelected(resendConfirm.ids);
+                }
+                setResendConfirm(null);
+              }}
+            >
+              Sí, reenviar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
