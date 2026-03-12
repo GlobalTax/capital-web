@@ -16741,14 +16741,20 @@ export type Database = {
       }
       outbound_lists: {
         Row: {
+          cnaes_utilizados: string[] | null
           contact_count: number | null
           created_at: string
           created_by: string | null
+          criterios_construccion: string | null
+          descripcion_proposito: string | null
           description: string | null
           estado: string
+          facturacion_max: number | null
+          facturacion_min: number | null
           id: string
           is_active: boolean | null
           list_type: string
+          lista_madre_id: string | null
           name: string
           origen: string
           sector: string | null
@@ -16756,14 +16762,20 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cnaes_utilizados?: string[] | null
           contact_count?: number | null
           created_at?: string
           created_by?: string | null
+          criterios_construccion?: string | null
+          descripcion_proposito?: string | null
           description?: string | null
           estado?: string
+          facturacion_max?: number | null
+          facturacion_min?: number | null
           id?: string
           is_active?: boolean | null
           list_type?: string
+          lista_madre_id?: string | null
           name: string
           origen?: string
           sector?: string | null
@@ -16771,21 +16783,35 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cnaes_utilizados?: string[] | null
           contact_count?: number | null
           created_at?: string
           created_by?: string | null
+          criterios_construccion?: string | null
+          descripcion_proposito?: string | null
           description?: string | null
           estado?: string
+          facturacion_max?: number | null
+          facturacion_min?: number | null
           id?: string
           is_active?: boolean | null
           list_type?: string
+          lista_madre_id?: string | null
           name?: string
           origen?: string
           sector?: string | null
           tipo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "outbound_lists_lista_madre_id_fkey"
+            columns: ["lista_madre_id"]
+            isOneToOne: false
+            referencedRelation: "outbound_lists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       outbound_prospects: {
         Row: {
