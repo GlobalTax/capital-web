@@ -730,26 +730,28 @@ function CcRecipientsSection({ campaignId, campaign }: { campaignId: string; cam
     setInitialized(true);
   }, [allRecipients, campaign, initialized]);
 
-  const handleToggle = (id: string) => {
-    setSelectedIds(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
-
-  const handleSave = async () => {
+  const saveToDb = async (ids: string[]) => {
     setSaving(true);
     try {
       const { error } = await supabase
         .from('valuation_campaigns')
-        .update({ cc_recipient_ids: selectedIds } as any)
+        .update({ cc_recipient_ids: ids } as any)
         .eq('id', campaignId);
       if (error) throw error;
-      toast.success(`CC actualizado: ${selectedIds.length} destinatario(s)`);
+      toast.success(`CC actualizado: ${ids.length} destinatario(s)`);
     } catch {
       toast.error('Error al guardar CC');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleToggle = (id: string) => {
+    setSelectedIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      saveToDb(next);
+      return next;
+    });
   };
 
   if (isLoading) {
@@ -805,10 +807,7 @@ function CcRecipientsSection({ campaignId, campaign }: { campaignId: string; cam
               ? 'Sin CC — los emails se enviarán solo al destinatario principal'
               : `${selectedIds.length} persona(s) recibirán copia de cada email`}
           </p>
-          <Button onClick={handleSave} disabled={saving} size="sm">
-            {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-            Guardar CC
-          </Button>
+          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
         </div>
       </CardContent>
     </Card>
