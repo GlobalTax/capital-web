@@ -183,6 +183,17 @@ serve(async (req) => {
           if (att) attachments.push(att);
         }
 
+        // 3. Fallback: shared campaign document (Document mode, company_id is null)
+        if (!pres) {
+          const shared = (sharedDocs || []).filter((d: any) => d.campaign_id === email.campaign_id);
+          for (const doc of shared) {
+            if (doc.storage_path) {
+              const att = await downloadPdfFromStorage(serviceClient, doc.storage_path, doc.file_name || "Documento.pdf");
+              if (att) attachments.push(att);
+            }
+          }
+        }
+
         // Convert body to HTML with responsive wrapper and append signature
         let htmlBody = `
           <div style="font-family:Arial,sans-serif;font-size:14px;color:#333;line-height:1.6;width:100%;max-width:600px;margin:0 auto;padding:0 12px;box-sizing:border-box;">
