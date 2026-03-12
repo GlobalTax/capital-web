@@ -931,6 +931,7 @@ function CompanyDrawer({ company, onClose, onEdit }: {
                 <div><span className="text-muted-foreground">Teléfono:</span> <span className="ml-1">{company.telefono || '—'}</span></div>
                 <div><span className="text-muted-foreground">Web:</span> <span className="ml-1">{company.web || '—'}</span></div>
                 <div><span className="text-muted-foreground">Provincia:</span> <span className="ml-1">{company.provincia || '—'}</span></div>
+                <div><span className="text-muted-foreground">C. Autónoma:</span> <span className="ml-1">{company.comunidad_autonoma || '—'}</span></div>
               </div>
               {company.notas && (
                 <div className="text-sm"><span className="text-muted-foreground">Notas:</span> <p className="mt-1">{company.notas}</p></div>
