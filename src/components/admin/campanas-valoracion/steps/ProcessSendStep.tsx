@@ -1350,7 +1350,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                             <>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => sendSingle(c, true)}
+                                onClick={() => setResendConfirm({ type: 'single', company: c })}
                                 disabled={isRowSending}
                               >
                                 <RefreshCw className="h-4 w-4 mr-2" />
