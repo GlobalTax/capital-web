@@ -939,6 +939,7 @@ export default function ContactListDetailPage() {
               </div>
               <Button onClick={handleSaveConfig}>Guardar cambios</Button>
             </CardContent>
+          </Card>
 
           <Card className="border-destructive/50">
             <CardContent className="pt-6">
