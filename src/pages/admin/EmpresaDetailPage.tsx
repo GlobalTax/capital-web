@@ -67,6 +67,7 @@ import { EmpresaFinancialsCard } from '@/components/admin/companies/EmpresaFinan
 import { EmpresaContactsTable } from '@/components/admin/companies/EmpresaContactsTable';
 import { useEmpresaContactos } from '@/hooks/useEmpresaContactos';
 import { EmpresaLinkContactDialog } from '@/components/admin/companies/EmpresaLinkContactDialog';
+import { EmpresaMergeDialog } from '@/components/admin/empresas/EmpresaMergeDialog';
 import { formatCompactCurrency } from '@/shared/utils/format';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
