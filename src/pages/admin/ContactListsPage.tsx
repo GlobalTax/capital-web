@@ -42,10 +42,12 @@ export default function ContactListsPage() {
   const { lists, isLoading, createList, deleteList, duplicateList, updateList } = useContactLists();
   const [search, setSearch] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('all');
+  const [tipoFilter, setTipoFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newSector, setNewSector] = useState('');
+  const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
 
   const filtered = useMemo(() => {
     let result = lists;
