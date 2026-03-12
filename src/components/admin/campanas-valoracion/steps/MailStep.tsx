@@ -807,10 +807,7 @@ function CcRecipientsSection({ campaignId, campaign }: { campaignId: string; cam
               ? 'Sin CC — los emails se enviarán solo al destinatario principal'
               : `${selectedIds.length} persona(s) recibirán copia de cada email`}
           </p>
-          <Button onClick={handleSave} disabled={saving} size="sm">
-            {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-            Guardar CC
-          </Button>
+          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
         </div>
       </CardContent>
     </Card>
