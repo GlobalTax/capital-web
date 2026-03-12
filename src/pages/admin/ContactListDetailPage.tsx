@@ -951,10 +951,13 @@ function CompanyDrawer({ company, onClose, onEdit }: {
                 <div><span className="text-muted-foreground">Empleados:</span> <span className="ml-1">{company.num_trabajadores ?? '—'}</span></div>
                 <div><span className="text-muted-foreground">Director Ejecutivo:</span> <span className="ml-1">{company.director_ejecutivo || '—'}</span></div>
                 <div><span className="text-muted-foreground">Contacto:</span> <span className="ml-1">{company.contacto || '—'}</span></div>
+                <div><span className="text-muted-foreground">Posición:</span> <span className="ml-1">{company.posicion_contacto || '—'}</span></div>
                 <div><span className="text-muted-foreground">Email:</span> <span className="ml-1">{company.email || '—'}</span></div>
                 <div><span className="text-muted-foreground">LinkedIn:</span> <span className="ml-1">{company.linkedin || '—'}</span></div>
                 <div><span className="text-muted-foreground">Teléfono:</span> <span className="ml-1">{company.telefono || '—'}</span></div>
                 <div><span className="text-muted-foreground">Web:</span> <span className="ml-1">{company.web || '—'}</span></div>
+                <div><span className="text-muted-foreground">CNAE:</span> <span className="ml-1">{company.cnae || '—'}</span></div>
+                <div className="col-span-2"><span className="text-muted-foreground">Desc. Actividad:</span> <span className="ml-1">{company.descripcion_actividad || '—'}</span></div>
                 <div><span className="text-muted-foreground">Provincia:</span> <span className="ml-1">{company.provincia || '—'}</span></div>
                 <div><span className="text-muted-foreground">C. Autónoma:</span> <span className="ml-1">{company.comunidad_autonoma || '—'}</span></div>
               </div>
