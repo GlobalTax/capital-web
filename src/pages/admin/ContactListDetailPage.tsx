@@ -869,6 +869,7 @@ export default function ContactListDetailPage() {
                             Empleados <SortIcon field="num_trabajadores" />
                           </button>
                         </TableHead>
+                        <TableHead className="min-w-[160px]">Notas</TableHead>
                         <TableHead className="w-12" />
                       </TableRow>
                     </TableHeader>
