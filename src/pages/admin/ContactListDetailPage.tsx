@@ -556,6 +556,14 @@ export default function ContactListDetailPage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div>
+            {parentList && (
+              <div className="mb-1">
+                <Link to={`/admin/listas-contacto/${parentList.id}`} className="text-xs text-primary hover:underline flex items-center gap-1">
+                  <Link2 className="h-3 w-3" />
+                  Sublista de: {parentList.name}
+                </Link>
+              </div>
+            )}
             <h1 className="text-2xl font-semibold">{list.name}</h1>
             <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
               <DropdownMenu>
