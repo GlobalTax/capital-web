@@ -208,6 +208,8 @@ export default function ContactListDetailPage() {
   const [moveCopyCompany, setMoveCopyCompany] = useState<ContactListCompany | null>(null);
   const [moveCopyMode, setMoveCopyMode] = useState<'move' | 'copy'>('move');
   const [moveCopyTargetId, setMoveCopyTargetId] = useState('');
+  const [isCreatingNewList, setIsCreatingNewList] = useState(false);
+  const [newListName, setNewListName] = useState('');
   const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
 
   // Search, filter & sort
@@ -564,8 +566,25 @@ export default function ContactListDetailPage() {
 
   // ===== MOVE / COPY COMPANY =====
   const handleMoveCopy = async () => {
-    if (!moveCopyCompany || !moveCopyTargetId || !listId) return;
-    setIsMoveCopyLoading(true);
+    if (!moveCopyCompany || !listId) return;
+    // Determine target list id
+    let targetId = moveCopyTargetId;
+    if (isCreatingNewList) {
+      if (!newListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
+      setIsMoveCopyLoading(true);
+      try {
+        const { data: newList, error: createErr } = await supabase
+          .from('outbound_lists' as any)
+          .insert({ name: newListName.trim(), type: (list as any)?.type || 'outbound' } as any)
+          .select('id')
+          .single();
+        if (createErr || !newList) { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+        targetId = (newList as any).id;
+      } catch { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+    } else {
+      if (!targetId) return;
+      setIsMoveCopyLoading(true);
+    }
     try {
       if (moveCopyMode === 'copy') {
         // Check if CIF already exists in target list
@@ -576,7 +595,7 @@ export default function ContactListDetailPage() {
             .eq('list_id', moveCopyTargetId)
             .eq('cif', moveCopyCompany.cif)
             .limit(1);
-          if (existing && existing.length > 0) {
+        if (existing && existing.length > 0) {
             toast.error('Esta empresa ya existe en la lista seleccionada');
             setIsMoveCopyLoading(false);
             return;
@@ -586,23 +605,25 @@ export default function ContactListDetailPage() {
         const { id, notas, created_at, ...rest } = moveCopyCompany as any;
         await supabase.from('outbound_list_companies' as any).insert({
           ...rest,
-          list_id: moveCopyTargetId,
+          list_id: targetId,
           notas: null,
         } as any);
         toast.success('Empresa copiada a la otra lista');
       } else {
         // Move: update list_id, clear notas
         await supabase.from('outbound_list_companies' as any)
-          .update({ list_id: moveCopyTargetId, notas: null } as any)
+          .update({ list_id: targetId, notas: null } as any)
           .eq('id', moveCopyCompany.id);
         toast.success('Empresa movida a la otra lista');
       }
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
-      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyTargetId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
       setMoveCopyCompany(null);
       setMoveCopyTargetId('');
+      setIsCreatingNewList(false);
+      setNewListName('');
     } catch (err) {
       toast.error('Error al procesar la operación');
     } finally {
@@ -1321,7 +1342,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Move/Copy Modal */}
-      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) setMoveCopyCompany(null); }}>
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'} a otra lista</DialogTitle>
@@ -1330,20 +1351,47 @@ export default function ContactListDetailPage() {
             <p className="text-sm text-muted-foreground">
               {moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
             </p>
-            <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar lista destino..." />
-              </SelectTrigger>
-              <SelectContent>
-                {allLists.map((l: any) => (
-                  <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isCreatingNewList ? (
+              <>
+                <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar lista destino..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allLists.map((l: any) => (
+                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setIsCreatingNewList(true); setMoveCopyTargetId(''); }}
+                >
+                  + Crear nueva lista
+                </button>
+              </>
+            ) : (
+              <>
+                <Input
+                  placeholder="Nombre de la nueva lista..."
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setIsCreatingNewList(false); setNewListName(''); }}
+                >
+                  ← Seleccionar lista existente
+                </button>
+              </>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setMoveCopyCompany(null)}>Cancelar</Button>
-            <Button onClick={handleMoveCopy} disabled={!moveCopyTargetId || isMoveCopyLoading}>
+            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); }}>Cancelar</Button>
+            <Button onClick={handleMoveCopy} disabled={(!isCreatingNewList && !moveCopyTargetId) || (isCreatingNewList && !newListName.trim()) || isMoveCopyLoading}>
               {isMoveCopyLoading ? 'Procesando...' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
             </Button>
           </DialogFooter>

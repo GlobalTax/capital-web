@@ -2736,6 +2736,50 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_documents: {
+        Row: {
+          buyer_id: string
+          created_at: string | null
+          file_name: string
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          note: string | null
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string | null
+          file_name: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          note?: string | null
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string | null
+          file_name?: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          note?: string | null
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_documents_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_buyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyer_matches: {
         Row: {
           buyer_id: string
