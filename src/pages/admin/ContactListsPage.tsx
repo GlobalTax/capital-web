@@ -21,9 +21,15 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
 } from 'lucide-react';
-import { useContactLists, ContactList } from '@/hooks/useContactLists';
+import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
 import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
+
+const TIPO_BADGES: Record<ContactListTipo, { label: string; className: string }> = {
+  compradores: { label: 'Compradores', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  outbound: { label: 'Outbound', className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  otros: { label: 'Otros', className: 'bg-slate-50 text-slate-600 border-slate-200' },
+};
 
 const ESTADO_BADGES: Record<string, { label: string; className: string }> = {
   borrador: { label: 'Borrador', className: 'bg-muted text-muted-foreground border-border' },
