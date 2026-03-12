@@ -179,7 +179,7 @@ export default function ContactListsPage() {
               <TableBody>
                 {filtered.map(list => {
                   const estado = ESTADO_BADGES[list.estado] || ESTADO_BADGES.borrador;
-                  return (
+                  const tipo = TIPO_BADGES[list.tipo] || TIPO_BADGES.outbound;
                     <TableRow
                       key={list.id}
                       className="cursor-pointer hover:bg-muted/50"
