@@ -36,6 +36,7 @@ import {
   useContactListCampaigns,
   useCompanyListHistory,
   ContactListCompany,
+  ContactListTipo,
 } from '@/hooks/useContactLists';
 import * as XLSX from 'xlsx';
 import { useDropzone } from 'react-dropzone';
@@ -134,6 +135,7 @@ export default function ContactListDetailPage() {
   const [configDesc, setConfigDesc] = useState('');
   const [configSector, setConfigSector] = useState('');
   const [configEstado, setConfigEstado] = useState('borrador');
+  const [configTipo, setConfigTipo] = useState<ContactListTipo>('outbound');
 
   React.useEffect(() => {
     if (list) {
@@ -141,6 +143,7 @@ export default function ContactListDetailPage() {
       setConfigDesc(list.description || '');
       setConfigSector(list.sector || '');
       setConfigEstado(list.estado || 'borrador');
+      setConfigTipo(list.tipo || 'outbound');
     }
   }, [list]);
 
@@ -318,6 +321,7 @@ export default function ContactListDetailPage() {
       name: configName,
       description: configDesc || null,
       sector: configSector || null,
+      tipo: configTipo,
       estado: configEstado,
       updated_at: new Date().toISOString(),
     }).eq('id', listId);
@@ -559,6 +563,17 @@ export default function ContactListDetailPage() {
               <div>
                 <Label>Descripción</Label>
                 <Textarea value={configDesc} onChange={e => setConfigDesc(e.target.value)} rows={3} />
+              </div>
+              <div>
+                <Label>Tipo de lista</Label>
+                <Select value={configTipo} onValueChange={(v) => setConfigTipo(v as ContactListTipo)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="compradores">Potenciales compradores</SelectItem>
+                    <SelectItem value="outbound">Outbound</SelectItem>
+                    <SelectItem value="otros">Otros</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label>Sector</Label>

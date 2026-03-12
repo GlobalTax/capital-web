@@ -21,9 +21,15 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
 } from 'lucide-react';
-import { useContactLists, ContactList } from '@/hooks/useContactLists';
+import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
 import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
+
+const TIPO_BADGES: Record<ContactListTipo, { label: string; className: string }> = {
+  compradores: { label: 'Compradores', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  outbound: { label: 'Outbound', className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  otros: { label: 'Otros', className: 'bg-slate-50 text-slate-600 border-slate-200' },
+};
 
 const ESTADO_BADGES: Record<string, { label: string; className: string }> = {
   borrador: { label: 'Borrador', className: 'bg-muted text-muted-foreground border-border' },
@@ -36,10 +42,12 @@ export default function ContactListsPage() {
   const { lists, isLoading, createList, deleteList, duplicateList, updateList } = useContactLists();
   const [search, setSearch] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('all');
+  const [tipoFilter, setTipoFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newSector, setNewSector] = useState('');
+  const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
 
   const filtered = useMemo(() => {
     let result = lists;
@@ -48,8 +56,9 @@ export default function ContactListsPage() {
       result = result.filter(l => l.name.toLowerCase().includes(q));
     }
     if (estadoFilter !== 'all') result = result.filter(l => l.estado === estadoFilter);
+    if (tipoFilter !== 'all') result = result.filter(l => l.tipo === tipoFilter);
     return result;
-  }, [lists, search, estadoFilter]);
+  }, [lists, search, estadoFilter, tipoFilter]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -57,11 +66,13 @@ export default function ContactListsPage() {
       nombre: newName.trim(),
       descripcion: newDesc.trim() || undefined,
       sector: newSector.trim() || undefined,
+      tipo: newTipo,
     });
     setIsCreateOpen(false);
     setNewName('');
     setNewDesc('');
     setNewSector('');
+    setNewTipo('outbound');
     navigate(`/admin/listas-contacto/${result.id}`);
   };
 
@@ -110,6 +121,17 @@ export default function ContactListsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar por nombre..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
+            <Select value={tipoFilter} onValueChange={setTipoFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent className="bg-background">
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="compradores">Compradores</SelectItem>
+                <SelectItem value="outbound">Outbound</SelectItem>
+                <SelectItem value="otros">Otros</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={estadoFilter} onValueChange={setEstadoFilter}>
               <SelectTrigger className="w-full md:w-[160px]">
                 <SelectValue placeholder="Estado" />
@@ -143,19 +165,21 @@ export default function ContactListsPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Sector</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Nº Empresas</TableHead>
-                  <TableHead>Campaña vinculada</TableHead>
-                  <TableHead>Fecha creación</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
+                 <TableRow>
+                   <TableHead>Nombre</TableHead>
+                   <TableHead>Tipo</TableHead>
+                   <TableHead>Sector</TableHead>
+                   <TableHead>Estado</TableHead>
+                   <TableHead className="text-right">Nº Empresas</TableHead>
+                   <TableHead>Campaña vinculada</TableHead>
+                   <TableHead>Fecha creación</TableHead>
+                   <TableHead className="w-12" />
+                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map(list => {
                   const estado = ESTADO_BADGES[list.estado] || ESTADO_BADGES.borrador;
+                  const tipo = TIPO_BADGES[list.tipo] || TIPO_BADGES.outbound;
                   return (
                     <TableRow
                       key={list.id}
@@ -169,6 +193,9 @@ export default function ContactListsPage() {
                           placeholder="Nombre de la lista"
                           displayClassName="font-medium"
                         />
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn('text-xs', tipo.className)}>{tipo.label}</Badge>
                       </TableCell>
                       <TableCell>
                         <EditableCell
@@ -228,6 +255,17 @@ export default function ContactListsPage() {
             <div>
               <Label>Nombre *</Label>
               <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Ej: Empresas Sector Salud Q1 2026" />
+            </div>
+            <div>
+              <Label>Tipo de lista *</Label>
+              <Select value={newTipo} onValueChange={(v) => setNewTipo(v as ContactListTipo)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-background">
+                  <SelectItem value="compradores">Potenciales compradores</SelectItem>
+                  <SelectItem value="outbound">Outbound</SelectItem>
+                  <SelectItem value="otros">Otros</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Descripción</Label>

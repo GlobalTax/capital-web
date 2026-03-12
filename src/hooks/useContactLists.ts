@@ -7,11 +7,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export type ContactListTipo = 'compradores' | 'outbound' | 'otros';
+
 export interface ContactList {
   id: string;
   name: string;
   description: string | null;
   sector: string | null;
+  tipo: ContactListTipo;
   origen: string;
   estado: string;
   contact_count: number;
@@ -88,6 +91,7 @@ export const useContactLists = () => {
         name: l.name,
         description: l.description,
         sector: l.sector,
+        tipo: l.tipo || 'outbound',
         origen: l.origen || 'manual',
         estado: l.estado || 'borrador',
         contact_count: l.contact_count || 0,
@@ -99,10 +103,10 @@ export const useContactLists = () => {
   });
 
   const createList = useMutation({
-    mutationFn: async (input: { nombre: string; descripcion?: string; sector?: string }) => {
+    mutationFn: async (input: { nombre: string; descripcion?: string; sector?: string; tipo?: ContactListTipo }) => {
       const { data, error } = await supabase
         .from(TB_LISTS)
-        .insert({ name: input.nombre, description: input.descripcion || null, sector: input.sector || null, origen: 'manual', estado: 'borrador' })
+        .insert({ name: input.nombre, description: input.descripcion || null, sector: input.sector || null, tipo: input.tipo || 'outbound', origen: 'manual', estado: 'borrador' })
         .select('id')
         .single();
       if (error) throw error;
