@@ -1011,8 +1011,12 @@ export default function ContactListDetailPage() {
                                 <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
                                   <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setAiGenCompany(company); setAiGenText(''); }}>
-                                  <Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA
+                                <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
+                                  {aiGenLoading === company.id ? (
+                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+                                  ) : (
+                                    <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
+                                  )}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
