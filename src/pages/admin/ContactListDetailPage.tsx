@@ -873,6 +873,9 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
     director_ejecutivo: company.director_ejecutivo || '',
     linkedin: company.linkedin || '',
     comunidad_autonoma: company.comunidad_autonoma || '',
+    posicion_contacto: company.posicion_contacto || '',
+    cnae: company.cnae || '',
+    descripcion_actividad: company.descripcion_actividad || '',
   });
 
   return (
