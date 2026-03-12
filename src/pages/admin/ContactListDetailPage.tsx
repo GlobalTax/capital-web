@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
-  Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet,
+  Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
