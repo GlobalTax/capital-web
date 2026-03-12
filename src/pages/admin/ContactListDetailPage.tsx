@@ -863,6 +863,20 @@ export default function ContactListDetailPage() {
                 </button>
               )}
             </div>
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por actividad..."
+                value={activitySearchQuery}
+                onChange={e => setActivitySearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+              {activitySearchQuery && (
+                <button onClick={() => setActivitySearchQuery('')} className="absolute right-2.5 top-2.5">
+                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                </button>
+              )}
+            </div>
             <Button
               variant={filterHasEmail ? 'default' : 'outline'}
               size="sm"
@@ -877,7 +891,7 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
-            {(searchQuery || filterHasEmail || filterHasEbitda) && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
