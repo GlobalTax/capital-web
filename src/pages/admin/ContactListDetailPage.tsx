@@ -664,12 +664,10 @@ export default function ContactListDetailPage() {
       const { error: updateErr } = await supabase
         .from('outbound_list_companies' as any)
         .update({ descripcion_actividad: data.description } as any)
-        .eq('id', aiGenCompany.id);
+        .eq('id', company.id);
       if (updateErr) throw updateErr;
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       toast.success('Descripción de actividad generada y guardada');
-      setAiGenCompany(null);
-      setAiGenText('');
     } catch (err: any) {
       toast.error(err?.message || 'Error al generar descripción');
     } finally {
