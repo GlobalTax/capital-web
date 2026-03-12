@@ -283,10 +283,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                       <TableCell className="text-center">
                         {(() => {
                           if (!email || status !== 'sent') return <span className="text-muted-foreground">—</span>;
-                          const opened = (email as any).email_opened;
-                          const delivery = (email as any).delivery_status;
-                          if (opened) return <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700">📩 Abierto</Badge>;
-                          if (delivery === 'delivered') return <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700">✓ Entregado</Badge>;
+                          if (email.email_opened) return <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700">📩 Abierto</Badge>;
+                          if (email.delivery_status === 'delivered') return <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700">✓ Entregado</Badge>;
+                          if (email.delivery_status === 'bounced') return <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">✗ Rebotado</Badge>;
                           if (delivery === 'bounced') return <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">✗ Rebotado</Badge>;
                           return <Badge variant="outline" className="text-muted-foreground">Enviado</Badge>;
                         })()}
