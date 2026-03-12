@@ -1,0 +1,1 @@
+ALTER TABLE outbound_list_companies ADD COLUMN IF NOT EXISTS comunidad_autonoma TEXT;
