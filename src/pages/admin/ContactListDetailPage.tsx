@@ -566,8 +566,25 @@ export default function ContactListDetailPage() {
 
   // ===== MOVE / COPY COMPANY =====
   const handleMoveCopy = async () => {
-    if (!moveCopyCompany || !moveCopyTargetId || !listId) return;
-    setIsMoveCopyLoading(true);
+    if (!moveCopyCompany || !listId) return;
+    // Determine target list id
+    let targetId = moveCopyTargetId;
+    if (isCreatingNewList) {
+      if (!newListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
+      setIsMoveCopyLoading(true);
+      try {
+        const { data: newList, error: createErr } = await supabase
+          .from('outbound_lists' as any)
+          .insert({ name: newListName.trim(), type: (list as any)?.type || 'outbound' } as any)
+          .select('id')
+          .single();
+        if (createErr || !newList) { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+        targetId = (newList as any).id;
+      } catch { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+    } else {
+      if (!targetId) return;
+      setIsMoveCopyLoading(true);
+    }
     try {
       if (moveCopyMode === 'copy') {
         // Check if CIF already exists in target list
