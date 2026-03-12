@@ -359,10 +359,10 @@ export default function ContactListDetailPage() {
     const rowsToInsert = [
       ...validationResult.nuevas.map(r => r.data),
       ...validationResult.vinculadas.map(r => r.data),
-    ];
+    ] as any[];
 
     if (rowsToInsert.length > 0) {
-      await addCompanies.mutateAsync(rowsToInsert);
+      await addCompanies.mutateAsync(rowsToInsert as any);
       await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
     }
