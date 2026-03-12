@@ -55,6 +55,7 @@ import {
   Plus,
   Loader2,
   Clock,
+  Merge,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useCreateServicio } from '@/hooks/useCreateServicio';
@@ -66,6 +67,7 @@ import { EmpresaFinancialsCard } from '@/components/admin/companies/EmpresaFinan
 import { EmpresaContactsTable } from '@/components/admin/companies/EmpresaContactsTable';
 import { useEmpresaContactos } from '@/hooks/useEmpresaContactos';
 import { EmpresaLinkContactDialog } from '@/components/admin/companies/EmpresaLinkContactDialog';
+import { EmpresaMergeDialog } from '@/components/admin/empresas/EmpresaMergeDialog';
 import { formatCompactCurrency } from '@/shared/utils/format';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -190,6 +192,7 @@ export default function EmpresaDetailPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [isDealPausedOpen, setIsDealPausedOpen] = useState(false);
+  const [isMergeOpen, setIsMergeOpen] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [descriptionValue, setDescriptionValue] = useState('');
   const [editingContact, setEditingContact] = useState(false);
@@ -394,7 +397,11 @@ export default function EmpresaDetailPage() {
               Web
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+           <Button variant="outline" size="sm" onClick={() => setIsMergeOpen(true)}>
+              <Merge className="h-4 w-4 mr-2" />
+              Fusionar
+            </Button>
+           <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>
@@ -972,6 +979,12 @@ export default function EmpresaDetailPage() {
         onOpenChange={setIsDealPausedOpen}
         companyId={empresa.id}
         companyName={empresa.nombre}
+      />
+      {/* Merge Dialog */}
+      <EmpresaMergeDialog
+        open={isMergeOpen}
+        onOpenChange={setIsMergeOpen}
+        empresa={empresa}
       />
     </div>
   );

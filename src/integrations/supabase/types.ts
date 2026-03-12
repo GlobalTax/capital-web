@@ -24244,6 +24244,10 @@ export type Database = {
             }
             Returns: Json
           }
+      merge_empresas: {
+        Args: { p_source_id: string; p_target_id: string }
+        Returns: Json
+      }
       monitor_security_violations: { Args: never; Returns: undefined }
       normalize_company_name: { Args: { name: string }; Returns: string }
       record_tracking_event: {
