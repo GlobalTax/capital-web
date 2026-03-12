@@ -131,6 +131,14 @@ serve(async (req) => {
       (presentations || []).map((p: any) => [p.company_id, p])
     );
 
+    // Fetch shared campaign documents (Document mode: company_id is null)
+    const { data: sharedDocs } = await serviceClient
+      .from("campaign_presentations")
+      .select("id, campaign_id, storage_path, file_name, status")
+      .in("campaign_id", campaignIds)
+      .is("company_id", null)
+      .eq("status", "assigned");
+
     // Get CC recipients from email_recipients_config (active + default copy)
     const { data: ccRecipients } = await serviceClient
       .from("email_recipients_config")
