@@ -81,7 +81,7 @@ function downloadTemplate() {
   const headers = [
     'Nombre empresa', 'CIF', 'Año datos', 'Facturación', 'EBITDA',
     'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto',
-    'Email', 'LinkedIn', 'Teléfono',
+    'Email', 'LinkedIn', 'Teléfono', 'Web',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   // Set column widths
@@ -262,7 +262,7 @@ export default function ContactListDetailPage() {
           mapped[field] = val ? String(val).trim() : null;
         }
       }
-      if (!mapped.empresa) mapped.empresa = 'Sin nombre';
+      if (!mapped.empresa) mapped.empresa = mapped.cif || mapped.contacto || mapped.email || 'Sin nombre';
       return mapped;
     });
 
