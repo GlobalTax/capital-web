@@ -208,6 +208,9 @@ export default function ContactListDetailPage() {
       web: addForm.web.trim() || null,
       provincia: addForm.provincia.trim() || null,
       comunidad_autonoma: addForm.comunidad_autonoma.trim() || null,
+      posicion_contacto: addForm.posicion_contacto.trim() || null,
+      cnae: addForm.cnae.trim() || null,
+      descripcion_actividad: addForm.descripcion_actividad.trim() || null,
       facturacion: parseSpanishNumber(addForm.facturacion),
       ebitda: parseSpanishNumber(addForm.ebitda),
       anios_datos: 1,
@@ -216,7 +219,7 @@ export default function ContactListDetailPage() {
       director_ejecutivo: addForm.director_ejecutivo.trim() || null,
       linkedin: addForm.linkedin.trim() || null,
     });
-    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '' });
+    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '', posicion_contacto: '', cnae: '', descripcion_actividad: '' });
     setIsAddModalOpen(false);
     toast.success('Empresa añadida');
   };
