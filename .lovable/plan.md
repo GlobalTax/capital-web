@@ -1,14 +1,33 @@
 
-## Actualizar Ahrefs Analytics data-key
 
-El data-key de Ahrefs Web Analytics en el código actual (`EQfyZr09+AcMIe1vpsSrVQ`) no coincide con el que aparece en tu panel de Ahrefs (`VouNMjijNalPNS/dBxC7Fw`).
+## Fix: PDF upload in Document campaigns
 
-### Cambio necesario
+### Root Cause
 
-**Archivo:** `src/components/TrackingInitializer.tsx` (linea 332)
+`DocumentStep.tsx` line 53-59 calls the `upload_blob` action without the required `bucket` field. The edge function validates `bucket` and `base64` are present (line 113) and returns 400 when `bucket` is missing.
 
-Reemplazar el `data-key` del script de Ahrefs:
-- Actual: `EQfyZr09+AcMIe1vpsSrVQ`
-- Nuevo: `VouNMjijNalPNS/dBxC7Fw`
+### Fix
 
-Es un cambio de una sola linea. No afecta a ningún otro componente.
+Add `bucket: 'campaign-presentations'` to the request body in `DocumentStep.tsx` line 54.
+
+```typescript
+// Before
+body: {
+  action: 'upload_blob',
+  path: storagePath,
+  base64,
+  contentType: 'application/pdf',
+}
+
+// After
+body: {
+  action: 'upload_blob',
+  bucket: 'campaign-presentations',
+  path: storagePath,
+  base64,
+  contentType: 'application/pdf',
+}
+```
+
+One line change, zero risk to existing functionality.
+

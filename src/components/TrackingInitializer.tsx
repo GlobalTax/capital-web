@@ -329,7 +329,7 @@ export const TrackingInitializer = () => {
         const ahrefsScript = document.createElement('script');
         ahrefsScript.id = 'ahrefs-analytics';
         ahrefsScript.src = 'https://analytics.ahrefs.com/analytics.js';
-        ahrefsScript.setAttribute('data-key', 'EQfyZr09+AcMIe1vpsSrVQ');
+        ahrefsScript.setAttribute('data-key', 'VouNMjijNalPNS/dBxC7Fw');
         ahrefsScript.async = true;
         document.head.appendChild(ahrefsScript);
         console.log('[Tracking] Ahrefs Web Analytics loaded');
