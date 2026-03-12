@@ -650,12 +650,16 @@ export default function ContactListDetailPage() {
   }, [queryClient, listId]);
 
   // ===== AI GENERATE DESCRIPTION =====
-  const handleAiGenerate = async () => {
-    if (!aiGenCompany || !aiGenText.trim()) return;
-    setAiGenLoading(true);
+  const handleAiGenerate = async (company: ContactListCompany) => {
+    const webUrl = (company as any).web;
+    if (!webUrl || !webUrl.trim()) {
+      toast.warning('Esta empresa no tiene web registrada. Añade una URL en el campo Web para generar la descripción automáticamente.');
+      return;
+    }
+    setAiGenLoading(company.id);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-activity-from-text', {
-        body: { text: aiGenText.trim(), company_name: aiGenCompany.empresa },
+      const { data, error } = await supabase.functions.invoke('generate-company-description', {
+        body: { url: webUrl.trim() },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
