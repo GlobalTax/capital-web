@@ -325,9 +325,9 @@ export default function ContactListDetailPage() {
     maxFiles: 1,
   });
 
-  const handleConfirmImport = async () => {
-    if (!listId || importData.length === 0) return;
-    const rows = importData.map((row: any) => {
+  // Step 1: Map rows from Excel data
+  const getMappedRows = useCallback(() => {
+    return importData.map((row: any) => {
       const mapped: any = { list_id: listId, anios_datos: 1 };
       for (const [header, field] of Object.entries(importMapping)) {
         const val = row[header];
@@ -342,12 +342,47 @@ export default function ContactListDetailPage() {
       if (!mapped.empresa) mapped.empresa = mapped.cif || mapped.contacto || mapped.email || 'Sin nombre';
       return mapped;
     });
+  }, [importData, importMapping, listId]);
 
-    await addCompanies.mutateAsync(rows);
-    await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
-    queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+  // Step 2: Validate (called when user clicks "Importar" in mapping step)
+  const handleStartValidation = async () => {
+    if (!listId || importData.length === 0) return;
+    const rows = getMappedRows();
+    setImportStep('preview');
+    await validate(rows, listId);
+  };
+
+  // Step 3: Confirm import (only nuevas + vinculadas)
+  const handleConfirmImport = async () => {
+    if (!listId || !validationResult) return;
+    setImportStep('importing');
+    const rowsToInsert = [
+      ...validationResult.nuevas.map(r => r.data),
+      ...validationResult.vinculadas.map(r => r.data),
+    ];
+
+    if (rowsToInsert.length > 0) {
+      await addCompanies.mutateAsync(rowsToInsert);
+      await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
+      queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+    }
+
+    setImportResultData({
+      imported: validationResult.nuevas.length,
+      linked: validationResult.vinculadas.length,
+      skippedDuplicates: validationResult.duplicadas.length,
+      skippedErrors: validationResult.errores.length,
+      errors: validationResult.errores,
+    });
+    setImportStep('result');
+  };
+
+  const handleCloseImport = () => {
     setImportData([]);
     setImportMapping({});
+    setImportStep('upload');
+    setImportResultData(null);
+    resetValidation();
     setIsImportModalOpen(false);
   };
 
