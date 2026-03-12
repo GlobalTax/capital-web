@@ -152,7 +152,7 @@ export default function ContactListDetailPage() {
   const [addForm, setAddForm] = useState({
     empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '',
     provincia: '', facturacion: '', ebitda: '', notas: '',
-    num_trabajadores: '', director_ejecutivo: '', linkedin: '',
+    num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '',
   });
 
   // Import state
