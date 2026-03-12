@@ -100,6 +100,69 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'plantilla_lista_contactos.xlsx');
 }
 
+// ===== INLINE NOTE CELL =====
+const InlineNoteCell = React.memo(({ companyId, initialValue, onSaved }: { companyId: string; initialValue: string | null; onSaved: (id: string, note: string) => void }) => {
+  const [value, setValue] = useState(initialValue || '');
+  const [isEditing, setIsEditing] = useState(false);
+  const originalRef = React.useRef(initialValue || '');
+
+  React.useEffect(() => {
+    if (!isEditing) {
+      setValue(initialValue || '');
+      originalRef.current = initialValue || '';
+    }
+  }, [initialValue, isEditing]);
+
+  const handleBlur = useCallback(async () => {
+    setIsEditing(false);
+    const trimmed = value.trim();
+    if (trimmed === originalRef.current) return;
+    try {
+      const { error } = await supabase
+        .from('outbound_list_companies' as any)
+        .update({ notas: trimmed || null } as any)
+        .eq('id', companyId);
+      if (error) throw error;
+      onSaved(companyId, trimmed);
+    } catch {
+      toast.error('Error al guardar la nota');
+      setValue(originalRef.current);
+    }
+  }, [companyId, value, onSaved]);
+
+  if (!isEditing) {
+    return (
+      <div
+        className="min-h-[28px] px-1 cursor-pointer hover:bg-muted/50 rounded text-sm flex items-center"
+        onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+      >
+        {value ? (
+          <span className="line-clamp-2">{value}</span>
+        ) : (
+          <span className="text-muted-foreground">Añadir nota...</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <textarea
+      autoFocus
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') { setValue(originalRef.current); setIsEditing(false); }
+      }}
+      onClick={(e) => e.stopPropagation()}
+      placeholder="Añadir nota..."
+      className="w-full min-h-[56px] text-sm rounded-md border border-input bg-background px-2 py-1 ring-2 ring-primary/50 resize-none focus:outline-none"
+      rows={2}
+    />
+  );
+});
+InlineNoteCell.displayName = 'InlineNoteCell';
+
 // ===== ESTADO BADGES =====
 const ESTADO_CONFIG: Record<string, { label: string; className: string }> = {
   borrador: { label: 'Borrador', className: 'bg-muted text-muted-foreground border-border' },
