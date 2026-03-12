@@ -1,36 +1,43 @@
 
 
-## Diagnostico
+## Sistema de importación Excel mejorado con plantilla
 
-El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
+### Situación actual
 
-Lo que debería ocurrir es:
-1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
-2. Adjunta el **PDF de valoración** (generado o almacenado)
-3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
+La tabla `outbound_list_companies` tiene: empresa, contacto, email, telefono, cif, web, provincia, facturacion, ebitda, anios_datos, notas.
 
-La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
+Faltan 3 campos que necesitas: `num_trabajadores`, `director_ejecutivo`, `linkedin`.
 
-## Plan
+El importador actual ya funciona con drag & drop + auto-mapeo, pero no tiene plantilla descargable ni los nuevos campos.
 
-### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
+### Cambios
 
-Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
+#### 1. Migración SQL — 3 columnas nuevas
 
-- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
-- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
-- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
+```sql
+ALTER TABLE outbound_list_companies 
+  ADD COLUMN num_trabajadores INTEGER,
+  ADD COLUMN director_ejecutivo TEXT,
+  ADD COLUMN linkedin TEXT;
+```
 
-### 2. Prerequisito: emails generados
+#### 2. Hook (`useContactLists.ts`)
 
-Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
+Añadir `num_trabajadores`, `director_ejecutivo` y `linkedin` al tipo `ContactListCompany`.
 
-### 3. Conectar datos
+#### 3. Página de detalle (`ContactListDetailPage.tsx`)
 
-ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
-- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
-- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
+- **Botón "Descargar plantilla"** junto al botón de importar: genera un .xlsx vacío con las cabeceras exactas: `Nombre empresa`, `CIF`, `Año datos`, `Facturación`, `EBITDA`, `Nº Trabajadores`, `Director Ejecutivo`, `Nombre Contacto`, `Email`, `LinkedIn`, `Teléfono`.
+- **Sinónimos de mapeo**: añadir los nuevos campos (`num_trabajadores`, `director_ejecutivo`, `linkedin`) al diccionario `COLUMN_SYNONYMS`.
+- **Import handler**: mapear los nuevos campos al insertar.
+- **Tabla, formulario manual, modal edición y drawer**: mostrar los nuevos campos donde corresponda.
+- **Exportación Excel**: incluir los nuevos campos.
 
-### Archivos afectados
-- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
+### Archivos a modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| Nueva migración SQL | 3 columnas nuevas |
+| `src/hooks/useContactLists.ts` | Tipo actualizado |
+| `src/pages/admin/ContactListDetailPage.tsx` | Plantilla, sinónimos, formularios, tabla |
 
