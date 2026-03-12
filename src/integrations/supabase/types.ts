@@ -16687,6 +16687,7 @@ export type Database = {
           name: string
           origen: string
           sector: string | null
+          tipo: string
           updated_at: string
         }
         Insert: {
@@ -16701,6 +16702,7 @@ export type Database = {
           name: string
           origen?: string
           sector?: string | null
+          tipo?: string
           updated_at?: string
         }
         Update: {
@@ -16715,6 +16717,7 @@ export type Database = {
           name?: string
           origen?: string
           sector?: string | null
+          tipo?: string
           updated_at?: string
         }
         Relationships: []

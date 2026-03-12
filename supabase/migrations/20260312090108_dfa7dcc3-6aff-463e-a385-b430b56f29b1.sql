@@ -1,0 +1,1 @@
+ALTER TABLE outbound_lists ADD COLUMN IF NOT EXISTS tipo TEXT NOT NULL DEFAULT 'outbound' CHECK (tipo IN ('compradores', 'outbound', 'otros'));
