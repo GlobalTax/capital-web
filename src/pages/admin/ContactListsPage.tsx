@@ -165,15 +165,16 @@ export default function ContactListsPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Sector</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Nº Empresas</TableHead>
-                  <TableHead>Campaña vinculada</TableHead>
-                  <TableHead>Fecha creación</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
+                 <TableRow>
+                   <TableHead>Nombre</TableHead>
+                   <TableHead>Tipo</TableHead>
+                   <TableHead>Sector</TableHead>
+                   <TableHead>Estado</TableHead>
+                   <TableHead className="text-right">Nº Empresas</TableHead>
+                   <TableHead>Campaña vinculada</TableHead>
+                   <TableHead>Fecha creación</TableHead>
+                   <TableHead className="w-12" />
+                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map(list => {
