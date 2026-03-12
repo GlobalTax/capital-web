@@ -480,6 +480,12 @@ export default function ContactListDetailPage() {
       sector: configSector || null,
       tipo: configTipo,
       estado: configEstado,
+      descripcion_proposito: configDescProposito || null,
+      cnaes_utilizados: configCnaes.length > 0 ? configCnaes : null,
+      facturacion_min: configFactMin ? parseFloat(configFactMin) : null,
+      facturacion_max: configFactMax ? parseFloat(configFactMax) : null,
+      criterios_construccion: configCriteriosConstruccion || null,
+      lista_madre_id: configListaMadreId || null,
       updated_at: new Date().toISOString(),
     }).eq('id', listId);
     queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
