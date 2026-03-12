@@ -16,6 +16,7 @@ export interface Empresa {
   revenue?: number | null;
   ebitda?: number | null;
   margen_ebitda?: number | null;
+  ebitda_margin?: number | null;
   deuda?: number | null;
   capital_circulante?: number | null;
   es_target?: boolean | null;
@@ -27,6 +28,10 @@ export interface Empresa {
   source_valuation_id?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  cnae_codigo?: string | null;
+  cnae_descripcion?: string | null;
+  año_datos_financieros?: number | null;
+  linkedin_url?: string | null;
   // Campos de valoración (desde company_valuations)
   valoracion?: number | null;
   fecha_valoracion?: string | null;
