@@ -1,58 +1,36 @@
 
 
-## Plan: Sincronizar empresas de listas de contacto → Empresas + Contactos
+## Diagnostico
 
-### Qué se hará
+El problema está en `ProcessSendStep.tsx`. Las funciones `sendSingle` (línea 550) y `handleSendEmails` (línea 771) invocan directamente `send-professional-valuation-email`, que genera y envía su propio template HTML de valoración profesional.
 
-Un trigger `AFTER INSERT` en `outbound_list_companies` que automáticamente:
+Lo que debería ocurrir es:
+1. El email usa el **template personalizado** definido en el paso 6 (Mail) — almacenado en `campaign_emails.subject` y `campaign_emails.body`
+2. Adjunta el **PDF de valoración** (generado o almacenado)
+3. Adjunta el **PDF de presentación/estudio** (subido en paso 4)
 
-1. **Crea/actualiza la empresa** en la tabla `empresas` (directorio `/admin/empresas`)
-2. **Crea el contacto principal** en la tabla `contactos` y lo vincula a la empresa
-3. **Crea un segundo contacto** (Director Ejecutivo) si es diferente del contacto principal
+La Edge Function `send-campaign-outbound-email` ya hace exactamente esto: lee subject/body de `campaign_emails`, adjunta los PDFs de `campaign_presentations`, y envía via Resend. Pero ProcessSendStep nunca la usa.
 
-### Mapeo de campos
+## Plan
 
-```text
-outbound_list_companies  →  empresas
-────────────────────────────────────────
-empresa                  →  nombre
-cif                      →  cif
-web                      →  sitio_web
-provincia                →  ubicacion
-facturacion              →  facturacion + revenue
-ebitda                   →  ebitda
-num_trabajadores         →  empleados
-descripcion_actividad    →  descripcion
-cnae                     →  cnae_descripcion
-origen                   →  'outbound'
-source                   →  'lista'
+### 1. Refactorizar `sendSingle` y `handleSendEmails` en ProcessSendStep.tsx
 
-outbound_list_companies  →  contactos
-────────────────────────────────────────
-contacto                 →  nombre
-email                    →  email
-telefono                 →  telefono
-linkedin                 →  linkedin
-posicion_contacto        →  cargo
-(empresa.id)             →  empresa_principal_id
-source                   →  'lista'
+Reemplazar las llamadas a `send-professional-valuation-email` por `send-campaign-outbound-email`:
 
-director_ejecutivo       →  nombre (2º contacto, cargo='Director Ejecutivo')
-```
+- **`sendSingle(c)`**: Buscar el `campaign_email` correspondiente a `c.id` (company_id), obtener su `email.id`, e invocar `send-campaign-outbound-email` con `{ email_ids: [email.id] }`.
+- **`handleSendEmails`**: Igual, recopilar los IDs de `campaign_emails` de las empresas `readyToSend` e invocar la función con todos los IDs.
+- Eliminar la generación de PDF en el cliente (`generatePdfBase64`, `generatePdfBlob`) de estos flujos, ya que la Edge Function obtiene los PDFs directamente del storage.
 
-### Lógica de deduplicación
+### 2. Prerequisito: emails generados
 
-- **Empresas**: Busca primero por CIF, luego por nombre normalizado (`normalize_company_name`). Si existe → UPDATE con `COALESCE` (no pisa datos existentes). Si no → INSERT.
-- **Contactos**: Busca por email (`LOWER(email)`) gracias al índice único existente. Si ya existe un contacto con ese email, lo vincula a la empresa si no tiene `empresa_principal_id`. Si no existe → INSERT.
-- **Director Ejecutivo**: Solo se crea si es diferente del contacto principal (por nombre). Se busca también por nombre+empresa para evitar duplicados.
+Para que esto funcione, los emails deben estar generados en `campaign_emails` antes de enviar desde el paso 5. Añadir una validación que verifique que existe un registro en `campaign_emails` para cada empresa antes de permitir el envío, o generar automáticamente los emails si no existen.
 
-### Implementación
+### 3. Conectar datos
 
-Una única migración SQL con:
-1. Función `sync_outbound_list_to_empresas_and_contactos()`
-2. Trigger `trg_sync_outbound_list_to_empresas` en `outbound_list_companies`
+ProcessSendStep necesita acceso a los emails de la campaña. Opciones:
+- Importar `useCampaignEmails` en ProcessSendStep para obtener los emails y usar `sendEmail`/`sendAllPending`
+- O simplemente hacer un query para obtener los IDs de `campaign_emails` por `company_id`
 
-### Impacto
-
-Cero cambios en código TypeScript. El trigger se ejecuta transparentemente tras cada INSERT en `outbound_list_companies`, que es lo que ya hace el flujo de importación existente.
+### Archivos afectados
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — refactorizar `sendSingle` y `handleSendEmails` para usar `send-campaign-outbound-email`
 
