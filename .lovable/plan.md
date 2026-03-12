@@ -1,40 +1,33 @@
 
 
-## Simplificar "Generar descripción IA" — flujo automático desde URL
+## Fix: PDF upload in Document campaigns
 
-### Cambios
+### Root Cause
 
-**1. Nueva Edge Function `generate-company-description`**
-- Recibe `{ url }` por body
-- Hace fetch del HTML de la URL (con User-Agent, redirect follow)
-- Extrae texto visible (elimina `<script>`, `<style>`, tags HTML, decode entities)
-- Trunca a 3000 caracteres
-- Llama a `callAI` con el system prompt M&A proporcionado
-- Devuelve `{ description }`
-- Errores de fetch → HTTP 422 con mensaje descriptivo
+`DocumentStep.tsx` line 53-59 calls the `upload_blob` action without the required `bucket` field. The edge function validates `bucket` and `base64` are present (line 113) and returns 400 when `bucket` is missing.
 
-**2. `supabase/config.toml`** — añadir entrada `generate-company-description` con `verify_jwt = false`
+### Fix
 
-**3. `ContactListDetailPage.tsx` — eliminar modal, simplificar flujo**
+Add `bucket: 'campaign-presentations'` to the request body in `DocumentStep.tsx` line 54.
 
-- **Estado**: Reemplazar `aiGenCompany`, `aiGenText`, `aiGenLoading` (boolean) por solo `aiGenLoading: string | null` (ID de la empresa en proceso)
-- **`handleAiGenerate(company)`**: Nuevo flujo directo:
-  - Si `company.web` está vacío → toast warning y return
-  - Llama a `generate-company-description` con la URL
-  - Guarda `descripcion_actividad` en DB
-  - Toast éxito o error según el caso
-- **Dropdown**: El `DropdownMenuItem` llama directamente a `handleAiGenerate(company)`, muestra spinner inline si `aiGenLoading === company.id`
-- **Modal eliminado**: Se borra completamente el Dialog de AI (líneas 1459-1491)
+```typescript
+// Before
+body: {
+  action: 'upload_blob',
+  path: storagePath,
+  base64,
+  contentType: 'application/pdf',
+}
 
-### Ficheros
+// After
+body: {
+  action: 'upload_blob',
+  bucket: 'campaign-presentations',
+  path: storagePath,
+  base64,
+  contentType: 'application/pdf',
+}
+```
 
-| Fichero | Acción |
-|---------|--------|
-| `supabase/functions/generate-company-description/index.ts` | Crear |
-| `supabase/config.toml` | Añadir función |
-| `src/pages/admin/ContactListDetailPage.tsx` | Modificar (eliminar modal, simplificar handler) |
-
-### No se toca
-- Importador, notas inline, mover/copiar, configuración de lista
-- Edge function anterior `generate-activity-from-text` (se mantiene por si se usa en otro sitio)
+One line change, zero risk to existing functionality.
 

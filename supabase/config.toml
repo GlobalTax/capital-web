@@ -329,3 +329,6 @@ verify_jwt = false
 
 [functions.generate-activity-from-text]
 verify_jwt = false
+
+[functions.generate-company-description]
+verify_jwt = false

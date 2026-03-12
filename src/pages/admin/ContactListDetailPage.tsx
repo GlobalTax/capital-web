@@ -220,10 +220,8 @@ export default function ContactListDetailPage() {
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
 
-  // AI generation state
-  const [aiGenCompany, setAiGenCompany] = useState<ContactListCompany | null>(null);
-  const [aiGenText, setAiGenText] = useState('');
-  const [aiGenLoading, setAiGenLoading] = useState(false);
+  // AI generation state - stores the company ID currently being generated
+  const [aiGenLoading, setAiGenLoading] = useState<string | null>(null);
 
   const toggleSort = (field: typeof sortField) => {
     if (sortField === field) {
@@ -652,12 +650,16 @@ export default function ContactListDetailPage() {
   }, [queryClient, listId]);
 
   // ===== AI GENERATE DESCRIPTION =====
-  const handleAiGenerate = async () => {
-    if (!aiGenCompany || !aiGenText.trim()) return;
-    setAiGenLoading(true);
+  const handleAiGenerate = async (company: ContactListCompany) => {
+    const webUrl = (company as any).web;
+    if (!webUrl || !webUrl.trim()) {
+      toast.warning('Esta empresa no tiene web registrada. Añade una URL en el campo Web para generar la descripción automáticamente.');
+      return;
+    }
+    setAiGenLoading(company.id);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-activity-from-text', {
-        body: { text: aiGenText.trim(), company_name: aiGenCompany.empresa },
+      const { data, error } = await supabase.functions.invoke('generate-company-description', {
+        body: { url: webUrl.trim() },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -666,16 +668,19 @@ export default function ContactListDetailPage() {
       const { error: updateErr } = await supabase
         .from('outbound_list_companies' as any)
         .update({ descripcion_actividad: data.description } as any)
-        .eq('id', aiGenCompany.id);
+        .eq('id', company.id);
       if (updateErr) throw updateErr;
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       toast.success('Descripción de actividad generada y guardada');
-      setAiGenCompany(null);
-      setAiGenText('');
     } catch (err: any) {
-      toast.error(err?.message || 'Error al generar descripción');
+      const msg = err?.message || '';
+      if (msg.includes('No se ha podido acceder')) {
+        toast.error('No se ha podido acceder a la web de la empresa. Puedes añadir la descripción manualmente.');
+      } else {
+        toast.error('Error al generar la descripción. Inténtalo de nuevo.');
+      }
     } finally {
-      setAiGenLoading(false);
+      setAiGenLoading(null);
     }
   };
 
@@ -1010,8 +1015,12 @@ export default function ContactListDetailPage() {
                                 <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
                                   <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setAiGenCompany(company); setAiGenText(''); }}>
-                                  <Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA
+                                <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
+                                  {aiGenLoading === company.id ? (
+                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+                                  ) : (
+                                    <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
+                                  )}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
@@ -1456,39 +1465,6 @@ export default function ContactListDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* AI Generate Description Modal */}
-      <Dialog open={!!aiGenCompany} onOpenChange={(open) => { if (!open) { setAiGenCompany(null); setAiGenText(''); } }}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5" />
-              Generar descripción con IA
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Empresa: <strong>{aiGenCompany?.empresa}</strong>
-            </p>
-            <Textarea
-              placeholder="Pega aquí cualquier texto sobre la empresa: web, perfil de LinkedIn, notas de reunión, email recibido..."
-              value={aiGenText}
-              onChange={e => setAiGenText(e.target.value)}
-              rows={8}
-              className="resize-none"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setAiGenCompany(null); setAiGenText(''); }}>Cancelar</Button>
-            <Button onClick={handleAiGenerate} disabled={!aiGenText.trim() || aiGenLoading}>
-              {aiGenLoading ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
-              ) : (
-                <><Sparkles className="h-4 w-4 mr-2" /> Generar</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
