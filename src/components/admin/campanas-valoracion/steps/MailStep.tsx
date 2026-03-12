@@ -20,8 +20,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Send, Loader2, Eye, Mail, MoreVertical, FileText, CheckCircle2, Clock, AlertCircle,
-  Edit3, RotateCcw, Building2, Save, Upload, Pen,
+  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users,
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignPresentations } from '@/hooks/useCampaignPresentations';
@@ -30,6 +31,7 @@ import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { getAvailableVariables, replaceVariables } from '@/utils/campaignEmailTemplateEngine';
 import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml, EmailSignatureData } from '@/hooks/useEmailSignature';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
