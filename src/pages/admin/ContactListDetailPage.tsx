@@ -595,7 +595,7 @@ export default function ContactListDetailPage() {
             .eq('list_id', moveCopyTargetId)
             .eq('cif', moveCopyCompany.cif)
             .limit(1);
-          if (existing && existing.length > 0) {
+        if (existing && existing.length > 0) {
             toast.error('Esta empresa ya existe en la lista seleccionada');
             setIsMoveCopyLoading(false);
             return;
@@ -605,23 +605,25 @@ export default function ContactListDetailPage() {
         const { id, notas, created_at, ...rest } = moveCopyCompany as any;
         await supabase.from('outbound_list_companies' as any).insert({
           ...rest,
-          list_id: moveCopyTargetId,
+          list_id: targetId,
           notas: null,
         } as any);
         toast.success('Empresa copiada a la otra lista');
       } else {
         // Move: update list_id, clear notas
         await supabase.from('outbound_list_companies' as any)
-          .update({ list_id: moveCopyTargetId, notas: null } as any)
+          .update({ list_id: targetId, notas: null } as any)
           .eq('id', moveCopyCompany.id);
         toast.success('Empresa movida a la otra lista');
       }
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
-      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyTargetId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
       setMoveCopyCompany(null);
       setMoveCopyTargetId('');
+      setIsCreatingNewList(false);
+      setNewListName('');
     } catch (err) {
       toast.error('Error al procesar la operación');
     } finally {
