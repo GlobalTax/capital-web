@@ -617,7 +617,7 @@ export default function ContactListDetailPage() {
     });
   }, [queryClient, listId]);
 
-
+  const handleDeleteList = async () => {
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
     await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
     queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
