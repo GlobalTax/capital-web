@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
-  Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin,
+  Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -131,6 +131,8 @@ export default function ContactListDetailPage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isLinkCampaignOpen, setIsLinkCampaignOpen] = useState(false);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
+  const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
+  const [dedupKeep, setDedupKeep] = useState<'newest' | 'oldest'>('newest');
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
 
@@ -351,6 +353,35 @@ export default function ContactListDetailPage() {
     toast.success('Lista eliminada');
   };
 
+  // ===== DEDUP =====
+  const duplicateGroups = useMemo(() => {
+    const groups: Record<string, ContactListCompany[]> = {};
+    companies.forEach(c => {
+      const key = (c.empresa || '').trim().toLowerCase();
+      if (!key) return;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(c);
+    });
+    return Object.entries(groups).filter(([, g]) => g.length > 1);
+  }, [companies]);
+
+  const handleDedup = async () => {
+    if (duplicateGroups.length === 0) return;
+    const idsToDelete: string[] = [];
+    for (const [, group] of duplicateGroups) {
+      const sorted = [...group].sort((a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      const toRemove = dedupKeep === 'newest' ? sorted.slice(0, -1) : sorted.slice(1);
+      toRemove.forEach(c => idsToDelete.push(c.id));
+    }
+    if (idsToDelete.length === 0) return;
+    await deleteCompanies.mutateAsync(idsToDelete);
+    queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+    setIsDedupModalOpen(false);
+    toast.success(`${idsToDelete.length} duplicados eliminados`);
+  };
+
   const handleEstadoChange = async (newEstado: string) => {
     if (!listId) return;
     await supabase.from('outbound_lists' as any).update({ estado: newEstado, updated_at: new Date().toISOString() }).eq('id', listId);
@@ -428,6 +459,11 @@ export default function ContactListDetailPage() {
             <Button variant="outline" size="sm" onClick={handleExport} disabled={companies.length === 0}>
               <Download className="h-4 w-4 mr-2" /> Exportar Excel
             </Button>
+            {duplicateGroups.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setIsDedupModalOpen(true)} className="text-amber-600 border-amber-300 hover:bg-amber-50">
+                <Copy className="h-4 w-4 mr-2" /> {duplicateGroups.length} duplicados
+              </Button>
+            )}
           </div>
 
           {/* Bulk actions */}
@@ -779,6 +815,47 @@ export default function ContactListDetailPage() {
 
       {/* Company Drawer */}
       <CompanyDrawer company={drawerCompany} onClose={() => setDrawerCompany(null)} onEdit={() => { setEditingCompany(drawerCompany); setDrawerCompany(null); }} />
+
+      {/* Dedup Modal */}
+      <Dialog open={isDedupModalOpen} onOpenChange={setIsDedupModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Eliminar duplicados</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Se han encontrado <strong>{duplicateGroups.length}</strong> empresas duplicadas (por nombre).
+              Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros.
+            </p>
+            <div>
+              <Label className="mb-2 block">¿Qué registro conservar?</Label>
+              <Select value={dedupKeep} onValueChange={(v) => setDedupKeep(v as 'newest' | 'oldest')}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Más reciente</SelectItem>
+                  <SelectItem value="oldest">Más antiguo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-1">
+              {duplicateGroups.map(([name, group]) => (
+                <div key={name} className="flex justify-between text-sm">
+                  <span className="truncate font-medium">{group[0].empresa}</span>
+                  <Badge variant="secondary" className="ml-2 flex-shrink-0">{group.length}x</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleDedup}>
+              Eliminar duplicados
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
