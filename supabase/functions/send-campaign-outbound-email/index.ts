@@ -139,13 +139,37 @@ serve(async (req) => {
       .is("company_id", null)
       .eq("status", "assigned");
 
-    // Get CC recipients from email_recipients_config (active + default copy)
-    const { data: ccRecipients } = await serviceClient
-      .from("email_recipients_config")
-      .select("email")
-      .eq("is_active", true)
-      .eq("is_default_copy", true);
-    const ccList = (ccRecipients || []).map((r: any) => r.email).filter(Boolean);
+    // Get CC recipients: use campaign-specific list if defined, otherwise fall back to global defaults
+    let ccList: string[] = [];
+    
+    // Check if any campaign has specific cc_recipient_ids configured
+    const firstCampaignId = campaignIds[0];
+    const { data: campaignRow } = await serviceClient
+      .from("valuation_campaigns")
+      .select("cc_recipient_ids")
+      .eq("id", firstCampaignId)
+      .maybeSingle();
+    
+    const campaignCcIds = campaignRow?.cc_recipient_ids;
+    
+    if (campaignCcIds && Array.isArray(campaignCcIds) && campaignCcIds.length > 0) {
+      // Use campaign-specific CC recipients
+      const { data: ccRecipients } = await serviceClient
+        .from("email_recipients_config")
+        .select("email")
+        .in("id", campaignCcIds)
+        .eq("is_active", true);
+      ccList = (ccRecipients || []).map((r: any) => r.email).filter(Boolean);
+    } else if (campaignCcIds === null) {
+      // No explicit config → use global defaults (is_default_copy = true)
+      const { data: ccRecipients } = await serviceClient
+        .from("email_recipients_config")
+        .select("email")
+        .eq("is_active", true)
+        .eq("is_default_copy", true);
+      ccList = (ccRecipients || []).map((r: any) => r.email).filter(Boolean);
+    }
+    // If campaignCcIds is an empty array [], send with NO CC (explicit opt-out)
 
     // Fetch sender's email signature
     const { data: signatureRow } = await serviceClient

@@ -38,6 +38,7 @@ export interface ValuationCampaign {
   total_sent: number;
   total_errors: number;
   total_valuation: number;
+  cc_recipient_ids: string[] | null;
 }
 
 export type CampaignInsert = Omit<ValuationCampaign, 'id' | 'created_at' | 'updated_at' | 'total_companies' | 'total_created' | 'total_sent' | 'total_errors' | 'total_valuation'>;
