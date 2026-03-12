@@ -242,7 +242,8 @@ export default function ContactListDetailPage() {
 
   // ===== HANDLERS =====
   const handleSelectAll = () => {
-    setSelectedIds(selectedIds.length === companies.length ? [] : companies.map(c => c.id));
+    const visible = filteredCompanies.map(c => c.id);
+    setSelectedIds(selectedIds.length === visible.length ? [] : visible);
   };
 
   const handleToggleSelect = (id: string) => {
