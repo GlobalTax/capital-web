@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '@/hooks/useExcelImportValidation';
+import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
+import { ImportResultModal } from '@/components/admin/contact-lists/ImportResultModal';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
