@@ -220,10 +220,8 @@ export default function ContactListDetailPage() {
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
 
-  // AI generation state
-  const [aiGenCompany, setAiGenCompany] = useState<ContactListCompany | null>(null);
-  const [aiGenText, setAiGenText] = useState('');
-  const [aiGenLoading, setAiGenLoading] = useState(false);
+  // AI generation state - stores the company ID currently being generated
+  const [aiGenLoading, setAiGenLoading] = useState<string | null>(null);
 
   const toggleSort = (field: typeof sortField) => {
     if (sortField === field) {
