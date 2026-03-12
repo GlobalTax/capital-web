@@ -65,6 +65,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const pendingEmails = emails.filter(e => e.status === 'pending');
   const sentEmails = emails.filter(e => e.status === 'sent');
   const errorEmails = emails.filter(e => e.status === 'error');
+  const openedEmails = emails.filter(e => (e as any).email_opened === true);
 
   const resetAndResend = async (emailId: string) => {
     setSendingId(emailId);
