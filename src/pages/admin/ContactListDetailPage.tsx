@@ -28,6 +28,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -136,6 +137,62 @@ export default function ContactListDetailPage() {
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
 
+  // Search, filter & sort
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores' | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [filterHasEmail, setFilterHasEmail] = useState(false);
+  const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      if (sortDir === 'desc') setSortDir('asc');
+      else { setSortField(null); setSortDir('desc'); }
+    } else {
+      setSortField(field);
+      setSortDir('desc');
+    }
+  };
+
+  const SortIcon = ({ field }: { field: typeof sortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
+    return sortDir === 'desc' ? <ArrowDown className="h-3 w-3 ml-1" /> : <ArrowUp className="h-3 w-3 ml-1" />;
+  };
+
+  const filteredCompanies = useMemo(() => {
+    let result = [...companies];
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c =>
+        (c.empresa || '').toLowerCase().includes(q) ||
+        (c.contacto || '').toLowerCase().includes(q) ||
+        (c.email || '').toLowerCase().includes(q) ||
+        (c.cif || '').toLowerCase().includes(q) ||
+        (c.director_ejecutivo || '').toLowerCase().includes(q)
+      );
+    }
+    // Filters
+    if (filterHasEmail) result = result.filter(c => c.email);
+    if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
+    // Sort
+    if (sortField) {
+      result.sort((a, b) => {
+        let va: any = a[sortField];
+        let vb: any = b[sortField];
+        if (sortField === 'empresa') {
+          va = (va || '').toLowerCase();
+          vb = (vb || '').toLowerCase();
+          return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        }
+        va = Number(va) || 0;
+        vb = Number(vb) || 0;
+        return sortDir === 'asc' ? va - vb : vb - va;
+      });
+    }
+    return result;
+  }, [companies, searchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
+
   // Config tab state
   const [configName, setConfigName] = useState('');
   const [configDesc, setConfigDesc] = useState('');
@@ -185,7 +242,8 @@ export default function ContactListDetailPage() {
 
   // ===== HANDLERS =====
   const handleSelectAll = () => {
-    setSelectedIds(selectedIds.length === companies.length ? [] : companies.map(c => c.id));
+    const visible = filteredCompanies.map(c => c.id);
+    setSelectedIds(selectedIds.length === visible.length ? [] : visible);
   };
 
   const handleToggleSelect = (id: string) => {
@@ -466,7 +524,7 @@ export default function ContactListDetailPage() {
             )}
           </div>
 
-          {/* Bulk actions */}
+           {/* Bulk actions */}
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
               <span className="text-sm font-medium">{selectedIds.length} seleccionadas</span>
@@ -477,6 +535,42 @@ export default function ContactListDetailPage() {
             </div>
           )}
 
+          {/* Search & Filter bar */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar empresa, contacto, email, CIF..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2.5">
+                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                </button>
+              )}
+            </div>
+            <Button
+              variant={filterHasEmail ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterHasEmail(!filterHasEmail)}
+            >
+              Con email
+            </Button>
+            <Button
+              variant={filterHasEbitda ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterHasEbitda(!filterHasEbitda)}
+            >
+              Con EBITDA
+            </Button>
+            {(searchQuery || filterHasEmail || filterHasEbitda) && (
+              <span className="text-sm text-muted-foreground">
+                {filteredCompanies.length} de {companies.length}
+              </span>
+            )}
+          </div>
           {/* Companies table */}
           <Card>
             <CardContent className="p-0">
@@ -488,27 +582,48 @@ export default function ContactListDetailPage() {
                   <p className="text-muted-foreground">No hay empresas en esta lista</p>
                   <p className="text-sm text-muted-foreground/70 mt-1">Descarga la plantilla, rellénala e impórtala</p>
                 </div>
+              ) : filteredCompanies.length === 0 ? (
+                <div className="text-center py-12">
+                  <Search className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground">No se encontraron resultados</p>
+                </div>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-10">
-                          <Checkbox checked={selectedIds.length === companies.length && companies.length > 0} onCheckedChange={handleSelectAll} />
+                          <Checkbox checked={selectedIds.length === filteredCompanies.length && filteredCompanies.length > 0} onCheckedChange={handleSelectAll} />
                         </TableHead>
-                        <TableHead>Empresa</TableHead>
+                        <TableHead>
+                          <button className="flex items-center hover:text-foreground" onClick={() => toggleSort('empresa')}>
+                            Empresa <SortIcon field="empresa" />
+                          </button>
+                        </TableHead>
                         <TableHead>CIF</TableHead>
                         <TableHead>Contacto</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Director Ejecutivo</TableHead>
-                        <TableHead className="text-right">Facturación</TableHead>
-                        <TableHead className="text-right">EBITDA</TableHead>
-                        <TableHead className="text-right">Empleados</TableHead>
+                        <TableHead className="text-right">
+                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('facturacion')}>
+                            Facturación <SortIcon field="facturacion" />
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('ebitda')}>
+                            EBITDA <SortIcon field="ebitda" />
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('num_trabajadores')}>
+                            Empleados <SortIcon field="num_trabajadores" />
+                          </button>
+                        </TableHead>
                         <TableHead className="w-12" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {companies.map(company => (
+                      {filteredCompanies.map(company => (
                         <TableRow key={company.id}>
                           <TableCell onClick={e => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
