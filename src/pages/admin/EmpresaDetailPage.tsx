@@ -192,6 +192,7 @@ export default function EmpresaDetailPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
   const [isDealPausedOpen, setIsDealPausedOpen] = useState(false);
+  const [isMergeOpen, setIsMergeOpen] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
   const [descriptionValue, setDescriptionValue] = useState('');
   const [editingContact, setEditingContact] = useState(false);
