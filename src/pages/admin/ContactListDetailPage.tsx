@@ -669,9 +669,14 @@ export default function ContactListDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       toast.success('Descripción de actividad generada y guardada');
     } catch (err: any) {
-      toast.error(err?.message || 'Error al generar descripción');
+      const msg = err?.message || '';
+      if (msg.includes('No se ha podido acceder')) {
+        toast.error('No se ha podido acceder a la web de la empresa. Puedes añadir la descripción manualmente.');
+      } else {
+        toast.error('Error al generar la descripción. Inténtalo de nuevo.');
+      }
     } finally {
-      setAiGenLoading(false);
+      setAiGenLoading(null);
     }
   };
 
