@@ -1342,7 +1342,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Move/Copy Modal */}
-      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) setMoveCopyCompany(null); }}>
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'} a otra lista</DialogTitle>
@@ -1351,20 +1351,47 @@ export default function ContactListDetailPage() {
             <p className="text-sm text-muted-foreground">
               {moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
             </p>
-            <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Seleccionar lista destino..." />
-              </SelectTrigger>
-              <SelectContent>
-                {allLists.map((l: any) => (
-                  <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!isCreatingNewList ? (
+              <>
+                <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar lista destino..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allLists.map((l: any) => (
+                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setIsCreatingNewList(true); setMoveCopyTargetId(''); }}
+                >
+                  + Crear nueva lista
+                </button>
+              </>
+            ) : (
+              <>
+                <Input
+                  placeholder="Nombre de la nueva lista..."
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setIsCreatingNewList(false); setNewListName(''); }}
+                >
+                  ← Seleccionar lista existente
+                </button>
+              </>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setMoveCopyCompany(null)}>Cancelar</Button>
-            <Button onClick={handleMoveCopy} disabled={!moveCopyTargetId || isMoveCopyLoading}>
+            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); }}>Cancelar</Button>
+            <Button onClick={handleMoveCopy} disabled={(!isCreatingNewList && !moveCopyTargetId) || (isCreatingNewList && !newListName.trim()) || isMoveCopyLoading}>
               {isMoveCopyLoading ? 'Procesando...' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
             </Button>
           </DialogFooter>
