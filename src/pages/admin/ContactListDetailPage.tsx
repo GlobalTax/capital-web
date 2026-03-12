@@ -1010,6 +1010,9 @@ export default function ContactListDetailPage() {
                                 <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
                                   <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                 </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setAiGenCompany(company); setAiGenText(''); }}>
+                                  <Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
                                   onClick={() => deleteCompany.mutate(company.id)}
