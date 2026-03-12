@@ -44,6 +44,8 @@ export default function ContactListsPage() {
   const navigate = useNavigate();
   const { lists, isLoading, createList, deleteList, duplicateList, updateList } = useContactLists();
   const [search, setSearch] = useState('');
+  const [activitySearch, setActivitySearch] = useState('');
+  const debouncedActivitySearch = useDebounce(activitySearch, 400);
   const [estadoFilter, setEstadoFilter] = useState('all');
   const [tipoFilter, setTipoFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -51,6 +53,25 @@ export default function ContactListsPage() {
   const [newDesc, setNewDesc] = useState('');
   const [newSector, setNewSector] = useState('');
   const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
+
+  // Activity search query — returns { list_id, count } map
+  const { data: activityMatches } = useQuery({
+    queryKey: ['activity-search', debouncedActivitySearch],
+    enabled: !!debouncedActivitySearch.trim(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outbound_list_companies' as any)
+        .select('list_id')
+        .ilike('descripcion_actividad', `%${debouncedActivitySearch.trim()}%`);
+      if (error) throw error;
+      // Count per list_id
+      const counts: Record<string, number> = {};
+      (data as any[]).forEach((row: any) => {
+        counts[row.list_id] = (counts[row.list_id] || 0) + 1;
+      });
+      return counts;
+    },
+  });
 
   const filtered = useMemo(() => {
     let result = lists;
@@ -60,8 +81,12 @@ export default function ContactListsPage() {
     }
     if (estadoFilter !== 'all') result = result.filter(l => l.estado === estadoFilter);
     if (tipoFilter !== 'all') result = result.filter(l => l.tipo === tipoFilter);
+    // Filter by activity matches
+    if (debouncedActivitySearch.trim() && activityMatches) {
+      result = result.filter(l => activityMatches[l.id]);
+    }
     return result;
-  }, [lists, search, estadoFilter, tipoFilter]);
+  }, [lists, search, estadoFilter, tipoFilter, debouncedActivitySearch, activityMatches]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
