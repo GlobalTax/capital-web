@@ -868,7 +868,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Import Excel Modal */}
-      <Dialog open={isImportModalOpen} onOpenChange={(open) => { setIsImportModalOpen(open); if (!open) { setImportData([]); setImportMapping({}); } }}>
+      <Dialog open={isImportModalOpen && importStep !== 'preview' && importStep !== 'result'} onOpenChange={(open) => { if (!open) handleCloseImport(); }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader><DialogTitle>Importar desde Excel</DialogTitle></DialogHeader>
           {importData.length === 0 ? (
@@ -914,17 +914,39 @@ export default function ContactListDetailPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setImportData([]); setImportMapping({}); setIsImportModalOpen(false); }}>Cancelar</Button>
+            <Button variant="outline" onClick={handleCloseImport}>Cancelar</Button>
             {importData.length > 0 && (
-              <Button onClick={handleConfirmImport} disabled={addCompanies.isPending}>
-                {addCompanies.isPending ? 'Importando...' : `Importar ${importData.length} empresas`}
+              <Button onClick={handleStartValidation} disabled={isValidating}>
+                {isValidating ? 'Validando...' : `Validar ${importData.length} empresas`}
               </Button>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Pool Filter Modal */}
+      {/* Import Preview Modal */}
+      {validationResult && importStep === 'preview' && (
+        <ImportPreviewModal
+          open
+          onClose={handleCloseImport}
+          onConfirm={handleConfirmImport}
+          result={validationResult}
+          isImporting={importStep === 'preview' && addCompanies.isPending}
+        />
+      )}
+
+      {/* Import Result Modal */}
+      {importResultData && importStep === 'result' && (
+        <ImportResultModal
+          open
+          onClose={handleCloseImport}
+          imported={importResultData.imported}
+          linked={importResultData.linked}
+          skippedDuplicates={importResultData.skippedDuplicates}
+          skippedErrors={importResultData.skippedErrors}
+          errors={importResultData.errors}
+        />
+      )}
       <PoolFilterModal listId={listId!} open={isPoolModalOpen} onOpenChange={setIsPoolModalOpen} onAdd={async (rows) => {
         await addCompanies.mutateAsync(rows);
         setIsPoolModalOpen(false);
