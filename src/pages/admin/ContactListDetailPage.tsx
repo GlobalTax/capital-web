@@ -588,6 +588,34 @@ export default function ContactListDetailPage() {
         </div>
       </div>
 
+      {/* Context summary - visible info strip */}
+      {(list.descripcion_proposito || (list.cnaes_utilizados && list.cnaes_utilizados.length > 0) || list.facturacion_min != null || list.facturacion_max != null || list.criterios_construccion) && (
+        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 space-y-1.5 text-sm">
+          {list.descripcion_proposito && (
+            <p className="text-foreground">{list.descripcion_proposito}</p>
+          )}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
+            {list.cnaes_utilizados && list.cnaes_utilizados.length > 0 && (
+              <span>
+                <strong className="text-foreground/80">CNAEs:</strong>{' '}
+                {list.cnaes_utilizados.join(', ')}
+              </span>
+            )}
+            {(list.facturacion_min != null || list.facturacion_max != null) && (
+              <span>
+                <strong className="text-foreground/80">Facturación:</strong>{' '}
+                {list.facturacion_min != null ? `${Number(list.facturacion_min).toLocaleString('es-ES')}€` : '—'}
+                {' → '}
+                {list.facturacion_max != null ? `${Number(list.facturacion_max).toLocaleString('es-ES')}€` : '—'}
+              </span>
+            )}
+          </div>
+          {list.criterios_construccion && (
+            <p className="text-xs text-muted-foreground italic">{list.criterios_construccion}</p>
+          )}
+        </div>
+      )}
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
