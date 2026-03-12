@@ -16610,9 +16610,11 @@ export type Database = {
         Row: {
           anios_datos: number | null
           cif: string | null
+          cnae: string | null
           comunidad_autonoma: string | null
           contacto: string | null
           created_at: string | null
+          descripcion_actividad: string | null
           director_ejecutivo: string | null
           ebitda: number | null
           email: string | null
@@ -16623,6 +16625,7 @@ export type Database = {
           list_id: string | null
           notas: string | null
           num_trabajadores: number | null
+          posicion_contacto: string | null
           provincia: string | null
           telefono: string | null
           web: string | null
@@ -16630,9 +16633,11 @@ export type Database = {
         Insert: {
           anios_datos?: number | null
           cif?: string | null
+          cnae?: string | null
           comunidad_autonoma?: string | null
           contacto?: string | null
           created_at?: string | null
+          descripcion_actividad?: string | null
           director_ejecutivo?: string | null
           ebitda?: number | null
           email?: string | null
@@ -16643,6 +16648,7 @@ export type Database = {
           list_id?: string | null
           notas?: string | null
           num_trabajadores?: number | null
+          posicion_contacto?: string | null
           provincia?: string | null
           telefono?: string | null
           web?: string | null
@@ -16650,9 +16656,11 @@ export type Database = {
         Update: {
           anios_datos?: number | null
           cif?: string | null
+          cnae?: string | null
           comunidad_autonoma?: string | null
           contacto?: string | null
           created_at?: string | null
+          descripcion_actividad?: string | null
           director_ejecutivo?: string | null
           ebitda?: number | null
           email?: string | null
@@ -16663,6 +16671,7 @@ export type Database = {
           list_id?: string | null
           notas?: string | null
           num_trabajadores?: number | null
+          posicion_contacto?: string | null
           provincia?: string | null
           telefono?: string | null
           web?: string | null
