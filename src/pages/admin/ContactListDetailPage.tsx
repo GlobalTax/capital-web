@@ -135,6 +135,7 @@ export default function ContactListDetailPage() {
   const [configDesc, setConfigDesc] = useState('');
   const [configSector, setConfigSector] = useState('');
   const [configEstado, setConfigEstado] = useState('borrador');
+  const [configTipo, setConfigTipo] = useState<ContactListTipo>('outbound');
 
   React.useEffect(() => {
     if (list) {
@@ -142,6 +143,7 @@ export default function ContactListDetailPage() {
       setConfigDesc(list.description || '');
       setConfigSector(list.sector || '');
       setConfigEstado(list.estado || 'borrador');
+      setConfigTipo(list.tipo || 'outbound');
     }
   }, [list]);
 
