@@ -121,6 +121,17 @@ export default function ContactListsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar por nombre..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
+            <Select value={tipoFilter} onValueChange={setTipoFilter}>
+              <SelectTrigger className="w-full md:w-[180px]">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent className="bg-background">
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="compradores">Compradores</SelectItem>
+                <SelectItem value="outbound">Outbound</SelectItem>
+                <SelectItem value="otros">Otros</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={estadoFilter} onValueChange={setEstadoFilter}>
               <SelectTrigger className="w-full md:w-[160px]">
                 <SelectValue placeholder="Estado" />
