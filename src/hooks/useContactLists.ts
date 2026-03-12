@@ -91,6 +91,7 @@ export const useContactLists = () => {
         name: l.name,
         description: l.description,
         sector: l.sector,
+        tipo: l.tipo || 'outbound',
         origen: l.origen || 'manual',
         estado: l.estado || 'borrador',
         contact_count: l.contact_count || 0,
