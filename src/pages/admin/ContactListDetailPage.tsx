@@ -570,6 +570,7 @@ export default function ContactListDetailPage() {
               </span>
             )}
           </div>
+          {/* Companies table */}
           <Card>
             <CardContent className="p-0">
               {isLoadingCompanies ? (
@@ -580,27 +581,48 @@ export default function ContactListDetailPage() {
                   <p className="text-muted-foreground">No hay empresas en esta lista</p>
                   <p className="text-sm text-muted-foreground/70 mt-1">Descarga la plantilla, rellénala e impórtala</p>
                 </div>
+              ) : filteredCompanies.length === 0 ? (
+                <div className="text-center py-12">
+                  <Search className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground">No se encontraron resultados</p>
+                </div>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-10">
-                          <Checkbox checked={selectedIds.length === companies.length && companies.length > 0} onCheckedChange={handleSelectAll} />
+                          <Checkbox checked={selectedIds.length === filteredCompanies.length && filteredCompanies.length > 0} onCheckedChange={handleSelectAll} />
                         </TableHead>
-                        <TableHead>Empresa</TableHead>
+                        <TableHead>
+                          <button className="flex items-center hover:text-foreground" onClick={() => toggleSort('empresa')}>
+                            Empresa <SortIcon field="empresa" />
+                          </button>
+                        </TableHead>
                         <TableHead>CIF</TableHead>
                         <TableHead>Contacto</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Director Ejecutivo</TableHead>
-                        <TableHead className="text-right">Facturación</TableHead>
-                        <TableHead className="text-right">EBITDA</TableHead>
-                        <TableHead className="text-right">Empleados</TableHead>
+                        <TableHead className="text-right">
+                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('facturacion')}>
+                            Facturación <SortIcon field="facturacion" />
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('ebitda')}>
+                            EBITDA <SortIcon field="ebitda" />
+                          </button>
+                        </TableHead>
+                        <TableHead className="text-right">
+                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('num_trabajadores')}>
+                            Empleados <SortIcon field="num_trabajadores" />
+                          </button>
+                        </TableHead>
                         <TableHead className="w-12" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {companies.map(company => (
+                      {filteredCompanies.map(company => (
                         <TableRow key={company.id}>
                           <TableCell onClick={e => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
