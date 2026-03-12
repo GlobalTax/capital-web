@@ -208,6 +208,8 @@ export default function ContactListDetailPage() {
   const [moveCopyCompany, setMoveCopyCompany] = useState<ContactListCompany | null>(null);
   const [moveCopyMode, setMoveCopyMode] = useState<'move' | 'copy'>('move');
   const [moveCopyTargetId, setMoveCopyTargetId] = useState('');
+  const [isCreatingNewList, setIsCreatingNewList] = useState(false);
+  const [newListName, setNewListName] = useState('');
   const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
 
   // Search, filter & sort
