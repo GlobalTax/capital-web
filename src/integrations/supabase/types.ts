@@ -5913,6 +5913,59 @@ export type Database = {
           },
         ]
       }
+      contacto_empresas: {
+        Row: {
+          contacto_id: string
+          created_at: string | null
+          empresa_id: string
+          es_principal: boolean | null
+          id: string
+        }
+        Insert: {
+          contacto_id: string
+          created_at?: string | null
+          empresa_id: string
+          es_principal?: boolean | null
+          id?: string
+        }
+        Update: {
+          contacto_id?: string
+          created_at?: string | null
+          empresa_id?: string
+          es_principal?: boolean | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacto_empresas_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacto_empresas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacto_empresas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "contacto_empresas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_con_actividad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contactos: {
         Row: {
           apellidos: string | null
