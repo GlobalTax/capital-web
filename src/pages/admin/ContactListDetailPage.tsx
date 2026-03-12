@@ -565,6 +565,17 @@ export default function ContactListDetailPage() {
                 <Textarea value={configDesc} onChange={e => setConfigDesc(e.target.value)} rows={3} />
               </div>
               <div>
+                <Label>Tipo de lista</Label>
+                <Select value={configTipo} onValueChange={(v) => setConfigTipo(v as ContactListTipo)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="compradores">Potenciales compradores</SelectItem>
+                    <SelectItem value="outbound">Outbound</SelectItem>
+                    <SelectItem value="otros">Otros</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>Sector</Label>
                 <Input value={configSector} onChange={e => setConfigSector(e.target.value)} />
               </div>
