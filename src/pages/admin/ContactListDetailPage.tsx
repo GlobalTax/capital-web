@@ -1455,6 +1455,40 @@ export default function ContactListDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* AI Generate Description Modal */}
+      <Dialog open={!!aiGenCompany} onOpenChange={(open) => { if (!open) { setAiGenCompany(null); setAiGenText(''); } }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Generar descripción con IA
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Empresa: <strong>{aiGenCompany?.empresa}</strong>
+            </p>
+            <Textarea
+              placeholder="Pega aquí cualquier texto sobre la empresa: web, perfil de LinkedIn, notas de reunión, email recibido..."
+              value={aiGenText}
+              onChange={e => setAiGenText(e.target.value)}
+              rows={8}
+              className="resize-none"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setAiGenCompany(null); setAiGenText(''); }}>Cancelar</Button>
+            <Button onClick={handleAiGenerate} disabled={!aiGenText.trim() || aiGenLoading}>
+              {aiGenLoading ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+              ) : (
+                <><Sparkles className="h-4 w-4 mr-2" /> Generar</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
