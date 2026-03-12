@@ -895,6 +895,7 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
             num_trabajadores: form.num_trabajadores ? parseInt(form.num_trabajadores) || null : null,
             director_ejecutivo: form.director_ejecutivo || null,
             linkedin: form.linkedin || null,
+            comunidad_autonoma: form.comunidad_autonoma || null,
           })}>{isSaving ? 'Guardando...' : 'Guardar'}</Button>
         </DialogFooter>
       </DialogContent>
