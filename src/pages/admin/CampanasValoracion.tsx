@@ -114,7 +114,7 @@ export default function CampanasValoracion() {
   }, [campaignsByType, searchQuery]);
 
   const totalCompanies = campaignsByType.reduce((s, c) => s + c.total_companies, 0);
-  const totalSent = campaignsByType.reduce((s, c) => s + c.total_sent, 0);
+  const totalSent = campaignsByType.reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
   const totalValuation = campaignsByType.reduce((s, c) => s + c.total_valuation, 0);
 
 
