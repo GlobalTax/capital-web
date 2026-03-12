@@ -22101,6 +22101,7 @@ export type Database = {
           advisor_role: string | null
           ai_personalize: boolean | null
           campaign_type: string
+          cc_recipient_ids: string[] | null
           comparables_text: string | null
           created_at: string
           created_by: string | null
@@ -22139,6 +22140,7 @@ export type Database = {
           advisor_role?: string | null
           ai_personalize?: boolean | null
           campaign_type?: string
+          cc_recipient_ids?: string[] | null
           comparables_text?: string | null
           created_at?: string
           created_by?: string | null
@@ -22177,6 +22179,7 @@ export type Database = {
           advisor_role?: string | null
           ai_personalize?: boolean | null
           campaign_type?: string
+          cc_recipient_ids?: string[] | null
           comparables_text?: string | null
           created_at?: string
           created_by?: string | null
