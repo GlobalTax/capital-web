@@ -651,6 +651,34 @@ export default function ContactListDetailPage() {
     });
   }, [queryClient, listId]);
 
+  // ===== AI GENERATE DESCRIPTION =====
+  const handleAiGenerate = async () => {
+    if (!aiGenCompany || !aiGenText.trim()) return;
+    setAiGenLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-activity-from-text', {
+        body: { text: aiGenText.trim(), company_name: aiGenCompany.empresa },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (!data?.description) throw new Error('No se recibió descripción');
+      // Update in DB
+      const { error: updateErr } = await supabase
+        .from('outbound_list_companies' as any)
+        .update({ descripcion_actividad: data.description } as any)
+        .eq('id', aiGenCompany.id);
+      if (updateErr) throw updateErr;
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+      toast.success('Descripción de actividad generada y guardada');
+      setAiGenCompany(null);
+      setAiGenText('');
+    } catch (err: any) {
+      toast.error(err?.message || 'Error al generar descripción');
+    } finally {
+      setAiGenLoading(false);
+    }
+  };
+
   const handleDeleteList = async () => {
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
     await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
