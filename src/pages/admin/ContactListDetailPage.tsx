@@ -562,7 +562,62 @@ export default function ContactListDetailPage() {
     toast.success('Configuración guardada');
   };
 
-  const handleDeleteList = async () => {
+  // ===== MOVE / COPY COMPANY =====
+  const handleMoveCopy = async () => {
+    if (!moveCopyCompany || !moveCopyTargetId || !listId) return;
+    setIsMoveCopyLoading(true);
+    try {
+      if (moveCopyMode === 'copy') {
+        // Check if CIF already exists in target list
+        if (moveCopyCompany.cif) {
+          const { data: existing } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('id')
+            .eq('list_id', moveCopyTargetId)
+            .eq('cif', moveCopyCompany.cif)
+            .limit(1);
+          if (existing && existing.length > 0) {
+            toast.error('Esta empresa ya existe en la lista seleccionada');
+            setIsMoveCopyLoading(false);
+            return;
+          }
+        }
+        // Insert copy without notas and id
+        const { id, notas, created_at, ...rest } = moveCopyCompany as any;
+        await supabase.from('outbound_list_companies' as any).insert({
+          ...rest,
+          list_id: moveCopyTargetId,
+          notas: null,
+        } as any);
+        toast.success('Empresa copiada a la otra lista');
+      } else {
+        // Move: update list_id, clear notas
+        await supabase.from('outbound_list_companies' as any)
+          .update({ list_id: moveCopyTargetId, notas: null } as any)
+          .eq('id', moveCopyCompany.id);
+        toast.success('Empresa movida a la otra lista');
+      }
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyTargetId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+      setMoveCopyCompany(null);
+      setMoveCopyTargetId('');
+    } catch (err) {
+      toast.error('Error al procesar la operación');
+    } finally {
+      setIsMoveCopyLoading(false);
+    }
+  };
+
+  const handleNoteSaved = useCallback((companyId: string, note: string) => {
+    queryClient.setQueryData(['contact-list-companies', listId], (old: any) => {
+      if (!Array.isArray(old)) return old;
+      return old.map((c: any) => c.id === companyId ? { ...c, notas: note || null } : c);
+    });
+  }, [queryClient, listId]);
+
+
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
     await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
     queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
