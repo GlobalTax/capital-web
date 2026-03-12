@@ -224,6 +224,11 @@ export default function ContactListDetailPage() {
   // Import state
   const [importData, setImportData] = useState<any[]>([]);
   const [importMapping, setImportMapping] = useState<Record<string, string>>({});
+  const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
+  const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
+  const [importResultData, setImportResultData] = useState<{
+    imported: number; linked: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
+  } | null>(null);
 
   // Link campaign state
   const [linkCampaignId, setLinkCampaignId] = useState('');
