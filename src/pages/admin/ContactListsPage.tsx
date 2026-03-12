@@ -257,6 +257,17 @@ export default function ContactListsPage() {
               <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Ej: Empresas Sector Salud Q1 2026" />
             </div>
             <div>
+              <Label>Tipo de lista *</Label>
+              <Select value={newTipo} onValueChange={(v) => setNewTipo(v as ContactListTipo)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-background">
+                  <SelectItem value="compradores">Potenciales compradores</SelectItem>
+                  <SelectItem value="outbound">Outbound</SelectItem>
+                  <SelectItem value="otros">Otros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label>Descripción</Label>
               <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descripción opcional..." rows={2} />
             </div>
