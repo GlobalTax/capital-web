@@ -103,10 +103,10 @@ export const useContactLists = () => {
   });
 
   const createList = useMutation({
-    mutationFn: async (input: { nombre: string; descripcion?: string; sector?: string }) => {
+    mutationFn: async (input: { nombre: string; descripcion?: string; sector?: string; tipo?: ContactListTipo }) => {
       const { data, error } = await supabase
         .from(TB_LISTS)
-        .insert({ name: input.nombre, description: input.descripcion || null, sector: input.sector || null, origen: 'manual', estado: 'borrador' })
+        .insert({ name: input.nombre, description: input.descripcion || null, sector: input.sector || null, tipo: input.tipo || 'outbound', origen: 'manual', estado: 'borrador' })
         .select('id')
         .single();
       if (error) throw error;
