@@ -59,6 +59,7 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   num_trabajadores: ['num_trabajadores', 'n__trabajadores', 'trabajadores', 'empleados', 'employees', 'numero_trabajadores', 'no_trabajadores', 'plantilla'],
   director_ejecutivo: ['director_ejecutivo', 'director', 'ceo', 'gerente', 'director_general', 'administrador'],
   linkedin: ['linkedin', 'perfil_linkedin', 'linkedin_url', 'url_linkedin'],
+  comunidad_autonoma: ['comunidad_autonoma', 'comunidad', 'ccaa', 'autonomia', 'comunidad_autonomica', 'region_autonoma'],
 };
 
 function parseSpanishNumber(val: any): number | null {
