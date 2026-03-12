@@ -523,7 +523,7 @@ export default function ContactListDetailPage() {
             )}
           </div>
 
-          {/* Bulk actions */}
+           {/* Bulk actions */}
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
               <span className="text-sm font-medium">{selectedIds.length} seleccionadas</span>
@@ -534,7 +534,42 @@ export default function ContactListDetailPage() {
             </div>
           )}
 
-          {/* Companies table */}
+          {/* Search & Filter bar */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar empresa, contacto, email, CIF..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-2.5">
+                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                </button>
+              )}
+            </div>
+            <Button
+              variant={filterHasEmail ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterHasEmail(!filterHasEmail)}
+            >
+              Con email
+            </Button>
+            <Button
+              variant={filterHasEbitda ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setFilterHasEbitda(!filterHasEbitda)}
+            >
+              Con EBITDA
+            </Button>
+            {(searchQuery || filterHasEmail || filterHasEbitda) && (
+              <span className="text-sm text-muted-foreground">
+                {filteredCompanies.length} de {companies.length}
+              </span>
+            )}
+          </div>
           <Card>
             <CardContent className="p-0">
               {isLoadingCompanies ? (
