@@ -156,6 +156,7 @@ export default function ContactListDetailPage() {
     empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '',
     provincia: '', facturacion: '', ebitda: '', notas: '',
     num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '',
+    posicion_contacto: '', cnae: '', descripcion_actividad: '',
   });
 
   // Import state
