@@ -484,7 +484,23 @@ export default function ContactListDetailPage() {
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{company.cif || '—'}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">{company.contacto || '—'}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{company.email || '—'}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <span>{company.email || '—'}</span>
+                              {company.linkedin && (
+                                <a
+                                  href={company.linkedin.startsWith('http') ? company.linkedin : `https://${company.linkedin}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={e => e.stopPropagation()}
+                                  className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
+                                  title={company.linkedin}
+                                >
+                                  <Linkedin className="h-3.5 w-3.5" />
+                                </a>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</TableCell>
                           <TableCell className="text-right text-sm tabular-nums">
                             {company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}
