@@ -914,6 +914,8 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
 
   const isBusy = sendingProgress.active || downloadProgress.active;
 
+  // Resend confirmation state
+  const [resendConfirm, setResendConfirm] = useState<{ type: 'single' | 'bulk'; company?: CampaignCompany; ids?: string[]; count?: number } | null>(null);
 
 
   return (
