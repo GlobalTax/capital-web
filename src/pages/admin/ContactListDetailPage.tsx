@@ -636,10 +636,13 @@ export default function ContactListDetailPage() {
             <div><Label>Nº Trabajadores</Label><Input type="number" value={addForm.num_trabajadores} onChange={e => setAddForm(p => ({ ...p, num_trabajadores: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Director Ejecutivo</Label><Input value={addForm.director_ejecutivo} onChange={e => setAddForm(p => ({ ...p, director_ejecutivo: e.target.value }))} /></div>
             <div><Label>Nombre Contacto</Label><Input value={addForm.contacto} onChange={e => setAddForm(p => ({ ...p, contacto: e.target.value }))} /></div>
+            <div><Label>Posición Contacto</Label><Input value={addForm.posicion_contacto} onChange={e => setAddForm(p => ({ ...p, posicion_contacto: e.target.value }))} /></div>
             <div><Label>Email</Label><Input type="email" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} /></div>
             <div><Label>LinkedIn</Label><Input value={addForm.linkedin} onChange={e => setAddForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
             <div><Label>Teléfono</Label><Input value={addForm.telefono} onChange={e => setAddForm(p => ({ ...p, telefono: e.target.value }))} /></div>
             <div><Label>Web</Label><Input value={addForm.web} onChange={e => setAddForm(p => ({ ...p, web: e.target.value }))} /></div>
+            <div><Label>CNAE</Label><Input value={addForm.cnae} onChange={e => setAddForm(p => ({ ...p, cnae: e.target.value }))} /></div>
+            <div className="col-span-2"><Label>Descripción Actividad</Label><Textarea value={addForm.descripcion_actividad} onChange={e => setAddForm(p => ({ ...p, descripcion_actividad: e.target.value }))} rows={2} /></div>
             <div><Label>Provincia</Label><Input value={addForm.provincia} onChange={e => setAddForm(p => ({ ...p, provincia: e.target.value }))} /></div>
             <div><Label>C. Autónoma</Label><Input value={addForm.comunidad_autonoma} onChange={e => setAddForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Notas</Label><Textarea value={addForm.notas} onChange={e => setAddForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
