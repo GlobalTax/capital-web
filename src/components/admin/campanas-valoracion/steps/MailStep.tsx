@@ -881,6 +881,9 @@ export function MailStep({ campaignId, campaign }: Props) {
             <Badge variant="secondary" className="ml-1.5 text-xs">{emails.length}</Badge>
           )}
         </TabsTrigger>
+        <TabsTrigger value="cc">
+          <Users className="h-3.5 w-3.5 mr-1.5" />Copias (CC)
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="template">
