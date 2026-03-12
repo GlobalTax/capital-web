@@ -875,6 +875,71 @@ export default function ContactListDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Advanced Configuration */}
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <h3 className="font-medium text-base">Configuración avanzada</h3>
+              <div>
+                <Label>Descripción / Propósito</Label>
+                <Textarea
+                  value={configDescProposito}
+                  onChange={e => setConfigDescProposito(e.target.value)}
+                  rows={3}
+                  placeholder="Ej: Sublista de instaladores eléctricos puros para mandato Cosamo."
+                />
+              </div>
+              <div>
+                <Label>CNAEs utilizados</Label>
+                <SFFundTagEditor
+                  value={configCnaes}
+                  onChange={setConfigCnaes}
+                  placeholder="Añadir código CNAE..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Facturación mínima (€)</Label>
+                  <Input
+                    type="number"
+                    value={configFactMin}
+                    onChange={e => setConfigFactMin(e.target.value)}
+                    placeholder="Ej: 1500000"
+                  />
+                </div>
+                <div>
+                  <Label>Facturación máxima (€)</Label>
+                  <Input
+                    type="number"
+                    value={configFactMax}
+                    onChange={e => setConfigFactMax(e.target.value)}
+                    placeholder="Ej: 10000000"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Criterios de construcción</Label>
+                <Textarea
+                  value={configCriteriosConstruccion}
+                  onChange={e => setConfigCriteriosConstruccion(e.target.value)}
+                  rows={3}
+                  placeholder="Ej: Export Sabi con CNAEs 8020 y 4321. Activas, con cuentas presentadas, facturación mínima 1.5M€."
+                />
+              </div>
+              <div>
+                <Label>Lista madre</Label>
+                <Select value={configListaMadreId} onValueChange={setConfigListaMadreId}>
+                  <SelectTrigger><SelectValue placeholder="Sin lista madre" /></SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="">Ninguna</SelectItem>
+                    {allLists.map((l: any) => (
+                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleSaveConfig}>Guardar cambios</Button>
+            </CardContent>
+
           <Card className="border-destructive/50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 mb-3">
