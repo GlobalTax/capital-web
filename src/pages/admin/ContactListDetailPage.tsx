@@ -1048,5 +1048,46 @@ function CompanyDrawer({ company, onClose, onEdit }: {
         )}
       </SheetContent>
     </Sheet>
+
+    {/* Dedup Modal */}
+    <Dialog open={isDedupModalOpen} onOpenChange={setIsDedupModalOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Eliminar duplicados</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Se han encontrado <strong>{duplicateGroups.length}</strong> empresas duplicadas (por nombre).
+            Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros.
+          </p>
+          <div>
+            <Label className="mb-2 block">¿Qué registro conservar?</Label>
+            <Select value={dedupKeep} onValueChange={(v) => setDedupKeep(v as 'newest' | 'oldest')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Más reciente</SelectItem>
+                <SelectItem value="oldest">Más antiguo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-1">
+            {duplicateGroups.map(([name, group]) => (
+              <div key={name} className="flex justify-between text-sm">
+                <span className="truncate font-medium">{group[0].empresa}</span>
+                <Badge variant="secondary" className="ml-2 flex-shrink-0">{group.length}x</Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)}>Cancelar</Button>
+          <Button variant="destructive" onClick={handleDedup}>
+            Eliminar duplicados
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
