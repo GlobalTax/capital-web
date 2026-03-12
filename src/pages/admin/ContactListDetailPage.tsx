@@ -137,6 +137,62 @@ export default function ContactListDetailPage() {
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
 
+  // Search, filter & sort
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores' | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [filterHasEmail, setFilterHasEmail] = useState(false);
+  const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      if (sortDir === 'desc') setSortDir('asc');
+      else { setSortField(null); setSortDir('desc'); }
+    } else {
+      setSortField(field);
+      setSortDir('desc');
+    }
+  };
+
+  const SortIcon = ({ field }: { field: typeof sortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="h-3 w-3 ml-1 opacity-40" />;
+    return sortDir === 'desc' ? <ArrowDown className="h-3 w-3 ml-1" /> : <ArrowUp className="h-3 w-3 ml-1" />;
+  };
+
+  const filteredCompanies = useMemo(() => {
+    let result = [...companies];
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c =>
+        (c.empresa || '').toLowerCase().includes(q) ||
+        (c.contacto || '').toLowerCase().includes(q) ||
+        (c.email || '').toLowerCase().includes(q) ||
+        (c.cif || '').toLowerCase().includes(q) ||
+        (c.director_ejecutivo || '').toLowerCase().includes(q)
+      );
+    }
+    // Filters
+    if (filterHasEmail) result = result.filter(c => c.email);
+    if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
+    // Sort
+    if (sortField) {
+      result.sort((a, b) => {
+        let va: any = a[sortField];
+        let vb: any = b[sortField];
+        if (sortField === 'empresa') {
+          va = (va || '').toLowerCase();
+          vb = (vb || '').toLowerCase();
+          return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        }
+        va = Number(va) || 0;
+        vb = Number(vb) || 0;
+        return sortDir === 'asc' ? va - vb : vb - va;
+      });
+    }
+    return result;
+  }, [companies, searchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
+
   // Config tab state
   const [configName, setConfigName] = useState('');
   const [configDesc, setConfigDesc] = useState('');
