@@ -31,7 +31,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -100,6 +100,69 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'plantilla_lista_contactos.xlsx');
 }
 
+// ===== INLINE NOTE CELL =====
+const InlineNoteCell = React.memo(({ companyId, initialValue, onSaved }: { companyId: string; initialValue: string | null; onSaved: (id: string, note: string) => void }) => {
+  const [value, setValue] = useState(initialValue || '');
+  const [isEditing, setIsEditing] = useState(false);
+  const originalRef = React.useRef(initialValue || '');
+
+  React.useEffect(() => {
+    if (!isEditing) {
+      setValue(initialValue || '');
+      originalRef.current = initialValue || '';
+    }
+  }, [initialValue, isEditing]);
+
+  const handleBlur = useCallback(async () => {
+    setIsEditing(false);
+    const trimmed = value.trim();
+    if (trimmed === originalRef.current) return;
+    try {
+      const { error } = await supabase
+        .from('outbound_list_companies' as any)
+        .update({ notas: trimmed || null } as any)
+        .eq('id', companyId);
+      if (error) throw error;
+      onSaved(companyId, trimmed);
+    } catch {
+      toast.error('Error al guardar la nota');
+      setValue(originalRef.current);
+    }
+  }, [companyId, value, onSaved]);
+
+  if (!isEditing) {
+    return (
+      <div
+        className="min-h-[28px] px-1 cursor-pointer hover:bg-muted/50 rounded text-sm flex items-center"
+        onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+      >
+        {value ? (
+          <span className="line-clamp-2">{value}</span>
+        ) : (
+          <span className="text-muted-foreground">Añadir nota...</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <textarea
+      autoFocus
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') { setValue(originalRef.current); setIsEditing(false); }
+      }}
+      onClick={(e) => e.stopPropagation()}
+      placeholder="Añadir nota..."
+      className="w-full min-h-[56px] text-sm rounded-md border border-input bg-background px-2 py-1 ring-2 ring-primary/50 resize-none focus:outline-none"
+      rows={2}
+    />
+  );
+});
+InlineNoteCell.displayName = 'InlineNoteCell';
+
 // ===== ESTADO BADGES =====
 const ESTADO_CONFIG: Record<string, { label: string; className: string }> = {
   borrador: { label: 'Borrador', className: 'bg-muted text-muted-foreground border-border' },
@@ -140,6 +203,12 @@ export default function ContactListDetailPage() {
   const [dedupKeep, setDedupKeep] = useState<'newest' | 'oldest'>('newest');
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
+
+  // Move/Copy state
+  const [moveCopyCompany, setMoveCopyCompany] = useState<ContactListCompany | null>(null);
+  const [moveCopyMode, setMoveCopyMode] = useState<'move' | 'copy'>('move');
+  const [moveCopyTargetId, setMoveCopyTargetId] = useState('');
+  const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -493,6 +562,61 @@ export default function ContactListDetailPage() {
     toast.success('Configuración guardada');
   };
 
+  // ===== MOVE / COPY COMPANY =====
+  const handleMoveCopy = async () => {
+    if (!moveCopyCompany || !moveCopyTargetId || !listId) return;
+    setIsMoveCopyLoading(true);
+    try {
+      if (moveCopyMode === 'copy') {
+        // Check if CIF already exists in target list
+        if (moveCopyCompany.cif) {
+          const { data: existing } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('id')
+            .eq('list_id', moveCopyTargetId)
+            .eq('cif', moveCopyCompany.cif)
+            .limit(1);
+          if (existing && existing.length > 0) {
+            toast.error('Esta empresa ya existe en la lista seleccionada');
+            setIsMoveCopyLoading(false);
+            return;
+          }
+        }
+        // Insert copy without notas and id
+        const { id, notas, created_at, ...rest } = moveCopyCompany as any;
+        await supabase.from('outbound_list_companies' as any).insert({
+          ...rest,
+          list_id: moveCopyTargetId,
+          notas: null,
+        } as any);
+        toast.success('Empresa copiada a la otra lista');
+      } else {
+        // Move: update list_id, clear notas
+        await supabase.from('outbound_list_companies' as any)
+          .update({ list_id: moveCopyTargetId, notas: null } as any)
+          .eq('id', moveCopyCompany.id);
+        toast.success('Empresa movida a la otra lista');
+      }
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyTargetId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+      setMoveCopyCompany(null);
+      setMoveCopyTargetId('');
+    } catch (err) {
+      toast.error('Error al procesar la operación');
+    } finally {
+      setIsMoveCopyLoading(false);
+    }
+  };
+
+  const handleNoteSaved = useCallback((companyId: string, note: string) => {
+    queryClient.setQueryData(['contact-list-companies', listId], (old: any) => {
+      if (!Array.isArray(old)) return old;
+      return old.map((c: any) => c.id === companyId ? { ...c, notas: note || null } : c);
+    });
+  }, [queryClient, listId]);
+
   const handleDeleteList = async () => {
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
     await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
@@ -745,6 +869,7 @@ export default function ContactListDetailPage() {
                             Empleados <SortIcon field="num_trabajadores" />
                           </button>
                         </TableHead>
+                        <TableHead className="min-w-[160px]">Notas</TableHead>
                         <TableHead className="w-12" />
                       </TableRow>
                     </TableHeader>
@@ -792,6 +917,9 @@ export default function ContactListDetailPage() {
                             {company.num_trabajadores ?? '—'}
                           </TableCell>
                           <TableCell onClick={e => e.stopPropagation()}>
+                            <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />
+                          </TableCell>
+                          <TableCell onClick={e => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
@@ -799,6 +927,12 @@ export default function ContactListDetailPage() {
                               <DropdownMenuContent align="end" className="bg-background">
                                 <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                   <Edit className="h-4 w-4 mr-2" /> Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                  <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
+                                  <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
@@ -1181,6 +1315,36 @@ export default function ContactListDetailPage() {
             <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)}>Cancelar</Button>
             <Button variant="destructive" onClick={handleDedup}>
               Eliminar duplicados
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move/Copy Modal */}
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) setMoveCopyCompany(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'} a otra lista</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
+            </p>
+            <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar lista destino..." />
+              </SelectTrigger>
+              <SelectContent>
+                {allLists.map((l: any) => (
+                  <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setMoveCopyCompany(null)}>Cancelar</Button>
+            <Button onClick={handleMoveCopy} disabled={!moveCopyTargetId || isMoveCopyLoading}>
+              {isMoveCopyLoading ? 'Procesando...' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
             </Button>
           </DialogFooter>
         </DialogContent>
