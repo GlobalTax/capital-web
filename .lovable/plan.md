@@ -1,33 +1,21 @@
 
 
-## Fix: PDF upload in Document campaigns
+## Añadir opción "Crear nueva lista" en el modal de Mover/Copiar
 
-### Root Cause
+### Cambio único en `ContactListDetailPage.tsx`
 
-`DocumentStep.tsx` line 53-59 calls the `upload_blob` action without the required `bucket` field. The edge function validates `bucket` and `base64` are present (line 113) and returns 400 when `bucket` is missing.
+**En el modal de Move/Copy (líneas 1322-1351):**
 
-### Fix
+1. Añadir un nuevo estado `newListName` (string) y un toggle `isCreatingNew` (boolean)
+2. Debajo del Select existente, añadir un enlace/botón "o crear nueva lista"
+3. Al hacer clic, cambia a un input de texto para el nombre de la nueva lista (oculta el Select)
+4. Otro enlace "seleccionar lista existente" para volver al Select
 
-Add `bucket: 'campaign-presentations'` to the request body in `DocumentStep.tsx` line 54.
+**En `handleMoveCopy` (líneas 566-611):**
 
-```typescript
-// Before
-body: {
-  action: 'upload_blob',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
+Si `isCreatingNew && newListName`, antes de mover/copiar:
+- Insertar nueva lista en `outbound_lists` con `name: newListName`, `type: list.type` (hereda el tipo de la lista actual)
+- Usar el id retornado como `targetId` para el resto de la lógica existente
 
-// After
-body: {
-  action: 'upload_blob',
-  bucket: 'campaign-presentations',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
-```
-
-One line change, zero risk to existing functionality.
+Sin cambios en base de datos. Sin ficheros nuevos.
 
