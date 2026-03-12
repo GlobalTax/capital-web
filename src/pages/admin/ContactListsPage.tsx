@@ -149,6 +149,10 @@ export default function ContactListsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar por nombre..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar por actividad... (ej: centro especial empleo, instalación eléctrica)" value={activitySearch} onChange={e => setActivitySearch(e.target.value)} className="pl-9" />
+            </div>
             <Select value={tipoFilter} onValueChange={setTipoFilter}>
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Tipo" />
