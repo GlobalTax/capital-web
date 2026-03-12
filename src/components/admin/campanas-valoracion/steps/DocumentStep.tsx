@@ -53,6 +53,7 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
       const { error: uploadError } = await supabase.functions.invoke('upload-campaign-presentation', {
         body: {
           action: 'upload_blob',
+          bucket: 'campaign-presentations',
           path: storagePath,
           base64,
           contentType: 'application/pdf',
