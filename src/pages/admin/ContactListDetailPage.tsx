@@ -83,8 +83,8 @@ function mapColumn(normalized: string): string | null {
 // ===== TEMPLATE DOWNLOAD =====
 function downloadTemplate() {
   const headers = [
-    'Nombre empresa', 'CIF', 'Año datos', 'Facturación', 'EBITDA',
-    'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto',
+    'Nombre empresa', 'CIF', 'CNAE', 'Descripción Actividad', 'Año datos', 'Facturación', 'EBITDA',
+    'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto', 'Posición Contacto',
     'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
