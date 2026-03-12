@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw } from 'lucide-react';
+import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye } from 'lucide-react';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
@@ -65,6 +65,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const pendingEmails = emails.filter(e => e.status === 'pending');
   const sentEmails = emails.filter(e => e.status === 'sent');
   const errorEmails = emails.filter(e => e.status === 'error');
+  const openedEmails = emails.filter(e => e.email_opened === true);
 
   const resetAndResend = async (emailId: string) => {
     setSendingId(emailId);
@@ -137,7 +138,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Empresas</CardTitle>
@@ -164,6 +165,16 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-green-600">{sentEmails.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              <Eye className="h-4 w-4" /> Abiertos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-blue-600">{openedEmails.length}</p>
           </CardContent>
         </Card>
         <Card>
@@ -244,6 +255,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                   <TableHead>Contacto</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead className="text-center">Estado</TableHead>
+                  <TableHead className="text-center">Entrega</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -267,6 +279,16 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                         {status === 'pending' && <Badge variant="secondary">Pendiente</Badge>}
                         {status === 'error' && <Badge variant="destructive">Error</Badge>}
                         {status === 'sin_email' && <Badge variant="outline" className="text-muted-foreground">Sin email</Badge>}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {(() => {
+                          if (!email || status !== 'sent') return <span className="text-muted-foreground">—</span>;
+                          if (email.email_opened) return <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700">📩 Abierto</Badge>;
+                          if (email.delivery_status === 'delivered') return <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700">✓ Entregado</Badge>;
+                          if (email.delivery_status === 'bounced') return <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">✗ Rebotado</Badge>;
+                          if (email.delivery_status === 'bounced') return <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">✗ Rebotado</Badge>;
+                          return <Badge variant="outline" className="text-muted-foreground">Enviado</Badge>;
+                        })()}
                       </TableCell>
                       <TableCell className="text-right">
                         {email && (
