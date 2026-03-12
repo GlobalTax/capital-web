@@ -459,6 +459,11 @@ export default function ContactListDetailPage() {
             <Button variant="outline" size="sm" onClick={handleExport} disabled={companies.length === 0}>
               <Download className="h-4 w-4 mr-2" /> Exportar Excel
             </Button>
+            {duplicateGroups.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setIsDedupModalOpen(true)} className="text-amber-600 border-amber-300 hover:bg-amber-50">
+                <Copy className="h-4 w-4 mr-2" /> {duplicateGroups.length} duplicados
+              </Button>
+            )}
           </div>
 
           {/* Bulk actions */}
