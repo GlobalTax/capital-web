@@ -16610,6 +16610,7 @@ export type Database = {
         Row: {
           anios_datos: number | null
           cif: string | null
+          comunidad_autonoma: string | null
           contacto: string | null
           created_at: string | null
           director_ejecutivo: string | null
@@ -16629,6 +16630,7 @@ export type Database = {
         Insert: {
           anios_datos?: number | null
           cif?: string | null
+          comunidad_autonoma?: string | null
           contacto?: string | null
           created_at?: string | null
           director_ejecutivo?: string | null
@@ -16648,6 +16650,7 @@ export type Database = {
         Update: {
           anios_datos?: number | null
           cif?: string | null
+          comunidad_autonoma?: string | null
           contacto?: string | null
           created_at?: string | null
           director_ejecutivo?: string | null

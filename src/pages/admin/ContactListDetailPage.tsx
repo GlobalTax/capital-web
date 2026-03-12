@@ -59,6 +59,7 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   num_trabajadores: ['num_trabajadores', 'n__trabajadores', 'trabajadores', 'empleados', 'employees', 'numero_trabajadores', 'no_trabajadores', 'plantilla'],
   director_ejecutivo: ['director_ejecutivo', 'director', 'ceo', 'gerente', 'director_general', 'administrador'],
   linkedin: ['linkedin', 'perfil_linkedin', 'linkedin_url', 'url_linkedin'],
+  comunidad_autonoma: ['comunidad_autonoma', 'comunidad', 'ccaa', 'autonomia', 'comunidad_autonomica', 'region_autonoma'],
 };
 
 function parseSpanishNumber(val: any): number | null {
@@ -81,7 +82,7 @@ function downloadTemplate() {
   const headers = [
     'Nombre empresa', 'CIF', 'Año datos', 'Facturación', 'EBITDA',
     'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto',
-    'Email', 'LinkedIn', 'Teléfono', 'Web',
+    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   // Set column widths
@@ -151,7 +152,7 @@ export default function ContactListDetailPage() {
   const [addForm, setAddForm] = useState({
     empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '',
     provincia: '', facturacion: '', ebitda: '', notas: '',
-    num_trabajadores: '', director_ejecutivo: '', linkedin: '',
+    num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '',
   });
 
   // Import state
@@ -202,6 +203,7 @@ export default function ContactListDetailPage() {
       cif: addForm.cif.trim() || null,
       web: addForm.web.trim() || null,
       provincia: addForm.provincia.trim() || null,
+      comunidad_autonoma: addForm.comunidad_autonoma.trim() || null,
       facturacion: parseSpanishNumber(addForm.facturacion),
       ebitda: parseSpanishNumber(addForm.ebitda),
       anios_datos: 1,
@@ -210,7 +212,7 @@ export default function ContactListDetailPage() {
       director_ejecutivo: addForm.director_ejecutivo.trim() || null,
       linkedin: addForm.linkedin.trim() || null,
     });
-    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '' });
+    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '' });
     setIsAddModalOpen(false);
     toast.success('Empresa añadida');
   };
@@ -291,6 +293,7 @@ export default function ContactListDetailPage() {
       'Teléfono': c.telefono || '',
       'Web': c.web || '',
       'Provincia': c.provincia || '',
+      'Comunidad Autónoma': c.comunidad_autonoma || '',
       'Notas': c.notas || '',
     })));
     const wb = XLSX.utils.book_new();
@@ -628,6 +631,7 @@ export default function ContactListDetailPage() {
             <div><Label>Teléfono</Label><Input value={addForm.telefono} onChange={e => setAddForm(p => ({ ...p, telefono: e.target.value }))} /></div>
             <div><Label>Web</Label><Input value={addForm.web} onChange={e => setAddForm(p => ({ ...p, web: e.target.value }))} /></div>
             <div><Label>Provincia</Label><Input value={addForm.provincia} onChange={e => setAddForm(p => ({ ...p, provincia: e.target.value }))} /></div>
+            <div><Label>C. Autónoma</Label><Input value={addForm.comunidad_autonoma} onChange={e => setAddForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Notas</Label><Textarea value={addForm.notas} onChange={e => setAddForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
           </div>
           <DialogFooter>
@@ -788,6 +792,7 @@ function PoolFilterModal({ listId, open, onOpenChange, onAdd, isAdding }: {
       num_trabajadores: null,
       director_ejecutivo: null,
       linkedin: null,
+      comunidad_autonoma: null,
     }));
     await onAdd(rows);
     setSelected([]);
@@ -854,6 +859,7 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
     num_trabajadores: company.num_trabajadores ? String(company.num_trabajadores) : '',
     director_ejecutivo: company.director_ejecutivo || '',
     linkedin: company.linkedin || '',
+    comunidad_autonoma: company.comunidad_autonoma || '',
   });
 
   return (
@@ -873,6 +879,7 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
           <div><Label>Teléfono</Label><Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} /></div>
           <div><Label>Web</Label><Input value={form.web} onChange={e => setForm(p => ({ ...p, web: e.target.value }))} /></div>
           <div><Label>Provincia</Label><Input value={form.provincia} onChange={e => setForm(p => ({ ...p, provincia: e.target.value }))} /></div>
+          <div><Label>C. Autónoma</Label><Input value={form.comunidad_autonoma} onChange={e => setForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
           <div className="col-span-2"><Label>Notas</Label><Textarea value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
         </div>
         <DialogFooter>
@@ -891,6 +898,7 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
             num_trabajadores: form.num_trabajadores ? parseInt(form.num_trabajadores) || null : null,
             director_ejecutivo: form.director_ejecutivo || null,
             linkedin: form.linkedin || null,
+            comunidad_autonoma: form.comunidad_autonoma || null,
           })}>{isSaving ? 'Guardando...' : 'Guardar'}</Button>
         </DialogFooter>
       </DialogContent>
@@ -926,6 +934,7 @@ function CompanyDrawer({ company, onClose, onEdit }: {
                 <div><span className="text-muted-foreground">Teléfono:</span> <span className="ml-1">{company.telefono || '—'}</span></div>
                 <div><span className="text-muted-foreground">Web:</span> <span className="ml-1">{company.web || '—'}</span></div>
                 <div><span className="text-muted-foreground">Provincia:</span> <span className="ml-1">{company.provincia || '—'}</span></div>
+                <div><span className="text-muted-foreground">C. Autónoma:</span> <span className="ml-1">{company.comunidad_autonoma || '—'}</span></div>
               </div>
               {company.notas && (
                 <div className="text-sm"><span className="text-muted-foreground">Notas:</span> <p className="mt-1">{company.notas}</p></div>

@@ -40,6 +40,7 @@ export interface ContactListCompany {
   num_trabajadores: number | null;
   director_ejecutivo: string | null;
   linkedin: string | null;
+  comunidad_autonoma: string | null;
   created_at: string;
 }
 
