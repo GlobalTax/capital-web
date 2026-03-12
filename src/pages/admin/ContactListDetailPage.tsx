@@ -203,6 +203,7 @@ export default function ContactListDetailPage() {
       cif: addForm.cif.trim() || null,
       web: addForm.web.trim() || null,
       provincia: addForm.provincia.trim() || null,
+      comunidad_autonoma: addForm.comunidad_autonoma.trim() || null,
       facturacion: parseSpanishNumber(addForm.facturacion),
       ebitda: parseSpanishNumber(addForm.ebitda),
       anios_datos: 1,
