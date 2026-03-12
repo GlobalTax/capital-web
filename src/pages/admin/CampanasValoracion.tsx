@@ -265,7 +265,7 @@ export default function CampanasValoracion() {
                       </TableCell>
                       <TableCell>{c.sector}</TableCell>
                       <TableCell className="text-center">{c.total_companies}</TableCell>
-                      <TableCell className="text-center">{c.total_sent}</TableCell>
+                      <TableCell className="text-center">{stageData?.[c.id]?.emailsSent ?? c.total_sent}</TableCell>
                       {activeTab === 'valuation' && <TableCell className="text-right">{c.total_valuation > 0 ? formatCurrencyEUR(c.total_valuation) : '—'}</TableCell>}
                       <TableCell className="text-center"><Badge variant={stage.variant}>{stage.label}</Badge></TableCell>
                       <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('es-ES')}</TableCell>
