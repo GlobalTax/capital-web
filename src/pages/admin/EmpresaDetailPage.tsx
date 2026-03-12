@@ -397,7 +397,11 @@ export default function EmpresaDetailPage() {
               Web
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+           <Button variant="outline" size="sm" onClick={() => setIsMergeOpen(true)}>
+              <Merge className="h-4 w-4 mr-2" />
+              Fusionar
+            </Button>
+           <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>
