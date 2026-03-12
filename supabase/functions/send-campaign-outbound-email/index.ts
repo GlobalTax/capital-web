@@ -131,6 +131,14 @@ serve(async (req) => {
       (presentations || []).map((p: any) => [p.company_id, p])
     );
 
+    // Fetch shared campaign documents (Document mode: company_id is null)
+    const { data: sharedDocs } = await serviceClient
+      .from("campaign_presentations")
+      .select("id, campaign_id, storage_path, file_name, status")
+      .in("campaign_id", campaignIds)
+      .is("company_id", null)
+      .eq("status", "assigned");
+
     // Get CC recipients from email_recipients_config (active + default copy)
     const { data: ccRecipients } = await serviceClient
       .from("email_recipients_config")
@@ -173,6 +181,17 @@ serve(async (req) => {
         if (pres?.storage_path) {
           const att = await downloadPdfFromStorage(serviceClient, pres.storage_path, pres.file_name || "Estudio.pdf");
           if (att) attachments.push(att);
+        }
+
+        // 3. Fallback: shared campaign document (Document mode, company_id is null)
+        if (!pres) {
+          const shared = (sharedDocs || []).filter((d: any) => d.campaign_id === email.campaign_id);
+          for (const doc of shared) {
+            if (doc.storage_path) {
+              const att = await downloadPdfFromStorage(serviceClient, doc.storage_path, doc.file_name || "Documento.pdf");
+              if (att) attachments.push(att);
+            }
+          }
         }
 
         // Convert body to HTML with responsive wrapper and append signature
