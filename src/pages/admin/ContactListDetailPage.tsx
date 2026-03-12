@@ -293,6 +293,7 @@ export default function ContactListDetailPage() {
       'Teléfono': c.telefono || '',
       'Web': c.web || '',
       'Provincia': c.provincia || '',
+      'Comunidad Autónoma': c.comunidad_autonoma || '',
       'Notas': c.notas || '',
     })));
     const wb = XLSX.utils.book_new();
