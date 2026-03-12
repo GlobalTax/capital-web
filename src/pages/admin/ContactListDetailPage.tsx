@@ -321,6 +321,7 @@ export default function ContactListDetailPage() {
       name: configName,
       description: configDesc || null,
       sector: configSector || null,
+      tipo: configTipo,
       estado: configEstado,
       updated_at: new Date().toISOString(),
     }).eq('id', listId);
