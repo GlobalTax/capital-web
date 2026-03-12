@@ -630,6 +630,7 @@ export default function ContactListDetailPage() {
             <div><Label>Teléfono</Label><Input value={addForm.telefono} onChange={e => setAddForm(p => ({ ...p, telefono: e.target.value }))} /></div>
             <div><Label>Web</Label><Input value={addForm.web} onChange={e => setAddForm(p => ({ ...p, web: e.target.value }))} /></div>
             <div><Label>Provincia</Label><Input value={addForm.provincia} onChange={e => setAddForm(p => ({ ...p, provincia: e.target.value }))} /></div>
+            <div><Label>C. Autónoma</Label><Input value={addForm.comunidad_autonoma} onChange={e => setAddForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Notas</Label><Textarea value={addForm.notas} onChange={e => setAddForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
           </div>
           <DialogFooter>
