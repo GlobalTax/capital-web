@@ -5,10 +5,27 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw } from 'lucide-react';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface Props {
@@ -16,12 +33,18 @@ interface Props {
   campaign: ValuationCampaign;
 }
 
+type ResendConfirm = 
+  | { type: 'single'; emailId: string; companyName: string }
+  | { type: 'bulk'; emailIds: string[]; count: number }
+  | null;
+
 export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const { companies } = useCampaignCompanies(campaignId);
   const { emails, sendEmail, sendAllPending, isSendingAll, isLoading } = useCampaignEmails(campaignId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [resendConfirm, setResendConfirm] = useState<ResendConfirm>(null);
 
   const emailMap = useMemo(() => {
     const map = new Map<string, typeof emails[0]>();
@@ -43,6 +66,32 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const sentEmails = emails.filter(e => e.status === 'sent');
   const errorEmails = emails.filter(e => e.status === 'error');
 
+  const resetAndResend = async (emailId: string) => {
+    setSendingId(emailId);
+    try {
+      await supabase.from('campaign_emails')
+        .update({ status: 'pending', sent_at: null, error_message: null })
+        .eq('id', emailId);
+      await sendEmail(emailId);
+    } catch {
+      // error handled by hook
+    } finally {
+      setSendingId(null);
+    }
+  };
+
+  const handleResendConfirm = async () => {
+    if (!resendConfirm) return;
+    if (resendConfirm.type === 'single') {
+      await resetAndResend(resendConfirm.emailId);
+    } else {
+      for (const emailId of resendConfirm.emailIds) {
+        await resetAndResend(emailId);
+      }
+    }
+    setResendConfirm(null);
+  };
+
   const handleSendSingle = async (emailId: string) => {
     setSendingId(emailId);
     try {
@@ -60,6 +109,12 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
       return;
     }
     await sendAllPending();
+  };
+
+  const handleBulkResend = () => {
+    const sentEmailIds = sentEmails.map(e => e.id);
+    if (sentEmailIds.length === 0) return;
+    setResendConfirm({ type: 'bulk', emailIds: sentEmailIds, count: sentEmailIds.length });
   };
 
   const toggleSelect = (id: string) => {
@@ -124,24 +179,32 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
       </div>
 
       {/* Actions */}
-      {pendingEmails.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {pendingEmails.length} email{pendingEmails.length !== 1 ? 's' : ''} pendiente{pendingEmails.length !== 1 ? 's' : ''} de envío
-              </p>
-              <Button onClick={handleSendAll} disabled={isSendingAll}>
-                {isSendingAll ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enviando...</>
-                ) : (
-                  <><Send className="h-4 w-4 mr-2" />Enviar todos ({pendingEmails.length})</>
-                )}
-              </Button>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {pendingEmails.length} pendiente{pendingEmails.length !== 1 ? 's' : ''} · {sentEmails.length} enviado{sentEmails.length !== 1 ? 's' : ''}
+            </p>
+            <div className="flex items-center gap-2">
+              {sentEmails.length > 0 && (
+                <Button variant="outline" onClick={handleBulkResend} disabled={isSendingAll}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Reenviar {sentEmails.length} enviados
+                </Button>
+              )}
+              {pendingEmails.length > 0 && (
+                <Button onClick={handleSendAll} disabled={isSendingAll}>
+                  {isSendingAll ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enviando...</>
+                  ) : (
+                    <><Send className="h-4 w-4 mr-2" />Enviar todos ({pendingEmails.length})</>
+                  )}
+                </Button>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Table */}
       <Card>
@@ -206,22 +269,49 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                         {status === 'sin_email' && <Badge variant="outline" className="text-muted-foreground">Sin email</Badge>}
                       </TableCell>
                       <TableCell className="text-right">
-                        {email && email.status === 'pending' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={sendingId === email.id}
-                            onClick={() => handleSendSingle(email.id)}
-                          >
-                            {sendingId === email.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <><Send className="h-4 w-4 mr-1" />Enviar</>
-                            )}
-                          </Button>
+                        {email && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" disabled={sendingId === email.id}>
+                                {sendingId === email.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <MoreVertical className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {status === 'pending' && (
+                                <DropdownMenuItem onClick={() => handleSendSingle(email.id)}>
+                                  <Send className="h-4 w-4 mr-2" />
+                                  Enviar
+                                </DropdownMenuItem>
+                              )}
+                              {status === 'sent' && (
+                                <DropdownMenuItem onClick={() => setResendConfirm({
+                                  type: 'single',
+                                  emailId: email.id,
+                                  companyName: c.client_company || 'esta empresa'
+                                })}>
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  Reenviar email
+                                </DropdownMenuItem>
+                              )}
+                              {status === 'error' && (
+                                <DropdownMenuItem onClick={() => setResendConfirm({
+                                  type: 'single',
+                                  emailId: email.id,
+                                  companyName: c.client_company || 'esta empresa'
+                                })}>
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  Reintentar envío
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                         {email?.error_message && (
-                          <span className="text-xs text-destructive" title={email.error_message}>
+                          <span className="text-xs text-destructive ml-1" title={email.error_message}>
                             {email.error_message.substring(0, 30)}...
                           </span>
                         )}
@@ -234,6 +324,29 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Resend confirmation dialog */}
+      <AlertDialog open={!!resendConfirm} onOpenChange={(open) => { if (!open) setResendConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              ⚠️ Confirmar reenvío
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {resendConfirm?.type === 'single'
+                ? `Este email ya fue enviado a "${resendConfirm.companyName}". ¿Estás seguro de que quieres reenviarlo?`
+                : `¿Estás seguro de que quieres reenviar ${resendConfirm?.count} emails que ya fueron enviados? Esta acción no se puede deshacer.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResendConfirm}>
+              Sí, reenviar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
