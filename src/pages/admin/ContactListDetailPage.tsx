@@ -253,6 +253,13 @@ export default function ContactListDetailPage() {
         (c.director_ejecutivo || '').toLowerCase().includes(q)
       );
     }
+    // Activity search
+    if (activitySearchQuery.trim()) {
+      const q = activitySearchQuery.toLowerCase();
+      result = result.filter(c =>
+        (c.descripcion_actividad || '').toLowerCase().includes(q)
+      );
+    }
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
@@ -272,7 +279,7 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
 
   // Config tab state
   const [configName, setConfigName] = useState('');
