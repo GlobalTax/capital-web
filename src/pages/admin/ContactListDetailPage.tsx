@@ -917,6 +917,9 @@ export default function ContactListDetailPage() {
                             {company.num_trabajadores ?? '—'}
                           </TableCell>
                           <TableCell onClick={e => e.stopPropagation()}>
+                            <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />
+                          </TableCell>
+                          <TableCell onClick={e => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
@@ -924,6 +927,12 @@ export default function ContactListDetailPage() {
                               <DropdownMenuContent align="end" className="bg-background">
                                 <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                   <Edit className="h-4 w-4 mr-2" /> Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                  <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
+                                  <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
