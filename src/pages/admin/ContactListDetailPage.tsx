@@ -250,7 +250,7 @@ export default function ContactListDetailPage() {
         .eq('id', list!.lista_madre_id)
         .single();
       if (error) throw error;
-      return data as { id: string; name: string };
+      return data as unknown as { id: string; name: string };
     },
   });
 
