@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '@/hooks/useExcelImportValidation';
 import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { SFFundTagEditor } from '@/components/admin/search-funds/SFFundTagEditor';
 import {
   useContactListCompanies,
   useContactListCampaigns,
@@ -202,6 +203,12 @@ export default function ContactListDetailPage() {
   const [configSector, setConfigSector] = useState('');
   const [configEstado, setConfigEstado] = useState('borrador');
   const [configTipo, setConfigTipo] = useState<ContactListTipo>('outbound');
+  const [configDescProposito, setConfigDescProposito] = useState('');
+  const [configCnaes, setConfigCnaes] = useState<string[]>([]);
+  const [configFactMin, setConfigFactMin] = useState('');
+  const [configFactMax, setConfigFactMax] = useState('');
+  const [configCriteriosConstruccion, setConfigCriteriosConstruccion] = useState('');
+  const [configListaMadreId, setConfigListaMadreId] = useState('');
 
   React.useEffect(() => {
     if (list) {
@@ -210,8 +217,42 @@ export default function ContactListDetailPage() {
       setConfigSector(list.sector || '');
       setConfigEstado(list.estado || 'borrador');
       setConfigTipo(list.tipo || 'outbound');
+      setConfigDescProposito(list.descripcion_proposito || '');
+      setConfigCnaes(list.cnaes_utilizados || []);
+      setConfigFactMin(list.facturacion_min != null ? String(list.facturacion_min) : '');
+      setConfigFactMax(list.facturacion_max != null ? String(list.facturacion_max) : '');
+      setConfigCriteriosConstruccion(list.criterios_construccion || '');
+      setConfigListaMadreId(list.lista_madre_id || '');
     }
   }, [list]);
+
+  // Query: all lists for "Lista madre" selector
+  const { data: allLists = [] } = useQuery({
+    queryKey: ['outbound-lists-for-parent'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outbound_lists' as any)
+        .select('id, name')
+        .order('name');
+      if (error) throw error;
+      return (data as any[]).filter((l: any) => l.id !== listId);
+    },
+  });
+
+  // Query: parent list name for breadcrumb
+  const { data: parentList } = useQuery({
+    queryKey: ['parent-list-name', list?.lista_madre_id],
+    enabled: !!list?.lista_madre_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outbound_lists' as any)
+        .select('id, name')
+        .eq('id', list!.lista_madre_id)
+        .single();
+      if (error) throw error;
+      return data as unknown as { id: string; name: string };
+    },
+  });
 
   // Add manual form state
   const [addForm, setAddForm] = useState({
@@ -439,6 +480,12 @@ export default function ContactListDetailPage() {
       sector: configSector || null,
       tipo: configTipo,
       estado: configEstado,
+      descripcion_proposito: configDescProposito || null,
+      cnaes_utilizados: configCnaes.length > 0 ? configCnaes : null,
+      facturacion_min: configFactMin ? parseFloat(configFactMin) : null,
+      facturacion_max: configFactMax ? parseFloat(configFactMax) : null,
+      criterios_construccion: configCriteriosConstruccion || null,
+      lista_madre_id: configListaMadreId || null,
       updated_at: new Date().toISOString(),
     }).eq('id', listId);
     queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
@@ -509,6 +556,14 @@ export default function ContactListDetailPage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div>
+            {parentList && (
+              <div className="mb-1">
+                <Link to={`/admin/listas-contacto/${parentList.id}`} className="text-xs text-primary hover:underline flex items-center gap-1">
+                  <Link2 className="h-3 w-3" />
+                  Sublista de: {parentList.name}
+                </Link>
+              </div>
+            )}
             <h1 className="text-2xl font-semibold">{list.name}</h1>
             <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
               <DropdownMenu>
@@ -813,6 +868,72 @@ export default function ContactListDetailPage() {
                     <SelectItem value="borrador">Borrador</SelectItem>
                     <SelectItem value="activa">Activa</SelectItem>
                     <SelectItem value="archivada">Archivada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button onClick={handleSaveConfig}>Guardar cambios</Button>
+            </CardContent>
+          </Card>
+
+          {/* Advanced Configuration */}
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <h3 className="font-medium text-base">Configuración avanzada</h3>
+              <div>
+                <Label>Descripción / Propósito</Label>
+                <Textarea
+                  value={configDescProposito}
+                  onChange={e => setConfigDescProposito(e.target.value)}
+                  rows={3}
+                  placeholder="Ej: Sublista de instaladores eléctricos puros para mandato Cosamo."
+                />
+              </div>
+              <div>
+                <Label>CNAEs utilizados</Label>
+                <SFFundTagEditor
+                  value={configCnaes}
+                  onChange={setConfigCnaes}
+                  placeholder="Añadir código CNAE..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Facturación mínima (€)</Label>
+                  <Input
+                    type="number"
+                    value={configFactMin}
+                    onChange={e => setConfigFactMin(e.target.value)}
+                    placeholder="Ej: 1500000"
+                  />
+                </div>
+                <div>
+                  <Label>Facturación máxima (€)</Label>
+                  <Input
+                    type="number"
+                    value={configFactMax}
+                    onChange={e => setConfigFactMax(e.target.value)}
+                    placeholder="Ej: 10000000"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label>Criterios de construcción</Label>
+                <Textarea
+                  value={configCriteriosConstruccion}
+                  onChange={e => setConfigCriteriosConstruccion(e.target.value)}
+                  rows={3}
+                  placeholder="Ej: Export Sabi con CNAEs 8020 y 4321. Activas, con cuentas presentadas, facturación mínima 1.5M€."
+                />
+              </div>
+              <div>
+                <Label>Lista madre</Label>
+                <Select value={configListaMadreId || '__none__'} onValueChange={(v) => setConfigListaMadreId(v === '__none__' ? '' : v)}>
+                  <SelectTrigger><SelectValue placeholder="Sin lista madre" /></SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="__none__">Ninguna</SelectItem>
+                    {allLists.map((l: any) => (
+                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
