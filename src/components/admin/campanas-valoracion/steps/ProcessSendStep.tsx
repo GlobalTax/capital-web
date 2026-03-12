@@ -1027,7 +1027,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </Button>
 
             {sentCompanies.length > 0 && (
-              <Button variant="outline" onClick={() => handleSendSelected(sentCompanies.map(c => c.id))} disabled={isBusy}>
+              <Button variant="outline" onClick={() => setResendConfirm({ type: 'bulk', ids: sentCompanies.map(c => c.id), count: sentCompanies.length })} disabled={isBusy}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reenviar {sentCompanies.length} enviados
               </Button>
