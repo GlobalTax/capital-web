@@ -889,14 +889,17 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
           <div><Label>EBITDA</Label><Input value={form.ebitda} onChange={e => setForm(p => ({ ...p, ebitda: e.target.value }))} /></div>
           <div><Label>Nº Trabajadores</Label><Input type="number" value={form.num_trabajadores} onChange={e => setForm(p => ({ ...p, num_trabajadores: e.target.value }))} /></div>
           <div className="col-span-2"><Label>Director Ejecutivo</Label><Input value={form.director_ejecutivo} onChange={e => setForm(p => ({ ...p, director_ejecutivo: e.target.value }))} /></div>
-          <div><Label>Contacto</Label><Input value={form.contacto} onChange={e => setForm(p => ({ ...p, contacto: e.target.value }))} /></div>
-          <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
-          <div><Label>LinkedIn</Label><Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
-          <div><Label>Teléfono</Label><Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} /></div>
-          <div><Label>Web</Label><Input value={form.web} onChange={e => setForm(p => ({ ...p, web: e.target.value }))} /></div>
-          <div><Label>Provincia</Label><Input value={form.provincia} onChange={e => setForm(p => ({ ...p, provincia: e.target.value }))} /></div>
-          <div><Label>C. Autónoma</Label><Input value={form.comunidad_autonoma} onChange={e => setForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
-          <div className="col-span-2"><Label>Notas</Label><Textarea value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
+            <div><Label>Contacto</Label><Input value={form.contacto} onChange={e => setForm(p => ({ ...p, contacto: e.target.value }))} /></div>
+            <div><Label>Posición Contacto</Label><Input value={form.posicion_contacto} onChange={e => setForm(p => ({ ...p, posicion_contacto: e.target.value }))} /></div>
+            <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
+            <div><Label>LinkedIn</Label><Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
+            <div><Label>Teléfono</Label><Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} /></div>
+            <div><Label>Web</Label><Input value={form.web} onChange={e => setForm(p => ({ ...p, web: e.target.value }))} /></div>
+            <div><Label>CNAE</Label><Input value={form.cnae} onChange={e => setForm(p => ({ ...p, cnae: e.target.value }))} /></div>
+            <div className="col-span-2"><Label>Descripción Actividad</Label><Textarea value={form.descripcion_actividad} onChange={e => setForm(p => ({ ...p, descripcion_actividad: e.target.value }))} rows={2} /></div>
+            <div><Label>Provincia</Label><Input value={form.provincia} onChange={e => setForm(p => ({ ...p, provincia: e.target.value }))} /></div>
+            <div><Label>C. Autónoma</Label><Input value={form.comunidad_autonoma} onChange={e => setForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
+            <div className="col-span-2"><Label>Notas</Label><Textarea value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
