@@ -36,6 +36,7 @@ import {
   useContactListCampaigns,
   useCompanyListHistory,
   ContactListCompany,
+  ContactListTipo,
 } from '@/hooks/useContactLists';
 import * as XLSX from 'xlsx';
 import { useDropzone } from 'react-dropzone';
