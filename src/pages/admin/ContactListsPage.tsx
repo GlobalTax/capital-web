@@ -219,12 +219,17 @@ export default function ContactListsPage() {
                       onClick={() => navigate(`/admin/listas-contacto/${list.id}`)}
                     >
                       <TableCell>
-                        <EditableCell
-                          value={list.name}
-                          onSave={async (val) => handleInlineSave(list.id, 'name', val)}
-                          placeholder="Nombre de la lista"
-                          displayClassName="font-medium"
-                        />
+                        <div>
+                          <EditableCell
+                            value={list.name}
+                            onSave={async (val) => handleInlineSave(list.id, 'name', val)}
+                            placeholder="Nombre de la lista"
+                            displayClassName="font-medium"
+                          />
+                          {debouncedActivitySearch.trim() && activityMatches && activityMatches[list.id] && (
+                            <span className="text-xs text-primary">{activityMatches[list.id]} empresas coinciden</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('text-xs', tipo.className)}>{tipo.label}</Badge>
