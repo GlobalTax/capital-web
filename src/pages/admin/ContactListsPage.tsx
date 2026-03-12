@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +24,7 @@ import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
 } from 'lucide-react';
 import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
+import { useDebounce } from '@/hooks/useDebounce';
 import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
 
