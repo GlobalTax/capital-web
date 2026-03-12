@@ -203,6 +203,12 @@ export default function ContactListDetailPage() {
   const [configSector, setConfigSector] = useState('');
   const [configEstado, setConfigEstado] = useState('borrador');
   const [configTipo, setConfigTipo] = useState<ContactListTipo>('outbound');
+  const [configDescProposito, setConfigDescProposito] = useState('');
+  const [configCnaes, setConfigCnaes] = useState<string[]>([]);
+  const [configFactMin, setConfigFactMin] = useState('');
+  const [configFactMax, setConfigFactMax] = useState('');
+  const [configCriteriosConstruccion, setConfigCriteriosConstruccion] = useState('');
+  const [configListaMadreId, setConfigListaMadreId] = useState('');
 
   React.useEffect(() => {
     if (list) {
@@ -211,8 +217,42 @@ export default function ContactListDetailPage() {
       setConfigSector(list.sector || '');
       setConfigEstado(list.estado || 'borrador');
       setConfigTipo(list.tipo || 'outbound');
+      setConfigDescProposito(list.descripcion_proposito || '');
+      setConfigCnaes(list.cnaes_utilizados || []);
+      setConfigFactMin(list.facturacion_min != null ? String(list.facturacion_min) : '');
+      setConfigFactMax(list.facturacion_max != null ? String(list.facturacion_max) : '');
+      setConfigCriteriosConstruccion(list.criterios_construccion || '');
+      setConfigListaMadreId(list.lista_madre_id || '');
     }
   }, [list]);
+
+  // Query: all lists for "Lista madre" selector
+  const { data: allLists = [] } = useQuery({
+    queryKey: ['outbound-lists-for-parent'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outbound_lists' as any)
+        .select('id, name')
+        .order('name');
+      if (error) throw error;
+      return (data as any[]).filter((l: any) => l.id !== listId);
+    },
+  });
+
+  // Query: parent list name for breadcrumb
+  const { data: parentList } = useQuery({
+    queryKey: ['parent-list-name', list?.lista_madre_id],
+    enabled: !!list?.lista_madre_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outbound_lists' as any)
+        .select('id, name')
+        .eq('id', list!.lista_madre_id)
+        .single();
+      if (error) throw error;
+      return data as { id: string; name: string };
+    },
+  });
 
   // Add manual form state
   const [addForm, setAddForm] = useState({
