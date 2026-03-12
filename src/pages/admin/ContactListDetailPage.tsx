@@ -927,10 +927,10 @@ export default function ContactListDetailPage() {
               </div>
               <div>
                 <Label>Lista madre</Label>
-                <Select value={configListaMadreId} onValueChange={setConfigListaMadreId}>
+                <Select value={configListaMadreId || '__none__'} onValueChange={(v) => setConfigListaMadreId(v === '__none__' ? '' : v)}>
                   <SelectTrigger><SelectValue placeholder="Sin lista madre" /></SelectTrigger>
                   <SelectContent className="bg-background">
-                    <SelectItem value="">Ninguna</SelectItem>
+                    <SelectItem value="__none__">Ninguna</SelectItem>
                     {allLists.map((l: any) => (
                       <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
                     ))}
