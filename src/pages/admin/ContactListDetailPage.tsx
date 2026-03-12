@@ -204,6 +204,12 @@ export default function ContactListDetailPage() {
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
 
+  // Move/Copy state
+  const [moveCopyCompany, setMoveCopyCompany] = useState<ContactListCompany | null>(null);
+  const [moveCopyMode, setMoveCopyMode] = useState<'move' | 'copy'>('move');
+  const [moveCopyTargetId, setMoveCopyTargetId] = useState('');
+  const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
+
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores' | null>(null);
