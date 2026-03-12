@@ -710,6 +710,111 @@ function SignatureEditorSection() {
   );
 }
 
+// ─── CC Recipients Section ──────────────────────────────────────────────
+function CcRecipientsSection({ campaignId, campaign }: { campaignId: string; campaign: ValuationCampaign }) {
+  const { data: allRecipients, isLoading } = useActiveEmailRecipients();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [initialized, setInitialized] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Initialize from campaign data
+  useEffect(() => {
+    if (initialized || !allRecipients) return;
+    const ccIds = (campaign as any).cc_recipient_ids;
+    if (ccIds === null || ccIds === undefined) {
+      // null = use defaults → pre-select those with is_default_copy
+      setSelectedIds(allRecipients.filter(r => r.is_default_copy).map(r => r.id));
+    } else {
+      setSelectedIds(ccIds);
+    }
+    setInitialized(true);
+  }, [allRecipients, campaign, initialized]);
+
+  const handleToggle = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('valuation_campaigns')
+        .update({ cc_recipient_ids: selectedIds } as any)
+        .eq('id', campaignId);
+      if (error) throw error;
+      toast.success(`CC actualizado: ${selectedIds.length} destinatario(s)`);
+    } catch {
+      toast.error('Error al guardar CC');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          Destinatarios en copia (CC)
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Selecciona quién recibirá copia de cada email enviado en esta campaña. Si no seleccionas a nadie, los emails se enviarán sin CC.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          {(allRecipients || []).map(recipient => (
+            <label
+              key={recipient.id}
+              className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+            >
+              <Checkbox
+                checked={selectedIds.includes(recipient.id)}
+                onCheckedChange={() => handleToggle(recipient.id)}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{recipient.name}</span>
+                  <Badge variant="outline" className="text-[10px]">{recipient.role}</Badge>
+                  {recipient.is_default_copy && (
+                    <Badge variant="secondary" className="text-[10px]">CC por defecto</Badge>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">{recipient.email}</span>
+              </div>
+            </label>
+          ))}
+          {(!allRecipients || allRecipients.length === 0) && (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No hay destinatarios configurados. Añádelos en Configuración → Email.
+            </p>
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {selectedIds.length === 0
+              ? 'Sin CC — los emails se enviarán solo al destinatario principal'
+              : `${selectedIds.length} persona(s) recibirán copia de cada email`}
+          </p>
+          <Button onClick={handleSave} disabled={saving} size="sm">
+            {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+            Guardar CC
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Main MailStep ──────────────────────────────────────────────────────
 export function MailStep({ campaignId, campaign }: Props) {
   const { companies } = useCampaignCompanies(campaignId);
