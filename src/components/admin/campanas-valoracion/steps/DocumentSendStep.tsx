@@ -254,8 +254,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                   <TableHead>Empresa</TableHead>
                   <TableHead>Contacto</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead className="text-center">Estado</TableHead>
-                  <TableHead className="text-center">Entrega</TableHead>
+                   <TableHead className="text-center">Estado</TableHead>
+                   <TableHead className="text-center">Fecha envío</TableHead>
+                   <TableHead className="text-center">Entrega</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -279,8 +280,11 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                         {status === 'pending' && <Badge variant="secondary">Pendiente</Badge>}
                         {status === 'error' && <Badge variant="destructive">Error</Badge>}
                         {status === 'sin_email' && <Badge variant="outline" className="text-muted-foreground">Sin email</Badge>}
-                      </TableCell>
-                      <TableCell className="text-center">
+                       </TableCell>
+                       <TableCell className="text-center text-xs text-muted-foreground">
+                         {email?.sent_at ? new Date(email.sent_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                       </TableCell>
+                       <TableCell className="text-center">
                         {(() => {
                           if (!email || status !== 'sent') return <span className="text-muted-foreground">—</span>;
                           if (email.email_opened) return <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700">📩 Abierto</Badge>;
