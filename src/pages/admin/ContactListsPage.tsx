@@ -56,8 +56,9 @@ export default function ContactListsPage() {
       result = result.filter(l => l.name.toLowerCase().includes(q));
     }
     if (estadoFilter !== 'all') result = result.filter(l => l.estado === estadoFilter);
+    if (tipoFilter !== 'all') result = result.filter(l => l.tipo === tipoFilter);
     return result;
-  }, [lists, search, estadoFilter]);
+  }, [lists, search, estadoFilter, tipoFilter]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
