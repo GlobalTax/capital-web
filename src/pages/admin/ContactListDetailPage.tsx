@@ -857,6 +857,7 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
     num_trabajadores: company.num_trabajadores ? String(company.num_trabajadores) : '',
     director_ejecutivo: company.director_ejecutivo || '',
     linkedin: company.linkedin || '',
+    comunidad_autonoma: company.comunidad_autonoma || '',
   });
 
   return (
