@@ -918,6 +918,9 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
             director_ejecutivo: form.director_ejecutivo || null,
             linkedin: form.linkedin || null,
             comunidad_autonoma: form.comunidad_autonoma || null,
+            posicion_contacto: form.posicion_contacto || null,
+            cnae: form.cnae || null,
+            descripcion_actividad: form.descripcion_actividad || null,
           })}>{isSaving ? 'Guardando...' : 'Guardar'}</Button>
         </DialogFooter>
       </DialogContent>
