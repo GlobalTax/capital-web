@@ -980,6 +980,12 @@ export default function EmpresaDetailPage() {
         companyId={empresa.id}
         companyName={empresa.nombre}
       />
+      {/* Merge Dialog */}
+      <EmpresaMergeDialog
+        open={isMergeOpen}
+        onOpenChange={setIsMergeOpen}
+        empresa={empresa}
+      />
     </div>
   );
 }
