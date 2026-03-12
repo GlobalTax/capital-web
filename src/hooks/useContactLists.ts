@@ -41,6 +41,9 @@ export interface ContactListCompany {
   director_ejecutivo: string | null;
   linkedin: string | null;
   comunidad_autonoma: string | null;
+  posicion_contacto: string | null;
+  cnae: string | null;
+  descripcion_actividad: string | null;
   created_at: string;
 }
 

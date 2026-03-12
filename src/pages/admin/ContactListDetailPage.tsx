@@ -60,6 +60,9 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   director_ejecutivo: ['director_ejecutivo', 'director', 'ceo', 'gerente', 'director_general', 'administrador'],
   linkedin: ['linkedin', 'perfil_linkedin', 'linkedin_url', 'url_linkedin'],
   comunidad_autonoma: ['comunidad_autonoma', 'comunidad', 'ccaa', 'autonomia', 'comunidad_autonomica', 'region_autonoma'],
+  posicion_contacto: ['posicion_contacto', 'posicion', 'cargo', 'puesto', 'position', 'rol', 'job_title'],
+  cnae: ['cnae', 'codigo_cnae', 'cnae_code', 'actividad_cnae'],
+  descripcion_actividad: ['descripcion_actividad', 'actividad', 'descripcion', 'activity', 'objeto_social', 'actividad_empresa'],
 };
 
 function parseSpanishNumber(val: any): number | null {
@@ -80,8 +83,8 @@ function mapColumn(normalized: string): string | null {
 // ===== TEMPLATE DOWNLOAD =====
 function downloadTemplate() {
   const headers = [
-    'Nombre empresa', 'CIF', 'Año datos', 'Facturación', 'EBITDA',
-    'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto',
+    'Nombre empresa', 'CIF', 'CNAE', 'Descripción Actividad', 'Año datos', 'Facturación', 'EBITDA',
+    'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto', 'Posición Contacto',
     'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
@@ -153,6 +156,7 @@ export default function ContactListDetailPage() {
     empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '',
     provincia: '', facturacion: '', ebitda: '', notas: '',
     num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '',
+    posicion_contacto: '', cnae: '', descripcion_actividad: '',
   });
 
   // Import state
@@ -204,6 +208,9 @@ export default function ContactListDetailPage() {
       web: addForm.web.trim() || null,
       provincia: addForm.provincia.trim() || null,
       comunidad_autonoma: addForm.comunidad_autonoma.trim() || null,
+      posicion_contacto: addForm.posicion_contacto.trim() || null,
+      cnae: addForm.cnae.trim() || null,
+      descripcion_actividad: addForm.descripcion_actividad.trim() || null,
       facturacion: parseSpanishNumber(addForm.facturacion),
       ebitda: parseSpanishNumber(addForm.ebitda),
       anios_datos: 1,
@@ -212,7 +219,7 @@ export default function ContactListDetailPage() {
       director_ejecutivo: addForm.director_ejecutivo.trim() || null,
       linkedin: addForm.linkedin.trim() || null,
     });
-    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '' });
+    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '', posicion_contacto: '', cnae: '', descripcion_actividad: '' });
     setIsAddModalOpen(false);
     toast.success('Empresa añadida');
   };
@@ -282,12 +289,15 @@ export default function ContactListDetailPage() {
     const ws = XLSX.utils.json_to_sheet(companies.map(c => ({
       'Nombre empresa': c.empresa,
       'CIF': c.cif || '',
+      'CNAE': c.cnae || '',
+      'Descripción Actividad': c.descripcion_actividad || '',
       'Año datos': c.anios_datos || '',
       'Facturación': c.facturacion || '',
       'EBITDA': c.ebitda || '',
       'Nº Trabajadores': c.num_trabajadores || '',
       'Director Ejecutivo': c.director_ejecutivo || '',
       'Nombre Contacto': c.contacto || '',
+      'Posición Contacto': c.posicion_contacto || '',
       'Email': c.email || '',
       'LinkedIn': c.linkedin || '',
       'Teléfono': c.telefono || '',
@@ -626,10 +636,13 @@ export default function ContactListDetailPage() {
             <div><Label>Nº Trabajadores</Label><Input type="number" value={addForm.num_trabajadores} onChange={e => setAddForm(p => ({ ...p, num_trabajadores: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Director Ejecutivo</Label><Input value={addForm.director_ejecutivo} onChange={e => setAddForm(p => ({ ...p, director_ejecutivo: e.target.value }))} /></div>
             <div><Label>Nombre Contacto</Label><Input value={addForm.contacto} onChange={e => setAddForm(p => ({ ...p, contacto: e.target.value }))} /></div>
+            <div><Label>Posición Contacto</Label><Input value={addForm.posicion_contacto} onChange={e => setAddForm(p => ({ ...p, posicion_contacto: e.target.value }))} /></div>
             <div><Label>Email</Label><Input type="email" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} /></div>
             <div><Label>LinkedIn</Label><Input value={addForm.linkedin} onChange={e => setAddForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
             <div><Label>Teléfono</Label><Input value={addForm.telefono} onChange={e => setAddForm(p => ({ ...p, telefono: e.target.value }))} /></div>
             <div><Label>Web</Label><Input value={addForm.web} onChange={e => setAddForm(p => ({ ...p, web: e.target.value }))} /></div>
+            <div><Label>CNAE</Label><Input value={addForm.cnae} onChange={e => setAddForm(p => ({ ...p, cnae: e.target.value }))} /></div>
+            <div className="col-span-2"><Label>Descripción Actividad</Label><Textarea value={addForm.descripcion_actividad} onChange={e => setAddForm(p => ({ ...p, descripcion_actividad: e.target.value }))} rows={2} /></div>
             <div><Label>Provincia</Label><Input value={addForm.provincia} onChange={e => setAddForm(p => ({ ...p, provincia: e.target.value }))} /></div>
             <div><Label>C. Autónoma</Label><Input value={addForm.comunidad_autonoma} onChange={e => setAddForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Notas</Label><Textarea value={addForm.notas} onChange={e => setAddForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
@@ -860,6 +873,9 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
     director_ejecutivo: company.director_ejecutivo || '',
     linkedin: company.linkedin || '',
     comunidad_autonoma: company.comunidad_autonoma || '',
+    posicion_contacto: company.posicion_contacto || '',
+    cnae: company.cnae || '',
+    descripcion_actividad: company.descripcion_actividad || '',
   });
 
   return (
@@ -873,14 +889,17 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
           <div><Label>EBITDA</Label><Input value={form.ebitda} onChange={e => setForm(p => ({ ...p, ebitda: e.target.value }))} /></div>
           <div><Label>Nº Trabajadores</Label><Input type="number" value={form.num_trabajadores} onChange={e => setForm(p => ({ ...p, num_trabajadores: e.target.value }))} /></div>
           <div className="col-span-2"><Label>Director Ejecutivo</Label><Input value={form.director_ejecutivo} onChange={e => setForm(p => ({ ...p, director_ejecutivo: e.target.value }))} /></div>
-          <div><Label>Contacto</Label><Input value={form.contacto} onChange={e => setForm(p => ({ ...p, contacto: e.target.value }))} /></div>
-          <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
-          <div><Label>LinkedIn</Label><Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
-          <div><Label>Teléfono</Label><Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} /></div>
-          <div><Label>Web</Label><Input value={form.web} onChange={e => setForm(p => ({ ...p, web: e.target.value }))} /></div>
-          <div><Label>Provincia</Label><Input value={form.provincia} onChange={e => setForm(p => ({ ...p, provincia: e.target.value }))} /></div>
-          <div><Label>C. Autónoma</Label><Input value={form.comunidad_autonoma} onChange={e => setForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
-          <div className="col-span-2"><Label>Notas</Label><Textarea value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
+            <div><Label>Contacto</Label><Input value={form.contacto} onChange={e => setForm(p => ({ ...p, contacto: e.target.value }))} /></div>
+            <div><Label>Posición Contacto</Label><Input value={form.posicion_contacto} onChange={e => setForm(p => ({ ...p, posicion_contacto: e.target.value }))} /></div>
+            <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
+            <div><Label>LinkedIn</Label><Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
+            <div><Label>Teléfono</Label><Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} /></div>
+            <div><Label>Web</Label><Input value={form.web} onChange={e => setForm(p => ({ ...p, web: e.target.value }))} /></div>
+            <div><Label>CNAE</Label><Input value={form.cnae} onChange={e => setForm(p => ({ ...p, cnae: e.target.value }))} /></div>
+            <div className="col-span-2"><Label>Descripción Actividad</Label><Textarea value={form.descripcion_actividad} onChange={e => setForm(p => ({ ...p, descripcion_actividad: e.target.value }))} rows={2} /></div>
+            <div><Label>Provincia</Label><Input value={form.provincia} onChange={e => setForm(p => ({ ...p, provincia: e.target.value }))} /></div>
+            <div><Label>C. Autónoma</Label><Input value={form.comunidad_autonoma} onChange={e => setForm(p => ({ ...p, comunidad_autonoma: e.target.value }))} /></div>
+            <div className="col-span-2"><Label>Notas</Label><Textarea value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
@@ -899,6 +918,9 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
             director_ejecutivo: form.director_ejecutivo || null,
             linkedin: form.linkedin || null,
             comunidad_autonoma: form.comunidad_autonoma || null,
+            posicion_contacto: form.posicion_contacto || null,
+            cnae: form.cnae || null,
+            descripcion_actividad: form.descripcion_actividad || null,
           })}>{isSaving ? 'Guardando...' : 'Guardar'}</Button>
         </DialogFooter>
       </DialogContent>
@@ -929,10 +951,13 @@ function CompanyDrawer({ company, onClose, onEdit }: {
                 <div><span className="text-muted-foreground">Empleados:</span> <span className="ml-1">{company.num_trabajadores ?? '—'}</span></div>
                 <div><span className="text-muted-foreground">Director Ejecutivo:</span> <span className="ml-1">{company.director_ejecutivo || '—'}</span></div>
                 <div><span className="text-muted-foreground">Contacto:</span> <span className="ml-1">{company.contacto || '—'}</span></div>
+                <div><span className="text-muted-foreground">Posición:</span> <span className="ml-1">{company.posicion_contacto || '—'}</span></div>
                 <div><span className="text-muted-foreground">Email:</span> <span className="ml-1">{company.email || '—'}</span></div>
                 <div><span className="text-muted-foreground">LinkedIn:</span> <span className="ml-1">{company.linkedin || '—'}</span></div>
                 <div><span className="text-muted-foreground">Teléfono:</span> <span className="ml-1">{company.telefono || '—'}</span></div>
                 <div><span className="text-muted-foreground">Web:</span> <span className="ml-1">{company.web || '—'}</span></div>
+                <div><span className="text-muted-foreground">CNAE:</span> <span className="ml-1">{company.cnae || '—'}</span></div>
+                <div className="col-span-2"><span className="text-muted-foreground">Desc. Actividad:</span> <span className="ml-1">{company.descripcion_actividad || '—'}</span></div>
                 <div><span className="text-muted-foreground">Provincia:</span> <span className="ml-1">{company.provincia || '—'}</span></div>
                 <div><span className="text-muted-foreground">C. Autónoma:</span> <span className="ml-1">{company.comunidad_autonoma || '—'}</span></div>
               </div>
