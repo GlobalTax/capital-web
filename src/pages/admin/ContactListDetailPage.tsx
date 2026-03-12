@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
-  Edit, Trash2, History, Link2, AlertTriangle, Filter,
+  Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -54,13 +54,16 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   provincia: ['provincia', 'ubicacion', 'location', 'region', 'estado', 'ciudad'],
   facturacion: ['facturacion', 'ventas', 'revenue', 'ingresos', 'ventas_2024', 'ventas_2023', 'facturacion_2024'],
   ebitda: ['ebitda', 'ebitda_2024', 'ebitda_2023', 'resultado'],
+  anios_datos: ['anio_datos', 'ano_datos', 'anio', 'ano', 'year', 'ano_datos', 'anios_datos', 'ano_data'],
+  num_trabajadores: ['num_trabajadores', 'n__trabajadores', 'trabajadores', 'empleados', 'employees', 'numero_trabajadores', 'no_trabajadores', 'plantilla'],
+  director_ejecutivo: ['director_ejecutivo', 'director', 'ceo', 'gerente', 'director_general', 'administrador'],
+  linkedin: ['linkedin', 'perfil_linkedin', 'linkedin_url', 'url_linkedin'],
 };
 
 function parseSpanishNumber(val: any): number | null {
   if (val == null || val === '') return null;
   if (typeof val === 'number') return val;
   const str = String(val).trim().replace(/[€$%\s]/g, '');
-  // Spanish: 1.234.567,89 → 1234567.89
   const parsed = parseFloat(str.replace(/\./g, '').replace(',', '.'));
   return isNaN(parsed) ? null : parsed;
 }
@@ -70,6 +73,21 @@ function mapColumn(normalized: string): string | null {
     if (synonyms.includes(normalized)) return field;
   }
   return null;
+}
+
+// ===== TEMPLATE DOWNLOAD =====
+function downloadTemplate() {
+  const headers = [
+    'Nombre empresa', 'CIF', 'Año datos', 'Facturación', 'EBITDA',
+    'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto',
+    'Email', 'LinkedIn', 'Teléfono',
+  ];
+  const ws = XLSX.utils.aoa_to_sheet([headers]);
+  // Set column widths
+  ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length + 4, 16) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
+  XLSX.writeFile(wb, 'plantilla_lista_contactos.xlsx');
 }
 
 // ===== ESTADO BADGES =====
@@ -84,7 +102,6 @@ export default function ContactListDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Fetch list details
   const { data: list, isLoading: isLoadingList } = useQuery({
     queryKey: ['contact-list-detail', listId],
     enabled: !!listId,
@@ -118,7 +135,6 @@ export default function ContactListDetailPage() {
   const [configSector, setConfigSector] = useState('');
   const [configEstado, setConfigEstado] = useState('borrador');
 
-  // Sync config state when list loads
   React.useEffect(() => {
     if (list) {
       setConfigName(list.name || '');
@@ -132,6 +148,7 @@ export default function ContactListDetailPage() {
   const [addForm, setAddForm] = useState({
     empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '',
     provincia: '', facturacion: '', ebitda: '', notas: '',
+    num_trabajadores: '', director_ejecutivo: '', linkedin: '',
   });
 
   // Import state
@@ -158,11 +175,7 @@ export default function ContactListDetailPage() {
 
   // ===== HANDLERS =====
   const handleSelectAll = () => {
-    if (selectedIds.length === companies.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(companies.map(c => c.id));
-    }
+    setSelectedIds(selectedIds.length === companies.length ? [] : companies.map(c => c.id));
   };
 
   const handleToggleSelect = (id: string) => {
@@ -190,8 +203,11 @@ export default function ContactListDetailPage() {
       ebitda: parseSpanishNumber(addForm.ebitda),
       anios_datos: 1,
       notas: addForm.notas.trim() || null,
+      num_trabajadores: addForm.num_trabajadores ? parseInt(addForm.num_trabajadores) || null : null,
+      director_ejecutivo: addForm.director_ejecutivo.trim() || null,
+      linkedin: addForm.linkedin.trim() || null,
     });
-    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '' });
+    setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '' });
     setIsAddModalOpen(false);
     toast.success('Empresa añadida');
   };
@@ -210,7 +226,6 @@ export default function ContactListDetailPage() {
         toast.error('El archivo está vacío');
         return;
       }
-      // Auto-map columns
       const headers = Object.keys(json[0] as any);
       const mapping: Record<string, string> = {};
       headers.forEach(h => {
@@ -238,6 +253,8 @@ export default function ContactListDetailPage() {
         const val = row[header];
         if (field === 'facturacion' || field === 'ebitda') {
           mapped[field] = parseSpanishNumber(val);
+        } else if (field === 'num_trabajadores' || field === 'anios_datos') {
+          mapped[field] = val ? parseInt(String(val)) || null : null;
         } else {
           mapped[field] = val ? String(val).trim() : null;
         }
@@ -247,7 +264,6 @@ export default function ContactListDetailPage() {
     });
 
     await addCompanies.mutateAsync(rows);
-    // Update list origen to 'excel'
     await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
     queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
     setImportData([]);
@@ -259,16 +275,20 @@ export default function ContactListDetailPage() {
   const handleExport = () => {
     if (companies.length === 0) return;
     const ws = XLSX.utils.json_to_sheet(companies.map(c => ({
-      Empresa: c.empresa,
-      Contacto: c.contacto || '',
-      Email: c.email || '',
-      Teléfono: c.telefono || '',
-      CIF: c.cif || '',
-      Web: c.web || '',
-      Provincia: c.provincia || '',
-      Facturación: c.facturacion || '',
-      EBITDA: c.ebitda || '',
-      Notas: c.notas || '',
+      'Nombre empresa': c.empresa,
+      'CIF': c.cif || '',
+      'Año datos': c.anios_datos || '',
+      'Facturación': c.facturacion || '',
+      'EBITDA': c.ebitda || '',
+      'Nº Trabajadores': c.num_trabajadores || '',
+      'Director Ejecutivo': c.director_ejecutivo || '',
+      'Nombre Contacto': c.contacto || '',
+      'Email': c.email || '',
+      'LinkedIn': c.linkedin || '',
+      'Teléfono': c.telefono || '',
+      'Web': c.web || '',
+      'Provincia': c.provincia || '',
+      'Notas': c.notas || '',
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
@@ -306,7 +326,6 @@ export default function ContactListDetailPage() {
     toast.success('Configuración guardada');
   };
 
-  // ===== DELETE LIST =====
   const handleDeleteList = async () => {
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
     await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
@@ -315,7 +334,6 @@ export default function ContactListDetailPage() {
     toast.success('Lista eliminada');
   };
 
-  // ===== ESTADO CHANGE =====
   const handleEstadoChange = async (newEstado: string) => {
     if (!listId) return;
     await supabase.from('outbound_lists' as any).update({ estado: newEstado, updated_at: new Date().toISOString() }).eq('id', listId);
@@ -378,6 +396,9 @@ export default function ContactListDetailPage() {
         <TabsContent value="empresas" className="mt-4 space-y-4">
           {/* Actions bar */}
           <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={downloadTemplate}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" /> Descargar plantilla
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setIsImportModalOpen(true)}>
               <Upload className="h-4 w-4 mr-2" /> Importar Excel
             </Button>
@@ -412,68 +433,74 @@ export default function ContactListDetailPage() {
                 <div className="text-center py-12">
                   <Building2 className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-muted-foreground">No hay empresas en esta lista</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1">Importa desde Excel, añade manualmente o filtra del pool</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">Descarga la plantilla, rellénala e impórtala</p>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10">
-                        <Checkbox checked={selectedIds.length === companies.length && companies.length > 0} onCheckedChange={handleSelectAll} />
-                      </TableHead>
-                      <TableHead>Empresa</TableHead>
-                      <TableHead>Contacto</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Provincia</TableHead>
-                      <TableHead className="text-right">Facturación</TableHead>
-                      <TableHead className="text-right">EBITDA</TableHead>
-                      <TableHead>Notas</TableHead>
-                      <TableHead className="w-12" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {companies.map(company => (
-                      <TableRow key={company.id}>
-                        <TableCell onClick={e => e.stopPropagation()}>
-                          <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
-                        </TableCell>
-                        <TableCell>
-                          <button className="text-sm font-medium hover:underline text-left" onClick={() => setDrawerCompany(company)}>
-                            {company.empresa}
-                          </button>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{company.contacto || '—'}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{company.email || '—'}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{company.provincia || '—'}</TableCell>
-                        <TableCell className="text-right text-sm tabular-nums">
-                          {company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}
-                        </TableCell>
-                        <TableCell className="text-right text-sm tabular-nums">
-                          {company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground max-w-[150px] truncate">{company.notas || '—'}</TableCell>
-                        <TableCell onClick={e => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-background">
-                              <DropdownMenuItem onClick={() => setEditingCompany(company)}>
-                                <Edit className="h-4 w-4 mr-2" /> Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => deleteCompany.mutate(company.id)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-10">
+                          <Checkbox checked={selectedIds.length === companies.length && companies.length > 0} onCheckedChange={handleSelectAll} />
+                        </TableHead>
+                        <TableHead>Empresa</TableHead>
+                        <TableHead>CIF</TableHead>
+                        <TableHead>Contacto</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Director Ejecutivo</TableHead>
+                        <TableHead className="text-right">Facturación</TableHead>
+                        <TableHead className="text-right">EBITDA</TableHead>
+                        <TableHead className="text-right">Empleados</TableHead>
+                        <TableHead className="w-12" />
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {companies.map(company => (
+                        <TableRow key={company.id}>
+                          <TableCell onClick={e => e.stopPropagation()}>
+                            <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
+                          </TableCell>
+                          <TableCell>
+                            <button className="text-sm font-medium hover:underline text-left" onClick={() => setDrawerCompany(company)}>
+                              {company.empresa}
+                            </button>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{company.cif || '—'}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{company.contacto || '—'}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{company.email || '—'}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</TableCell>
+                          <TableCell className="text-right text-sm tabular-nums">
+                            {company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}
+                          </TableCell>
+                          <TableCell className="text-right text-sm tabular-nums">
+                            {company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}
+                          </TableCell>
+                          <TableCell className="text-right text-sm tabular-nums">
+                            {company.num_trabajadores ?? '—'}
+                          </TableCell>
+                          <TableCell onClick={e => e.stopPropagation()}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-background">
+                                <DropdownMenuItem onClick={() => setEditingCompany(company)}>
+                                  <Edit className="h-4 w-4 mr-2" /> Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={() => deleteCompany.mutate(company.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -573,16 +600,19 @@ export default function ContactListDetailPage() {
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Añadir empresa manualmente</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
             <div className="col-span-2"><Label>Empresa *</Label><Input value={addForm.empresa} onChange={e => setAddForm(p => ({ ...p, empresa: e.target.value }))} /></div>
-            <div><Label>Contacto</Label><Input value={addForm.contacto} onChange={e => setAddForm(p => ({ ...p, contacto: e.target.value }))} /></div>
-            <div><Label>Email</Label><Input type="email" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} /></div>
-            <div><Label>Teléfono</Label><Input value={addForm.telefono} onChange={e => setAddForm(p => ({ ...p, telefono: e.target.value }))} /></div>
             <div><Label>CIF</Label><Input value={addForm.cif} onChange={e => setAddForm(p => ({ ...p, cif: e.target.value }))} /></div>
-            <div><Label>Web</Label><Input value={addForm.web} onChange={e => setAddForm(p => ({ ...p, web: e.target.value }))} /></div>
-            <div><Label>Provincia</Label><Input value={addForm.provincia} onChange={e => setAddForm(p => ({ ...p, provincia: e.target.value }))} /></div>
             <div><Label>Facturación (€)</Label><Input value={addForm.facturacion} onChange={e => setAddForm(p => ({ ...p, facturacion: e.target.value }))} /></div>
             <div><Label>EBITDA (€)</Label><Input value={addForm.ebitda} onChange={e => setAddForm(p => ({ ...p, ebitda: e.target.value }))} /></div>
+            <div><Label>Nº Trabajadores</Label><Input type="number" value={addForm.num_trabajadores} onChange={e => setAddForm(p => ({ ...p, num_trabajadores: e.target.value }))} /></div>
+            <div className="col-span-2"><Label>Director Ejecutivo</Label><Input value={addForm.director_ejecutivo} onChange={e => setAddForm(p => ({ ...p, director_ejecutivo: e.target.value }))} /></div>
+            <div><Label>Nombre Contacto</Label><Input value={addForm.contacto} onChange={e => setAddForm(p => ({ ...p, contacto: e.target.value }))} /></div>
+            <div><Label>Email</Label><Input type="email" value={addForm.email} onChange={e => setAddForm(p => ({ ...p, email: e.target.value }))} /></div>
+            <div><Label>LinkedIn</Label><Input value={addForm.linkedin} onChange={e => setAddForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
+            <div><Label>Teléfono</Label><Input value={addForm.telefono} onChange={e => setAddForm(p => ({ ...p, telefono: e.target.value }))} /></div>
+            <div><Label>Web</Label><Input value={addForm.web} onChange={e => setAddForm(p => ({ ...p, web: e.target.value }))} /></div>
+            <div><Label>Provincia</Label><Input value={addForm.provincia} onChange={e => setAddForm(p => ({ ...p, provincia: e.target.value }))} /></div>
             <div className="col-span-2"><Label>Notas</Label><Textarea value={addForm.notas} onChange={e => setAddForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
           </div>
           <DialogFooter>
@@ -597,13 +627,18 @@ export default function ContactListDetailPage() {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader><DialogTitle>Importar desde Excel</DialogTitle></DialogHeader>
           {importData.length === 0 ? (
-            <div {...getRootProps()} className={cn(
-              'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
-              isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-            )}>
-              <input {...getInputProps()} />
-              <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
+            <div className="space-y-3">
+              <div {...getRootProps()} className={cn(
+                'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
+                isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+              )}>
+                <input {...getInputProps()} />
+                <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
+              </div>
+              <Button variant="link" size="sm" className="text-xs" onClick={downloadTemplate}>
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-1" /> Descargar plantilla con las cabeceras correctas
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -735,6 +770,9 @@ function PoolFilterModal({ listId, open, onOpenChange, onAdd, isAdding }: {
       anios_datos: 1,
       telefono: null,
       notas: null,
+      num_trabajadores: null,
+      director_ejecutivo: null,
+      linkedin: null,
     }));
     await onAdd(rows);
     setSelected([]);
@@ -798,22 +836,28 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
     facturacion: company.facturacion ? String(company.facturacion) : '',
     ebitda: company.ebitda ? String(company.ebitda) : '',
     notas: company.notas || '',
+    num_trabajadores: company.num_trabajadores ? String(company.num_trabajadores) : '',
+    director_ejecutivo: company.director_ejecutivo || '',
+    linkedin: company.linkedin || '',
   });
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader><DialogTitle>Editar empresa</DialogTitle></DialogHeader>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto pr-1">
           <div className="col-span-2"><Label>Empresa</Label><Input value={form.empresa} onChange={e => setForm(p => ({ ...p, empresa: e.target.value }))} /></div>
-          <div><Label>Contacto</Label><Input value={form.contacto} onChange={e => setForm(p => ({ ...p, contacto: e.target.value }))} /></div>
-          <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
-          <div><Label>Teléfono</Label><Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} /></div>
           <div><Label>CIF</Label><Input value={form.cif} onChange={e => setForm(p => ({ ...p, cif: e.target.value }))} /></div>
-          <div><Label>Web</Label><Input value={form.web} onChange={e => setForm(p => ({ ...p, web: e.target.value }))} /></div>
-          <div><Label>Provincia</Label><Input value={form.provincia} onChange={e => setForm(p => ({ ...p, provincia: e.target.value }))} /></div>
           <div><Label>Facturación</Label><Input value={form.facturacion} onChange={e => setForm(p => ({ ...p, facturacion: e.target.value }))} /></div>
           <div><Label>EBITDA</Label><Input value={form.ebitda} onChange={e => setForm(p => ({ ...p, ebitda: e.target.value }))} /></div>
+          <div><Label>Nº Trabajadores</Label><Input type="number" value={form.num_trabajadores} onChange={e => setForm(p => ({ ...p, num_trabajadores: e.target.value }))} /></div>
+          <div className="col-span-2"><Label>Director Ejecutivo</Label><Input value={form.director_ejecutivo} onChange={e => setForm(p => ({ ...p, director_ejecutivo: e.target.value }))} /></div>
+          <div><Label>Contacto</Label><Input value={form.contacto} onChange={e => setForm(p => ({ ...p, contacto: e.target.value }))} /></div>
+          <div><Label>Email</Label><Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} /></div>
+          <div><Label>LinkedIn</Label><Input value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} /></div>
+          <div><Label>Teléfono</Label><Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} /></div>
+          <div><Label>Web</Label><Input value={form.web} onChange={e => setForm(p => ({ ...p, web: e.target.value }))} /></div>
+          <div><Label>Provincia</Label><Input value={form.provincia} onChange={e => setForm(p => ({ ...p, provincia: e.target.value }))} /></div>
           <div className="col-span-2"><Label>Notas</Label><Textarea value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} rows={2} /></div>
         </div>
         <DialogFooter>
@@ -829,6 +873,9 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
             facturacion: parseSpanishNumber(form.facturacion),
             ebitda: parseSpanishNumber(form.ebitda),
             notas: form.notas || null,
+            num_trabajadores: form.num_trabajadores ? parseInt(form.num_trabajadores) || null : null,
+            director_ejecutivo: form.director_ejecutivo || null,
+            linkedin: form.linkedin || null,
           })}>{isSaving ? 'Guardando...' : 'Guardar'}</Button>
         </DialogFooter>
       </DialogContent>
@@ -852,14 +899,18 @@ function CompanyDrawer({ company, onClose, onEdit }: {
             </SheetHeader>
             <div className="mt-6 space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Contacto:</span> <span className="ml-1">{company.contacto || '—'}</span></div>
-                <div><span className="text-muted-foreground">Email:</span> <span className="ml-1">{company.email || '—'}</span></div>
-                <div><span className="text-muted-foreground">Teléfono:</span> <span className="ml-1">{company.telefono || '—'}</span></div>
                 <div><span className="text-muted-foreground">CIF:</span> <span className="ml-1">{company.cif || '—'}</span></div>
-                <div><span className="text-muted-foreground">Web:</span> <span className="ml-1">{company.web || '—'}</span></div>
-                <div><span className="text-muted-foreground">Provincia:</span> <span className="ml-1">{company.provincia || '—'}</span></div>
+                <div><span className="text-muted-foreground">Año datos:</span> <span className="ml-1">{company.anios_datos || '—'}</span></div>
                 <div><span className="text-muted-foreground">Facturación:</span> <span className="ml-1">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span></div>
                 <div><span className="text-muted-foreground">EBITDA:</span> <span className="ml-1">{company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}</span></div>
+                <div><span className="text-muted-foreground">Empleados:</span> <span className="ml-1">{company.num_trabajadores ?? '—'}</span></div>
+                <div><span className="text-muted-foreground">Director Ejecutivo:</span> <span className="ml-1">{company.director_ejecutivo || '—'}</span></div>
+                <div><span className="text-muted-foreground">Contacto:</span> <span className="ml-1">{company.contacto || '—'}</span></div>
+                <div><span className="text-muted-foreground">Email:</span> <span className="ml-1">{company.email || '—'}</span></div>
+                <div><span className="text-muted-foreground">LinkedIn:</span> <span className="ml-1">{company.linkedin || '—'}</span></div>
+                <div><span className="text-muted-foreground">Teléfono:</span> <span className="ml-1">{company.telefono || '—'}</span></div>
+                <div><span className="text-muted-foreground">Web:</span> <span className="ml-1">{company.web || '—'}</span></div>
+                <div><span className="text-muted-foreground">Provincia:</span> <span className="ml-1">{company.provincia || '—'}</span></div>
               </div>
               {company.notas && (
                 <div className="text-sm"><span className="text-muted-foreground">Notas:</span> <p className="mt-1">{company.notas}</p></div>
