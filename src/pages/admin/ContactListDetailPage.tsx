@@ -1319,6 +1319,36 @@ export default function ContactListDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Move/Copy Modal */}
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) setMoveCopyCompany(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'} a otra lista</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
+            </p>
+            <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar lista destino..." />
+              </SelectTrigger>
+              <SelectContent>
+                {allLists.map((l: any) => (
+                  <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setMoveCopyCompany(null)}>Cancelar</Button>
+            <Button onClick={handleMoveCopy} disabled={!moveCopyTargetId || isMoveCopyLoading}>
+              {isMoveCopyLoading ? 'Procesando...' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
