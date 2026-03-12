@@ -790,6 +790,7 @@ function PoolFilterModal({ listId, open, onOpenChange, onAdd, isAdding }: {
       num_trabajadores: null,
       director_ejecutivo: null,
       linkedin: null,
+      comunidad_autonoma: null,
     }));
     await onAdd(rows);
     setSelected([]);
