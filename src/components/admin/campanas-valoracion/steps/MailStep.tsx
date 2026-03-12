@@ -917,6 +917,10 @@ export function MailStep({ campaignId, campaign }: Props) {
         />
       </TabsContent>
 
+      <TabsContent value="cc">
+        <CcRecipientsSection campaignId={campaignId} campaign={campaign} />
+      </TabsContent>
+
       {/* Edit dialog */}
       {editingEmail && (
         <EditEmailDialog
