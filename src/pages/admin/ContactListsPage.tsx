@@ -180,6 +180,7 @@ export default function ContactListsPage() {
                 {filtered.map(list => {
                   const estado = ESTADO_BADGES[list.estado] || ESTADO_BADGES.borrador;
                   const tipo = TIPO_BADGES[list.tipo] || TIPO_BADGES.outbound;
+                  return (
                     <TableRow
                       key={list.id}
                       className="cursor-pointer hover:bg-muted/50"
@@ -192,6 +193,9 @@ export default function ContactListsPage() {
                           placeholder="Nombre de la lista"
                           displayClassName="font-medium"
                         />
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn('text-xs', tipo.className)}>{tipo.label}</Badge>
                       </TableCell>
                       <TableCell>
                         <EditableCell
