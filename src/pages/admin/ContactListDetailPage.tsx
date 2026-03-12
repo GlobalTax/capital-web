@@ -262,7 +262,7 @@ export default function ContactListDetailPage() {
           mapped[field] = val ? String(val).trim() : null;
         }
       }
-      if (!mapped.empresa) mapped.empresa = 'Sin nombre';
+      if (!mapped.empresa) mapped.empresa = mapped.cif || mapped.contacto || mapped.email || 'Sin nombre';
       return mapped;
     });
 
