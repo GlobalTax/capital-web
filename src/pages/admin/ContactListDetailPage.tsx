@@ -211,7 +211,6 @@ export default function ContactListDetailPage() {
       num_trabajadores: addForm.num_trabajadores ? parseInt(addForm.num_trabajadores) || null : null,
       director_ejecutivo: addForm.director_ejecutivo.trim() || null,
       linkedin: addForm.linkedin.trim() || null,
-      comunidad_autonoma: addForm.comunidad_autonoma.trim() || null,
     });
     setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '' });
     setIsAddModalOpen(false);
