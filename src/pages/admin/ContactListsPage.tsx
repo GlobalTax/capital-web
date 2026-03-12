@@ -66,11 +66,13 @@ export default function ContactListsPage() {
       nombre: newName.trim(),
       descripcion: newDesc.trim() || undefined,
       sector: newSector.trim() || undefined,
+      tipo: newTipo,
     });
     setIsCreateOpen(false);
     setNewName('');
     setNewDesc('');
     setNewSector('');
+    setNewTipo('outbound');
     navigate(`/admin/listas-contacto/${result.id}`);
   };
 
