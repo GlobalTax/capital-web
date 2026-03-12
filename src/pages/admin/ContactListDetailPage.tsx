@@ -214,10 +214,16 @@ export default function ContactListDetailPage() {
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
+  const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const [sortField, setSortField] = useState<'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores' | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+
+  // AI generation state
+  const [aiGenCompany, setAiGenCompany] = useState<ContactListCompany | null>(null);
+  const [aiGenText, setAiGenText] = useState('');
+  const [aiGenLoading, setAiGenLoading] = useState(false);
 
   const toggleSort = (field: typeof sortField) => {
     if (sortField === field) {
