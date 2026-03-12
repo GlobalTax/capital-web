@@ -60,6 +60,9 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   director_ejecutivo: ['director_ejecutivo', 'director', 'ceo', 'gerente', 'director_general', 'administrador'],
   linkedin: ['linkedin', 'perfil_linkedin', 'linkedin_url', 'url_linkedin'],
   comunidad_autonoma: ['comunidad_autonoma', 'comunidad', 'ccaa', 'autonomia', 'comunidad_autonomica', 'region_autonoma'],
+  posicion_contacto: ['posicion_contacto', 'posicion', 'cargo', 'puesto', 'position', 'rol', 'job_title'],
+  cnae: ['cnae', 'codigo_cnae', 'cnae_code', 'actividad_cnae'],
+  descripcion_actividad: ['descripcion_actividad', 'actividad', 'descripcion', 'activity', 'objeto_social', 'actividad_empresa'],
 };
 
 function parseSpanishNumber(val: any): number | null {
