@@ -16612,13 +16612,16 @@ export type Database = {
           cif: string | null
           contacto: string | null
           created_at: string | null
+          director_ejecutivo: string | null
           ebitda: number | null
           email: string | null
           empresa: string
           facturacion: number | null
           id: string
+          linkedin: string | null
           list_id: string | null
           notas: string | null
+          num_trabajadores: number | null
           provincia: string | null
           telefono: string | null
           web: string | null
@@ -16628,13 +16631,16 @@ export type Database = {
           cif?: string | null
           contacto?: string | null
           created_at?: string | null
+          director_ejecutivo?: string | null
           ebitda?: number | null
           email?: string | null
           empresa: string
           facturacion?: number | null
           id?: string
+          linkedin?: string | null
           list_id?: string | null
           notas?: string | null
+          num_trabajadores?: number | null
           provincia?: string | null
           telefono?: string | null
           web?: string | null
@@ -16644,13 +16650,16 @@ export type Database = {
           cif?: string | null
           contacto?: string | null
           created_at?: string | null
+          director_ejecutivo?: string | null
           ebitda?: number | null
           email?: string | null
           empresa?: string
           facturacion?: number | null
           id?: string
+          linkedin?: string | null
           list_id?: string | null
           notas?: string | null
+          num_trabajadores?: number | null
           provincia?: string | null
           telefono?: string | null
           web?: string | null

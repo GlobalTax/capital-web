@@ -34,6 +34,9 @@ export interface ContactListCompany {
   ebitda: number | null;
   anios_datos: number;
   notas: string | null;
+  num_trabajadores: number | null;
+  director_ejecutivo: string | null;
+  linkedin: string | null;
   created_at: string;
 }
 
