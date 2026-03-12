@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '@/hooks/useExcelImportValidation';
+import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
+import { ImportResultModal } from '@/components/admin/contact-lists/ImportResultModal';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -221,6 +224,11 @@ export default function ContactListDetailPage() {
   // Import state
   const [importData, setImportData] = useState<any[]>([]);
   const [importMapping, setImportMapping] = useState<Record<string, string>>({});
+  const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
+  const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
+  const [importResultData, setImportResultData] = useState<{
+    imported: number; linked: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
+  } | null>(null);
 
   // Link campaign state
   const [linkCampaignId, setLinkCampaignId] = useState('');
@@ -317,9 +325,9 @@ export default function ContactListDetailPage() {
     maxFiles: 1,
   });
 
-  const handleConfirmImport = async () => {
-    if (!listId || importData.length === 0) return;
-    const rows = importData.map((row: any) => {
+  // Step 1: Map rows from Excel data
+  const getMappedRows = useCallback(() => {
+    return importData.map((row: any) => {
       const mapped: any = { list_id: listId, anios_datos: 1 };
       for (const [header, field] of Object.entries(importMapping)) {
         const val = row[header];
@@ -334,12 +342,47 @@ export default function ContactListDetailPage() {
       if (!mapped.empresa) mapped.empresa = mapped.cif || mapped.contacto || mapped.email || 'Sin nombre';
       return mapped;
     });
+  }, [importData, importMapping, listId]);
 
-    await addCompanies.mutateAsync(rows);
-    await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
-    queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+  // Step 2: Validate (called when user clicks "Importar" in mapping step)
+  const handleStartValidation = async () => {
+    if (!listId || importData.length === 0) return;
+    const rows = getMappedRows();
+    setImportStep('preview');
+    await validate(rows, listId);
+  };
+
+  // Step 3: Confirm import (only nuevas + vinculadas)
+  const handleConfirmImport = async () => {
+    if (!listId || !validationResult) return;
+    setImportStep('importing');
+    const rowsToInsert = [
+      ...validationResult.nuevas.map(r => r.data),
+      ...validationResult.vinculadas.map(r => r.data),
+    ] as any[];
+
+    if (rowsToInsert.length > 0) {
+      await addCompanies.mutateAsync(rowsToInsert as any);
+      await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
+      queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+    }
+
+    setImportResultData({
+      imported: validationResult.nuevas.length,
+      linked: validationResult.vinculadas.length,
+      skippedDuplicates: validationResult.duplicadas.length,
+      skippedErrors: validationResult.errores.length,
+      errors: validationResult.errores,
+    });
+    setImportStep('result');
+  };
+
+  const handleCloseImport = () => {
     setImportData([]);
     setImportMapping({});
+    setImportStep('upload');
+    setImportResultData(null);
+    resetValidation();
     setIsImportModalOpen(false);
   };
 
@@ -825,7 +868,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Import Excel Modal */}
-      <Dialog open={isImportModalOpen} onOpenChange={(open) => { setIsImportModalOpen(open); if (!open) { setImportData([]); setImportMapping({}); } }}>
+      <Dialog open={isImportModalOpen && importStep !== 'preview' && importStep !== 'result'} onOpenChange={(open) => { if (!open) handleCloseImport(); }}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader><DialogTitle>Importar desde Excel</DialogTitle></DialogHeader>
           {importData.length === 0 ? (
@@ -871,17 +914,39 @@ export default function ContactListDetailPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setImportData([]); setImportMapping({}); setIsImportModalOpen(false); }}>Cancelar</Button>
+            <Button variant="outline" onClick={handleCloseImport}>Cancelar</Button>
             {importData.length > 0 && (
-              <Button onClick={handleConfirmImport} disabled={addCompanies.isPending}>
-                {addCompanies.isPending ? 'Importando...' : `Importar ${importData.length} empresas`}
+              <Button onClick={handleStartValidation} disabled={isValidating}>
+                {isValidating ? 'Validando...' : `Validar ${importData.length} empresas`}
               </Button>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Pool Filter Modal */}
+      {/* Import Preview Modal */}
+      {validationResult && importStep === 'preview' && (
+        <ImportPreviewModal
+          open
+          onClose={handleCloseImport}
+          onConfirm={handleConfirmImport}
+          result={validationResult}
+          isImporting={importStep === 'preview' && addCompanies.isPending}
+        />
+      )}
+
+      {/* Import Result Modal */}
+      {importResultData && importStep === 'result' && (
+        <ImportResultModal
+          open
+          onClose={handleCloseImport}
+          imported={importResultData.imported}
+          linked={importResultData.linked}
+          skippedDuplicates={importResultData.skippedDuplicates}
+          skippedErrors={importResultData.skippedErrors}
+          errors={importResultData.errors}
+        />
+      )}
       <PoolFilterModal listId={listId!} open={isPoolModalOpen} onOpenChange={setIsPoolModalOpen} onAdd={async (rows) => {
         await addCompanies.mutateAsync(rows);
         setIsPoolModalOpen(false);
