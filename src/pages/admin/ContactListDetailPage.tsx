@@ -31,7 +31,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -214,10 +214,16 @@ export default function ContactListDetailPage() {
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
+  const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const [sortField, setSortField] = useState<'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores' | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+
+  // AI generation state
+  const [aiGenCompany, setAiGenCompany] = useState<ContactListCompany | null>(null);
+  const [aiGenText, setAiGenText] = useState('');
+  const [aiGenLoading, setAiGenLoading] = useState(false);
 
   const toggleSort = (field: typeof sortField) => {
     if (sortField === field) {
@@ -247,6 +253,13 @@ export default function ContactListDetailPage() {
         (c.director_ejecutivo || '').toLowerCase().includes(q)
       );
     }
+    // Activity search
+    if (activitySearchQuery.trim()) {
+      const q = activitySearchQuery.toLowerCase();
+      result = result.filter(c =>
+        (c.descripcion_actividad || '').toLowerCase().includes(q)
+      );
+    }
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
@@ -266,7 +279,7 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
 
   // Config tab state
   const [configName, setConfigName] = useState('');
@@ -638,6 +651,34 @@ export default function ContactListDetailPage() {
     });
   }, [queryClient, listId]);
 
+  // ===== AI GENERATE DESCRIPTION =====
+  const handleAiGenerate = async () => {
+    if (!aiGenCompany || !aiGenText.trim()) return;
+    setAiGenLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-activity-from-text', {
+        body: { text: aiGenText.trim(), company_name: aiGenCompany.empresa },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (!data?.description) throw new Error('No se recibió descripción');
+      // Update in DB
+      const { error: updateErr } = await supabase
+        .from('outbound_list_companies' as any)
+        .update({ descripcion_actividad: data.description } as any)
+        .eq('id', aiGenCompany.id);
+      if (updateErr) throw updateErr;
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+      toast.success('Descripción de actividad generada y guardada');
+      setAiGenCompany(null);
+      setAiGenText('');
+    } catch (err: any) {
+      toast.error(err?.message || 'Error al generar descripción');
+    } finally {
+      setAiGenLoading(false);
+    }
+  };
+
   const handleDeleteList = async () => {
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
     await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
@@ -822,6 +863,20 @@ export default function ContactListDetailPage() {
                 </button>
               )}
             </div>
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por actividad..."
+                value={activitySearchQuery}
+                onChange={e => setActivitySearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+              {activitySearchQuery && (
+                <button onClick={() => setActivitySearchQuery('')} className="absolute right-2.5 top-2.5">
+                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                </button>
+              )}
+            </div>
             <Button
               variant={filterHasEmail ? 'default' : 'outline'}
               size="sm"
@@ -836,7 +891,7 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
-            {(searchQuery || filterHasEmail || filterHasEbitda) && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
@@ -954,6 +1009,9 @@ export default function ContactListDetailPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
                                   <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setAiGenCompany(company); setAiGenText(''); }}>
+                                  <Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
@@ -1393,6 +1451,40 @@ export default function ContactListDetailPage() {
             <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); }}>Cancelar</Button>
             <Button onClick={handleMoveCopy} disabled={(!isCreatingNewList && !moveCopyTargetId) || (isCreatingNewList && !newListName.trim()) || isMoveCopyLoading}>
               {isMoveCopyLoading ? 'Procesando...' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Generate Description Modal */}
+      <Dialog open={!!aiGenCompany} onOpenChange={(open) => { if (!open) { setAiGenCompany(null); setAiGenText(''); } }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Generar descripción con IA
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Empresa: <strong>{aiGenCompany?.empresa}</strong>
+            </p>
+            <Textarea
+              placeholder="Pega aquí cualquier texto sobre la empresa: web, perfil de LinkedIn, notas de reunión, email recibido..."
+              value={aiGenText}
+              onChange={e => setAiGenText(e.target.value)}
+              rows={8}
+              className="resize-none"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setAiGenCompany(null); setAiGenText(''); }}>Cancelar</Button>
+            <Button onClick={handleAiGenerate} disabled={!aiGenText.trim() || aiGenLoading}>
+              {aiGenLoading ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+              ) : (
+                <><Sparkles className="h-4 w-4 mr-2" /> Generar</>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

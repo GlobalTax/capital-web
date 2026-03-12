@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +24,7 @@ import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
 } from 'lucide-react';
 import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
+import { useDebounce } from '@/hooks/useDebounce';
 import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +44,8 @@ export default function ContactListsPage() {
   const navigate = useNavigate();
   const { lists, isLoading, createList, deleteList, duplicateList, updateList } = useContactLists();
   const [search, setSearch] = useState('');
+  const [activitySearch, setActivitySearch] = useState('');
+  const debouncedActivitySearch = useDebounce(activitySearch, 400);
   const [estadoFilter, setEstadoFilter] = useState('all');
   const [tipoFilter, setTipoFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -48,6 +53,25 @@ export default function ContactListsPage() {
   const [newDesc, setNewDesc] = useState('');
   const [newSector, setNewSector] = useState('');
   const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
+
+  // Activity search query — returns { list_id, count } map
+  const { data: activityMatches } = useQuery({
+    queryKey: ['activity-search', debouncedActivitySearch],
+    enabled: !!debouncedActivitySearch.trim(),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('outbound_list_companies' as any)
+        .select('list_id')
+        .ilike('descripcion_actividad', `%${debouncedActivitySearch.trim()}%`);
+      if (error) throw error;
+      // Count per list_id
+      const counts: Record<string, number> = {};
+      (data as any[]).forEach((row: any) => {
+        counts[row.list_id] = (counts[row.list_id] || 0) + 1;
+      });
+      return counts;
+    },
+  });
 
   const filtered = useMemo(() => {
     let result = lists;
@@ -57,8 +81,12 @@ export default function ContactListsPage() {
     }
     if (estadoFilter !== 'all') result = result.filter(l => l.estado === estadoFilter);
     if (tipoFilter !== 'all') result = result.filter(l => l.tipo === tipoFilter);
+    // Filter by activity matches
+    if (debouncedActivitySearch.trim() && activityMatches) {
+      result = result.filter(l => activityMatches[l.id]);
+    }
     return result;
-  }, [lists, search, estadoFilter, tipoFilter]);
+  }, [lists, search, estadoFilter, tipoFilter, debouncedActivitySearch, activityMatches]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -120,6 +148,10 @@ export default function ContactListsPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar por nombre..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            </div>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar por actividad... (ej: centro especial empleo, instalación eléctrica)" value={activitySearch} onChange={e => setActivitySearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={tipoFilter} onValueChange={setTipoFilter}>
               <SelectTrigger className="w-full md:w-[180px]">
@@ -187,12 +219,17 @@ export default function ContactListsPage() {
                       onClick={() => navigate(`/admin/listas-contacto/${list.id}`)}
                     >
                       <TableCell>
-                        <EditableCell
-                          value={list.name}
-                          onSave={async (val) => handleInlineSave(list.id, 'name', val)}
-                          placeholder="Nombre de la lista"
-                          displayClassName="font-medium"
-                        />
+                        <div>
+                          <EditableCell
+                            value={list.name}
+                            onSave={async (val) => handleInlineSave(list.id, 'name', val)}
+                            placeholder="Nombre de la lista"
+                            displayClassName="font-medium"
+                          />
+                          {debouncedActivitySearch.trim() && activityMatches && activityMatches[list.id] && (
+                            <span className="text-xs text-primary">{activityMatches[list.id]} empresas coinciden</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('text-xs', tipo.className)}>{tipo.label}</Badge>
