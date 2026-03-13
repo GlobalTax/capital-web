@@ -112,6 +112,7 @@ export const useContactLists = () => {
         last_campaign_name: campaignMap[l.id] || null,
         lista_madre_id: l.lista_madre_id || null,
         has_children: parentIds.has(l.id),
+        notes: l.notes || null,
       })) as ContactList[];
     },
   });
