@@ -15369,6 +15369,39 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_documents: {
+        Row: {
+          created_at: string | null
+          file_name: string
+          file_size_bytes: number | null
+          id: string
+          mime_type: string | null
+          note: string | null
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_name: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          note?: string | null
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string | null
+          note?: string | null
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       marketing_reports: {
         Row: {
           created_at: string
