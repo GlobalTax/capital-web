@@ -721,7 +721,7 @@ export default function ContactListDetailPage() {
   // ===== SAVE CONFIG =====
   const handleSaveConfig = async () => {
     if (!listId) return;
-    await supabase.from('outbound_lists' as any).update({
+    const { error } = await supabase.from('outbound_lists' as any).update({
       name: configName,
       description: configDesc || null,
       sector: configSector || null,
@@ -734,7 +734,12 @@ export default function ContactListDetailPage() {
       criterios_construccion: configCriteriosConstruccion || null,
       lista_madre_id: configListaMadreId || null,
       updated_at: new Date().toISOString(),
-    }).eq('id', listId);
+    } as any).eq('id', listId);
+    if (error) {
+      console.error('Error saving config:', error);
+      toast.error('Error al guardar: ' + error.message);
+      return;
+    }
     queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
     queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
     toast.success('Configuración guardada');
