@@ -304,8 +304,9 @@ export default function ContactListsPage() {
                    <TableHead>Sector</TableHead>
                    <TableHead>Estado</TableHead>
                    <TableHead className="text-right">Nº Empresas</TableHead>
-                   <TableHead>Campaña vinculada</TableHead>
-                   <TableHead>Fecha creación</TableHead>
+                    <TableHead>Campaña vinculada</TableHead>
+                    <TableHead>Notas</TableHead>
+                    <TableHead>Fecha creación</TableHead>
                    <TableHead className="w-12" />
                  </TableRow>
               </TableHeader>
