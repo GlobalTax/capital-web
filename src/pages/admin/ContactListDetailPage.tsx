@@ -1159,6 +1159,7 @@ export default function ContactListDetailPage() {
                             Empresa <SortIcon field="empresa" />
                           </button>
                         </TableHead>
+                        {isMadreList && <TableHead>Sublistas</TableHead>}
                         <TableHead>CIF</TableHead>
                         <TableHead>Contacto</TableHead>
                         <TableHead>Email</TableHead>
