@@ -12,10 +12,15 @@ export interface ErrorRow extends ValidatedRow {
   motivo: string;
 }
 
+export interface RelatedListRow extends ValidatedRow {
+  listaRelacionada: string; // name of the list where it already exists
+}
+
 export interface ValidationResult {
   nuevas: ValidatedRow[];
   vinculadas: ValidatedRow[];
   duplicadas: ValidatedRow[];
+  enOtraLista: RelatedListRow[];
   errores: ErrorRow[];
 }
 
@@ -33,7 +38,8 @@ export function useExcelImportValidation() {
 
   const validate = useCallback(async (
     rows: Record<string, any>[],
-    listId: string
+    listId: string,
+    listaMadreId?: string | null
   ): Promise<ValidationResult> => {
     setIsValidating(true);
     try {
@@ -58,60 +64,129 @@ export function useExcelImportValidation() {
         (empresaCifs || []).map((r: any) => normalizeCif(r.cif)).filter(Boolean) as string[]
       );
 
+      // Fetch CIFs from related lists (parent + siblings)
+      const relatedCifMap = new Map<string, string>(); // cif -> list name
+      if (listaMadreId) {
+        // Get parent list companies
+        const { data: parentCompanies } = await supabase
+          .from('outbound_list_companies' as any)
+          .select('cif')
+          .eq('list_id', listaMadreId)
+          .not('cif', 'is', null);
+
+        const { data: parentListData } = await supabase
+          .from('outbound_lists' as any)
+          .select('name')
+          .eq('id', listaMadreId)
+          .single();
+
+        const parentName = (parentListData as any)?.name || 'Lista madre';
+        (parentCompanies || []).forEach((r: any) => {
+          const c = normalizeCif(r.cif);
+          if (c) relatedCifMap.set(c, parentName);
+        });
+
+        // Get sibling lists
+        const { data: siblingLists } = await supabase
+          .from('outbound_lists' as any)
+          .select('id, name')
+          .eq('lista_madre_id', listaMadreId)
+          .neq('id', listId);
+
+        for (const sibling of (siblingLists || []) as any[]) {
+          const { data: sibCifs } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('cif')
+            .eq('list_id', sibling.id)
+            .not('cif', 'is', null);
+
+          (sibCifs || []).forEach((r: any) => {
+            const c = normalizeCif(r.cif);
+            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, sibling.name);
+          });
+        }
+      } else {
+        // This list might be a parent — check its sublists
+        const { data: childLists } = await supabase
+          .from('outbound_lists' as any)
+          .select('id, name')
+          .eq('lista_madre_id', listId);
+
+        for (const child of (childLists || []) as any[]) {
+          const { data: childCifs } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('cif')
+            .eq('list_id', child.id)
+            .not('cif', 'is', null);
+
+          (childCifs || []).forEach((r: any) => {
+            const c = normalizeCif(r.cif);
+            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, child.name);
+          });
+        }
+      }
+
       const nuevas: ValidatedRow[] = [];
       const vinculadas: ValidatedRow[] = [];
       const duplicadas: ValidatedRow[] = [];
+      const enOtraLista: RelatedListRow[] = [];
       const errores: ErrorRow[] = [];
       const seenCifsInExcel = new Set<string>();
 
       rows.forEach((data, index) => {
-        const rowNumber = index + 2; // +2 for header row + 0-index
+        const rowNumber = index + 2;
         const empresa = (data.empresa || '').toString().trim();
         const rawCif = data.cif ? data.cif.toString().trim() : null;
         const cif = normalizeCif(rawCif);
         const row: ValidatedRow = { rowNumber, data, empresa, cif };
 
-        // Rule: no empresa AND no CIF → error
         if (!empresa && !cif) {
           errores.push({ ...row, motivo: 'Falta nombre de empresa y CIF' });
           return;
         }
 
-        // Rule: CIF present but invalid format
         if (cif && !CIF_REGEX.test(cif)) {
           errores.push({ ...row, motivo: `CIF inválido: "${rawCif}" (debe ser alfanumérico de 9 caracteres)` });
           return;
         }
 
-        // No CIF → import as nueva (can't dedup without CIF)
         if (!cif) {
           nuevas.push(row);
           return;
         }
 
-        // Intra-Excel dedup
         if (seenCifsInExcel.has(cif)) {
           duplicadas.push(row);
           return;
         }
         seenCifsInExcel.add(cif);
 
-        // Already in this list
         if (existingInListSet.has(cif)) {
           duplicadas.push(row);
           return;
         }
 
-        // Exists in empresas directory but not in this list
+        // Check related lists
+        const relatedListName = relatedCifMap.get(cif);
+
         if (existingInEmpresasSet.has(cif)) {
-          vinculadas.push(row);
+          if (relatedListName) {
+            enOtraLista.push({ ...row, listaRelacionada: relatedListName });
+          } else {
+            vinculadas.push(row);
+          }
+          return;
+        }
+
+        if (relatedListName) {
+          enOtraLista.push({ ...row, listaRelacionada: relatedListName });
           return;
         }
 
         nuevas.push(row);
       });
 
-      const result: ValidationResult = { nuevas, vinculadas, duplicadas, errores };
+      const result: ValidationResult = { nuevas, vinculadas, duplicadas, enOtraLista, errores };
       setValidationResult(result);
       return result;
     } finally {

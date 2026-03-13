@@ -5,7 +5,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Link2, AlertTriangle, XCircle, Download, ChevronDown } from 'lucide-react';
+import { CheckCircle2, Link2, AlertTriangle, XCircle, Download, ChevronDown, GitBranch } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import type { ErrorRow } from '@/hooks/useExcelImportValidation';
 
@@ -14,12 +14,13 @@ interface ImportResultModalProps {
   onClose: () => void;
   imported: number;
   linked: number;
+  linkedRelated: number;
   skippedDuplicates: number;
   skippedErrors: number;
   errors: ErrorRow[];
 }
 
-export function ImportResultModal({ open, onClose, imported, linked, skippedDuplicates, skippedErrors, errors }: ImportResultModalProps) {
+export function ImportResultModal({ open, onClose, imported, linked, linkedRelated, skippedDuplicates, skippedErrors, errors }: ImportResultModalProps) {
   const [errorsOpen, setErrorsOpen] = useState(false);
 
   const handleDownloadErrors = () => {
@@ -52,6 +53,12 @@ export function ImportResultModal({ open, onClose, imported, linked, skippedDupl
             <Link2 className="h-4 w-4 text-blue-600" />
             <span>{linked} empresas vinculadas desde directorio</span>
           </div>
+          {linkedRelated > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <GitBranch className="h-4 w-4 text-orange-500" />
+              <span>{linkedRelated} importadas (ya en lista relacionada)</span>
+            </div>
+          )}
           <div className="flex items-center gap-2 text-sm">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <span>{skippedDuplicates} omitidas por duplicación</span>

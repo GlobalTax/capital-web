@@ -459,7 +459,7 @@ export default function ContactListDetailPage() {
   const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
   const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
-    imported: number; linked: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
+    imported: number; linked: number; linkedRelated: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
   } | null>(null);
 
   // Link campaign state
@@ -581,7 +581,7 @@ export default function ContactListDetailPage() {
     if (!listId || importData.length === 0) return;
     const rows = getMappedRows();
     setImportStep('preview');
-    await validate(rows, listId);
+    await validate(rows, listId, list?.lista_madre_id || null);
   };
 
   // Step 3: Confirm import (only nuevas + vinculadas)
@@ -591,6 +591,7 @@ export default function ContactListDetailPage() {
     const rowsToInsert = [
       ...validationResult.nuevas.map(r => r.data),
       ...validationResult.vinculadas.map(r => r.data),
+      ...validationResult.enOtraLista.map(r => r.data),
     ] as any[];
 
     setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
@@ -608,6 +609,7 @@ export default function ContactListDetailPage() {
     setImportResultData({
       imported: validationResult.nuevas.length,
       linked: validationResult.vinculadas.length,
+      linkedRelated: validationResult.enOtraLista.length,
       skippedDuplicates: validationResult.duplicadas.length,
       skippedErrors: validationResult.errores.length,
       errors: validationResult.errores,
@@ -1495,6 +1497,7 @@ export default function ContactListDetailPage() {
           onClose={handleCloseImport}
           imported={importResultData.imported}
           linked={importResultData.linked}
+          linkedRelated={importResultData.linkedRelated}
           skippedDuplicates={importResultData.skippedDuplicates}
           skippedErrors={importResultData.skippedErrors}
           errors={importResultData.errors}
