@@ -12,6 +12,7 @@ import { es } from 'date-fns/locale';
 interface NewsArticle {
   id: string;
   title: string;
+  slug: string;
   excerpt: string;
   category: string;
   source_name: string;
@@ -99,11 +100,9 @@ export const MANewsSection: React.FC = () => {
         {/* News Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {news.map((article) => (
-            <a
+            <Link
               key={article.id}
-              href={article.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
+              to={`/recursos/noticias/${article.slug}`}
               className="block"
             >
               <Card 
@@ -142,7 +141,7 @@ export const MANewsSection: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            </a>
+            </Link>
           ))}
         </div>
 

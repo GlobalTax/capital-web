@@ -38,11 +38,18 @@ export const recursosData: MenuCategory[] = [
         description: "Informes trimestrales del mercado M&A con datos propietarios"
       },
       {
+        id: "noticias-ma",
+        label: "Noticias M&A",
+        href: "/recursos/noticias",
+        icon: 'newspaper',
+        description: "Últimas noticias del mercado de fusiones y adquisiciones"
+      },
+      {
         id: "blog",
         label: "Blog",
         href: "/recursos/blog",
-        icon: 'newspaper',
-        description: "Últimas noticias y análisis del mercado M&A"
+        icon: 'file-text',
+        description: "Artículos y análisis del mercado M&A"
       },
       {
         id: "case-studies",
