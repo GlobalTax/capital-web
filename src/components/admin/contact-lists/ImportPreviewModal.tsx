@@ -16,7 +16,7 @@ interface ImportPreviewModalProps {
   importProgress?: { done: number; total: number } | null;
 }
 
-export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporting }: ImportPreviewModalProps) {
+export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporting, importProgress }: ImportPreviewModalProps) {
   const canImport = result.nuevas.length + result.vinculadas.length > 0;
 
   return (
