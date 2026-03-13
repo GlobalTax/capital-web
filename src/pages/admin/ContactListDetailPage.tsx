@@ -459,7 +459,7 @@ export default function ContactListDetailPage() {
   const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
   const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
-    imported: number; linked: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
+    imported: number; linked: number; linkedRelated: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
   } | null>(null);
 
   // Link campaign state
