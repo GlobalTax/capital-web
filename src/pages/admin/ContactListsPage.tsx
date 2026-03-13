@@ -86,7 +86,7 @@ export default function ContactListsPage() {
   // Tab counts
   const tabCounts = useMemo(() => ({
     madre: lists.filter(l => l.has_children).length,
-    compradores: lists.filter(l => l.tipo === 'compradores').length,
+    compradores: lists.filter(l => !l.has_children && l.tipo === 'compradores').length,
     outbound: lists.filter(l => !l.has_children && l.tipo !== 'compradores').length,
   }), [lists]);
 
