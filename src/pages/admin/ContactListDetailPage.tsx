@@ -984,6 +984,9 @@ export default function ContactListDetailPage() {
               </DropdownMenu>
               {list.sector && <span>· {list.sector}</span>}
               <span>· {list.contact_count} empresas</span>
+              {isMadreList && (
+                <span>· {companiesInSublists}/{companies.length} en sublistas</span>
+              )}
               <span>· {new Date(list.created_at).toLocaleDateString('es-ES')}</span>
             </div>
           </div>
