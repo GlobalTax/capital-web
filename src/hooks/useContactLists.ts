@@ -195,12 +195,18 @@ export const useContactListCompanies = (listId: string | undefined) => {
   });
 
   const addCompanies = useMutation({
-    mutationFn: async (inputs: Omit<ContactListCompany, 'id' | 'created_at'>[]) => {
-      const { error } = await supabase.from(TB_COMPANIES).insert(inputs);
-      if (error) throw error;
+    mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }) => {
+      const BATCH_SIZE = 25;
+      const total = rows.length;
+      for (let i = 0; i < total; i += BATCH_SIZE) {
+        const batch = rows.slice(i, i + BATCH_SIZE);
+        const { error } = await supabase.from(TB_COMPANIES).insert(batch);
+        if (error) throw new Error(`Error en lote ${Math.floor(i / BATCH_SIZE) + 1}: ${error.message}. Se insertaron ${i} de ${total} filas.`);
+        onProgress?.(Math.min(i + BATCH_SIZE, total), total);
+      }
     },
     onSuccess: () => { invalidate(); toast.success('Empresas añadidas'); },
-    onError: (e: Error) => toast.error('Error', { description: e.message }),
+    onError: (e: Error) => toast.error('Error en importación', { description: e.message }),
   });
 
   const updateCompany = useMutation({
