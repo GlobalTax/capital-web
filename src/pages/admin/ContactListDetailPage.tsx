@@ -163,6 +163,70 @@ const InlineNoteCell = React.memo(({ companyId, initialValue, onSaved }: { compa
 });
 InlineNoteCell.displayName = 'InlineNoteCell';
 
+// ===== INLINE TEXT CELL (single-line editable) =====
+const InlineTextCell = React.memo(({ companyId, field, initialValue, placeholder = 'Añadir...', onSaved }: { companyId: string; field: string; initialValue: string | null; placeholder?: string; onSaved: (id: string, field: string, value: string) => void }) => {
+  const [value, setValue] = useState(initialValue || '');
+  const [isEditing, setIsEditing] = useState(false);
+  const originalRef = React.useRef(initialValue || '');
+
+  React.useEffect(() => {
+    if (!isEditing) {
+      setValue(initialValue || '');
+      originalRef.current = initialValue || '';
+    }
+  }, [initialValue, isEditing]);
+
+  const handleBlur = useCallback(async () => {
+    setIsEditing(false);
+    const trimmed = value.trim();
+    if (trimmed === originalRef.current) return;
+    try {
+      const { error } = await supabase
+        .from('outbound_list_companies' as any)
+        .update({ [field]: trimmed || null } as any)
+        .eq('id', companyId);
+      if (error) throw error;
+      onSaved(companyId, field, trimmed);
+    } catch {
+      toast.error('Error al guardar');
+      setValue(originalRef.current);
+    }
+  }, [companyId, field, value, onSaved]);
+
+  if (!isEditing) {
+    return (
+      <div
+        className="min-h-[28px] px-1 cursor-pointer hover:bg-muted/50 rounded text-sm flex items-center"
+        onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+      >
+        {value ? (
+          <span className="truncate">{value}</span>
+        ) : (
+          <span className="text-muted-foreground">{placeholder}</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <input
+      autoFocus
+      type="text"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); }
+        if (e.key === 'Escape') { setValue(originalRef.current); setIsEditing(false); }
+      }}
+      onClick={(e) => e.stopPropagation()}
+      placeholder={placeholder}
+      className="w-full h-7 text-sm rounded-md border border-input bg-background px-2 py-1 ring-2 ring-primary/50 focus:outline-none"
+    />
+  );
+});
+InlineTextCell.displayName = 'InlineTextCell';
+
 // ===== ESTADO BADGES =====
 const ESTADO_CONFIG: Record<string, { label: string; className: string }> = {
   borrador: { label: 'Borrador', className: 'bg-muted text-muted-foreground border-border' },
@@ -660,6 +724,13 @@ export default function ContactListDetailPage() {
     });
   }, [queryClient, listId]);
 
+  const handleFieldSaved = useCallback((companyId: string, field: string, value: string) => {
+    queryClient.setQueryData(['contact-list-companies', listId], (old: any) => {
+      if (!Array.isArray(old)) return old;
+      return old.map((c: any) => c.id === companyId ? { ...c, [field]: value || null } : c);
+    });
+  }, [queryClient, listId]);
+
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
     const webUrl = (company as any).web;
@@ -998,6 +1069,7 @@ export default function ContactListDetailPage() {
                         <TableHead>CIF</TableHead>
                         <TableHead>Contacto</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>LinkedIn</TableHead>
                         <TableHead>Director Ejecutivo</TableHead>
                         <TableHead>Web</TableHead>
                         <TableHead>Provincia</TableHead>
@@ -1032,21 +1104,25 @@ export default function ContactListDetailPage() {
                             </button>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{company.cif || '—'}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{company.contacto || '—'}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1.5">
-                              <span>{company.email || '—'}</span>
+                          <TableCell onClick={e => e.stopPropagation()}>
+                            <InlineTextCell companyId={company.id} field="contacto" initialValue={company.contacto} placeholder="Añadir contacto..." onSaved={handleFieldSaved} />
+                          </TableCell>
+                          <TableCell onClick={e => e.stopPropagation()}>
+                            <InlineTextCell companyId={company.id} field="email" initialValue={company.email} placeholder="Añadir email..." onSaved={handleFieldSaved} />
+                          </TableCell>
+                          <TableCell onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center gap-1">
+                              <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} />
                               {company.linkedin && (
                                 <button
                                   type="button"
                                   onClick={e => {
                                     e.stopPropagation();
-                                    e.preventDefault();
                                     const url = company.linkedin!.startsWith('http') ? company.linkedin! : `https://${company.linkedin}`;
                                     window.open(url, '_blank', 'noopener,noreferrer');
                                   }}
                                   className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
-                                  title={company.linkedin}
+                                  title="Abrir LinkedIn"
                                 >
                                   <Linkedin className="h-3.5 w-3.5" />
                                 </button>
