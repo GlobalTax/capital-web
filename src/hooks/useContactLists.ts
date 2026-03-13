@@ -92,6 +92,11 @@ export const useContactLists = () => {
         }
       }
 
+      // Compute which lists have children (are "madre")
+      const parentIds = new Set(
+        (data || []).map((l: any) => l.lista_madre_id).filter(Boolean)
+      );
+
       return (data || []).map((l: any) => ({
         id: l.id,
         name: l.name,
@@ -104,6 +109,8 @@ export const useContactLists = () => {
         created_at: l.created_at,
         updated_at: l.updated_at,
         last_campaign_name: campaignMap[l.id] || null,
+        lista_madre_id: l.lista_madre_id || null,
+        has_children: parentIds.has(l.id),
       })) as ContactList[];
     },
   });
