@@ -33,14 +33,7 @@ const CHANNEL_OPTIONS = [
   { value: 'crm_internal', label: '🔒 CRM Interno' },
 ];
 
-const LINKEDIN_FORMAT_OPTIONS = [
-  { value: 'carousel', label: 'Carrusel' },
-  { value: 'long_text', label: 'Texto largo' },
-  { value: 'infographic', label: 'Infografía' },
-  { value: 'opinion', label: 'Opinión' },
-  { value: 'storytelling', label: 'Storytelling' },
-  { value: 'data_highlight', label: 'Dato destacado' },
-];
+// LinkedIn formats now come from useLinkedInFormats hook
 
 const AUDIENCE_OPTIONS = [
   { value: 'sellers', label: '🎯 Vendedores' },
