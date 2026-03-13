@@ -456,7 +456,7 @@ export default function ContactListDetailPage() {
         .eq('lista_madre_id', listId!);
       if (subErr || !sublists || sublists.length === 0) return null;
 
-      const sublistArr = sublists as { id: string; name: string }[];
+      const sublistArr = (sublists as unknown) as { id: string; name: string }[];
       const sublistIds = sublistArr.map(s => s.id);
       const nameMap = Object.fromEntries(sublistArr.map(s => [s.id, s.name]));
 
