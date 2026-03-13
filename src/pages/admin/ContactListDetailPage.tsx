@@ -1197,6 +1197,21 @@ export default function ContactListDetailPage() {
                               {company.empresa}
                             </button>
                           </TableCell>
+                          {isMadreList && (
+                            <TableCell>
+                              {company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim()) ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {sublistCompanyMap.map.get(company.cif.toUpperCase().trim())!.map(name => (
+                                    <Badge key={name} variant="secondary" size="sm" className="bg-accent/10 text-accent-foreground border-0 text-[10px]">
+                                      {name}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">—</span>
+                              )}
+                            </TableCell>
+                          )}
                           <TableCell className="text-sm text-muted-foreground">{company.cif || '—'}</TableCell>
                           <TableCell onClick={e => e.stopPropagation()}>
                             <InlineTextCell companyId={company.id} field="contacto" initialValue={company.contacto} placeholder="Añadir contacto..." onSaved={handleFieldSaved} />
