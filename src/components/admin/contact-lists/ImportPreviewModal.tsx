@@ -4,7 +4,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, CheckCircle2, Link2, AlertTriangle, XCircle } from 'lucide-react';
+import { ChevronDown, CheckCircle2, Link2, AlertTriangle, XCircle, GitBranch } from 'lucide-react';
 import type { ValidationResult } from '@/hooks/useExcelImportValidation';
 
 interface ImportPreviewModalProps {
@@ -17,7 +17,8 @@ interface ImportPreviewModalProps {
 }
 
 export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporting, importProgress }: ImportPreviewModalProps) {
-  const canImport = result.nuevas.length + result.vinculadas.length > 0;
+  const importable = result.nuevas.length + result.vinculadas.length + result.enOtraLista.length;
+  const canImport = importable > 0;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -40,6 +41,12 @@ export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporti
             rows={result.vinculadas.map(r => ({ name: r.empresa || r.cif || '—', cif: r.cif }))}
           />
           <SummarySection
+            icon={<GitBranch className="h-4 w-4 text-orange-500" />}
+            label="Ya en lista relacionada (se importarán con aviso)"
+            count={result.enOtraLista.length}
+            rows={result.enOtraLista.map(r => ({ name: r.empresa || r.cif || '—', cif: r.cif, motivo: r.listaRelacionada }))}
+          />
+          <SummarySection
             icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
             label="Duplicadas en esta lista (se omitirán)"
             count={result.duplicadas.length}
@@ -60,7 +67,7 @@ export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporti
               ? `Importando ${importProgress.done}/${importProgress.total}...`
               : isImporting
                 ? 'Importando...'
-                : `Importar ${result.nuevas.length + result.vinculadas.length} empresas`}
+                : `Importar ${importable} empresas`}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -95,7 +102,7 @@ function SummarySection({ icon, label, count, rows }: {
               <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="truncate max-w-[200px]">{r.name}</span>
                 {r.cif && <span className="text-muted-foreground/60">{r.cif}</span>}
-                {r.motivo && <span className="text-destructive/80 italic truncate">— {r.motivo}</span>}
+                {r.motivo && <span className="text-orange-600/80 italic truncate">— {r.motivo}</span>}
               </div>
             ))}
           </div>
