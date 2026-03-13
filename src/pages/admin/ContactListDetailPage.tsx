@@ -999,6 +999,7 @@ export default function ContactListDetailPage() {
                         <TableHead>Contacto</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Director Ejecutivo</TableHead>
+                        <TableHead>Web</TableHead>
                         <TableHead className="text-right">
                           <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('facturacion')}>
                             Facturación <SortIcon field="facturacion" />
