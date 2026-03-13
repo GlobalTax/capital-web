@@ -1,25 +1,25 @@
 
 
-## Revisión: Todo ya está implementado
+## Sitemap: 2 bugs encontrados
 
-He revisado en profundidad el código actual comparándolo con las recomendaciones del análisis externo. **Todas las sugerencias ya están implementadas**:
+### Bug 1: URLs de blog incorrectas
+Tanto la edge function `generate-sitemap` como el cliente `generateSitemap.ts` generan URLs de blog como `/blog/{slug}` pero la ruta real es `/recursos/blog/{slug}` (hay un redirect 301 de `/blog` a `/recursos/blog` en el router).
 
-### Lo que el análisis sugiere → Lo que ya existe
+### Bug 2: Noticias ausentes del sitemap
+Las ~381+ noticias publicadas de `news_articles` no aparecen en ninguno de los dos generadores de sitemap. Solo se incluyen blog posts.
 
-| Sugerencia | Estado actual |
-|---|---|
-| Crear `SEOHead.tsx` | ✅ Ya existe en `src/components/seo/SEOHead.tsx` — con canonical, og:url, og:title, og:description, og:image, twitter cards, keywords, robots, structured data |
-| Blog posts con SEOHead | ✅ `src/pages/blog/BlogPost.tsx` ya usa `<SEOHead>` con `meta_title`, `meta_description`, canonical único por slug, structured data (Article + Breadcrumb) |
-| Noticias con SEOHead | ✅ `src/pages/recursos/NewsArticleDetail.tsx` ya usa `<SEOHead>` con `meta_title`, `meta_description`, canonical `/recursos/noticias/${slug}`, structured data |
-| Canonical estático en index.html | ✅ Línea 15: `<link rel="canonical" href="https://capittal.es/" />` |
-| og:url estático en index.html | ✅ Línea 30: `<meta property="og:url" content="https://capittal.es/" />` |
-| SSR para blog | ✅ Edge function `blog-ssr` ya desplegada |
-| SSR para noticias | ✅ Edge function `news-ssr` recién creada |
-| Prerender-proxy routing | ✅ Ya redirige `/blog/*` a `blog-ssr` y `/recursos/noticias/*` a `news-ssr` |
+### Plan de cambios
 
-### Conclusión
+**Fichero 1: `supabase/functions/generate-sitemap/index.ts`**
+- Corregir la ruta de blog posts de `/blog/{slug}` a `/recursos/blog/{slug}`
+- Añadir query a `news_articles` (filtrado por `is_published=true`, `is_deleted=false`) y generar entradas `<url>` con ruta `/recursos/noticias/{slug}`
 
-El análisis externo describe exactamente lo que ya has implementado en las últimas sesiones. **No hay cambios pendientes**. El componente `SEOHead` sugerido es una versión simplificada del que ya tienes (que además soporta structured data, keywords y twitter cards).
+**Fichero 2: `src/utils/seo/generateSitemap.ts`**
+- Misma corrección: `/blog/{slug}` → `/recursos/blog/{slug}`
+- Añadir query a `news_articles` y generar entradas correspondientes
 
-Lo único que queda es **esperar al re-crawl** de Ahrefs/Google para que detecten los cambios. Fuerza un recrawl desde Ahrefs → Site Audit → Recrawl, y en Google Search Console envía las URLs actualizadas para re-indexación.
+**Fichero 3: `src/utils/seo/blogSitemap.ts`**
+- Corregir ruta de `/blog/{slug}` a `/recursos/blog/{slug}`
+
+Después del deploy, redesplegar la edge function `generate-sitemap`.
 
