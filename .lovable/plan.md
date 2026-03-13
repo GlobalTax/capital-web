@@ -1,33 +1,26 @@
 
 
-## Fix: PDF upload in Document campaigns
+## Plan: Evitar duplicados entre tabs Madre y Compradores
 
-### Root Cause
+### Problema
+Una lista con `tipo = 'compradores'` que además tiene sublistas (`has_children = true`) aparece en ambos tabs.
 
-`DocumentStep.tsx` line 53-59 calls the `upload_blob` action without the required `bucket` field. The edge function validates `bucket` and `base64` are present (line 113) and returns 400 when `bucket` is missing.
+### Solución
+Priorizar "Madre": si una lista tiene hijos, solo aparece en Madre, nunca en Compradores ni Outbound.
 
-### Fix
+### Cambio en `src/pages/admin/ContactListsPage.tsx`
 
-Add `bucket: 'campaign-presentations'` to the request body in `DocumentStep.tsx` line 54.
-
-```typescript
-// Before
-body: {
-  action: 'upload_blob',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
-
-// After
-body: {
-  action: 'upload_blob',
-  bucket: 'campaign-presentations',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
+**Contadores (líneas 87-91):**
+```ts
+madre: lists.filter(l => l.has_children).length,
+compradores: lists.filter(l => !l.has_children && l.tipo === 'compradores').length,
+outbound: lists.filter(l => !l.has_children && l.tipo !== 'compradores').length,
 ```
 
-One line change, zero risk to existing functionality.
+**Filtro compradores (línea 103):**
+```ts
+result = result.filter(l => !l.has_children && l.tipo === 'compradores');
+```
+
+Solo se edita `src/pages/admin/ContactListsPage.tsx` (2 líneas).
 
