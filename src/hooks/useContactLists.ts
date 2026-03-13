@@ -21,6 +21,8 @@ export interface ContactList {
   created_at: string;
   updated_at: string;
   last_campaign_name?: string | null;
+  lista_madre_id?: string | null;
+  has_children: boolean;
 }
 
 export interface ContactListCompany {
