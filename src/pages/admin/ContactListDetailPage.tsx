@@ -1497,6 +1497,7 @@ export default function ContactListDetailPage() {
           onClose={handleCloseImport}
           imported={importResultData.imported}
           linked={importResultData.linked}
+          linkedRelated={importResultData.linkedRelated}
           skippedDuplicates={importResultData.skippedDuplicates}
           skippedErrors={importResultData.skippedErrors}
           errors={importResultData.errors}
