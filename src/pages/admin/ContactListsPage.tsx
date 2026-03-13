@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -22,11 +23,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
+  Crown, Users, Send,
 } from 'lucide-react';
 import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
 import { useDebounce } from '@/hooks/useDebounce';
 import { EditableCell } from '@/components/admin/shared/EditableCell';
 import { cn } from '@/lib/utils';
+
+type ListTab = 'madre' | 'compradores' | 'outbound';
 
 const TIPO_BADGES: Record<ContactListTipo, { label: string; className: string }> = {
   compradores: { label: 'Compradores', className: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -40,9 +44,16 @@ const ESTADO_BADGES: Record<string, { label: string; className: string }> = {
   archivada: { label: 'Archivada', className: 'bg-red-50 text-red-700 border-red-200' },
 };
 
+const TAB_DEFAULT_TIPO: Record<ListTab, ContactListTipo> = {
+  madre: 'outbound',
+  compradores: 'compradores',
+  outbound: 'outbound',
+};
+
 export default function ContactListsPage() {
   const navigate = useNavigate();
   const { lists, isLoading, createList, deleteList, duplicateList, updateList } = useContactLists();
+  const [activeTab, setActiveTab] = useState<ListTab>('madre');
   const [search, setSearch] = useState('');
   const [activitySearch, setActivitySearch] = useState('');
   const debouncedActivitySearch = useDebounce(activitySearch, 400);
@@ -54,7 +65,7 @@ export default function ContactListsPage() {
   const [newSector, setNewSector] = useState('');
   const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
 
-  // Activity search query — returns { list_id, count } map
+  // Activity search query
   const { data: activityMatches } = useQuery({
     queryKey: ['activity-search', debouncedActivitySearch],
     enabled: !!debouncedActivitySearch.trim(),
@@ -64,7 +75,6 @@ export default function ContactListsPage() {
         .select('list_id')
         .ilike('descripcion_actividad', `%${debouncedActivitySearch.trim()}%`);
       if (error) throw error;
-      // Count per list_id
       const counts: Record<string, number> = {};
       (data as any[]).forEach((row: any) => {
         counts[row.list_id] = (counts[row.list_id] || 0) + 1;
@@ -73,20 +83,41 @@ export default function ContactListsPage() {
     },
   });
 
+  // Tab counts
+  const tabCounts = useMemo(() => ({
+    madre: lists.filter(l => l.has_children).length,
+    compradores: lists.filter(l => l.tipo === 'compradores').length,
+    outbound: lists.filter(l => !l.has_children && l.tipo !== 'compradores').length,
+  }), [lists]);
+
+  // Filter by tab first, then other filters
   const filtered = useMemo(() => {
     let result = lists;
+
+    // Tab filter
+    switch (activeTab) {
+      case 'madre':
+        result = result.filter(l => l.has_children);
+        break;
+      case 'compradores':
+        result = result.filter(l => l.tipo === 'compradores');
+        break;
+      case 'outbound':
+        result = result.filter(l => !l.has_children && l.tipo !== 'compradores');
+        break;
+    }
+
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(l => l.name.toLowerCase().includes(q));
     }
     if (estadoFilter !== 'all') result = result.filter(l => l.estado === estadoFilter);
     if (tipoFilter !== 'all') result = result.filter(l => l.tipo === tipoFilter);
-    // Filter by activity matches
     if (debouncedActivitySearch.trim() && activityMatches) {
       result = result.filter(l => activityMatches[l.id]);
     }
     return result;
-  }, [lists, search, estadoFilter, tipoFilter, debouncedActivitySearch, activityMatches]);
+  }, [lists, activeTab, search, estadoFilter, tipoFilter, debouncedActivitySearch, activityMatches]);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -100,8 +131,13 @@ export default function ContactListsPage() {
     setNewName('');
     setNewDesc('');
     setNewSector('');
-    setNewTipo('outbound');
+    setNewTipo(TAB_DEFAULT_TIPO[activeTab]);
     navigate(`/admin/listas-contacto/${result.id}`);
+  };
+
+  const handleOpenCreate = () => {
+    setNewTipo(TAB_DEFAULT_TIPO[activeTab]);
+    setIsCreateOpen(true);
   };
 
   const handleArchive = (list: ContactList) => {
@@ -135,11 +171,38 @@ export default function ContactListsPage() {
             Gestiona y depura listas de empresas para tus campañas outbound
           </p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <Button onClick={handleOpenCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Nueva Lista
         </Button>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ListTab)}>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="madre" className="gap-2">
+            <Crown className="h-4 w-4" />
+            Listados Madre
+            <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px]">
+              {tabCounts.madre}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="compradores" className="gap-2">
+            <Users className="h-4 w-4" />
+            Potenciales Compradores
+            <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px]">
+              {tabCounts.compradores}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="outbound" className="gap-2">
+            <Send className="h-4 w-4" />
+            Outbound
+            <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px]">
+              {tabCounts.outbound}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Filters */}
       <Card>
@@ -153,17 +216,18 @@ export default function ContactListsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar por actividad... (ej: centro especial empleo, instalación eléctrica)" value={activitySearch} onChange={e => setActivitySearch(e.target.value)} className="pl-9" />
             </div>
-            <Select value={tipoFilter} onValueChange={setTipoFilter}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent className="bg-background">
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value="compradores">Compradores</SelectItem>
-                <SelectItem value="outbound">Outbound</SelectItem>
-                <SelectItem value="otros">Otros</SelectItem>
-              </SelectContent>
-            </Select>
+            {activeTab === 'outbound' && (
+              <Select value={tipoFilter} onValueChange={setTipoFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent className="bg-background">
+                  <SelectItem value="all">Todos los tipos</SelectItem>
+                  <SelectItem value="outbound">Outbound</SelectItem>
+                  <SelectItem value="otros">Otros</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
             <Select value={estadoFilter} onValueChange={setEstadoFilter}>
               <SelectTrigger className="w-full md:w-[160px]">
                 <SelectValue placeholder="Estado" />
@@ -190,7 +254,7 @@ export default function ContactListsPage() {
             <div className="text-center py-16">
               <ClipboardList className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground">No se encontraron listas</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={() => setIsCreateOpen(true)}>
+              <Button variant="outline" size="sm" className="mt-4" onClick={handleOpenCreate}>
                 <Plus className="h-4 w-4 mr-2" /> Crear lista
               </Button>
             </div>
