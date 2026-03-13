@@ -13,6 +13,7 @@ interface ImportPreviewModalProps {
   onConfirm: () => void;
   result: ValidationResult;
   isImporting: boolean;
+  importProgress?: { done: number; total: number } | null;
 }
 
 export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporting }: ImportPreviewModalProps) {
