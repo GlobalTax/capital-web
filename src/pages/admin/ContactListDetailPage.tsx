@@ -1148,26 +1148,10 @@ export default function ContactListDetailPage() {
                             <InlineTextCell companyId={company.id} field="contacto" initialValue={company.contacto} placeholder="Añadir contacto..." onSaved={handleFieldSaved} />
                           </TableCell>
                           <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineTextCell companyId={company.id} field="email" initialValue={company.email} placeholder="Añadir email..." onSaved={handleFieldSaved} />
+                            <InlineTextCell companyId={company.id} field="email" initialValue={company.email} placeholder="Añadir email..." onSaved={handleFieldSaved} linkType="email" />
                           </TableCell>
                           <TableCell onClick={e => e.stopPropagation()}>
-                            <div className="flex items-center gap-1">
-                              <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} />
-                              {company.linkedin && (
-                                <button
-                                  type="button"
-                                  onClick={e => {
-                                    e.stopPropagation();
-                                    const url = company.linkedin!.startsWith('http') ? company.linkedin! : `https://${company.linkedin}`;
-                                    window.open(url, '_blank', 'noopener,noreferrer');
-                                  }}
-                                  className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
-                                  title="Abrir LinkedIn"
-                                >
-                                  <Linkedin className="h-3.5 w-3.5" />
-                                </button>
-                              )}
-                            </div>
+                            <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} linkType="url" />
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">
