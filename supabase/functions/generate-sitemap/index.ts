@@ -180,6 +180,7 @@ Deno.serve(async (req) => {
 
   // Fetch blog posts dynamically (no hreflang - Spanish only)
   let blogEntries = "";
+  let newsEntries = "";
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -209,7 +210,6 @@ Deno.serve(async (req) => {
       .eq("is_deleted", false)
       .order("published_at", { ascending: false });
 
-    let newsEntries = "";
     if (!newsError && news?.length) {
       newsEntries = news
         .map((n) => {
