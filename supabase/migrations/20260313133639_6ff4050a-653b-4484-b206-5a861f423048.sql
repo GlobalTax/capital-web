@@ -1,0 +1,2 @@
+ALTER TABLE public.outbound_lists DROP CONSTRAINT outbound_lists_tipo_check;
+ALTER TABLE public.outbound_lists ADD CONSTRAINT outbound_lists_tipo_check CHECK (tipo = ANY (ARRAY['compradores'::text, 'outbound'::text, 'otros'::text, 'madre'::text]));
