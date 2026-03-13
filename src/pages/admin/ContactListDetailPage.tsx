@@ -1069,6 +1069,7 @@ export default function ContactListDetailPage() {
                         <TableHead>CIF</TableHead>
                         <TableHead>Contacto</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>LinkedIn</TableHead>
                         <TableHead>Director Ejecutivo</TableHead>
                         <TableHead>Web</TableHead>
                         <TableHead>Provincia</TableHead>
