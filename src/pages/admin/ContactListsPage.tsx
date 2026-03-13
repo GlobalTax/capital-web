@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
-  Crown, Users, Send,
+  Crown, Users, Send, Building2, List, CheckCircle, BarChart3, Megaphone,
 } from 'lucide-react';
 import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
 import { useDebounce } from '@/hooks/useDebounce';
