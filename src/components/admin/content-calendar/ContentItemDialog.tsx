@@ -44,10 +44,13 @@ const AUDIENCE_OPTIONS = [
 
 const ContentItemDialog: React.FC<ContentItemDialogProps> = ({ open, onOpenChange, item, prefill, onSave }) => {
   const { register, handleSubmit, setValue, watch, reset } = useForm<Partial<ContentCalendarItem>>();
+  const { formats: linkedInFormats, addFormat, removeFormat } = useLinkedInFormats();
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [isOptimizingSEO, setIsOptimizingSEO] = useState(false);
   const [isRepurposing, setIsRepurposing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  const [newFormatLabel, setNewFormatLabel] = useState('');
+  const [formatPopoverOpen, setFormatPopoverOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
