@@ -1366,7 +1366,8 @@ export default function ContactListDetailPage() {
           onClose={handleCloseImport}
           onConfirm={handleConfirmImport}
           result={validationResult}
-          isImporting={importStep === 'preview' && addCompanies.isPending}
+          isImporting={importStep === 'importing' || (importStep === 'preview' && addCompanies.isPending)}
+          importProgress={importProgress}
         />
       )}
 

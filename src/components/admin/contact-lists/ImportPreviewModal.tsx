@@ -56,7 +56,11 @@ export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporti
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isImporting}>Cancelar</Button>
           <Button onClick={onConfirm} disabled={!canImport || isImporting}>
-            {isImporting ? 'Importando...' : `Importar ${result.nuevas.length + result.vinculadas.length} empresas`}
+            {isImporting && importProgress
+              ? `Importando ${importProgress.done}/${importProgress.total}...`
+              : isImporting
+                ? 'Importando...'
+                : `Importar ${result.nuevas.length + result.vinculadas.length} empresas`}
           </Button>
         </DialogFooter>
       </DialogContent>
