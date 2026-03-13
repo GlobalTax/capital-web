@@ -470,7 +470,7 @@ export default function ContactListDetailPage() {
 
       // 3. Build map: cif → sublist names[]
       const map = new Map<string, Set<string>>();
-      for (const row of subCompanies as { cif: string; list_id: string }[]) {
+      for (const row of (subCompanies as unknown) as { cif: string; list_id: string }[]) {
         if (!row.cif) continue;
         const cifKey = row.cif.toUpperCase().trim();
         if (!map.has(cifKey)) map.set(cifKey, new Set());
