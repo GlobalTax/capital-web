@@ -7,11 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Loader2, Copy, RefreshCw } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sparkles, Loader2, Copy, RefreshCw, X, Plus, ChevronsUpDown, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
 import { type ContentCalendarItem } from '@/hooks/useContentCalendar';
+import { useLinkedInFormats } from '@/hooks/useLinkedInFormats';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 
 interface ContentItemDialogProps {
@@ -30,14 +33,7 @@ const CHANNEL_OPTIONS = [
   { value: 'crm_internal', label: '🔒 CRM Interno' },
 ];
 
-const LINKEDIN_FORMAT_OPTIONS = [
-  { value: 'carousel', label: 'Carrusel' },
-  { value: 'long_text', label: 'Texto largo' },
-  { value: 'infographic', label: 'Infografía' },
-  { value: 'opinion', label: 'Opinión' },
-  { value: 'storytelling', label: 'Storytelling' },
-  { value: 'data_highlight', label: 'Dato destacado' },
-];
+// LinkedIn formats now come from useLinkedInFormats hook
 
 const AUDIENCE_OPTIONS = [
   { value: 'sellers', label: '🎯 Vendedores' },
@@ -48,10 +44,13 @@ const AUDIENCE_OPTIONS = [
 
 const ContentItemDialog: React.FC<ContentItemDialogProps> = ({ open, onOpenChange, item, prefill, onSave }) => {
   const { register, handleSubmit, setValue, watch, reset } = useForm<Partial<ContentCalendarItem>>();
+  const { formats: linkedInFormats, addFormat, removeFormat } = useLinkedInFormats();
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
   const [isOptimizingSEO, setIsOptimizingSEO] = useState(false);
   const [isRepurposing, setIsRepurposing] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  const [newFormatLabel, setNewFormatLabel] = useState('');
+  const [formatPopoverOpen, setFormatPopoverOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -253,14 +252,84 @@ const ContentItemDialog: React.FC<ContentItemDialogProps> = ({ open, onOpenChang
                 {isLinkedIn && (
                   <div>
                     <Label className="text-xs">Formato LinkedIn</Label>
-                    <Select value={linkedinFormat || ''} onValueChange={v => setValue('linkedin_format', v as any)}>
-                      <SelectTrigger className="h-9"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                      <SelectContent>
-                        {LINKEDIN_FORMAT_OPTIONS.map(o => (
-                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={formatPopoverOpen} onOpenChange={setFormatPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="h-9 w-full justify-between font-normal">
+                          {linkedinFormat
+                            ? linkedInFormats.find(f => f.value === linkedinFormat)?.label || linkedinFormat
+                            : 'Seleccionar...'}
+                          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[220px] p-0" align="start">
+                        <div className="max-h-[200px] overflow-y-auto">
+                          {linkedInFormats.map(f => (
+                            <div
+                              key={f.id}
+                              className={cn(
+                                "flex items-center justify-between px-3 py-1.5 text-sm cursor-pointer hover:bg-accent",
+                                linkedinFormat === f.value && "bg-accent"
+                              )}
+                              onClick={() => {
+                                setValue('linkedin_format', f.value as any);
+                                setFormatPopoverOpen(false);
+                              }}
+                            >
+                              <span className="flex items-center gap-2">
+                                {linkedinFormat === f.value && <Check className="h-3.5 w-3.5" />}
+                                {f.label}
+                              </span>
+                              <button
+                                type="button"
+                                className="opacity-0 group-hover:opacity-100 hover:opacity-100 hover:text-destructive p-0.5"
+                                style={{ opacity: undefined }}
+                                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={e => (e.currentTarget.style.opacity = '0.3')}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  if (confirm(`¿Eliminar formato "${f.label}"?`)) {
+                                    removeFormat.mutate(f.id);
+                                    if (linkedinFormat === f.value) setValue('linkedin_format', null);
+                                  }
+                                }}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="border-t p-2 flex gap-1">
+                          <Input
+                            className="h-7 text-xs"
+                            placeholder="Nuevo formato..."
+                            value={newFormatLabel}
+                            onChange={e => setNewFormatLabel(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && newFormatLabel.trim()) {
+                                e.preventDefault();
+                                const value = newFormatLabel.trim().toLowerCase().replace(/\s+/g, '_');
+                                addFormat.mutate({ value, label: newFormatLabel.trim() });
+                                setNewFormatLabel('');
+                              }
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0 shrink-0"
+                            disabled={!newFormatLabel.trim()}
+                            onClick={() => {
+                              const value = newFormatLabel.trim().toLowerCase().replace(/\s+/g, '_');
+                              addFormat.mutate({ value, label: newFormatLabel.trim() });
+                              setNewFormatLabel('');
+                            }}
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 )}
                 <div>
