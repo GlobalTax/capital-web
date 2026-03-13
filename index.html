@@ -12,6 +12,7 @@
     <!-- Favicon -->
     <link rel="icon" href="/capittal-favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/capittal-favicon.png">
+    <link rel="canonical" href="https://capittal.es/" />
     
     <!-- Typography: General Sans (self-hosted) + Google Fonts (non-blocking) -->
     <link rel="preload" href="/fonts/GeneralSans-Regular.otf" as="font" type="font/otf" crossorigin>
@@ -174,11 +175,10 @@
           var twd=document.querySelector('meta[name="twitter:description"]');
           if(twd) twd.setAttribute('content',r.d);
         }
-        // Canonical link
+        // Canonical link (update existing static tag)
         var canon='https://capittal.es'+p;
         var cl=document.querySelector('link[rel="canonical"]');
-        if(!cl){cl=document.createElement('link');cl.setAttribute('rel','canonical');document.head.appendChild(cl);}
-        cl.setAttribute('href',canon);
+        if(cl) cl.setAttribute('href',canon);
       })();
     </script>
     <script type="application/ld+json">
