@@ -73,13 +73,13 @@ Deno.serve(async (req) => {
     let ssrFunctionUrl: string;
     let ssrParams: string;
 
+    const blogMatch = path.match(/^\/recursos\/blog\/(.+)$/);
     const newsMatch = path.match(/^\/recursos\/noticias\/(.+)$/);
 
-    if (path.startsWith("/blog/") && path.length > 6) {
-      // Blog post: /blog/my-post-slug → blog-ssr?slug=my-post-slug
-      const slug = path.replace("/blog/", "");
+    if (blogMatch) {
+      // Blog post: /recursos/blog/my-post-slug → blog-ssr?slug=my-post-slug
       ssrFunctionUrl = `${supabaseUrl}/functions/v1/blog-ssr`;
-      ssrParams = `?slug=${encodeURIComponent(slug)}`;
+      ssrParams = `?slug=${encodeURIComponent(blogMatch[1])}`;
     } else if (newsMatch) {
       // News article: /recursos/noticias/my-slug → news-ssr?slug=my-slug
       ssrFunctionUrl = `${supabaseUrl}/functions/v1/news-ssr`;
