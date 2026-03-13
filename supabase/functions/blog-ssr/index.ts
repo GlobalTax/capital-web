@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const canonicalUrl = `https://capittal.es/blog/${post.slug}`;
+    const canonicalUrl = `https://capittal.es/recursos/blog/${post.slug}`;
     const title = escapeHtml(post.meta_title || post.title);
     const description = escapeHtml(post.meta_description || post.excerpt || "");
     const image = post.featured_image_url || "https://capittal.es/og-image.png";
