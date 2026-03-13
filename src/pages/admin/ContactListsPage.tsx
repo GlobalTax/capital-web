@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
-  Crown, Users, Send,
+  Crown, Users, Send, Building2, List, CheckCircle, BarChart3, Megaphone,
 } from 'lucide-react';
 import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -82,6 +82,16 @@ export default function ContactListsPage() {
       return counts;
     },
   });
+
+  // KPI stats
+  const kpiStats = useMemo(() => {
+    const totalEmpresas = lists.reduce((acc, l) => acc + (l.contact_count || 0), 0);
+    const totalListas = lists.length;
+    const activas = lists.filter(l => l.estado === 'activa').length;
+    const avgEmpresas = totalListas ? Math.round(totalEmpresas / totalListas) : 0;
+    const conCampana = lists.filter(l => l.last_campaign_name).length;
+    return { totalEmpresas, totalListas, activas, avgEmpresas, conCampana };
+  }, [lists]);
 
   // Tab counts
   const tabCounts = useMemo(() => ({
@@ -175,6 +185,32 @@ export default function ContactListsPage() {
           <Plus className="h-4 w-4 mr-2" />
           Nueva Lista
         </Button>
+      </div>
+
+      {/* KPI Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {[
+          { title: 'Total Empresas', value: kpiStats.totalEmpresas.toLocaleString('es-ES'), icon: Building2, iconColor: 'text-blue-600', iconBg: 'bg-blue-50', subtitle: 'En todas las listas' },
+          { title: 'Total Listas', value: kpiStats.totalListas, icon: List, iconColor: 'text-slate-600', iconBg: 'bg-slate-100', subtitle: 'Creadas' },
+          { title: 'Listas Activas', value: kpiStats.activas, icon: CheckCircle, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50', subtitle: `${kpiStats.totalListas ? ((kpiStats.activas / kpiStats.totalListas) * 100).toFixed(0) : 0}% del total` },
+          { title: 'Media Empresas/Lista', value: kpiStats.avgEmpresas, icon: BarChart3, iconColor: 'text-purple-600', iconBg: 'bg-purple-50', subtitle: 'Promedio' },
+          { title: 'Con Campaña', value: kpiStats.conCampana, icon: Megaphone, iconColor: 'text-amber-600', iconBg: 'bg-amber-50', subtitle: 'Listas asignadas' },
+        ].map((stat) => (
+          <Card key={stat.title} className="shadow-sm">
+            <CardContent className="pt-3 pb-2 px-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">{stat.title}</p>
+                  <p className="text-xl font-semibold mt-0.5 truncate">{stat.value}</p>
+                  <p className="text-[10px] text-muted-foreground/70 mt-0.5 truncate">{stat.subtitle}</p>
+                </div>
+                <div className={cn("p-2 rounded-lg flex-shrink-0", stat.iconBg)}>
+                  <stat.icon className={cn("h-4 w-4", stat.iconColor)} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Tabs */}
