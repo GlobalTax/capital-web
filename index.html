@@ -175,11 +175,10 @@
           var twd=document.querySelector('meta[name="twitter:description"]');
           if(twd) twd.setAttribute('content',r.d);
         }
-        // Canonical link
+        // Canonical link (update existing static tag)
         var canon='https://capittal.es'+p;
         var cl=document.querySelector('link[rel="canonical"]');
-        if(!cl){cl=document.createElement('link');cl.setAttribute('rel','canonical');document.head.appendChild(cl);}
-        cl.setAttribute('href',canon);
+        if(cl) cl.setAttribute('href',canon);
       })();
     </script>
     <script type="application/ld+json">
