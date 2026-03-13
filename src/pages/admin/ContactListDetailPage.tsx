@@ -1283,6 +1283,7 @@ export default function ContactListDetailPage() {
                 <Select value={configTipo} onValueChange={(v) => setConfigTipo(v as ContactListTipo)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-background">
+                    <SelectItem value="madre">Listado Madre</SelectItem>
                     <SelectItem value="compradores">Potenciales compradores</SelectItem>
                     <SelectItem value="outbound">Outbound</SelectItem>
                     <SelectItem value="otros">Otros</SelectItem>

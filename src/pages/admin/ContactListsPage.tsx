@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 type ListTab = 'madre' | 'compradores' | 'outbound';
 
 const TIPO_BADGES: Record<ContactListTipo, { label: string; className: string }> = {
+  madre: { label: 'Listado Madre', className: 'bg-purple-50 text-purple-700 border-purple-200' },
   compradores: { label: 'Compradores', className: 'bg-blue-50 text-blue-700 border-blue-200' },
   outbound: { label: 'Outbound', className: 'bg-amber-50 text-amber-700 border-amber-200' },
   otros: { label: 'Otros', className: 'bg-slate-50 text-slate-600 border-slate-200' },
@@ -95,9 +96,9 @@ export default function ContactListsPage() {
 
   // Tab counts
   const tabCounts = useMemo(() => ({
-    madre: lists.filter(l => l.has_children).length,
+    madre: lists.filter(l => l.has_children || l.tipo === 'madre').length,
     compradores: lists.filter(l => !l.has_children && l.tipo === 'compradores').length,
-    outbound: lists.filter(l => !l.has_children && l.tipo !== 'compradores').length,
+    outbound: lists.filter(l => !l.has_children && l.tipo !== 'compradores' && l.tipo !== 'madre').length,
   }), [lists]);
 
   // Filter by tab first, then other filters
@@ -107,13 +108,13 @@ export default function ContactListsPage() {
     // Tab filter
     switch (activeTab) {
       case 'madre':
-        result = result.filter(l => l.has_children);
+        result = result.filter(l => l.has_children || l.tipo === 'madre');
         break;
       case 'compradores':
         result = result.filter(l => !l.has_children && l.tipo === 'compradores');
         break;
       case 'outbound':
-        result = result.filter(l => !l.has_children && l.tipo !== 'compradores');
+        result = result.filter(l => !l.has_children && l.tipo !== 'compradores' && l.tipo !== 'madre');
         break;
     }
 
@@ -398,6 +399,7 @@ export default function ContactListsPage() {
               <Select value={newTipo} onValueChange={(v) => setNewTipo(v as ContactListTipo)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-background">
+                  <SelectItem value="madre">Listado Madre</SelectItem>
                   <SelectItem value="compradores">Potenciales compradores</SelectItem>
                   <SelectItem value="outbound">Outbound</SelectItem>
                   <SelectItem value="otros">Otros</SelectItem>
