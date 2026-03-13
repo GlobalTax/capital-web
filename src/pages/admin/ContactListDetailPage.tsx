@@ -944,6 +944,20 @@ export default function ContactListDetailPage() {
                 {filteredCompanies.length} de {companies.length}
               </span>
             )}
+            {companies.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkAiGenerate}
+                disabled={bulkAiRunning || !!aiGenLoading}
+              >
+                {bulkAiRunning ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando {bulkAiProgress.done}/{bulkAiProgress.total}...</>
+                ) : (
+                  <><Sparkles className="h-4 w-4 mr-2" /> Generar descripciones IA</>
+                )}
+              </Button>
+            )}
           </div>
           {/* Companies table */}
           <Card>
