@@ -100,7 +100,7 @@ export default function ContactListsPage() {
         result = result.filter(l => l.has_children);
         break;
       case 'compradores':
-        result = result.filter(l => l.tipo === 'compradores');
+        result = result.filter(l => !l.has_children && l.tipo === 'compradores');
         break;
       case 'outbound':
         result = result.filter(l => !l.has_children && l.tipo !== 'compradores');
