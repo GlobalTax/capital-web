@@ -1,33 +1,24 @@
 
 
-## Fix: PDF upload in Document campaigns
+## Plan: Celdas de Email y LinkedIn con acceso directo + edición
 
-### Root Cause
+### Problema
+Actualmente, al hacer click en email o LinkedIn siempre se entra en modo edición. El usuario quiere que si ya tienen valor, el click abra directamente (mailto: para email, nueva pestaña para LinkedIn), y solo entre en edición al hacer click en un icono de editar.
 
-`DocumentStep.tsx` line 53-59 calls the `upload_blob` action without the required `bucket` field. The edge function validates `bucket` and `base64` are present (line 113) and returns 400 when `bucket` is missing.
+### Cambios en `InlineTextCell` (~líneas 167-227)
 
-### Fix
+Añadir prop opcional `linkType?: 'email' | 'url'`. Cuando tiene valor y `linkType` está definido:
 
-Add `bucket: 'campaign-presentations'` to the request body in `DocumentStep.tsx` line 54.
+- **Vista no-edición**: Mostrar el valor como texto clickable (link) + un pequeño icono de lápiz para editar
+  - Click en el texto → abre `mailto:{value}` (email) o `window.open(url)` (LinkedIn)
+  - Click en el lápiz → entra en modo edición
+- **Sin valor**: Comportamiento actual (click para editar)
 
-```typescript
-// Before
-body: {
-  action: 'upload_blob',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
+### Cambios en las celdas de la tabla (~líneas 1107-1131)
 
-// After
-body: {
-  action: 'upload_blob',
-  bucket: 'campaign-presentations',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
-```
+- **Email** (línea 1111): Añadir `linkType="email"`
+- **LinkedIn** (líneas 1113-1131): Añadir `linkType="url"` y eliminar el botón separado de LinkedIn (ya no hace falta, el click directo lo reemplaza)
 
-One line change, zero risk to existing functionality.
+### Fichero editado
+- `src/pages/admin/ContactListDetailPage.tsx`
 
