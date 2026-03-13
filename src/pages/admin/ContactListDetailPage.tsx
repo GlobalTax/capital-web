@@ -1134,7 +1134,7 @@ export default function ContactListDetailPage() {
                     </TableHeader>
                     <TableBody>
                       {filteredCompanies.map(company => (
-                        <TableRow key={company.id}>
+                        <TableRow key={company.id} className="group/row">
                           <TableCell onClick={e => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
                           </TableCell>
