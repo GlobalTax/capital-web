@@ -349,6 +349,14 @@ export default function ContactListsPage() {
                       </TableCell>
                       <TableCell className="text-right tabular-nums">{list.contact_count}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{list.last_campaign_name || '—'}</TableCell>
+                      <TableCell>
+                        <EditableCell
+                          value={list.notes}
+                          onSave={async (val) => handleInlineSave(list.id, 'notes', val)}
+                          placeholder="Añadir nota..."
+                          emptyText="—"
+                        />
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(list.created_at).toLocaleDateString('es-ES')}
                       </TableCell>

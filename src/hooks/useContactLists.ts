@@ -23,6 +23,7 @@ export interface ContactList {
   last_campaign_name?: string | null;
   lista_madre_id?: string | null;
   has_children: boolean;
+  notes: string | null;
 }
 
 export interface ContactListCompany {

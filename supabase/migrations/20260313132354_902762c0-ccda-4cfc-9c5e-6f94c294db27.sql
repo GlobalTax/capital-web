@@ -1,0 +1,1 @@
+ALTER TABLE public.outbound_lists ADD COLUMN notes text;
