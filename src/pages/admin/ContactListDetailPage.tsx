@@ -164,7 +164,7 @@ const InlineNoteCell = React.memo(({ companyId, initialValue, onSaved }: { compa
 InlineNoteCell.displayName = 'InlineNoteCell';
 
 // ===== INLINE TEXT CELL (single-line editable) =====
-const InlineTextCell = React.memo(({ companyId, field, initialValue, placeholder = 'Añadir...', onSaved }: { companyId: string; field: string; initialValue: string | null; placeholder?: string; onSaved: (id: string, field: string, value: string) => void }) => {
+const InlineTextCell = React.memo(({ companyId, field, initialValue, placeholder = 'Añadir...', onSaved, linkType }: { companyId: string; field: string; initialValue: string | null; placeholder?: string; onSaved: (id: string, field: string, value: string) => void; linkType?: 'email' | 'url' }) => {
   const [value, setValue] = useState(initialValue || '');
   const [isEditing, setIsEditing] = useState(false);
   const originalRef = React.useRef(initialValue || '');
@@ -193,16 +193,56 @@ const InlineTextCell = React.memo(({ companyId, field, initialValue, placeholder
     }
   }, [companyId, field, value, onSaved]);
 
+  const handleLinkClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!value) return;
+    if (linkType === 'email') {
+      window.open(`mailto:${value}`, '_self');
+    } else if (linkType === 'url') {
+      const url = value.startsWith('http') ? value : `https://${value}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  }, [value, linkType]);
+
   if (!isEditing) {
     return (
-      <div
-        className="min-h-[28px] px-1 cursor-pointer hover:bg-muted/50 rounded text-sm flex items-center"
-        onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-      >
+      <div className="min-h-[28px] px-1 rounded text-sm flex items-center gap-1">
         {value ? (
-          <span className="truncate">{value}</span>
+          <>
+            {linkType ? (
+              <span
+                className="truncate cursor-pointer hover:text-primary hover:underline transition-colors"
+                onClick={handleLinkClick}
+                title={linkType === 'email' ? `Enviar email a ${value}` : `Abrir ${value}`}
+              >
+                {value}
+              </span>
+            ) : (
+              <span
+                className="truncate cursor-pointer hover:bg-muted/50"
+                onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+              >
+                {value}
+              </span>
+            )}
+            {linkType && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 opacity-0 group-hover/row:opacity-100"
+                title="Editar"
+              >
+                <Pencil className="h-3 w-3" />
+              </button>
+            )}
+          </>
         ) : (
-          <span className="text-muted-foreground">{placeholder}</span>
+          <span
+            className="text-muted-foreground cursor-pointer hover:bg-muted/50 w-full"
+            onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+          >
+            {placeholder}
+          </span>
         )}
       </div>
     );
