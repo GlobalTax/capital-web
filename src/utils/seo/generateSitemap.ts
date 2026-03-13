@@ -184,7 +184,24 @@ export const generateFullSitemap = async (): Promise<string> => {
     // Blog entries
     const blogEntries = posts?.map(post => {
       const lastmod = new Date(post.updated_at).toISOString().split('T')[0];
-      return `  <url>\n    <loc>${BASE}/blog/${post.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
+      return `  <url>\n    <loc>${BASE}/recursos/blog/${post.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
+    }).join('\n') || '';
+
+    // News articles
+    const { data: newsArticles, error: newsError } = await supabase
+      .from('news_articles')
+      .select('slug, updated_at')
+      .eq('is_published', true)
+      .eq('is_deleted', false)
+      .order('published_at', { ascending: false });
+
+    if (newsError) {
+      console.error('Error fetching news articles for sitemap:', newsError);
+    }
+
+    const newsEntries = newsArticles?.map(article => {
+      const lastmod = new Date(article.updated_at).toISOString().split('T')[0];
+      return `  <url>\n    <loc>${BASE}/recursos/noticias/${article.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>never</changefreq>\n    <priority>0.5</priority>\n  </url>`;
     }).join('\n') || '';
     
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -192,6 +209,7 @@ export const generateFullSitemap = async (): Promise<string> => {
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${staticEntries}
 ${blogEntries}
+${newsEntries}
 </urlset>`;
     
     return sitemap;

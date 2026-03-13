@@ -1,25 +1,19 @@
 
 
-## Sitemap: 2 bugs encontrados
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-### Bug 1: URLs de blog incorrectas
-Tanto la edge function `generate-sitemap` como el cliente `generateSitemap.ts` generan URLs de blog como `/blog/{slug}` pero la ruta real es `/recursos/blog/{slug}` (hay un redirect 301 de `/blog` a `/recursos/blog` en el router).
+### Cambios realizados
 
-### Bug 2: Noticias ausentes del sitemap
-Las ~381+ noticias publicadas de `news_articles` no aparecen en ninguno de los dos generadores de sitemap. Solo se incluyen blog posts.
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-### Plan de cambios
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-**Fichero 1: `supabase/functions/generate-sitemap/index.ts`**
-- Corregir la ruta de blog posts de `/blog/{slug}` a `/recursos/blog/{slug}`
-- Añadir query a `news_articles` (filtrado por `is_published=true`, `is_deleted=false`) y generar entradas `<url>` con ruta `/recursos/noticias/{slug}`
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-**Fichero 2: `src/utils/seo/generateSitemap.ts`**
-- Misma corrección: `/blog/{slug}` → `/recursos/blog/{slug}`
-- Añadir query a `news_articles` y generar entradas correspondientes
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-**Fichero 3: `src/utils/seo/blogSitemap.ts`**
-- Corregir ruta de `/blog/{slug}` a `/recursos/blog/{slug}`
+### Resultado
 
-Después del deploy, redesplegar la edge function `generate-sitemap`.
-
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos

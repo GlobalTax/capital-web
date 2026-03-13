@@ -12,7 +12,7 @@ export const generateBlogSitemap = async (): Promise<string> => {
     
     const urls = posts?.map(post => `
   <url>
-    <loc>https://capittal.es/blog/${post.slug}</loc>
+    <loc>https://capittal.es/recursos/blog/${post.slug}</loc>
     <lastmod>${new Date(post.updated_at).toISOString().split('T')[0]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
