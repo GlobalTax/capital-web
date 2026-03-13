@@ -16,6 +16,7 @@ import { es } from 'date-fns/locale';
 interface NewsArticle {
   id: string;
   title: string;
+  slug: string;
   excerpt: string;
   content: string;
   category: string;
