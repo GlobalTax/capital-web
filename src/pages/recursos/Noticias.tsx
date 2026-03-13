@@ -209,6 +209,7 @@ const Noticias: React.FC = () => {
                         </div>
                       </CardContent>
                     </Card>
+                    </Link>
                   ))}
                 </div>
 

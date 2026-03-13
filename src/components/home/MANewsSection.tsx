@@ -141,7 +141,7 @@ export const MANewsSection: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            </a>
+            </Link>
           ))}
         </div>
 
