@@ -180,6 +180,9 @@
         var canon='https://capittal.es'+p;
         var cl=document.querySelector('link[rel="canonical"]');
         if(cl) cl.setAttribute('href',canon);
+        // OG URL (update existing static tag)
+        var ogurl=document.querySelector('meta[property="og:url"]');
+        if(ogurl) ogurl.setAttribute('content',canon);
       })();
     </script>
     <script type="application/ld+json">
