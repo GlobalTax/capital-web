@@ -196,12 +196,30 @@ Deno.serve(async (req) => {
       blogEntries = posts
         .map((p) => {
           const lastmod = new Date(p.updated_at).toISOString().split("T")[0];
-          return `  <url>\n    <loc>${BASE}/blog/${p.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
+          return `  <url>\n    <loc>${BASE}/recursos/blog/${p.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
+        })
+        .join("\n");
+    }
+
+    // Fetch news articles dynamically
+    const { data: news, error: newsError } = await supabase
+      .from("news_articles")
+      .select("slug, updated_at")
+      .eq("is_published", true)
+      .eq("is_deleted", false)
+      .order("published_at", { ascending: false });
+
+    let newsEntries = "";
+    if (!newsError && news?.length) {
+      newsEntries = news
+        .map((n) => {
+          const lastmod = new Date(n.updated_at).toISOString().split("T")[0];
+          return `  <url>\n    <loc>${BASE}/recursos/noticias/${n.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>never</changefreq>\n    <priority>0.5</priority>\n  </url>`;
         })
         .join("\n");
     }
   } catch (e) {
-    console.error("Error fetching blog posts for sitemap:", e);
+    console.error("Error fetching dynamic content for sitemap:", e);
   }
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -209,6 +227,7 @@ Deno.serve(async (req) => {
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${staticEntries}
 ${blogEntries}
+${newsEntries}
 </urlset>`;
 
   return new Response(sitemap, {
