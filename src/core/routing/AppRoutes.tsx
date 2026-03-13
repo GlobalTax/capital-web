@@ -92,6 +92,7 @@ const MedioAmbiente = lazy(() => import('@/pages/sectores/MedioAmbiente').catch(
 // === RESOURCE PAGES ===
 const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
 const Noticias = lazy(() => import('@/pages/recursos/Noticias'));
+const NewsArticleDetail = lazy(() => import('@/pages/recursos/NewsArticleDetail'));
 const TestExitReady = lazy(() => import('@/pages/recursos/TestExitReady').catch(() => import('@/pages/VentaEmpresas')));
 const SearchFundsHub = lazy(() => import('@/pages/recursos/SearchFundsHub'));
 const InformesMA = lazy(() => import('@/pages/recursos/InformesMA'));
