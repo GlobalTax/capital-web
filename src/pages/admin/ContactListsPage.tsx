@@ -355,10 +355,14 @@ export default function ContactListsPage() {
                            {list.lista_madre_id ? (() => {
                              const madre = lists.find(l => l.id === list.lista_madre_id);
                              return madre ? (
-                               <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                                 <Crown className="h-3 w-3 mr-1" />
-                                 {madre.name}
-                               </Badge>
+                                <Badge 
+                                  variant="outline" 
+                                  className="text-xs bg-purple-50 text-purple-700 border-purple-200 cursor-pointer hover:bg-purple-100 transition-colors"
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/admin/listas-contacto/${madre.id}`); }}
+                                >
+                                  <Crown className="h-3 w-3 mr-1" />
+                                  {madre.name}
+                                </Badge>
                              ) : '—';
                            })() : '—'}
                          </TableCell>
