@@ -1053,6 +1053,20 @@ export default function ContactListDetailPage() {
                             </div>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {company.web ? (
+                              <a
+                                href={company.web.startsWith('http') ? company.web : `https://${company.web}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={e => e.stopPropagation()}
+                                className="hover:text-primary flex items-center gap-1 transition-colors"
+                              >
+                                <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="truncate max-w-[150px]">{company.web.replace(/^https?:\/\/(www\.)?/, '')}</span>
+                              </a>
+                            ) : '—'}
+                          </TableCell>
                           <TableCell className="text-right text-sm tabular-nums">
                             {company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}
                           </TableCell>
