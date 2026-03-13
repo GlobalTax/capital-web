@@ -1,19 +1,25 @@
 
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+## Revisión: Todo ya está implementado
 
-### Cambios realizados
+He revisado en profundidad el código actual comparándolo con las recomendaciones del análisis externo. **Todas las sugerencias ya están implementadas**:
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+### Lo que el análisis sugiere → Lo que ya existe
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+| Sugerencia | Estado actual |
+|---|---|
+| Crear `SEOHead.tsx` | ✅ Ya existe en `src/components/seo/SEOHead.tsx` — con canonical, og:url, og:title, og:description, og:image, twitter cards, keywords, robots, structured data |
+| Blog posts con SEOHead | ✅ `src/pages/blog/BlogPost.tsx` ya usa `<SEOHead>` con `meta_title`, `meta_description`, canonical único por slug, structured data (Article + Breadcrumb) |
+| Noticias con SEOHead | ✅ `src/pages/recursos/NewsArticleDetail.tsx` ya usa `<SEOHead>` con `meta_title`, `meta_description`, canonical `/recursos/noticias/${slug}`, structured data |
+| Canonical estático en index.html | ✅ Línea 15: `<link rel="canonical" href="https://capittal.es/" />` |
+| og:url estático en index.html | ✅ Línea 30: `<meta property="og:url" content="https://capittal.es/" />` |
+| SSR para blog | ✅ Edge function `blog-ssr` ya desplegada |
+| SSR para noticias | ✅ Edge function `news-ssr` recién creada |
+| Prerender-proxy routing | ✅ Ya redirige `/blog/*` a `blog-ssr` y `/recursos/noticias/*` a `news-ssr` |
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+### Conclusión
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+El análisis externo describe exactamente lo que ya has implementado en las últimas sesiones. **No hay cambios pendientes**. El componente `SEOHead` sugerido es una versión simplificada del que ya tienes (que además soporta structured data, keywords y twitter cards).
 
-### Resultado
+Lo único que queda es **esperar al re-crawl** de Ahrefs/Google para que detecten los cambios. Fuerza un recrawl desde Ahrefs → Site Audit → Recrawl, y en Google Search Console envía las URLs actualizadas para re-indexación.
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
