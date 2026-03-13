@@ -83,6 +83,16 @@ export default function ContactListsPage() {
     },
   });
 
+  // KPI stats
+  const kpiStats = useMemo(() => {
+    const totalEmpresas = lists.reduce((acc, l) => acc + (l.contact_count || 0), 0);
+    const totalListas = lists.length;
+    const activas = lists.filter(l => l.estado === 'activa').length;
+    const avgEmpresas = totalListas ? Math.round(totalEmpresas / totalListas) : 0;
+    const conCampana = lists.filter(l => l.last_campaign_name).length;
+    return { totalEmpresas, totalListas, activas, avgEmpresas, conCampana };
+  }, [lists]);
+
   // Tab counts
   const tabCounts = useMemo(() => ({
     madre: lists.filter(l => l.has_children).length,
