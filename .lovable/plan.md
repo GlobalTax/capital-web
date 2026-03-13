@@ -1,33 +1,21 @@
 
 
-## Fix: PDF upload in Document campaigns
+## Plan: Panel resumen de KPIs en Listas de Contacto
 
-### Root Cause
+### Métricas a mostrar
+Fila de 5 cards compactas encima de los tabs con datos calculados de las listas existentes:
 
-`DocumentStep.tsx` line 53-59 calls the `upload_blob` action without the required `bucket` field. The edge function validates `bucket` and `base64` are present (line 113) and returns 400 when `bucket` is missing.
+1. **Total Empresas** — Suma de `contact_count` de todas las listas
+2. **Total Listas** — Número total de listas
+3. **Listas Activas** — Listas con `estado === 'activa'`
+4. **Media Empresas/Lista** — Total empresas / total listas
+5. **Con Campaña** — Listas que tienen `last_campaign_name` asignada
 
-### Fix
+Las métricas se recalculan con `useMemo` desde el array `lists` ya disponible (sin queries adicionales).
 
-Add `bucket: 'campaign-presentations'` to the request body in `DocumentStep.tsx` line 54.
+### Diseño
+Cards compactas tipo `EmpresasStatsCards` con icono, valor grande y subtítulo. Grid `grid-cols-2 md:grid-cols-5`.
 
-```typescript
-// Before
-body: {
-  action: 'upload_blob',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
-
-// After
-body: {
-  action: 'upload_blob',
-  bucket: 'campaign-presentations',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
-```
-
-One line change, zero risk to existing functionality.
+### Cambio
+- **`src/pages/admin/ContactListsPage.tsx`**: Añadir bloque de KPIs entre el header y los tabs, usando `Card`/`CardContent` + iconos de lucide.
 
