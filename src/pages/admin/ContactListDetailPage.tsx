@@ -352,6 +352,7 @@ export default function ContactListDetailPage() {
   const [importData, setImportData] = useState<any[]>([]);
   const [importMapping, setImportMapping] = useState<Record<string, string>>({});
   const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
+  const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
   const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
     imported: number; linked: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
