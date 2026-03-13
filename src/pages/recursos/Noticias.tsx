@@ -151,9 +151,9 @@ const Noticias: React.FC = () => {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {newsData.articles.map((article) => (
+                    <Link key={article.id} to={`/recursos/noticias/${article.slug}`} className="block">
                     <Card 
-                      key={article.id} 
-                      className="group hover:shadow-lg transition-all duration-300"
+                      className="group hover:shadow-lg transition-all duration-300 h-full"
                     >
                       <CardContent className="p-6">
                         {/* Category */}
