@@ -591,6 +591,7 @@ export default function ContactListDetailPage() {
     const rowsToInsert = [
       ...validationResult.nuevas.map(r => r.data),
       ...validationResult.vinculadas.map(r => r.data),
+      ...validationResult.enOtraLista.map(r => r.data),
     ] as any[];
 
     setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
