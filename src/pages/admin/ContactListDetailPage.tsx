@@ -352,6 +352,7 @@ export default function ContactListDetailPage() {
   const [importData, setImportData] = useState<any[]>([]);
   const [importMapping, setImportMapping] = useState<Record<string, string>>({});
   const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
+  const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
   const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
     imported: number; linked: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
@@ -488,12 +489,18 @@ export default function ContactListDetailPage() {
       ...validationResult.vinculadas.map(r => r.data),
     ] as any[];
 
+    setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
+
     if (rowsToInsert.length > 0) {
-      await addCompanies.mutateAsync(rowsToInsert as any);
+      await addCompanies.mutateAsync({
+        rows: rowsToInsert as any,
+        onProgress: (done, total) => setImportProgress({ done, total }),
+      });
       await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
     }
 
+    setImportProgress(null);
     setImportResultData({
       imported: validationResult.nuevas.length,
       linked: validationResult.vinculadas.length,
@@ -1353,13 +1360,14 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Import Preview Modal */}
-      {validationResult && importStep === 'preview' && (
+      {validationResult && (importStep === 'preview' || importStep === 'importing') && (
         <ImportPreviewModal
           open
           onClose={handleCloseImport}
           onConfirm={handleConfirmImport}
           result={validationResult}
-          isImporting={importStep === 'preview' && addCompanies.isPending}
+          isImporting={importStep === 'importing' || addCompanies.isPending}
+          importProgress={importProgress}
         />
       )}
 
@@ -1376,7 +1384,7 @@ export default function ContactListDetailPage() {
         />
       )}
       <PoolFilterModal listId={listId!} open={isPoolModalOpen} onOpenChange={setIsPoolModalOpen} onAdd={async (rows) => {
-        await addCompanies.mutateAsync(rows);
+        await addCompanies.mutateAsync({ rows });
         setIsPoolModalOpen(false);
       }} isAdding={addCompanies.isPending} />
 
