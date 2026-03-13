@@ -609,6 +609,7 @@ export default function ContactListDetailPage() {
     setImportResultData({
       imported: validationResult.nuevas.length,
       linked: validationResult.vinculadas.length,
+      linkedRelated: validationResult.enOtraLista.length,
       skippedDuplicates: validationResult.duplicadas.length,
       skippedErrors: validationResult.errores.length,
       errors: validationResult.errores,
