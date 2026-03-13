@@ -288,6 +288,9 @@ verify_jwt = false
 [functions.blog-ssr]
 verify_jwt = false
 
+[functions.news-ssr]
+verify_jwt = false
+
 [functions.enrich-campaign-company]
 verify_jwt = false
 

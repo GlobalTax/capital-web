@@ -27,6 +27,7 @@
     <link rel="preconnect" href="https://fwhqtzkkvnjkazhaficj.supabase.co" crossorigin>
 
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://capittal.es/" />
     <meta property="og:image" content="https://capittal.es/og-image.jpg">
     <meta property="og:site_name" content="Capittal Transacciones" />
     <meta property="og:locale" content="es_ES" />
@@ -179,6 +180,9 @@
         var canon='https://capittal.es'+p;
         var cl=document.querySelector('link[rel="canonical"]');
         if(cl) cl.setAttribute('href',canon);
+        // OG URL (update existing static tag)
+        var ogurl=document.querySelector('meta[property="og:url"]');
+        if(ogurl) ogurl.setAttribute('content',canon);
       })();
     </script>
     <script type="application/ld+json">
