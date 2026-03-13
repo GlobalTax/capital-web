@@ -304,8 +304,9 @@ export default function ContactListsPage() {
                    <TableHead>Sector</TableHead>
                    <TableHead>Estado</TableHead>
                    <TableHead className="text-right">Nº Empresas</TableHead>
-                   <TableHead>Campaña vinculada</TableHead>
-                   <TableHead>Fecha creación</TableHead>
+                    <TableHead>Campaña vinculada</TableHead>
+                    <TableHead>Notas</TableHead>
+                    <TableHead>Fecha creación</TableHead>
                    <TableHead className="w-12" />
                  </TableRow>
               </TableHeader>
@@ -348,6 +349,14 @@ export default function ContactListsPage() {
                       </TableCell>
                       <TableCell className="text-right tabular-nums">{list.contact_count}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{list.last_campaign_name || '—'}</TableCell>
+                      <TableCell>
+                        <EditableCell
+                          value={list.notes}
+                          onSave={async (val) => handleInlineSave(list.id, 'notes', val)}
+                          placeholder="Añadir nota..."
+                          emptyText="—"
+                        />
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(list.created_at).toLocaleDateString('es-ES')}
                       </TableCell>

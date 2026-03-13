@@ -16941,6 +16941,7 @@ export type Database = {
           list_type: string
           lista_madre_id: string | null
           name: string
+          notes: string | null
           origen: string
           sector: string | null
           tipo: string
@@ -16962,6 +16963,7 @@ export type Database = {
           list_type?: string
           lista_madre_id?: string | null
           name: string
+          notes?: string | null
           origen?: string
           sector?: string | null
           tipo?: string
@@ -16983,6 +16985,7 @@ export type Database = {
           list_type?: string
           lista_madre_id?: string | null
           name?: string
+          notes?: string | null
           origen?: string
           sector?: string | null
           tipo?: string
