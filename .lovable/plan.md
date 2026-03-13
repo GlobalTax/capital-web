@@ -1,33 +1,19 @@
 
 
-## Fix: PDF upload in Document campaigns
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-### Root Cause
+### Cambios realizados
 
-`DocumentStep.tsx` line 53-59 calls the `upload_blob` action without the required `bucket` field. The edge function validates `bucket` and `base64` are present (line 113) and returns 400 when `bucket` is missing.
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-### Fix
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-Add `bucket: 'campaign-presentations'` to the request body in `DocumentStep.tsx` line 54.
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-```typescript
-// Before
-body: {
-  action: 'upload_blob',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-// After
-body: {
-  action: 'upload_blob',
-  bucket: 'campaign-presentations',
-  path: storagePath,
-  base64,
-  contentType: 'application/pdf',
-}
-```
+### Resultado
 
-One line change, zero risk to existing functionality.
-
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
