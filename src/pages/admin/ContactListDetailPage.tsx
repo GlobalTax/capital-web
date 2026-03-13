@@ -688,6 +688,45 @@ export default function ContactListDetailPage() {
     }
   };
 
+  // ===== BULK AI GENERATE =====
+  const handleBulkAiGenerate = async () => {
+    const candidates = companies.filter(
+      (c: any) => c.web && c.web.trim() && (!c.descripcion_actividad || !c.descripcion_actividad.trim())
+    );
+    if (candidates.length === 0) {
+      toast.info('Todas las empresas ya tienen descripción o no tienen web registrada.');
+      return;
+    }
+    if (!confirm(`Se generará la descripción para ${candidates.length} empresa${candidates.length > 1 ? 's' : ''}. ¿Continuar?`)) return;
+
+    setBulkAiRunning(true);
+    setBulkAiProgress({ done: 0, total: candidates.length, errors: 0 });
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const company of candidates) {
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-company-description', {
+          body: { url: (company as any).web.trim() },
+        });
+        if (error || data?.error || !data?.description) throw new Error(data?.error || 'Sin descripción');
+        const { error: updateErr } = await supabase
+          .from('outbound_list_companies' as any)
+          .update({ descripcion_actividad: data.description } as any)
+          .eq('id', company.id);
+        if (updateErr) throw updateErr;
+        successCount++;
+      } catch {
+        errorCount++;
+      }
+      setBulkAiProgress({ done: successCount + errorCount, total: candidates.length, errors: errorCount });
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+    setBulkAiRunning(false);
+    toast.success(`Generadas ${successCount} descripciones.${errorCount > 0 ? ` ${errorCount} errores.` : ''}`);
+  };
+
   const handleDeleteList = async () => {
     if (!confirm('¿Eliminar esta lista y todas sus empresas? Esta acción no se puede deshacer.')) return;
     await supabase.from('outbound_lists' as any).delete().eq('id', listId!);
