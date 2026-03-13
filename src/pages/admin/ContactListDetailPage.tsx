@@ -581,7 +581,7 @@ export default function ContactListDetailPage() {
     if (!listId || importData.length === 0) return;
     const rows = getMappedRows();
     setImportStep('preview');
-    await validate(rows, listId);
+    await validate(rows, listId, list?.lista_madre_id || null);
   };
 
   // Step 3: Confirm import (only nuevas + vinculadas)
