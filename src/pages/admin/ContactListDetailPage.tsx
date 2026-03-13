@@ -1360,13 +1360,13 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Import Preview Modal */}
-      {validationResult && importStep === 'preview' && (
+      {validationResult && (importStep === 'preview' || importStep === 'importing') && (
         <ImportPreviewModal
           open
           onClose={handleCloseImport}
           onConfirm={handleConfirmImport}
           result={validationResult}
-          isImporting={importStep === 'importing' || (importStep === 'preview' && addCompanies.isPending)}
+          isImporting={importStep === 'importing' || addCompanies.isPending}
           importProgress={importProgress}
         />
       )}
