@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 type ListTab = 'madre' | 'compradores' | 'outbound';
 
 const TIPO_BADGES: Record<ContactListTipo, { label: string; className: string }> = {
+  madre: { label: 'Listado Madre', className: 'bg-purple-50 text-purple-700 border-purple-200' },
   compradores: { label: 'Compradores', className: 'bg-blue-50 text-blue-700 border-blue-200' },
   outbound: { label: 'Outbound', className: 'bg-amber-50 text-amber-700 border-amber-200' },
   otros: { label: 'Otros', className: 'bg-slate-50 text-slate-600 border-slate-200' },
