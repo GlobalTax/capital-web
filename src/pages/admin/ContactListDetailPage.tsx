@@ -223,6 +223,10 @@ export default function ContactListDetailPage() {
   // AI generation state - stores the company ID currently being generated
   const [aiGenLoading, setAiGenLoading] = useState<string | null>(null);
 
+  // Bulk AI generation state
+  const [bulkAiRunning, setBulkAiRunning] = useState(false);
+  const [bulkAiProgress, setBulkAiProgress] = useState({ done: 0, total: 0, errors: 0 });
+
   const toggleSort = (field: typeof sortField) => {
     if (sortField === field) {
       if (sortDir === 'desc') setSortDir('asc');
