@@ -1383,7 +1383,7 @@ export default function ContactListDetailPage() {
         />
       )}
       <PoolFilterModal listId={listId!} open={isPoolModalOpen} onOpenChange={setIsPoolModalOpen} onAdd={async (rows) => {
-        await addCompanies.mutateAsync(rows);
+        await addCompanies.mutateAsync({ rows });
         setIsPoolModalOpen(false);
       }} isAdding={addCompanies.isPending} />
 
