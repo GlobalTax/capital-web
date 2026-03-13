@@ -1068,6 +1068,7 @@ export default function ContactListDetailPage() {
                               </a>
                             ) : '—'}
                           </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{company.provincia || '—'}</TableCell>
                           <TableCell className="text-right text-sm tabular-nums">
                             {company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}
                           </TableCell>
