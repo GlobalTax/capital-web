@@ -13442,6 +13442,27 @@ export type Database = {
         }
         Relationships: []
       }
+      linkedin_format_options: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          value?: string
+        }
+        Relationships: []
+      }
       login_attempts: {
         Row: {
           attempted_at: string
