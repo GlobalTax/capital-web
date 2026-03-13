@@ -305,7 +305,8 @@ export default function ContactListsPage() {
                    <TableHead>Estado</TableHead>
                    <TableHead className="text-right">Nº Empresas</TableHead>
                     <TableHead>Campaña vinculada</TableHead>
-                    <TableHead>Notas</TableHead>
+                     {activeTab === 'compradores' && <TableHead>Lista Madre</TableHead>}
+                     <TableHead>Notas</TableHead>
                     <TableHead>Fecha creación</TableHead>
                    <TableHead className="w-12" />
                  </TableRow>
