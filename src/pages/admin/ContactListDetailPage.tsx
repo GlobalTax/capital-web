@@ -724,6 +724,13 @@ export default function ContactListDetailPage() {
     });
   }, [queryClient, listId]);
 
+  const handleFieldSaved = useCallback((companyId: string, field: string, value: string) => {
+    queryClient.setQueryData(['contact-list-companies', listId], (old: any) => {
+      if (!Array.isArray(old)) return old;
+      return old.map((c: any) => c.id === companyId ? { ...c, [field]: value || null } : c);
+    });
+  }, [queryClient, listId]);
+
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
     const webUrl = (company as any).web;
