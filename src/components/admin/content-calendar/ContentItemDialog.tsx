@@ -7,11 +7,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Loader2, Copy, RefreshCw } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sparkles, Loader2, Copy, RefreshCw, X, Plus, ChevronsUpDown, Check } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { supabase } from '@/integrations/supabase/client';
 import { type ContentCalendarItem } from '@/hooks/useContentCalendar';
+import { useLinkedInFormats } from '@/hooks/useLinkedInFormats';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 
 interface ContentItemDialogProps {
