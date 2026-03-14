@@ -117,7 +117,7 @@ const Blog = () => {
                 {/* Artículo Destacado */}
                 {featuredArticle && (
                   <div className="mb-20">
-                    <Link to={`/blog/${featuredArticle.slug}`}>
+                    <Link to={`/recursos/blog/${featuredArticle.slug}`}>
                       <div className="bg-white border-0.5 border-border rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1">
                         <div className="flex items-center gap-2 mb-4">
                           <Tag className="h-4 w-4 text-gray-500" />
