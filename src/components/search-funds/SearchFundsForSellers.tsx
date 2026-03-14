@@ -50,7 +50,6 @@ const myths = [
 ];
 
 export const SearchFundsForSellers = () => {
-  const navigate = useNavigate();
 
   return (
     <section className="py-20 bg-background">
