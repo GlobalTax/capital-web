@@ -1,19 +1,36 @@
 
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+## Plan: Insertar artículo "¿Qué es el EBITDA?" en blog_posts
 
-### Cambios realizados
+He revisado el contenido y la estructura de la tabla `blog_posts`. El slug no existe aún, así que se puede insertar directamente.
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+### Revisión del contenido
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+El artículo es sólido. Observaciones menores:
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+- **meta_title** (92 caracteres) excede los 60 char recomendados para Google. Propongo recortar a: `¿Qué es el EBITDA y cómo se calcula? | Capittal` (49 char).
+- **meta_description** (164 caracteres) excede ligeramente los 155 char. Propongo recortar a: `El EBITDA mide la rentabilidad operativa antes de intereses, impuestos y amortizaciones. Fórmula, ejemplos prácticos y múltiplos por sector en España.` (152 char).
+- **category**: La tabla usa valores como "Valoración" (con tilde y mayúscula). Confirmo que `Valoración` es categoría válida del array `VALID_CATEGORIES`.
+- **reading_time**: ~2.200 palabras ÷ 200 = **11 minutos**.
+- **tags**: Se mapean como array: `{EBITDA, valoración, "M&A", múltiplos, contabilidad}`.
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+### Acción
 
-### Resultado
+1. **Insertar el post** en `blog_posts` con el contenido formateado en HTML semántico (sin `<h1>`, usando `<h2>`, `<h3>`, `<p>`, `<table>`, `<ul>`, `<strong>`, `<blockquote>`).
+2. Estado: `is_published = true`, `published_at = now()`.
+3. `is_featured = false` (salvo que indiques lo contrario).
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+### Detalle de campos
+
+| Campo | Valor |
+|---|---|
+| title | ¿Qué es el EBITDA y cómo se calcula? Guía completa con ejemplos |
+| slug | que-es-el-ebitda-como-se-calcula-guia-completa |
+| excerpt | El EBITDA mide la rentabilidad operativa de una empresa antes de intereses, impuestos y amortizaciones. Guía con fórmula, ejemplos y múltiplos por sector. |
+| category | Valoración |
+| tags | EBITDA, valoración, M&A, múltiplos, contabilidad |
+| reading_time | 11 |
+| meta_title | ¿Qué es el EBITDA y cómo se calcula? \| Capittal |
+| meta_description | El EBITDA mide la rentabilidad operativa antes de intereses, impuestos y amortizaciones. Fórmula, ejemplos prácticos y múltiplos por sector en España. |
+| content | HTML semántico completo del artículo (tablas, listas, blockquotes para definiciones) |
+
