@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import Step4Results from '@/components/valuation/Step4Results';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
