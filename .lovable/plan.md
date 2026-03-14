@@ -1,35 +1,19 @@
 
 
-## Plan: Acortar meta descriptions a ≤155 caracteres
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-### Alcance
+### Cambios realizados
 
-1. **Homepage** (`/`): Cambiar la `d` a exactamente: `Asesoramiento M&A en Barcelona: venta de empresas, valoraciones y due diligence. +70 profesionales especializados en mid-market español.`
-   - También actualizar la misma descripción en las 3 ubicaciones estáticas del `<head>` (líneas 8, 40, 41).
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-2. **Todas las demás rutas del objeto `R`**: Revisar cada una de las ~120 descripciones y recortar las que excedan 155 caracteres, manteniendo el mensaje clave y las keywords principales.
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-### Rutas con descriptions que exceden 155 caracteres (ejemplos detectados)
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-- `/venta-empresas` (187 chars) → recortar
-- `/compra-empresas` (186 chars) → recortar
-- `/servicios/valoraciones` (189 chars) → recortar
-- `/servicios/due-diligence` (183 chars) → recortar
-- `/servicios/planificacion-fiscal` (172 chars) → recortar
-- `/sectores/seguridad` (213 chars) → recortar
-- `/sectores/tecnologia` (171 chars) → recortar
-- `/recursos/blog` (168 chars) → recortar
-- `/lp/calculadora` (155+ chars) → ajustar
-- Y prácticamente todas las rutas en catalán, inglés y castellano con textos largos
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-### Criterio de recorte
+### Resultado
 
-- Mantener keywords principales (sector, servicio, "Capittal", "M&A", "España/Barcelona")
-- Priorizar call-to-action o propuesta de valor
-- Cortar frases secundarias o redundantes
-- Máximo estricto: 155 caracteres
-
-### Archivos a modificar
-
-- `index.html` — líneas 8, 40, 41 (meta tags estáticos) y líneas 46-162 (objeto `R` del script SEO)
-
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
