@@ -1,19 +1,21 @@
 
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+## Problema
 
-### Cambios realizados
+El Cloudflare Worker detecta `ahrefsbot` como bot y le sirve HTML pre-renderizado desde Supabase Edge Functions. Ese HTML no contiene el `<script>` de Ahrefs Analytics que está en `index.html`, por lo que la verificación falla.
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+## Solución
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+Eliminar `'ahrefsbot'` de la lista `BOT_UA_PATTERNS` en `cloudflare/worker-bot-prerender.js` (línea 19). Así el verificador de Ahrefs recibirá el SPA normal con el script estático en el `<head>`.
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+También eliminar `'semrushbot'` si se planea usar Semrush en el futuro (opcional).
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+### Archivo a modificar
 
-### Resultado
+- **`cloudflare/worker-bot-prerender.js`** — Eliminar `'ahrefsbot'` de la línea 19 del array `BOT_UA_PATTERNS`.
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+### Después de implementar
+
+1. Desplegar el Worker actualizado en Cloudflare Dashboard.
+2. Pulsar **Recheck installation** en Ahrefs.
+
