@@ -81,4 +81,4 @@ Sitemap: https://capittal.es/sitemap.xml
 
 # LLMs.txt - AI-friendly site description
 # https://llmstxt.org/
-Sitemap: https://capittal.es/llms.txt
+# LLMs.txt: https://capittal.es/llms.txt
