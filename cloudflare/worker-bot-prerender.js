@@ -15,8 +15,8 @@
 const BOT_UA_PATTERNS = [
   'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
   'yandexbot', 'facebookexternalhit', 'facebookcatalog', 'twitterbot',
-  'linkedinbot', 'whatsapp', 'telegrambot', 'applebot', 'semrushbot',
-  'ahrefsbot', 'mj12bot', 'dotbot', 'petalbot', 'sogou', 'ia_archiver',
+  'linkedinbot', 'whatsapp', 'telegrambot', 'applebot',
+  'mj12bot', 'dotbot', 'petalbot', 'sogou', 'ia_archiver',
   'archive.org_bot', 'screaming frog', 'lighthouse', 'chrome-lighthouse',
   'pagespeed', 'pingbot', 'rogerbot',
 ];
