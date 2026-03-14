@@ -1,19 +1,24 @@
 
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+## Diagnóstico: el sitemap correcto no se ha publicado todavía
 
-### Cambios realizados
+### Situación actual
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+Los 3 ficheros fuente ya están correctos en el repositorio:
+- `public/sitemap.xml` — 25 URLs limpias (solo las aprobadas)
+- `supabase/functions/generate-sitemap/index.ts` — mismas 25 + blog dinámico
+- `scripts/generate-sitemap.mjs` — alineado con la lista aprobada
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+**El problema es que la app no se ha republicado.** Tanto `capittal.es/sitemap.xml` como `webcapittal.lovable.app/sitemap.xml` siguen sirviendo el build anterior con las 400+ URLs antiguas.
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+### Acción necesaria
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+No hay cambios de código pendientes. Solo necesitas **publicar la app** (botón "Publish" en Lovable) para que el nuevo `public/sitemap.xml` se despliegue.
 
-### Resultado
+Una vez publicada, `capittal.es/sitemap.xml` mostrará solo las 25 rutas estáticas aprobadas. Los posts de blog dinámicos se añadirán cuando ejecutes `node scripts/generate-sitemap.mjs` en el pipeline de build, o puedes usar la Edge Function (`/functions/v1/generate-sitemap`) que ya devuelve el sitemap completo con blog.
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+### Verificación post-deploy
+
+1. Acceder a `https://capittal.es/sitemap.xml` y confirmar que solo tiene las URLs aprobadas
+2. Reenviar el sitemap en Google Search Console
+
