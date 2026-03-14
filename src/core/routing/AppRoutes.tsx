@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 
 // Trailing slash normalizer - strips trailing slashes to avoid duplicate URLs
