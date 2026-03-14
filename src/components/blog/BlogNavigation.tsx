@@ -56,7 +56,7 @@ const BlogNavigation = ({ previousPost, nextPost }: BlogNavigationProps) => {
           {/* Post siguiente */}
           <div className="flex flex-col">
             {nextPost ? (
-              <Link to={`/blog/${nextPost.slug}`} className="group">
+              <Link to={`/recursos/blog/${nextPost.slug}`} className="group">
                 <div className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors text-right">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-muted-foreground mb-1">Siguiente artículo</p>
