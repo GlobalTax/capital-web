@@ -116,6 +116,7 @@ const NewsArticleDetail: React.FC = () => {
         canonical={`https://capittal.es/recursos/noticias/${article.slug}`}
         ogImage={article.featured_image_url || 'https://capittal.es/og-default.jpg'}
         keywords={article.tags?.join(', ')}
+        noindex={true}
         structuredData={[
           getArticleSchema(
             article.title,

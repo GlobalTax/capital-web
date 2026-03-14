@@ -94,6 +94,7 @@ const Noticias: React.FC = () => {
         description="Últimas noticias sobre fusiones, adquisiciones, private equity y venture capital en España. Mantente informado sobre el sector M&A."
         canonical="https://capittal.es/recursos/noticias"
         keywords="noticias M&A, fusiones adquisiciones España, private equity noticias, venture capital España"
+        noindex={true}
         structuredData={getWebPageSchema('Noticias M&A España', 'Últimas noticias sobre fusiones, adquisiciones, private equity y venture capital en España.', 'https://capittal.es/recursos/noticias')}
       />
 
