@@ -782,7 +782,7 @@ const PAGES_DATA: Record<string, PageData> = {
 
   // ─── OTRAS PÁGINAS ───
   "/contacto": {
-    title: "Contacto | Capittal Transacciones - Asesores M&A Barcelona",
+    title: "Contacto | Capittal Transacciones",
     description:
       "Contacta con Capittal para asesoramiento en M&A, valoraciones y due diligence. Oficinas en Ausiàs March 36, Barcelona.",
     keywords:
