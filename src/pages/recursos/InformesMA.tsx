@@ -140,7 +140,7 @@ const InformesMA: React.FC = () => {
                       return (
                         <Link
                           key={informe.id}
-                          to={`/blog/${informe.slug}`}
+                          to={`/recursos/blog/${informe.slug}`}
                           className={`block group rounded-xl border transition-all hover:shadow-lg ${
                             idx === 0
                               ? 'border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/30'

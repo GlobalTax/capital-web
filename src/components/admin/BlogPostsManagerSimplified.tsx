@@ -536,7 +536,7 @@ const BlogPostsManagerSimplified = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(`/blog/${post.slug}`, '_blank')}
+                      onClick={() => window.open(`/recursos/blog/${post.slug}`, '_blank')}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>

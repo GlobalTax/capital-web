@@ -181,7 +181,7 @@ const BlogManagerList = ({ posts, onDelete }: BlogManagerListProps) => {
                       title={post.is_published ? "Ver post publicado" : "Vista previa del borrador"}
                       onClick={() => {
                         if (post.is_published) {
-                          window.open(`/blog/${post.slug}`, '_blank');
+                          window.open(`/recursos/blog/${post.slug}`, '_blank');
                         } else {
                           // Navigate within same tab to preserve auth session
                           navigate(`/admin/blog/preview/${post.id}`);
