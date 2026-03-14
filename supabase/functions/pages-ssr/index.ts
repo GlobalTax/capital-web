@@ -84,7 +84,7 @@ interface PageData {
 // ─── Static pages map ───
 const PAGES_DATA: Record<string, PageData> = {
   "/": {
-    title: "Capittal | Asesores M&A Especializados en el Sector Seguridad - Barcelona",
+    title: "Capittal | Asesores M&A Especializados en el Sector Seguridad",
     description:
       "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales. Barcelona.",
     keywords:
