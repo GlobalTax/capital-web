@@ -84,9 +84,9 @@ interface PageData {
 // ─── Static pages map ───
 const PAGES_DATA: Record<string, PageData> = {
   "/": {
-    title: "Capittal | Asesores M&A Especializados en el Sector Seguridad - Barcelona",
+    title: "Capittal | Asesores M&A Especializados en el Sector Seguridad",
     description:
-      "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales. Barcelona.",
+      "Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad con más de 70 profesionales.",
     keywords:
       "M&A España, fusiones y adquisiciones, valoración de empresas, due diligence, asesoría financiera, compraventa empresas",
     canonical: "https://capittal.es/",
@@ -782,7 +782,7 @@ const PAGES_DATA: Record<string, PageData> = {
 
   // ─── OTRAS PÁGINAS ───
   "/contacto": {
-    title: "Contacto | Capittal Transacciones - Asesores M&A Barcelona",
+    title: "Contacto | Capittal Transacciones",
     description:
       "Contacta con Capittal para asesoramiento en M&A, valoraciones y due diligence. Oficinas en Ausiàs March 36, Barcelona.",
     keywords:

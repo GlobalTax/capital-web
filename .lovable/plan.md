@@ -1,16 +1,19 @@
 
 
-## Plan: Remove "Barcelona" from titles in pages-ssr
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-The file is confirmed to have the two lines that need changing. Since previous deploy attempts failed due to file size, we'll deploy using the `supabase--deploy_edge_functions` tool.
+### Cambios realizados
 
-### Changes
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-| File | Line | Current | New |
-|------|------|---------|-----|
-| `supabase/functions/pages-ssr/index.ts` | 87 | `"Capittal \| Asesores M&A Especializados en el Sector Seguridad - Barcelona"` | `"Capittal \| Asesores M&A Especializados en el Sector Seguridad"` |
-| `supabase/functions/pages-ssr/index.ts` | 89 | description ending in `"Barcelona."` | Remove `" Barcelona."` → end at `"profesionales."` |
-| `supabase/functions/pages-ssr/index.ts` | 785 | `"Contacto \| Capittal Transacciones - Asesores M&A Barcelona"` | `"Contacto \| Capittal Transacciones"` |
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-Three line edits in one file, then deploy via the edge function deploy tool.
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
