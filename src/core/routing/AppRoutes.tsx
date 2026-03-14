@@ -135,10 +135,12 @@ const Cookies = lazy(() => import('@/pages/Cookies').catch(() => import('@/pages
 const BlogPost = lazy(() => import('@/pages/blog/BlogPost').catch(() => import('@/pages/VentaEmpresas')));
 
 // Helper: redirect from old blog path to new hierarchy
-const BlogSlugRedirect = () => {
-  const { slug } = require('react-router-dom').useParams();
-  return <Navigate to={`/recursos/blog/${slug}`} replace />;
-};
+const BlogSlugRedirect = lazy(() => Promise.resolve({
+  default: () => {
+    const { slug } = useParams();
+    return <Navigate to={`/recursos/blog/${slug}`} replace />;
+  }
+}));
 
 export const AppRoutes = () => {
   return (
