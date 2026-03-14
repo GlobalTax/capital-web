@@ -29,7 +29,7 @@ const BlogNavigation = ({ previousPost, nextPost }: BlogNavigationProps) => {
           {/* Post anterior */}
           <div className="flex flex-col">
             {previousPost ? (
-              <Link to={`/blog/${previousPost.slug}`} className="group">
+              <Link to={`/recursos/blog/${previousPost.slug}`} className="group">
                 <div className="flex items-start gap-3 p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors">
                   <ArrowLeft className="h-5 w-5 text-muted-foreground mt-1 group-hover:text-primary transition-colors" />
                   <div className="flex-1 min-w-0">
