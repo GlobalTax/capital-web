@@ -41,16 +41,18 @@ const DeLooperACapittalContent = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <SimpleButton
-                  text="Solicitar Valoración"
-                  onClick={() => navigate('/lp/calculadora')}
-                  variant="primary"
-                />
-                <SimpleButton
-                  text="Hablar con Experto"
-                  onClick={() => navigate('/contacto')}
-                  variant="secondary"
-                />
+                <Link to="/lp/calculadora">
+                  <SimpleButton
+                    text="Solicitar Valoración"
+                    variant="primary"
+                  />
+                </Link>
+                <Link to="/contacto">
+                  <SimpleButton
+                    text="Hablar con Experto"
+                    variant="secondary"
+                  />
+                </Link>
               </div>
             </div>
 
