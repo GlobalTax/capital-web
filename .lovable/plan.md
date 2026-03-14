@@ -1,23 +1,19 @@
 
 
-## Problema: Ahrefs no detecta el script de analytics
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-Ahrefs muestra "Script isn't found" porque el script se carga dinámicamente vía JavaScript en `TrackingInitializer.tsx`. El verificador de Ahrefs no ejecuta JavaScript del lado del cliente, así que nunca lo encuentra.
+### Cambios realizados
 
-## Solución
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-Añadir el snippet de Ahrefs directamente como `<script>` estático en el `<head>` de `index.html`, tal como indica la guía de instalación de Ahrefs. Mantener la protección contra duplicados en `TrackingInitializer.tsx` (que ya comprueba `getElementById`).
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-### Cambios
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-**`index.html`** — Añadir después de la línea del favicon (~línea 14):
-```html
-<script src="https://analytics.ahrefs.com/analytics.js" data-key="VouNMjijNalPNS/dBxC7Fw" async></script>
-```
-
-**`src/components/TrackingInitializer.tsx`** — Sin cambios necesarios (el guard `getElementById('ahrefs-analytics')` evitará duplicados, pero como el tag estático no tiene ese `id`, conviene añadirlo o simplemente eliminar el bloque dinámico de Ahrefs de TrackingInitializer para evitar carga doble). Se eliminará el bloque de Ahrefs (líneas 327-336).
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
 ### Resultado
 
-El script estará visible en el HTML estático para el verificador de Ahrefs. Tras publicar, pulsar "Recheck installation" en Ahrefs para confirmar.
-
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos

@@ -325,15 +325,7 @@ export const TrackingInitializer = () => {
       }
 
       // ========== AHREFS WEB ANALYTICS ==========
-      if (!document.getElementById('ahrefs-analytics')) {
-        const ahrefsScript = document.createElement('script');
-        ahrefsScript.id = 'ahrefs-analytics';
-        ahrefsScript.src = 'https://analytics.ahrefs.com/analytics.js';
-        ahrefsScript.setAttribute('data-key', 'VouNMjijNalPNS/dBxC7Fw');
-        ahrefsScript.async = true;
-        document.head.appendChild(ahrefsScript);
-        console.log('[Tracking] Ahrefs Web Analytics loaded');
-      }
+      // Cargado estáticamente en index.html para que el verificador de Ahrefs lo detecte
     };
 
     // Ejecutar inicialización
