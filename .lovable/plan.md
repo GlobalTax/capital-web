@@ -1,35 +1,19 @@
 
 
-## Analysis: Sitemap "Wrong Format" Issue
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-### Root Cause
+### Cambios realizados
 
-Ahrefs reports `sitemap.xml` at **33 bytes** with "wrong format" warning. The `public/sitemap.xml` in the repo is 153 lines and looks valid, BUT:
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-1. **Route mismatch**: The static `public/sitemap.xml` uses paths like `/servicios/venta-empresas`, `/servicios/compra-empresas` — but the actual site routes (per `siteRoutes.ts` and the live site) are `/venta-empresas`, `/compra-empresas` (no `/servicios/` prefix for the main pages).
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-2. **Stale/mismatched content**: The production sitemap (served via Cloudflare) includes `xhtml:link` hreflang tags and different routes than what's in `public/sitemap.xml`. The Cloudflare Worker is likely serving a different sitemap or the static file is being intercepted/replaced.
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-3. **The llms.txt Sitemap issue** was already fixed (commented out in robots.txt). The remaining issue is the sitemap.xml itself.
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-### Plan
+### Resultado
 
-**Regenerate `public/sitemap.xml`** using the centralized `siteRoutes.ts` registry as the source of truth:
-
-- Include all ~35 public routes from `siteRoutes.ts` with correct paths (`/venta-empresas`, not `/servicios/venta-empresas`)
-- Add blog index route
-- Add `xmlns:xhtml` namespace and hreflang alternates if the production sitemap uses them (it does)
-- Ensure valid XML declaration and structure
-- Remove the duplicate/incorrect routes that don't match actual site URLs (e.g., `/servicios/compra-empresas` should be `/compra-empresas`)
-
-**Also sync `generateSitemap.ts` and `generate-sitemap/index.ts`** route lists with `siteRoutes.ts` to prevent future drift.
-
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| `public/sitemap.xml` | Regenerate with correct routes from siteRoutes registry |
-| `src/utils/seo/generateSitemap.ts` | Sync static routes to match siteRoutes.ts |
-
-This is a 1-file critical fix (sitemap.xml) + 1 sync fix to prevent future mismatch.
-
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
