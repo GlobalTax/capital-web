@@ -98,13 +98,11 @@ const LandingCalculatorMetaThanksInner = () => {
 
         {/* Botón volver arriba */}
         <div className="mb-6">
-          <Button
-            onClick={() => navigate('/lp/calculadora-meta')}
-            variant="ghost"
-            className="flex items-center"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a la calculadora
+          <Button asChild variant="ghost" className="flex items-center">
+            <Link to="/lp/calculadora-meta">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver a la calculadora
+            </Link>
           </Button>
         </div>
 

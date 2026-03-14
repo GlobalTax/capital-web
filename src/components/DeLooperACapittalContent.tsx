@@ -172,12 +172,13 @@ const DeLooperACapittalContent = () => {
             Descubre cómo podemos ayudarte hoy.
           </p>
           <div className="inline-block">
-            <SimpleButton
-              text="Comenzar Valoración Gratuita"
-              onClick={() => navigate('/lp/calculadora')}
-              variant="primary"
-              className="text-lg px-10 py-4 shadow-lg hover:shadow-xl"
-            />
+            <Link to="/lp/calculadora">
+              <SimpleButton
+                text="Comenzar Valoración Gratuita"
+                variant="primary"
+                className="text-lg px-10 py-4 shadow-lg hover:shadow-xl"
+              />
+            </Link>
           </div>
           <div className="mt-6 flex items-center justify-center space-x-8 text-sm text-slate-600">
             <span className="flex items-center">

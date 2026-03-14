@@ -44,12 +44,13 @@ const VentaEmpresasHero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <InteractiveHoverButton 
-                text={t('ventaEmpresas.hero.ctaValuate')}
-                variant="primary" 
-                size="lg"
-                onClick={() => navigate('/lp/calculadora')}
-              />
+              <Link to="/lp/calculadora">
+                <InteractiveHoverButton 
+                  text={t('ventaEmpresas.hero.ctaValuate')}
+                  variant="primary" 
+                  size="lg"
+                />
+              </Link>
               <InteractiveHoverButton 
                 text={t('ventaEmpresas.hero.ctaContact')}
                 variant="secondary" 

@@ -60,12 +60,13 @@ const SearchFundsHero: React.FC = () => {
                 onClick={scrollToContact}
                 size="lg"
               />
-              <InteractiveHoverButton 
-                text="Busco dealflow"
-                onClick={() => navigate('/contacto?origen=search-funds-searcher')}
-                variant="secondary"
-                size="lg"
-              />
+              <Link to="/contacto?origen=search-funds-searcher">
+                <InteractiveHoverButton 
+                  text="Busco dealflow"
+                  variant="secondary"
+                  size="lg"
+                />
+              </Link>
             </div>
 
             {/* Trust indicators */}

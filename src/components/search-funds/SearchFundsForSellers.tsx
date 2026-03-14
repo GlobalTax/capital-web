@@ -100,10 +100,11 @@ export const SearchFundsForSellers = () => {
                 ))}
               </div>
               <div className="mt-8">
-                <InteractiveHoverButton 
-                  text="Valorar mi empresa gratis →"
-                  onClick={() => navigate('/lp/calculadora?origen=search-funds')}
-                />
+                <Link to="/lp/calculadora?origen=search-funds">
+                  <InteractiveHoverButton 
+                    text="Valorar mi empresa gratis →"
+                  />
+                </Link>
               </div>
             </div>
 
