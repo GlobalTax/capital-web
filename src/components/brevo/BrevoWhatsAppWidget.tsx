@@ -24,19 +24,36 @@ const BrevoWhatsAppWidget = () => {
       return;
     }
 
-    // Cargar script de Brevo Conversations
-    (function(d, w, c) {
-      w.BrevoConversationsID = '68af2b16c62a3d2cd5046deb';
-      w[c] = w[c] || function() {
-        (w[c].q = w[c].q || []).push(arguments);
-      };
-      const s = d.createElement('script');
-      s.async = true;
-      s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
-      if (d.head) d.head.appendChild(s);
-    })(document, window, 'BrevoConversations');
+    // Diferir la carga del widget para no bloquear el main thread (mejora FID/TBT)
+    const loadWidget = () => {
+      (function(d, w, c) {
+        w.BrevoConversationsID = '68af2b16c62a3d2cd5046deb';
+        w[c] = w[c] || function() {
+          (w[c].q = w[c].q || []).push(arguments);
+        };
+        const s = d.createElement('script');
+        s.async = true;
+        s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
+        if (d.head) d.head.appendChild(s);
+      })(document, window, 'BrevoConversations');
+    };
 
-    // Cleanup: el widget persiste entre navegaciones, así que no necesitamos limpiarlo
+    let idleHandle: number | undefined;
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+    if ('requestIdleCallback' in window) {
+      idleHandle = (window as any).requestIdleCallback(loadWidget, { timeout: 5000 });
+    } else {
+      timeoutHandle = setTimeout(loadWidget, 3000);
+    }
+
+    return () => {
+      if (idleHandle !== undefined) {
+        (window as any).cancelIdleCallback(idleHandle);
+      }
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
+      }
+    };
   }, [location.pathname]);
 
   return null;
