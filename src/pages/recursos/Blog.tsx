@@ -117,7 +117,7 @@ const Blog = () => {
                 {/* Artículo Destacado */}
                 {featuredArticle && (
                   <div className="mb-20">
-                    <Link to={`/blog/${featuredArticle.slug}`}>
+                    <Link to={`/recursos/blog/${featuredArticle.slug}`}>
                       <div className="bg-white border-0.5 border-border rounded-lg p-8 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1">
                         <div className="flex items-center gap-2 mb-4">
                           <Tag className="h-4 w-4 text-gray-500" />
@@ -174,7 +174,7 @@ const Blog = () => {
                 {gridPosts && gridPosts.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {gridPosts.map((article) => (
-                      <Link key={article.id} to={`/blog/${article.slug}`}>
+                      <Link key={article.id} to={`/recursos/blog/${article.slug}`}>
                         <div className="bg-white border-0.5 border-border rounded-lg p-6 shadow-sm hover:shadow-lg transition-all duration-300 ease-out hover:-translate-y-1 cursor-pointer">
                           <div className="flex flex-col h-full">
                             {article.featured_image_url && (

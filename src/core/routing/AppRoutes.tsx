@@ -1,21 +1,15 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { PageLoadingSkeleton } from '@/components/LoadingStates';
 
-// Redirect component for /lp/calculadora-web → /lp/calculadora?source=web
-const CalculadoraWebRedirect = () => {
+// Trailing slash normalizer - strips trailing slashes to avoid duplicate URLs
+const TrailingSlashRedirect = () => {
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  
-  // Only add source=web if it doesn't already exist
-  if (!searchParams.has('source')) {
-    searchParams.set('source', 'web');
+  if (location.pathname !== '/' && location.pathname.endsWith('/')) {
+    const trimmed = location.pathname.replace(/\/+$/, '');
+    return <Navigate to={`${trimmed}${location.search}${location.hash}`} replace />;
   }
-  
-  const newSearch = searchParams.toString();
-  const targetUrl = `/lp/calculadora${newSearch ? `?${newSearch}` : ''}`;
-  
-  return <Navigate to={targetUrl} replace />;
+  return null;
 };
 
 // === CORE PAGES ===
@@ -50,7 +44,7 @@ const LandingCalculadoraFiscal = lazy(() => import('@/pages/LandingCalculadoraFi
 const LandingCalculadoraAsesores = lazy(() => import('@/pages/LandingCalculadoraAsesores'));
 const LandingCalculatorMeta = lazy(() => import('@/pages/LandingCalculatorMeta'));
 const LandingCalculatorMetaThanks = lazy(() => import('@/pages/LandingCalculatorMetaThanks'));
-const LandingCalculatorB = lazy(() => import('@/pages/LandingCalculatorB')); // 🔥 NUEVO - Variante B Typeform
+const LandingCalculatorB = lazy(() => import('@/pages/LandingCalculatorB'));
 const LandingVentaEmpresas = lazy(() => import('@/pages/LandingVentaEmpresas'));
 const LandingVentaEmpresasV2 = lazy(() => import('@/pages/LandingVentaEmpresasV2'));
 const LandingSuiteLoop = lazy(() => import('@/pages/LandingSuiteLoop'));
@@ -140,15 +134,23 @@ const TerminosUso = lazy(() => import('@/pages/TerminosUso').catch(() => import(
 const Cookies = lazy(() => import('@/pages/Cookies').catch(() => import('@/pages/VentaEmpresas')));
 const BlogPost = lazy(() => import('@/pages/blog/BlogPost').catch(() => import('@/pages/VentaEmpresas')));
 
+// Helper: redirect from old blog path to new hierarchy
+const BlogSlugRedirect = () => {
+  const { slug } = useParams();
+  return <Navigate to={`/recursos/blog/${slug}`} replace />;
+};
+
 export const AppRoutes = () => {
   return (
     <Suspense fallback={<PageLoadingSkeleton />}>
+      {/* Normalize trailing slashes globally */}
+      <TrailingSlashRedirect />
       <Routes>
         {/* === CORE ROUTES === */}
         <Route path="/" element={<Index />} />
-        <Route path="/ca" element={<Index />} />
-        <Route path="/inici" element={<Index />} />
-        <Route path="/en" element={<Index />} />
+        <Route path="/ca" element={<Navigate to="/" replace />} />
+        <Route path="/inici" element={<Navigate to="/" replace />} />
+        <Route path="/en" element={<Navigate to="/" replace />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/admin/login" element={<AdminLoginNew />} />
@@ -164,38 +166,39 @@ export const AppRoutes = () => {
         {/* === SHARED PRESENTATIONS (Public Access with Token) === */}
         <Route path="/p/:token" element={<SharedPresentationPage />} />
         
-        {/* === BUSINESS ROUTES === */}
+        {/* === BUSINESS ROUTES (Canonical: Spanish) === */}
         <Route path="/venta-empresas" element={<VentaEmpresas />} />
-        <Route path="/venda-empreses" element={<VentaEmpresas />} />
-        <Route path="/sell-companies" element={<VentaEmpresas />} />
+        <Route path="/venda-empreses" element={<Navigate to="/venta-empresas" replace />} />
+        <Route path="/sell-companies" element={<Navigate to="/venta-empresas" replace />} />
         
         <Route path="/compra-empresas" element={<CompraEmpresas />} />
         <Route path="/compra-empreses" element={<Navigate to="/compra-empresas" replace />} />
-        <Route path="/buy-companies" element={<CompraEmpresas />} />
+        <Route path="/buy-companies" element={<Navigate to="/compra-empresas" replace />} />
         
         <Route path="/oportunidades" element={<Oportunidades />} />
         <Route path="/favoritos" element={<SavedOperations />} />
         <Route path="/marketplace" element={<Navigate to="/oportunidades" replace />} />
         
         <Route path="/contacto" element={<Contacto />} />
-        <Route path="/contacte" element={<Contacto />} />
-        <Route path="/contact" element={<Contacto />} />
+        <Route path="/contacte" element={<Navigate to="/contacto" replace />} />
+        <Route path="/contact" element={<Navigate to="/contacto" replace />} />
         
         <Route path="/programa-colaboradores" element={<ProgramaColaboradores />} />
-        <Route path="/programa-col·laboradors" element={<ProgramaColaboradores />} />
-        <Route path="/programa-col-laboradors" element={<ProgramaColaboradores />} />
-        <Route path="/collaborators-program" element={<ProgramaColaboradores />} />
+        <Route path="/programa-col·laboradors" element={<Navigate to="/programa-colaboradores" replace />} />
+        <Route path="/programa-col-laboradors" element={<Navigate to="/programa-colaboradores" replace />} />
+        <Route path="/collaborators-program" element={<Navigate to="/programa-colaboradores" replace />} />
+        <Route path="/partners-program" element={<Navigate to="/programa-colaboradores" replace />} />
         
         <Route path="/casos-exito" element={<CasosExito />} />
-        <Route path="/casos-exit" element={<CasosExito />} />
-        <Route path="/success-stories" element={<CasosExito />} />
+        <Route path="/casos-exit" element={<Navigate to="/casos-exito" replace />} />
+        <Route path="/success-stories" element={<Navigate to="/casos-exito" replace />} />
         
         <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
-        <Route path="/per-que-triar-nos" element={<PorQueElegirnos />} />
-        <Route path="/why-choose-us" element={<PorQueElegirnos />} />
+        <Route path="/per-que-triar-nos" element={<Navigate to="/por-que-elegirnos" replace />} />
+        <Route path="/why-choose-us" element={<Navigate to="/por-que-elegirnos" replace />} />
         
         <Route path="/equipo" element={<Equipo />} />
-        <Route path="/equip" element={<Equipo />} />
+        <Route path="/equip" element={<Navigate to="/equipo" replace />} />
         <Route path="/team" element={<Navigate to="/equipo" replace />} />
         
         <Route path="/nosotros" element={<Navigate to="/por-que-elegirnos" replace />} />
@@ -210,8 +213,8 @@ export const AppRoutes = () => {
         
         {/* === LANDING CALCULATOR ROUTES === */}
         <Route path="/lp" element={<Navigate to="/lp/calculadora" replace />} />
-        <Route path="/lp/calculadora-web" element={<CalculadoraWebRedirect />} />
-        <Route path="/lp/calculadora-web/*" element={<CalculadoraWebRedirect />} />
+        <Route path="/lp/calculadora-web" element={<Navigate to="/lp/calculadora" replace />} />
+        <Route path="/lp/calculadora-web/*" element={<Navigate to="/lp/calculadora" replace />} />
         <Route path="/lp/calculadora" element={<LandingCalculator />} />
         <Route path="/lp/calculadora/*" element={<LandingCalculator />} />
         <Route path="/lp/calculadora-b" element={<LandingCalculatorB />} />
@@ -245,7 +248,7 @@ export const AppRoutes = () => {
         {/* === BOOKING ROUTES === */}
         <Route path="/book/:token" element={<BookingPage />} />
         
-        {/* === SERVICE ROUTES (Spanish) === */}
+        {/* === SERVICE ROUTES (Canonical: Spanish) === */}
         <Route path="/servicios/valoraciones" element={<Valoraciones />} />
         <Route path="/servicios/venta-empresas" element={<VentaEmpresasServicio />} />
         <Route path="/servicios/due-diligence" element={<DueDiligence />} />
@@ -258,23 +261,23 @@ export const AppRoutes = () => {
         <Route path="/valoracion-empresas" element={<ValoracionEmpresas />} />
         <Route path="/guia-valoracion-empresas" element={<GuiaValoracionEmpresas />} />
         
-        {/* === SERVICE ROUTES (Catalan) === */}
-        <Route path="/serveis/valoracions" element={<Valoraciones />} />
-        <Route path="/serveis/venda-empreses" element={<VentaEmpresasServicio />} />
-        <Route path="/serveis/due-diligence" element={<DueDiligence />} />
-        <Route path="/serveis/assessorament-legal" element={<AsesoramientoLegal />} />
-        <Route path="/serveis/reestructuracions" element={<Reestructuraciones />} />
-        <Route path="/serveis/planificacio-fiscal" element={<PlanificacionFiscal />} />
+        {/* === SERVICE ROUTES (Catalan → redirect to Spanish) === */}
+        <Route path="/serveis/valoracions" element={<Navigate to="/servicios/valoraciones" replace />} />
+        <Route path="/serveis/venda-empreses" element={<Navigate to="/servicios/venta-empresas" replace />} />
+        <Route path="/serveis/due-diligence" element={<Navigate to="/servicios/due-diligence" replace />} />
+        <Route path="/serveis/assessorament-legal" element={<Navigate to="/servicios/asesoramiento-legal" replace />} />
+        <Route path="/serveis/reestructuracions" element={<Navigate to="/servicios/reestructuraciones" replace />} />
+        <Route path="/serveis/planificacio-fiscal" element={<Navigate to="/servicios/planificacion-fiscal" replace />} />
         
-        {/* === SERVICE ROUTES (English) === */}
-        <Route path="/services/valuations" element={<Valoraciones />} />
-        <Route path="/services/sell-companies" element={<VentaEmpresasServicio />} />
-        <Route path="/services/due-diligence" element={<DueDiligence />} />
-        <Route path="/services/legal-advisory" element={<AsesoramientoLegal />} />
-        <Route path="/services/restructuring" element={<Reestructuraciones />} />
-        <Route path="/services/tax-planning" element={<PlanificacionFiscal />} />
+        {/* === SERVICE ROUTES (English → redirect to Spanish) === */}
+        <Route path="/services/valuations" element={<Navigate to="/servicios/valoraciones" replace />} />
+        <Route path="/services/sell-companies" element={<Navigate to="/servicios/venta-empresas" replace />} />
+        <Route path="/services/due-diligence" element={<Navigate to="/servicios/due-diligence" replace />} />
+        <Route path="/services/legal-advisory" element={<Navigate to="/servicios/asesoramiento-legal" replace />} />
+        <Route path="/services/restructuring" element={<Navigate to="/servicios/reestructuraciones" replace />} />
+        <Route path="/services/tax-planning" element={<Navigate to="/servicios/planificacion-fiscal" replace />} />
         
-        {/* === SECTOR ROUTES (Spanish) === */}
+        {/* === SECTOR ROUTES (Canonical: Spanish) === */}
         <Route path="/sectores/tecnologia" element={<Tecnologia />} />
         <Route path="/sectores/healthcare" element={<Healthcare />} />
         <Route path="/sectores/industrial" element={<Industrial />} />
@@ -286,24 +289,24 @@ export const AppRoutes = () => {
         <Route path="/sectores/logistica" element={<Logistica />} />
         <Route path="/sectores/medio-ambiente" element={<MedioAmbiente />} />
         
-        {/* === SECTOR ROUTES (Catalan) === */}
-        <Route path="/sectors/tecnologia" element={<Tecnologia />} />
-        <Route path="/sectors/salut" element={<Healthcare />} />
-        <Route path="/sectors/industrial" element={<Industrial />} />
-        <Route path="/sectors/retail-consum" element={<RetailConsumer />} />
-        <Route path="/sectors/energia" element={<Energia />} />
-        <Route path="/sectors/seguretat" element={<Seguridad />} />
-        <Route path="/sectors/construccio" element={<Construccion />} />
-        <Route path="/sectors/alimentacio" element={<Alimentacion />} />
-        <Route path="/sectors/logistica" element={<Logistica />} />
-        <Route path="/sectors/medi-ambient" element={<MedioAmbiente />} />
+        {/* === SECTOR ROUTES (Catalan → redirect to Spanish) === */}
+        <Route path="/sectors/tecnologia" element={<Navigate to="/sectores/tecnologia" replace />} />
+        <Route path="/sectors/salut" element={<Navigate to="/sectores/healthcare" replace />} />
+        <Route path="/sectors/industrial" element={<Navigate to="/sectores/industrial" replace />} />
+        <Route path="/sectors/retail-consum" element={<Navigate to="/sectores/retail-consumer" replace />} />
+        <Route path="/sectors/energia" element={<Navigate to="/sectores/energia" replace />} />
+        <Route path="/sectors/seguretat" element={<Navigate to="/sectores/seguridad" replace />} />
+        <Route path="/sectors/construccio" element={<Navigate to="/sectores/construccion" replace />} />
+        <Route path="/sectors/alimentacio" element={<Navigate to="/sectores/alimentacion" replace />} />
+        <Route path="/sectors/logistica" element={<Navigate to="/sectores/logistica" replace />} />
+        <Route path="/sectors/medi-ambient" element={<Navigate to="/sectores/medio-ambiente" replace />} />
         
-        {/* === SECTOR ROUTES (English) === */}
-        <Route path="/sectors/technology" element={<Tecnologia />} />
-        <Route path="/sectors/healthcare" element={<Healthcare />} />
-        <Route path="/sectors/retail-consumer" element={<RetailConsumer />} />
-        <Route path="/sectors/energy" element={<Energia />} />
-        <Route path="/sectors/security" element={<Seguridad />} />
+        {/* === SECTOR ROUTES (English → redirect to Spanish) === */}
+        <Route path="/sectors/technology" element={<Navigate to="/sectores/tecnologia" replace />} />
+        <Route path="/sectors/healthcare" element={<Navigate to="/sectores/healthcare" replace />} />
+        <Route path="/sectors/retail-consumer" element={<Navigate to="/sectores/retail-consumer" replace />} />
+        <Route path="/sectors/energy" element={<Navigate to="/sectores/energia" replace />} />
+        <Route path="/sectors/security" element={<Navigate to="/sectores/seguridad" replace />} />
         
         {/* === PHANTOM SECTOR REDIRECTS === */}
         <Route path="/sectores/financial-services" element={<Navigate to="/oportunidades" replace />} />
@@ -316,16 +319,15 @@ export const AppRoutes = () => {
         {/* === OPERATION DETAIL REDIRECT === */}
         <Route path="/operaciones/:id" element={<Navigate to="/oportunidades" replace />} />
         
-        {/* === PARTNERS PROGRAM (English) === */}
-        <Route path="/partners-program" element={<ProgramaColaboradores />} />
-        
         {/* === JOB POSTS ROUTES === */}
         <Route path="/oportunidades/empleo" element={<JobsPage />} />
         <Route path="/oportunidades/empleo/:slug" element={<JobDetailPage />} />
         
         {/* === RESOURCE ROUTES === */}
         <Route path="/blog" element={<Navigate to="/recursos/blog" replace />} />
+        <Route path="/blog/:slug" element={<BlogSlugRedirect />} />
         <Route path="/recursos/blog" element={<Blog />} />
+        <Route path="/recursos/blog/:slug" element={<BlogPost />} />
         <Route path="/recursos/noticias" element={<Noticias />} />
         <Route path="/recursos/noticias/:slug" element={<NewsArticleDetail />} />
         <Route path="/recursos/test-exit-ready" element={<TestExitReady />} />
@@ -360,16 +362,12 @@ export const AppRoutes = () => {
         <Route path="/landing/:slug" element={<LandingPageView />} />
         
         {/* === LEGAL ROUTES === */}
-        <Route path="/por-que-elegirnos" element={<PorQueElegirnos />} />
         <Route path="/por-que-elegirnos/experiencia" element={<Experiencia />} />
         <Route path="/por-que-elegirnos/metodologia" element={<Metodologia />} />
         <Route path="/por-que-elegirnos/resultados" element={<Resultados />} />
         <Route path="/politica-privacidad" element={<PoliticaPrivacidad />} />
         <Route path="/terminos-uso" element={<TerminosUso />} />
         <Route path="/cookies" element={<Cookies />} />
-        
-        {/* === BLOG ROUTES === */}
-        <Route path="/blog/:slug" element={<BlogPost />} />
         
         {/* === 404 ROUTE === */}
         <Route path="*" element={<NotFound />} />

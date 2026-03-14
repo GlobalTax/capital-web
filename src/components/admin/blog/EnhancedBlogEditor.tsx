@@ -366,7 +366,7 @@ const EnhancedBlogEditor: React.FC<EnhancedBlogEditorProps> = ({ post, onClose, 
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(`/blog/${formData.slug}`, '_blank')}
+                onClick={() => window.open(`/recursos/blog/${formData.slug}`, '_blank')}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 Vista previa

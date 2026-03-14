@@ -88,14 +88,14 @@ const BlogPost = () => {
       <SEOHead 
         title={post.meta_title || `${post.title} | Blog Capittal`}
         description={post.meta_description || post.excerpt || ''}
-        canonical={`https://capittal.es/blog/${post.slug}`}
+        canonical={`https://capittal.es/recursos/blog/${post.slug}`}
         ogImage={post.featured_image_url || 'https://capittal.es/og-blog-default.jpg'}
         keywords={post.tags?.join(', ')}
         structuredData={[
           getArticleSchema(
             post.title,
             post.meta_description || post.excerpt || '',
-            `https://capittal.es/blog/${post.slug}`,
+            `https://capittal.es/recursos/blog/${post.slug}`,
             post.featured_image_url || '',
             post.published_at || post.created_at,
             post.updated_at,
@@ -104,7 +104,7 @@ const BlogPost = () => {
           getBreadcrumbSchema([
             { name: 'Inicio', url: 'https://capittal.es/' },
             { name: 'Blog', url: 'https://capittal.es/recursos/blog' },
-            { name: post.title, url: `https://capittal.es/blog/${post.slug}` }
+            { name: post.title, url: `https://capittal.es/recursos/blog/${post.slug}` }
           ])
         ]}
       />

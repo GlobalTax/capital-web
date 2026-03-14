@@ -123,7 +123,7 @@ const BlogPopularPosts = ({
             return (
               <Link 
                 key={post.id} 
-                to={`/blog/${post.blog_posts.slug}`}
+                to={`/recursos/blog/${post.blog_posts.slug}`}
                 className="block group"
               >
                 <div className="flex gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">

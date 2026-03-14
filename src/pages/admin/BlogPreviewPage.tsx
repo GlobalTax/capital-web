@@ -53,7 +53,7 @@ const BlogPreviewPage = () => {
         title: "Publicado",
         description: "El post ha sido publicado correctamente.",
       });
-      window.open(`/blog/${post.slug}`, '_blank');
+      window.open(`/recursos/blog/${post.slug}`, '_blank');
       navigate('/admin/blog-v2');
     } catch (error) {
       console.error('Error publishing post:', error);
