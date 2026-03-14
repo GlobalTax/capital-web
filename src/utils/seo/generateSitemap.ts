@@ -1,48 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
-interface SitemapURL {
-  loc: string;
-  lastmod?: string;
-  changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
-  priority?: number;
-  alternates?: {
-    lang: string;
-    href: string;
-  }[];
-}
-
-// ─── Multilingual route map: es -> { ca, en } ───
-// Must stay in sync with generate-sitemap edge function
-const HREFLANG_MAP: Record<string, { ca?: string; en?: string }> = {
-  '/': { ca: '/ca', en: '/en' },
-  '/venta-empresas': { ca: '/venda-empreses', en: '/sell-companies' },
-  '/compra-empresas': { ca: '/compra-empreses', en: '/buy-companies' },
-  '/contacto': { ca: '/contacte', en: '/contact' },
-  '/por-que-elegirnos': { ca: '/per-que-triar-nos', en: '/why-choose-us' },
-  '/equipo': { ca: '/equip', en: '/team' },
-  '/casos-exito': { ca: '/casos-exit', en: '/success-stories' },
-  '/programa-colaboradores': { ca: '/programa-col-laboradors', en: '/collaborators-program' },
-  '/servicios/valoraciones': { ca: '/serveis/valoracions', en: '/services/valuations' },
-  '/servicios/venta-empresas': { ca: '/serveis/venda-empreses', en: '/services/sell-companies' },
-  '/servicios/due-diligence': { ca: '/serveis/due-diligence', en: '/services/due-diligence' },
-  '/servicios/asesoramiento-legal': { ca: '/serveis/assessorament-legal', en: '/services/legal-advisory' },
-  '/servicios/reestructuraciones': { ca: '/serveis/reestructuracions', en: '/services/restructuring' },
-  '/servicios/planificacion-fiscal': { ca: '/serveis/planificacio-fiscal', en: '/services/tax-planning' },
-  '/sectores/tecnologia': { ca: '/sectors/tecnologia', en: '/sectors/technology' },
-  '/sectores/healthcare': { ca: '/sectors/salut', en: '/sectors/healthcare' },
-  '/sectores/seguridad': { ca: '/sectors/seguretat', en: '/sectors/security' },
-  '/sectores/industrial': { ca: '/sectors/industrial' },
-  '/sectores/retail-consumer': { ca: '/sectors/retail-consum' },
-  '/sectores/energia': { ca: '/sectors/energia', en: '/sectors/energy' },
-  '/sectores/construccion': { ca: '/sectors/construccio' },
-  '/sectores/logistica': { ca: '/sectors/logistica' },
-  '/sectores/alimentacion': { ca: '/sectors/alimentacio' },
-  '/sectores/medio-ambiente': { ca: '/sectors/medi-ambient' },
-};
-
 const BASE = 'https://capittal.es';
 
-// Static routes - synced with generate-sitemap edge function
 interface RouteEntry {
   path: string;
   changefreq: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
@@ -50,124 +9,50 @@ interface RouteEntry {
 }
 
 const staticRoutes: RouteEntry[] = [
-  // Core pages
+  // Homepage
   { path: '/', changefreq: 'weekly', priority: 1.0 },
-  { path: '/venta-empresas', changefreq: 'weekly', priority: 0.9 },
-  { path: '/compra-empresas', changefreq: 'weekly', priority: 0.9 },
-  { path: '/contacto', changefreq: 'monthly', priority: 0.9 },
-  { path: '/por-que-elegirnos', changefreq: 'monthly', priority: 0.8 },
-  { path: '/equipo', changefreq: 'monthly', priority: 0.7 },
-  { path: '/casos-exito', changefreq: 'monthly', priority: 0.8 },
-  { path: '/programa-colaboradores', changefreq: 'monthly', priority: 0.7 },
-  { path: '/de-looper-a-capittal', changefreq: 'yearly', priority: 0.5 },
 
-  // Landing pages
-  { path: '/lp/calculadora', changefreq: 'weekly', priority: 0.95 },
-  { path: '/lp/calculadora-fiscal', changefreq: 'weekly', priority: 0.95 },
-  { path: '/lp/calculadora-asesores', changefreq: 'weekly', priority: 0.95 },
-  { path: '/lp/venta-empresas', changefreq: 'monthly', priority: 0.9 },
-  { path: '/lp/suiteloop', changefreq: 'monthly', priority: 0.85 },
-
-  // Servicios (ES)
-  { path: '/servicios/valoraciones', changefreq: 'monthly', priority: 0.9 },
+  // Servicios
   { path: '/servicios/venta-empresas', changefreq: 'monthly', priority: 0.9 },
+  { path: '/servicios/compra-empresas', changefreq: 'monthly', priority: 0.9 },
+  { path: '/servicios/valoraciones', changefreq: 'monthly', priority: 0.9 },
   { path: '/servicios/due-diligence', changefreq: 'monthly', priority: 0.85 },
-  { path: '/servicios/asesoramiento-legal', changefreq: 'monthly', priority: 0.85 },
   { path: '/servicios/reestructuraciones', changefreq: 'monthly', priority: 0.8 },
   { path: '/servicios/planificacion-fiscal', changefreq: 'monthly', priority: 0.8 },
 
   // Sectores
   { path: '/sectores/seguridad', changefreq: 'monthly', priority: 0.8 },
   { path: '/sectores/tecnologia', changefreq: 'monthly', priority: 0.75 },
-  { path: '/sectores/healthcare', changefreq: 'monthly', priority: 0.75 },
   { path: '/sectores/industrial', changefreq: 'monthly', priority: 0.75 },
-  { path: '/sectores/retail-consumer', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/healthcare', changefreq: 'monthly', priority: 0.75 },
   { path: '/sectores/energia', changefreq: 'monthly', priority: 0.75 },
   { path: '/sectores/construccion', changefreq: 'monthly', priority: 0.75 },
   { path: '/sectores/logistica', changefreq: 'monthly', priority: 0.75 },
-  { path: '/sectores/alimentacion', changefreq: 'monthly', priority: 0.75 },
   { path: '/sectores/medio-ambiente', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/retail', changefreq: 'monthly', priority: 0.75 },
+  { path: '/sectores/alimentacion', changefreq: 'monthly', priority: 0.75 },
 
-  // Recursos
+  // Páginas estáticas
+  { path: '/equipo', changefreq: 'monthly', priority: 0.7 },
+  { path: '/contacto', changefreq: 'monthly', priority: 0.9 },
   { path: '/recursos/blog', changefreq: 'weekly', priority: 0.8 },
-  { path: '/recursos/noticias', changefreq: 'daily', priority: 0.75 },
-  { path: '/recursos/case-studies', changefreq: 'monthly', priority: 0.75 },
-
-  // English standalone
-  { path: '/sell-companies', changefreq: 'monthly', priority: 0.7 },
-  { path: '/buy-companies', changefreq: 'monthly', priority: 0.7 },
-  { path: '/team', changefreq: 'monthly', priority: 0.6 },
-  { path: '/contact', changefreq: 'monthly', priority: 0.6 },
-  { path: '/why-choose-us', changefreq: 'monthly', priority: 0.6 },
-  { path: '/success-stories', changefreq: 'monthly', priority: 0.6 },
-  { path: '/collaborators-program', changefreq: 'monthly', priority: 0.5 },
-
-  // Catalan standalone
-  { path: '/venda-empreses', changefreq: 'monthly', priority: 0.7 },
-  { path: '/compra-empreses', changefreq: 'monthly', priority: 0.7 },
-  { path: '/equip', changefreq: 'monthly', priority: 0.6 },
-  { path: '/contacte', changefreq: 'monthly', priority: 0.6 },
-  { path: '/per-que-triar-nos', changefreq: 'monthly', priority: 0.6 },
-  { path: '/casos-exit', changefreq: 'monthly', priority: 0.6 },
-
-  // Catalan services
-  { path: '/serveis/valoracions', changefreq: 'monthly', priority: 0.7 },
-  { path: '/serveis/venda-empreses', changefreq: 'monthly', priority: 0.7 },
-  { path: '/serveis/due-diligence', changefreq: 'monthly', priority: 0.65 },
-  { path: '/serveis/assessorament-legal', changefreq: 'monthly', priority: 0.65 },
-  { path: '/serveis/reestructuracions', changefreq: 'monthly', priority: 0.6 },
-  { path: '/serveis/planificacio-fiscal', changefreq: 'monthly', priority: 0.6 },
-
-  // English services
-  { path: '/services/valuations', changefreq: 'monthly', priority: 0.7 },
-  { path: '/services/sell-companies', changefreq: 'monthly', priority: 0.7 },
-  { path: '/services/due-diligence', changefreq: 'monthly', priority: 0.65 },
-  { path: '/services/legal-advisory', changefreq: 'monthly', priority: 0.65 },
-  { path: '/services/restructuring', changefreq: 'monthly', priority: 0.6 },
-  { path: '/services/tax-planning', changefreq: 'monthly', priority: 0.6 },
-
-  // Legal
-  { path: '/politica-privacidad', changefreq: 'yearly', priority: 0.3 },
-  { path: '/terminos-uso', changefreq: 'yearly', priority: 0.3 },
-  { path: '/cookies', changefreq: 'yearly', priority: 0.3 },
+  { path: '/lp/calculadora', changefreq: 'weekly', priority: 0.95 },
+  { path: '/por-que-elegirnos', changefreq: 'monthly', priority: 0.8 },
+  { path: '/casos-exito', changefreq: 'monthly', priority: 0.8 },
+  { path: '/search-funds', changefreq: 'monthly', priority: 0.7 },
+  { path: '/programa-colaboradores', changefreq: 'monthly', priority: 0.7 },
 ];
-
-// Build reverse map for hreflang lookup
-const PATH_TO_GROUP: Record<string, { es: string; ca?: string; en?: string }> = {};
-for (const [esPath, variants] of Object.entries(HREFLANG_MAP)) {
-  const group = { es: esPath, ...variants };
-  PATH_TO_GROUP[esPath] = group;
-  if (variants.ca) PATH_TO_GROUP[variants.ca] = group;
-  if (variants.en) PATH_TO_GROUP[variants.en] = group;
-}
-
-const generateUrlEntry = (route: RouteEntry, today: string): string => {
-  const loc = `${BASE}${route.path}`;
-  const group = PATH_TO_GROUP[route.path];
-
-  let entry = `  <url>\n    <loc>${loc}</loc>`;
-  entry += `\n    <lastmod>${today}</lastmod>`;
-  entry += `\n    <changefreq>${route.changefreq}</changefreq>`;
-  entry += `\n    <priority>${route.priority}</priority>`;
-
-  if (group) {
-    entry += `\n    <xhtml:link rel="alternate" hreflang="es" href="${BASE}${group.es}" />`;
-    if (group.ca) entry += `\n    <xhtml:link rel="alternate" hreflang="ca" href="${BASE}${group.ca}" />`;
-    if (group.en) entry += `\n    <xhtml:link rel="alternate" hreflang="en" href="${BASE}${group.en}" />`;
-    if (group.es === '/') {
-      entry += `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE}/" />`;
-    }
-  }
-
-  entry += `\n  </url>`;
-  return entry;
-};
 
 export const generateFullSitemap = async (): Promise<string> => {
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    // Obtener blog posts dinámicos
+    // Static entries
+    const staticEntries = staticRoutes.map(r =>
+      `  <url>\n    <loc>${BASE}${r.path}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>${r.changefreq}</changefreq>\n    <priority>${r.priority}</priority>\n  </url>`
+    ).join('\n');
+
+    // Dynamic blog posts
     const { data: posts, error } = await supabase
       .from('blog_posts')
       .select('slug, published_at, updated_at')
@@ -177,39 +62,16 @@ export const generateFullSitemap = async (): Promise<string> => {
     if (error) {
       console.error('Error fetching blog posts for sitemap:', error);
     }
-    
-    // Static entries
-    const staticEntries = staticRoutes.map(r => generateUrlEntry(r, today)).join('\n');
 
-    // Blog entries
     const blogEntries = posts?.map(post => {
       const lastmod = new Date(post.updated_at).toISOString().split('T')[0];
       return `  <url>\n    <loc>${BASE}/recursos/blog/${post.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`;
     }).join('\n') || '';
-
-    // News articles
-    const { data: newsArticles, error: newsError } = await supabase
-      .from('news_articles')
-      .select('slug, updated_at')
-      .eq('is_published', true)
-      .eq('is_deleted', false)
-      .order('published_at', { ascending: false });
-
-    if (newsError) {
-      console.error('Error fetching news articles for sitemap:', newsError);
-    }
-
-    const newsEntries = newsArticles?.map(article => {
-      const lastmod = new Date(article.updated_at).toISOString().split('T')[0];
-      return `  <url>\n    <loc>${BASE}/recursos/noticias/${article.slug}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>never</changefreq>\n    <priority>0.5</priority>\n  </url>`;
-    }).join('\n') || '';
     
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${staticEntries}
 ${blogEntries}
-${newsEntries}
 </urlset>`;
     
     return sitemap;
