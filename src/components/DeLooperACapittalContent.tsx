@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronRight, TrendingUp, Users, Award, ArrowRight, CheckCircle, Database, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import SmartVideoPlayer from '@/components/video/SmartVideoPlayer';
 import { SimpleButton } from '@/components/ui/simple-button';
 
