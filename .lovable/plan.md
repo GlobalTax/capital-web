@@ -1,37 +1,19 @@
 
 
-## Plan: Simplify robots.txt
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-`public/sitemap.xml` was already deleted previously — confirmed it's not in the `public/` directory.
+### Cambios realizados
 
-The user wants `robots.txt` simplified to remove all the verbose per-bot rules and keep only the essential directives. This is valid — the Cloudflare Worker already handles bot-specific behavior, so the robots.txt just needs to be clean and minimal.
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-### Changes
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-| File | Action |
-|------|--------|
-| `public/robots.txt` | Rewrite to minimal version: single `User-agent: *` block with `Allow: /`, essential `Disallow` rules for private paths, and the single `Sitemap` directive |
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-### New `robots.txt` content
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-```text
-User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
+### Resultado
 
-Sitemap: https://capittal.es/sitemap.xml
-```
-
-This removes:
-- Duplicate per-bot blocks (Googlebot, GPTBot, ChatGPT-User, ClaudeBot, PerplexityBot, Google-Extended, CCBot) — unnecessary since `User-agent: *` covers all
-- Vite/websocket disallows (irrelevant in production)
-- Query parameter disallows (handled better via canonical tags)
-- Googlebot-Image block
-- Comment blocks about ai.txt and llms.txt
-
-**Note**: The CCBot block (`Disallow: /`) will be removed. If you want to keep blocking CCBot specifically, let me know.
-
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos

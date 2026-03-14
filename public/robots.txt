@@ -1,6 +1,3 @@
-# Capittal.es - Robots.txt
-# https://capittal.es
-
 User-agent: *
 Allow: /
 Disallow: /admin/
@@ -8,77 +5,5 @@ Disallow: /admin-login/
 Disallow: /auth/
 Disallow: /api/private/
 Disallow: /operaciones/
-Disallow: /_vite/
-Disallow: /__vite/
-Disallow: /ws/
-Disallow: /*?utm_*
-Disallow: /*?gclid=*
-Disallow: /*?fbclid=*
-
-# Googlebot specific
-User-agent: Googlebot
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
-
-# Assets
-User-agent: Googlebot-Image
-Allow: /assets/
-Allow: /images/
-
-# AI Crawlers - Allowed
-User-agent: GPTBot
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
-
-User-agent: ChatGPT-User
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
-
-User-agent: ClaudeBot
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
-
-User-agent: PerplexityBot
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
-
-User-agent: Google-Extended
-Allow: /
-Disallow: /admin/
-Disallow: /admin-login/
-Disallow: /auth/
-Disallow: /api/private/
-Disallow: /operaciones/
-
-# AI Crawlers - Blocked (massive scraping)
-User-agent: CCBot
-Disallow: /
 
 Sitemap: https://capittal.es/sitemap.xml
-
-# AI structured data
-# https://capittal.es/ai.txt
-
-# LLMs.txt - AI-friendly site description
-# https://llmstxt.org/
-# LLMs.txt: https://capittal.es/llms.txt
