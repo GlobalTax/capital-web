@@ -34,7 +34,6 @@ const requirements = [
 ];
 
 export const SearchFundsForSearchers = () => {
-  const navigate = useNavigate();
 
   return (
     <section className="py-20 bg-muted/30">
