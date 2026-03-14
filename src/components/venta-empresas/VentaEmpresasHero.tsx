@@ -5,7 +5,6 @@ import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const VentaEmpresasHero = () => {
   const { t } = useI18n();
-  const navigate = useNavigate();
   const benefits = [
     { text: t('ventaEmpresas.hero.benefit1') },
     { text: t('ventaEmpresas.hero.benefit2') },
