@@ -38,19 +38,20 @@ const BrevoWhatsAppWidget = () => {
       })(document, window, 'BrevoConversations');
     };
 
-    // Usar requestIdleCallback si disponible, sino setTimeout de 3s
-    let handle: number;
+    let idleHandle: number | undefined;
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
     if ('requestIdleCallback' in window) {
-      handle = (window as any).requestIdleCallback(loadWidget, { timeout: 5000 });
+      idleHandle = (window as any).requestIdleCallback(loadWidget, { timeout: 5000 });
     } else {
-      handle = window.setTimeout(loadWidget, 3000);
+      timeoutHandle = setTimeout(loadWidget, 3000);
     }
 
     return () => {
-      if ('requestIdleCallback' in window) {
-        (window as any).cancelIdleCallback(handle);
-      } else {
-        window.clearTimeout(handle);
+      if (idleHandle !== undefined) {
+        (window as any).cancelIdleCallback(idleHandle);
+      }
+      if (timeoutHandle !== undefined) {
+        clearTimeout(timeoutHandle);
       }
     };
   }, [location.pathname]);
