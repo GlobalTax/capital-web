@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
+  <script src="https://analytics.ahrefs.com/analytics.js" data-key="VouNMjljNalPNS/dBxC7Fw" async></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${title} | Capittal</title>
