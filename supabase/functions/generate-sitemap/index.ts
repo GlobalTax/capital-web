@@ -8,7 +8,6 @@ const corsHeaders = {
 
 const BASE = "https://capittal.es";
 
-// Duplicated from src/data/siteRoutes.ts — canonical route list
 const SITE_ROUTES = [
   { path: "/", changefreq: "weekly", priority: 1.0 },
   { path: "/venta-empresas", changefreq: "monthly", priority: 0.9 },
@@ -43,32 +42,51 @@ const SITE_ROUTES = [
   { path: "/guia-valoracion-empresas", changefreq: "monthly", priority: 0.65 },
 ];
 
-async function verifyAdmin(req: Request) {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) throw new Error("Missing authorization");
+async function generateSitemapXml(): Promise<string> {
+  const today = new Date().toISOString().split("T")[0];
 
-  const token = authHeader.replace("Bearer ", "");
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: `Bearer ${token}` } } }
-  );
+  const staticEntries = SITE_ROUTES.map(
+    (r) => `  <url>
+    <loc>${BASE}${r.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${r.changefreq}</changefreq>
+    <priority>${r.priority}</priority>
+  </url>`
+  ).join("\n");
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) throw new Error("Invalid token");
+  let blogEntries = "";
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!
+    );
 
-  const serviceClient = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
+    const { data: posts, error } = await supabase
+      .from("blog_posts")
+      .select("slug, published_at, updated_at")
+      .eq("is_published", true)
+      .order("published_at", { ascending: false });
 
-  const { data: hasRole } = await serviceClient.rpc("has_role", {
-    _user_id: user.id,
-    _role: "admin",
-  });
+    if (!error && posts?.length) {
+      blogEntries = posts.map((p) => {
+        const lastmod = new Date(p.updated_at).toISOString().split("T")[0];
+        return `  <url>
+    <loc>${BASE}/recursos/blog/${p.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+      }).join("\n");
+    }
+  } catch (e) {
+    console.error("Error fetching blog posts for sitemap:", e);
+  }
 
-  if (!hasRole) throw new Error("Admin access required");
-  return serviceClient;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticEntries}
+${blogEntries}
+</urlset>`;
 }
 
 Deno.serve(async (req) => {
@@ -77,54 +95,53 @@ Deno.serve(async (req) => {
   }
 
   try {
-    await verifyAdmin(req);
+    // GET = public (for Cloudflare Worker, bots, browsers)
+    // POST = admin-only (for manual regeneration from admin panel)
+    if (req.method === "POST") {
+      // Verify admin for POST requests
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Missing authorization" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
 
-    const today = new Date().toISOString().split("T")[0];
-
-    // Static URL entries from centralized registry
-    const staticEntries = SITE_ROUTES.map(
-      (r) => `  <url>
-    <loc>${BASE}${r.path}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${r.changefreq}</changefreq>
-    <priority>${r.priority}</priority>
-  </url>`
-    ).join("\n");
-
-    // Dynamic blog posts
-    let blogEntries = "";
-    try {
+      const token = authHeader.replace("Bearer ", "");
       const supabase = createClient(
         Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_ANON_KEY")!
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: `Bearer ${token}` } } }
       );
 
-      const { data: posts, error } = await supabase
-        .from("blog_posts")
-        .select("slug, published_at, updated_at")
-        .eq("is_published", true)
-        .order("published_at", { ascending: false });
-
-      if (!error && posts?.length) {
-        blogEntries = posts.map((p) => {
-          const lastmod = new Date(p.updated_at).toISOString().split("T")[0];
-          return `  <url>
-    <loc>${BASE}/recursos/blog/${p.slug}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
-        }).join("\n");
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-    } catch (e) {
-      console.error("Error fetching blog posts for sitemap:", e);
+
+      const serviceClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+
+      const { data: hasRole } = await serviceClient.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
+
+      if (!hasRole) {
+        return new Response(JSON.stringify({ error: "Admin access required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
-    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${staticEntries}
-${blogEntries}
-</urlset>`;
+    // Generate sitemap for both GET and POST
+    const sitemap = await generateSitemapXml();
 
     return new Response(sitemap, {
       headers: {
@@ -134,9 +151,9 @@ ${blogEntries}
       },
     });
   } catch (e) {
-    const status = e.message.includes("authorization") || e.message.includes("Admin") ? 401 : 500;
+    console.error("generate-sitemap error:", e);
     return new Response(JSON.stringify({ error: e.message }), {
-      status,
+      status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

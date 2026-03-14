@@ -51,6 +51,36 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
+    // 0. Intercept /sitemap.xml → serve from edge function (dynamic, correct Content-Type)
+    if (pathname === '/sitemap.xml') {
+      try {
+        const sitemapUrl = `${env.SUPABASE_URL}/functions/v1/generate-sitemap`;
+        const sitemapResponse = await fetch(sitemapUrl, {
+          headers: {
+            'apikey': env.SUPABASE_ANON_KEY,
+          },
+        });
+
+        if (sitemapResponse.ok) {
+          const xml = await sitemapResponse.text();
+          return new Response(xml, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/xml; charset=utf-8',
+              'Cache-Control': 'public, max-age=3600',
+              'X-Source': 'edge-function',
+            },
+          });
+        }
+        // fallback to origin if edge function fails
+        console.error(`Sitemap edge function failed: ${sitemapResponse.status}`);
+        return fetch(request);
+      } catch (err) {
+        console.error('Sitemap proxy error:', err);
+        return fetch(request);
+      }
+    }
+
     // 1. Static assets → origin
     if (isStaticAsset(pathname)) {
       return fetch(request);
