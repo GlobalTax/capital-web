@@ -7,7 +7,6 @@ import SmartVideoPlayer from '@/components/video/SmartVideoPlayer';
 import { SimpleButton } from '@/components/ui/simple-button';
 
 const DeLooperACapittalContent = () => {
-  const navigate = useNavigate();
 
   const trustMetrics = [
     { icon: <TrendingUp className="h-6 w-6 text-blue-600" />, value: "4+ años", label: "de experiencia" },
