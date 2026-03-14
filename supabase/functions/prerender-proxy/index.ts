@@ -19,8 +19,6 @@ const BOT_UA_PATTERNS = [
   "whatsapp",
   "telegrambot",
   "applebot",
-  "semrushbot",
-  "ahrefsbot",
   "mj12bot",
   "dotbot",
   "petalbot",
