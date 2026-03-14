@@ -88,7 +88,7 @@ const BlogPost = () => {
       <SEOHead 
         title={post.meta_title || `${post.title} | Blog Capittal`}
         description={post.meta_description || post.excerpt || ''}
-        canonical={`https://capittal.es/blog/${post.slug}`}
+        canonical={`https://capittal.es/recursos/blog/${post.slug}`}
         ogImage={post.featured_image_url || 'https://capittal.es/og-blog-default.jpg'}
         keywords={post.tags?.join(', ')}
         structuredData={[
