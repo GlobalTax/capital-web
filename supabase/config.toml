@@ -335,3 +335,6 @@ verify_jwt = false
 
 [functions.generate-company-description]
 verify_jwt = false
+
+[functions.prerender]
+verify_jwt = false

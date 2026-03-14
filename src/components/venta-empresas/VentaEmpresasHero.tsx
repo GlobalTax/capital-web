@@ -1,11 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 
 const VentaEmpresasHero = () => {
   const { t } = useI18n();
-  const navigate = useNavigate();
   const benefits = [
     { text: t('ventaEmpresas.hero.benefit1') },
     { text: t('ventaEmpresas.hero.benefit2') },
@@ -45,12 +44,13 @@ const VentaEmpresasHero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <InteractiveHoverButton 
-                text={t('ventaEmpresas.hero.ctaValuate')}
-                variant="primary" 
-                size="lg"
-                onClick={() => navigate('/lp/calculadora')}
-              />
+              <Link to="/lp/calculadora">
+                <InteractiveHoverButton 
+                  text={t('ventaEmpresas.hero.ctaValuate')}
+                  variant="primary" 
+                  size="lg"
+                />
+              </Link>
               <InteractiveHoverButton 
                 text={t('ventaEmpresas.hero.ctaContact')}
                 variant="secondary" 

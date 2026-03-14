@@ -17626,6 +17626,84 @@ export type Database = {
         }
         Relationships: []
       }
+      prerender_cache: {
+        Row: {
+          created_at: string | null
+          extraction_notes: Json | null
+          full_record: boolean | null
+          h1: string | null
+          h2s: Json | null
+          health: string | null
+          html_snapshot: string | null
+          internal_links: Json | null
+          internal_links_count: number | null
+          meta_description: string | null
+          path: string
+          rendered_at: string | null
+          source: string | null
+          status: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          extraction_notes?: Json | null
+          full_record?: boolean | null
+          h1?: string | null
+          h2s?: Json | null
+          health?: string | null
+          html_snapshot?: string | null
+          internal_links?: Json | null
+          internal_links_count?: number | null
+          meta_description?: string | null
+          path: string
+          rendered_at?: string | null
+          source?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          extraction_notes?: Json | null
+          full_record?: boolean | null
+          h1?: string | null
+          h2s?: Json | null
+          health?: string | null
+          html_snapshot?: string | null
+          internal_links?: Json | null
+          internal_links_count?: number | null
+          meta_description?: string | null
+          path?: string
+          rendered_at?: string | null
+          source?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      prerender_rate_limits: {
+        Row: {
+          created_at: string | null
+          id: string
+          scan_type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          scan_type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          scan_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       presentation_assets: {
         Row: {
           created_at: string | null

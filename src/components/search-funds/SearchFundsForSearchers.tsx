@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Target, Shield, Zap, Handshake, CheckCircle } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
@@ -34,7 +34,6 @@ const requirements = [
 ];
 
 export const SearchFundsForSearchers = () => {
-  const navigate = useNavigate();
 
   return (
     <section className="py-20 bg-muted/30">
@@ -99,10 +98,11 @@ export const SearchFundsForSearchers = () => {
                 Completa nuestro formulario de registro y te contactaremos para verificar tu perfil 
                 y darte acceso a nuestro deal flow cualificado.
               </p>
-              <InteractiveHoverButton 
-                text="Registrarme como Searcher →"
-                onClick={() => navigate('/search-funds/registro-searcher')}
-              />
+              <Link to="/search-funds/registro-searcher">
+                <InteractiveHoverButton 
+                  text="Registrarme como Searcher →"
+                />
+              </Link>
               <p className="text-xs text-muted-foreground mt-4">
                 Proceso de verificación en 48-72h. Sin coste hasta encontrar empresa.
               </p>

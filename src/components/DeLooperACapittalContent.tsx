@@ -2,12 +2,11 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronRight, TrendingUp, Users, Award, ArrowRight, CheckCircle, Database, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import SmartVideoPlayer from '@/components/video/SmartVideoPlayer';
 import { SimpleButton } from '@/components/ui/simple-button';
 
 const DeLooperACapittalContent = () => {
-  const navigate = useNavigate();
 
   const trustMetrics = [
     { icon: <TrendingUp className="h-6 w-6 text-blue-600" />, value: "4+ años", label: "de experiencia" },
@@ -42,16 +41,18 @@ const DeLooperACapittalContent = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <SimpleButton
-                  text="Solicitar Valoración"
-                  onClick={() => navigate('/lp/calculadora')}
-                  variant="primary"
-                />
-                <SimpleButton
-                  text="Hablar con Experto"
-                  onClick={() => navigate('/contacto')}
-                  variant="secondary"
-                />
+                <Link to="/lp/calculadora">
+                  <SimpleButton
+                    text="Solicitar Valoración"
+                    variant="primary"
+                  />
+                </Link>
+                <Link to="/contacto">
+                  <SimpleButton
+                    text="Hablar con Experto"
+                    variant="secondary"
+                  />
+                </Link>
               </div>
             </div>
 
@@ -171,12 +172,13 @@ const DeLooperACapittalContent = () => {
             Descubre cómo podemos ayudarte hoy.
           </p>
           <div className="inline-block">
-            <SimpleButton
-              text="Comenzar Valoración Gratuita"
-              onClick={() => navigate('/lp/calculadora')}
-              variant="primary"
-              className="text-lg px-10 py-4 shadow-lg hover:shadow-xl"
-            />
+            <Link to="/lp/calculadora">
+              <SimpleButton
+                text="Comenzar Valoración Gratuita"
+                variant="primary"
+                className="text-lg px-10 py-4 shadow-lg hover:shadow-xl"
+              />
+            </Link>
           </div>
           <div className="mt-6 flex items-center justify-center space-x-8 text-sm text-slate-600">
             <span className="flex items-center">

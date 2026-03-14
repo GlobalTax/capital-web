@@ -1,13 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Users } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { SearchFundsDataVisual } from './SearchFundsDataVisual';
 
 const SearchFundsHero: React.FC = () => {
-  const navigate = useNavigate();
-  
   const benefits = [
     "Emprendedores de élite que invierten su futuro en tu empresa",
     "Proceso de due diligence riguroso y profesional",
@@ -62,12 +60,13 @@ const SearchFundsHero: React.FC = () => {
                 onClick={scrollToContact}
                 size="lg"
               />
-              <InteractiveHoverButton 
-                text="Busco dealflow"
-                onClick={() => navigate('/contacto?origen=search-funds-searcher')}
-                variant="secondary"
-                size="lg"
-              />
+              <Link to="/contacto?origen=search-funds-searcher">
+                <InteractiveHoverButton 
+                  text="Busco dealflow"
+                  variant="secondary"
+                  size="lg"
+                />
+              </Link>
             </div>
 
             {/* Trust indicators */}

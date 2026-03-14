@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Heart, Clock, TrendingUp, Users } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
@@ -50,7 +50,6 @@ const myths = [
 ];
 
 export const SearchFundsForSellers = () => {
-  const navigate = useNavigate();
 
   return (
     <section className="py-20 bg-background">
@@ -101,10 +100,11 @@ export const SearchFundsForSellers = () => {
                 ))}
               </div>
               <div className="mt-8">
-                <InteractiveHoverButton 
-                  text="Valorar mi empresa gratis →"
-                  onClick={() => navigate('/lp/calculadora?origen=search-funds')}
-                />
+                <Link to="/lp/calculadora?origen=search-funds">
+                  <InteractiveHoverButton 
+                    text="Valorar mi empresa gratis →"
+                  />
+                </Link>
               </div>
             </div>
 

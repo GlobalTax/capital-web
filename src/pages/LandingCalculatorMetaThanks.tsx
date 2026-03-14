@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import Step4Results from '@/components/valuation/Step4Results';
 import { I18nProvider, useI18n } from '@/shared/i18n/I18nProvider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { SEOHead } from '@/components/seo';
@@ -98,13 +98,11 @@ const LandingCalculatorMetaThanksInner = () => {
 
         {/* Botón volver arriba */}
         <div className="mb-6">
-          <Button
-            onClick={() => navigate('/lp/calculadora-meta')}
-            variant="ghost"
-            className="flex items-center"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a la calculadora
+          <Button asChild variant="ghost" className="flex items-center">
+            <Link to="/lp/calculadora-meta">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver a la calculadora
+            </Link>
           </Button>
         </div>
 

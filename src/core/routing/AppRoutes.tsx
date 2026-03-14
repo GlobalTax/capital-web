@@ -12,34 +12,59 @@ const TrailingSlashRedirect = () => {
   return null;
 };
 
-// === CORE PAGES ===
-const Index = lazy(() => import('@/pages/Index'));
+// === DIRECT IMPORTS — Public marketing pages (no lazy loading for SEO) ===
+import Index from '@/pages/Index';
+import VentaEmpresas from '@/pages/VentaEmpresas';
+import CompraEmpresas from '@/pages/CompraEmpresas';
+import Contacto from '@/pages/Contacto';
+import ProgramaColaboradores from '@/pages/ProgramaColaboradores';
+import CasosExito from '@/pages/CasosExito';
+import PorQueElegirnos from '@/pages/por-que-elegirnos';
+import DeLooperACapittal from '@/pages/DeLooperACapittal';
+import Equipo from '@/pages/Equipo';
+
+// === SERVICE PAGES (Direct imports) ===
+import Valoraciones from '@/pages/servicios/Valoraciones';
+import VentaEmpresasServicio from '@/pages/servicios/VentaEmpresas';
+import DueDiligence from '@/pages/servicios/DueDiligence';
+import AsesoramientoLegal from '@/pages/servicios/AsesoramientoLegal';
+import AsesoramientoLegalTecnico from '@/pages/servicios/AsesoramientoLegalTecnico';
+import Reestructuraciones from '@/pages/servicios/Reestructuraciones';
+import PlanificacionFiscal from '@/pages/servicios/PlanificacionFiscal';
+import SearchFunds from '@/pages/servicios/SearchFunds';
+import ValoracionEmpresas from '@/pages/ValoracionEmpresas';
+import GuiaValoracionEmpresas from '@/pages/GuiaValoracionEmpresas';
+
+// === SECTOR PAGES (Direct imports) ===
+import Tecnologia from '@/pages/sectores/Tecnologia';
+import Healthcare from '@/pages/sectores/Healthcare';
+import Industrial from '@/pages/sectores/Industrial';
+import RetailConsumer from '@/pages/sectores/RetailConsumer';
+import Energia from '@/pages/sectores/Energia';
+import Seguridad from '@/pages/sectores/Seguridad';
+import Construccion from '@/pages/sectores/Construccion';
+import Alimentacion from '@/pages/sectores/Alimentacion';
+import Logistica from '@/pages/sectores/Logistica';
+import MedioAmbiente from '@/pages/sectores/MedioAmbiente';
+
+// === RESOURCE PAGES (Direct imports) ===
+import Blog from '@/pages/recursos/Blog';
+import TestExitReady from '@/pages/recursos/TestExitReady';
+import BlogPost from '@/pages/blog/BlogPost';
+import LandingCalculator from '@/pages/LandingCalculator';
+
+// === SECURITY CALCULATOR (Direct import) ===
+import SecurityCalculator from '@/pages/SecurityCalculator';
+
+// === LAZY IMPORTS — Authenticated / non-SEO pages ===
 const Admin = lazy(() => import('@/pages/Admin'));
 const AdminLoginNew = lazy(() => import('@/pages/AdminLoginNew'));
 const AuthPage = lazy(() => import('@/pages/Auth'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
-
-// === TEST PAGES ===
 const NuevoDiseno = lazy(() => import('@/pages/test/NuevoDiseno'));
-
-// === ADMIN PROTECTION ===
-import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
-
-  // === BUSINESS PAGES ===
-  const VentaEmpresas = lazy(() => import('@/pages/VentaEmpresas'));
-  const CompraEmpresas = lazy(() => import('@/pages/CompraEmpresas'));
-  const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
-  const SavedOperations = lazy(() => import('@/pages/SavedOperations'));
-  const Contacto = lazy(() => import('@/pages/Contacto'));
-  const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
-  const CasosExito = lazy(() => import('@/pages/CasosExito'));
-  const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos'));
-  const DeLooperACapittal = lazy(() => import('@/pages/DeLooperACapittal'));
-  const Equipo = lazy(() => import('@/pages/Equipo'));
-
-// === CALCULATORS ===
+const Oportunidades = lazy(() => import('@/pages/Oportunidades'));
+const SavedOperations = lazy(() => import('@/pages/SavedOperations'));
 const CalculadoraStandalone = lazy(() => import('@/pages/CalculadoraStandalone'));
-const LandingCalculator = lazy(() => import('@/pages/LandingCalculator'));
 const LandingCalculadoraFiscal = lazy(() => import('@/pages/LandingCalculadoraFiscal'));
 const LandingCalculadoraAsesores = lazy(() => import('@/pages/LandingCalculadoraAsesores'));
 const LandingCalculatorMeta = lazy(() => import('@/pages/LandingCalculatorMeta'));
@@ -56,42 +81,11 @@ const LandingCompraEmpresasMeta = lazy(() => import('@/pages/LandingCompraEmpres
 const LandingOpenDeals = lazy(() => import('@/pages/LandingOpenDeals'));
 const LandingOportunidadesMeta = lazy(() => import('@/pages/LandingOportunidadesMeta'));
 const LandingRODLinkedIn = lazy(() => import('@/pages/LandingRODLinkedIn'));
-import SecurityCalculator from '@/pages/SecurityCalculator';
 const LandingSimuladorSeguridad = lazy(() => import('@/pages/LandingSimuladorSeguridad'));
-
-// === SERVICE PAGES ===
-import Valoraciones from '@/pages/servicios/Valoraciones';
-const VentaEmpresasServicio = lazy(() => import('@/pages/servicios/VentaEmpresas'));
-const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence').catch(() => import('@/pages/VentaEmpresas')));
-const AsesoramientoLegal = lazy(() => import('@/pages/servicios/AsesoramientoLegal').catch(() => import('@/pages/VentaEmpresas')));
-const AsesoramientoLegalTecnico = lazy(() => import('@/pages/servicios/AsesoramientoLegalTecnico').catch(() => import('@/pages/VentaEmpresas')));
-const Reestructuraciones = lazy(() => import('@/pages/servicios/Reestructuraciones').catch(() => import('@/pages/VentaEmpresas')));
-const PlanificacionFiscal = lazy(() => import('@/pages/servicios/PlanificacionFiscal').catch(() => import('@/pages/VentaEmpresas')));
-const SearchFunds = lazy(() => import('@/pages/servicios/SearchFunds'));
-const ValoracionEmpresas = lazy(() => import('@/pages/ValoracionEmpresas'));
-const GuiaValoracionEmpresas = lazy(() => import('@/pages/GuiaValoracionEmpresas'));
-
-// === SECTOR PAGES ===
-const Tecnologia = lazy(() => import('@/pages/sectores/Tecnologia').catch(() => import('@/pages/VentaEmpresas')));
-const Healthcare = lazy(() => import('@/pages/sectores/Healthcare').catch(() => import('@/pages/VentaEmpresas')));
-const Industrial = lazy(() => import('@/pages/sectores/Industrial').catch(() => import('@/pages/VentaEmpresas')));
-const RetailConsumer = lazy(() => import('@/pages/sectores/RetailConsumer').catch(() => import('@/pages/VentaEmpresas')));
-const Energia = lazy(() => import('@/pages/sectores/Energia').catch(() => import('@/pages/VentaEmpresas')));
-const Seguridad = lazy(() => import('@/pages/sectores/Seguridad').catch(() => import('@/pages/VentaEmpresas')));
-const Construccion = lazy(() => import('@/pages/sectores/Construccion').catch(() => import('@/pages/VentaEmpresas')));
-const Alimentacion = lazy(() => import('@/pages/sectores/Alimentacion').catch(() => import('@/pages/VentaEmpresas')));
-const Logistica = lazy(() => import('@/pages/sectores/Logistica').catch(() => import('@/pages/VentaEmpresas')));
-const MedioAmbiente = lazy(() => import('@/pages/sectores/MedioAmbiente').catch(() => import('@/pages/VentaEmpresas')));
-
-// === RESOURCE PAGES ===
-const Blog = lazy(() => import('@/pages/recursos/Blog').catch(() => import('@/pages/VentaEmpresas')));
 const Noticias = lazy(() => import('@/pages/recursos/Noticias'));
 const NewsArticleDetail = lazy(() => import('@/pages/recursos/NewsArticleDetail'));
-const TestExitReady = lazy(() => import('@/pages/recursos/TestExitReady').catch(() => import('@/pages/VentaEmpresas')));
 const SearchFundsHub = lazy(() => import('@/pages/recursos/SearchFundsHub'));
 const InformesMA = lazy(() => import('@/pages/recursos/InformesMA'));
-
-// === SEARCH FUNDS RESOURCE CENTER ===
 const SearchFundsResourceCenter = lazy(() => import('@/pages/search-funds/SearchFundsResourceCenter'));
 const SearchFundsGuide = lazy(() => import('@/pages/search-funds/SearchFundsGuide'));
 const SearchFundsGlossary = lazy(() => import('@/pages/search-funds/SearchFundsGlossary'));
@@ -99,40 +93,29 @@ const SearchFundsTools = lazy(() => import('@/pages/search-funds/SearchFundsTool
 const SearchFundsCases = lazy(() => import('@/pages/search-funds/SearchFundsCases'));
 const SearchFundsLibrary = lazy(() => import('@/pages/search-funds/SearchFundsLibrary'));
 const SearchFundsCommunity = lazy(() => import('@/pages/search-funds/SearchFundsCommunity'));
-
-// === SEARCH FUNDS ADVANCED GUIDES ===
 const SearchFundsSourcing = lazy(() => import('@/pages/search-funds/SearchFundsSourcing'));
 const SearchFundsValuation = lazy(() => import('@/pages/search-funds/SearchFundsValuation'));
 const SearchFundsNegotiation = lazy(() => import('@/pages/search-funds/SearchFundsNegotiation'));
 const SearchFundsPostAcquisition = lazy(() => import('@/pages/search-funds/SearchFundsPostAcquisition'));
-
-// === SEARCHER REGISTRATION ===
 const SearcherRegistration = lazy(() => import('@/pages/SearcherRegistration'));
 const SearcherRegistrationConfirmation = lazy(() => import('@/pages/SearcherRegistrationConfirmation'));
-
-// === BOOKING PAGE ===
 const BookingPage = lazy(() => import('@/components/booking/BookingPage'));
 const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() => import('@/pages/VentaEmpresas')));
-
 const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => import('@/pages/VentaEmpresas')));
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => import('@/pages/VentaEmpresas')));
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => import('@/pages/NotFound')));
-
-// === PRESENTATIONS (Shared) ===
 const SharedPresentationPage = lazy(() => import('@/features/presentations/pages/SharedPresentationPage'));
-
-// === JOB POSTS ===
 const JobsPage = lazy(() => import('@/pages/JobsPage').catch(() => import('@/pages/VentaEmpresas')));
 const JobDetailPage = lazy(() => import('@/pages/JobDetailPage').catch(() => import('@/pages/NotFound')));
-
-// === LEGAL & SUB-PAGES ===
 const Experiencia = lazy(() => import('@/pages/por-que-elegirnos/experiencia').catch(() => import('@/pages/VentaEmpresas')));
 const Metodologia = lazy(() => import('@/pages/por-que-elegirnos/metodologia').catch(() => import('@/pages/VentaEmpresas')));
 const Resultados = lazy(() => import('@/pages/por-que-elegirnos/resultados').catch(() => import('@/pages/VentaEmpresas')));
 const PoliticaPrivacidad = lazy(() => import('@/pages/PoliticaPrivacidad').catch(() => import('@/pages/VentaEmpresas')));
 const TerminosUso = lazy(() => import('@/pages/TerminosUso').catch(() => import('@/pages/VentaEmpresas')));
 const Cookies = lazy(() => import('@/pages/Cookies').catch(() => import('@/pages/VentaEmpresas')));
-const BlogPost = lazy(() => import('@/pages/blog/BlogPost').catch(() => import('@/pages/VentaEmpresas')));
+
+// === ADMIN PROTECTION ===
+import { AdminProtectedRoute } from '@/components/auth/AdminProtectedRoute';
 
 // Helper: redirect from old blog path to new hierarchy
 const BlogSlugRedirect = () => {
