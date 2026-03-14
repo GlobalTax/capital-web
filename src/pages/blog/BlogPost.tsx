@@ -95,7 +95,7 @@ const BlogPost = () => {
           getArticleSchema(
             post.title,
             post.meta_description || post.excerpt || '',
-            `https://capittal.es/blog/${post.slug}`,
+            `https://capittal.es/recursos/blog/${post.slug}`,
             post.featured_image_url || '',
             post.published_at || post.created_at,
             post.updated_at,
