@@ -31,6 +31,7 @@ const BOT_UA_PATTERNS = [
   "pagespeed",
   "pingbot",
   "rogerbot",
+  "ahrefsbot",
 ];
 
 function isBot(userAgent: string): boolean {

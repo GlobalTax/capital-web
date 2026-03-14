@@ -18,7 +18,7 @@ const BOT_UA_PATTERNS = [
   'linkedinbot', 'whatsapp', 'telegrambot', 'applebot',
   'mj12bot', 'dotbot', 'petalbot', 'sogou', 'ia_archiver',
   'archive.org_bot', 'screaming frog', 'lighthouse', 'chrome-lighthouse',
-  'pagespeed', 'pingbot', 'rogerbot',
+  'pagespeed', 'pingbot', 'rogerbot', 'ahrefsbot',
 ];
 
 const STATIC_EXTENSIONS = [
