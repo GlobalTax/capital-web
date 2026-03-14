@@ -6,8 +6,6 @@ import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button
 import { SearchFundsDataVisual } from './SearchFundsDataVisual';
 
 const SearchFundsHero: React.FC = () => {
-  const navigate = useNavigate();
-  
   const benefits = [
     "Emprendedores de élite que invierten su futuro en tu empresa",
     "Proceso de due diligence riguroso y profesional",
