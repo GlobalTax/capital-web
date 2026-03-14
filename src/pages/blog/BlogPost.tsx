@@ -104,7 +104,7 @@ const BlogPost = () => {
           getBreadcrumbSchema([
             { name: 'Inicio', url: 'https://capittal.es/' },
             { name: 'Blog', url: 'https://capittal.es/recursos/blog' },
-            { name: post.title, url: `https://capittal.es/blog/${post.slug}` }
+            { name: post.title, url: `https://capittal.es/recursos/blog/${post.slug}` }
           ])
         ]}
       />
