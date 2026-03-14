@@ -1,17 +1,19 @@
 
 
-## Plan: Remove Static Sitemap and Clean robots.txt
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-### Changes
+### Cambios realizados
 
-1. **Delete `public/sitemap.xml`** — Remove the static file so only the dynamic sitemap served via Cloudflare Worker at `https://capittal.es/sitemap.xml` exists.
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-2. **Verify `public/robots.txt`** — Already confirmed: there is only one `Sitemap:` line (line 77) pointing to `https://capittal.es/sitemap.xml`. The `llms.txt` reference is commented out. No changes needed to robots.txt.
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-### Files
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-| File | Action |
-|------|--------|
-| `public/sitemap.xml` | **Delete** |
-| `public/robots.txt` | No changes needed (already correct) |
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
