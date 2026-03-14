@@ -108,7 +108,8 @@ export const useInlineUpdate = <T extends Record<string, any>>({
     );
 
     try {
-      const { error } = await supabase
+      // Use 'as any' to avoid TS2589: deep type instantiation with dynamic table union
+      const { error } = await (supabase as any)
         .from(table)
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id);
