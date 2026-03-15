@@ -238,6 +238,7 @@ export const AppRoutes = () => {
         <Route path="/servicios/valoraciones" element={<Valoraciones />} />
         <Route path="/servicios/venta-empresas" element={<VentaEmpresasServicio />} />
         <Route path="/servicios/venta-de-empresas" element={<Navigate to="/venta-empresas" replace />} />
+        <Route path="/servicios/valoracion-empresas" element={<Navigate to="/servicios/valoraciones" replace />} />
         <Route path="/servicios/due-diligence" element={<DueDiligence />} />
         <Route path="/servicios/asesoramiento-legal" element={<AsesoramientoLegal />} />
         <Route path="/servicios/asesoramiento-legal/tecnico" element={<AsesoramientoLegalTecnico />} />
