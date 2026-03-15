@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
   <meta name="twitter:description" content="${description}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
   <script type="application/ld+json">${orgJsonLd}</script>
-  <script type="application/ld+json">${articleJsonLd}</script>
+  <script type="application/ld+json">${articleJsonLd}</script>${post.faq_data ? `\n  <script type="application/ld+json">${safeJsonLd(JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": (post.faq_data as Array<{question: string; answer: string}>).map((faq: {question: string; answer: string}) => ({ "@type": "Question", "name": faq.question, "acceptedAnswer": { "@type": "Answer", "text": faq.answer } })) }))}</script>` : ""}
   
   <style>
     *{margin:0;padding:0;box-sizing:border-box}

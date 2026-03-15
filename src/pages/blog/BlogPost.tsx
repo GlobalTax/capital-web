@@ -105,7 +105,8 @@ const BlogPost = () => {
             { name: 'Inicio', url: 'https://capittal.es/' },
             { name: 'Blog', url: 'https://capittal.es/recursos/blog' },
             { name: post.title, url: `https://capittal.es/recursos/blog/${post.slug}` }
-          ])
+          ]),
+          ...((post as any).faq_data ? [getFAQSchema((post as any).faq_data)] : [])
         ]}
       />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
