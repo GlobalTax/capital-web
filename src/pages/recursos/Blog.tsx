@@ -136,7 +136,7 @@ const Blog = () => {
                           {featuredArticle.title}
                         </h2>
                         <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                          {featuredArticle.excerpt || truncateText(featuredArticle.content, 200)}
+                          {featuredArticle.excerpt || truncateText(featuredArticle.content.replace(/<[^>]*>/g, ''), 200)}
                         </p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-6 text-sm text-gray-500">
@@ -196,7 +196,7 @@ const Blog = () => {
                             </h3>
                             
                             <p className="text-sm text-gray-600 mb-6 flex-grow leading-relaxed">
-                              {article.excerpt || truncateText(article.content, 150)}
+                              {article.excerpt || truncateText(article.content.replace(/<[^>]*>/g, ''), 150)}
                             </p>
                             
                             <div className="flex items-center justify-between mt-auto">
