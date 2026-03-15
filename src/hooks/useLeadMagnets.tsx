@@ -21,7 +21,7 @@ export const useLeadMagnets = () => {
   });
 
   const createLeadMagnet = useMutation({
-    mutationFn: async (formData: Partial<LeadMagnet>) => {
+    mutationFn: async (formData: Omit<Partial<LeadMagnet>, 'id' | 'download_count' | 'lead_conversion_count' | 'created_at' | 'updated_at'> & { title: string; type: LeadMagnet['type']; sector: string; description: string }) => {
       const { data, error } = await supabase
         .from('lead_magnets')
         .insert([formData])
