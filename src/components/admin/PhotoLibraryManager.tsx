@@ -45,7 +45,7 @@ const PhotoLibraryManager: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto } = usePhotoLibrary(search, currentFolder);
+  const { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(search, currentFolder);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
