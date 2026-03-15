@@ -26,7 +26,7 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['photo-library', search, currentFolder],
     queryFn: async (): Promise<{ photos: PhotoFile[]; folders: FolderItem[] }> => {
       const normalizedSearch = search.trim().toLowerCase();
