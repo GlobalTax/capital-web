@@ -9,6 +9,7 @@ import PlanificacionFiscalWhyOptimize from '@/components/planificacion-fiscal/Pl
 import PlanificacionFiscalServices from '@/components/planificacion-fiscal/PlanificacionFiscalServices';
 import PlanificacionFiscalFAQ from '@/components/planificacion-fiscal/PlanificacionFiscalFAQ';
 import PlanificacionFiscalCTA from '@/components/planificacion-fiscal/PlanificacionFiscalCTA';
+import ServiceClosedOperations from '@/components/shared/ServiceClosedOperations';
 
 const PlanificacionFiscal = () => {
   const location = useLocation();
