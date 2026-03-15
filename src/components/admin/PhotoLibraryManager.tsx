@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { usePhotoLibrary, PhotoFile } from '@/hooks/usePhotoLibrary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Upload, Trash2, Copy, Loader2, ImageIcon, X, FolderPlus, Folder, ChevronRight, Home } from 'lucide-react';
+import { Search, Upload, Trash2, Copy, Loader2, ImageIcon, X, FolderPlus, Folder, ChevronRight, Home, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -37,23 +37,80 @@ const PhotoLibraryManager: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<PhotoFile | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
+  const [draggingPhoto, setDraggingPhoto] = useState<PhotoFile | null>(null);
+  const [isMoving, setIsMoving] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder } = usePhotoLibrary(search, currentFolder);
+  const { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto } = usePhotoLibrary(search, currentFolder);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
     uploadPhotos(Array.from(files));
   }, [uploadPhotos]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleExternalDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    handleFiles(e.dataTransfer.files);
+    // Only handle file drops (not internal photo drags)
+    if (e.dataTransfer.files.length > 0 && !e.dataTransfer.getData('application/photo-path')) {
+      handleFiles(e.dataTransfer.files);
+    }
   }, [handleFiles]);
+
+  // --- Internal drag & drop for moving photos ---
+  const handlePhotoDragStart = useCallback((e: React.DragEvent, photo: PhotoFile) => {
+    e.dataTransfer.setData('application/photo-path', photo.fullPath);
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggingPhoto(photo);
+  }, []);
+
+  const handleFolderDragOver = useCallback((e: React.DragEvent, folderName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverFolder(folderName);
+  }, []);
+
+  const handleFolderDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverFolder(null);
+  }, []);
+
+  const handleFolderDrop = useCallback(async (e: React.DragEvent, folderName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverFolder(null);
+    setDraggingPhoto(null);
+
+    const photoPath = e.dataTransfer.getData('application/photo-path');
+    if (!photoPath) return; // Not an internal photo drag
+
+    const targetFolder = currentFolder ? `${currentFolder}/${folderName}` : folderName;
+    setIsMoving(true);
+    await movePhoto(photoPath, targetFolder);
+    setIsMoving(false);
+  }, [currentFolder, movePhoto]);
+
+  // Drop on breadcrumb (move to parent/root)
+  const handleBreadcrumbDrop = useCallback(async (e: React.DragEvent, targetFolder: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const photoPath = e.dataTransfer.getData('application/photo-path');
+    if (!photoPath) return;
+
+    setIsMoving(true);
+    await movePhoto(photoPath, targetFolder);
+    setIsMoving(false);
+  }, [movePhoto]);
+
+  const handlePhotoDragEnd = useCallback(() => {
+    setDraggingPhoto(null);
+    setDragOverFolder(null);
+  }, []);
 
   const copyUrl = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -110,7 +167,8 @@ const PhotoLibraryManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">📸 Biblioteca de Fotos</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {photos.length} fotos · {folders.length} carpetas · Sube, organiza y copia URLs
+            {photos.length} fotos · {folders.length} carpetas · Arrastra fotos a carpetas para moverlas
+            {isMoving && <span className="ml-2 text-primary animate-pulse">Moviendo...</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -139,8 +197,10 @@ const PhotoLibraryManager: React.FC = () => {
           <BreadcrumbItem>
             {currentFolder ? (
               <BreadcrumbLink
-                className="cursor-pointer flex items-center gap-1"
+                className="cursor-pointer flex items-center gap-1 px-1 rounded transition-colors"
                 onClick={() => navigateToBreadcrumb(-1)}
+                onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                onDrop={e => handleBreadcrumbDrop(e, '')}
               >
                 <Home className="h-3.5 w-3.5" />
                 Inicio
@@ -162,8 +222,10 @@ const PhotoLibraryManager: React.FC = () => {
                   <BreadcrumbPage>{part}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink
-                    className="cursor-pointer"
+                    className="cursor-pointer px-1 rounded transition-colors"
                     onClick={() => navigateToBreadcrumb(i)}
+                    onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                    onDrop={e => handleBreadcrumbDrop(e, breadcrumbParts.slice(0, i + 1).join('/'))}
                   >
                     {part}
                   </BreadcrumbLink>
@@ -208,9 +270,9 @@ const PhotoLibraryManager: React.FC = () => {
         className={`relative min-h-[300px] rounded-[var(--radius-lg)] border-2 border-dashed transition-colors ${
           isDragging ? 'border-primary bg-primary/5' : 'border-border'
         }`}
-        onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+        onDragOver={e => { e.preventDefault(); if (e.dataTransfer.types.includes('Files')) setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
+        onDrop={handleExternalDrop}
       >
         {isDragging && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 rounded-[var(--radius-lg)]">
@@ -238,13 +300,27 @@ const PhotoLibraryManager: React.FC = () => {
                 {folders.map(folder => (
                   <div
                     key={folder.name}
-                    className="group relative flex flex-col items-center gap-2 p-4 rounded-[var(--radius)] border border-border bg-card hover:bg-muted/50 cursor-pointer transition-colors"
+                    className={`group relative flex flex-col items-center gap-2 p-4 rounded-[var(--radius)] border bg-card cursor-pointer transition-all ${
+                      dragOverFolder === folder.name
+                        ? 'border-primary bg-primary/10 ring-2 ring-primary scale-105'
+                        : 'border-border hover:bg-muted/50'
+                    }`}
                     onClick={() => navigateToFolder(folder.name)}
+                    onDragOver={e => handleFolderDragOver(e, folder.name)}
+                    onDragLeave={handleFolderDragLeave}
+                    onDrop={e => handleFolderDrop(e, folder.name)}
                   >
-                    <Folder className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <Folder className={`h-10 w-10 transition-colors ${
+                      dragOverFolder === folder.name ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
+                    }`} />
                     <p className="text-xs text-foreground truncate w-full text-center" title={folder.name}>
                       {folder.name}
                     </p>
+                    {dragOverFolder === folder.name && (
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] text-primary font-medium whitespace-nowrap">
+                        Soltar aquí
+                      </span>
+                    )}
                     <button
                       className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10"
                       onClick={(e) => { e.stopPropagation(); setDeleteFolderTarget(folder.name); }}
@@ -263,15 +339,24 @@ const PhotoLibraryManager: React.FC = () => {
                 {photos.map(photo => (
                   <div
                     key={photo.id}
-                    className="group relative rounded-[var(--radius)] border border-border bg-card overflow-hidden hover:shadow-md transition-shadow"
+                    draggable
+                    onDragStart={e => handlePhotoDragStart(e, photo)}
+                    onDragEnd={handlePhotoDragEnd}
+                    className={`group relative rounded-[var(--radius)] border border-border bg-card overflow-hidden transition-all cursor-grab active:cursor-grabbing ${
+                      draggingPhoto?.id === photo.id ? 'opacity-40 scale-95' : 'hover:shadow-md'
+                    }`}
                   >
-                    <div className="aspect-square bg-muted">
+                    <div className="aspect-square bg-muted relative">
                       <img
                         src={photo.publicUrl}
                         alt={photo.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        draggable={false}
                       />
+                      <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-70 transition-opacity">
+                        <GripVertical className="h-4 w-4 text-foreground drop-shadow-md" />
+                      </div>
                     </div>
                     <div className="absolute inset-0 bg-background/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <Button size="icon" variant="secondary" onClick={() => copyUrl(photo.publicUrl)} title="Copiar URL">
