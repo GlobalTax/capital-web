@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
       <h1>${escapeHtml(post.title)}</h1>
       <div class="meta">${authorName} · ${category} · ${publishedAt ? new Date(publishedAt).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" }) : ""}</div>
       ${post.featured_image_url ? `<img class="hero" src="${escapeHtml(post.featured_image_url)}" alt="${title}">` : ""}
-      <p class="redirect-note">Redirigiendo a la versión completa en <a href="${canonicalUrl}">capittal.es</a>…</p>
+      
       <div class="content">${post.content}</div>
     </article>
   </main>

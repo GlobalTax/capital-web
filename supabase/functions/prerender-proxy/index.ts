@@ -168,7 +168,7 @@ function buildFallbackHtml(path: string): string {
 </head>
 <body>
   <h1>Capittal - Especialistas en Fusiones y Adquisiciones</h1>
-  <p>Redirigiendo a <a href="https://capittal.es${path}">capittal.es${path}</a>...</p>
+  <p>Visite <a href="https://capittal.es${path}">capittal.es${path}</a> para más información.</p>
 </body>
 </html>`;
 }

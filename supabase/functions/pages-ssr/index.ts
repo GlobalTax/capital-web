@@ -2012,7 +2012,7 @@ function buildPageHtml(path: string, page: PageData): string {
     </nav>
   </header>
   <main>
-    <p class="redirect-note">Redirigiendo a la versión completa en <a href="${spaUrl}">capittal.es</a>…</p>
+    
     ${page.content}
   </main>
   <footer>© ${new Date().getFullYear()} <a href="https://capittal.es">Capittal</a> · Especialistas en M&A, Valoraciones y Due Diligence · <a href="${spaUrl}">Ver versión completa</a></footer>
