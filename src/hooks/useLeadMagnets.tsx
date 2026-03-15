@@ -98,13 +98,28 @@ export const useLeadMagnets = () => {
 };
 
 export const useLeadMagnetDownloads = () => {
-  const recordDownload = async (leadMagnetId: string, formData: DownloadFormData) => {
+  const resolveLeadMagnetId = async (idOrSlug: string): Promise<string> => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(idOrSlug)) return idOrSlug;
+
+    const { data, error } = await supabase
+      .from('lead_magnets')
+      .select('id')
+      .eq('landing_page_slug', idOrSlug)
+      .single();
+
+    if (error || !data) throw new Error(`Lead magnet not found for slug: ${idOrSlug}`);
+    return data.id;
+  };
+
+  const recordDownload = async (idOrSlug: string, formData: DownloadFormData) => {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] === LEAD MAGNET DOWNLOAD START ===`);
-    console.log('Lead magnet ID:', leadMagnetId);
-    console.log('Form data:', formData);
+    console.log('Lead magnet ID/slug:', idOrSlug);
 
     try {
+      const leadMagnetId = await resolveLeadMagnetId(idOrSlug);
+
       const { error } = await supabase
         .from('lead_magnet_downloads')
         .insert([{
