@@ -77,6 +77,8 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
         </Button>
 
         <PhotoLibraryPicker onSelect={(url) => onChange(url)} />
+
+        {value && (
           <Button
             type="button"
             variant="outline"
