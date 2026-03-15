@@ -41,6 +41,9 @@ const AsesoramientoLegal = () => {
       <AsesoramientoLegalServices />
       
       <AsesoramientoLegalBenefits />
+      <ServiceClosedOperations
+        subtitle="Asesoramiento legal en operaciones complejas de M&A"
+      />
       <AsesoramientoLegalFAQ />
       <AsesoramientoLegalCTA />
     </UnifiedLayout>

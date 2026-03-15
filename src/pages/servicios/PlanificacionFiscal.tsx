@@ -37,6 +37,9 @@ const PlanificacionFiscal = () => {
       <PlanificacionFiscalHero />
       <PlanificacionFiscalWhyOptimize />
       <PlanificacionFiscalServices />
+      <ServiceClosedOperations
+        subtitle="Optimización fiscal en operaciones corporativas reales"
+      />
       <PlanificacionFiscalFAQ />
       <PlanificacionFiscalCTA />
     </UnifiedLayout>

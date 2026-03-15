@@ -40,6 +40,9 @@ const DueDiligence = () => {
         <DueDiligenceTypes />
         <DueDiligenceProcess />
         <DueDiligenceBenefits />
+        <ServiceClosedOperations
+          subtitle="Due diligence riguroso en operaciones de todos los tamaños"
+        />
         <DueDiligenceFAQ />
         <DueDiligenceCTA />
       </UnifiedLayout>

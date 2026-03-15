@@ -65,6 +65,9 @@ const VentaEmpresas = () => {
         <VentaEmpresasBenefits />
         <VentaEmpresasProcess />
         <VentaEmpresasValuation />
+        <ServiceClosedOperations
+          subtitle="Empresas que han confiado en nosotros para maximizar el valor de su venta"
+        />
         <VentaEmpresasFAQ />
         <VentaEmpresasCTA />
       </UnifiedLayout>

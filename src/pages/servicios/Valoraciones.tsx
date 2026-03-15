@@ -42,6 +42,9 @@ const Valoraciones = () => {
         <ValoracionesMultiples />
         <ValoracionesProcess />
         <ValoracionesBenefits />
+        <ServiceClosedOperations
+          subtitle="Valoraciones que han permitido tomar decisiones estratégicas informadas"
+        />
         <ValoracionesFAQNew />
         <ValoracionesCTANew />
       </UnifiedLayout>

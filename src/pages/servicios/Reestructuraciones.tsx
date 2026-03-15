@@ -38,6 +38,9 @@ const Reestructuraciones = () => {
         <ReestructuracionesHero />
         <ReestructuracionesProcess />
         <ReestructuracionesBenefits />
+        <ServiceClosedOperations
+          subtitle="Reestructuraciones exitosas que han devuelto la viabilidad a empresas"
+        />
         <ReestructuracionesFAQ />
         <ReestructuracionesCTA />
       </UnifiedLayout>
