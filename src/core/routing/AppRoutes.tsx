@@ -106,6 +106,7 @@ const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() =
 const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => import('@/pages/VentaEmpresas')));
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => import('@/pages/VentaEmpresas')));
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => import('@/pages/NotFound')));
+const ResourceLandingPageLazy = lazy(() => import('@/pages/recursos/ResourceLandingPage'));
 const SharedPresentationPage = lazy(() => import('@/features/presentations/pages/SharedPresentationPage'));
 const JobsPage = lazy(() => import('@/pages/JobsPage').catch(() => import('@/pages/VentaEmpresas')));
 const JobDetailPage = lazy(() => import('@/pages/JobDetailPage').catch(() => import('@/pages/NotFound')));

@@ -38,6 +38,13 @@ export const recursosData: MenuCategory[] = [
         description: "Guía completa de métodos y herramientas de valoración"
       },
       {
+        id: "biblioteca-recursos",
+        label: "Biblioteca de Recursos",
+        href: "/recursos/biblioteca",
+        icon: 'library',
+        description: "Informes, guías y plantillas gratuitas sobre M&A"
+      },
+      {
         id: "informes-ma",
         label: "Informes M&A",
         href: "/recursos/informes-ma",
