@@ -167,7 +167,8 @@ const PhotoLibraryManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">📸 Biblioteca de Fotos</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {photos.length} fotos · {folders.length} carpetas · Sube, organiza y copia URLs
+            {photos.length} fotos · {folders.length} carpetas · Arrastra fotos a carpetas para moverlas
+            {isMoving && <span className="ml-2 text-primary animate-pulse">Moviendo...</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
