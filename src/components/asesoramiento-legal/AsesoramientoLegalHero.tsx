@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SimpleButton } from '@/components/ui/simple-button';
-import { Phone, Download } from 'lucide-react';
+import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 
 const AsesoramientoLegalHero = () => {
   return (
@@ -34,20 +33,21 @@ const AsesoramientoLegalHero = () => {
                 <div className="text-sm text-slate-600">Operaciones Asesoradas</div>
               </div>
               <div className="text-center p-4 bg-card border border-border rounded-xl">
-                <div className="text-3xl font-bold text-slate-900 mb-2">905 millones</div>
-                <div className="text-sm text-slate-600">Valor Total Protegido</div>
+                <div className="text-3xl font-bold text-slate-900 mb-2">98%</div>
+                <div className="text-sm text-slate-600">Sin Litigios Post-Cierre</div>
               </div>
             </div>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <SimpleButton
-                text="Consulta"
-                variant="primary"
-                size="lg"
-                className="flex items-center gap-2"
-                onClick={() => window.location.href = '/contacto'}
-              />
+              <a href="#contact">
+                <InteractiveHoverButton
+                  text="Consulta Legal"
+                  variant="primary"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                />
+              </a>
             </div>
           </div>
 

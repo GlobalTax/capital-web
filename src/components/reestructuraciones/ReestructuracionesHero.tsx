@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-import { Link } from 'react-router-dom';
 import { RefreshCw, TrendingUp, Shield, Target } from 'lucide-react';
 
 const ReestructuracionesHero = () => {
@@ -41,14 +40,14 @@ const ReestructuracionesHero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/contacto">
+              <a href="#contact">
                 <InteractiveHoverButton
                   text="Evaluar Reestructuración"
                   variant="primary"
                   size="lg"
                   className="w-full sm:w-auto"
                 />
-              </Link>
+              </a>
             </div>
           </div>
 
