@@ -40,7 +40,7 @@ const SITE_ROUTES = [
   { path: "/recursos/test-exit-ready", title: "Test Exit Ready | Capittal", description: "Evalúa si tu empresa está preparada para vender.", h1: "Test Exit Ready", changefreq: "monthly", priority: 0.7 },
   { path: "/search-funds", title: "Search Funds España | Capittal", description: "Conectamos empresas con Search Funds.", h1: "Search Funds", changefreq: "monthly", priority: 0.7 },
   { path: "/lp/calculadora", title: "Calculadora de Valoración Gratis | Capittal", description: "Calcula el valor de tu empresa gratis con nuestra calculadora online.", h1: "Calculadora de Valoración", changefreq: "weekly", priority: 0.95 },
-  { path: "/valoracion-empresas", title: "Valoración de Empresas en España | Capittal", description: "Guía completa sobre valoración de empresas.", h1: "Valoración de Empresas", changefreq: "monthly", priority: 0.7 },
+  
   { path: "/guia-valoracion-empresas", title: "Guía de Valoración de Empresas | Capittal", description: "Guía profesional de valoración empresarial.", h1: "Guía de Valoración", changefreq: "monthly", priority: 0.65 },
 ];
 

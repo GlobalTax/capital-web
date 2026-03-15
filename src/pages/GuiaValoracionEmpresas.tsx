@@ -105,7 +105,7 @@ const GuiaValoracionEmpresas = () => {
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
               <Link to="/" className="hover:text-foreground transition-colors">Inicio</Link>
               <span>/</span>
-              <Link to="/valoracion-empresas" className="hover:text-foreground transition-colors">Valoración de Empresas</Link>
+              <Link to="/servicios/valoraciones" className="hover:text-foreground transition-colors">Valoración de Empresas</Link>
               <span>/</span>
               <span className="text-foreground">Guía Completa</span>
             </div>
@@ -444,7 +444,7 @@ const GuiaValoracionEmpresas = () => {
             title="Obtén una estimación rápida del valor de tu empresa"
             description="Nuestra calculadora gratuita aplica múltiplos EBITDA actualizados por sector para darte un rango de valoración orientativo en menos de 5 minutos."
             primaryAction={{ label: 'Usar calculadora gratuita', href: '/lp/calculadora' }}
-            secondaryAction={{ label: 'Ver métodos detallados', href: '/valoracion-empresas' }}
+            secondaryAction={{ label: 'Ver métodos detallados', href: '/servicios/valoraciones' }}
           />
 
           {/* ─── SECCIÓN 7: FAQ ─── */}

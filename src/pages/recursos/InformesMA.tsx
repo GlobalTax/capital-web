@@ -235,7 +235,7 @@ const InformesMA: React.FC = () => {
                   <h3 className="font-semibold text-foreground mb-3">Contenido relacionado</h3>
                   <ul className="space-y-2 text-sm">
                     <li>
-                      <Link to="/valoracion-empresas" className="text-primary hover:underline">
+                      <Link to="/servicios/valoraciones" className="text-primary hover:underline">
                         Calculadora de Valoración
                       </Link>
                     </li>

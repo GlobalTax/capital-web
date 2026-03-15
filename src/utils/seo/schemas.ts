@@ -318,7 +318,7 @@ export const getFinancialServiceSchema = () => ({
         "@type": "Service",
         "name": "Valoración de Empresas",
         "description": "Valoración profesional mediante DCF, múltiplos comparables y métodos patrimoniales",
-        "url": "https://capittal.es/valoracion-empresas"
+        "url": "https://capittal.es/servicios/valoraciones"
       }
     },
     {

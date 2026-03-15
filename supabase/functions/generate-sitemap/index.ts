@@ -38,7 +38,7 @@ const SITE_ROUTES = [
   { path: "/recursos/test-exit-ready", changefreq: "monthly", priority: 0.7 },
   { path: "/search-funds", changefreq: "monthly", priority: 0.7 },
   { path: "/lp/calculadora", changefreq: "weekly", priority: 0.95 },
-  { path: "/valoracion-empresas", changefreq: "monthly", priority: 0.7 },
+  
   { path: "/guia-valoracion-empresas", changefreq: "monthly", priority: 0.65 },
 ];
 

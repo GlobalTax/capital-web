@@ -32,7 +32,7 @@ import AsesoramientoLegalTecnico from '@/pages/servicios/AsesoramientoLegalTecni
 import Reestructuraciones from '@/pages/servicios/Reestructuraciones';
 import PlanificacionFiscal from '@/pages/servicios/PlanificacionFiscal';
 import SearchFunds from '@/pages/servicios/SearchFunds';
-import ValoracionEmpresas from '@/pages/ValoracionEmpresas';
+
 import GuiaValoracionEmpresas from '@/pages/GuiaValoracionEmpresas';
 
 // === SECTOR PAGES (Direct imports) ===
@@ -246,7 +246,7 @@ export const AppRoutes = () => {
         <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
         <Route path="/servicios/search-funds" element={<SearchFunds />} />
         <Route path="/search-funds" element={<SearchFunds />} />
-        <Route path="/valoracion-empresas" element={<ValoracionEmpresas />} />
+        <Route path="/valoracion-empresas" element={<Navigate to="/servicios/valoraciones" replace />} />
         <Route path="/guia-valoracion-empresas" element={<GuiaValoracionEmpresas />} />
         
         {/* === SERVICE ROUTES (Catalan → redirect to Spanish) === */}

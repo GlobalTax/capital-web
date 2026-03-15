@@ -10,7 +10,7 @@ const suggestedLinks = [
   {
     title: "Calculadora de Valoración",
     description: "Descubre el valor de tu empresa en 2 minutos",
-    href: "/valoracion-empresas",
+    href: "/servicios/valoraciones",
     icon: Calculator,
   },
   {
