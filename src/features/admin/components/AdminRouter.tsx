@@ -188,6 +188,7 @@ const AdminRouter = () => {
           <Route path="/hero-slides" element={<LazyHeroSlidesManager />} />
           <Route path="/practice-areas" element={<LazyPracticeAreasManager />} />
           <Route path="/noticias" element={<LazyNewsArticlesManager />} />
+          <Route path="/photo-library" element={<LazyPhotoLibraryPage />} />
           
           {/* Job Posts Management - Complete */}
           <Route path="/jobs" element={<LazyJobPostsManager />} />
