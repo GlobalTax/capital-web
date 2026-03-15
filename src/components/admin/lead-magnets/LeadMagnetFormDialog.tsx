@@ -127,7 +127,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
       };
 
       if (editingMagnet) {
-        await updateLeadMagnet.mutateAsync({ id: editingMagnet.id, ...basePayload });
+        await updateLeadMagnet.mutateAsync({ id: editingMagnet.id, ...basePayload, download_count: downloadCount, lead_conversion_count: conversionCount });
         toast({ title: 'Recurso actualizado' });
       } else {
         await createLeadMagnet.mutateAsync(basePayload);
