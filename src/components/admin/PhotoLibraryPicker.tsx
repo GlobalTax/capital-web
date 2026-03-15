@@ -18,7 +18,7 @@ const PhotoLibraryPicker: React.FC<PhotoLibraryPickerProps> = ({ onSelect, trigg
   const [currentFolder, setCurrentFolder] = useState('');
   const [editingUrl, setEditingUrl] = useState<string | null>(null);
 
-  const { photos, folders, isLoading } = usePhotoLibrary(search, currentFolder);
+  const { photos, folders, isLoading, isError, error, refetch } = usePhotoLibrary(search, currentFolder);
 
   const breadcrumbs = currentFolder ? currentFolder.split('/') : [];
 
