@@ -107,7 +107,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
 
     setSaving(true);
     try {
-      const payload: Partial<LeadMagnet> = {
+      const basePayload = {
         title: title.trim(),
         type: type as LeadMagnet['type'],
         sector,
@@ -122,7 +122,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
       };
 
       if (editingMagnet) {
-        await updateLeadMagnet.mutateAsync({ id: editingMagnet.id, ...payload });
+        await updateLeadMagnet.mutateAsync({ id: editingMagnet.id, ...basePayload });
         toast({ title: 'Recurso actualizado' });
       } else {
         await createLeadMagnet.mutateAsync(payload);
