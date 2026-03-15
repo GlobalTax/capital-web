@@ -197,8 +197,10 @@ const PhotoLibraryManager: React.FC = () => {
           <BreadcrumbItem>
             {currentFolder ? (
               <BreadcrumbLink
-                className="cursor-pointer flex items-center gap-1"
+                className="cursor-pointer flex items-center gap-1 px-1 rounded transition-colors"
                 onClick={() => navigateToBreadcrumb(-1)}
+                onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                onDrop={e => handleBreadcrumbDrop(e, '')}
               >
                 <Home className="h-3.5 w-3.5" />
                 Inicio
@@ -220,8 +222,10 @@ const PhotoLibraryManager: React.FC = () => {
                   <BreadcrumbPage>{part}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink
-                    className="cursor-pointer"
+                    className="cursor-pointer px-1 rounded transition-colors"
                     onClick={() => navigateToBreadcrumb(i)}
+                    onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                    onDrop={e => handleBreadcrumbDrop(e, breadcrumbParts.slice(0, i + 1).join('/'))}
                   >
                     {part}
                   </BreadcrumbLink>
