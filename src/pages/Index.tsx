@@ -13,6 +13,7 @@ import EcosistemaIntegral from '@/components/EcosistemaIntegral';
 import CaseStudiesCompact from '@/components/CaseStudiesCompact';
 import WhyChooseCapittal from '@/components/WhyChooseCapittal';
 import MANewsSection from '@/components/home/MANewsSection';
+import GuideDownloadSection from '@/components/home/GuideDownloadSection';
 import Contact from '@/components/Contact';
 
 const Index = () => {
