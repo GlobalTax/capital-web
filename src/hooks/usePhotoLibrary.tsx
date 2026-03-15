@@ -26,8 +26,9 @@ export const usePhotoLibrary = (search: string = '') => {
     queryFn: async (): Promise<PhotoFile[]> => {
       const { data, error } = await supabase.storage
         .from(BUCKET)
-        .list('', { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
+        .list(undefined, { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
 
+      console.log('Photo library list result:', { count: data?.length, error });
       if (error) throw error;
       if (!data) return [];
 

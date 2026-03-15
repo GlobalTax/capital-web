@@ -1,30 +1,52 @@
 
 
-## Plan: Fix Photo Library listing
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Problem
-The 20 photos uploaded successfully (confirmed in database), but `supabase.storage.from('admin-photos').list('', {...})` returns empty. Passing an empty string `''` as the path in some Supabase JS client versions doesn't correctly list root-level files.
+### Cambios realizados
 
-### Fix
-**File: `src/hooks/usePhotoLibrary.tsx` (line 28-29)**
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-Change:
-```typescript
-.list('', { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
-```
+### Resultado
 
-To:
-```typescript
-.list(undefined, { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
-```
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-Additionally, add error logging to help debug if the issue persists:
-```typescript
-console.log('Photo library list result:', { data, error });
-```
+---
 
-### Why
-Supabase storage `list()` with `''` (empty string) can behave differently than `list(undefined)` — some versions interpret `''` as a literal folder name rather than "root". Using `undefined` explicitly requests root-level listing.
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-One file, one-line change.
+### Cambios realizados
 
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
