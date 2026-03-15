@@ -109,126 +109,6 @@ const SectoresMenu = () => (
   </div>
 );
 
-const RecursosUnifiedMenu = () => (
-  <div className="grid lg:grid-cols-[1fr_1px_1fr] gap-0">
-    {/* Search Funds Column */}
-    <div className="p-6 space-y-6">
-      <div className="border-b border-gray-200 pb-2">
-        <strong className="text-xs font-medium tracking-wider text-gray-500 uppercase">
-          Search Funds
-        </strong>
-      </div>
-      
-      {/* Featured Card */}
-      <Link
-        to={searchFundsData.featured.href}
-        className="group relative flex flex-col overflow-hidden rounded-lg bg-black text-white p-5 hover:bg-gray-900 transition-all duration-300"
-      >
-        <span className="mb-3 text-[10px] font-medium tracking-wider uppercase opacity-70">
-          Herramienta Destacada
-        </span>
-        <div className="flex items-center space-x-1 text-sm font-medium mb-1.5">
-          {searchFundsData.featured.title}
-          <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-1" />
-        </div>
-        <p className="text-xs opacity-75 leading-relaxed">
-          {searchFundsData.featured.description}
-        </p>
-      </Link>
-
-      {/* Search Funds Categories */}
-      {searchFundsData.categories.map((category) => (
-        <div key={category.title} className="space-y-3">
-          <strong className="text-[11px] font-medium tracking-wider text-gray-400 uppercase">
-            {category.title}
-          </strong>
-          <div className="space-y-1">
-            {category.items.map((item) => (
-              <NavigationMenuLink key={item.id} asChild>
-                <Link
-                  to={item.href}
-                  className="group flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900 group-hover:text-black">
-                      {item.label}
-                    </div>
-                    {item.description && (
-                      <p className="mt-0.5 text-xs text-gray-500 group-hover:text-gray-600">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                  <ArrowRight className="size-3.5 text-gray-400 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </NavigationMenuLink>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* Vertical Divider */}
-    <div className="hidden lg:block bg-gray-200" />
-
-    {/* Recursos Column */}
-    <div className="p-6 space-y-6">
-      <div className="border-b border-gray-200 pb-2">
-        <strong className="text-xs font-medium tracking-wider text-gray-500 uppercase">
-          Recursos
-        </strong>
-      </div>
-
-      {/* Featured Card */}
-      <Link
-        to="/lp/calculadora-web"
-        className="group relative flex flex-col overflow-hidden rounded-lg bg-primary text-primary-foreground p-5 hover:bg-primary/90 transition-all duration-300"
-      >
-        <span className="mb-3 text-[10px] font-medium tracking-wider uppercase opacity-70">
-          Herramienta Gratuita
-        </span>
-        <div className="flex items-center space-x-1 text-sm font-medium mb-1.5">
-          Calculadora de Valoración
-          <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-1" />
-        </div>
-        <p className="text-xs opacity-75 leading-relaxed">
-          Obtén una valoración inicial de tu empresa de forma gratuita.
-        </p>
-      </Link>
-
-      {/* Recursos Categories */}
-      {recursosData.map((category) => (
-        <div key={category.title} className="space-y-3">
-          <strong className="text-[11px] font-medium tracking-wider text-gray-400 uppercase">
-            {category.title}
-          </strong>
-          <div className="space-y-1">
-            {category.items.map((item) => (
-              <NavigationMenuLink key={item.id} asChild>
-                <Link
-                  to={item.href}
-                  className="group flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900 group-hover:text-black">
-                      {item.label}
-                    </div>
-                    {item.description && (
-                      <p className="mt-0.5 text-xs text-gray-500 group-hover:text-gray-600">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                  <ArrowRight className="size-3.5 text-gray-400 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </NavigationMenuLink>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-
 const NosotrosMenu = () => (
   <div className="grid gap-6 md:grid-cols-2">
     <div>
@@ -273,6 +153,123 @@ const NosotrosMenu = () => (
             <ArrowRight className="size-4 text-gray-400 transition-transform group-hover:translate-x-1" />
           </Link>
         </NavigationMenuLink>
+      ))}
+    </div>
+  </div>
+);
+
+const RecursosUnifiedMenu = () => (
+  <div className="grid lg:grid-cols-[1fr_1px_1fr] gap-0">
+    {/* Search Funds Column */}
+    <div className="p-6 space-y-6">
+      <div className="border-b border-gray-200 pb-2">
+        <strong className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+          Search Funds
+        </strong>
+      </div>
+      
+      <Link
+        to={searchFundsData.featured.href}
+        className="group relative flex flex-col overflow-hidden rounded-lg bg-black text-white p-5 hover:bg-gray-900 transition-all duration-300"
+      >
+        <span className="mb-3 text-[10px] font-medium tracking-wider uppercase opacity-70">
+          Herramienta Destacada
+        </span>
+        <div className="flex items-center space-x-1 text-sm font-medium mb-1.5">
+          {searchFundsData.featured.title}
+          <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-1" />
+        </div>
+        <p className="text-xs opacity-75 leading-relaxed">
+          {searchFundsData.featured.description}
+        </p>
+      </Link>
+
+      {searchFundsData.categories.map((category) => (
+        <div key={category.title} className="space-y-3">
+          <strong className="text-[11px] font-medium tracking-wider text-gray-400 uppercase">
+            {category.title}
+          </strong>
+          <div className="space-y-1">
+            {category.items.map((item) => (
+              <NavigationMenuLink key={item.id} asChild>
+                <Link
+                  to={item.href}
+                  className="group flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-900 group-hover:text-black">
+                      {item.label}
+                    </div>
+                    {item.description && (
+                      <p className="mt-0.5 text-xs text-gray-500 group-hover:text-gray-600">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  <ArrowRight className="size-3.5 text-gray-400 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </NavigationMenuLink>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Vertical Divider */}
+    <div className="hidden lg:block bg-gray-200" />
+
+    {/* Recursos Column */}
+    <div className="p-6 space-y-6">
+      <div className="border-b border-gray-200 pb-2">
+        <strong className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+          Recursos
+        </strong>
+      </div>
+
+      <Link
+        to="/lp/calculadora-web"
+        className="group relative flex flex-col overflow-hidden rounded-lg bg-primary text-primary-foreground p-5 hover:bg-primary/90 transition-all duration-300"
+      >
+        <span className="mb-3 text-[10px] font-medium tracking-wider uppercase opacity-70">
+          Herramienta Gratuita
+        </span>
+        <div className="flex items-center space-x-1 text-sm font-medium mb-1.5">
+          Calculadora de Valoración
+          <ArrowRight className="ml-1 size-3.5 transition-transform group-hover:translate-x-1" />
+        </div>
+        <p className="text-xs opacity-75 leading-relaxed">
+          Obtén una valoración inicial de tu empresa de forma gratuita.
+        </p>
+      </Link>
+
+      {recursosData.map((category) => (
+        <div key={category.title} className="space-y-3">
+          <strong className="text-[11px] font-medium tracking-wider text-gray-400 uppercase">
+            {category.title}
+          </strong>
+          <div className="space-y-1">
+            {category.items.map((item) => (
+              <NavigationMenuLink key={item.id} asChild>
+                <Link
+                  to={item.href}
+                  className="group flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-900 group-hover:text-black">
+                      {item.label}
+                    </div>
+                    {item.description && (
+                      <p className="mt-0.5 text-xs text-gray-500 group-hover:text-gray-600">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  <ArrowRight className="size-3.5 text-gray-400 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </NavigationMenuLink>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   </div>
