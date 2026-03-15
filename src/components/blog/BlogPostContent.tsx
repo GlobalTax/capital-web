@@ -9,6 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
 import BlogValuationCTA from './BlogValuationCTA';
+import BlogGuideDownloadCTA from './BlogGuideDownloadCTA';
 import BlogContactSection from './BlogContactSection';
 
 interface BlogPostContentProps {
@@ -326,6 +327,11 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
             {/* CTA Valoración - Sidebar */}
             <div className="mt-6">
               <BlogValuationCTA />
+            </div>
+            
+            {/* CTA Guía Vender Empresa - Sidebar */}
+            <div className="mt-4">
+              <BlogGuideDownloadCTA />
             </div>
             </div>
           </div>

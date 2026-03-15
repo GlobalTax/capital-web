@@ -287,6 +287,16 @@ export const siteRoutes: SiteRoute[] = [
 
   // === RESOURCE PAGES ===
   {
+    path: '/recursos/guia-vender-empresa',
+    title: 'Guía Gratuita para Vender tu Empresa | Capittal',
+    description: 'Descarga gratis la guía completa de 12 capítulos: valoración, due diligence, fiscalidad, negociación y checklist de preparación.',
+    h1: 'Guía Completa para Vender tu Empresa',
+    internalLinks: ['/venta-empresas', '/lp/calculadora', '/servicios/venta-empresas', '/contacto'],
+    lastmod: today,
+    priority: 0.8,
+    changefreq: 'monthly',
+  },
+  {
     path: '/recursos/blog',
     title: 'Blog M&A | Capittal',
     description: 'Artículos sobre fusiones y adquisiciones, valoración de empresas, due diligence y mercado M&A español.',
