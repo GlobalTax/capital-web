@@ -1,52 +1,22 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Añadir avatar de Samuel Navarro a los 4 artículos nuevos + EBITDA
 
-### Cambios realizados
+### Problema
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+Los 5 artículos recién publicados tienen `author_name = 'Samuel Navarro'` pero `author_avatar_url = NULL`. Los artículos antiguos usan `'Samuel L. Navarro'` y sí tienen la URL del avatar.
 
-### Resultado
+### Solución
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+Un solo UPDATE que ponga la URL de la foto del equipo en los 5 posts afectados:
 
----
+```sql
+UPDATE blog_posts 
+SET author_avatar_url = 'https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/team/1756718254153_74hs9r.png'
+WHERE author_name = 'Samuel Navarro' AND author_avatar_url IS NULL;
+```
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+Esto afecta a: `que-es-ebitda`, `fusiones-y-adquisiciones`, `que-es-due-diligence`, `que-es-private-equity`, `que-es-un-nda`.
 
-### Cambios realizados
+No requiere cambios de código — `BlogPost.tsx` ya renderiza `author_avatar_url` cuando existe.
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
-
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
