@@ -84,6 +84,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
     setDescription(''); setSlug(''); setMetaTitle('');
     setMetaDescription(''); setStatus('draft'); setContent('');
     setFileUrl(''); setImageUrl(''); setSlugManual(false);
+    setDownloadCount(0); setConversionCount(0);
   };
 
   useEffect(() => {
