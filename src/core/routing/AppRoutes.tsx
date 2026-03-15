@@ -51,6 +51,7 @@ import MedioAmbiente from '@/pages/sectores/MedioAmbiente';
 import Blog from '@/pages/recursos/Blog';
 import TestExitReady from '@/pages/recursos/TestExitReady';
 import GuiaVenderEmpresa from '@/pages/recursos/GuiaVenderEmpresa';
+import ResourceLibrary from '@/pages/recursos/ResourceLibrary';
 import BlogPost from '@/pages/blog/BlogPost';
 import LandingCalculator from '@/pages/LandingCalculator';
 
