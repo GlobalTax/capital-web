@@ -125,7 +125,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
         await updateLeadMagnet.mutateAsync({ id: editingMagnet.id, ...basePayload });
         toast({ title: 'Recurso actualizado' });
       } else {
-        await createLeadMagnet.mutateAsync(payload);
+        await createLeadMagnet.mutateAsync(basePayload);
         toast({ title: 'Recurso creado' });
       }
 
