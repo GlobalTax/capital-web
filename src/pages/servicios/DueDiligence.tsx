@@ -10,6 +10,7 @@ import DueDiligenceProcess from '@/components/due-diligence/DueDiligenceProcess'
 import DueDiligenceBenefits from '@/components/due-diligence/DueDiligenceBenefits';
 import DueDiligenceFAQ from '@/components/due-diligence/DueDiligenceFAQ';
 import DueDiligenceCTA from '@/components/due-diligence/DueDiligenceCTA';
+import ServiceClosedOperations from '@/components/shared/ServiceClosedOperations';
 
 const DueDiligence = () => {
   const location = useLocation();
@@ -39,6 +40,9 @@ const DueDiligence = () => {
         <DueDiligenceTypes />
         <DueDiligenceProcess />
         <DueDiligenceBenefits />
+        <ServiceClosedOperations
+          subtitle="Due diligence riguroso en operaciones de todos los tamaños"
+        />
         <DueDiligenceFAQ />
         <DueDiligenceCTA />
       </UnifiedLayout>

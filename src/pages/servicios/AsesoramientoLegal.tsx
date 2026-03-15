@@ -11,6 +11,7 @@ import AsesoramientoLegalServices from '@/components/asesoramiento-legal/Asesora
 import AsesoramientoLegalBenefits from '@/components/asesoramiento-legal/AsesoramientoLegalBenefits';
 import AsesoramientoLegalFAQ from '@/components/asesoramiento-legal/AsesoramientoLegalFAQ';
 import AsesoramientoLegalCTA from '@/components/asesoramiento-legal/AsesoramientoLegalCTA';
+import ServiceClosedOperations from '@/components/shared/ServiceClosedOperations';
 
 const AsesoramientoLegal = () => {
   const location = useLocation();
@@ -40,6 +41,9 @@ const AsesoramientoLegal = () => {
       <AsesoramientoLegalServices />
       
       <AsesoramientoLegalBenefits />
+      <ServiceClosedOperations
+        subtitle="Asesoramiento legal en operaciones complejas de M&A"
+      />
       <AsesoramientoLegalFAQ />
       <AsesoramientoLegalCTA />
     </UnifiedLayout>

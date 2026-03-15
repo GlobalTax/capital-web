@@ -7,6 +7,7 @@ import VentaEmpresasProcess from '@/components/venta-empresas/VentaEmpresasProce
 import VentaEmpresasValuation from '@/components/venta-empresas/VentaEmpresasValuation';
 import VentaEmpresasFAQ from '@/components/venta-empresas/VentaEmpresasFAQ';
 import VentaEmpresasCTA from '@/components/venta-empresas/VentaEmpresasCTA';
+import ServiceClosedOperations from '@/components/shared/ServiceClosedOperations';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema } from '@/utils/seo/schemas';
 import { useI18n } from '@/shared/i18n/I18nProvider';
@@ -64,6 +65,9 @@ const VentaEmpresas = () => {
         <VentaEmpresasBenefits />
         <VentaEmpresasProcess />
         <VentaEmpresasValuation />
+        <ServiceClosedOperations
+          subtitle="Empresas que han confiado en nosotros para maximizar el valor de su venta"
+        />
         <VentaEmpresasFAQ />
         <VentaEmpresasCTA />
       </UnifiedLayout>
