@@ -1,52 +1,25 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Problem
 
-### Cambios realizados
+The earn-out article shows **raw HTML tags** in the blog listing page because:
+1. The `excerpt` column is `NULL` in the database
+2. The fallback `truncateText(content, 200)` truncates the HTML `content` field without stripping tags, showing raw `<article class="blog-post-content"> <p class="text-lg...` in the card
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+## Fix
 
-### Resultado
+### 1. SQL Migration — Add excerpt to the post
+Update the `blog_posts` row for `que-es-earn-out` to set a proper plain-text excerpt matching the meta description.
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+### 2. Blog.tsx — Strip HTML in fallback
+Add an `stripHtml` helper function that removes all HTML tags before truncating, so any future posts without excerpts won't show raw markup:
 
----
+```typescript
+const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
+// Then use: truncateText(stripHtml(article.content), 150)
+```
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+### Files
+- **Create** SQL migration to `UPDATE blog_posts SET excerpt = '...' WHERE slug = 'que-es-earn-out'`
+- **Edit** `src/pages/recursos/Blog.tsx` — add `stripHtml` helper, apply to both fallback locations (lines 139 and 199)
 
-### Cambios realizados
-
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
-
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
