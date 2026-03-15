@@ -11,6 +11,7 @@ import ValoracionesProcess from '@/components/valoraciones/ValoracionesProcess';
 import ValoracionesBenefits from '@/components/valoraciones/ValoracionesBenefits';
 import ValoracionesFAQNew from '@/components/valoraciones/ValoracionesFAQNew';
 import ValoracionesCTANew from '@/components/valoraciones/ValoracionesCTANew';
+import ServiceClosedOperations from '@/components/shared/ServiceClosedOperations';
 
 const Valoraciones = () => {
   const location = useLocation();
