@@ -13,3 +13,6 @@ export const LazyBlogPostsManagerV2 = lazy(() => import('../BlogPostsManagerV2')
 
 // Widgets - solo si es necesario
 export const LazyWidgetFactory = lazy(() => import('../dashboard/widgets/WidgetFactory').then(module => ({ default: module.WidgetFactory })));
+
+// Photo Library
+export const LazyPhotoLibraryManager = lazy(() => import('../../../pages/admin/PhotoLibraryPage'));
