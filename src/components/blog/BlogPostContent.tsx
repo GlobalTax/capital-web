@@ -9,6 +9,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { cn } from '@/lib/utils';
 import { BlogPost } from '@/types/blog';
 import BlogValuationCTA from './BlogValuationCTA';
+import BlogGuideDownloadCTA from './BlogGuideDownloadCTA';
 import BlogContactSection from './BlogContactSection';
 
 interface BlogPostContentProps {
