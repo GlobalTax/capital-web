@@ -37,23 +37,80 @@ const PhotoLibraryManager: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<PhotoFile | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
+  const [draggingPhoto, setDraggingPhoto] = useState<PhotoFile | null>(null);
+  const [isMoving, setIsMoving] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder } = usePhotoLibrary(search, currentFolder);
+  const { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto } = usePhotoLibrary(search, currentFolder);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
     uploadPhotos(Array.from(files));
   }, [uploadPhotos]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleExternalDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    handleFiles(e.dataTransfer.files);
+    // Only handle file drops (not internal photo drags)
+    if (e.dataTransfer.files.length > 0 && !e.dataTransfer.getData('application/photo-path')) {
+      handleFiles(e.dataTransfer.files);
+    }
   }, [handleFiles]);
+
+  // --- Internal drag & drop for moving photos ---
+  const handlePhotoDragStart = useCallback((e: React.DragEvent, photo: PhotoFile) => {
+    e.dataTransfer.setData('application/photo-path', photo.fullPath);
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggingPhoto(photo);
+  }, []);
+
+  const handleFolderDragOver = useCallback((e: React.DragEvent, folderName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverFolder(folderName);
+  }, []);
+
+  const handleFolderDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverFolder(null);
+  }, []);
+
+  const handleFolderDrop = useCallback(async (e: React.DragEvent, folderName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverFolder(null);
+    setDraggingPhoto(null);
+
+    const photoPath = e.dataTransfer.getData('application/photo-path');
+    if (!photoPath) return; // Not an internal photo drag
+
+    const targetFolder = currentFolder ? `${currentFolder}/${folderName}` : folderName;
+    setIsMoving(true);
+    await movePhoto(photoPath, targetFolder);
+    setIsMoving(false);
+  }, [currentFolder, movePhoto]);
+
+  // Drop on breadcrumb (move to parent/root)
+  const handleBreadcrumbDrop = useCallback(async (e: React.DragEvent, targetFolder: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const photoPath = e.dataTransfer.getData('application/photo-path');
+    if (!photoPath) return;
+
+    setIsMoving(true);
+    await movePhoto(photoPath, targetFolder);
+    setIsMoving(false);
+  }, [movePhoto]);
+
+  const handlePhotoDragEnd = useCallback(() => {
+    setDraggingPhoto(null);
+    setDragOverFolder(null);
+  }, []);
 
   const copyUrl = (url: string) => {
     navigator.clipboard.writeText(url);
