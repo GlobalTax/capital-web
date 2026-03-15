@@ -100,18 +100,18 @@ const GuiaVenderEmpresa = () => {
                 </div>
 
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-normal text-white tracking-tight leading-tight mb-6">
-                  Guía Completa para{' '}
-                  <span className="text-primary">Vender tu Empresa</span>
+                  Vende tu empresa al{' '}
+                  <span className="text-primary">precio que realmente vale</span>
                 </h1>
 
                 <p className="text-lg text-gray-300 leading-relaxed mb-8 max-w-lg">
-                  Todo lo que un empresario necesita saber antes de iniciar un proceso de venta: desde la valoración hasta el cierre, con checklist y consejos prácticos.
+                  El 78% de los empresarios que venden sin preparación pierden entre un 15% y un 25% del valor real. Esta guía de 8 capítulos te enseña a evitarlo.
                 </p>
 
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="flex items-center gap-2 text-sm text-gray-300">
                     <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
-                    12 capítulos
+                    8 capítulos clave
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-300">
                     <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
