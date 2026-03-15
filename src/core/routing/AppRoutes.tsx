@@ -32,7 +32,7 @@ import AsesoramientoLegalTecnico from '@/pages/servicios/AsesoramientoLegalTecni
 import Reestructuraciones from '@/pages/servicios/Reestructuraciones';
 import PlanificacionFiscal from '@/pages/servicios/PlanificacionFiscal';
 import SearchFunds from '@/pages/servicios/SearchFunds';
-import ValoracionEmpresas from '@/pages/ValoracionEmpresas';
+
 import GuiaValoracionEmpresas from '@/pages/GuiaValoracionEmpresas';
 
 // === SECTOR PAGES (Direct imports) ===
