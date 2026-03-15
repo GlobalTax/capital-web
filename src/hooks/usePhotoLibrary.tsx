@@ -13,45 +13,66 @@ export interface PhotoFile {
   updated_at: string;
   metadata: { size: number; mimetype: string } | null;
   publicUrl: string;
+  fullPath: string;
 }
 
-export const usePhotoLibrary = (search: string = '') => {
+export interface FolderItem {
+  name: string;
+}
+
+export const usePhotoLibrary = (search: string = '', currentFolder: string = '') => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const { data: photos = [], isLoading, refetch } = useQuery({
-    queryKey: ['photo-library', search],
-    queryFn: async (): Promise<PhotoFile[]> => {
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['photo-library', search, currentFolder],
+    queryFn: async (): Promise<{ photos: PhotoFile[]; folders: FolderItem[] }> => {
       const { data, error } = await supabase.storage
         .from(BUCKET)
-        .list(undefined, { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
+        .list(currentFolder || undefined, { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
 
-      console.log('Photo library list result:', { count: data?.length, error });
+      console.log('Photo library list result:', { folder: currentFolder, count: data?.length, error });
       if (error) throw error;
-      if (!data) return [];
+      if (!data) return { photos: [], folders: [] };
 
-      const filtered = search
-        ? data.filter(f => f.name.toLowerCase().includes(search.toLowerCase()))
-        : data;
+      const folders: FolderItem[] = [];
+      const photos: PhotoFile[] = [];
 
-      return filtered
-        .filter(f => f.name !== '.emptyFolderPlaceholder')
-        .map(f => {
-          const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(f.name);
-          return {
-            name: f.name,
-            id: f.id ?? f.name,
-            created_at: f.created_at ?? '',
-            updated_at: f.updated_at ?? '',
-            metadata: f.metadata as PhotoFile['metadata'],
-            publicUrl: urlData.publicUrl,
-          };
+      for (const f of data) {
+        if (f.name === '.emptyFolderPlaceholder') continue;
+
+        // Folders have id === null in Supabase storage
+        if (f.id === null) {
+          if (!search || f.name.toLowerCase().includes(search.toLowerCase())) {
+            folders.push({ name: f.name });
+          }
+          continue;
+        }
+
+        if (search && !f.name.toLowerCase().includes(search.toLowerCase())) continue;
+
+        const fullPath = currentFolder ? `${currentFolder}/${f.name}` : f.name;
+        const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(fullPath);
+        photos.push({
+          name: f.name,
+          id: f.id ?? f.name,
+          created_at: f.created_at ?? '',
+          updated_at: f.updated_at ?? '',
+          metadata: f.metadata as PhotoFile['metadata'],
+          publicUrl: urlData.publicUrl,
+          fullPath,
         });
+      }
+
+      return { photos, folders };
     },
     staleTime: 1000 * 60,
   });
+
+  const photos = data?.photos ?? [];
+  const folders = data?.folders ?? [];
 
   const uploadPhotos = useCallback(async (files: File[]) => {
     setIsUploading(true);
@@ -68,8 +89,9 @@ export const usePhotoLibrary = (search: string = '') => {
 
         const ext = file.name.split('.').pop();
         const safeName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+        const fullPath = currentFolder ? `${currentFolder}/${safeName}` : safeName;
 
-        const { error } = await supabase.storage.from(BUCKET).upload(safeName, file);
+        const { error } = await supabase.storage.from(BUCKET).upload(fullPath, file);
         if (error) {
           toast({ title: 'Error', description: `Error subiendo ${file.name}: ${error.message}`, variant: 'destructive' });
         } else {
@@ -86,10 +108,10 @@ export const usePhotoLibrary = (search: string = '') => {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [toast, queryClient]);
+  }, [toast, queryClient, currentFolder]);
 
-  const deletePhoto = useCallback(async (name: string) => {
-    const { error } = await supabase.storage.from(BUCKET).remove([name]);
+  const deletePhoto = useCallback(async (fullPath: string) => {
+    const { error } = await supabase.storage.from(BUCKET).remove([fullPath]);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
       return false;
@@ -99,5 +121,40 @@ export const usePhotoLibrary = (search: string = '') => {
     return true;
   }, [toast, queryClient]);
 
-  return { photos, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, refetch };
+  const createFolder = useCallback(async (name: string) => {
+    const folderPath = currentFolder ? `${currentFolder}/${name}/.emptyFolderPlaceholder` : `${name}/.emptyFolderPlaceholder`;
+    const { error } = await supabase.storage.from(BUCKET).upload(folderPath, new Blob(['']));
+    if (error) {
+      toast({ title: 'Error', description: `Error creando carpeta: ${error.message}`, variant: 'destructive' });
+      return false;
+    }
+    toast({ title: '📁 Carpeta creada', description: `Carpeta "${name}" creada` });
+    queryClient.invalidateQueries({ queryKey: ['photo-library'] });
+    return true;
+  }, [toast, queryClient, currentFolder]);
+
+  const deleteFolder = useCallback(async (name: string) => {
+    const folderPath = currentFolder ? `${currentFolder}/${name}` : name;
+    // List all files in folder to delete them
+    const { data: files, error: listError } = await supabase.storage.from(BUCKET).list(folderPath, { limit: 1000 });
+    if (listError) {
+      toast({ title: 'Error', description: listError.message, variant: 'destructive' });
+      return false;
+    }
+
+    if (files && files.length > 0) {
+      const filePaths = files.map(f => `${folderPath}/${f.name}`);
+      const { error: removeError } = await supabase.storage.from(BUCKET).remove(filePaths);
+      if (removeError) {
+        toast({ title: 'Error', description: removeError.message, variant: 'destructive' });
+        return false;
+      }
+    }
+
+    toast({ title: '🗑️ Carpeta eliminada', description: `Carpeta "${name}" eliminada` });
+    queryClient.invalidateQueries({ queryKey: ['photo-library'] });
+    return true;
+  }, [toast, queryClient, currentFolder]);
+
+  return { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, refetch };
 };

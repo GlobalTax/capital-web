@@ -1,35 +1,52 @@
 
 
-## Plan: Carpetas en la Biblioteca de Fotos
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Enfoque
-Usar **carpetas de Supabase Storage** (subdirectorios dentro del bucket `admin-photos`). No se necesita tabla nueva en la base de datos — Supabase Storage soporta carpetas nativamente mediante prefijos en el path de los archivos.
+### Cambios realizados
 
-### Cambios
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-**1. Hook `src/hooks/usePhotoLibrary.tsx`**
-- Añadir estado `currentFolder` (string, default `''` = raíz)
-- `list()` pasa `currentFolder` como primer argumento para listar solo esa carpeta
-- Separar resultados en carpetas (items con `id: null`) y archivos
-- Nueva función `createFolder(name)`: sube un `.emptyFolderPlaceholder` dentro del subdirectorio
-- `uploadPhotos` sube archivos al `currentFolder` actual (prefijo `folder/filename`)
-- `deletePhoto` usa el path completo incluyendo carpeta
-- Nueva función `deleteFolder(name)`: lista contenido y elimina todo recursivamente
-- Actualizar `getPublicUrl` para incluir el path de carpeta
+### Resultado
 
-**2. Componente `src/components/admin/PhotoLibraryManager.tsx`**
-- Añadir barra de navegación breadcrumb (Inicio > Carpeta actual) para navegar entre niveles
-- Botón "Nueva carpeta" con dialog simple (input de nombre)
-- Renderizar carpetas como tarjetas con icono `FolderIcon` antes del grid de fotos
-- Click en carpeta → navegar a ese subdirectorio
-- Botón "Atrás" o breadcrumb para volver al nivel superior
-- Opción de eliminar carpeta vacía (con confirmación)
-- Al subir fotos, se suben a la carpeta activa
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-### Flujo
-1. Usuario ve raíz con carpetas + fotos sueltas
-2. Clic en "Nueva carpeta" → escribe nombre → se crea
-3. Clic en carpeta → entra, ve sus fotos
-4. Sube fotos → van a la carpeta actual
-5. Breadcrumb para volver atrás
+---
 
+## ✅ Completado: og:url estático + SSR para noticias individuales
+
+### Cambios realizados
+
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
