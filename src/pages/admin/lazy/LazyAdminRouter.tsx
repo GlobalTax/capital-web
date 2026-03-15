@@ -30,6 +30,7 @@ export const LazyAdminRouter = () => {
         <Route path="/blog-manager" element={<LazyModernBlogManager />} />
         <Route path="/blog-posts" element={<LazyBlogPostsManager />} />
         <Route path="/blog-posts-v2" element={<LazyBlogPostsManagerV2 />} />
+        <Route path="/photo-library" element={<LazyPhotoLibraryManager />} />
       </Routes>
     </Suspense>
   );
