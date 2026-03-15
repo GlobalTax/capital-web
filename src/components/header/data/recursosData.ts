@@ -31,6 +31,13 @@ export const recursosData: MenuCategory[] = [
     title: "Contenido",
     items: [
       {
+        id: "guia-valoracion-empresas",
+        label: "Guía de Valoración de Empresas",
+        href: "/valoracion-empresas",
+        icon: 'chart-bar',
+        description: "Guía completa de métodos y herramientas de valoración"
+      },
+      {
         id: "informes-ma",
         label: "Informes M&A",
         href: "/recursos/informes-ma",
