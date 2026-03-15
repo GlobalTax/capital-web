@@ -8,7 +8,8 @@ import {
   LazyBlogDashboard,
   LazyModernBlogManager,
   LazyBlogPostsManager,
-  LazyBlogPostsManagerV2
+  LazyBlogPostsManagerV2,
+  LazyPhotoLibraryManager
 } from '@/components/admin/lazy';
 
 // Loading fallback component
