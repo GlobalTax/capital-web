@@ -270,9 +270,9 @@ const PhotoLibraryManager: React.FC = () => {
         className={`relative min-h-[300px] rounded-[var(--radius-lg)] border-2 border-dashed transition-colors ${
           isDragging ? 'border-primary bg-primary/5' : 'border-border'
         }`}
-        onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+        onDragOver={e => { e.preventDefault(); if (e.dataTransfer.types.includes('Files')) setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
+        onDrop={handleExternalDrop}
       >
         {isDragging && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 rounded-[var(--radius-lg)]">
