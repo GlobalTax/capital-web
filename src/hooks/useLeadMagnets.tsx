@@ -7,7 +7,6 @@ const QUERY_KEY = 'lead_magnets';
 export const useLeadMagnets = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all lead magnets
   const { data: leadMagnets = [], isLoading, error } = useQuery({
     queryKey: [QUERY_KEY],
     queryFn: async () => {
@@ -21,9 +20,8 @@ export const useLeadMagnets = () => {
     }
   });
 
-  // Create lead magnet
   const createLeadMagnet = useMutation({
-    mutationFn: async (formData: LeadMagnetFormData) => {
+    mutationFn: async (formData: Partial<LeadMagnet>) => {
       const { data, error } = await supabase
         .from('lead_magnets')
         .insert([formData])
@@ -38,7 +36,6 @@ export const useLeadMagnets = () => {
     }
   });
 
-  // Update lead magnet
   const updateLeadMagnet = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<LeadMagnet> & { id: string }) => {
       const { data, error } = await supabase
@@ -56,7 +53,6 @@ export const useLeadMagnets = () => {
     }
   });
 
-  // Toggle status (active/draft/archived)
   const toggleStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'active' | 'draft' | 'archived' }) => {
       const { error } = await supabase
@@ -71,7 +67,6 @@ export const useLeadMagnets = () => {
     }
   });
 
-  // Delete lead magnet
   const deleteLeadMagnet = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -86,6 +81,23 @@ export const useLeadMagnets = () => {
     }
   });
 
+  const uploadFile = async (file: File, folder: string): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from('lead-magnets')
+      .upload(fileName, file, { upsert: true });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('lead-magnets')
+      .getPublicUrl(data.path);
+
+    return publicUrl;
+  };
+
   return {
     leadMagnets,
     isLoading,
@@ -93,7 +105,8 @@ export const useLeadMagnets = () => {
     createLeadMagnet,
     updateLeadMagnet,
     toggleStatus,
-    deleteLeadMagnet
+    deleteLeadMagnet,
+    uploadFile
   };
 };
 

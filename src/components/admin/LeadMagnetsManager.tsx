@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
-import { Plus, Search, Download, Users, TrendingUp, ImagePlus, Loader2 } from 'lucide-react';
+import { Plus, Search, Download, Users, TrendingUp, ImagePlus, Loader2, MoreVertical, Pencil, Trash2, Eye, EyeOff, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useLeadMagnets } from '@/hooks/useLeadMagnets';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import LeadMagnetFormDialog from './lead-magnets/LeadMagnetFormDialog';
+import type { LeadMagnet } from '@/types/leadMagnets';
 
 const LeadMagnetsManager = () => {
-  const { leadMagnets, isLoading, error } = useLeadMagnets();
+  const { leadMagnets, isLoading, error, toggleStatus, deleteLeadMagnet } = useLeadMagnets();
   const [searchTerm, setSearchTerm] = useState('');
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingMagnet, setEditingMagnet] = useState<LeadMagnet | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LeadMagnet | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -27,24 +34,44 @@ const LeadMagnetsManager = () => {
       const { data, error } = await supabase.functions.invoke('generate-resource-image', {
         body: { lead_magnet_id: magnetId },
       });
-
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-
-      toast({
-        title: 'Imagen generada',
-        description: 'La portada se ha generado y guardado correctamente.',
-      });
-      queryClient.invalidateQueries({ queryKey: ['leadMagnets'] });
+      toast({ title: 'Imagen generada', description: 'La portada se ha generado y guardado correctamente.' });
+      queryClient.invalidateQueries({ queryKey: ['lead_magnets'] });
     } catch (err) {
-      console.error('Error generating image:', err);
-      toast({
-        title: 'Error',
-        description: err instanceof Error ? err.message : 'No se pudo generar la imagen',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: err instanceof Error ? err.message : 'No se pudo generar la imagen', variant: 'destructive' });
     } finally {
       setGeneratingId(null);
+    }
+  };
+
+  const handleEdit = (magnet: LeadMagnet) => {
+    setEditingMagnet(magnet);
+    setDialogOpen(true);
+  };
+
+  const handleNew = () => {
+    setEditingMagnet(null);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteLeadMagnet.mutateAsync(deleteTarget.id);
+      toast({ title: 'Recurso eliminado' });
+    } catch {
+      toast({ title: 'Error', description: 'No se pudo eliminar', variant: 'destructive' });
+    }
+    setDeleteTarget(null);
+  };
+
+  const handleToggleStatus = async (magnet: LeadMagnet, newStatus: 'active' | 'draft' | 'archived') => {
+    try {
+      await toggleStatus.mutateAsync({ id: magnet.id, status: newStatus });
+      toast({ title: `Estado cambiado a ${newStatus}` });
+    } catch {
+      toast({ title: 'Error', description: 'No se pudo cambiar el estado', variant: 'destructive' });
     }
   };
 
@@ -72,7 +99,7 @@ const LeadMagnetsManager = () => {
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando lead magnets...</p>
+          <p className="text-muted-foreground">Cargando recursos...</p>
         </div>
       </div>
     );
@@ -82,7 +109,7 @@ const LeadMagnetsManager = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <p className="text-destructive mb-2">Error al cargar lead magnets</p>
+          <p className="text-destructive mb-2">Error al cargar recursos</p>
           <p className="text-muted-foreground text-sm">{String(error)}</p>
         </div>
       </div>
@@ -93,35 +120,27 @@ const LeadMagnetsManager = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Lead Magnets</h1>
-          <p className="text-muted-foreground">
-            Gestiona recursos descargables para capturar leads
-          </p>
+          <h1 className="text-3xl font-bold">Recursos</h1>
+          <p className="text-muted-foreground">Gestiona recursos descargables para capturar leads</p>
         </div>
-        <Button>
+        <Button onClick={handleNew}>
           <Plus className="h-4 w-4 mr-2" />
-          Nuevo Lead Magnet
+          Nuevo Recurso
         </Button>
       </div>
 
-      {/* Search */}
       <div className="flex items-center space-x-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Buscar lead magnets..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+          <Input placeholder="Buscar recursos..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Lead Magnets</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Recursos</CardTitle>
             <Download className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -129,90 +148,64 @@ const LeadMagnetsManager = () => {
             <p className="text-xs text-muted-foreground">recursos disponibles</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Descargas Totales</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {leadMagnets.reduce((sum, magnet) => sum + magnet.download_count, 0)}
-            </div>
+            <div className="text-2xl font-bold">{leadMagnets.reduce((s, m) => s + m.download_count, 0)}</div>
             <p className="text-xs text-muted-foreground">descargas registradas</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Conversiones</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {leadMagnets.reduce((sum, magnet) => sum + magnet.lead_conversion_count, 0)}
-            </div>
+            <div className="text-2xl font-bold">{leadMagnets.reduce((s, m) => s + m.lead_conversion_count, 0)}</div>
             <p className="text-xs text-muted-foreground">leads generados</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Lead Magnets Grid */}
+      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredLeadMagnets.map((magnet) => (
-          <Card key={magnet.id} className="hover:shadow-md transition-shadow overflow-hidden">
-            {/* Image preview */}
+          <Card key={magnet.id} className="hover:shadow-md transition-shadow overflow-hidden group">
             {magnet.featured_image_url ? (
-              <div className="aspect-video w-full overflow-hidden">
-                <img
-                  src={magnet.featured_image_url}
-                  alt={magnet.title}
-                  className="w-full h-full object-cover"
-                />
+              <div className="aspect-video w-full overflow-hidden relative">
+                <img src={magnet.featured_image_url} alt={magnet.title} className="w-full h-full object-cover" />
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <CardActions magnet={magnet} onEdit={handleEdit} onDelete={setDeleteTarget} onToggle={handleToggleStatus} onRegenImage={handleGenerateImage} generatingId={generatingId} />
+                </div>
               </div>
             ) : (
-              <div className="aspect-video w-full bg-muted flex flex-col items-center justify-center gap-2">
+              <div className="aspect-video w-full bg-muted flex flex-col items-center justify-center gap-2 relative">
                 <Download className="h-8 w-8 text-muted-foreground" />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleGenerateImage(magnet.id)}
-                  disabled={generatingId === magnet.id}
-                >
-                  {generatingId === magnet.id ? (
-                    <>
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Generando...
-                    </>
-                  ) : (
-                    <>
-                      <ImagePlus className="h-3 w-3 mr-1" />
-                      Generar imagen con IA
-                    </>
-                  )}
+                <Button size="sm" variant="outline" onClick={() => handleGenerateImage(magnet.id)} disabled={generatingId === magnet.id}>
+                  {generatingId === magnet.id ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Generando...</> : <><ImagePlus className="h-3 w-3 mr-1" />Generar imagen con IA</>}
                 </Button>
+                <div className="absolute top-2 right-2">
+                  <CardActions magnet={magnet} onEdit={handleEdit} onDelete={setDeleteTarget} onToggle={handleToggleStatus} onRegenImage={handleGenerateImage} generatingId={generatingId} />
+                </div>
               </div>
             )}
             <CardHeader>
               <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg">{magnet.title}</CardTitle>
+                <div className="space-y-1 flex-1 min-w-0">
+                  <CardTitle className="text-lg truncate">{magnet.title}</CardTitle>
                   <CardDescription>{magnet.sector}</CardDescription>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <Badge className={getTypeColor(magnet.type)}>
-                    {magnet.type}
-                  </Badge>
-                  <Badge className={getStatusColor(magnet.status)}>
-                    {magnet.status}
-                  </Badge>
+                <div className="flex flex-col gap-1 ml-2 shrink-0">
+                  <Badge className={getTypeColor(magnet.type)}>{magnet.type}</Badge>
+                  <Badge className={getStatusColor(magnet.status)}>{magnet.status}</Badge>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                {magnet.description}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{magnet.description}</p>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Descargas:</span>
@@ -223,28 +216,6 @@ const LeadMagnetsManager = () => {
                   <div className="text-lg font-bold">{magnet.lead_conversion_count}</div>
                 </div>
               </div>
-              {/* Regenerate button if image exists */}
-              {magnet.featured_image_url && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="mt-3 w-full"
-                  onClick={() => handleGenerateImage(magnet.id)}
-                  disabled={generatingId === magnet.id}
-                >
-                  {generatingId === magnet.id ? (
-                    <>
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Regenerando...
-                    </>
-                  ) : (
-                    <>
-                      <ImagePlus className="h-3 w-3 mr-1" />
-                      Regenerar imagen
-                    </>
-                  )}
-                </Button>
-              )}
             </CardContent>
           </Card>
         ))}
@@ -254,21 +225,93 @@ const LeadMagnetsManager = () => {
         <Card>
           <CardContent className="text-center py-8">
             <Download className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No hay lead magnets</h3>
+            <h3 className="text-lg font-semibold mb-2">No hay recursos</h3>
             <p className="text-muted-foreground mb-4">
-              {searchTerm ? 'No se encontraron resultados para tu búsqueda.' : 'Aún no has creado ningún lead magnet.'}
+              {searchTerm ? 'No se encontraron resultados.' : 'Aún no has creado ningún recurso.'}
             </p>
             {!searchTerm && (
-              <Button>
+              <Button onClick={handleNew}>
                 <Plus className="h-4 w-4 mr-2" />
-                Crear tu primer lead magnet
+                Crear tu primer recurso
               </Button>
             )}
           </CardContent>
         </Card>
       )}
+
+      {/* Form Dialog */}
+      <LeadMagnetFormDialog open={dialogOpen} onOpenChange={setDialogOpen} editingMagnet={editingMagnet} />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar recurso?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará permanentemente "{deleteTarget?.title}". Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
+
+// Dropdown actions per card
+const CardActions: React.FC<{
+  magnet: LeadMagnet;
+  onEdit: (m: LeadMagnet) => void;
+  onDelete: (m: LeadMagnet) => void;
+  onToggle: (m: LeadMagnet, s: 'active' | 'draft' | 'archived') => void;
+  onRegenImage: (id: string) => void;
+  generatingId: string | null;
+}> = ({ magnet, onEdit, onDelete, onToggle, onRegenImage, generatingId }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="secondary" size="icon" className="h-8 w-8">
+        <MoreVertical className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem onClick={() => onEdit(magnet)}>
+        <Pencil className="h-4 w-4 mr-2" />Editar
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      {magnet.status !== 'active' && (
+        <DropdownMenuItem onClick={() => onToggle(magnet, 'active')}>
+          <Eye className="h-4 w-4 mr-2" />Activar
+        </DropdownMenuItem>
+      )}
+      {magnet.status !== 'draft' && (
+        <DropdownMenuItem onClick={() => onToggle(magnet, 'draft')}>
+          <EyeOff className="h-4 w-4 mr-2" />Borrador
+        </DropdownMenuItem>
+      )}
+      {magnet.status !== 'archived' && (
+        <DropdownMenuItem onClick={() => onToggle(magnet, 'archived')}>
+          <Archive className="h-4 w-4 mr-2" />Archivar
+        </DropdownMenuItem>
+      )}
+      {magnet.featured_image_url && (
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => onRegenImage(magnet.id)} disabled={generatingId === magnet.id}>
+            <ImagePlus className="h-4 w-4 mr-2" />Regenerar imagen
+          </DropdownMenuItem>
+        </>
+      )}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className="text-destructive" onClick={() => onDelete(magnet)}>
+        <Trash2 className="h-4 w-4 mr-2" />Eliminar
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
 
 export default LeadMagnetsManager;
