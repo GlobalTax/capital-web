@@ -101,7 +101,7 @@ const GuiaVenderEmpresa = () => {
 
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-normal text-white tracking-tight leading-tight mb-6">
                   Vende tu empresa al{' '}
-                  <span className="text-primary">precio que realmente vale</span>
+                  <span className="text-blue-400">precio que realmente vale</span>
                 </h1>
 
                 <p className="text-lg text-gray-300 leading-relaxed mb-8 max-w-lg">
