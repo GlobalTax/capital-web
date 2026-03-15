@@ -29,9 +29,12 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['photo-library', search, currentFolder],
     queryFn: async (): Promise<{ photos: PhotoFile[]; folders: FolderItem[] }> => {
+      const normalizedSearch = search.trim().toLowerCase();
+      const listPath = currentFolder || '';
+
       const { data, error } = await supabase.storage
         .from(BUCKET)
-        .list(currentFolder || undefined, { limit: 500, sortBy: { column: 'created_at', order: 'desc' } });
+        .list(listPath, { limit: 500, sortBy: { column: 'name', order: 'asc' } });
 
       console.log('Photo library list result:', { folder: currentFolder, count: data?.length, error });
       if (error) throw error;
@@ -43,18 +46,19 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
       for (const f of data) {
         if (f.name === '.emptyFolderPlaceholder') continue;
 
-        // Folders have id === null in Supabase storage
-        if (f.id === null) {
-          if (!search || f.name.toLowerCase().includes(search.toLowerCase())) {
+        // En algunos responses de Storage, la carpeta viene con id null o undefined
+        if (f.id == null) {
+          if (!normalizedSearch || f.name.toLowerCase().includes(normalizedSearch)) {
             folders.push({ name: f.name });
           }
           continue;
         }
 
-        if (search && !f.name.toLowerCase().includes(search.toLowerCase())) continue;
+        if (normalizedSearch && !f.name.toLowerCase().includes(normalizedSearch)) continue;
 
         const fullPath = currentFolder ? `${currentFolder}/${f.name}` : f.name;
         const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(fullPath);
+
         photos.push({
           name: f.name,
           id: f.id ?? f.name,
