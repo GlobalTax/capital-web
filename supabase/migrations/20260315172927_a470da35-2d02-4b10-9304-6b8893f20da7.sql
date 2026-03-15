@@ -1,0 +1,3 @@
+UPDATE public.blog_posts SET content = REPLACE(content, '/servicios/valoracion-empresas', '/servicios/valoraciones') WHERE content LIKE '%/servicios/valoracion-empresas%';
+
+UPDATE public.blog_posts SET content = REPLACE(content, '/recursos/blog/valoracion-de-empresas', '/recursos/blog/como-se-valora-una-empresa-claves-para-entenderlo-incluye-ejemplo-practico') WHERE content LIKE '%/recursos/blog/valoracion-de-empresas%';
