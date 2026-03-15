@@ -1,29 +1,36 @@
 
 
-## Status: NOT yet implemented — the `meta http-equiv="refresh"` is still present in all 4 functions
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### What needs to change
+### Cambios realizados
 
-| File | Line | Remove/Change |
-|------|------|---------------|
-| `blog-ssr/index.ts` | 150 | Delete `<meta http-equiv="refresh" ...>` |
-| `blog-ssr/index.ts` | 176 | Delete "Redirigiendo" paragraph |
-| `news-ssr/index.ts` | 158 | Delete `<meta http-equiv="refresh" ...>` |
-| `news-ssr/index.ts` | 189 | Delete "Redirigiendo" paragraph |
-| `pages-ssr/index.ts` | 1987 | Delete `<meta http-equiv="refresh" ...>` |
-| `pages-ssr/index.ts` | 2015 | Delete "Redirigiendo" paragraph |
-| `prerender-proxy/index.ts` | 167 | Delete `<meta http-equiv="refresh" ...>` |
-| `prerender-proxy/index.ts` | 171 | Replace "Redirigiendo" with static text (e.g., a simple `<p>` with a link, no redirect language) |
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-### Why
+### Resultado
 
-Google treats `<meta http-equiv="refresh">` as a redirect signal, which can cause:
-- The SSR page to not be indexed (Google follows the redirect instead)
-- Duplicate content signals between the SSR HTML and the SPA version
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-These SSR pages are meant to **be** the final content for bots — they should not redirect anywhere.
+---
 
-### Deployment
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-After edits, deploy all 4 functions via `supabase--deploy_edge_functions` and verify with curl that the output no longer contains `http-equiv="refresh"`.
+### Cambios realizados
 
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos

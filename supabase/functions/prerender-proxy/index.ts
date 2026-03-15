@@ -164,11 +164,11 @@ function buildFallbackHtml(path: string): string {
   <title>Capittal - Especialistas en M&amp;A</title>
   <meta name="description" content="Capittal Transacciones asesora en fusiones, adquisiciones, valoraciones y due diligence. Especialistas en el sector seguridad.">
   <link rel="canonical" href="https://capittal.es${path}">
-  <meta http-equiv="refresh" content="0;url=https://capittal.es${path}">
+  
 </head>
 <body>
   <h1>Capittal - Especialistas en Fusiones y Adquisiciones</h1>
-  <p>Redirigiendo a <a href="https://capittal.es${path}">capittal.es${path}</a>...</p>
+  <p>Visite <a href="https://capittal.es${path}">capittal.es${path}</a> para más información.</p>
 </body>
 </html>`;
 }

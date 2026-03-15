@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
   <meta name="twitter:image" content="${escapeHtml(image)}">
   <script type="application/ld+json">${orgJsonLd}</script>
   <script type="application/ld+json">${articleJsonLd}</script>
-  <meta http-equiv="refresh" content="3;url=${canonicalUrl}">
+  
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1a1a2e;background:#fff;line-height:1.7;max-width:800px;margin:0 auto;padding:24px 16px}
@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
     .content a{color:#3b82f6}
     footer{margin-top:48px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:.875rem;color:#64748b;text-align:center}
     footer a{color:#3b82f6}
-    .redirect-note{background:#f1f5f9;padding:12px 16px;border-radius:6px;font-size:.875rem;color:#475569;margin-bottom:24px}
+    
   </style>
 </head>
 <body>
@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
       <h1>${escapeHtml(post.title)}</h1>
       <div class="meta">${authorName} · ${category} · ${publishedAt ? new Date(publishedAt).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" }) : ""}</div>
       ${post.featured_image_url ? `<img class="hero" src="${escapeHtml(post.featured_image_url)}" alt="${title}">` : ""}
-      <p class="redirect-note">Redirigiendo a la versión completa en <a href="${canonicalUrl}">capittal.es</a>…</p>
+      
       <div class="content">${post.content}</div>
     </article>
   </main>
