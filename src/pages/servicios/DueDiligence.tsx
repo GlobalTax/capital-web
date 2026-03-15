@@ -10,6 +10,7 @@ import DueDiligenceProcess from '@/components/due-diligence/DueDiligenceProcess'
 import DueDiligenceBenefits from '@/components/due-diligence/DueDiligenceBenefits';
 import DueDiligenceFAQ from '@/components/due-diligence/DueDiligenceFAQ';
 import DueDiligenceCTA from '@/components/due-diligence/DueDiligenceCTA';
+import ServiceClosedOperations from '@/components/shared/ServiceClosedOperations';
 
 const DueDiligence = () => {
   const location = useLocation();
