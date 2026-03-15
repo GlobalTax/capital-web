@@ -128,6 +128,7 @@ const LazyPresentationViewerPage = React.lazy(() => import('@/features/presentat
 const LazySidebarSettings = React.lazy(() => import('@/pages/admin/SidebarSettings'));
 const LazyHeroSlidesManager = React.lazy(() => import('@/components/admin/HeroSlidesManager'));
 const LazyPracticeAreasManager = React.lazy(() => import('@/components/admin/PracticeAreasManager'));
+const LazyPhotoLibraryPage = React.lazy(() => import('@/pages/admin/PhotoLibraryPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
