@@ -139,7 +139,6 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
 
   const deleteFolder = useCallback(async (name: string) => {
     const folderPath = currentFolder ? `${currentFolder}/${name}` : name;
-    // List all files in folder to delete them
     const { data: files, error: listError } = await supabase.storage.from(BUCKET).list(folderPath, { limit: 1000 });
     if (listError) {
       toast({ title: 'Error', description: listError.message, variant: 'destructive' });
@@ -160,5 +159,43 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
     return true;
   }, [toast, queryClient, currentFolder]);
 
-  return { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, refetch };
+  const movePhoto = useCallback(async (sourceFullPath: string, targetFolder: string) => {
+    const fileName = sourceFullPath.split('/').pop();
+    if (!fileName) return false;
+
+    const destPath = targetFolder ? `${targetFolder}/${fileName}` : fileName;
+
+    if (sourceFullPath === destPath) return false;
+
+    // Download the file, then upload to new location, then delete old
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from(BUCKET)
+      .download(sourceFullPath);
+
+    if (downloadError || !fileData) {
+      toast({ title: 'Error', description: `Error descargando: ${downloadError?.message}`, variant: 'destructive' });
+      return false;
+    }
+
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(destPath, fileData, { upsert: false });
+
+    if (uploadError) {
+      toast({ title: 'Error', description: `Error moviendo: ${uploadError.message}`, variant: 'destructive' });
+      return false;
+    }
+
+    const { error: removeError } = await supabase.storage.from(BUCKET).remove([sourceFullPath]);
+    if (removeError) {
+      toast({ title: 'Aviso', description: `Copiada pero no se pudo eliminar original: ${removeError.message}`, variant: 'destructive' });
+    }
+
+    const folderName = targetFolder || 'raíz';
+    toast({ title: '📁 Foto movida', description: `Movida a "${folderName}"` });
+    queryClient.invalidateQueries({ queryKey: ['photo-library'] });
+    return true;
+  }, [toast, queryClient]);
+
+  return { photos, folders, isLoading, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch };
 };
