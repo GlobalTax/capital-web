@@ -138,7 +138,7 @@ const ValoracionEmpresas = () => {
 
       <main className="min-h-screen bg-background">
         {/* ═══ Section 1: Hero AEO ═══ */}
-        <section className="py-16 md:py-24 px-4">
+        <section className="pt-28 md:pt-32 pb-16 md:pb-24 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
               Valoración de Empresas en España: Guía Completa de Métodos, Herramientas y Asesoramiento Profesional
