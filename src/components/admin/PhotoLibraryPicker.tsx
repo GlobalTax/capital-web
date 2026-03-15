@@ -107,6 +107,12 @@ const PhotoLibraryPicker: React.FC<PhotoLibraryPickerProps> = ({ onSelect, trigg
             <div className="flex-1 overflow-y-auto min-h-0">
               {isLoading ? (
                 <p className="text-sm text-muted-foreground text-center py-8">Cargando...</p>
+              ) : isError ? (
+                <div className="col-span-4 flex flex-col items-center gap-2 py-8 text-destructive">
+                  <p className="text-sm font-medium">Error al cargar fotos</p>
+                  <p className="text-xs text-muted-foreground">{(error as Error)?.message || 'Error de permisos'}</p>
+                  <Button variant="outline" size="sm" onClick={() => refetch()}>Reintentar</Button>
+                </div>
               ) : (
                 <div className="grid grid-cols-4 gap-3">
                   {folders.map((folder) => (

@@ -287,6 +287,17 @@ const PhotoLibraryManager: React.FC = () => {
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center h-64 text-destructive gap-3">
+            <ImageIcon className="h-12 w-12" />
+            <p className="font-medium">Error al cargar las fotos</p>
+            <p className="text-sm text-muted-foreground max-w-md text-center">
+              {(error as Error)?.message || 'Error de permisos. Verifica las políticas RLS del bucket.'}
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              Reintentar
+            </Button>
+          </div>
         ) : photos.length === 0 && folders.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-3">
             <ImageIcon className="h-12 w-12" />
