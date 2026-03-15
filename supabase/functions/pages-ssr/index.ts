@@ -1995,7 +1995,7 @@ function buildPageHtml(path: string, page: PageData): string {
     h1{font-size:2rem;line-height:1.3;margin-bottom:16px;color:#0f172a}
     h2{font-size:1.4rem;margin:24px 0 12px;color:#0f172a}
     p{margin-bottom:16px;font-size:1.05rem}
-    .redirect-note{background:#f1f5f9;padding:12px 16px;border-radius:6px;font-size:.875rem;color:#475569;margin-bottom:24px}
+    
     footer{margin-top:48px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:.875rem;color:#64748b;text-align:center}
     footer a{color:#3b82f6}
   </style>
