@@ -9,6 +9,7 @@ import ReestructuracionesProcess from '@/components/reestructuraciones/Reestruct
 import ReestructuracionesBenefits from '@/components/reestructuraciones/ReestructuracionesBenefits';
 import ReestructuracionesFAQ from '@/components/reestructuraciones/ReestructuracionesFAQ';
 import ReestructuracionesCTA from '@/components/reestructuraciones/ReestructuracionesCTA';
+import ServiceClosedOperations from '@/components/shared/ServiceClosedOperations';
 
 const Reestructuraciones = () => {
   const location = useLocation();
