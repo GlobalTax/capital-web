@@ -136,7 +136,7 @@ const Blog = () => {
                           {featuredArticle.title}
                         </h2>
                         <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                          {featuredArticle.excerpt || truncateText(featuredArticle.content, 200)}
+                          {featuredArticle.excerpt || truncateText(featuredArticle.content.replace(/<[^>]*>/g, ''), 200)}
                         </p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-6 text-sm text-gray-500">
