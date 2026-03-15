@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
-import { getArticleSchema, getBreadcrumbSchema } from '@/utils/seo';
+import { getArticleSchema, getBreadcrumbSchema, getFAQSchema } from '@/utils/seo';
 import BlogPostContent from '@/components/blog/BlogPostContent';
 import BlogNavigation from '@/components/blog/BlogNavigation';
 import RelatedPosts from '@/components/blog/RelatedPosts';
