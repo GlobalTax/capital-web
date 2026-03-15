@@ -148,7 +148,7 @@ const ResourceLandingPage = () => {
                     'Herramientas y plantillas descargables',
                   ].map((item, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                       <span className="text-foreground">{item}</span>
                     </li>
                   ))}

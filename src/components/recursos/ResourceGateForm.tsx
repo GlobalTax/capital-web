@@ -63,8 +63,8 @@ const ResourceGateForm: React.FC<ResourceGateFormProps> = ({ resourceSlug, fileU
   if (isSuccess) {
     return (
       <div className="bg-card border border-border rounded-xl p-8 text-center space-y-4">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle2 className="w-8 h-8 text-green-600" />
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+          <CheckCircle2 className="w-8 h-8 text-primary" />
         </div>
         <h3 className="text-xl font-semibold text-foreground">¡Descarga iniciada!</h3>
         <p className="text-muted-foreground">
