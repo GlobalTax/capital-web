@@ -1,25 +1,52 @@
 
 
-## Plan: Selector de fotos de la biblioteca en editores
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Enfoque
-Crear un componente `PhotoLibraryPicker` reutilizable (modal/dialog) que permite navegar la biblioteca de fotos con carpetas y seleccionar una imagen. Integrarlo en `ImageUploadField` para que esté disponible en cualquier lugar que use ese componente (blog sidebar, recursos, etc.).
+### Cambios realizados
 
-### Cambios
-
-**1. Nuevo componente `src/components/admin/PhotoLibraryPicker.tsx`**
-- Dialog modal que reutiliza la lógica de `usePhotoLibrary`
-- Grid de carpetas + fotos con navegación breadcrumb (como PhotoLibraryManager pero simplificado)
-- Búsqueda integrada
-- Click en una foto → devuelve su `publicUrl` via callback `onSelect(url: string)`
-- Botón para abrir el picker con icono `ImageIcon`
-
-**2. Actualizar `src/components/admin/ImageUploadField.tsx`**
-- Añadir un tercer botón junto a Upload y X: icono de biblioteca (`ImageIcon`)
-- Al hacer click, abre `PhotoLibraryPicker`
-- Cuando el usuario selecciona una foto, se llama `onChange(url)` con la URL pública
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
 ### Resultado
-- En el sidebar del blog (imagen destacada) y cualquier otro sitio que use `ImageUploadField`, aparecerá un botón de biblioteca
-- El usuario puede elegir entre: pegar URL, subir archivo nuevo, o seleccionar de la biblioteca existente
 
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+
+---
+
+## ✅ Completado: og:url estático + SSR para noticias individuales
+
+### Cambios realizados
+
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
