@@ -1,52 +1,34 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Incorporar recurso "Constitución de sociedades holding" a la biblioteca
 
-### Cambios realizados
+### Resumen
+Subir el PDF al storage de Supabase e insertar un registro en `lead_magnets` para que aparezca en la biblioteca de recursos (`/recursos/biblioteca`) con su landing page de descarga gated.
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Pasos
 
-### Resultado
+**1. Subir el PDF al bucket de storage**
+- Copiar `guia-constituir-holding-venta-empresa.pdf` al proyecto
+- Subirlo al bucket existente (probablemente `campaign-presentations` o crear una ruta en el bucket usado por la guía existente)
+- Verificar que el bucket tiene políticas de lectura pública
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**2. Insertar registro en `lead_magnets`**
+SQL migration con estos datos:
+- **title**: "Constitución de Sociedades Holding en Operaciones de Compraventa"
+- **type**: `whitepaper` (análisis técnico-legal con normativa y doctrina)
+- **sector**: `fiscal`
+- **description**: "Análisis técnico-legal sobre la constitución de holdings pre-venta: régimen FEAC, cláusula anti-abuso (art. 89.2 LIS), doctrina del TEAC 2024-2025, riesgos de inspección y ejemplo numérico de tributación."
+- **landing_page_slug**: `guia-holding-venta-empresa`
+- **file_url**: ruta al PDF en storage
+- **status**: `active`
+- **meta_title**: "Guía Holding Pre-Venta: Régimen FEAC, Riesgos y Ejemplo Numérico [2026]"
+- **meta_description**: "Análisis de la constitución de sociedades holding antes de vender una empresa. Régimen FEAC, cláusula anti-abuso art. 89.2 LIS, doctrina TEAC 2024-2025 y ejemplo numérico con y sin holding."
 
----
-
-## ✅ Completado: og:url estático + SSR para noticias individuales
-
-### Cambios realizados
-
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
-
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+**3. Contenido de la landing page**
+El sistema ya genera la landing page automáticamente en `/recursos/biblioteca/guia-holding-venta-empresa` usando el componente `ResourceLandingPage`. Se mostrará con el diseño split (texto + formulario gate) existente. El campo `content` se rellenará con los puntos clave del documento para la parte izquierda de la landing.
 
 ### Resultado
+- Aparecerá en la biblioteca filtrable como tipo "Whitepaper"
+- Landing page con formulario de captura de leads antes de la descarga
+- PDF servido desde Supabase Storage
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
