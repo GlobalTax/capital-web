@@ -1,19 +1,52 @@
 import React, { useState } from 'react';
-import { Plus, Search, Download, Users, TrendingUp } from 'lucide-react';
+import { Plus, Search, Download, Users, TrendingUp, ImagePlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLeadMagnets } from '@/hooks/useLeadMagnets';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const LeadMagnetsManager = () => {
   const { leadMagnets, isLoading, error } = useLeadMagnets();
   const [searchTerm, setSearchTerm] = useState('');
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const filteredLeadMagnets = leadMagnets.filter(magnet =>
     magnet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     magnet.sector.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleGenerateImage = async (magnetId: string) => {
+    setGeneratingId(magnetId);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-resource-image', {
+        body: { lead_magnet_id: magnetId },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: 'Imagen generada',
+        description: 'La portada se ha generado y guardado correctamente.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['leadMagnets'] });
+    } catch (err) {
+      console.error('Error generating image:', err);
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'No se pudo generar la imagen',
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingId(null);
+    }
+  };
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
@@ -127,7 +160,39 @@ const LeadMagnetsManager = () => {
       {/* Lead Magnets Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredLeadMagnets.map((magnet) => (
-          <Card key={magnet.id} className="hover:shadow-md transition-shadow">
+          <Card key={magnet.id} className="hover:shadow-md transition-shadow overflow-hidden">
+            {/* Image preview */}
+            {magnet.featured_image_url ? (
+              <div className="aspect-video w-full overflow-hidden">
+                <img
+                  src={magnet.featured_image_url}
+                  alt={magnet.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="aspect-video w-full bg-muted flex flex-col items-center justify-center gap-2">
+                <Download className="h-8 w-8 text-muted-foreground" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleGenerateImage(magnet.id)}
+                  disabled={generatingId === magnet.id}
+                >
+                  {generatingId === magnet.id ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="h-3 w-3 mr-1" />
+                      Generar imagen con IA
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
@@ -158,6 +223,28 @@ const LeadMagnetsManager = () => {
                   <div className="text-lg font-bold">{magnet.lead_conversion_count}</div>
                 </div>
               </div>
+              {/* Regenerate button if image exists */}
+              {magnet.featured_image_url && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="mt-3 w-full"
+                  onClick={() => handleGenerateImage(magnet.id)}
+                  disabled={generatingId === magnet.id}
+                >
+                  {generatingId === magnet.id ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Regenerando...
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="h-3 w-3 mr-1" />
+                      Regenerar imagen
+                    </>
+                  )}
+                </Button>
+              )}
             </CardContent>
           </Card>
         ))}

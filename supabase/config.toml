@@ -338,3 +338,6 @@ verify_jwt = false
 
 [functions.prerender]
 verify_jwt = false
+
+[functions.generate-resource-image]
+verify_jwt = false
