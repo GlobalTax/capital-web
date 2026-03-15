@@ -1,52 +1,35 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Generar imágenes con IA para los recursos de la biblioteca
 
-### Cambios realizados
+### Enfoque
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+Crear una edge function `generate-resource-image` que use Gemini (imagen) para generar una portada profesional para cada lead magnet, subirla al bucket `lead-magnets` (ya existe, público), y actualizar `featured_image_url` en la tabla.
 
-### Resultado
+### Componentes
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+#### 1. Edge Function: `generate-resource-image`
+Basada en el patrón existente de `generate-newsletter-image`:
+- Recibe `lead_magnet_id` 
+- Lee título, tipo y sector del lead magnet
+- Genera un prompt contextualizado (ej: "Professional M&A report cover about [título], [sector] theme, clean corporate design, no text")
+- Llama a Gemini image model
+- Convierte base64 a archivo y lo sube al bucket `lead-magnets`
+- Actualiza `featured_image_url` en la tabla `lead_magnets`
 
----
+#### 2. Botón "Generar imagen" en ResourceCard placeholder
+Cuando un recurso no tiene imagen, el placeholder actual (icono grande) se complementa con la opción de generar imagen desde el admin.
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+#### 3. Botón en Admin Lead Magnets
+Añadir un botón "Generar imagen con IA" en el panel de admin de lead magnets (`LeadMagnetsManager`) para cada recurso sin imagen. Al hacer clic, llama a la edge function y actualiza la card automáticamente.
 
-### Cambios realizados
+### Archivos
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
-
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+1. **Crear** `supabase/functions/generate-resource-image/index.ts` — edge function
+2. **Editar** `supabase/config.toml` — registrar función con `verify_jwt = false`
+3. **Editar** el componente de admin de lead magnets — añadir botón de generación
 
 ### Resultado
 
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
+Los admins podrán generar imágenes con un clic desde el panel. Las imágenes se almacenan permanentemente en Storage y se muestran automáticamente en las cards de la biblioteca.
+
