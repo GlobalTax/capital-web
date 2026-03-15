@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { usePhotoLibrary, PhotoFile } from '@/hooks/usePhotoLibrary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Upload, Trash2, Copy, Loader2, ImageIcon, X, FolderPlus, Folder, ChevronRight, Home } from 'lucide-react';
+import { Search, Upload, Trash2, Copy, Loader2, ImageIcon, X, FolderPlus, Folder, ChevronRight, Home, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
