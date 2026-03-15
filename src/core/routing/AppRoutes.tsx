@@ -50,6 +50,7 @@ import MedioAmbiente from '@/pages/sectores/MedioAmbiente';
 // === RESOURCE PAGES (Direct imports) ===
 import Blog from '@/pages/recursos/Blog';
 import TestExitReady from '@/pages/recursos/TestExitReady';
+import GuiaVenderEmpresa from '@/pages/recursos/GuiaVenderEmpresa';
 import BlogPost from '@/pages/blog/BlogPost';
 import LandingCalculator from '@/pages/LandingCalculator';
 
