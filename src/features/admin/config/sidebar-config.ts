@@ -139,11 +139,10 @@ export const sidebarSections: SidebarSection[] = [
         visible: false
       },
       { 
-        title: "Lead Magnets",
+        title: "Recursos",
         url: "/admin/lead-magnets", 
         icon: Zap,
-        description: "Recursos descargables",
-        visible: false
+        description: "Recursos descargables"
       },
       {
         title: "Calculadora Asesores",
