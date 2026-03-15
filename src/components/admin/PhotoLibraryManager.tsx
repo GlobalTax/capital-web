@@ -339,15 +339,24 @@ const PhotoLibraryManager: React.FC = () => {
                 {photos.map(photo => (
                   <div
                     key={photo.id}
-                    className="group relative rounded-[var(--radius)] border border-border bg-card overflow-hidden hover:shadow-md transition-shadow"
+                    draggable
+                    onDragStart={e => handlePhotoDragStart(e, photo)}
+                    onDragEnd={handlePhotoDragEnd}
+                    className={`group relative rounded-[var(--radius)] border border-border bg-card overflow-hidden transition-all cursor-grab active:cursor-grabbing ${
+                      draggingPhoto?.id === photo.id ? 'opacity-40 scale-95' : 'hover:shadow-md'
+                    }`}
                   >
-                    <div className="aspect-square bg-muted">
+                    <div className="aspect-square bg-muted relative">
                       <img
                         src={photo.publicUrl}
                         alt={photo.name}
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        draggable={false}
                       />
+                      <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-70 transition-opacity">
+                        <GripVertical className="h-4 w-4 text-foreground drop-shadow-md" />
+                      </div>
                     </div>
                     <div className="absolute inset-0 bg-background/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <Button size="icon" variant="secondary" onClick={() => copyUrl(photo.publicUrl)} title="Copiar URL">
