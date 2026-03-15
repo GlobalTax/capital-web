@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
   <script type="application/ld+json">${orgJsonLd}</script>
   <script type="application/ld+json">${articleJsonLd}</script>
   <script type="application/ld+json">${breadcrumbJsonLd}</script>
-  <meta http-equiv="refresh" content="3;url=${canonicalUrl}">
+  
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1a1a2e;background:#fff;line-height:1.7;max-width:800px;margin:0 auto;padding:24px 16px}
