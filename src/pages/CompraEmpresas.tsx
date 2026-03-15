@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import AcquisitionHero from '@/components/landing/AcquisitionHero';
 import GrowthStrategy from '@/components/landing/GrowthStrategy';
 import AcquisitionProcess from '@/components/landing/AcquisitionProcess';
@@ -65,22 +64,18 @@ const CompraEmpresas = () => {
           )
         ]}
       />
-      <div className="min-h-screen bg-white">
-        <Header />
-        <div className="pt-16">
-          <AcquisitionHero />
-          <GrowthStrategy />
-          <AcquisitionProcess />
-          <WhyChooseUs />
-          <SuccessStories />
-          <Contact 
-            id="contact"
-            pageOrigin="compra-empresas"
-            variant="compra"
-          />
-        </div>
-        <Footer />
-      </div>
+      <UnifiedLayout variant="home">
+        <AcquisitionHero />
+        <GrowthStrategy />
+        <AcquisitionProcess />
+        <WhyChooseUs />
+        <SuccessStories />
+        <Contact 
+          id="contact"
+          pageOrigin="compra-empresas"
+          variant="compra"
+        />
+      </UnifiedLayout>
     </>
   );
 };

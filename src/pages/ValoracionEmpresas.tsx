@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { TrendingUp, BarChart3, Building, Scale, ArrowRight, Calculator, CheckCircle, Users, FileText, Target, Shield, Lightbulb } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import {
   Accordion,
@@ -12,85 +11,145 @@ import {
 } from '@/components/ui/accordion';
 import { getWebPageSchema, getFAQSchema, getHowToSchema, getWebApplicationSchema } from '@/utils/seo/schemas';
 
-/* ─── Data ─── */
+/* ─── Constants ─── */
 
 const SCENARIOS = [
-  { icon: TrendingUp, title: 'Venta de la empresa', text: 'Conocer el valor de mercado es imprescindible para negociar con compradores desde una posición informada. Una valoración rigurosa evita malvender y permite justificar el precio pedido con datos objetivos.' },
-  { icon: Users, title: 'Entrada o salida de socios', text: 'Cuando un socio quiere incorporarse o salir del capital, es necesario determinar el valor justo de las participaciones para evitar conflictos y garantizar una transacción equitativa para todas las partes.' },
-  { icon: Target, title: 'Búsqueda de inversión', text: 'Los inversores —fondos de capital riesgo, business angels o family offices— exigen una valoración fundamentada antes de invertir. Un informe profesional acelera la captación de financiación y demuestra seriedad.' },
-  { icon: FileText, title: 'Planificación fiscal y sucesoria', text: 'Las operaciones de herencia, donación o reestructuración societaria requieren una valoración a efectos fiscales. Una estimación incorrecta puede derivar en sanciones tributarias o en un pago excesivo de impuestos.' },
-  { icon: Shield, title: 'Procesos judiciales o arbitrajes', text: 'En litigios entre socios, divorcios con patrimonio empresarial o reclamaciones contractuales, un informe de valoración pericial certificado es una pieza clave para defender la posición ante los tribunales.' },
-  { icon: Lightbulb, title: 'Planificación estratégica', text: 'Conocer el valor de tu empresa te permite medir el impacto de tus decisiones estratégicas, desde abrir nuevas líneas de negocio hasta desinvertir en áreas no rentables, y comparar tu evolución año a año.' },
+  {
+    title: 'Venta de la empresa',
+    text: 'Conocer el valor razonable te permite negociar con compradores potenciales desde una posición de fuerza, maximizando el precio final.',
+    icon: TrendingUp,
+  },
+  {
+    title: 'Búsqueda de inversores',
+    text: 'Atrae inversores al demostrar el potencial de crecimiento y rentabilidad de tu negocio, justificando la inversión solicitada.',
+    icon: BarChart3,
+  },
+  {
+    title: 'Fusiones y adquisiciones',
+    text: 'Identifica sinergias y oportunidades de crecimiento al fusionarte con otra empresa, estableciendo una valoración equitativa para ambas partes.',
+    icon: Building,
+  },
+  {
+    title: 'Reestructuración interna',
+    text: 'Toma decisiones informadas sobre la asignación de recursos, la optimización de procesos y la mejora de la eficiencia operativa.',
+    icon: Scale,
+  },
 ];
 
 const METHODS = [
   {
-    icon: TrendingUp,
     title: 'Descuento de Flujos de Caja (DCF)',
-    short: 'El método más riguroso para valoraciones formales',
-    full: 'El método DCF (Discounted Cash Flow) estima el valor intrínseco de una empresa proyectando sus flujos de caja libres futuros y descontándolos a valor presente mediante una tasa de descuento (WACC). Es el método preferido por analistas financieros y bancos de inversión porque captura el potencial real de generación de valor del negocio. Se basa en supuestos de crecimiento de ingresos, márgenes operativos, inversiones necesarias (CAPEX) y necesidades de capital circulante. Es especialmente adecuado para empresas con flujos de caja predecibles, contratos recurrentes o modelos de negocio estables. Su principal limitación es la sensibilidad a los supuestos: pequeñas variaciones en la tasa de crecimiento o el WACC pueden generar cambios significativos en la valoración final.',
-    when: 'Empresas con historial financiero estable y flujos predecibles',
-    advantage: 'Captura el valor intrínseco y potencial de crecimiento',
-    limitation: 'Sensible a los supuestos de proyección',
+    short: 'El método más preciso y completo',
+    full: 'Proyecta los flujos de caja futuros de la empresa y los descuenta a una tasa que refleja el riesgo del negocio. Considera el valor del dinero en el tiempo y el potencial de crecimiento a largo plazo.',
+    when: 'Empresas con flujos de caja predecibles y un historial operativo sólido.',
+    advantage: 'Considera el valor del dinero en el tiempo y el potencial de crecimiento a largo plazo.',
+    limitation: 'Requiere proyecciones financieras precisas y una tasa de descuento adecuada.',
+    icon: TrendingUp,
   },
   {
+    title: 'Múltiplos de Mercado',
+    short: 'Rápido y fácil de aplicar',
+    full: 'Compara la empresa con otras similares que cotizan en bolsa o que han sido vendidas recientemente. Utiliza ratios como el PER (precio/beneficio) o el EV/EBITDA (valor de empresa/EBITDA) para estimar el valor.',
+    when: 'Empresas en sectores con muchas transacciones comparables y datos públicos disponibles.',
+    advantage: 'Fácil de aplicar y entender, utiliza datos de mercado reales.',
+    limitation: 'Puede no reflejar las características únicas de la empresa.',
     icon: BarChart3,
-    title: 'Múltiplos de Mercado (EV/EBITDA, EV/Revenue)',
-    short: 'Rápido, intuitivo y basado en el mercado actual',
-    full: 'El método de múltiplos compara tu empresa con otras similares del mismo sector utilizando ratios como EV/EBITDA (Enterprise Value sobre EBITDA) o EV/Revenue (Enterprise Value sobre facturación). En España, los múltiplos EV/EBITDA para PYMES oscilan entre 3x y 8x dependiendo del sector, tamaño y crecimiento. Por ejemplo, una empresa tecnológica SaaS puede cotizar a 10-15x EBITDA, mientras que una empresa industrial madura puede situarse en 4-6x. Este método es especialmente útil cuando existen suficientes empresas comparables cotizadas o transacciones recientes en el sector. Su principal ventaja es la rapidez y la referencia directa al mercado; su limitación es que no captura las particularidades únicas de cada empresa.',
-    when: 'Sectores con suficientes comparables y transacciones recientes',
-    advantage: 'Refleja condiciones reales del mercado de M&A',
-    limitation: 'No captura particularidades únicas de cada empresa',
   },
   {
+    title: 'Valoración Patrimonial',
+    short: 'Útil para empresas con muchos activos',
+    full: 'Suma el valor de todos los activos de la empresa (inmuebles, inventario, equipos, etc.) y resta los pasivos (deudas, obligaciones, etc.). Refleja el valor liquidativo de la empresa en caso de venta.',
+    when: 'Empresas con muchos activos tangibles y un historial de pérdidas o baja rentabilidad.',
+    advantage: 'Fácil de entender y calcular, proporciona un valor mínimo de referencia.',
+    limitation: 'No considera el potencial de crecimiento ni la rentabilidad futura.',
     icon: Building,
-    title: 'Valoración por Activos (Valor Patrimonial)',
-    short: 'Ideal para empresas intensivas en activos',
-    full: 'La valoración patrimonial calcula el valor neto contable ajustado de la empresa: el valor real de mercado de todos sus activos (inmuebles, maquinaria, existencias, cuentas por cobrar, patentes) menos el total de pasivos y deudas. Es el método más conservador y proporciona un «suelo» de valoración. Se utiliza principalmente en empresas inmobiliarias, holdings de participaciones, empresas industriales con activos tangibles significativos o negocios en situación de liquidación. Es importante distinguir entre valor contable y valor de mercado: un inmueble comprado hace 20 años puede tener un valor contable muy inferior a su valor de mercado actual. Por ello, se recomienda ajustar los activos a valor razonable para obtener una estimación precisa.',
-    when: 'Inmobiliarias, holdings, empresas en liquidación',
-    advantage: 'Método más conservador, proporciona un suelo de valoración',
-    limitation: 'No refleja la capacidad de generación de beneficios futuros',
   },
   {
-    icon: Scale,
     title: 'Transacciones Comparables',
-    short: 'Basado en precios reales pagados en el mercado',
-    full: 'Este método analiza el precio pagado en transacciones reales de compraventa de empresas similares en el mismo sector y geografía. Es muy valorado por inversores y fondos de adquisición porque refleja lo que el mercado realmente paga, no una estimación teórica. En Capittal, mantenemos una base de datos propietaria de transacciones de M&A en España que nos permite aplicar múltiplos específicos por sector, tamaño de empresa y región. Las fuentes incluyen registros mercantiles, bases de datos internacionales (MergerMarket, Capital IQ) y nuestra propia experiencia en operaciones cerradas. La principal limitación es la disponibilidad de datos: muchas transacciones de PYMES no son públicas, lo que puede dificultar encontrar comparables adecuados.',
-    when: 'Cuando existen transacciones recientes de empresas similares',
-    advantage: 'Refleja precios reales pagados en el mercado',
-    limitation: 'Disponibilidad limitada de datos en transacciones privadas',
+    short: 'Basado en operaciones reales',
+    full: 'Analiza las valoraciones de empresas similares que han sido adquiridas recientemente. Ajusta los precios de transacción por las diferencias en tamaño, rentabilidad y riesgo.',
+    when: 'Empresas en sectores con un mercado M&A activo y datos de transacciones disponibles.',
+    advantage: 'Refleja las condiciones reales del mercado y las expectativas de los compradores.',
+    limitation: 'Requiere acceso a información detallada sobre transacciones comparables.',
+    icon: Scale,
   },
 ];
 
 const PROCESS_STEPS = [
-  { name: 'Recopilación de información financiera', text: 'El primer paso es reunir los estados financieros de los últimos 3 a 5 años: cuenta de resultados, balance de situación y estado de flujos de efectivo. También se recopila información sobre contratos principales, cartera de clientes, activos tangibles e intangibles, y estructura de deuda. Cuanta mayor sea la calidad de la información, más precisa será la valoración.' },
-  { name: 'Análisis del sector y mercado', text: 'Se estudia el sector en el que opera la empresa: tendencias de crecimiento, nivel de competencia, barreras de entrada, regulación aplicable y múltiplos de transacciones recientes. Este análisis contextual es esencial para determinar qué múltiplos y tasas de descuento son apropiados y cómo se posiciona la empresa frente a sus competidores.' },
-  { name: 'Aplicación de metodologías de valoración', text: 'Se aplican al menos dos metodologías complementarias —típicamente DCF y múltiplos de mercado— para obtener un rango de valoración robusto. Cada método se calibra con datos específicos del sector y se ajusta por factores cualitativos como la dependencia del fundador, la diversificación de clientes o la calidad del equipo directivo.' },
-  { name: 'Ajustes y normalización del EBITDA', text: 'Se normaliza el EBITDA eliminando partidas extraordinarias, gastos personales del empresario canalizados a través de la empresa, retribuciones por encima o por debajo de mercado, y otros elementos no recurrentes. Esta normalización refleja la capacidad real de generación de beneficios del negocio y es fundamental para una valoración justa.' },
-  { name: 'Determinación del rango de valor', text: 'Combinando los resultados de las distintas metodologías y aplicando los ajustes pertinentes, se establece un rango de valoración con un valor mínimo, un valor central y un valor máximo. Este rango tiene en cuenta distintos escenarios (conservador, base, optimista) y proporciona una referencia sólida para la negociación.' },
-  { name: 'Elaboración del informe de valoración', text: 'El proceso culmina con un informe profesional que documenta la metodología utilizada, los supuestos clave, los datos de mercado empleados, los ajustes realizados y las conclusiones de valor. Este informe es utilizable en procesos de venta, negociaciones con inversores, procedimientos judiciales y planificación fiscal.' },
+  {
+    name: 'Recopilación de información',
+    text: 'Solicitamos los estados financieros de los últimos 3-5 años, el plan de negocio, la estructura organizativa, la lista de clientes y proveedores, los contratos relevantes y cualquier otra información que pueda influir en la valoración.',
+  },
+  {
+    name: 'Análisis de la empresa y su entorno',
+    text: 'Analizamos la situación financiera, la posición competitiva, las fortalezas y debilidades, las oportunidades y amenazas, el sector en el que opera y las perspectivas macroeconómicas.',
+  },
+  {
+    name: 'Selección de los métodos de valoración',
+    text: 'Seleccionamos los métodos de valoración más adecuados para la empresa, en función de sus características, su sector y la disponibilidad de información. Combinamos varios métodos para triangular un rango de valor razonable.',
+  },
+  {
+    name: 'Cálculo del valor',
+    text: 'Aplicamos los métodos de valoración seleccionados y calculamos el valor de la empresa. Realizamos ajustes para reflejar los factores cualitativos y cuantitativos que influyen en el precio final.',
+  },
+  {
+    name: 'Elaboración del informe',
+    text: 'Elaboramos un informe detallado que explica la metodología utilizada, los supuestos clave, los resultados obtenidos y las conclusiones. El informe incluye un rango de valor razonable y una justificación del mismo.',
+  },
 ];
 
 const FACTORS = [
-  { title: 'Crecimiento y tendencia de ingresos', text: 'Empresas con crecimiento sostenido de facturación reciben múltiplos superiores. Un crecimiento anual del 15-20% puede duplicar el múltiplo respecto a una empresa estancada.' },
-  { title: 'Rentabilidad y márgenes operativos', text: 'Márgenes EBITDA superiores a la media del sector indican eficiencia operativa y capacidad de generación de caja, factores que aumentan directamente la valoración.' },
-  { title: 'Sector y posición competitiva', text: 'Sectores con altas barreras de entrada, crecimiento estructural y consolidación activa (como tecnología, salud o seguridad) obtienen múltiplos más altos que sectores maduros o commoditizados.' },
-  { title: 'Dependencia del fundador', text: 'Si la empresa depende excesivamente del fundador o propietario, los compradores aplicarán un descuento significativo. Un equipo directivo sólido y procesos documentados aumentan el valor.' },
-  { title: 'Diversificación de clientes', text: 'Una cartera concentrada en pocos clientes supone un riesgo para el comprador. Empresas con una base diversificada —ningún cliente superior al 10-15% de la facturación— reciben valoraciones superiores.' },
-  { title: 'Recurrencia de ingresos', text: 'Modelos de negocio con ingresos recurrentes (contratos a largo plazo, suscripciones, servicios continuados) son más valorados que los dependientes de proyectos puntuales o ventas únicas.' },
+  {
+    title: 'Rentabilidad',
+    text: 'Un historial de beneficios sólidos y crecientes aumenta el valor de la empresa. Los inversores buscan empresas que generen un retorno atractivo sobre el capital invertido.',
+  },
+  {
+    title: 'Crecimiento',
+    text: 'Las empresas con un alto potencial de crecimiento son más valiosas. Los inversores están dispuestos a pagar más por una empresa que puede aumentar sus ingresos y beneficios en el futuro.',
+  },
+  {
+    title: 'Riesgo',
+    text: 'Un menor riesgo reduce la tasa de descuento y aumenta el valor de la empresa. Los inversores prefieren empresas con un modelo de negocio estable, una base de clientes diversificada y una gestión experimentada.',
+  },
+  {
+    title: 'Activos',
+    text: 'Los activos tangibles (inmuebles, equipos, inventario) y los activos intangibles (marcas, patentes, fondo de comercio) contribuyen al valor de la empresa.',
+  },
+  {
+    title: 'Deuda',
+    text: 'Un alto nivel de deuda reduce el valor de la empresa. Los inversores consideran que la deuda es un riesgo, ya que reduce los flujos de caja disponibles para los accionistas.',
+  },
+  {
+    title: 'Equipo directivo',
+    text: 'Un equipo directivo experimentado y competente aumenta el valor de la empresa. Los inversores confían en que un buen equipo directivo puede ejecutar la estrategia y generar valor a largo plazo.',
+  },
 ];
 
 const FAQ_DATA = [
-  { question: '¿Es gratuita la calculadora de valoración?', answer: 'Sí, nuestra calculadora de valoración de empresas es completamente gratuita y sin compromiso. Puedes utilizarla tantas veces como necesites para obtener una estimación orientativa del valor de tu negocio basada en múltiplos sectoriales actualizados.' },
-  { question: '¿Qué métodos de valoración utilizáis?', answer: 'Nuestra calculadora utiliza el método de múltiplos de EBITDA y de facturación, ajustados por sector, tamaño de empresa, márgenes operativos y tasa de crecimiento. Para valoraciones profesionales, combinamos DCF (descuento de flujos de caja), múltiplos de mercado, transacciones comparables y valoración patrimonial.' },
-  { question: '¿Cuánto tarda una valoración profesional?', answer: 'Una valoración profesional completa realizada por nuestro equipo de expertos en M&A suele tardar entre 2 y 4 semanas, dependiendo de la complejidad de la empresa y la disponibilidad de la documentación financiera necesaria.' },
-  { question: '¿Los datos que introduzco son confidenciales?', answer: 'Absolutamente. Todos los datos introducidos en la calculadora son tratados con total confidencialidad. No compartimos información con terceros y cumplimos estrictamente con la normativa europea de protección de datos (RGPD).' },
-  { question: '¿Qué sectores cubre la calculadora?', answer: 'La calculadora cubre más de 20 sectores, incluyendo tecnología, industrial, servicios profesionales, retail, hostelería, salud, educación, construcción, transporte y logística, alimentación, energía, medio ambiente, seguridad y muchos más.' },
-  { question: '¿Cómo se calcula el valor de una empresa en España?', answer: 'El valor de una empresa en España se calcula habitualmente combinando varias metodologías: descuento de flujos de caja (DCF), múltiplos de EBITDA sectoriales (que en España oscilan entre 3x y 8x para PYMES), transacciones comparables y valoración patrimonial. El método más utilizado en operaciones de M&A es el de múltiplos de EBITDA, ajustado por factores como el crecimiento, los márgenes operativos y la posición competitiva.' },
-  { question: '¿Cuánto vale una empresa que factura 1 millón de euros?', answer: 'El valor depende fundamentalmente del sector, la rentabilidad y el crecimiento. Una empresa que factura 1 millón de euros con un margen EBITDA del 20% (EBITDA de 200.000€) podría valorarse entre 600.000€ y 1.600.000€ aplicando múltiplos de 3x a 8x EBITDA según el sector. Empresas tecnológicas o con alto crecimiento pueden superar estos rangos significativamente.' },
-  { question: '¿Qué múltiplo de EBITDA aplica a mi sector?', answer: 'Los múltiplos varían significativamente por sector en España: tecnología/SaaS (8-15x), salud/healthcare (7-10x), seguridad privada (6-9x), servicios profesionales (5-8x), industrial/manufactura (4-7x), construcción (3-6x), hostelería (3-5x). Estos rangos se ajustan además por el tamaño de la empresa, su tasa de crecimiento y la calidad de sus márgenes operativos.' },
-  { question: '¿Cuál es la diferencia entre valor de empresa (Enterprise Value) y valor de equity?', answer: 'El Enterprise Value (EV) o valor de empresa incluye el valor total del negocio: equity más deuda neta. El valor de equity es lo que realmente recibe el vendedor después de descontar la deuda financiera y sumar la caja excedente. Por ejemplo, si una empresa tiene un EV de 5 millones y una deuda neta de 1 millón, el valor de equity para el accionista es de 4 millones de euros.' },
-  { question: '¿Es obligatorio valorar una empresa para venderla?', answer: 'No es legalmente obligatorio, pero es altamente recomendable. Sin una valoración fundamentada, el vendedor carece de una referencia objetiva para negociar y corre el riesgo de aceptar un precio por debajo del valor real. Además, una valoración profesional acelera el proceso de venta, genera confianza en el comprador y puede ser necesaria a efectos fiscales para justificar el precio de la transacción ante Hacienda.' },
+  {
+    question: '¿Qué es una valoración de empresas?',
+    answer: 'Una valoración de empresas es un proceso que determina el valor económico de una empresa o de una parte de ella. Se utiliza para tomar decisiones informadas sobre la compra, venta, fusión, inversión o reestructuración de una empresa.',
+  },
+  {
+    question: '¿Por qué es importante valorar una empresa?',
+    answer: 'Es importante para conocer el valor razonable de una empresa, negociar con compradores o vendedores, atraer inversores, planificar una sucesión o reestructuración, y tomar decisiones estratégicas.',
+  },
+  {
+    question: '¿Qué métodos se utilizan para valorar una empresa?',
+    answer: 'Se utilizan métodos como el descuento de flujos de caja (DCF), los múltiplos de mercado, la valoración patrimonial y las transacciones comparables. La elección del método depende de las características de la empresa y la disponibilidad de información.',
+  },
+  {
+    question: '¿Qué factores influyen en la valoración de una empresa?',
+    answer: 'Influyen factores como la rentabilidad, el crecimiento, el riesgo, los activos, la deuda, el equipo directivo, la posición competitiva, el sector y las perspectivas macroeconómicas.',
+  },
+  {
+    question: '¿Quién puede realizar una valoración de empresas?',
+    answer: 'Puede ser realizada por profesionales como analistas financieros, consultores de M&A, auditores o expertos independientes. Es importante elegir a un profesional con experiencia y conocimientos en el sector de la empresa.',
+  },
+  {
+    question: '¿Cuánto cuesta una valoración de empresas?',
+    answer: 'Depende de la complejidad de la empresa, la cantidad de información disponible y el alcance del trabajo. Puede variar desde unos pocos miles de euros hasta decenas de miles de euros.',
+  },
 ];
 
 /* ─── Component ─── */
@@ -134,11 +193,9 @@ const ValoracionEmpresas = () => {
         description="Guía completa sobre valoración de empresas en España: métodos DCF, múltiplos EBITDA, comparables y patrimonial. Calculadora gratuita online. Asesoramiento profesional M&A."
         structuredData={structuredData}
       />
-      <Header />
-
-      <main className="min-h-screen bg-background">
+      <UnifiedLayout variant="home">
         {/* ═══ Section 1: Hero AEO ═══ */}
-        <section className="pt-28 md:pt-32 pb-16 md:pb-24 px-4">
+        <section className="pb-16 md:pb-24 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
               Valoración de Empresas en España: Guía Completa de Métodos, Herramientas y Asesoramiento Profesional
@@ -167,117 +224,60 @@ const ValoracionEmpresas = () => {
             </h2>
             <p className="text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
               Existen múltiples situaciones en las que conocer el valor de tu empresa es fundamental.
-              Una valoración profesional no solo te da un número: te proporciona una comprensión profunda
-              de los generadores de valor de tu negocio y las palancas para mejorarlo.
+              Estas son las más habituales en el mercado español:
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {SCENARIOS.map((s) => (
-                <div key={s.title} className="bg-card border border-border rounded-xl p-6">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              {SCENARIOS.map((s, i) => (
+                <div key={i} className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                       <s.icon className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-2">{s.title}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{s.text}</p>
-                    </div>
+                    <h3 className="font-semibold text-foreground">{s.title}</h3>
                   </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{s.text}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ═══ Section 3: Métodos de Valoración ampliados ═══ */}
+        {/* ═══ Section 3: Métodos de valoración ═══ */}
         <section className="py-16 px-4">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 text-center">
               Métodos de Valoración de Empresas
             </h2>
             <p className="text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
-              No existe un único método para valorar una empresa. Los profesionales de M&A combinan varias
-              metodologías para obtener un rango de valor fiable. A continuación, explicamos los cuatro métodos
-              más utilizados en España, sus ventajas, limitaciones y cuándo aplicar cada uno.
-            </p>
-            <div className="space-y-8">
-              {METHODS.map((method) => (
-                <article key={method.title} className="bg-card border border-border rounded-xl p-6 md:p-8">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <method.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-foreground text-lg md:text-xl">{method.title}</h3>
-                      <p className="text-primary text-sm font-medium">{method.short}</p>
-                    </div>
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed mb-4">{method.full}</p>
-                  <div className="grid sm:grid-cols-3 gap-3">
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">Cuándo usarlo</p>
-                      <p className="text-sm text-muted-foreground">{method.when}</p>
-                    </div>
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">Ventaja principal</p>
-                      <p className="text-sm text-muted-foreground">{method.advantage}</p>
-                    </div>
-                    <div className="bg-muted/50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-foreground uppercase tracking-wide mb-1">Limitación</p>
-                      <p className="text-sm text-muted-foreground">{method.limitation}</p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ Section 4: Proceso paso a paso ═══ */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 text-center">
-              Cómo valorar una empresa: proceso paso a paso
-            </h2>
-            <p className="text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
-              El proceso de valoración empresarial sigue una metodología estructurada que garantiza
-              resultados rigurosos y defendibles. Estos son los seis pasos que seguimos en Capittal
-              para cada valoración profesional.
+              No existe un único método válido para todas las empresas. Los profesionales combinan varias
+              metodologías para triangular un rango de valor razonable. Estos son los cuatro métodos más
+              utilizados en España:
             </p>
             <div className="space-y-6">
-              {PROCESS_STEPS.map((step, index) => (
-                <div key={step.name} className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground text-lg mb-2">{step.name}</h3>
-                    <p className="text-muted-foreground leading-relaxed text-sm">{step.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ Section 5: Factores que afectan la valoración ═══ */}
-        <section className="py-16 px-4">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 text-center">
-              Factores clave que afectan la valoración de una empresa
-            </h2>
-            <p className="text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
-              El valor de una empresa no depende únicamente de sus cifras financieras. Los compradores
-              e inversores evalúan múltiples factores cualitativos y cuantitativos que pueden aumentar
-              o reducir significativamente el precio final de una transacción.
-            </p>
-            <div className="grid md:grid-cols-2 gap-6">
-              {FACTORS.map((f) => (
-                <div key={f.title} className="border border-border rounded-xl p-5">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed">{f.text}</p>
+              {METHODS.map((m, i) => (
+                <div key={i} className="bg-card rounded-xl p-6 md:p-8 shadow-sm border border-border">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <m.icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-foreground mb-1">{m.title}</h3>
+                      <p className="text-primary font-medium text-sm mb-3">{m.short}</p>
+                      <p className="text-muted-foreground text-sm leading-relaxed mb-4">{m.full}</p>
+                      <div className="grid sm:grid-cols-3 gap-3 text-sm">
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <span className="font-medium text-foreground block mb-1">Cuándo usarlo</span>
+                          <span className="text-muted-foreground">{m.when}</span>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <span className="font-medium text-foreground block mb-1">Ventaja</span>
+                          <span className="text-muted-foreground">{m.advantage}</span>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <span className="font-medium text-foreground block mb-1">Limitación</span>
+                          <span className="text-muted-foreground">{m.limitation}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -286,75 +286,93 @@ const ValoracionEmpresas = () => {
           </div>
         </section>
 
-        {/* ═══ Section 6: Valoración gratuita vs profesional ═══ */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 text-center">
-              Valoración online gratuita vs. valoración profesional
-            </h2>
-            <p className="text-muted-foreground text-center max-w-3xl mx-auto mb-8 leading-relaxed">
-              Ambas opciones tienen su utilidad dependiendo de tu situación. Una valoración online gratuita
-              es ideal como primer paso para conocer un rango aproximado, mientras que una valoración
-              profesional es imprescindible para tomar decisiones de alto impacto económico.
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse bg-card rounded-xl overflow-hidden border border-border">
-                <thead>
-                  <tr className="bg-muted/50">
-                    <th className="text-left p-4 font-semibold text-foreground">Característica</th>
-                    <th className="text-center p-4 font-semibold text-foreground">Calculadora gratuita</th>
-                    <th className="text-center p-4 font-semibold text-foreground">Valoración profesional</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm text-muted-foreground">
-                  <tr className="border-t border-border"><td className="p-4">Tiempo</td><td className="p-4 text-center">5 minutos</td><td className="p-4 text-center">2-4 semanas</td></tr>
-                  <tr className="border-t border-border"><td className="p-4">Coste</td><td className="p-4 text-center">Gratuito</td><td className="p-4 text-center">€3.000 - €50.000+</td></tr>
-                  <tr className="border-t border-border"><td className="p-4">Metodología</td><td className="p-4 text-center">Múltiplos sectoriales</td><td className="p-4 text-center">DCF + Múltiplos + Comparables</td></tr>
-                  <tr className="border-t border-border"><td className="p-4">Precisión</td><td className="p-4 text-center">Orientativa (±30%)</td><td className="p-4 text-center">Alta precisión (±10%)</td></tr>
-                  <tr className="border-t border-border"><td className="p-4">Informe certificado</td><td className="p-4 text-center">No</td><td className="p-4 text-center">Sí</td></tr>
-                  <tr className="border-t border-border"><td className="p-4">Uso en negociación</td><td className="p-4 text-center">Referencia inicial</td><td className="p-4 text-center">Documento vinculante</td></tr>
-                  <tr className="border-t border-border"><td className="p-4">Validez fiscal/legal</td><td className="p-4 text-center">No</td><td className="p-4 text-center">Sí</td></tr>
-                </tbody>
-              </table>
+        {/* ═══ Section 4: CTA Calculadora ═══ */}
+        <section className="py-16 px-4 bg-primary/5">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-6">
+              <Calculator className="w-7 h-7 text-primary" />
             </div>
-          </div>
-        </section>
-
-        {/* ═══ Section 7: CTA Calculadora ═══ */}
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto bg-primary/5 border border-primary/20 rounded-2xl p-8 md:p-12 text-center">
-            <Calculator className="w-12 h-12 text-primary mx-auto mb-4" />
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Calcula el valor de tu empresa gratis
+              Calcula gratis el valor de tu empresa
             </h2>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Utiliza nuestra calculadora gratuita de valoración basada en múltiplos de EBITDA y
-              benchmarks sectoriales actualizados para el mercado español. Resultado inmediato,
-              confidencial y sin compromiso. Más de 20 sectores disponibles.
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+              Usa nuestra calculadora gratuita para obtener una estimación orientativa del valor de tu empresa
+              basada en múltiplos de EBITDA y facturación ajustados por sector. Resultado inmediato y confidencial.
             </p>
             <Link
               to="/lp/calculadora"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-lg font-semibold hover:bg-foreground/90 transition-colors"
             >
-              Usar calculadora gratuita
+              <Calculator className="w-5 h-5" />
+              Acceder a la Calculadora Gratuita
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </section>
 
-        {/* ═══ Section 8: FAQ ampliado (10 preguntas) ═══ */}
-        <section className="py-16 px-4 bg-muted/30">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8 text-center">
-              Preguntas frecuentes sobre valoración de empresas en España
+        {/* ═══ Section 5: Proceso ═══ */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 text-center">
+              Proceso de Valoración Profesional
             </h2>
-            <Accordion type="single" collapsible className="w-full">
-              {FAQ_DATA.map((faq, index) => (
-                <AccordionItem key={index} value={`faq-${index}`}>
-                  <AccordionTrigger className="text-left text-base font-medium">
+            <p className="text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
+              Una valoración empresarial rigurosa sigue un proceso estructurado que garantiza la precisión
+              y fiabilidad de los resultados. Estos son los pasos que nuestro equipo sigue:
+            </p>
+            <div className="space-y-6">
+              {PROCESS_STEPS.map((step, i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                    {i + 1}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">{step.name}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ Section 6: Factores ═══ */}
+        <section className="py-16 px-4 bg-muted/30">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 text-center">
+              Factores que influyen en la valoración
+            </h2>
+            <p className="text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
+              El valor de una empresa no depende solo de sus estados financieros. Estos son los factores
+              cualitativos y cuantitativos que más impactan en la valoración final:
+            </p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {FACTORS.map((f, i) => (
+                <div key={i} className="bg-card rounded-xl p-6 shadow-sm border border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    <h3 className="font-semibold text-foreground">{f.title}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{f.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ Section 7: FAQ ═══ */}
+        <section className="py-16 px-4">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-10 text-center">
+              Preguntas Frecuentes sobre Valoración de Empresas
+            </h2>
+            <Accordion type="single" collapsible className="space-y-3">
+              {FAQ_DATA.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} className="bg-card rounded-xl border border-border px-6">
+                  <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline py-4">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground leading-relaxed">
+                  <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -363,8 +381,8 @@ const ValoracionEmpresas = () => {
           </div>
         </section>
 
-        {/* ═══ Section 9: CTA Profesional ═══ */}
-        <section className="py-16 px-4">
+        {/* ═══ Section 8: CTA Final ═══ */}
+        <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               ¿Necesitas una valoración profesional?
@@ -384,9 +402,7 @@ const ValoracionEmpresas = () => {
             </Link>
           </div>
         </section>
-      </main>
-
-      <Footer />
+      </UnifiedLayout>
     </>
   );
 };

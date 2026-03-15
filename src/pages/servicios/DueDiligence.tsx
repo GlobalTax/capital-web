@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getBreadcrumbSchema } from '@/utils/seo';
 import { useHreflang } from '@/hooks/useHreflang';
@@ -17,7 +16,7 @@ const DueDiligence = () => {
   useHreflang();
   
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <SEOHead 
         title="Due Diligence M&A - Análisis Exhaustivo de Empresas | Capittal"
         description="Servicio especializado de due diligence para fusiones y adquisiciones. Análisis financiero, legal, operacional y estratégico de empresas en España."
@@ -35,17 +34,15 @@ const DueDiligence = () => {
           ])
         ]}
       />
-      <Header />
-      <div className="pt-16">
+      <UnifiedLayout variant="home">
         <DueDiligenceHero />
         <DueDiligenceTypes />
         <DueDiligenceProcess />
         <DueDiligenceBenefits />
         <DueDiligenceFAQ />
         <DueDiligenceCTA />
-      </div>
-      <Footer />
-    </div>
+      </UnifiedLayout>
+    </>
   );
 };
 

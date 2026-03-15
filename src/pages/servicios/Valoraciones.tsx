@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import UnifiedLayout from '@/components/shared/UnifiedLayout';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getBreadcrumbSchema } from '@/utils/seo';
 import { useHreflang } from '@/hooks/useHreflang';
@@ -15,11 +14,10 @@ import ValoracionesCTANew from '@/components/valoraciones/ValoracionesCTANew';
 
 const Valoraciones = () => {
   const location = useLocation();
-  console.log('🟢 VALORACIONES PAGE IS RENDERING - This should appear in console');
   useHreflang();
   
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <SEOHead 
         title="Valoración de Empresas - Métodos DCF, Múltiplos y Comparables | Capittal"
         description="Valoración profesional de empresas con métodos DCF, múltiplos sectoriales y comparables. Informes certificados para M&A, herencias y disputas societarias."
@@ -37,16 +35,16 @@ const Valoraciones = () => {
           ])
         ]}
       />
-      <Header />
-      <ValoracionesHero />
-      <ValoracionesMethodology />
-      <ValoracionesMultiples />
-      <ValoracionesProcess />
-      <ValoracionesBenefits />
-      <ValoracionesFAQNew />
-      <ValoracionesCTANew />
-      <Footer />
-    </div>
+      <UnifiedLayout variant="home">
+        <ValoracionesHero />
+        <ValoracionesMethodology />
+        <ValoracionesMultiples />
+        <ValoracionesProcess />
+        <ValoracionesBenefits />
+        <ValoracionesFAQNew />
+        <ValoracionesCTANew />
+      </UnifiedLayout>
+    </>
   );
 };
 
