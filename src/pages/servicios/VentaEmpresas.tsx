@@ -9,6 +9,7 @@ import VentaEmpresasServiceIntegration from '@/components/venta-empresas/VentaEm
 import VentaEmpresasValuationFactors from '@/components/venta-empresas/VentaEmpresasValuationFactors';
 import VentaEmpresasFAQ from '@/components/venta-empresas/VentaEmpresasFAQ';
 import VentaEmpresasCTA from '@/components/venta-empresas/VentaEmpresasCTA';
+import GuideDownloadBanner from '@/components/shared/GuideDownloadBanner';
 import { SEOHead } from '@/components/seo';
 import { getServiceSchema, getBreadcrumbSchema } from '@/utils/seo';
 import { useHreflang } from '@/hooks/useHreflang';
