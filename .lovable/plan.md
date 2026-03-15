@@ -1,52 +1,41 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Publicar artículo "Qué es un earn-out en M&A"
 
-### Cambios realizados
+### Acción principal
+Crear una migración SQL que inserte el artículo completo en la tabla `blog_posts`, incluyendo `faq_data` JSONB para el schema FAQPage automático.
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Detalles
 
-### Resultado
+**1. Migración SQL — INSERT en `blog_posts`**
+- `slug`: `que-es-earn-out`
+- `title`: Qué es un earn-out en M&A: cómo funciona, cláusulas y ejemplos [2026]
+- `meta_title`: Qué es un earn-out en M&A: cómo funciona, cláusulas y ejemplos [2026]
+- `meta_description`: El earn-out es un pago variable en la compraventa de empresas vinculado a resultados futuros. Descubre cómo funciona, qué cláusulas incluir, riesgos para comprador y vendedor, y ejemplos prácticos en el mid-market español.
+- `author_name`: Samuel Navarro
+- `author_avatar_url`: (avatar estándar del memory)
+- `category`: M&A
+- `tags`: earn out, earn out que es, earn out m&a, clausula earn out, pago diferido venta empresa
+- `reading_time`: 12
+- `is_published`: true
+- `is_featured`: false
+- `featured_image_url`: imagen genérica del blog (o placeholder)
+- `content`: HTML completo del artículo con:
+  - Tablas HTML (`<table>`) para las comparativas
+  - Citas en `<blockquote>` con atribución
+  - Estadísticas destacadas con formato visual
+  - **Enlaces internos corregidos**: `/blog/valoracion-de-empresas` → `/recursos/blog/como-se-valora-una-empresa-claves-para-entenderlo-incluye-ejemplo-practico` (el slug real)
+  - Los otros 4 enlaces: `/recursos/blog/vender-mi-empresa`, `/recursos/blog/que-es-ebitda`, `/recursos/blog/fusiones-y-adquisiciones`, `/recursos/blog/que-es-due-diligence`
+  - CTA final con enlace a `/contacto`
+  - Sección de fuentes y referencias
+  - Fecha "Última actualización" visible
+- `faq_data`: JSONB con las 4 preguntas del FAQ (esto activa automáticamente el FAQPage schema tanto en el componente React como en blog-ssr)
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**2. No se requieren cambios en código frontend** — blog-ssr y BlogPost.tsx ya soportan `faq_data`, Article schema, y BreadcrumbList schema dinámicamente.
 
----
+### Nota sobre enlace incorrecto
+Las instrucciones indican enlazar a `/blog/valoracion-de-empresas`, pero ese slug no existe. Se usará el slug real: `como-se-valora-una-empresa-claves-para-entenderlo-incluye-ejemplo-practico`.
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+### Archivos
+- **Crear** migración SQL con INSERT completo del artículo
 
-### Cambios realizados
-
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
-
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
