@@ -2010,6 +2010,7 @@ export type Database = {
           content: string
           created_at: string
           excerpt: string | null
+          faq_data: Json | null
           featured_image_url: string | null
           id: string
           is_featured: boolean
@@ -2030,6 +2031,7 @@ export type Database = {
           content: string
           created_at?: string
           excerpt?: string | null
+          faq_data?: Json | null
           featured_image_url?: string | null
           id?: string
           is_featured?: boolean
@@ -2050,6 +2052,7 @@ export type Database = {
           content?: string
           created_at?: string
           excerpt?: string | null
+          faq_data?: Json | null
           featured_image_url?: string | null
           id?: string
           is_featured?: boolean
