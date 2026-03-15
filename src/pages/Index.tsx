@@ -76,6 +76,7 @@ const Index = () => {
       <EcosistemaIntegral />
       <CaseStudiesCompact />
       <MANewsSection />
+      <GuideDownloadSection />
       <WhyChooseCapittal />
       <Contact />
     </UnifiedLayout>

@@ -315,6 +315,7 @@ export const AppRoutes = () => {
         <Route path="/recursos/noticias" element={<Noticias />} />
         <Route path="/recursos/noticias/:slug" element={<NewsArticleDetail />} />
         <Route path="/recursos/test-exit-ready" element={<TestExitReady />} />
+        <Route path="/recursos/guia-vender-empresa" element={<GuiaVenderEmpresa />} />
         <Route path="/recursos/case-studies" element={<CaseStudies />} />
         <Route path="/recursos/newsletter" element={<Newsletter />} />
         <Route path="/recursos/webinars" element={<Webinars />} />

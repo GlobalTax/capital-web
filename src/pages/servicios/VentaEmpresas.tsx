@@ -45,6 +45,7 @@ const VentaEmpresas = () => {
       <VentaEmpresasValuation />
       <VentaEmpresasServiceIntegration />
       <VentaEmpresasValuationFactors />
+      <GuideDownloadBanner />
       <VentaEmpresasFAQ />
       <VentaEmpresasCTA />
       </UnifiedLayout>

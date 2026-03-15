@@ -328,6 +328,11 @@ const BlogPostContent = ({ post }: BlogPostContentProps) => {
             <div className="mt-6">
               <BlogValuationCTA />
             </div>
+            
+            {/* CTA Guía Vender Empresa - Sidebar */}
+            <div className="mt-4">
+              <BlogGuideDownloadCTA />
+            </div>
             </div>
           </div>
         </div>
