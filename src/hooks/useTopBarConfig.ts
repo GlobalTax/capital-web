@@ -43,6 +43,7 @@ const DEFAULT_LINKS: Omit<TopBarLink, 'id'>[] = [
   { label: 'Blog', href: '/blog', is_external: false, position: 2, is_active: true },
   { label: 'Casos de Éxito', href: '/casos-exito', is_external: false, position: 3, is_active: true },
   { label: 'Partners', href: '/colaboradores', is_external: false, position: 4, is_active: true },
+  { label: 'Recursos', href: '/recursos/biblioteca', is_external: false, position: 5, is_active: true },
 ];
 
 // Query keys
