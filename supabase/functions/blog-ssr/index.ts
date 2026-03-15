@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
 
     const { data: post, error } = await supabase
       .from("blog_posts")
-      .select("title, slug, excerpt, content, meta_title, meta_description, featured_image_url, author_name, published_at, updated_at, tags, category")
+      .select("title, slug, excerpt, content, meta_title, meta_description, featured_image_url, author_name, published_at, updated_at, tags, category, faq_data")
       .eq("slug", slug)
       .eq("is_published", true)
       .limit(1)
