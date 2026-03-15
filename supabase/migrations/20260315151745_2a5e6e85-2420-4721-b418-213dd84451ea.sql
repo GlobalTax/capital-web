@@ -1,0 +1,1 @@
+UPDATE public.blog_posts SET content = REPLACE(content, '/servicios/venta-de-empresas', '/venta-empresas') WHERE content LIKE '%/servicios/venta-de-empresas%';
