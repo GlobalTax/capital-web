@@ -46,6 +46,8 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [status, setStatus] = useState<string>('draft');
+  const [downloadCount, setDownloadCount] = useState(0);
+  const [conversionCount, setConversionCount] = useState(0);
   const [content, setContent] = useState('');
   const [fileUrl, setFileUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -67,6 +69,8 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
       setMetaDescription(editingMagnet.meta_description || '');
       setStatus(editingMagnet.status);
       setContent(editingMagnet.content || '');
+      setDownloadCount(editingMagnet.download_count || 0);
+      setConversionCount(editingMagnet.lead_conversion_count || 0);
       setFileUrl(editingMagnet.file_url || '');
       setImageUrl(editingMagnet.featured_image_url || '');
       setSlugManual(true);
@@ -80,6 +84,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
     setDescription(''); setSlug(''); setMetaTitle('');
     setMetaDescription(''); setStatus('draft'); setContent('');
     setFileUrl(''); setImageUrl(''); setSlugManual(false);
+    setDownloadCount(0); setConversionCount(0);
   };
 
   useEffect(() => {
@@ -122,7 +127,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
       };
 
       if (editingMagnet) {
-        await updateLeadMagnet.mutateAsync({ id: editingMagnet.id, ...basePayload });
+        await updateLeadMagnet.mutateAsync({ id: editingMagnet.id, ...basePayload, download_count: downloadCount, lead_conversion_count: conversionCount });
         toast({ title: 'Recurso actualizado' });
       } else {
         await createLeadMagnet.mutateAsync(basePayload);
@@ -200,7 +205,19 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
             </Select>
           </div>
 
-          {/* PDF Upload */}
+          {/* Download & Conversion counts (edit only) */}
+          {editingMagnet && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="downloadCount">Nº de descargas</Label>
+                <Input id="downloadCount" type="number" min={0} value={downloadCount} onChange={e => setDownloadCount(parseInt(e.target.value) || 0)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="conversionCount">Nº de conversiones</Label>
+                <Input id="conversionCount" type="number" min={0} value={conversionCount} onChange={e => setConversionCount(parseInt(e.target.value) || 0)} />
+              </div>
+            </div>
+          )}
           <div className="grid gap-2">
             <Label>Archivo PDF</Label>
             <input
