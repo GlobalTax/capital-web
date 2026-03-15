@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-import { Link } from 'react-router-dom';
 
 const PlanificacionFiscalHero = () => {
   return (
@@ -35,14 +34,14 @@ const PlanificacionFiscalHero = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link to="/contacto">
+              <a href="#contact">
                 <InteractiveHoverButton
                   text="Consulta Fiscal Gratuita"
                   variant="primary"
                   size="lg"
                   className="w-full sm:w-auto"
                 />
-              </Link>
+              </a>
             </div>
           </div>
 
