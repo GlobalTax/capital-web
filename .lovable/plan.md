@@ -1,52 +1,91 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Sistema de descarga de la "Guía para Vender tu Empresa" (PDF Lead Magnet)
 
-### Cambios realizados
+### El PDF
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+La guía tiene 12 capítulos, 20+ páginas, con contenido de alto valor (valoración, due diligence, fiscalidad, checklist). Es el lead magnet perfecto para capturar empresarios que se plantean vender.
 
-### Resultado
+### Estrategia de distribución: 6 puntos de contacto
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+| Ubicacion | Tipo de CTA | Captura de datos |
+|-----------|------------|-----------------|
+| 1. Landing propia `/recursos/guia-vender-empresa` | Formulario completo (email + nombre + empresa) | Si - lead magnet |
+| 2. Sidebar del blog (todos los posts) | Banner compacto con boton | Si - email minimo |
+| 3. Dentro de articulos (inline CTA) | Banner horizontal entre secciones | Si - email minimo |
+| 4. Home (nueva seccion) | Card destacada con preview del PDF | Link a landing |
+| 5. Pagina `/venta-empresas` | Banner contextual | Link a landing |
+| 6. Hub Venta Empresa | Seccion de recursos | Link a landing |
 
----
+### Implementacion tecnica
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+#### 1. Subir PDF a Supabase Storage
+- Subir `guia-vender-empresa-capittal.pdf` al bucket existente (o crear uno `lead-magnets` si no existe)
+- Generar URL publica para la descarga
 
-### Cambios realizados
+#### 2. Registrar en `lead_magnets` (tabla existente)
+- INSERT con `type: 'report'`, `sector: 'general'`, `file_url` apuntando al storage
+- El sistema de tracking (`lead_magnet_downloads`) ya existe y tiene trigger automatico
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+#### 3. Crear landing `/recursos/guia-vender-empresa`
+- Nueva pagina con formulario de captura (reutilizando patron de `LeadMagnetLandingPage`)
+- Contenido especifico: preview de los 12 capitulos, estadisticas (78% empresarios, 15-25% mas precio), cita de Samuel
+- SEO optimizado con schema markup
+- Ruta en `AppRoutes.tsx`
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+#### 4. Componente `BlogGuideDownloadCTA`
+- Nuevo componente para sidebar del blog (junto al `BlogValuationCTA` existente)
+- Diseno dark similar al CTA de valoracion actual pero con icono de PDF/libro
+- Mini-formulario inline (solo email) o link a landing
+- Se anade en `BlogPostContent.tsx` debajo de `BlogValuationCTA`
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+#### 5. Componente `InlineGuideDownloadBanner`
+- Banner horizontal para insertar dentro del contenido HTML de los articulos
+- Se puede renderizar automaticamente despues del 3er H2 de cada post
+- Alternativa: insertarlo manualmente via HTML en los posts que mas conviertan
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+#### 6. Seccion en Home
+- Nueva seccion `GuideDownloadSection` entre `MANewsSection` y `WhyChooseCapittal`
+- Preview visual del PDF (portada) + 3-4 bullets del contenido + CTA a landing
+- Diseno limpio, no agresivo
 
-### Resultado
+#### 7. CTA en paginas de servicio
+- Banner en `/venta-empresas` despues de la seccion de proceso
+- Seccion en `/hub-venta-empresa` como recurso complementario
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+### Flujo de conversion
 
----
+```text
+Usuario llega (blog/home/servicio)
+  → Ve CTA de la guia
+  → Click → Landing /recursos/guia-vender-empresa
+  → Rellena formulario (email obligatorio)
+  → INSERT en lead_magnet_downloads (trigger incrementa contador)
+  → PDF se abre en nueva pestana (signed URL)
+  → Pagina de confirmacion con CTA secundario (calculadora/contacto)
+```
 
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
+### Archivos a crear/modificar
 
-### Cambios realizados
+| Archivo | Accion |
+|---------|--------|
+| `src/pages/recursos/GuiaVenderEmpresa.tsx` | Crear - Landing page |
+| `src/components/blog/BlogGuideDownloadCTA.tsx` | Crear - CTA sidebar blog |
+| `src/components/blog/InlineGuideDownloadBanner.tsx` | Crear - Banner inline |
+| `src/components/home/GuideDownloadSection.tsx` | Crear - Seccion home |
+| `src/components/blog/BlogPostContent.tsx` | Modificar - Anadir CTA guia en sidebar |
+| `src/pages/Index.tsx` | Modificar - Anadir seccion guia |
+| `src/pages/VentaEmpresas.tsx` | Modificar - Anadir banner guia |
+| `src/core/routing/AppRoutes.tsx` | Modificar - Nueva ruta |
+| `src/data/siteRoutes.ts` | Modificar - Registrar ruta para SEO |
+| SQL migration | Crear bucket storage + INSERT en lead_magnets |
 
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+### Prioridad de implementacion
 
-### Resultado
+1. Storage + registro en DB (prerequisito)
+2. Landing page propia (pagina principal de conversion)
+3. CTA en sidebar del blog (mayor volumen de trafico organico)
+4. Seccion en Home
+5. Banners en paginas de servicio
+6. Inline CTA en articulos
 
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
