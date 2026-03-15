@@ -1,52 +1,44 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Biblioteca de Fotos en el Admin
 
-### Cambios realizados
+### Qué se construirá
+Un gestor de imágenes centralizado en el panel de administración donde podrás subir, organizar, buscar y copiar URLs de fotos. Funcionará como una mediateca (similar a WordPress).
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Cambios
 
-### Resultado
+**1. Migración SQL: crear bucket `admin-photos`**
+- Bucket público para almacenar las fotos
+- RLS policies: lectura pública, escritura solo para usuarios autenticados
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**2. Nuevo hook `src/hooks/usePhotoLibrary.tsx`**
+- Lista todos los archivos del bucket `admin-photos` usando `supabase.storage.from('admin-photos').list()`
+- Funciones: `uploadPhoto`, `deletePhoto`, `listPhotos`
+- Búsqueda por nombre de archivo
+- Paginación o scroll infinito
 
----
+**3. Nuevo componente `src/components/admin/PhotoLibraryManager.tsx`**
+- Grid de imágenes con preview (thumbnails)
+- Zona de drag & drop para subir múltiples fotos a la vez
+- Botón "Subir fotos" con input file múltiple
+- Por cada imagen: preview, nombre, fecha, tamaño, botón copiar URL, botón eliminar
+- Barra de búsqueda por nombre
+- Indicador de progreso durante subida
+- Dialog de confirmación para eliminar
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+**4. Nueva página `src/pages/admin/PhotoLibraryPage.tsx`**
+- Renderiza `PhotoLibraryManager`
 
-### Cambios realizados
+**5. Registrar ruta en `AdminRouter.tsx`**
+- Lazy import + ruta `/admin/photo-library`
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+**6. Añadir al sidebar en `sidebar-config.ts`**
+- En sección "📚 RECURSOS": "Biblioteca de Fotos" con icono `Image` apuntando a `/admin/photo-library`
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+### Flujo del usuario
+1. Navega a "Biblioteca de Fotos" en el sidebar
+2. Ve todas las fotos subidas en un grid visual
+3. Arrastra fotos o hace clic en "Subir" para añadir nuevas
+4. Copia la URL pública con un clic para usarla en blog, recursos, etc.
+5. Elimina fotos que ya no necesita
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
