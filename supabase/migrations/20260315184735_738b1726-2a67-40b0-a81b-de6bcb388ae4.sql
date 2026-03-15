@@ -1,0 +1,1 @@
+UPDATE public.blog_posts SET excerpt = 'El earn-out es un pago variable en la compraventa de empresas vinculado a resultados futuros. Descubre cómo funciona, qué cláusulas incluir, riesgos para comprador y vendedor, y ejemplos prácticos en el mid-market español.' WHERE slug = 'que-es-earn-out';
