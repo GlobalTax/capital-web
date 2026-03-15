@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload, X } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import PhotoLibraryPicker from '@/components/admin/PhotoLibraryPicker';
 
 interface ImageUploadFieldProps {
   label: string;
