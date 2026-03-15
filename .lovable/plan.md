@@ -1,32 +1,52 @@
 
 
-# Plan: Publicar artículo "Cómo vender mi empresa" en el blog
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-## Acción única
+### Cambios realizados
 
-Crear una migración SQL que inserte el artículo completo en `blog_posts` con:
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-- **slug**: `vender-mi-empresa`
-- **meta_title**: `Cómo vender mi empresa: guía completa paso a paso [2026]`
-- **meta_description**: La proporcionada (guía práctica...)
-- **category**: `M&A`
-- **tags**: cluster completo de keywords secundarias
-- **reading_time**: ~15 min
-- **is_published**: true, **is_featured**: true
-- **author_name**: `Samuel Navarro`
-- **faq_data**: JSONB con las 4 preguntas del FAQ
-- **content**: HTML completo con:
-  - Fecha visible "Última actualización: marzo 2026"
-  - Estadísticas destacadas en `<div class="bg-muted/50 border-l-4 border-primary">` (2.800+ operaciones, 25-40% NDAs, etc.)
-  - Citas de Samuel Navarro en `<blockquote>`
-  - Tablas HTML (costes de venta) con formato zebra-striped
-  - Internal links: `/recursos/blog/valoracion-de-empresas`, `/recursos/blog/que-es-due-diligence`, `/recursos/blog/que-es-un-nda`, `/recursos/blog/que-es-ebitda`, `/recursos/blog/fusiones-y-adquisiciones`
-  - CTA final enlazando a `/#contacto` y `/servicios/venta-de-empresas`
-  - Sección de fuentes y referencias
-- Trigger `trigger_google_indexing` deshabilitado/rehabilitado durante el INSERT
+### Resultado
 
-El artículo será accesible en `/recursos/blog/vender-mi-empresa`. Los schemas Article, FAQ y Breadcrumb se generan automáticamente por `BlogPost.tsx` y `blog-ssr`.
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-### Archivo
-- **Crear** `supabase/migrations/[timestamp].sql` — INSERT con todo el contenido
+---
 
+## ✅ Completado: og:url estático + SSR para noticias individuales
+
+### Cambios realizados
+
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
