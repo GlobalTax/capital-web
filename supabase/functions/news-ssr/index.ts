@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
     .content a{color:#3b82f6}
     footer{margin-top:48px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:.875rem;color:#64748b;text-align:center}
     footer a{color:#3b82f6}
-    .redirect-note{background:#f1f5f9;padding:12px 16px;border-radius:6px;font-size:.875rem;color:#475569;margin-bottom:24px}
+    
   </style>
 </head>
 <body>
