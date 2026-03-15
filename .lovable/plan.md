@@ -1,52 +1,36 @@
 
+Diagnóstico claro: no salen porque la llamada de listado de Storage está fallando por RLS (en consola: `StorageApiError: new row violates row-level security policy`).  
+Aunque ya existe política `SELECT` para `admin-photos`, falta una política `UPDATE` para ese bucket, y el endpoint de listado de Supabase Storage puede necesitar actualizar metadatos internos (por ejemplo `last_accessed_at`), lo que dispara ese error.
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+Plan de implementación
 
-### Cambios realizados
+1) Corregir RLS de `storage.objects` para `admin-photos`
+- Crear una nueva migración SQL que añada política `UPDATE` específica del bucket.
+- Política propuesta:
+  - `FOR UPDATE TO authenticated`
+  - `USING (bucket_id = 'admin-photos')`
+  - `WITH CHECK (bucket_id = 'admin-photos')`
+- Mantener las políticas existentes de `SELECT/INSERT/DELETE` (no romper nada que ya funcione).
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+2) Mejorar visibilidad de errores en frontend (ahora se ve “No hay fotos” aunque hay error)
+- En `usePhotoLibrary`, exponer `isError` y `error` del `useQuery`.
+- En `PhotoLibraryManager` y `PhotoLibraryPicker`, mostrar estado de error explícito (mensaje de permisos/RLS) en lugar de mostrar estado vacío.
+- Mantener reintento manual (`refetch`) para que el usuario no tenga que recargar toda la página.
 
-### Resultado
+3) Verificación funcional (fin a fin)
+- Abrir `/admin/photo-library`.
+- Confirmar que aparecen fotos existentes del bucket.
+- Subir una imagen nueva y comprobar que aparece en la cuadrícula.
+- Abrir editor de blog → imagen destacada → icono de biblioteca → navegar carpetas → seleccionar foto.
+- Probar mover entre carpetas y recorte para asegurar que no se rompió nada con políticas nuevas.
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+Detalles técnicos (para implementación)
+- Archivo nuevo de migración: `supabase/migrations/<timestamp>_fix_admin_photos_update_policy.sql`
+- SQL esperado (resumen):
+  - `create policy "Authenticated users can update admin-photos" on storage.objects for update to authenticated using (bucket_id='admin-photos') with check (bucket_id='admin-photos');`
+- Cambios frontend:
+  - `src/hooks/usePhotoLibrary.tsx`: devolver `error/isError`.
+  - `src/components/admin/PhotoLibraryManager.tsx`: estado visual de error + botón “Reintentar”.
+  - `src/components/admin/PhotoLibraryPicker.tsx`: mismo patrón de error.
+- Resultado esperado: desaparece el falso estado vacío y se muestran correctamente las fotos ya subidas.
 
----
-
-## ✅ Completado: og:url estático + SSR para noticias individuales
-
-### Cambios realizados
-
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
-
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
