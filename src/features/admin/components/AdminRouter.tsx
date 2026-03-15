@@ -128,6 +128,7 @@ const LazyPresentationViewerPage = React.lazy(() => import('@/features/presentat
 const LazySidebarSettings = React.lazy(() => import('@/pages/admin/SidebarSettings'));
 const LazyHeroSlidesManager = React.lazy(() => import('@/components/admin/HeroSlidesManager'));
 const LazyPracticeAreasManager = React.lazy(() => import('@/components/admin/PracticeAreasManager'));
+const LazyPhotoLibraryPage = React.lazy(() => import('@/pages/admin/PhotoLibraryPage'));
 
 const AdminRouter = () => {
   const { isLoading } = useAdminAuth();
@@ -187,6 +188,7 @@ const AdminRouter = () => {
           <Route path="/hero-slides" element={<LazyHeroSlidesManager />} />
           <Route path="/practice-areas" element={<LazyPracticeAreasManager />} />
           <Route path="/noticias" element={<LazyNewsArticlesManager />} />
+          <Route path="/photo-library" element={<LazyPhotoLibraryPage />} />
           
           {/* Job Posts Management - Complete */}
           <Route path="/jobs" element={<LazyJobPostsManager />} />
