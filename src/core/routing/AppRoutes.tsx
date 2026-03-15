@@ -51,6 +51,7 @@ import MedioAmbiente from '@/pages/sectores/MedioAmbiente';
 import Blog from '@/pages/recursos/Blog';
 import TestExitReady from '@/pages/recursos/TestExitReady';
 import GuiaVenderEmpresa from '@/pages/recursos/GuiaVenderEmpresa';
+import ResourceLibrary from '@/pages/recursos/ResourceLibrary';
 import BlogPost from '@/pages/blog/BlogPost';
 import LandingCalculator from '@/pages/LandingCalculator';
 
@@ -105,6 +106,7 @@ const CaseStudies = lazy(() => import('@/pages/recursos/CaseStudies').catch(() =
 const Newsletter = lazy(() => import('@/pages/recursos/Newsletter').catch(() => import('@/pages/VentaEmpresas')));
 const Webinars = lazy(() => import('@/pages/recursos/Webinars').catch(() => import('@/pages/VentaEmpresas')));
 const LandingPageView = lazy(() => import('@/pages/LandingPageView').catch(() => import('@/pages/NotFound')));
+const ResourceLandingPageLazy = lazy(() => import('@/pages/recursos/ResourceLandingPage'));
 const SharedPresentationPage = lazy(() => import('@/features/presentations/pages/SharedPresentationPage'));
 const JobsPage = lazy(() => import('@/pages/JobsPage').catch(() => import('@/pages/VentaEmpresas')));
 const JobDetailPage = lazy(() => import('@/pages/JobDetailPage').catch(() => import('@/pages/NotFound')));
@@ -316,6 +318,8 @@ export const AppRoutes = () => {
         <Route path="/recursos/noticias/:slug" element={<NewsArticleDetail />} />
         <Route path="/recursos/test-exit-ready" element={<TestExitReady />} />
         <Route path="/recursos/guia-vender-empresa" element={<GuiaVenderEmpresa />} />
+        <Route path="/recursos/biblioteca" element={<ResourceLibrary />} />
+        <Route path="/recursos/biblioteca/:slug" element={<ResourceLandingPageLazy />} />
         <Route path="/recursos/case-studies" element={<CaseStudies />} />
         <Route path="/recursos/newsletter" element={<Newsletter />} />
         <Route path="/recursos/webinars" element={<Webinars />} />
