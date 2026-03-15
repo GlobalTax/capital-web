@@ -205,7 +205,19 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
             </Select>
           </div>
 
-          {/* PDF Upload */}
+          {/* Download & Conversion counts (edit only) */}
+          {editingMagnet && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="downloadCount">Nº de descargas</Label>
+                <Input id="downloadCount" type="number" min={0} value={downloadCount} onChange={e => setDownloadCount(parseInt(e.target.value) || 0)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="conversionCount">Nº de conversiones</Label>
+                <Input id="conversionCount" type="number" min={0} value={conversionCount} onChange={e => setConversionCount(parseInt(e.target.value) || 0)} />
+              </div>
+            </div>
+          )}
           <div className="grid gap-2">
             <Label>Archivo PDF</Label>
             <input
