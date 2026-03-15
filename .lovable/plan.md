@@ -1,40 +1,52 @@
 
 
-## Plan: Publicar 4 artículos SEO+GEO en blog_posts
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-El artículo de EBITDA (`que-es-ebitda`) ya está publicado. Los 5 documentos subidos incluyen ese + 4 nuevos artículos que necesitan insertarse en Supabase.
+### Cambios realizados
 
-### Artículos a publicar
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-| # | Slug | Title | Category | Reading Time | FAQs |
-|---|------|-------|----------|-------------|------|
-| 1 | `fusiones-y-adquisiciones` | Fusiones y adquisiciones (M&A): qué son, tipos y proceso completo [2026] | M&A | 14 | 4 preguntas |
-| 2 | `que-es-due-diligence` | Qué es una Due Diligence: proceso, tipos y checklist [2026] | Due Diligence | 12 | 4 preguntas |
-| 3 | `que-es-private-equity` | Qué es Private Equity: cómo funcionan los fondos de capital privado [2026] | Private Equity | 12 | 4 preguntas |
-| 4 | `que-es-un-nda` | Qué es un NDA (acuerdo de confidencialidad): guía completa [2026] | Legal | 11 | 4 preguntas |
+### Resultado
 
-### Nota sobre slugs duplicados
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-Ya existe un post con slug `que-es-due-diligence-guia-completa-ma`. El nuevo artículo usa slug `que-es-due-diligence` (más limpio y SEO-optimizado). Ambos pueden coexistir, pero recomiendo despublicar el antiguo para evitar canibalización. Lo confirmo contigo antes de actuar.
+---
 
-### Para cada artículo se hará
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-1. **INSERT en `blog_posts`** con todos los campos SEO (meta_title, meta_description, tags, excerpt, author_name, etc.)
-2. **Contenido HTML** completo con:
-   - Tablas `<table>` para datos comparativos
-   - `<blockquote>` para citas de Samuel Navarro
-   - Destacados CSS para estadísticas (87%, 94%, 73%, etc.)
-   - Links internos entre los 5 artículos del cluster + páginas de servicios
-   - Sección FAQ semántica con H3 por pregunta
-   - CTA final con enlace a `/#contacto`
-   - "Última actualización: marzo 2026"
-3. **`faq_data` JSONB** con las preguntas/respuestas estructuradas para el FAQPage schema (mismo patrón usado en el artículo EBITDA)
+### Cambios realizados
 
-### Infraestructura
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-No se necesitan cambios de código ni de esquema — el campo `faq_data` ya existe en `blog_posts` y `BlogPost.tsx` + `blog-ssr` ya inyectan el FAQPage schema condicionalmente. Solo son 4 INSERTs de datos.
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-### Deploy
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-No requiere deploy de edge functions — `blog-ssr` ya soporta `faq_data`. Solo insertar los 4 registros.
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
