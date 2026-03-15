@@ -300,13 +300,27 @@ const PhotoLibraryManager: React.FC = () => {
                 {folders.map(folder => (
                   <div
                     key={folder.name}
-                    className="group relative flex flex-col items-center gap-2 p-4 rounded-[var(--radius)] border border-border bg-card hover:bg-muted/50 cursor-pointer transition-colors"
+                    className={`group relative flex flex-col items-center gap-2 p-4 rounded-[var(--radius)] border bg-card cursor-pointer transition-all ${
+                      dragOverFolder === folder.name
+                        ? 'border-primary bg-primary/10 ring-2 ring-primary scale-105'
+                        : 'border-border hover:bg-muted/50'
+                    }`}
                     onClick={() => navigateToFolder(folder.name)}
+                    onDragOver={e => handleFolderDragOver(e, folder.name)}
+                    onDragLeave={handleFolderDragLeave}
+                    onDrop={e => handleFolderDrop(e, folder.name)}
                   >
-                    <Folder className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <Folder className={`h-10 w-10 transition-colors ${
+                      dragOverFolder === folder.name ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
+                    }`} />
                     <p className="text-xs text-foreground truncate w-full text-center" title={folder.name}>
                       {folder.name}
                     </p>
+                    {dragOverFolder === folder.name && (
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] text-primary font-medium whitespace-nowrap">
+                        Soltar aquí
+                      </span>
+                    )}
                     <button
                       className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10"
                       onClick={(e) => { e.stopPropagation(); setDeleteFolderTarget(folder.name); }}
