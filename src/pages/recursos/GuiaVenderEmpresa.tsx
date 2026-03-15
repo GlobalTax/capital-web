@@ -111,7 +111,7 @@ const GuiaVenderEmpresa = () => {
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="flex items-center gap-2 text-sm text-gray-300">
                     <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
-                    12 capítulos
+                    8 capítulos clave
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-300">
                     <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />

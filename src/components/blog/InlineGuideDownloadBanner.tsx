@@ -11,7 +11,7 @@ const InlineGuideDownloadBanner = () => {
         </div>
         <div className="flex-1">
           <h4 className="text-base font-semibold text-foreground mb-1">
-            📥 Guía Gratuita: Cómo Vender tu Empresa
+            Guía Gratuita: Cómo Vender tu Empresa
           </h4>
           <p className="text-sm text-muted-foreground">
             12 capítulos con valoración, due diligence, fiscalidad y checklist de preparación.
