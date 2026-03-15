@@ -341,16 +341,6 @@ export const siteRoutes: SiteRoute[] = [
 
   // === ADDITIONAL PUBLIC PAGES ===
   {
-    path: '/valoracion-empresas',
-    title: 'Valoración de Empresas en España | Capittal',
-    description: 'Guía completa sobre valoración de empresas: métodos, múltiplos por sector y factores clave.',
-    h1: 'Valoración de Empresas',
-    internalLinks: ['/lp/calculadora', '/servicios/valoraciones', '/contacto'],
-    lastmod: today,
-    priority: 0.7,
-    changefreq: 'monthly',
-  },
-  {
     path: '/guia-valoracion-empresas',
     title: 'Guía de Valoración de Empresas | Capittal',
     description: 'Guía profesional de valoración empresarial: metodologías DCF, múltiplos, precedentes y mejores prácticas.',

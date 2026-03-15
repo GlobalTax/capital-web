@@ -444,7 +444,7 @@ const GuiaValoracionEmpresas = () => {
             title="Obtén una estimación rápida del valor de tu empresa"
             description="Nuestra calculadora gratuita aplica múltiplos EBITDA actualizados por sector para darte un rango de valoración orientativo en menos de 5 minutos."
             primaryAction={{ label: 'Usar calculadora gratuita', href: '/lp/calculadora' }}
-            secondaryAction={{ label: 'Ver métodos detallados', href: '/valoracion-empresas' }}
+            secondaryAction={{ label: 'Ver métodos detallados', href: '/servicios/valoraciones' }}
           />
 
           {/* ─── SECCIÓN 7: FAQ ─── */}

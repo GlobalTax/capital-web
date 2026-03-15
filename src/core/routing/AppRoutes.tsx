@@ -246,7 +246,7 @@ export const AppRoutes = () => {
         <Route path="/servicios/planificacion-fiscal" element={<PlanificacionFiscal />} />
         <Route path="/servicios/search-funds" element={<SearchFunds />} />
         <Route path="/search-funds" element={<SearchFunds />} />
-        <Route path="/valoracion-empresas" element={<ValoracionEmpresas />} />
+        <Route path="/valoracion-empresas" element={<Navigate to="/servicios/valoraciones" replace />} />
         <Route path="/guia-valoracion-empresas" element={<GuiaValoracionEmpresas />} />
         
         {/* === SERVICE ROUTES (Catalan → redirect to Spanish) === */}

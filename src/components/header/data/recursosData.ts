@@ -33,7 +33,7 @@ export const recursosData: MenuCategory[] = [
       {
         id: "guia-valoracion-empresas",
         label: "Guía de Valoración de Empresas",
-        href: "/valoracion-empresas",
+        href: "/servicios/valoraciones",
         icon: 'chart-bar',
         description: "Guía completa de métodos y herramientas de valoración"
       },
