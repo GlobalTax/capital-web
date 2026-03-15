@@ -1,0 +1,1 @@
+UPDATE lead_magnets SET download_count = 247 WHERE id = 'afdeb5f4-783b-4525-9ddb-ec020fe436f7';

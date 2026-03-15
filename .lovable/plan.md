@@ -1,22 +1,52 @@
 
 
-## Plan
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### 1. Actualizar el número de descargas
-El lead magnet "Guía Completa para Vender tu Empresa" tiene `download_count: 1`. Actualizaré ese valor a un número creíble (ej: **247**) directamente en la base de datos usando un UPDATE.
+### Cambios realizados
 
-### 2. Panel de gestión
-**Ya tienes un panel de administración** para los recursos en:
-**`/admin/lead-magnets`**
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-Desde ahí puedes:
-- Ver todos los lead magnets con sus métricas (descargas, conversiones)
-- Buscar y filtrar recursos
-- Generar imágenes con IA
-- Gestionar el estado (activo/borrador/archivado)
+### Resultado
 
-### Cambios
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-- **Base de datos**: `UPDATE lead_magnets SET download_count = 247 WHERE id = 'afdeb5f4-...'`
-- **Sin cambios de código**
+---
 
+## ✅ Completado: og:url estático + SSR para noticias individuales
+
+### Cambios realizados
+
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
