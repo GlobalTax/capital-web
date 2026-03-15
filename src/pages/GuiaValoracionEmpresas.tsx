@@ -105,7 +105,7 @@ const GuiaValoracionEmpresas = () => {
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
               <Link to="/" className="hover:text-foreground transition-colors">Inicio</Link>
               <span>/</span>
-              <Link to="/valoracion-empresas" className="hover:text-foreground transition-colors">Valoración de Empresas</Link>
+              <Link to="/servicios/valoraciones" className="hover:text-foreground transition-colors">Valoración de Empresas</Link>
               <span>/</span>
               <span className="text-foreground">Guía Completa</span>
             </div>
