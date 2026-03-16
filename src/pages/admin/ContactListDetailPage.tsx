@@ -320,6 +320,7 @@ export default function ContactListDetailPage() {
   const [newListName, setNewListName] = useState('');
   const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
   const [sublistConflict, setSublistConflict] = useState<{ sublistName: string } | null>(null);
+  const [moveCopyFromSublistId, setMoveCopyFromSublistId] = useState<string | null>(null);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
