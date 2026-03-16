@@ -523,6 +523,7 @@ export default function ContactListDetailPage() {
   const [importData, setImportData] = useState<any[]>([]);
   const [importMapping, setImportMapping] = useState<Record<string, string>>({});
   const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
+  const [isReadingFile, setIsReadingFile] = useState(false);
   const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
   const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
@@ -595,12 +596,15 @@ export default function ContactListDetailPage() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
+    setIsReadingFile(true);
+    toast.info(`Procesando "${file.name}"...`, { duration: 3000 });
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = new Uint8Array(e.target?.result as ArrayBuffer);
       const wb = XLSX.read(data, { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      setIsReadingFile(false);
       if (json.length === 0) {
         toast.error('El archivo está vacío');
         return;
@@ -614,6 +618,11 @@ export default function ContactListDetailPage() {
       });
       setImportMapping(mapping);
       setImportData(json);
+      toast.success(`${json.length} filas encontradas · ${Object.keys(mapping).length} columnas mapeadas`);
+    };
+    reader.onerror = () => {
+      setIsReadingFile(false);
+      toast.error('Error al leer el archivo');
     };
     reader.readAsArrayBuffer(file);
   }, []);
@@ -1659,14 +1668,22 @@ export default function ContactListDetailPage() {
           <DialogHeader><DialogTitle>Importar desde Excel</DialogTitle></DialogHeader>
           {importData.length === 0 ? (
             <div className="space-y-3">
-              <div {...getRootProps()} className={cn(
-                'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
-                isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-              )}>
-                <input {...getInputProps()} />
-                <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
-              </div>
+              {isReadingFile ? (
+                <div className="border-2 border-dashed border-primary/30 rounded-lg p-12 text-center bg-primary/5">
+                  <Loader2 className="h-10 w-10 text-primary mx-auto mb-3 animate-spin" />
+                  <p className="text-foreground font-medium">Leyendo archivo Excel...</p>
+                  <p className="text-muted-foreground text-sm mt-1">Esto puede tardar unos segundos</p>
+                </div>
+              ) : (
+                <div {...getRootProps()} className={cn(
+                  'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
+                  isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                )}>
+                  <input {...getInputProps()} />
+                  <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
+                </div>
+              )}
               <Button variant="link" size="sm" className="text-xs" onClick={downloadTemplate}>
                 <FileSpreadsheet className="h-3.5 w-3.5 mr-1" /> Descargar plantilla con las cabeceras correctas
               </Button>
@@ -1703,7 +1720,8 @@ export default function ContactListDetailPage() {
             <Button variant="outline" onClick={handleCloseImport}>Cancelar</Button>
             {importData.length > 0 && (
               <Button onClick={handleStartValidation} disabled={isValidating}>
-                {isValidating ? 'Validando...' : `Validar ${importData.length} empresas`}
+                {isValidating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isValidating ? 'Validando empresas...' : `Validar ${importData.length} empresas`}
               </Button>
             )}
           </DialogFooter>
