@@ -117,41 +117,43 @@ const PhotoLibraryPicker: React.FC<PhotoLibraryPickerProps> = ({ onSelect, trigg
                   <Button variant="outline" size="sm" onClick={() => refetch()}>Reintentar</Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-4 gap-3">
-                  {folders.map((folder) => (
-                    <button
-                      key={folder.name}
-                      onClick={() => setCurrentFolder(currentFolder ? `${currentFolder}/${folder.name}` : folder.name)}
-                      className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border hover:bg-accent transition-colors"
-                    >
-                      <Folder className="w-8 h-8 text-muted-foreground" />
-                      <span className="text-xs truncate w-full text-center">{folder.name}</span>
-                    </button>
-                  ))}
-                  {photos.map((photo) => (
-                    <button
-                      key={photo.id}
-                      onClick={() => handleSelect(photo.publicUrl)}
-                      className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary transition-all"
-                    >
-                      <img src={photo.thumbnailUrl || photo.publicUrl} alt={photo.name} className="w-full h-full object-cover" loading="lazy" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                    </button>
-                  ))}
-                  {folders.length === 0 && photos.length === 0 && (
-                    <p className="col-span-4 text-sm text-muted-foreground text-center py-8">No hay fotos en esta ubicación</p>
-                  )}
-                </div>
-                {/* Infinite scroll sentinel */}
-                <div ref={sentinelRef} className="h-1" />
-                {loadingMore && (
-                  <div className="flex justify-center py-3">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <>
+                  <div className="grid grid-cols-4 gap-3">
+                    {folders.map((folder) => (
+                      <button
+                        key={folder.name}
+                        onClick={() => setCurrentFolder(currentFolder ? `${currentFolder}/${folder.name}` : folder.name)}
+                        className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                      >
+                        <Folder className="w-8 h-8 text-muted-foreground" />
+                        <span className="text-xs truncate w-full text-center">{folder.name}</span>
+                      </button>
+                    ))}
+                    {photos.map((photo) => (
+                      <button
+                        key={photo.id}
+                        onClick={() => handleSelect(photo.publicUrl)}
+                        className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary transition-all"
+                      >
+                        <img src={photo.thumbnailUrl || photo.publicUrl} alt={photo.name} className="w-full h-full object-cover" loading="lazy" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      </button>
+                    ))}
+                    {folders.length === 0 && photos.length === 0 && (
+                      <p className="col-span-4 text-sm text-muted-foreground text-center py-8">No hay fotos en esta ubicación</p>
+                    )}
                   </div>
-                )}
-              </div>
-            </>
-          )}
+                  <div ref={sentinelRef} className="h-1" />
+                  {loadingMore && (
+                    <div className="flex justify-center py-3">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
