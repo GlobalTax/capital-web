@@ -672,25 +672,38 @@ export default function ContactListDetailPage() {
 
     setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
 
-    if (rowsToInsert.length > 0) {
-      await addCompanies.mutateAsync({
-        rows: rowsToInsert as any,
-        onProgress: (done, total) => setImportProgress({ done, total }),
-      });
-      await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
-      queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
-    }
+    let importedCount = 0;
+    let failedCount = 0;
 
-    setImportProgress(null);
-    setImportResultData({
-      imported: validationResult.nuevas.length,
-      linked: validationResult.vinculadas.length,
-      linkedRelated: validationResult.enOtraLista.length,
-      skippedDuplicates: validationResult.duplicadas.length,
-      skippedErrors: validationResult.errores.length,
-      errors: validationResult.errores,
-    });
-    setImportStep('result');
+    try {
+      if (rowsToInsert.length > 0) {
+        const result = await addCompanies.mutateAsync({
+          rows: rowsToInsert as any,
+          onProgress: (done, total) => setImportProgress({ done, total }),
+        });
+        importedCount = result.inserted;
+        failedCount = result.failed;
+
+        if (importedCount > 0) {
+          await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
+          queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+        }
+      }
+    } catch (err: any) {
+      console.error('[Import] Unexpected error:', err);
+      toast.error('Error inesperado durante la importación');
+    } finally {
+      setImportProgress(null);
+      setImportResultData({
+        imported: importedCount || validationResult.nuevas.length,
+        linked: validationResult.vinculadas.length,
+        linkedRelated: validationResult.enOtraLista.length,
+        skippedDuplicates: validationResult.duplicadas.length,
+        skippedErrors: validationResult.errores.length + failedCount,
+        errors: validationResult.errores,
+      });
+      setImportStep('result');
+    }
   };
 
   const handleCloseImport = () => {
