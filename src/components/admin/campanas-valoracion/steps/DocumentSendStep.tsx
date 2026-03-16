@@ -61,14 +61,22 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   }, [emails]);
 
   const filteredCompanies = useMemo(() => {
-    if (!searchQuery.trim()) return companies;
-    const q = searchQuery.toLowerCase();
-    return companies.filter(c =>
-      c.client_company?.toLowerCase().includes(q) ||
-      c.client_email?.toLowerCase().includes(q) ||
-      c.client_name?.toLowerCase().includes(q)
-    );
-  }, [companies, searchQuery]);
+    return companies.filter(c => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (
+          !c.client_company?.toLowerCase().includes(q) &&
+          !c.client_email?.toLowerCase().includes(q) &&
+          !c.client_name?.toLowerCase().includes(q)
+        ) return false;
+      }
+      if (filterSentDate.from || filterSentDate.to) {
+        const email = emailMap.get(c.id);
+        if (!matchesDateRange(email?.sent_at ?? null, filterSentDate)) return false;
+      }
+      return true;
+    });
+  }, [companies, searchQuery, filterSentDate, emailMap]);
 
   const pendingEmails = emails.filter(e => e.status === 'pending');
   const sentEmails = emails.filter(e => e.status === 'sent');
