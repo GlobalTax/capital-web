@@ -389,6 +389,14 @@ export default function ContactListDetailPage() {
         return sortDir === 'asc' ? va - vb : vb - va;
       });
     }
+    // For madre lists: sort unassigned first, then assigned
+    if (isMadreList && sublistCompanyMap && !sortField) {
+      result.sort((a, b) => {
+        const aAssigned = a.cif && sublistCompanyMap.map.has(a.cif.toUpperCase().trim()) ? 1 : 0;
+        const bAssigned = b.cif && sublistCompanyMap.map.has(b.cif.toUpperCase().trim()) ? 1 : 0;
+        return aAssigned - bAssigned;
+      });
+    }
     return result;
   }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
 
