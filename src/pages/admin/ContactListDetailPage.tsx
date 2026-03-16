@@ -1806,34 +1806,45 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Move/Copy Modal */}
-      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); } }}>
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'} a otra lista</DialogTitle>
+            <DialogTitle>
+              {moveCopyFromSublistId ? 'Cambiar empresa de sublista' : moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'}{!moveCopyFromSublistId && ' a otra lista'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              {moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
+              {moveCopyFromSublistId ? 'Reasignar' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
             </p>
             {!isCreatingNewList ? (
               <>
                 <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar lista destino..." />
+                    <SelectValue placeholder={moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino..."} />
                   </SelectTrigger>
                   <SelectContent>
-                    {allLists.map((l: any) => (
-                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                    ))}
+                    {moveCopyFromSublistId && sublistCompanyMap?.sublists
+                      ? sublistCompanyMap.sublists
+                          .filter(s => s.id !== moveCopyFromSublistId)
+                          .map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))
+                      : allLists.map((l: any) => (
+                          <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                        ))
+                    }
                   </SelectContent>
                 </Select>
-                <button
-                  type="button"
-                  className="text-xs text-primary hover:underline"
-                  onClick={() => { setIsCreatingNewList(true); setMoveCopyTargetId(''); }}
-                >
-                  + Crear nueva lista
-                </button>
+                {!moveCopyFromSublistId && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() => { setIsCreatingNewList(true); setMoveCopyTargetId(''); }}
+                  >
+                    + Crear nueva lista
+                  </button>
+                )}
               </>
             ) : (
               <>
