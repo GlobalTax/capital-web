@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,16 +22,86 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye, Clock } from 'lucide-react';
+import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye, Clock, Users, CalendarCheck } from 'lucide-react';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
 import { DateRangeFilter, DateRangeFilterValue, matchesDateRange } from '@/components/admin/campanas-valoracion/shared/DateRangeFilter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+// Seguimiento states config
+const SEGUIMIENTO_OPTIONS = [
+  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
+  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
+  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
+] as const;
+
+function getSeguimientoOption(value: string | null) {
+  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
+}
+
+// ─── Inline Seguimiento Badge Select ────────────────────────────────────
+function SeguimientoBadge({ company, campaignId }: { company: any; campaignId: string }) {
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const current = getSeguimientoOption(company.seguimiento_estado);
+
+  const handleChange = useCallback(async (newValue: string) => {
+    if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ seguimiento_estado: newValue })
+        .eq('id', company.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+    } catch (e: any) {
+      toast.error('Error al guardar seguimiento: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [company.id, company.seguimiento_estado, campaignId, queryClient]);
+
+  return (
+    <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+      {saving ? (
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      ) : (
+        <Select value={company.seguimiento_estado || 'sin_respuesta'} onValueChange={handleChange}>
+          <SelectTrigger className={cn(
+            "h-7 text-[10px] font-medium px-2 py-0 border rounded-full w-auto min-w-[120px] gap-1",
+            current.className
+          )}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SEGUIMIENTO_OPTIONS.map(opt => (
+              <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span className={cn("w-2 h-2 rounded-full", {
+                    'bg-muted-foreground': opt.value === 'sin_respuesta',
+                    'bg-emerald-500': opt.value === 'interesado',
+                    'bg-red-400': opt.value === 'no_interesado',
+                    'bg-violet-500': opt.value === 'reunion_agendada',
+                  })} />
+                  {opt.label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
 
 interface Props {
   campaignId: string;
