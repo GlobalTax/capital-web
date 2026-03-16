@@ -1368,7 +1368,7 @@ export default function ContactListDetailPage() {
                           </TableCell>
                         </TableRow>
                         );
-                      ))}
+                      })}
                     </TableBody>
                   </Table>
                 </div>
