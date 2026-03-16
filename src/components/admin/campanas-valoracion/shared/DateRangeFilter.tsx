@@ -120,7 +120,15 @@ export function matchesDateRange(date: string | null | undefined, filter: DateRa
   if (!date) return false;
   const d = new Date(date);
   if (isNaN(d.getTime())) return false;
-  if (filter.from && d < new Date(filter.from.setHours(0, 0, 0, 0))) return false;
-  if (filter.to && d > new Date(filter.to.setHours(23, 59, 59, 999))) return false;
+  if (filter.from) {
+    const from = new Date(filter.from);
+    from.setHours(0, 0, 0, 0);
+    if (d < from) return false;
+  }
+  if (filter.to) {
+    const to = new Date(filter.to);
+    to.setHours(23, 59, 59, 999);
+    if (d > to) return false;
+  }
   return true;
 }
