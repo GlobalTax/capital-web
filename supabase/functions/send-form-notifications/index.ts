@@ -21,16 +21,8 @@ interface FormNotificationRequest {
   formData: any;
 }
 
-// Equipo completo que recibe notificaciones de formularios
-const ADMIN_EMAILS = [
-  'samuel@capittal.es',
-  'marcc@capittal.es',
-  'oriol@capittal.es',
-  'marc@capittal.es',
-  'marcel@capittal.es',
-  'lluis@capittal.es',
-  'albert@capittal.es',
-];
+// Fallback mínimo si la DB falla
+const FALLBACK_ADMIN_EMAIL = 'samuel@capittal.es';
 
 // Helper functions for formatting
 const getPageOriginLabel = (pageOrigin: string | undefined): string => {
