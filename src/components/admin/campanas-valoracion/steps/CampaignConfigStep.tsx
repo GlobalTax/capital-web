@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2, Save, Download, Calendar, TrendingUp, Check, ChevronsUpDown } from 'lucide-react';
+import { Sparkles, Loader2, Save, Download, Calendar, TrendingUp, Check, ChevronsUpDown, Mail } from 'lucide-react';
 import { VALUATION_SECTORS } from '@/types/professionalValuation';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -17,6 +17,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { ValuationRangesConfig } from '../ValuationRangesConfig';
+import { useTeamAdvisors } from '@/hooks/useTeamAdvisors';
 
 const TEMPLATES_KEY = 'campaign-sector-templates';
 
