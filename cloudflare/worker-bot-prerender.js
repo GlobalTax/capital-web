@@ -1,17 +1,15 @@
 /**
- * Cloudflare Worker - capittal.es
+ * Cloudflare Worker - capittal.es  (v3 — server-rendered bot HTML)
  *
  * Flow:
- *   Bots    → Lovable upstream + HTMLRewriter (guaranteed correct SEO meta tags)
+ *   Bots    → Server-generated HTML (correct title, description, canonical,
+ *             og tags, hreflang — zero external dependencies)
  *   Users   → Lovable upstream (SPA, unmodified)
  *
- * Strategy: Instead of relying on Prerender.io (which may cache stale HTML,
- * return redirects, or wrong content-types), we fetch the SPA shell from
- * Lovable for ALL requests and apply HTMLRewriter for bots to ensure
- * correct title, description, canonical, og tags, and hreflang on every page.
- *
- * Googlebot renders JS natively, so the SPA content is fine.
- * Ahrefs/SEMrush only care about meta tags, which HTMLRewriter guarantees.
+ * Why: Lovable upstream redirects or returns homepage HTML for bot user-agents,
+ * making HTMLRewriter-based approaches ineffective. This version generates
+ * a complete HTML page for each route directly in the Worker, guaranteeing
+ * correct SEO meta tags with zero points of failure.
  */
 
 const LOVABLE_UPSTREAM = "https://webcapittal.lovable.app";
@@ -235,29 +233,8 @@ const HREFLANGS = {
 };
 
 // =====================================================================
-// HTMLRewriter handlers
+// Server-side HTML generation for bots (no external dependencies)
 // =====================================================================
-
-class RemoveElementHandler {
-  element(el) { el.remove(); }
-}
-
-class TitleHandler {
-  constructor(title) { this.title = title; }
-  element(el) { el.setInnerContent(this.title); }
-}
-
-class HtmlLangHandler {
-  constructor(lang) { this.lang = lang; }
-  element(el) { el.setAttribute('lang', this.lang); }
-}
-
-class HeadEndHandler {
-  constructor(extraHtml) { this.extraHtml = extraHtml; }
-  element(el) {
-    if (this.extraHtml) el.append(this.extraHtml, { html: true });
-  }
-}
 
 function detectLang(path) {
   if (path === '/ca' || path.startsWith('/venda-') || path.startsWith('/serveis/') ||
@@ -268,63 +245,75 @@ function detectLang(path) {
       path === '/contact' || path === '/success-stories' || path === '/why-choose-us' ||
       path.startsWith('/collaborators-') || path.startsWith('/partners-') ||
       path.startsWith('/services/')) return 'en';
-  // English sector overrides for /sectors/ paths with English names
   if (path.startsWith('/sectors/')) {
     if (['technology','healthcare','retail-consumer','energy','security'].some(s => path.includes(s))) return 'en';
   }
   return 'es';
 }
 
-function applyHtmlRewriter(response, pathname) {
+function esc(str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * Generate a complete HTML page for bots with correct SEO meta tags.
+ * No external fetches, no HTMLRewriter — pure string generation.
+ * This is the nuclear option that eliminates ALL points of failure.
+ */
+function generateBotHtml(pathname) {
   const p = pathname.replace(/\/+$/, '') || '/';
   const meta = ROUTES[p];
   const canonicalUrl = BASE_URL + p;
   const lang = detectLang(p);
+  const title = meta ? esc(meta.t) : `Capittal Transacciones | ${esc(p)}`;
+  const desc = meta ? esc(meta.d) : 'Asesoramiento M&A en Barcelona. Capittal Transacciones.';
 
-  // Build extra HTML to inject at end of <head>
-  // This GUARANTEES correct tags even if the original HTML doesn't have them
-  let injectHtml = '';
-
-  // Hreflang tags
+  // Hreflang links
+  let hreflangTags = '';
   const hl = HREFLANGS[p];
   if (hl) {
     for (const [hrefLang, hrefPath] of Object.entries(hl)) {
-      injectHtml += `<link rel="alternate" hreflang="${hrefLang}" href="${BASE_URL}${hrefPath}" />\n`;
+      hreflangTags += `    <link rel="alternate" hreflang="${hrefLang}" href="${BASE_URL}${hrefPath}" />\n`;
     }
-    injectHtml += `<link rel="alternate" hreflang="x-default" href="${BASE_URL}${hl.es || p}" />\n`;
+    hreflangTags += `    <link rel="alternate" hreflang="x-default" href="${BASE_URL}${hl.es || p}" />\n`;
   }
 
-  let rw = new HTMLRewriter()
-    .on('html', new HtmlLangHandler(lang))
-    // Remove ALL existing canonical, og, twitter, hreflang tags to prevent duplicates
-    .on('link[rel="canonical"]', new RemoveElementHandler())
-    .on('link[rel="alternate"][hreflang]', new RemoveElementHandler())
-    .on('meta[property="og:url"]', new RemoveElementHandler())
-    .on('meta[property="og:title"]', new RemoveElementHandler())
-    .on('meta[property="og:description"]', new RemoveElementHandler())
-    .on('meta[name="twitter:title"]', new RemoveElementHandler())
-    .on('meta[name="twitter:description"]', new RemoveElementHandler())
-    .on('meta[name="description"]', new RemoveElementHandler())
-    .on('title', new TitleHandler(meta ? meta.t : `Capittal Transacciones | ${p}`));
-
-  // Inject all SEO tags fresh at end of <head>
-  injectHtml += `<link rel="canonical" href="${canonicalUrl}" />\n`;
-  if (meta) {
-    injectHtml += `<meta name="description" content="${escAttr(meta.d)}" />\n`;
-    injectHtml += `<meta property="og:title" content="${escAttr(meta.t)}" />\n`;
-    injectHtml += `<meta property="og:description" content="${escAttr(meta.d)}" />\n`;
-    injectHtml += `<meta property="og:url" content="${canonicalUrl}" />\n`;
-    injectHtml += `<meta name="twitter:title" content="${escAttr(meta.t)}" />\n`;
-    injectHtml += `<meta name="twitter:description" content="${escAttr(meta.d)}" />\n`;
-  }
-
-  rw = rw.on('head', new HeadEndHandler(injectHtml));
-
-  return rw.transform(response);
-}
-
-function escAttr(str) {
-  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${title}</title>
+    <meta name="description" content="${desc}" />
+    <link rel="canonical" href="${canonicalUrl}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Capittal Transacciones" />
+    <meta property="og:locale" content="${lang === 'ca' ? 'ca_ES' : lang === 'en' ? 'en_US' : 'es_ES'}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${desc}" />
+    <meta property="og:url" content="${canonicalUrl}" />
+    <meta property="og:image" content="${BASE_URL}/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${desc}" />
+    <meta name="twitter:image" content="${BASE_URL}/og-image.jpg" />
+${hreflangTags}</head>
+<body>
+    <h1>${title}</h1>
+    <p>${desc}</p>
+    <nav>
+      <a href="${BASE_URL}/">Inicio</a>
+      <a href="${BASE_URL}/venta-empresas">Venta de Empresas</a>
+      <a href="${BASE_URL}/compra-empresas">Compra de Empresas</a>
+      <a href="${BASE_URL}/servicios/valoraciones">Valoraciones</a>
+      <a href="${BASE_URL}/contacto">Contacto</a>
+    </nav>
+    <noscript>
+      <p>Esta página requiere JavaScript para funcionar completamente.
+      Visite <a href="${canonicalUrl}">${canonicalUrl}</a></p>
+    </noscript>
+</body>
+</html>`;
 }
 
 // =====================================================================
@@ -390,7 +379,7 @@ async function handleRequest(request, env) {
     const meta = ROUTES[p];
     const hl = HREFLANGS[p];
     return new Response(JSON.stringify({
-      worker_version: '2.0-direct-rewrite',
+      worker_version: '3.0-server-rendered',
       deployed: true,
       test_path: p,
       route_found: !!meta,
@@ -404,35 +393,19 @@ async function handleRequest(request, env) {
     });
   }
 
-  // ── Bots → Lovable upstream + HTMLRewriter for guaranteed SEO meta tags ──
+  // ── Bots → Server-generated HTML with correct SEO meta tags ──────────
+  // No external fetches. No HTMLRewriter. Pure HTML string generation.
+  // This eliminates Lovable/Prerender.io as points of failure.
   if (isGetLike && isBotReq && !isIgnoredExtension(url.pathname)) {
-    // Fetch the SPA shell from Lovable upstream (same as user traffic)
-    const upstreamResp = await fetchFromLovable(request, url, isGetLike);
-
-    // If it's a redirect, pass through
-    if (isRedirect(upstreamResp.status)) {
-      const loc = upstreamResp.headers.get("Location") || "";
-      const upstreamBase = new URL(LOVABLE_UPSTREAM);
-      let newLoc = loc.replaceAll(upstreamBase.hostname, PUBLIC_HOST);
-      newLoc = newLoc.replace(/^http:\/\//i, "https://");
-      const newHeaders = new Headers(upstreamResp.headers);
-      if (loc) newHeaders.set("Location", newLoc);
-      return new Response(upstreamResp.body, { status: upstreamResp.status, headers: newHeaders });
-    }
-
-    // Apply HTMLRewriter to override SEO meta tags on the SPA shell
-    const contentType = upstreamResp.headers.get('content-type') || '';
-    if (contentType.includes('text/html')) {
-      return applyHtmlRewriter(
-        new Response(upstreamResp.body, {
-          status: upstreamResp.status,
-          headers: upstreamResp.headers,
-        }),
-        url.pathname
-      );
-    }
-
-    return upstreamResp;
+    const html = generateBotHtml(url.pathname);
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+        'X-Robots-Tag': 'index, follow',
+      },
+    });
   }
 
   // ── Usuarios normales → Lovable ───────────────────────────────────────
