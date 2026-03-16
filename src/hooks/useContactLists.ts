@@ -234,7 +234,7 @@ export const useContactListCompanies = (listId: string | undefined) => {
 
   const addCompanies = useMutation({
     mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }) => {
-      const BATCH_SIZE = 25;
+      const BATCH_SIZE = 100;
       const total = rows.length;
       for (let i = 0; i < total; i += BATCH_SIZE) {
         const batch = rows.slice(i, i + BATCH_SIZE);
