@@ -53,6 +53,54 @@ interface Props {
   updateField: <K extends keyof ValuationCampaign>(key: K, value: ValuationCampaign[K]) => void;
 }
 
+function SenderSelector({ data, updateField }: Props) {
+  const { data: advisors, isLoading } = useTeamAdvisors();
+
+  const currentValue = data.sender_email || '';
+
+  const handleChange = (value: string) => {
+    if (value === 'default') {
+      updateField('sender_name', null as any);
+      updateField('sender_email', null as any);
+    } else {
+      const advisor = advisors?.find(a => a.email === value);
+      if (advisor) {
+        updateField('sender_name', advisor.name as any);
+        updateField('sender_email', advisor.email as any);
+      }
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader><CardTitle className="text-base flex items-center gap-2"><Mail className="h-4 w-4" />Emisor del email</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">Selecciona quién aparecerá como remitente (From) y Reply-To de los emails de esta campaña.</p>
+        <Select value={currentValue || 'default'} onValueChange={handleChange} disabled={isLoading}>
+          <SelectTrigger className="w-full md:w-[350px]">
+            <SelectValue placeholder="Seleccionar emisor..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">
+              Por defecto — Samuel Navarro (samuel@capittal.es)
+            </SelectItem>
+            {advisors?.filter(a => a.email.endsWith('@capittal.es')).map(advisor => (
+              <SelectItem key={advisor.id} value={advisor.email}>
+                {advisor.name} ({advisor.email})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {data.sender_email && (
+          <p className="text-xs text-muted-foreground">
+            Los emails se enviarán como: <span className="font-medium text-foreground">{data.sender_name} &lt;{data.sender_email}&gt;</span>
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function CampaignConfigStep({ data, updateField }: Props) {
   const [generatingComparables, setGeneratingComparables] = useState(false);
   const [hasTemplateForSector, setHasTemplateForSector] = useState(false);
