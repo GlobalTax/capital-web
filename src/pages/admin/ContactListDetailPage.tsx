@@ -1198,6 +1198,17 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
+            {isMadreList && (
+              <Button
+                variant={groupBlocked ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGroupBlocked(!groupBlocked)}
+                title={groupBlocked ? 'Vista agrupada: bloqueadas al final' : 'Vista unificada: todas mezcladas'}
+              >
+                {groupBlocked ? <Layers className="h-4 w-4 mr-1.5" /> : <List className="h-4 w-4 mr-1.5" />}
+                {groupBlocked ? 'Agrupada' : 'Unificada'}
+              </Button>
+            )}
             {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
