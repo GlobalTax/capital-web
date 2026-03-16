@@ -135,6 +135,13 @@ export const navigationGroups: NavigationGroup[] = [
         id: "lead-magnets",
         description: "Gestión de lead magnets",
         keywords: ["lead", "magnets", "recursos", "descargas"]
+      },
+      {
+        title: "Biblioteca de Fotos",
+        icon: ImageIcon,
+        id: "photo-library",
+        description: "Gestiona y organiza fotos",
+        keywords: ["fotos", "imágenes", "biblioteca", "media", "galería"]
       }
     ]
   },
