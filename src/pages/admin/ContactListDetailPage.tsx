@@ -35,7 +35,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -329,6 +329,7 @@ export default function ContactListDetailPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+  const [groupBlocked, setGroupBlocked] = useState(true);
 
   // AI generation state - stores the company ID currently being generated
   const [aiGenLoading, setAiGenLoading] = useState<string | null>(null);
@@ -440,8 +441,8 @@ export default function ContactListDetailPage() {
         return sortDir === 'asc' ? va - vb : vb - va;
       });
     }
-    // For madre lists: sort unassigned first, then assigned
-    if (isMadreList && sublistCompanyMap && !sortField) {
+    // For madre lists: sort unassigned first, then assigned (only in grouped mode without column sort)
+    if (isMadreList && sublistCompanyMap && groupBlocked && !sortField) {
       result.sort((a, b) => {
         const aAssigned = a.cif && sublistCompanyMap.map.has(a.cif.toUpperCase().trim()) ? 1 : 0;
         const bAssigned = b.cif && sublistCompanyMap.map.has(b.cif.toUpperCase().trim()) ? 1 : 0;
@@ -449,7 +450,7 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
   // Config tab state
   const [configName, setConfigName] = useState('');
@@ -1197,6 +1198,17 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
+            {isMadreList && (
+              <Button
+                variant={groupBlocked ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGroupBlocked(!groupBlocked)}
+                title={groupBlocked ? 'Vista agrupada: bloqueadas al final' : 'Vista unificada: todas mezcladas'}
+              >
+                {groupBlocked ? <Layers className="h-4 w-4 mr-1.5" /> : <List className="h-4 w-4 mr-1.5" />}
+                {groupBlocked ? 'Agrupada' : 'Unificada'}
+              </Button>
+            )}
             {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
@@ -1280,7 +1292,7 @@ export default function ContactListDetailPage() {
                           const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
                           // Render separator row before first assigned company
                           let separatorRow = null;
-                          if (isMadreList && isAssignedToSublist && !separatorRendered && !sortField) {
+                          if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
                             separatorRendered = true;
                             const assignedCount = filteredCompanies.filter(c => c.cif && sublistCompanyMap?.map.has(c.cif.toUpperCase().trim())).length;
                             separatorRow = (
