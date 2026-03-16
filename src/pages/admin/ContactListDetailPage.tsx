@@ -320,6 +320,7 @@ export default function ContactListDetailPage() {
   const [newListName, setNewListName] = useState('');
   const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
   const [sublistConflict, setSublistConflict] = useState<{ sublistName: string } | null>(null);
+  const [moveCopyFromSublistId, setMoveCopyFromSublistId] = useState<string | null>(null);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -375,13 +376,15 @@ export default function ContactListDetailPage() {
         .not('cif', 'is', null);
       if (compErr || !subCompanies) return null;
 
-      // 3. Build map: cif → sublist names[]
+      // 3. Build map: cif → sublist names[] and cifToListId: cif → list_id
       const map = new Map<string, Set<string>>();
+      const cifToListId = new Map<string, string>();
       for (const row of (subCompanies as unknown) as { cif: string; list_id: string }[]) {
         if (!row.cif) continue;
         const cifKey = row.cif.toUpperCase().trim();
         if (!map.has(cifKey)) map.set(cifKey, new Set());
         map.get(cifKey)!.add(nameMap[row.list_id] || '');
+        cifToListId.set(cifKey, row.list_id);
       }
 
       // Convert Sets to arrays
@@ -389,7 +392,7 @@ export default function ContactListDetailPage() {
       for (const [cif, names] of map) {
         result.set(cif, Array.from(names));
       }
-      return { map: result, sublistCount: sublistArr.length };
+      return { map: result, cifToListId, sublists: sublistArr, sublistCount: sublistArr.length };
     },
   });
 
@@ -785,6 +788,13 @@ export default function ContactListDetailPage() {
           notas: null,
         } as any);
         toast.success('Empresa copiada a la otra lista');
+      } else if (moveCopyFromSublistId) {
+        // Move from sublist: update the record in the source sublist
+        await supabase.from('outbound_list_companies' as any)
+          .update({ list_id: targetId } as any)
+          .eq('list_id', moveCopyFromSublistId)
+          .eq('cif', moveCopyCompany.cif);
+        toast.success('Empresa reasignada a otra sublista');
       } else {
         // Move: update list_id, clear notas
         await supabase.from('outbound_list_companies' as any)
@@ -794,6 +804,9 @@ export default function ContactListDetailPage() {
       }
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
+      if (moveCopyFromSublistId) {
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyFromSublistId] });
+      }
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
       queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
@@ -801,6 +814,7 @@ export default function ContactListDetailPage() {
       setMoveCopyTargetId('');
       setIsCreatingNewList(false);
       setNewListName('');
+      setMoveCopyFromSublistId(null);
     } catch (err) {
       toast.error('Error al procesar la operación');
     } finally {
@@ -1362,12 +1376,23 @@ export default function ContactListDetailPage() {
                                     {(() => {
                                       const sublistNames = sublistCompanyMap?.map.get(company.cif!.toUpperCase().trim());
                                       const targetSublist = allLists.find((l: any) => sublistNames?.includes(l.name));
+                                      const currentSublistId = sublistCompanyMap?.cifToListId?.get(company.cif!.toUpperCase().trim());
                                       return (
-                                        <DropdownMenuItem onClick={() => {
-                                          if (targetSublist) navigate(`/admin/empresas/${(targetSublist as any).id}`);
-                                        }}>
-                                          <MoveRight className="h-4 w-4 mr-2" /> Ver en sublista
-                                        </DropdownMenuItem>
+                                        <>
+                                          <DropdownMenuItem onClick={() => {
+                                            if (targetSublist) navigate(`/admin/listas-contacto/${(targetSublist as any).id}`);
+                                          }}>
+                                            <MoveRight className="h-4 w-4 mr-2" /> Ver en sublista
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => {
+                                            setMoveCopyCompany(company);
+                                            setMoveCopyMode('move');
+                                            setMoveCopyTargetId('');
+                                            setMoveCopyFromSublistId(currentSublistId || null);
+                                          }}>
+                                            <ArrowUpDown className="h-4 w-4 mr-2" /> Cambiar de sublista
+                                          </DropdownMenuItem>
+                                        </>
                                       );
                                     })()}
                                   </>
@@ -1784,34 +1809,45 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Move/Copy Modal */}
-      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); } }}>
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'} a otra lista</DialogTitle>
+            <DialogTitle>
+              {moveCopyFromSublistId ? 'Cambiar empresa de sublista' : moveCopyMode === 'move' ? 'Mover empresa' : 'Copiar empresa'}{!moveCopyFromSublistId && ' a otra lista'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              {moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
+              {moveCopyFromSublistId ? 'Reasignar' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{moveCopyCompany?.empresa}</strong> a:
             </p>
             {!isCreatingNewList ? (
               <>
                 <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar lista destino..." />
+                    <SelectValue placeholder={moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino..."} />
                   </SelectTrigger>
                   <SelectContent>
-                    {allLists.map((l: any) => (
-                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                    ))}
+                    {moveCopyFromSublistId && sublistCompanyMap?.sublists
+                      ? sublistCompanyMap.sublists
+                          .filter(s => s.id !== moveCopyFromSublistId)
+                          .map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                          ))
+                      : allLists.map((l: any) => (
+                          <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                        ))
+                    }
                   </SelectContent>
                 </Select>
-                <button
-                  type="button"
-                  className="text-xs text-primary hover:underline"
-                  onClick={() => { setIsCreatingNewList(true); setMoveCopyTargetId(''); }}
-                >
-                  + Crear nueva lista
-                </button>
+                {!moveCopyFromSublistId && (
+                  <button
+                    type="button"
+                    className="text-xs text-primary hover:underline"
+                    onClick={() => { setIsCreatingNewList(true); setMoveCopyTargetId(''); }}
+                  >
+                    + Crear nueva lista
+                  </button>
+                )}
               </>
             ) : (
               <>
@@ -1832,9 +1868,9 @@ export default function ContactListDetailPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); }}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); }}>Cancelar</Button>
             <Button onClick={handleMoveCopy} disabled={(!isCreatingNewList && !moveCopyTargetId) || (isCreatingNewList && !newListName.trim()) || isMoveCopyLoading}>
-              {isMoveCopyLoading ? 'Procesando...' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
+              {isMoveCopyLoading ? 'Procesando...' : moveCopyFromSublistId ? 'Reasignar' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
             </Button>
           </DialogFooter>
         </DialogContent>
