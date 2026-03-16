@@ -1,52 +1,52 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Add valuation + financial filters across all campaign steps
 
-### Cambios realizados
+### Current state
+Each campaign step has different levels of filtering:
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+| Step | Search | Revenue/EBITDA filter | Valuation filter | Sort | Status filters |
+|------|--------|----------------------|-----------------|------|---------------|
+| CompaniesStep (Paso 2) | ✅ | ✅ | N/A | ✅ | — |
+| ReviewCalculateStep (Paso 4) | ✅ | ✅ | ❌ | ✅ | — |
+| ProcessSendStep (Paso 7) | ✅ | ✅ | ❌ | ✅ | ✅ |
+| FollowUpStep (Paso 8) | ✅ | ✅ | ❌ | ✅ | ✅ |
+| CampaignSummaryStep (Paso 9) | ✅ | ❌ | ❌ | ❌ | ✅ |
+| DocumentSendStep | ✅ | ❌ | N/A | ❌ | — |
 
-### Resultado
+### Changes
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**1. Extend `SortableHeader` to support `valuation_central`**
+- Change `SortField` type from `'revenue' | 'ebitda' | null` to `'revenue' | 'ebitda' | 'valuation_central' | null`
+- Update `applySortToList` generic constraint to include `valuation_central`
 
----
+**2. ReviewCalculateStep — add Valoración filter + sort**
+- Add `filterValuation` state (FinancialFilterValue)
+- Add `<FinancialFilter label="Valoración" ...>` next to existing Revenue/EBITDA filters
+- Filter by `matchesCustomRange(c.valuation_central, filterValuation)`
+- Add `<SortableHeader>` for valuation_central column
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+**3. ProcessSendStep — add Valoración filter + sort**
+- Same pattern: add `filterValuation` + FinancialFilter + matchesCustomRange on `valuation_central`
+- Add sortable header for valuation column
 
-### Cambios realizados
+**4. FollowUpStep (SendList) — add Valoración filter**
+- Add `filterValuation` state + FinancialFilter + filter logic on `valuation_central`
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+**5. CampaignSummaryStep — add Revenue, EBITDA, Valoración filters + sort**
+- Add FinancialFilter imports and states for revenue, ebitda, valuation_central
+- Add sort state + SortableHeader on financial columns
+- Apply filtering in the existing `filteredCompanies` memo
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+**6. DocumentSendStep — add Revenue/EBITDA filters + sort**
+- Add FinancialFilter for revenue and ebitda
+- Add sort support
+- These columns would need to be shown in the table (currently the table might not show them — will check and add if needed)
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+### Files changed
+- `src/components/admin/campanas-valoracion/shared/SortableHeader.tsx` — extend SortField type
+- `src/components/admin/campanas-valoracion/steps/ReviewCalculateStep.tsx` — add valuation filter
+- `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx` — add valuation filter
+- `src/components/admin/campanas-valoracion/steps/FollowUpStep.tsx` — add valuation filter
+- `src/components/admin/campanas-valoracion/steps/CampaignSummaryStep.tsx` — add all financial filters + sort
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
