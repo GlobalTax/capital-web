@@ -233,6 +233,32 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Generate route-specific noscript content so crawlers see unique body per page
+function generateNoscriptContent(routePath, meta) {
+  const title = escapeHtml(meta.t);
+  const desc = escapeHtml(meta.d);
+  const nav = `
+      <header>
+        <nav>
+          <a href="/">Capittal</a>
+          <a href="/venta-empresas">Venta de Empresas</a>
+          <a href="/compra-empresas">Compra de Empresas</a>
+          <a href="/servicios/valoraciones">Valoraciones</a>
+          <a href="/contacto">Contacto</a>
+        </nav>
+      </header>`;
+
+  return `<noscript>${nav}
+      <main>
+        <h1>${title}</h1>
+        <p>${desc}</p>
+      </main>
+      <footer>
+        <p>&copy; Capittal Transacciones S.L.</p>
+      </footer>
+    </noscript>`;
+}
+
 function generateHtmlForRoute(templateHtml, routePath, meta) {
   let html = templateHtml;
   const canonicalUrl = BASE_URL + routePath;
@@ -287,6 +313,14 @@ function generateHtmlForRoute(templateHtml, routePath, meta) {
   html = html.replace(
     /<meta name="twitter:description" content="[^"]*">/,
     `<meta name="twitter:description" content="${escapeHtml(meta.d)}">`
+  );
+
+  // Replace body noscript content with route-specific content
+  // This prevents all pages from showing the same homepage H1/H2/body to crawlers
+  // Target the noscript block that contains <header> (body SEO content), not the font fallback one
+  html = html.replace(
+    /<noscript>\s*<header>[\s\S]*?<\/noscript>/,
+    generateNoscriptContent(routePath, meta)
   );
 
   // Add hreflang links before </head>
