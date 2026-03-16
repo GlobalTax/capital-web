@@ -9,7 +9,7 @@ export interface SortState {
   direction: SortDirection;
 }
 
-export function toggleSort(current: SortState, field: 'revenue' | 'ebitda'): SortState {
+export function toggleSort(current: SortState, field: 'revenue' | 'ebitda' | 'valuation_central'): SortState {
   if (current.field !== field) return { field, direction: 'desc' };
   if (current.direction === 'desc') return { field, direction: 'asc' };
   return { field: null, direction: null };
