@@ -1,52 +1,36 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Paginación client-side en la Biblioteca de Fotos
 
-### Cambios realizados
+### Enfoque
+La RPC `list_admin_photos` devuelve todos los archivos de una carpeta en una sola query. Modificar la RPC para paginación server-side añadiría complejidad innecesaria (la query ya es rápida con el CTE). La solución más limpia es **paginación client-side con "Cargar más"** — mostrar N fotos inicialmente e ir cargando más al hacer scroll o pulsar un botón.
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+Usaremos el hook `useInfiniteScroll` que ya existe en el proyecto para activar la carga automática al llegar al final del grid.
 
-### Resultado
+### Cambios
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**1. `src/hooks/usePhotoLibrary.tsx`** — Añadir paginación client-side
+- Nuevo estado `visibleCount` (inicializado a 40)
+- `photos` devuelve solo `allPhotos.slice(0, visibleCount)` 
+- Función `loadMorePhotos` que incrementa `visibleCount` en 40
+- Propiedad `hasMorePhotos` = `visibleCount < allPhotos.length`
+- Reset de `visibleCount` cuando cambia `currentFolder` o `search`
+- Exportar `loadMorePhotos` y `hasMorePhotos`
 
----
+**2. `src/components/admin/PhotoLibraryManager.tsx`** — Integrar infinite scroll
+- Importar `useInfiniteScroll` del hook existente
+- Desestructurar `loadMorePhotos` y `hasMorePhotos` del hook
+- Usar `useInfiniteScroll(loadMorePhotos, hasMorePhotos)` para obtener `sentinelRef`
+- Colocar `<div ref={sentinelRef} />` justo después del grid de fotos
+- Mostrar spinner de carga cuando `loading` del infinite scroll esté activo
+- Actualizar el contador del header para mostrar "X de Y fotos"
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
-
-### Cambios realizados
-
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
-
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+**3. `src/components/admin/PhotoLibraryPicker.tsx`** — Misma lógica para el picker
+- Aplicar la misma paginación al grid del picker (que también usa `usePhotoLibrary`)
 
 ### Resultado
+- Carga inicial rápida: solo 40 thumbnails se renderizan
+- Scroll infinito automático al llegar al final
+- Sin cambios en la base de datos
+- 3 archivos editados
 
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
