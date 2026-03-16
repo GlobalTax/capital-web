@@ -254,9 +254,18 @@ export const useContactListCompanies = (listId: string | undefined) => {
             const sub = batch.slice(j, j + SUB_BATCH_SIZE);
             const { error: subErr } = await supabase.from(TB_COMPANIES).insert(sub);
             if (subErr) {
-              console.error(`[Import] Sub-batch error at row ${i + j}:`, subErr.message);
-              failed += sub.length;
-              errors.push({ startIndex: i + j, count: sub.length, message: subErr.message });
+              // Fallback: try each row individually so one bad row doesn't block the rest
+              for (let k = 0; k < sub.length; k++) {
+                const { error: rowErr } = await supabase.from(TB_COMPANIES).insert([sub[k]]);
+                if (rowErr) {
+                  const empresa = (sub[k] as any).empresa || '?';
+                  console.error(`[Import] Row error (${empresa}):`, rowErr.message);
+                  failed += 1;
+                  errors.push({ startIndex: i + j + k, count: 1, message: `${empresa}: ${rowErr.message}` });
+                } else {
+                  inserted += 1;
+                }
+              }
             } else {
               inserted += sub.length;
             }
