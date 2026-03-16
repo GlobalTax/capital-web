@@ -1,52 +1,38 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Cambiar sublista de empresa bloqueada en lista madre
 
-### Cambios realizados
+### Problema
+En las listas madre, las empresas asignadas a sublistas están bloqueadas y solo tienen la opción "Ver en sublista". El usuario necesita poder reasignarlas a otra sublista directamente.
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Solución
+Añadir la opción **"Cambiar de sublista"** en el menú contextual de empresas bloqueadas (junto a "Ver en sublista"). Al hacer clic, abre el mismo diálogo de mover/copiar pero en modo `move`, pre-filtrando solo las sublistas hermanas como destinos válidos.
 
-### Resultado
+### Cambios
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**Archivo: `src/pages/admin/ContactListDetailPage.tsx`**
 
----
+1. **Menú de empresa bloqueada** (líneas 1360-1373): Añadir un segundo `DropdownMenuItem` "Cambiar de sublista" que:
+   - Busca el `list_id` actual de la empresa en la sublista (usando `sublistCompanyMap`)
+   - Llama a `setMoveCopyCompany(company)` + `setMoveCopyMode('move')` + marca que el origen es una sublista (no la madre)
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+2. **Nuevo estado**: `moveCopyFromSublistId` — guarda el `list_id` de la sublista origen cuando se mueve desde una empresa bloqueada. Necesario porque `executeMoveCopy` usa `listId` (la madre) como origen del move, pero aquí el registro está en la sublista.
 
-### Cambios realizados
+3. **Ajuste en `executeMoveCopy`** (línea ~790): Cuando `moveCopyFromSublistId` está definido, usar ese ID en lugar de `listId` para el `update`:
+   ```
+   .eq('list_id', moveCopyFromSublistId || listId)
+   ```
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+4. **Filtrar destinos en el diálogo**: Cuando `moveCopyFromSublistId` está definido, mostrar solo las sublistas de esta madre (excluyendo la de origen) como opciones de destino.
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+5. **Limpiar estado**: Resetear `moveCopyFromSublistId` junto con el resto del estado en el cleanup.
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+### Flujo
+```text
+Empresa bloqueada → ⋮ → "Cambiar de sublista"
+  → Diálogo con sublistas disponibles (sin la actual)
+  → Confirmar → UPDATE list_id del registro → Invalidar cache
+```
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+Un solo archivo editado. Sin cambios de base de datos.
 
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
