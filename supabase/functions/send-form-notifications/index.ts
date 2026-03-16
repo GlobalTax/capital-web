@@ -1354,8 +1354,8 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('[dynamic] Error fetching email_recipients_config, using hardcoded fallback:', e);
     }
 
-    // Merge hardcoded + dynamic, deduplicate
-    const allAdminEmails = [...new Set([...ADMIN_EMAILS, ...dynamicEmails])];
+    // Usar solo destinatarios dinámicos de la DB, fallback mínimo si vacío
+    const allAdminEmails = dynamicEmails.length > 0 ? dynamicEmails : [FALLBACK_ADMIN_EMAIL];
 
     // Enviar emails a administradores con delay para respetar rate limit
     console.log(`Enviando ${allAdminEmails.length} emails admin para submissionId=${submissionId}...`);
