@@ -26,6 +26,16 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(40);
+
+  // Reset visible count when folder or search changes
+  const prevFolder = useRef(currentFolder);
+  const prevSearch = useRef(search);
+  if (prevFolder.current !== currentFolder || prevSearch.current !== search) {
+    prevFolder.current = currentFolder;
+    prevSearch.current = search;
+    setVisibleCount(40);
+  }
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['photo-library', currentFolder],
