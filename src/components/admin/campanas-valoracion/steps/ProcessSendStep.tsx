@@ -35,6 +35,9 @@ import { SortableHeader, SortState, toggleSort, applySortToList } from '@/compon
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
+import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 function estimateZipSize(count: number): string {
   const estimatedBytes = count * 200 * 1024 * 0.75;
