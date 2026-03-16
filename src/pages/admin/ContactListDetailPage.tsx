@@ -1804,7 +1804,24 @@ export default function ContactListDetailPage() {
         </DialogContent>
       </Dialog>
 
-    </div>
+      {/* Sublist Conflict AlertDialog */}
+      <AlertDialog open={!!sublistConflict} onOpenChange={(open) => { if (!open) { setSublistConflict(null); setPendingMoveCopyTargetId(''); setIsMoveCopyLoading(false); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Empresa ya asignada a otra sublista</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta empresa ya está asignada a la sublista <strong>"{sublistConflict?.sublistName}"</strong>. Asignarla aquí la mantendrá en ambas sublistas. ¿Quieres continuar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setSublistConflict(null); setPendingMoveCopyTargetId(''); setIsMoveCopyLoading(false); }}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => { setSublistConflict(null); setIsMoveCopyLoading(true); await executeMoveCopy(pendingMoveCopyTargetId); setPendingMoveCopyTargetId(''); }}>
+              Continuar de todas formas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
   );
 }
 
