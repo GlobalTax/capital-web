@@ -539,7 +539,7 @@ function SendList({
     return applySortToList(result, sort);
   }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, filterValuation, sendMap, sort]);
 
-  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
   const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
@@ -548,6 +548,7 @@ function SendList({
     setFilterSeguimiento(null);
     setFilterRevenue({ min: null, max: null });
     setFilterEbitda({ min: null, max: null });
+    setFilterValuation({ min: null, max: null });
   }, []);
   const excluded = companies.length - visible.length;
 
