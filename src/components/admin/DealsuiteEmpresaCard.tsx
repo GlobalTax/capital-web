@@ -130,7 +130,7 @@ export const DealsuiteEmpresaCard = ({ empresa, onBack, isNew, onCreated }: Prop
             ) : (
               <div className="flex items-start gap-4">
                 {empresa.imagen_url ? (
-                  <img src={empresa.imagen_url} alt="" className="w-14 h-14 rounded-lg object-cover border" />
+                  <img src={empresa.imagen_url} alt={empresa.nombre || 'Empresa'} className="w-14 h-14 rounded-lg object-cover border" />
                 ) : (
                   <div className="w-14 h-14 rounded-lg bg-muted flex items-center justify-center">
                     <Building2 className="h-6 w-6 text-muted-foreground" />
@@ -322,7 +322,7 @@ export const DealsuiteEmpresaCard = ({ empresa, onBack, isNew, onCreated }: Prop
                   {contactos.map(c => (
                     <div key={c.id} className="flex items-start gap-3 p-2 rounded-lg bg-muted/30 group">
                       {c.imagen_url ? (
-                        <img src={c.imagen_url} alt="" className="w-9 h-9 rounded-full object-cover" />
+                        <img src={c.imagen_url} alt={c.nombre || 'Contacto'} className="w-9 h-9 rounded-full object-cover" />
                       ) : (
                         <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                           {(c.nombre || '?')[0].toUpperCase()}

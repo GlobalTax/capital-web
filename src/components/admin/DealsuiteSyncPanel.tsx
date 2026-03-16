@@ -486,7 +486,7 @@ export const DealsuiteSyncPanel = () => {
                     onClick={() => setSelectedEmpresa(emp)}
                   >
                     {emp.imagen_url ? (
-                      <img src={emp.imagen_url} alt="" className="w-10 h-10 rounded-lg object-cover border" />
+                      <img src={emp.imagen_url} alt={emp.nombre || 'Empresa'} className="w-10 h-10 rounded-lg object-cover border" />
                     ) : (
                       <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
                         <Building2 className="h-5 w-5 text-muted-foreground" />
@@ -560,7 +560,7 @@ export const DealsuiteSyncPanel = () => {
                               </button>
                               {deal.image_url && (
                                 <div className="flex-shrink-0 w-16 h-16 rounded overflow-hidden border bg-muted" onClick={() => handleSelectDeal(deal)}>
-                                  <img src={deal.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                  <img src={deal.image_url} alt={deal.title || 'Deal'} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                 </div>
                               )}
                               <div className="flex-1 min-w-0" onClick={() => handleSelectDeal(deal)}>
