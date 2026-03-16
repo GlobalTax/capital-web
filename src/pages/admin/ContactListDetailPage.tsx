@@ -376,13 +376,15 @@ export default function ContactListDetailPage() {
         .not('cif', 'is', null);
       if (compErr || !subCompanies) return null;
 
-      // 3. Build map: cif → sublist names[]
+      // 3. Build map: cif → sublist names[] and cifToListId: cif → list_id
       const map = new Map<string, Set<string>>();
+      const cifToListId = new Map<string, string>();
       for (const row of (subCompanies as unknown) as { cif: string; list_id: string }[]) {
         if (!row.cif) continue;
         const cifKey = row.cif.toUpperCase().trim();
         if (!map.has(cifKey)) map.set(cifKey, new Set());
         map.get(cifKey)!.add(nameMap[row.list_id] || '');
+        cifToListId.set(cifKey, row.list_id);
       }
 
       // Convert Sets to arrays
@@ -390,7 +392,7 @@ export default function ContactListDetailPage() {
       for (const [cif, names] of map) {
         result.set(cif, Array.from(names));
       }
-      return { map: result, sublistCount: sublistArr.length };
+      return { map: result, cifToListId, sublists: sublistArr, sublistCount: sublistArr.length };
     },
   });
 
