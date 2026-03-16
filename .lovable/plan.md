@@ -1,52 +1,49 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Mejorar visibilidad de empresas bloqueadas en listas madre
 
-### Cambios realizados
+### Problema actual
+Las empresas asignadas a sublistas solo tienen `opacity-50`, que es sutil y difícil de distinguir rápidamente.
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Cambios en `src/pages/admin/ContactListDetailPage.tsx`
 
-### Resultado
+**1. Fila bloqueada más visible**
+- Cambiar `opacity-50` por un fondo diferenciado: `bg-muted/40` con borde izquierdo coloreado `border-l-2 border-l-orange-400`
+- Añadir un icono `Lock` pequeño junto al nombre de la empresa
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**2. Badge de sublista más prominente**
+- Cambiar el badge actual (variant `secondary`, tamaño `sm`, texto 10px) por uno más visible: variant `accent` o custom con fondo naranja/amber claro, texto más grande (11-12px), y un icono `ArrowRight` inline
+- Formato: `→ [Nombre sublista]` para que sea inmediatamente legible
 
----
+**3. Separación visual**
+- Ordenar las empresas: primero las NO asignadas (activas), luego las bloqueadas, con un separador visual (una fila con texto "Asignadas a sublistas (X)" en gris)
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+### Cambio concreto en la fila
 
-### Cambios realizados
+```tsx
+<TableRow key={company.id} className={cn(
+  "group/row",
+  isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
+)}>
+```
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+Badge de sublista:
+```tsx
+<Badge variant="outline" size="sm" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[11px] gap-1">
+  <ArrowRight className="h-3 w-3" />
+  {name}
+</Badge>
+```
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+Nombre de empresa con icono lock:
+```tsx
+<button className="text-sm font-medium hover:underline text-left flex items-center gap-1.5">
+  {isAssignedToSublist && <Lock className="h-3 w-3 text-amber-500 flex-shrink-0" />}
+  {company.empresa}
+</button>
+```
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+### No se toca
+- Importador, trigger, configuración, notas, búsqueda por keywords
+- Lógica de validación al mover/copiar (ya implementada)
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
