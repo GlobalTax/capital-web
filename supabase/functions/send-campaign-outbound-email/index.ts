@@ -146,7 +146,7 @@ serve(async (req) => {
     const firstCampaignId = campaignIds[0];
     const { data: campaignRow } = await serviceClient
       .from("valuation_campaigns")
-      .select("cc_recipient_ids")
+      .select("cc_recipient_ids, sender_name, sender_email")
       .eq("id", firstCampaignId)
       .maybeSingle();
     
