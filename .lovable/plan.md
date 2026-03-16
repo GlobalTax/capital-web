@@ -1,81 +1,80 @@
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Cambios realizados
+## Plan: hacer la importación resiliente para que no se pare
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Qué está pasando
+La importación ya usa lotes de 25 y reintento en sublotes de 5, pero sigue teniendo dos problemas:
+1. Si un lote falla del todo, `addCompanies` lanza error y corta la importación completa.
+2. No hay pausa entre lotes, así que con ficheros grandes se sigue presionando demasiado a Supabase.
+3. `handleConfirmImport` trata la importación como una sola operación “todo o nada”, así que no refleja bien un escenario de avance parcial.
 
-### Resultado
+### Enfoque
+Cambiar la importación a un modelo de “seguir aunque tarde”:
+- procesar en lotes pequeños
+- meter una pequeña espera entre lotes
+- no abortar toda la importación por un lote fallido
+- acumular insertadas, omitidas y errores
+- mantener el progreso visible hasta terminar todo el archivo
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+### Cambios a implementar
 
----
+#### 1) `src/hooks/useContactLists.ts`
+Rehacer `addCompanies` para que devuelva un resultado acumulado en vez de fallar en cuanto un lote dé error:
+- mantener lote principal pequeño
+- añadir delay entre lotes
+- si falla el lote principal, dividirlo en sublotes aún menores
+- si incluso un sublote falla, registrar el error y seguir con el siguiente
+- reportar progreso real tras cada lote/sublote
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+Resultado esperado del mutation:
+```ts
+{
+  inserted: number;
+  failed: number;
+  errors: Array<{ startIndex: number; count: number; message: string }>;
+}
+```
 
-### Cambios realizados
+#### 2) `src/pages/admin/ContactListDetailPage.tsx`
+Adaptar `handleConfirmImport` para trabajar con ese resultado parcial:
+- no asumir que todo entra correctamente
+- mantener `importProgress` vivo durante toda la subida
+- al finalizar, mostrar resultado real:
+  - cuántas empresas se importaron
+  - cuántas no se pudieron insertar
+  - detalle resumido de errores
+- actualizar `outbound_lists.updated_at` aunque el proceso haya sido parcial pero haya insertado filas
+- envolver el flujo en `try/catch/finally` para que nunca se quede la UI bloqueada
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+#### 3) Resultado visible para el usuario
+Aprovechar el modal actual de preview/import para que quede claro que:
+- la importación sigue avanzando por bloques
+- puede tardar varios minutos con Excels grandes
+- aunque un bloque falle, el resto continúa
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+Si hace falta, ajustar el texto del progreso a algo como:
+- “Importando lote X de Y”
+- “Subiendo empresas: 325 / 4.820”
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+### Detalle técnico
+La clave es pasar de una importación “transaccional” a una importación “resiliente por lotes”:
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+```text
+archivo validado
+  -> lote 1
+  -> pausa corta
+  -> lote 2
+     -> si falla: sublotes
+     -> si un sublote falla: registrar error y seguir
+  -> lote 3
+  ...
+  -> resumen final
+```
 
-### Resultado
+Esto evita que un timeout o una fila problemática tumben todo el proceso.
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+### Archivos a modificar
+- `src/hooks/useContactLists.ts`
+- `src/pages/admin/ContactListDetailPage.tsx`
 
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
-
----
-
-## ✅ Completado: Integración Lista de Contacto → Campaña Outbound
-
-### Cambios realizados
-
-1. **Migración SQL**: Añadida columna `source_list_id` (uuid) a `valuation_campaigns` con FK a `outbound_lists`.
-
-2. **`src/components/admin/contact-lists/SendToCampaignDialog.tsx`** (NUEVO): Diálogo completo para enviar empresas de una lista a una campaña outbound. Incluye:
-   - Selección entre crear nueva campaña o añadir a existente
-   - Deduplicación por CIF contra la campaña destino (omite duplicados)
-   - Deduplicación cross-campaña (aviso de empresas ya contactadas en otras campañas)
-   - Mapeo automático de campos lista → campaña
-   - Inserción en batches de 100
-
-3. **`src/components/admin/campanas-valoracion/ImportFromListDialog.tsx`** (NUEVO): Diálogo para importar empresas desde lista dentro del paso 2 (CompaniesStep) de una campaña. Misma lógica de deduplicación.
-
-4. **`src/pages/admin/ContactListDetailPage.tsx`**: Botón "Enviar a campaña" en la toolbar de acciones de la lista.
-
-5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`**: Botón "Importar desde lista de contacto" antes del formulario manual.
-
-6. **`src/pages/admin/CampanasValoracion.tsx`**: Badge con nombre de lista origen junto al nombre de la campaña (clickable, navega a la lista).
-
-7. **`src/hooks/useCampaigns.ts`**: Añadido `source_list_id` al tipo `ValuationCampaign`.
-
-### Resultado
-
-- Flujo directo lista → campaña con un solo clic
-- Protección anti-duplicados a nivel de campaña y cross-campaña
-- Trazabilidad: cada campaña muestra su lista origen
+### Resultado esperado
+Después del cambio, la importación podrá tardar más, pero seguirá avanzando de forma estable y el usuario verá progreso real hasta el final, incluso si algunos bloques fallan.
