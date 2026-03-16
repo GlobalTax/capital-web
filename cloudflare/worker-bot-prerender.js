@@ -1,34 +1,44 @@
 /**
- * Cloudflare Worker - capittal.es  (v3 — server-rendered bot HTML)
+ * Cloudflare Worker - capittal.es  (v4 — Prerender.io integration)
  *
  * Flow:
- *   Bots    → Server-generated HTML (correct title, description, canonical,
- *             og tags, hreflang — zero external dependencies)
+ *   Bots    → Prerender.io (fully rendered HTML with JS executed)
+ *             Falls back to server-generated HTML if Prerender.io fails
  *   Users   → Lovable upstream (SPA, unmodified)
  *
- * Why: Lovable upstream redirects or returns homepage HTML for bot user-agents,
- * making HTMLRewriter-based approaches ineffective. This version generates
- * a complete HTML page for each route directly in the Worker, guaranteeing
- * correct SEO meta tags with zero points of failure.
+ * Why: Lovable is a CSR SPA — crawlers see an empty shell. Prerender.io
+ * renders the full page with a headless browser, so bots get complete HTML
+ * with correct meta tags, content, structured data, and internal links.
  */
 
-const BOT_UA_PATTERNS = [
-  'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
-  'yandexbot', 'facebookexternalhit', 'facebookcatalog', 'twitterbot',
-  'linkedinbot', 'whatsapp', 'telegrambot', 'applebot',
-  'mj12bot', 'dotbot', 'petalbot', 'sogou', 'ia_archiver',
-  'archive.org_bot', 'screaming frog', 'lighthouse', 'chrome-lighthouse',
-  'pagespeed', 'pingbot', 'rogerbot', 'ahrefsbot',
+const LOVABLE_UPSTREAM = "https://webcapittal.lovable.app";
+const PUBLIC_HOST = "capittal.es";
+const BASE_URL = "https://capittal.es";
+const PRERENDER_URL = "https://service.prerender.io/";
+const PRERENDER_TOKEN = "O4ymoBvl4whx6UQePxL5";
+const SITEMAP_EDGE_FN = "https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap";
+
+const BOT_AGENTS = [
+  "googlebot","yahoo! slurp","bingbot","yandex","baiduspider","facebookexternalhit",
+  "twitterbot","rogerbot","linkedinbot","embedly","quora link preview","showyoubot",
+  "outbrain","pinterest/0.","developers.google.com/+/web/snippet","slackbot","vkshare",
+  "w3c_validator","redditbot","applebot","whatsapp","flipboard","tumblr","bitlybot",
+  "skypeuripreview","nuzzel","discordbot","google page speed","qwantify","pinterestbot",
+  "bitrix link preview","xing-contenttabreceiver","chrome-lighthouse","telegrambot",
+  "oai-searchbot","chatgpt","gptbot","claudebot","amazonbot","perplexity",
+  "google-inspectiontool","integration-test",
+  "ahrefsbot","semrushbot","mj12bot","dotbot","bytespider",
 ];
 
-const STATIC_EXTENSIONS = [
-  '.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
-  '.woff', '.woff2', '.ttf', '.eot', '.otf', '.map', '.webp', '.avif',
-  '.mp4', '.webm', '.mp3', '.wav', '.pdf', '.xml', '.json', '.txt',
+const IGNORE_EXTENSIONS = [
+  ".js",".css",".xml",".less",".png",".jpg",".jpeg",".gif",".pdf",".doc",".txt",".ico",
+  ".rss",".zip",".mp3",".rar",".exe",".wmv",".avi",".ppt",".mpg",".mpeg",".tif",".wav",
+  ".mov",".psd",".ai",".xls",".mp4",".m4a",".swf",".dat",".dmg",".iso",".flv",".m4v",
+  ".torrent",".woff",".ttf",".svg",".webmanifest",
 ];
 
 // =====================================================================
-// SEO Route Data — title + description per route
+// SEO Route Data — used only as fallback if Prerender.io is down
 // =====================================================================
 const ROUTES = {
   "/":{t:"Capittal Transacciones | Fusiones y Adquisiciones en España - M&A Advisory",d:"Asesoramiento M&A en Barcelona: venta de empresas, valoraciones y due diligence. +70 profesionales especializados en mid-market español."},
@@ -64,9 +74,6 @@ const ROUTES = {
   "/de-looper-a-capittal":{t:"De Looper a Capittal | Nuestra Historia",d:"La evolución de Looper a Capittal Transacciones. Nuestra historia, visión y compromiso con el mercado M&A español."},
   "/valoracion-empresas":{t:"Valoración de Empresas Online | Capittal",d:"Obtenga una valoración profesional de su empresa. Múltiplos sectoriales, DCF y comparables de mercado."},
   "/oportunidades":{t:"Oportunidades de Inversión | Empresas en Venta | Capittal",d:"Oportunidades de inversión y empresas en venta. Marketplace de operaciones M&A verificadas por Capittal en España."},
-  "/politica-privacidad":{t:"Política de Privacidad | Capittal",d:"Política de privacidad y protección de datos de Capittal Transacciones S.L."},
-  "/terminos-uso":{t:"Términos de Uso | Capittal",d:"Términos y condiciones de uso del sitio web de Capittal Transacciones."},
-  "/cookies":{t:"Política de Cookies | Capittal",d:"Información sobre el uso de cookies en el sitio web de Capittal Transacciones."},
   "/lp/calculadora-b":{t:"Calculadora de Valoración B - Capittal",d:"Calcula el valor de tu empresa con nuestra calculadora alternativa. Estimación rápida basada en facturación, EBITDA y sector."},
   "/lp/calculadora-meta":{t:"Calculadora de Valoración de Empresas | Capittal",d:"Descubre cuánto vale tu empresa con nuestra calculadora gratuita. Valoración basada en múltiplos sectoriales de EBITDA."},
   "/lp/venta-empresas":{t:"Venta de Empresas - Valoración Gratuita | Capittal",d:"¿Quieres vender tu empresa? Valoración gratuita del valor de mercado de tu negocio. Asesoramiento confidencial de principio a fin."},
@@ -107,7 +114,6 @@ const ROUTES = {
   "/por-que-elegirnos/experiencia":{t:"Nuestra Experiencia en M&A | Capittal",d:"Más de una década en fusiones y adquisiciones en España. Track record de operaciones cerradas en múltiples sectores."},
   "/por-que-elegirnos/metodologia":{t:"Metodología de Trabajo M&A | Capittal",d:"Metodología probada en M&A. Proceso estructurado desde la valoración inicial hasta el cierre con máxima confidencialidad."},
   "/por-que-elegirnos/resultados":{t:"Resultados en Operaciones M&A | Capittal",d:"Resultados verificables en fusiones y adquisiciones. Métricas de éxito, valoraciones alcanzadas y satisfacción de clientes."},
-  "/nosotros":{t:"Sobre Nosotros - Capittal Transacciones | M&A Advisory",d:"Capittal Transacciones: firma de asesoramiento M&A en Barcelona. Más de 70 profesionales especializados en el mid-market español."},
   "/ca":{t:"Capittal Transaccions - Fusions i Adquisicions a Espanya | M&A Advisory",d:"Assessorament M&A a Barcelona. +70 professionals en venda d'empreses, valoracions i due diligence. Especialistes en mid-market."},
   "/venda-empreses":{t:"Venda d'Empreses a Espanya - Assessorament M&A | Capittal",d:"Vols vendre la teva empresa? Assessorament en venda, valoració i negociació. Procés confidencial amb accés a fons d'inversió."},
   "/contacte":{t:"Contacte - Capittal Transaccions | M&A Barcelona",d:"Contacta amb Capittal. Oficines a Barcelona, Ausiàs March 36. Assessorament en fusions i adquisicions, valoracions i due diligence."},
@@ -115,22 +121,6 @@ const ROUTES = {
   "/casos-exit":{t:"Casos d'Èxit - Operacions M&A | Capittal",d:"Operacions tancades amb èxit per Capittal. Venda d'empreses, adquisicions i valoracions en múltiples sectors."},
   "/per-que-triar-nos":{t:"Per Què Triar-nos | Capittal Transaccions",d:"Experiència, metodologia i resultats. Capittal és el teu millor soci en operacions de M&A i valoracions empresarials."},
   "/programa-col-laboradors":{t:"Programa de Col·laboradors | Capittal",d:"Uneix-te a la nostra xarxa de col·laboradors. Refereix operacions de M&A i rep compensació per cada transacció tancada."},
-  "/serveis/valoracions":{t:"Valoració d'Empreses - Múltiples EBITDA i DCF | Capittal",d:"Valoració d'empreses: múltiples EBITDA, fluxos de caixa descomptats (DCF) i comparables de mercat. Calculadora gratuïta online."},
-  "/serveis/venda-empreses":{t:"Venda d'Empreses a Espanya - Assessorament M&A | Capittal",d:"Assessorament en venda d'empreses. Valoració, negociació i tancament amb accés a fons d'inversió i compradors estratègics."},
-  "/serveis/due-diligence":{t:"Due Diligence Financera i Fiscal - M&A Espanya | Capittal",d:"Due diligence financera, fiscal i legal per a compravenda d'empreses. Anàlisi rigurós per a compradors i venedors en M&A."},
-  "/serveis/assessorament-legal":{t:"Assessorament Legal en M&A | Capittal",d:"Suport jurídic en fusions i adquisicions. Contractes, due diligence legal i tancament de transaccions a Espanya."},
-  "/serveis/reestructuracions":{t:"Reestructuració d'Empreses - Assessorament Financer | Capittal",d:"Assessorament en reestructuracions, refinançament de deute i situacions especials. Solucions financeres per a empreses."},
-  "/serveis/planificacio-fiscal":{t:"Planificació Fiscal en Venda d'Empreses | Capittal",d:"Optimització fiscal en compravenda d'empreses. Planificació fiscal pre-venda per maximitzar el valor net de l'operació."},
-  "/sectors/tecnologia":{t:"M&A Tecnologia Espanya - Venda Empreses Tech | Capittal",d:"M&A d'empreses tecnològiques: SaaS, ciberseguretat i infraestructura digital. Compradors estratègics i fons tech a Espanya."},
-  "/sectors/salut":{t:"M&A Salut Espanya - Venda Empreses Sanitàries | Capittal",d:"M&A en el sector sanitari i healthcare. Operacions amb clíniques, laboratoris i empreses de serveis de salut a Espanya."},
-  "/sectors/industrial":{t:"M&A Industrial Espanya - Venda Empreses Industrials | Capittal",d:"Compravenda d'empreses industrials: manufactura, enginyeria i serveis industrials. Fons de Private Equity a Espanya."},
-  "/sectors/retail-consum":{t:"M&A Retail i Consum | Capittal",d:"M&A en retail i consum. Distribució, franquícies, e-commerce i marques de consum a Espanya."},
-  "/sectors/energia":{t:"M&A Energia Espanya - Venda Empreses Energètiques | Capittal",d:"Compravenda d'empreses del sector energètic. Renovables, infraestructura energètica i serveis relacionats a Espanya."},
-  "/sectors/seguretat":{t:"M&A Seguretat Privada Espanya | Capittal",d:"M&A en seguretat privada. Venda d'empreses d'alarmes, vigilància i serveis auxiliars. Experts en el sector a Espanya."},
-  "/sectors/construccio":{t:"M&A Sector Construcció | Capittal",d:"M&A en construcció i infraestructures a Espanya. Promotores, constructores i enginyeria civil."},
-  "/sectors/alimentacio":{t:"M&A Sector Alimentació | Capittal",d:"M&A en el sector alimentari. Producció, distribució i marques d'alimentació a Espanya."},
-  "/sectors/logistica":{t:"M&A Sector Logística | Capittal",d:"Fusions i adquisicions en logística i transport. Distribució, emmagatzematge i cadena de subministrament."},
-  "/sectors/medi-ambient":{t:"M&A Sector Medi Ambient | Capittal",d:"M&A en medi ambient. Gestió de residus, tractament d'aigües i sostenibilitat a Espanya."},
   "/en":{t:"Capittal - Mergers & Acquisitions Advisory in Spain",d:"M&A advisory firm in Barcelona. 70+ professionals in company sales, valuations and due diligence across Spain."},
   "/sell-companies":{t:"Sell Your Company in Spain - M&A Advisory | Capittal",d:"Looking to sell your company? Professional M&A advisory. Confidential process with access to PE funds and international buyers."},
   "/buy-companies":{t:"Buy Companies in Spain - Buy-Side Advisory | Capittal",d:"Buy-side advisory for PE funds and corporate investors. Target identification, valuation and due diligence across Spain."},
@@ -139,22 +129,10 @@ const ROUTES = {
   "/why-choose-us":{t:"Why Choose Us | Capittal M&A Advisory",d:"Experience, methodology and results. Discover why Capittal is your best partner for M&A transactions and valuations in Spain."},
   "/collaborators-program":{t:"Collaborators Program | Capittal",d:"Join our collaborator network. Refer M&A opportunities and receive compensation for every closed transaction with Capittal."},
   "/partners-program":{t:"Partners Program | Capittal M&A Advisory",d:"Partner with Capittal. Strategic alliances for financial advisors, law firms and consulting firms in M&A deal referrals."},
-  "/services/valuations":{t:"Business Valuation Services - EBITDA Multiples & DCF | Capittal",d:"Business valuation: EBITDA multiples, discounted cash flows (DCF) and market comparables. Free online valuation calculator."},
-  "/services/sell-companies":{t:"Sell-Side M&A Advisory in Spain | Capittal",d:"Sell-side advisory for business owners. Valuation, buyer identification and negotiation. Confidential process with global reach."},
-  "/services/due-diligence":{t:"Financial & Tax Due Diligence - M&A Spain | Capittal",d:"Financial, tax and legal due diligence for M&A transactions. Rigorous analysis for buyers and sellers in acquisitions."},
-  "/services/legal-advisory":{t:"Legal Advisory in M&A | Capittal",d:"Legal support for mergers and acquisitions. Contract negotiation, legal due diligence and transaction closing across Spain."},
-  "/services/restructuring":{t:"Business Restructuring Advisory | Capittal",d:"Corporate restructuring, debt refinancing and special situations. Financial solutions for companies facing challenges in Spain."},
-  "/services/tax-planning":{t:"Tax Planning for Company Sales | Capittal",d:"Tax optimization for company sales. Pre-sale tax planning to maximize net proceeds. Specialized M&A tax advisory in Spain."},
-  "/sectors/technology":{t:"M&A Technology Spain - Tech Company Sales | Capittal",d:"M&A advisory for tech companies in Spain. SaaS, cybersecurity and digital infrastructure acquisitions."},
-  "/sectors/healthcare":{t:"M&A Healthcare Spain - Health Company Sales | Capittal",d:"M&A in the healthcare sector in Spain. Transactions with clinics, laboratories and healthcare services companies."},
-  "/sectors/retail-consumer":{t:"M&A Retail & Consumer Spain | Capittal",d:"M&A in retail and consumer sectors. Distribution, franchises, e-commerce and consumer brands across Spain."},
-  "/sectors/energy":{t:"M&A Energy Spain - Energy Company Sales | Capittal",d:"M&A for energy sector companies in Spain. Renewables, energy infrastructure and related services acquisitions."},
-  "/sectors/security":{t:"M&A Private Security Spain | Capittal",d:"M&A in private security. Advisory for alarm companies, surveillance firms and auxiliary services in Spain."},
-  "/legal/politica-cookies":{t:"Política de Cookies | Capittal",d:"Información sobre el uso de cookies en el sitio web de Capittal Transacciones."},
 };
 
 // =====================================================================
-// Hreflang mappings
+// Hreflang mappings (used only in fallback HTML)
 // =====================================================================
 const HREFLANGS = {
   "/":{es:"/",ca:"/ca",en:"/en"},
@@ -180,51 +158,37 @@ const HREFLANGS = {
   "/programa-col-laboradors":{es:"/programa-colaboradores",ca:"/programa-col-laboradors",en:"/collaborators-program"},
   "/collaborators-program":{es:"/programa-colaboradores",ca:"/programa-col-laboradors",en:"/collaborators-program"},
   "/servicios/valoraciones":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
-  "/serveis/valoracions":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
-  "/services/valuations":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
-  "/servicios/venta-empresas":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
-  "/serveis/venda-empreses":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
-  "/services/sell-companies":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
   "/servicios/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
-  "/serveis/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
-  "/services/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
   "/servicios/asesoramiento-legal":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
-  "/serveis/assessorament-legal":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
-  "/services/legal-advisory":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
   "/servicios/reestructuraciones":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
-  "/serveis/reestructuracions":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
-  "/services/restructuring":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
   "/servicios/planificacion-fiscal":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
-  "/serveis/planificacio-fiscal":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
-  "/services/tax-planning":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
   "/sectores/tecnologia":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
-  "/sectors/tecnologia":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
-  "/sectors/technology":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
   "/sectores/healthcare":{es:"/sectores/healthcare",ca:"/sectors/salut",en:"/sectors/healthcare"},
-  "/sectors/salut":{es:"/sectores/healthcare",ca:"/sectors/salut",en:"/sectors/healthcare"},
   "/sectores/seguridad":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
-  "/sectors/seguretat":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
-  "/sectors/security":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
   "/sectores/energia":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
-  "/sectors/energia":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
-  "/sectors/energy":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
   "/sectores/industrial":{es:"/sectores/industrial",ca:"/sectors/industrial"},
-  "/sectors/industrial":{es:"/sectores/industrial",ca:"/sectors/industrial"},
   "/sectores/retail-consumer":{es:"/sectores/retail-consumer",ca:"/sectors/retail-consum",en:"/sectors/retail-consumer"},
-  "/sectors/retail-consum":{es:"/sectores/retail-consumer",ca:"/sectors/retail-consum",en:"/sectors/retail-consumer"},
   "/sectores/construccion":{es:"/sectores/construccion",ca:"/sectors/construccio"},
-  "/sectors/construccio":{es:"/sectores/construccion",ca:"/sectors/construccio"},
   "/sectores/alimentacion":{es:"/sectores/alimentacion",ca:"/sectors/alimentacio"},
-  "/sectors/alimentacio":{es:"/sectores/alimentacion",ca:"/sectors/alimentacio"},
   "/sectores/logistica":{es:"/sectores/logistica",ca:"/sectors/logistica"},
-  "/sectors/logistica":{es:"/sectores/logistica",ca:"/sectors/logistica"},
   "/sectores/medio-ambiente":{es:"/sectores/medio-ambiente",ca:"/sectors/medi-ambient"},
-  "/sectors/medi-ambient":{es:"/sectores/medio-ambiente",ca:"/sectors/medi-ambient"},
 };
 
 // =====================================================================
-// Server-side HTML generation for bots (no external dependencies)
+// Helpers
 // =====================================================================
+function isRedirect(status) { return [301,302,303,307,308].includes(status); }
+
+function isBot(ua) {
+  const lower = ua.toLowerCase();
+  return BOT_AGENTS.some(bot => lower.includes(bot));
+}
+
+function isIgnoredExtension(pathname) {
+  const dot = pathname.lastIndexOf(".");
+  if (dot < 0) return false;
+  return IGNORE_EXTENSIONS.includes(pathname.substring(dot).toLowerCase());
+}
 
 function detectLang(path) {
   if (path === '/ca' || path.startsWith('/venda-') || path.startsWith('/serveis/') ||
@@ -235,9 +199,6 @@ function detectLang(path) {
       path === '/contact' || path === '/success-stories' || path === '/why-choose-us' ||
       path.startsWith('/collaborators-') || path.startsWith('/partners-') ||
       path.startsWith('/services/')) return 'en';
-  if (path.startsWith('/sectors/')) {
-    if (['technology','healthcare','retail-consumer','energy','security'].some(s => path.includes(s))) return 'en';
-  }
   return 'es';
 }
 
@@ -245,12 +206,27 @@ function esc(str) {
   return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-/**
- * Generate a complete HTML page for bots with correct SEO meta tags.
- * No external fetches, no HTMLRewriter — pure string generation.
- * This is the nuclear option that eliminates ALL points of failure.
- */
-function generateBotHtml(pathname) {
+// =====================================================================
+// Prerender.io fetch — sends the request to Prerender.io's service
+// which renders the page with headless Chrome and returns full HTML
+// =====================================================================
+async function fetchFromPrerender(requestUrl, originalHeaders) {
+  const prerenderUrl = `${PRERENDER_URL}${requestUrl}`;
+  const headers = new Headers(originalHeaders);
+  headers.set('X-Prerender-Token', PRERENDER_TOKEN);
+
+  const resp = await fetch(new Request(prerenderUrl, {
+    headers,
+    redirect: 'manual',
+  }));
+
+  return resp;
+}
+
+// =====================================================================
+// Fallback: generate basic HTML if Prerender.io is unavailable
+// =====================================================================
+function generateFallbackHtml(pathname) {
   const p = pathname.replace(/\/+$/, '') || '/';
   const meta = ROUTES[p];
   const canonicalUrl = BASE_URL + p;
@@ -258,7 +234,6 @@ function generateBotHtml(pathname) {
   const title = meta ? esc(meta.t) : `Capittal Transacciones | ${esc(p)}`;
   const desc = meta ? esc(meta.d) : 'Asesoramiento M&A en Barcelona. Capittal Transacciones.';
 
-  // Hreflang links
   let hreflangTags = '';
   const hl = HREFLANGS[p];
   if (hl) {
@@ -298,54 +273,58 @@ ${hreflangTags}</head>
       <a href="${BASE_URL}/servicios/valoraciones">Valoraciones</a>
       <a href="${BASE_URL}/contacto">Contacto</a>
     </nav>
-    <noscript>
-      <p>Esta página requiere JavaScript para funcionar completamente.
-      Visite <a href="${canonicalUrl}">${canonicalUrl}</a></p>
-    </noscript>
 </body>
 </html>`;
 }
 
-function isExcludedPath(pathname) {
-  return EXCLUDED_PATHS.some(p => pathname.startsWith(p));
+// =====================================================================
+// Fetch from Lovable upstream (for normal users)
+// =====================================================================
+function fetchFromLovable(request, url, isGetLike) {
+  const upstreamBase = new URL(LOVABLE_UPSTREAM);
+  const upstreamUrl = new URL(url.href);
+  upstreamUrl.protocol = upstreamBase.protocol;
+  upstreamUrl.hostname = upstreamBase.hostname;
+
+  const h = new Headers(request.headers);
+  h.set("Host", upstreamBase.hostname);
+  h.set("X-Forwarded-Host", PUBLIC_HOST);
+  h.set("X-Forwarded-Proto", "https");
+  h.delete("cf-connecting-ip");
+  h.delete("x-forwarded-for");
+  h.delete("forwarded");
+
+  return fetch(new Request(upstreamUrl.toString(), {
+    method: request.method,
+    headers: h,
+    body: isGetLike ? undefined : request.body,
+    redirect: "manual",
+  }));
 }
 
-function getCacheTtl(pathname) {
-  return pathname.startsWith('/blog/') ? 300 : 3600;
-}
-
+// =====================================================================
+// Main Worker
+// =====================================================================
 export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const pathname = url.pathname;
+  async fetch(request, env) {
+    try { return await handleRequest(request, env); }
+    catch (err) { return new Response(err?.stack || String(err), { status: 500 }); }
+  },
+};
 
-    // 0. Intercept /sitemap.xml → serve from edge function (dynamic, correct Content-Type)
-    if (pathname === '/sitemap.xml') {
-      try {
-        const sitemapUrl = `${env.SUPABASE_URL}/functions/v1/generate-sitemap`;
-        const sitemapResponse = await fetch(sitemapUrl, {
-          headers: {
-            'apikey': env.SUPABASE_ANON_KEY,
-          },
-        });
+async function handleRequest(request, env) {
+  const url = new URL(request.url);
+  const userAgent = (request.headers.get("User-Agent") || "");
+  const isBotReq = isBot(userAgent);
+  const isGetLike = request.method === "GET" || request.method === "HEAD";
+  const xPrerender = request.headers.get("X-Prerender");
 
-        if (sitemapResponse.ok) {
-          const xml = await sitemapResponse.text();
-          return new Response(xml, {
-            status: 200,
-            headers: {
-              'Content-Type': 'application/xml; charset=utf-8',
-              'Cache-Control': 'public, max-age=3600',
-              'X-Source': 'edge-function',
-            },
-          });
-        }
-        // fallback to origin if edge function fails
-        console.error(`Sitemap edge function failed: ${sitemapResponse.status}`);
-        return fetch(request);
-      } catch (err) {
-        console.error('Sitemap proxy error:', err);
-        return fetch(request);
+  // ── Sitemap proxy ──────────────────────────────────────────────────
+  if (url.pathname === '/sitemap.xml') {
+    const sitemapResp = await fetch(SITEMAP_EDGE_FN, {
+      headers: {
+        "apikey": env.SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${env.SUPABASE_ANON_KEY}`,
       }
     });
     const xml = await sitemapResp.text();
@@ -357,21 +336,21 @@ export default {
     });
   }
 
-  // ── IndexNow verification ─────────────────────────────────────────────
+  // ── IndexNow verification ─────────────────────────────────────────
   if (url.pathname === '/zr9ub5nwpbrj74k31fttyeva7qu332fx.txt') {
     return new Response('zr9ub5nwpbrj74k31fttyeva7qu332fx', {
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
     });
   }
 
-  // ── SEO Debug endpoint — verify Worker is deployed and meta tags work ──
+  // ── SEO Debug endpoint ────────────────────────────────────────────
   if (url.pathname === '/__seo-debug') {
     const testPath = url.searchParams.get('path') || '/venta-empresas';
     const p = testPath.replace(/\/+$/, '') || '/';
     const meta = ROUTES[p];
     const hl = HREFLANGS[p];
     return new Response(JSON.stringify({
-      worker_version: '3.0-server-rendered',
+      worker_version: '4.0-prerender-io',
       deployed: true,
       test_path: p,
       route_found: !!meta,
@@ -380,55 +359,68 @@ export default {
       hreflang: hl || null,
       lang: detectLang(p),
       total_routes: Object.keys(ROUTES).length,
+      prerender_enabled: true,
     }, null, 2), {
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
     });
   }
 
-  // ── Bots → Server-generated HTML with correct SEO meta tags ──────────
-  // No external fetches. No HTMLRewriter. Pure HTML string generation.
-  // This eliminates Lovable/Prerender.io as points of failure.
-  if (isGetLike && isBotReq && !isIgnoredExtension(url.pathname)) {
-    const html = generateBotHtml(url.pathname);
-    return new Response(html, {
+  // ── Bots → Prerender.io (with fallback to generated HTML) ─────────
+  // Prerender.io renders the full SPA with headless Chrome, so bots
+  // get the complete page with React-rendered content, meta tags, etc.
+  // X-Prerender header check prevents infinite loops (Prerender.io
+  // sets this header when fetching the original page).
+  if (isGetLike && isBotReq && !xPrerender && !isIgnoredExtension(url.pathname)) {
+    try {
+      // Request fully-rendered HTML from Prerender.io
+      const prerenderResp = await fetchFromPrerender(request.url, request.headers);
+
+      // If Prerender.io returns a valid response, use it
+      if (prerenderResp.ok) {
+        const html = await prerenderResp.text();
+        return new Response(html, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, max-age=3600',
+            'X-Robots-Tag': 'index, follow',
+            'X-Prerender-Source': 'prerender.io',
+          },
+        });
+      }
+
+      // Prerender.io returned an error — fall back to generated HTML
+      console.log(`Prerender.io returned ${prerenderResp.status} for ${url.pathname}, using fallback`);
+    } catch (err) {
+      // Prerender.io is unreachable — fall back to generated HTML
+      console.log(`Prerender.io fetch failed for ${url.pathname}: ${err.message}`);
+    }
+
+    // Fallback: serve generated HTML with correct meta tags
+    const fallbackHtml = generateFallbackHtml(url.pathname);
+    return new Response(fallbackHtml, {
       status: 200,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, max-age=3600',
         'X-Robots-Tag': 'index, follow',
+        'X-Prerender-Source': 'fallback',
       },
     });
   }
 
-  // ── Usuarios normales → Lovable ───────────────────────────────────────
+  // ── Normal users → Lovable upstream ───────────────────────────────
   const resp = await fetchFromLovable(request, url, isGetLike);
 
   if (isRedirect(resp.status)) {
     const upstreamBase = new URL(LOVABLE_UPSTREAM);
-    const loc    = resp.headers.get("Location") || "";
-    let newLoc   = loc.replaceAll(upstreamBase.hostname, PUBLIC_HOST);
-    newLoc       = newLoc.replace(/^http:\/\//i, "https://");
+    const loc = resp.headers.get("Location") || "";
+    let newLoc = loc.replaceAll(upstreamBase.hostname, PUBLIC_HOST);
+    newLoc = newLoc.replace(/^http:\/\//i, "https://");
     const newHeaders = new Headers(resp.headers);
     if (loc) newHeaders.set("Location", newLoc);
     return new Response(resp.body, { status: resp.status, headers: newHeaders });
   }
 
   return resp;
-}
-
-// ── Fetch from Lovable upstream ──────────────────────────────────────
-function fetchFromLovable(request, url, isGetLike) {
-  const upstreamBase = new URL(LOVABLE_UPSTREAM);
-  const upstreamUrl  = new URL(url.href);
-  upstreamUrl.protocol = upstreamBase.protocol;
-  upstreamUrl.hostname = upstreamBase.hostname;
-
-    // 4. Bot detected — check cache first
-    const cacheKey = new URL(url.origin + pathname);
-    const cache = caches.default;
-
-  return fetch(new Request(upstreamUrl.toString(), {
-    method: request.method, headers: h,
-    body: isGetLike ? undefined : request.body, redirect: "manual",
-  }));
 }
