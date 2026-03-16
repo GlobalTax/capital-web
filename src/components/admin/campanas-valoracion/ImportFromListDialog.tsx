@@ -24,7 +24,7 @@ export function ImportFromListDialog({ open, onOpenChange, campaignId, existingC
   const [excludeContacted, setExcludeContacted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState<'choose' | 'dedup'>('choose');
-  const [dedupResult, setDedupResult] = useState<{\
+  const [dedupResult, setDedupResult] = useState<{
     newCompanies: any[];
     existingInTarget: any[];
     contactedInOther: { company: any; campaigns: string[] }[];
