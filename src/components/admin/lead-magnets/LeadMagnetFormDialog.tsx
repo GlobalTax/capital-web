@@ -249,33 +249,12 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
           </div>
 
           {/* Image Upload */}
-          <div className="grid gap-2">
-            <Label>Imagen destacada</Label>
-            <input
-              type="file"
-              ref={imageInputRef}
-              accept="image/*"
-              className="hidden"
-              onChange={e => {
-                const f = e.target.files?.[0];
-                if (f) handleFileUpload(f, 'images', setImageUrl);
-              }}
-            />
-            <div className="flex items-center gap-3">
-              <Button type="button" variant="outline" size="sm" onClick={() => imageInputRef.current?.click()} disabled={uploading}>
-                {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Image className="h-4 w-4 mr-1" />}
-                {imageUrl ? 'Cambiar imagen' : 'Subir imagen'}
-              </Button>
-              {imageUrl && (
-                <div className="relative">
-                  <img src={imageUrl} alt="Preview" className="h-16 w-24 object-cover rounded border" />
-                  <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-5 w-5 bg-background border rounded-full" onClick={() => setImageUrl('')}>
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          <ImageUploadField
+            label="Imagen destacada"
+            value={imageUrl || undefined}
+            onChange={(url) => setImageUrl(url || '')}
+            folder="lead-magnets/images"
+          />
 
           {/* SEO */}
           <div className="border-t pt-4 mt-2">
