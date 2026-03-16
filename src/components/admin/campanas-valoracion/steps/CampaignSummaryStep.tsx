@@ -226,6 +226,10 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const [filterEstado, setFilterEstado] = useState<string | null>(null);
   const [filterEntrega, setFilterEntrega] = useState<string | null>(null);
   const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -262,16 +266,25 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
       result = result.filter(c => (c.seguimiento_estado || 'sin_respuesta') === filterSeguimiento);
     }
 
-    return result;
-  }, [companies, searchQuery, filterEstado, filterEntrega, filterSeguimiento, emailTrackingMap]);
+    // Financial filters
+    result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
+    result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
+    result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
 
-  const hasActiveFilters = !!searchQuery || !!filterEstado || !!filterEntrega || !!filterSeguimiento;
+    return applySortToList(result, sort);
+  }, [companies, searchQuery, filterEstado, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, filterValuation, emailTrackingMap, sort]);
+
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
+  const hasActiveFilters = !!searchQuery || !!filterEstado || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
 
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
     setFilterEstado(null);
     setFilterEntrega(null);
     setFilterSeguimiento(null);
+    setFilterRevenue({ min: null, max: null });
+    setFilterEbitda({ min: null, max: null });
+    setFilterValuation({ min: null, max: null });
   }, []);
 
   const sentCount = companies.filter(c => c.status === 'sent').length;
