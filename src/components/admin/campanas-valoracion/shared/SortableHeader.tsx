@@ -15,7 +15,7 @@ export function toggleSort(current: SortState, field: 'revenue' | 'ebitda' | 'va
   return { field: null, direction: null };
 }
 
-export function applySortToList<T extends { revenue?: number | null; ebitda?: number | null }>(
+export function applySortToList<T extends { revenue?: number | null; ebitda?: number | null; valuation_central?: number | null }>(
   list: T[],
   sort: SortState
 ): T[] {
