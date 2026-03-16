@@ -1,52 +1,44 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Eliminar emails hardcodeados y usar solo `email_recipients_config`
 
-### Cambios realizados
+### Problema
+Hay **listas de emails hardcodeadas** en 3 Edge Functions que se mezclan con (o ignoran) la tabla `email_recipients_config`. Cambiar destinatarios en el panel de admin no tiene efecto real porque el código siempre añade los emails fijos.
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Funciones afectadas y sus emails hardcodeados
 
-### Resultado
+1. **`send-form-notifications/index.ts`** (líneas 25-33):
+   - `ADMIN_EMAILS` hardcodeado con 7 personas
+   - Se **merge** con los dinámicos: `[...ADMIN_EMAILS, ...dynamicEmails]` → los hardcoded siempre reciben
+   - `CONFIRMATION_BCC_BASE` (líneas 1401-1404): samuel, lluis, oriol hardcodeados en BCC
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+2. **`send-valuation-email/index.ts`** (líneas 517-525):
+   - `internalRecipients` hardcodeado con 7 personas
+   - **No consulta** `email_recipients_config` en absoluto
 
----
+3. **`send-professional-valuation-email/index.ts`** (líneas 129-135):
+   - `DEFAULT_INTERNAL_TEAM` con 5 personas como fallback
+   - Sí consulta la tabla, pero usa el fallback si falla → correcto, pero el fallback está desactualizado
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+### Solución
 
-### Cambios realizados
+**Principio**: Todas las funciones deben obtener destinatarios **exclusivamente** de `email_recipients_config`. Solo mantener un fallback mínimo (samuel@capittal.es) por si la DB falla.
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+#### Cambios por función:
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+**1. `send-form-notifications/index.ts`**
+- Eliminar `ADMIN_EMAILS` hardcodeado
+- Cambiar línea 1366 de merge a solo dinámicos: `const allAdminEmails = dynamicEmails.length > 0 ? dynamicEmails : ['samuel@capittal.es']`
+- Cambiar `CONFIRMATION_BCC_BASE` a solo `['samuel@capittal.es']` como fallback mínimo, y usar `dynamicBccEmails` como fuente principal
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+**2. `send-valuation-email/index.ts`**
+- Reemplazar `internalRecipients` hardcodeado por una consulta a `email_recipients_config` (is_active + is_default_copy)
+- Fallback a `['samuel@capittal.es']` si la consulta falla
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+**3. `send-professional-valuation-email/index.ts`**
+- Reducir `DEFAULT_INTERNAL_TEAM` a solo `['samuel@capittal.es']` como fallback de emergencia
+- La lógica de consulta ya existe y es correcta
 
 ### Resultado
+Después de estos cambios, solo necesitarás ir a `/admin/configuracion/destinatarios-email` para añadir/quitar personas y los cambios se aplicarán inmediatamente en todos los flujos de email.
 
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
