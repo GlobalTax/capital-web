@@ -78,9 +78,34 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
 function parseSpanishNumber(val: any): number | null {
   if (val == null || val === '') return null;
   if (typeof val === 'number') return val;
-  const str = String(val).trim().replace(/[€$%\s]/g, '');
-  const parsed = parseFloat(str.replace(/\./g, '').replace(',', '.'));
-  return isNaN(parsed) ? null : parsed;
+
+  // Strip currency symbols, comparison operators, whitespace
+  let str = String(val).trim().replace(/[€$£¥%>\<~\s]/g, '');
+  if (!str) return null;
+
+  // Detect magnitude suffix (K, M, B) before cleaning
+  let multiplier = 1;
+  const upper = str.toUpperCase();
+  if (upper.endsWith('B')) { multiplier = 1_000_000_000; str = str.slice(0, -1); }
+  else if (upper.endsWith('M')) { multiplier = 1_000_000; str = str.slice(0, -1); }
+  else if (upper.endsWith('K')) { multiplier = 1_000; str = str.slice(0, -1); }
+
+  if (!str) return null;
+
+  // Detect locale: if last separator is comma, treat comma as decimal
+  const lastComma = str.lastIndexOf(',');
+  const lastDot = str.lastIndexOf('.');
+
+  if (lastComma > lastDot) {
+    // Spanish: 1.234,56 → remove dots, replace comma with dot
+    str = str.replace(/\./g, '').replace(',', '.');
+  } else {
+    // Anglo: 1,234.56 → remove commas
+    str = str.replace(/,/g, '');
+  }
+
+  const parsed = parseFloat(str);
+  return isNaN(parsed) ? null : parsed * multiplier;
 }
 
 function mapColumn(normalized: string): string | null {
