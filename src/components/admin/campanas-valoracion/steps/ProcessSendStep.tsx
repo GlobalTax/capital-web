@@ -574,6 +574,16 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
+
+  // Map company_id -> sent_at for date filtering
+  const emailSentAtMap = useMemo(() => {
+    const m = new Map<string, string | null>();
+    for (const e of campaignEmails) {
+      m.set(e.company_id, e.sent_at ?? null);
+    }
+    return m;
+  }, [campaignEmails]);
 
   const toggleSelection = useCallback((id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]),
