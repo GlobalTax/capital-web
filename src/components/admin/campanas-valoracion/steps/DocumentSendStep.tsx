@@ -318,14 +318,17 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
               <Building2 className="h-5 w-5" />
               Empresas ({filteredCompanies.length})
             </CardTitle>
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-8 text-sm"
-              />
+            <div className="flex items-center gap-2">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8 text-sm"
+                />
+              </div>
+              <DateRangeFilter label="Fecha envío" value={filterSentDate} onChange={setFilterSentDate} />
             </div>
           </div>
         </CardHeader>
