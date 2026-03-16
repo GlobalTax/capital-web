@@ -133,6 +133,13 @@ export const useLeadMagnetDownloads = () => {
     try {
       const leadMagnetId = await resolveLeadMagnetId(idOrSlug);
 
+      // Fetch lead magnet details for email notification
+      const { data: magnetData } = await supabase
+        .from('lead_magnets')
+        .select('title, file_url')
+        .eq('id', leadMagnetId)
+        .single();
+
       const { error } = await supabase
         .from('lead_magnet_downloads')
         .insert([{
@@ -151,6 +158,31 @@ export const useLeadMagnetDownloads = () => {
       }
 
       console.log(`[${timestamp}] Lead magnet download recorded successfully`);
+
+      // Send email notifications (team + user confirmation)
+      try {
+        await supabase.functions.invoke('send-form-notifications', {
+          body: {
+            formType: 'lead_magnet_download',
+            email: formData.user_email,
+            fullName: formData.user_name || formData.user_email,
+            formData: {
+              fullName: formData.user_name || formData.user_email,
+              email: formData.user_email,
+              user_company: formData.user_company,
+              user_phone: formData.user_phone,
+              lead_magnet_id: leadMagnetId,
+              lead_magnet_title: magnetData?.title || 'Recurso',
+              file_url: magnetData?.file_url || '',
+              referrer: typeof window !== 'undefined' ? window.location.href : null,
+            }
+          }
+        });
+        console.log(`[${timestamp}] Email notifications sent for lead magnet download`);
+      } catch (emailError) {
+        // Don't fail the download if email fails
+        console.error('Error sending download notification emails:', emailError);
+      }
     } catch (error) {
       console.error('Error in lead magnet download:', error);
       throw error;

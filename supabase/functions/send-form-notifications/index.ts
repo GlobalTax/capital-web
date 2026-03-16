@@ -633,6 +633,52 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
       };
     }
 
+    case 'lead_magnet_download': {
+      const resourceTitle = data.lead_magnet_title || 'el recurso solicitado';
+      const downloadUrl = data.file_url || '';
+      
+      const contentHtml = `
+        <div style="margin-bottom: 24px;">
+          <p style="margin: 0; color: #0f172a; font-size: 16px;">
+            Hola <strong>${data.fullName || 'Usuario'}</strong>,
+          </p>
+          <p style="margin: 12px 0 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Gracias por descargar <strong>${resourceTitle}</strong>. Esperamos que este recurso te sea de gran utilidad para la toma de decisiones estratégicas de tu empresa.
+          </p>
+        </div>
+
+        ${downloadUrl ? `
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="${downloadUrl}" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+            📥 Descargar recurso
+          </a>
+          <p style="margin: 8px 0 0; color: #94a3b8; font-size: 12px;">Si el botón no funciona, copia este enlace en tu navegador:<br><a href="${downloadUrl}" style="color: #2563eb; font-size: 11px; word-break: break-all;">${downloadUrl}</a></p>
+        </div>
+        ` : ''}
+
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6; margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px;">
+            ¿Quieres conocer el valor de tu empresa?
+          </h3>
+          <p style="margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.6;">
+            Utiliza nuestra calculadora gratuita de valoración y obtén una estimación en minutos.
+          </p>
+          <a href="https://capittal.es/lp/calculadora" style="display: inline-block; background: #2563eb; color: #ffffff; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">
+            Calcular valoración →
+          </a>
+        </div>
+      `;
+
+      return {
+        subject: `Tu descarga: ${resourceTitle} - Capittal`,
+        html: getUserEmailBaseHtml(
+          'Tu Recurso Está Listo',
+          resourceTitle,
+          contentHtml
+        )
+      };
+    }
+
     default:
       return {
         subject: `✅ Hemos recibido tu información - Capittal`,
@@ -756,21 +802,24 @@ const getEmailTemplate = (formType: string, data: any) => {
         ${getContactDataSection({ ...data, fullName: data.fullName, company: data.user_company, phone: data.user_phone })}
         <div style="margin-bottom: 24px;">
           <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
-            📥 Lead Magnet
+            📥 Recurso Descargado
           </h3>
-          <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 500;">ID: ${data.lead_magnet_id}</span>
+          <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0 0 4px; color: #0f172a; font-size: 16px; font-weight: 600;">${data.lead_magnet_title || 'Recurso'}</p>
+            <p style="margin: 0; color: #92400e; font-size: 12px;">ID: ${data.lead_magnet_id}</p>
+          </div>
         </div>
       `;
       
       return {
-        subject: `Nueva descarga Lead Magnet – ${data.fullName} – Capittal`,
+        subject: `📥 Nueva descarga: ${data.lead_magnet_title || 'Recurso'} – ${data.fullName} – Capittal`,
         html: getAdminEmailBaseHtml(
-          'Nueva Descarga de Lead Magnet',
-          'Lead Magnet',
+          'Nueva Descarga de Recurso',
+          data.lead_magnet_title || 'Lead Magnet',
           contentHtml,
           'Lead Magnet',
-          data._crmLink || 'https://capittal.es/admin/crm',
-          'Ver en CRM',
+          'https://capittal.es/admin/lead-magnets',
+          'Ver Recursos',
           utmData
         )
       };

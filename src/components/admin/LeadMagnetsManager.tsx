@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useLeadMagnets } from '@/hooks/useLeadMagnets';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import LeadMagnetFormDialog from './lead-magnets/LeadMagnetFormDialog';
 import type { LeadMagnet } from '@/types/leadMagnets';
 
@@ -20,8 +21,39 @@ const LeadMagnetsManager = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMagnet, setEditingMagnet] = useState<LeadMagnet | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<LeadMagnet | null>(null);
+  const [downloadsPage, setDownloadsPage] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const DOWNLOADS_PER_PAGE = 20;
+
+  // Fetch recent downloads
+  const { data: downloadsData } = useQuery({
+    queryKey: ['lead_magnet_downloads', downloadsPage],
+    queryFn: async () => {
+      const from = downloadsPage * DOWNLOADS_PER_PAGE;
+      const to = from + DOWNLOADS_PER_PAGE - 1;
+
+      const { data, error, count } = await supabase
+        .from('lead_magnet_downloads')
+        .select('id, user_email, user_name, user_company, user_phone, created_at, lead_magnet_id', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+      return { downloads: data || [], total: count || 0 };
+    }
+  });
+
+  const downloads = downloadsData?.downloads || [];
+  const totalDownloads = downloadsData?.total || 0;
+  const totalPages = Math.ceil(totalDownloads / DOWNLOADS_PER_PAGE);
+
+  // Map lead magnet IDs to titles
+  const getMagnetTitle = (id: string) => {
+    const magnet = leadMagnets.find(m => m.id === id);
+    return magnet?.title || id.substring(0, 8) + '...';
+  };
 
   const filteredLeadMagnets = leadMagnets.filter(magnet =>
     magnet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -238,6 +270,75 @@ const LeadMagnetsManager = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Downloads Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Descargas Recientes
+          </CardTitle>
+          <CardDescription>
+            {totalDownloads} descarga{totalDownloads !== 1 ? 's' : ''} registrada{totalDownloads !== 1 ? 's' : ''}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {downloads.length > 0 ? (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Recurso</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Empresa</TableHead>
+                    <TableHead>Teléfono</TableHead>
+                    <TableHead>Fecha</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {downloads.map((d) => (
+                    <TableRow key={d.id}>
+                      <TableCell className="font-medium max-w-[200px] truncate">
+                        {getMagnetTitle(d.lead_magnet_id)}
+                      </TableCell>
+                      <TableCell>{d.user_name || '-'}</TableCell>
+                      <TableCell>
+                        <a href={`mailto:${d.user_email}`} className="text-primary hover:underline">
+                          {d.user_email}
+                        </a>
+                      </TableCell>
+                      <TableCell>{d.user_company || '-'}</TableCell>
+                      <TableCell>{d.user_phone || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
+                        {new Date(d.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Página {downloadsPage + 1} de {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" disabled={downloadsPage === 0} onClick={() => setDownloadsPage(p => p - 1)}>
+                      Anterior
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={downloadsPage >= totalPages - 1} onClick={() => setDownloadsPage(p => p + 1)}>
+                      Siguiente
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">No hay descargas registradas aún.</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Form Dialog */}
       <LeadMagnetFormDialog open={dialogOpen} onOpenChange={setDialogOpen} editingMagnet={editingMagnet} />
