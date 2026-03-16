@@ -93,6 +93,25 @@ export default function CampanasValoracion() {
     enabled: campaignIds.length > 0,
   });
 
+  // Fetch source list names
+  const sourceListIds = campaigns.filter(c => (c as any).source_list_id).map(c => (c as any).source_list_id as string);
+  const { data: sourceListNames } = useQuery({
+    queryKey: ['source-list-names', sourceListIds.join(',')],
+    queryFn: async () => {
+      if (sourceListIds.length === 0) return {} as Record<string, string>;
+      const unique = [...new Set(sourceListIds)];
+      const { data, error } = await (supabase as any)
+        .from('outbound_lists')
+        .select('id, name')
+        .in('id', unique);
+      if (error) return {} as Record<string, string>;
+      const map: Record<string, string> = {};
+      for (const l of (data || [])) map[l.id] = l.name;
+      return map;
+    },
+    enabled: sourceListIds.length > 0,
+  });
+
   const getStageLabel = (campaignId: string): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
     const stage = stageData?.[campaignId];
     if (!stage || stage.emailsSent === 0) return { label: 'Borrador', variant: 'secondary' };
