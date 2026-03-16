@@ -234,16 +234,33 @@ export const useContactListCompanies = (listId: string | undefined) => {
 
   const addCompanies = useMutation({
     mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }) => {
-      const BATCH_SIZE = 100;
+      const BATCH_SIZE = 25;
       const total = rows.length;
+      let inserted = 0;
       for (let i = 0; i < total; i += BATCH_SIZE) {
         const batch = rows.slice(i, i + BATCH_SIZE);
         const { error } = await supabase.from(TB_COMPANIES).insert(batch);
-        if (error) throw new Error(`Error en lote ${Math.floor(i / BATCH_SIZE) + 1}: ${error.message}. Se insertaron ${i} de ${total} filas.`);
-        onProgress?.(Math.min(i + BATCH_SIZE, total), total);
+        if (error) {
+          // Retry once with smaller sub-batches of 5
+          let subOk = 0;
+          for (let j = 0; j < batch.length; j += 5) {
+            const sub = batch.slice(j, j + 5);
+            const { error: subErr } = await supabase.from(TB_COMPANIES).insert(sub);
+            if (subErr) {
+              console.error(`[Import] Sub-batch error at row ${i + j}:`, subErr.message);
+            } else {
+              subOk += sub.length;
+            }
+          }
+          inserted += subOk;
+          if (subOk === 0) throw new Error(`Error en lote ${Math.floor(i / BATCH_SIZE) + 1}: ${error.message}. Se insertaron ${inserted} de ${total} filas.`);
+        } else {
+          inserted += batch.length;
+        }
+        onProgress?.(inserted, total);
       }
     },
-    onSuccess: () => { invalidate(); toast.success('Empresas añadidas'); },
+    onSuccess: () => { invalidate(); toast.success('Empresas importadas correctamente'); },
     onError: (e: Error) => toast.error('Error en importación', { description: e.message }),
   });
 
