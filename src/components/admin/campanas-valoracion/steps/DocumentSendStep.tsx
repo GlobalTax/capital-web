@@ -427,6 +427,17 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                 />
               </div>
               <DateRangeFilter label="Fecha envío" value={filterSentDate} onChange={setFilterSentDate} />
+              <Select value={filterSeguimiento || 'all'} onValueChange={(v) => setFilterSeguimiento(v === 'all' ? null : v)}>
+                <SelectTrigger className="h-8 w-[150px] text-xs">
+                  <SelectValue placeholder="Seguimiento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo seguimiento</SelectItem>
+                  {SEGUIMIENTO_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-xs">{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
