@@ -1323,32 +1323,51 @@ export default function ContactListDetailPage() {
                                 <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-background">
-                                <DropdownMenuItem onClick={() => setEditingCompany(company)}>
-                                  <Edit className="h-4 w-4 mr-2" /> Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
-                                  <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
-                                  <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
-                                  {aiGenLoading === company.id ? (
-                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
-                                  ) : (
-                                    <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
-                                  )}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onClick={() => deleteCompany.mutate(company.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                                </DropdownMenuItem>
+                                {isAssignedToSublist ? (
+                                  <>
+                                    {(() => {
+                                      const sublistNames = sublistCompanyMap?.map.get(company.cif!.toUpperCase().trim());
+                                      const targetSublist = allLists.find((l: any) => sublistNames?.includes(l.name));
+                                      return (
+                                        <DropdownMenuItem onClick={() => {
+                                          if (targetSublist) navigate(`/admin/empresas/${(targetSublist as any).id}`);
+                                        }}>
+                                          <MoveRight className="h-4 w-4 mr-2" /> Ver en sublista
+                                        </DropdownMenuItem>
+                                      );
+                                    })()}
+                                  </>
+                                ) : (
+                                  <>
+                                    <DropdownMenuItem onClick={() => setEditingCompany(company)}>
+                                      <Edit className="h-4 w-4 mr-2" /> Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                      <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
+                                      <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
+                                      {aiGenLoading === company.id ? (
+                                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+                                      ) : (
+                                        <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
+                                      )}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => deleteCompany.mutate(company.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
                         </TableRow>
+                        );
                       ))}
                     </TableBody>
                   </Table>
