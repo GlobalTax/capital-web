@@ -124,6 +124,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
+  const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
 
   const emailMap = useMemo(() => {
     const map = new Map<string, typeof emails[0]>();
@@ -145,14 +146,20 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
         const email = emailMap.get(c.id);
         if (!matchesDateRange(email?.sent_at ?? null, filterSentDate)) return false;
       }
+      if (filterSeguimiento) {
+        const estado = c.seguimiento_estado || 'sin_respuesta';
+        if (estado !== filterSeguimiento) return false;
+      }
       return true;
     });
-  }, [companies, searchQuery, filterSentDate, emailMap]);
+  }, [companies, searchQuery, filterSentDate, emailMap, filterSeguimiento]);
 
   const pendingEmails = emails.filter(e => e.status === 'pending');
   const sentEmails = emails.filter(e => e.status === 'sent');
   const errorEmails = emails.filter(e => e.status === 'error');
   const openedEmails = emails.filter(e => e.email_opened === true);
+  const interesados = companies.filter(c => c.seguimiento_estado === 'interesado');
+  const reuniones = companies.filter(c => c.seguimiento_estado === 'reunion_agendada');
 
   const resetAndResend = async (emailId: string) => {
     setSendingId(emailId);
