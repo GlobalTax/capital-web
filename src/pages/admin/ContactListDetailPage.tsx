@@ -1668,14 +1668,22 @@ export default function ContactListDetailPage() {
           <DialogHeader><DialogTitle>Importar desde Excel</DialogTitle></DialogHeader>
           {importData.length === 0 ? (
             <div className="space-y-3">
-              <div {...getRootProps()} className={cn(
-                'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
-                isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-              )}>
-                <input {...getInputProps()} />
-                <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
-              </div>
+              {isReadingFile ? (
+                <div className="border-2 border-dashed border-primary/30 rounded-lg p-12 text-center bg-primary/5">
+                  <Loader2 className="h-10 w-10 text-primary mx-auto mb-3 animate-spin" />
+                  <p className="text-foreground font-medium">Leyendo archivo Excel...</p>
+                  <p className="text-muted-foreground text-sm mt-1">Esto puede tardar unos segundos</p>
+                </div>
+              ) : (
+                <div {...getRootProps()} className={cn(
+                  'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
+                  isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                )}>
+                  <input {...getInputProps()} />
+                  <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
+                </div>
+              )}
               <Button variant="link" size="sm" className="text-xs" onClick={downloadTemplate}>
                 <FileSpreadsheet className="h-3.5 w-3.5 mr-1" /> Descargar plantilla con las cabeceras correctas
               </Button>
