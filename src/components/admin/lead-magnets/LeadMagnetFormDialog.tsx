@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, FileText, Image, Loader2, X } from 'lucide-react';
+import { Upload, FileText, Loader2, X } from 'lucide-react';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 import { useLeadMagnets } from '@/hooks/useLeadMagnets';
 import { useToast } from '@/hooks/use-toast';
 import type { LeadMagnet } from '@/types/leadMagnets';
@@ -56,7 +57,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
   const [slugManual, setSlugManual] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     if (editingMagnet) {
@@ -248,33 +249,12 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
           </div>
 
           {/* Image Upload */}
-          <div className="grid gap-2">
-            <Label>Imagen destacada</Label>
-            <input
-              type="file"
-              ref={imageInputRef}
-              accept="image/*"
-              className="hidden"
-              onChange={e => {
-                const f = e.target.files?.[0];
-                if (f) handleFileUpload(f, 'images', setImageUrl);
-              }}
-            />
-            <div className="flex items-center gap-3">
-              <Button type="button" variant="outline" size="sm" onClick={() => imageInputRef.current?.click()} disabled={uploading}>
-                {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Image className="h-4 w-4 mr-1" />}
-                {imageUrl ? 'Cambiar imagen' : 'Subir imagen'}
-              </Button>
-              {imageUrl && (
-                <div className="relative">
-                  <img src={imageUrl} alt="Preview" className="h-16 w-24 object-cover rounded border" />
-                  <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-5 w-5 bg-background border rounded-full" onClick={() => setImageUrl('')}>
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          <ImageUploadField
+            label="Imagen destacada"
+            value={imageUrl || undefined}
+            onChange={(url) => setImageUrl(url || '')}
+            folder="lead-magnets/images"
+          />
 
           {/* SEO */}
           <div className="border-t pt-4 mt-2">
