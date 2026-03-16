@@ -1398,7 +1398,7 @@ const handler = async (req: Request): Promise<Response> => {
           : "Capittal <info@capittal.es>",
         to: [email],
         bcc: CONFIRMATION_BCC_EMAILS, // Copia oculta al equipo interno
-        cc: isCampaignValuation ? ["lluis@capittal.es"] : undefined,
+        cc: undefined, // CC gestionado desde email_recipients_config
         reply_to: isCampaignValuation ? "samuel@capittal.es" : undefined,
         subject: userTemplate.subject,
         html: userTemplate.html,
