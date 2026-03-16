@@ -4,18 +4,33 @@ import { collaboratorsTranslations } from './collaborators-translations';
 // Helper function to get localized URL
 export function getLocalizedUrl(page: string, lang: 'es' | 'ca' | 'en'): string {
   const urlMap: Record<string, Record<string, string>> = {
-    home: { es: '/', ca: '/inici', en: '/' },
+    home: { es: '/', ca: '/ca', en: '/en' },
     ventaEmpresas: { es: '/venta-empresas', ca: '/venda-empreses', en: '/sell-companies' },
-    compraEmpresas: { es: '/compra-empresas', ca: '/compra-empreses', en: '/buy-companies' },
+    compraEmpresas: { es: '/compra-empresas', ca: '/compra-empresas', en: '/buy-companies' },
     contacto: { es: '/contacto', ca: '/contacte', en: '/contact' },
     casosExito: { es: '/casos-exito', ca: '/casos-exit', en: '/success-stories' },
     porQueElegirnos: { es: '/por-que-elegirnos', ca: '/per-que-triar-nos', en: '/why-choose-us' },
-    equipo: { es: '/equipo', ca: '/equip', en: '/team' },
-    programaColaboradores: { es: '/programa-colaboradores', ca: '/programa-col·laboradors', en: '/partners-program' },
+    equipo: { es: '/equipo', ca: '/equip', en: '/equipo' },
+    programaColaboradores: { es: '/programa-colaboradores', ca: '/programa-col-laboradors', en: '/collaborators-program' },
     serviciosValoraciones: { es: '/servicios/valoraciones', ca: '/serveis/valoracions', en: '/services/valuations' },
-    blog: { es: '/blog', ca: '/blog', en: '/blog' },
+    serviciosVentaEmpresas: { es: '/servicios/venta-empresas', ca: '/serveis/venda-empreses', en: '/services/sell-companies' },
+    serviciosDueDiligence: { es: '/servicios/due-diligence', ca: '/serveis/due-diligence', en: '/services/due-diligence' },
+    serviciosAsesoramientoLegal: { es: '/servicios/asesoramiento-legal', ca: '/serveis/assessorament-legal', en: '/services/legal-advisory' },
+    serviciosReestructuraciones: { es: '/servicios/reestructuraciones', ca: '/serveis/reestructuracions', en: '/services/restructuring' },
+    serviciosPlanificacionFiscal: { es: '/servicios/planificacion-fiscal', ca: '/serveis/planificacio-fiscal', en: '/services/tax-planning' },
+    blog: { es: '/recursos/blog', ca: '/recursos/blog', en: '/recursos/blog' },
+    sectorTecnologia: { es: '/sectores/tecnologia', ca: '/sectors/tecnologia', en: '/sectors/technology' },
+    sectorHealthcare: { es: '/sectores/healthcare', ca: '/sectors/salut', en: '/sectors/healthcare' },
+    sectorIndustrial: { es: '/sectores/industrial', ca: '/sectors/industrial', en: '/sectores/industrial' },
+    sectorRetail: { es: '/sectores/retail-consumer', ca: '/sectors/retail-consum', en: '/sectors/retail-consumer' },
+    sectorEnergia: { es: '/sectores/energia', ca: '/sectors/energia', en: '/sectors/energy' },
+    sectorSeguridad: { es: '/sectores/seguridad', ca: '/sectors/seguretat', en: '/sectors/security' },
+    sectorConstruccion: { es: '/sectores/construccion', ca: '/sectors/construccio', en: '/sectores/construccion' },
+    sectorAlimentacion: { es: '/sectores/alimentacion', ca: '/sectors/alimentacio', en: '/sectores/alimentacion' },
+    sectorLogistica: { es: '/sectores/logistica', ca: '/sectors/logistica', en: '/sectores/logistica' },
+    sectorMedioAmbiente: { es: '/sectores/medio-ambiente', ca: '/sectors/medi-ambient', en: '/sectores/medio-ambiente' },
   };
-  return urlMap[page]?.[lang] || '/';
+  return urlMap[page]?.[lang] || urlMap[page]?.es || '/';
 }
 
 // Diccionarios para la calculadora y landing

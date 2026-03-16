@@ -71,17 +71,17 @@ export function Footerdemo() {
                 </Link>
               </li>
               <li>
-                <Link to="/servicios/due-diligence" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('serviciosDueDiligence', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.dueDiligence')}
                 </Link>
               </li>
               <li>
-                <Link to="/servicios/asesoramiento-legal" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('serviciosAsesoramientoLegal', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.asesoramientoLegal')}
                 </Link>
               </li>
               <li>
-                <Link to="/servicios/reestructuraciones" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('serviciosReestructuraciones', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.reestructuraciones')}
                 </Link>
               </li>
@@ -98,52 +98,52 @@ export function Footerdemo() {
             <h3 className="text-sm font-semibold mb-4 text-white">{t('footer.section.sectors')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/sectores/industrial" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorIndustrial', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.industrial')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/healthcare" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorHealthcare', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.healthcare')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/construccion" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorConstruccion', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.construccion')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/seguridad" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorSeguridad', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.seguridad')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/medio-ambiente" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorMedioAmbiente', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.medioAmbiente')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/tecnologia" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorTecnologia', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.tecnologia')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/retail-consumer" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorRetail', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.retail')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/alimentacion" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorAlimentacion', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.alimentacion')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/energia" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorEnergia', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.energia')}
                 </Link>
               </li>
               <li>
-                <Link to="/sectores/logistica" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('sectorLogistica', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.logistica')}
                 </Link>
               </li>
@@ -207,7 +207,7 @@ export function Footerdemo() {
                 </Link>
               </li>
               <li>
-                <Link to="/por-que-elegirnos" className="text-gray-300 hover:text-white transition-colors">
+                <Link to={getLocalizedUrl('porQueElegirnos', lang)} className="text-gray-300 hover:text-white transition-colors">
                   {t('footer.link.porQueElegirnos')}
                 </Link>
               </li>
