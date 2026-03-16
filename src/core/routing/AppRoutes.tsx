@@ -12,44 +12,51 @@ const TrailingSlashRedirect = () => {
   return null;
 };
 
-// === DIRECT IMPORTS — Key landing pages (highest traffic entry points) ===
+// === DIRECT IMPORTS — Public marketing pages (no lazy loading for SEO) ===
 import Index from '@/pages/Index';
 import VentaEmpresas from '@/pages/VentaEmpresas';
 import CompraEmpresas from '@/pages/CompraEmpresas';
 import Contacto from '@/pages/Contacto';
+import ProgramaColaboradores from '@/pages/ProgramaColaboradores';
+import CasosExito from '@/pages/CasosExito';
+import PorQueElegirnos from '@/pages/por-que-elegirnos';
+import DeLooperACapittal from '@/pages/DeLooperACapittal';
+import Equipo from '@/pages/Equipo';
+
+// === SERVICE PAGES (Direct imports) ===
+import Valoraciones from '@/pages/servicios/Valoraciones';
+import VentaEmpresasServicio from '@/pages/servicios/VentaEmpresas';
+import DueDiligence from '@/pages/servicios/DueDiligence';
+import AsesoramientoLegal from '@/pages/servicios/AsesoramientoLegal';
+import AsesoramientoLegalTecnico from '@/pages/servicios/AsesoramientoLegalTecnico';
+import Reestructuraciones from '@/pages/servicios/Reestructuraciones';
+import PlanificacionFiscal from '@/pages/servicios/PlanificacionFiscal';
+import SearchFunds from '@/pages/servicios/SearchFunds';
+
+import GuiaValoracionEmpresas from '@/pages/GuiaValoracionEmpresas';
+
+// === SECTOR PAGES (Direct imports) ===
+import Tecnologia from '@/pages/sectores/Tecnologia';
+import Healthcare from '@/pages/sectores/Healthcare';
+import Industrial from '@/pages/sectores/Industrial';
+import RetailConsumer from '@/pages/sectores/RetailConsumer';
+import Energia from '@/pages/sectores/Energia';
+import Seguridad from '@/pages/sectores/Seguridad';
+import Construccion from '@/pages/sectores/Construccion';
+import Alimentacion from '@/pages/sectores/Alimentacion';
+import Logistica from '@/pages/sectores/Logistica';
+import MedioAmbiente from '@/pages/sectores/MedioAmbiente';
+
+// === RESOURCE PAGES (Direct imports) ===
 import Blog from '@/pages/recursos/Blog';
+import TestExitReady from '@/pages/recursos/TestExitReady';
+import GuiaVenderEmpresa from '@/pages/recursos/GuiaVenderEmpresa';
+import ResourceLibrary from '@/pages/recursos/ResourceLibrary';
+import BlogPost from '@/pages/blog/BlogPost';
 import LandingCalculator from '@/pages/LandingCalculator';
 
-// === LAZY IMPORTS — Public pages (SEO meta tags handled by prerender-seo.mjs) ===
-const ProgramaColaboradores = lazy(() => import('@/pages/ProgramaColaboradores'));
-const CasosExito = lazy(() => import('@/pages/CasosExito'));
-const PorQueElegirnos = lazy(() => import('@/pages/por-que-elegirnos'));
-const DeLooperACapittal = lazy(() => import('@/pages/DeLooperACapittal'));
-const Equipo = lazy(() => import('@/pages/Equipo'));
-const Valoraciones = lazy(() => import('@/pages/servicios/Valoraciones'));
-const VentaEmpresasServicio = lazy(() => import('@/pages/servicios/VentaEmpresas'));
-const DueDiligence = lazy(() => import('@/pages/servicios/DueDiligence'));
-const AsesoramientoLegal = lazy(() => import('@/pages/servicios/AsesoramientoLegal'));
-const AsesoramientoLegalTecnico = lazy(() => import('@/pages/servicios/AsesoramientoLegalTecnico'));
-const Reestructuraciones = lazy(() => import('@/pages/servicios/Reestructuraciones'));
-const PlanificacionFiscal = lazy(() => import('@/pages/servicios/PlanificacionFiscal'));
-const SearchFunds = lazy(() => import('@/pages/servicios/SearchFunds'));
-const GuiaValoracionEmpresas = lazy(() => import('@/pages/GuiaValoracionEmpresas'));
-const Tecnologia = lazy(() => import('@/pages/sectores/Tecnologia'));
-const Healthcare = lazy(() => import('@/pages/sectores/Healthcare'));
-const Industrial = lazy(() => import('@/pages/sectores/Industrial'));
-const RetailConsumer = lazy(() => import('@/pages/sectores/RetailConsumer'));
-const Energia = lazy(() => import('@/pages/sectores/Energia'));
-const Seguridad = lazy(() => import('@/pages/sectores/Seguridad'));
-const Construccion = lazy(() => import('@/pages/sectores/Construccion'));
-const Alimentacion = lazy(() => import('@/pages/sectores/Alimentacion'));
-const Logistica = lazy(() => import('@/pages/sectores/Logistica'));
-const MedioAmbiente = lazy(() => import('@/pages/sectores/MedioAmbiente'));
-const TestExitReady = lazy(() => import('@/pages/recursos/TestExitReady'));
-const GuiaVenderEmpresa = lazy(() => import('@/pages/recursos/GuiaVenderEmpresa'));
-const ResourceLibrary = lazy(() => import('@/pages/recursos/ResourceLibrary'));
-const BlogPost = lazy(() => import('@/pages/blog/BlogPost'));
-const SecurityCalculator = lazy(() => import('@/pages/SecurityCalculator'));
+// === SECURITY CALCULATOR (Direct import) ===
+import SecurityCalculator from '@/pages/SecurityCalculator';
 
 // === LAZY IMPORTS — Authenticated / non-SEO pages ===
 const Admin = lazy(() => import('@/pages/Admin'));

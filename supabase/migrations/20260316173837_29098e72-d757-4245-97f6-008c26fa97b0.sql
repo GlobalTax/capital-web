@@ -1,0 +1,1 @@
+ALTER TABLE valuation_campaigns ADD COLUMN IF NOT EXISTS source_list_id uuid REFERENCES outbound_lists(id) ON DELETE SET NULL;

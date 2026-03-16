@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X, Search, ChevronDown } from 'lucide-react';
+import { Plus, Upload, Trash2, FileSpreadsheet, AlertTriangle, Download, Calendar, Sparkles, Loader2, Pencil, Check, X, Search, ChevronDown, List } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { cn } from '@/lib/utils';
+import { ImportFromListDialog } from '@/components/admin/campanas-valoracion/ImportFromListDialog';
 
 const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
 
@@ -329,6 +330,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 });
   const [enrichLabel, setEnrichLabel] = useState('');
+  const [isImportFromListOpen, setIsImportFromListOpen] = useState(false);
 
   // Derive website from email domain (skip generic providers)
   const domainFromEmail = (email: string): string | null => {
@@ -821,6 +823,11 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
         </Card>
       )}
 
+      {/* Import from list button */}
+      <Button variant="outline" onClick={() => setIsImportFromListOpen(true)} className="w-full">
+        <List className="h-4 w-4 mr-1" />Importar desde lista de contacto
+      </Button>
+
       {/* Manual Entry */}
       <Card>
         <CardHeader><CardTitle className="text-base">Añadir empresa manualmente</CardTitle></CardHeader>
@@ -1197,6 +1204,17 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Import from list dialog */}
+      <ImportFromListDialog
+        open={isImportFromListOpen}
+        onOpenChange={setIsImportFromListOpen}
+        campaignId={campaignId}
+        existingCompanies={companies}
+        onImported={() => {
+          // Refetch companies
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

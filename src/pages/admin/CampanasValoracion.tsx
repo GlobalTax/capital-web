@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft } from 'lucide-react';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft, List } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -91,6 +91,25 @@ export default function CampanasValoracion() {
       return stages;
     },
     enabled: campaignIds.length > 0,
+  });
+
+  // Fetch source list names
+  const sourceListIds = campaigns.filter(c => (c as any).source_list_id).map(c => (c as any).source_list_id as string);
+  const { data: sourceListNames } = useQuery({
+    queryKey: ['source-list-names', sourceListIds.join(',')],
+    queryFn: async () => {
+      if (sourceListIds.length === 0) return {} as Record<string, string>;
+      const unique = [...new Set(sourceListIds)];
+      const { data, error } = await (supabase as any)
+        .from('outbound_lists')
+        .select('id, name')
+        .in('id', unique);
+      if (error) return {} as Record<string, string>;
+      const map: Record<string, string> = {};
+      for (const l of (data || [])) map[l.id] = l.name;
+      return map;
+    },
+    enabled: sourceListIds.length > 0,
   });
 
   const getStageLabel = (campaignId: string): { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } => {
@@ -247,19 +266,34 @@ export default function CampanasValoracion() {
                             </Button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5 group">
-                            <span>{c.name}</span>
-                            <button
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingNameId(c.id);
-                                setEditingNameValue(c.name);
-                              }}
-                              title="Renombrar"
-                            >
-                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                            </button>
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1.5 group">
+                              <span>{c.name}</span>
+                              <button
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingNameId(c.id);
+                                  setEditingNameValue(c.name);
+                                }}
+                                title="Renombrar"
+                              >
+                                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                              </button>
+                            </div>
+                            {(c as any).source_list_id && sourceListNames?.[(c as any).source_list_id] && (
+                              <button
+                                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/admin/listas-contacto/${(c as any).source_list_id}`);
+                                }}
+                                title="Ver lista origen"
+                              >
+                                <List className="h-3 w-3" />
+                                {sourceListNames[(c as any).source_list_id]}
+                              </button>
+                            )}
                           </div>
                         )}
                       </TableCell>

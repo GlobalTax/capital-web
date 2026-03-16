@@ -35,11 +35,12 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List, Megaphone,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { SFFundTagEditor } from '@/components/admin/search-funds/SFFundTagEditor';
+import { SendToCampaignDialog } from '@/components/admin/contact-lists/SendToCampaignDialog';
 import {
   useContactListCompanies,
   useContactListCampaigns,
@@ -308,6 +309,7 @@ export default function ContactListDetailPage() {
   const [isLinkCampaignOpen, setIsLinkCampaignOpen] = useState(false);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
+  const [isSendToCampaignOpen, setIsSendToCampaignOpen] = useState(false);
   const [dedupKeep, setDedupKeep] = useState<'newest' | 'oldest'>('newest');
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
@@ -1141,6 +1143,9 @@ export default function ContactListDetailPage() {
                 <Copy className="h-4 w-4 mr-2" /> {duplicateGroups.length} duplicados
               </Button>
             )}
+            <Button variant="accent" size="sm" onClick={() => setIsSendToCampaignOpen(true)} disabled={companies.length === 0}>
+              <Megaphone className="h-4 w-4 mr-2" /> Enviar a campaña
+            </Button>
           </div>
 
            {/* Bulk actions */}
@@ -1906,6 +1911,14 @@ export default function ContactListDetailPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Send to Campaign Dialog */}
+      <SendToCampaignDialog
+        open={isSendToCampaignOpen}
+        onOpenChange={setIsSendToCampaignOpen}
+        companies={selectedIds.length > 0 ? companies.filter(c => selectedIds.includes(c.id)) : companies}
+        listId={listId!}
+        listName={list?.name || ''}
+      />
     </div>
   );
 }

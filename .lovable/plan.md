@@ -1,95 +1,81 @@
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
+### Cambios realizados
 
-## Plan: Integración directa Lista de Contacto → Campaña Outbound
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-### Contexto actual
-- Las listas de contacto (`outbound_lists` / `outbound_list_companies`) y las campañas outbound (`valuation_campaigns` / `valuation_campaign_companies`) son sistemas independientes.
-- Existe una tabla puente `outbound_list_campaigns` para vincular manualmente lista↔campaña, pero solo registra metadata — no mueve empresas.
-- Las empresas se añaden a campañas vía Excel o manualmente en el paso 2 (CompaniesStep).
-- No hay protección contra enviar emails duplicados a empresas que ya existen en otra campaña.
+### Resultado
 
-### Solución: Botón "Enviar a campaña" con deduplicación
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-#### 1. Migración SQL
-Añadir columna `source_list_id` a `valuation_campaigns` para trazar rápidamente qué lista alimentó cada campaña:
+---
 
-```sql
-ALTER TABLE valuation_campaigns 
-  ADD COLUMN source_list_id uuid REFERENCES outbound_lists(id) ON DELETE SET NULL;
-```
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-#### 2. ContactListDetailPage — Botón "Enviar a campaña Outbound"
-En la toolbar de la lista, añadir un botón que:
-- Abre un diálogo con dos opciones: **Crear nueva campaña** o **Añadir a campaña existente**
-- Muestra las empresas seleccionadas (o todas si no hay selección)
-- **Deduplicación**: Antes de insertar, consulta `valuation_campaign_companies` por `client_cif` en la campaña destino. Muestra un resumen:
-  - X empresas nuevas (se añadirán)
-  - Y empresas ya existentes en la campaña (se omitirán)
-  - Z empresas ya contactadas en OTRAS campañas (aviso, pero permite continuar)
-- Al confirmar: inserta en `valuation_campaign_companies` mapeando campos (`empresa→client_company`, `cif→client_cif`, `email→client_email`, `facturacion→revenue`, `ebitda→ebitda`, etc.)
-- Registra el vínculo en `outbound_list_campaigns`
-- Si crea nueva campaña, setea `source_list_id`
+### Cambios realizados
 
-#### 3. CompaniesStep — Botón "Importar desde lista"
-En el paso 2 de la campaña, añadir un botón que:
-- Abre un selector de listas (`outbound_lists`)
-- Muestra las empresas de la lista seleccionada
-- Aplica la misma deduplicación por CIF contra la campaña actual
-- Inserta las empresas nuevas y registra `source_list_id` si la campaña no tenía uno
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-#### 4. Visibilidad en Campañas — Lista origen
-- **CampanasValoracion.tsx** (listado): Mostrar badge/link con el nombre de la lista origen junto al nombre de la campaña (query join con `outbound_lists` via `source_list_id`)
-- **CampaignConfigStep**: Mostrar la lista origen como info de solo lectura si existe
-- **CampanaValoracionForm header**: Mostrar link a la lista origen
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-#### 5. Deduplicación cross-campaña (protección anti-duplicados)
-En el diálogo de envío, consultar `valuation_campaign_companies` filtrando por los CIFs de las empresas a enviar, agrupando por `campaign_id`. Mostrar aviso tipo:
-> "3 empresas ya fueron contactadas en la campaña 'Sector Industrial Q1'. ¿Deseas incluirlas igualmente?"
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-Con checkbox para excluirlas individualmente.
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-### Archivos a modificar
+### Resultado
 
-| Archivo | Cambio |
-|---------|--------|
-| **Migración SQL** | `source_list_id` en `valuation_campaigns` |
-| `src/hooks/useCampaigns.ts` | Añadir `source_list_id` al tipo `ValuationCampaign` |
-| `src/pages/admin/ContactListDetailPage.tsx` | Botón "Enviar a campaña" + diálogo con deduplicación + mapeo de campos |
-| `src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx` | Botón "Importar desde lista" + selector + deduplicación |
-| `src/pages/admin/CampanasValoracion.tsx` | Mostrar badge con lista origen en el listado |
-| `src/hooks/useContactLists.ts` | Helper para mapear campos lista→campaña |
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
 
-### Mapeo de campos lista → campaña
+---
 
-```text
-outbound_list_companies    →  valuation_campaign_companies
-─────────────────────────     ──────────────────────────────
-empresa                    →  client_company
-contacto                   →  client_name
-email                      →  client_email
-telefono                   →  client_phone
-cif                        →  client_cif
-web                        →  client_website
-provincia                  →  client_provincia
-facturacion                →  revenue
-ebitda                     →  ebitda
-```
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
 
-### Flujo de deduplicación
+### Cambios realizados
 
-```text
-1. Usuario selecciona empresas en lista
-2. Click "Enviar a campaña"
-3. Sistema consulta CIFs en campaña destino → duplicados internos
-4. Sistema consulta CIFs en TODAS las campañas → duplicados cross
-5. Muestra resumen:
-   ┌─────────────────────────────────────────┐
-   │ 45 empresas seleccionadas               │
-   │ ✓ 38 nuevas — se añadirán               │
-   │ ⚠ 4 ya en esta campaña — se omitirán    │
-   │ ⚠ 3 contactadas en otras campañas       │
-   │   □ Excluir contactadas previamente      │
-   └─────────────────────────────────────────┘
-6. Confirmar → insert batch
-```
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
 
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
+
+---
+
+## ✅ Completado: Integración Lista de Contacto → Campaña Outbound
+
+### Cambios realizados
+
+1. **Migración SQL**: Añadida columna `source_list_id` (uuid) a `valuation_campaigns` con FK a `outbound_lists`.
+
+2. **`src/components/admin/contact-lists/SendToCampaignDialog.tsx`** (NUEVO): Diálogo completo para enviar empresas de una lista a una campaña outbound. Incluye:
+   - Selección entre crear nueva campaña o añadir a existente
+   - Deduplicación por CIF contra la campaña destino (omite duplicados)
+   - Deduplicación cross-campaña (aviso de empresas ya contactadas en otras campañas)
+   - Mapeo automático de campos lista → campaña
+   - Inserción en batches de 100
+
+3. **`src/components/admin/campanas-valoracion/ImportFromListDialog.tsx`** (NUEVO): Diálogo para importar empresas desde lista dentro del paso 2 (CompaniesStep) de una campaña. Misma lógica de deduplicación.
+
+4. **`src/pages/admin/ContactListDetailPage.tsx`**: Botón "Enviar a campaña" en la toolbar de acciones de la lista.
+
+5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`**: Botón "Importar desde lista de contacto" antes del formulario manual.
+
+6. **`src/pages/admin/CampanasValoracion.tsx`**: Badge con nombre de lista origen junto al nombre de la campaña (clickable, navega a la lista).
+
+7. **`src/hooks/useCampaigns.ts`**: Añadido `source_list_id` al tipo `ValuationCampaign`.
+
+### Resultado
+
+- Flujo directo lista → campaña con un solo clic
+- Protección anti-duplicados a nivel de campaña y cross-campaña
+- Trazabilidad: cada campaña muestra su lista origen
