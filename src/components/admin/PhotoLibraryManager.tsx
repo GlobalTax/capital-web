@@ -191,7 +191,9 @@ const PhotoLibraryManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">📸 Biblioteca de Fotos</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {photos.length} fotos · {folders.length} carpetas · Arrastra fotos a carpetas para moverlas
+            {totalPhotos > 0 && photos.length < totalPhotos
+              ? `Mostrando ${photos.length} de ${totalPhotos} fotos`
+              : `${photos.length} fotos`} · {folders.length} carpetas · Arrastra fotos a carpetas para moverlas
             {isMoving && <span className="ml-2 text-primary animate-pulse">Moviendo...</span>}
           </p>
         </div>
