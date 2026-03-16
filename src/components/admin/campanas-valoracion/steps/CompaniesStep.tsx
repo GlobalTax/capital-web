@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { cn } from '@/lib/utils';
+import { ImportFromListDialog } from '@/components/admin/campanas-valoracion/ImportFromListDialog';
 
 const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
 
