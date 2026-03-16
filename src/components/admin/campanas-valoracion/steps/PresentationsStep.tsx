@@ -33,7 +33,7 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const [manualAssignments, setManualAssignments] = useState<Record<string, string>>({});
   const [editingAssignment, setEditingAssignment] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [openPopover, setOpenPopover] = useState<Record<string, boolean>>({});
   const filteredPresentations = useMemo(() => {
     if (!searchQuery.trim()) return presentations;
     const q = searchQuery.toLowerCase().trim();
