@@ -330,6 +330,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   const [isEnriching, setIsEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState({ current: 0, total: 0 });
   const [enrichLabel, setEnrichLabel] = useState('');
+  const [isImportFromListOpen, setIsImportFromListOpen] = useState(false);
 
   // Derive website from email domain (skip generic providers)
   const domainFromEmail = (email: string): string | null => {
