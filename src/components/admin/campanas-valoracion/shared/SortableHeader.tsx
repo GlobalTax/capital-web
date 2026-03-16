@@ -2,7 +2,7 @@ import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type SortDirection = 'asc' | 'desc' | null;
-export type SortField = 'revenue' | 'ebitda' | null;
+export type SortField = 'revenue' | 'ebitda' | 'valuation_central' | null;
 
 export interface SortState {
   field: SortField;
