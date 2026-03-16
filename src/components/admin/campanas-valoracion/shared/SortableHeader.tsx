@@ -29,9 +29,9 @@ export function applySortToList<T extends { revenue?: number | null; ebitda?: nu
 
 interface SortableHeaderProps {
   label: string;
-  field: 'revenue' | 'ebitda';
+  field: 'revenue' | 'ebitda' | 'valuation_central';
   sort: SortState;
-  onToggle: (field: 'revenue' | 'ebitda') => void;
+  onToggle: (field: 'revenue' | 'ebitda' | 'valuation_central') => void;
   className?: string;
 }
 
