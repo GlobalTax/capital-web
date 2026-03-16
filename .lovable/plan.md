@@ -1,52 +1,52 @@
 
 
-## Plan: Corregir la función SQL `list_admin_photos`
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-**Problema**: La función actual falla con error 400 porque el `ORDER BY` (líneas 63-68) usa `o.name` directamente, pero después de un `GROUP BY` PostgreSQL no permite referenciar columnas base que no estén agrupadas.
+### Cambios realizados
 
-**Solución**: Reescribir usando un CTE que primero calcula `child_name` e `is_folder` por cada fila, y luego agrupa/ordena usando esos campos derivados.
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-### Cambio único
+### Resultado
 
-**Nueva migración SQL** que reemplaza `list_admin_photos`:
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-```sql
-CREATE OR REPLACE FUNCTION public.list_admin_photos(folder_path TEXT DEFAULT '')
-RETURNS TABLE (name TEXT, id UUID, created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ, metadata JSONB)
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, storage
-AS $$
-BEGIN
-  RETURN QUERY
-  WITH items AS (
-    SELECT
-      CASE WHEN folder_path = '' THEN split_part(o.name, '/', 1)
-           ELSE split_part(replace(o.name, folder_path || '/', ''), '/', 1)
-      END AS child_name,
-      CASE WHEN folder_path = '' THEN position('/' in o.name) > 0
-           ELSE position('/' in replace(o.name, folder_path || '/', '')) > 0
-      END AS is_folder,
-      o.id AS file_id,
-      o.created_at AS file_created,
-      o.updated_at AS file_updated,
-      o.metadata AS file_metadata
-    FROM storage.objects o
-    WHERE o.bucket_id = 'admin-photos'
-      AND (folder_path = '' OR o.name LIKE folder_path || '/%')
-  )
-  SELECT
-    i.child_name,
-    CASE WHEN i.is_folder THEN NULL::UUID ELSE i.file_id END,
-    MIN(i.file_created),
-    MAX(i.file_updated),
-    CASE WHEN i.is_folder THEN NULL::JSONB ELSE (array_agg(i.file_metadata))[1] END
-  FROM items i
-  GROUP BY i.child_name, i.is_folder, CASE WHEN i.is_folder THEN NULL::UUID ELSE i.file_id END
-  ORDER BY i.is_folder DESC, i.child_name ASC;
-END;
-$$;
-```
+---
 
-**Por qué funciona**: El CTE pre-calcula los campos derivados. El `ORDER BY` exterior solo usa alias del CTE que ya están en el `GROUP BY`, eliminando el error de PostgreSQL.
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-No se necesitan cambios en el frontend — el hook `usePhotoLibrary` ya consume este formato correctamente.
+### Cambios realizados
 
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
