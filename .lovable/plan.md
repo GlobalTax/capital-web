@@ -1,45 +1,52 @@
 
 
-## Plan: Filtro por fecha de envío en vistas de envío
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Qué se hace
-Añadir un filtro de rango de fechas (fecha de envío) en las dos vistas de envío: **ProcessSendStep** (Paso 7 - Valoración) y **DocumentSendStep** (Paso Documento).
+### Cambios realizados
 
-### Implementación
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-**1. Nuevo componente reutilizable: `DateRangeFilter`**
-- Archivo: `src/components/admin/campanas-valoracion/shared/DateRangeFilter.tsx`
-- Botón tipo popover (mismo estilo que `FinancialFilter`) con dos calendarios: "Desde" y "Hasta"
-- Muestra el rango activo en el botón (ej: "12/03 - 15/03") o el label por defecto ("Fecha envío")
-- Botón limpiar integrado (X en el chip o botón Limpiar dentro del popover)
+### Resultado
 
-**2. ProcessSendStep.tsx**
-- Nuevo estado `filterSentDate: { from: Date | null; to: Date | null }`
-- En el `filteredCompanies` useMemo: cruzar `company.id` con los emails del hook para obtener `sent_at`, y filtrar por rango
-- Añadir el componente `DateRangeFilter` junto a los `FinancialFilter` existentes (línea ~1212)
-- Necesita acceso a los emails — ya tiene `useCampaignEmails` importado
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-**3. DocumentSendStep.tsx**
-- Mismo estado `filterSentDate`
-- En el `filteredCompanies` useMemo: usar `emailMap` (ya existe) para obtener `sent_at` y filtrar
-- Añadir `DateRangeFilter` junto al buscador existente (línea ~311)
+---
 
-### UI del filtro
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-```text
-[📅 Fecha envío ▼]  →  click  →  Popover:
-┌─────────────────────────────┐
-│  Fecha de envío             │
-│  Desde: [📅 Seleccionar]    │
-│  Hasta: [📅 Seleccionar]    │
-│  [Limpiar]    [Aplicar]     │
-└─────────────────────────────┘
-```
+### Cambios realizados
 
-Cuando hay filtro activo: `[📅 12/03 - 15/03  ✕]`
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-### Archivos
-- **Crear**: `src/components/admin/campanas-valoracion/shared/DateRangeFilter.tsx`
-- **Editar**: `ProcessSendStep.tsx` (añadir estado + filtro en useMemo + UI)
-- **Editar**: `DocumentSendStep.tsx` (añadir estado + filtro en useMemo + UI)
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes

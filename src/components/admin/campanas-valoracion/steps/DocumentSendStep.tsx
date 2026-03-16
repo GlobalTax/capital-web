@@ -28,6 +28,7 @@ import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { DateRangeFilter, DateRangeFilterValue, matchesDateRange } from '@/components/admin/campanas-valoracion/shared/DateRangeFilter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -51,6 +52,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
 
   const emailMap = useMemo(() => {
     const map = new Map<string, typeof emails[0]>();
@@ -59,14 +61,22 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   }, [emails]);
 
   const filteredCompanies = useMemo(() => {
-    if (!searchQuery.trim()) return companies;
-    const q = searchQuery.toLowerCase();
-    return companies.filter(c =>
-      c.client_company?.toLowerCase().includes(q) ||
-      c.client_email?.toLowerCase().includes(q) ||
-      c.client_name?.toLowerCase().includes(q)
-    );
-  }, [companies, searchQuery]);
+    return companies.filter(c => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (
+          !c.client_company?.toLowerCase().includes(q) &&
+          !c.client_email?.toLowerCase().includes(q) &&
+          !c.client_name?.toLowerCase().includes(q)
+        ) return false;
+      }
+      if (filterSentDate.from || filterSentDate.to) {
+        const email = emailMap.get(c.id);
+        if (!matchesDateRange(email?.sent_at ?? null, filterSentDate)) return false;
+      }
+      return true;
+    });
+  }, [companies, searchQuery, filterSentDate, emailMap]);
 
   const pendingEmails = emails.filter(e => e.status === 'pending');
   const sentEmails = emails.filter(e => e.status === 'sent');
@@ -308,14 +318,17 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
               <Building2 className="h-5 w-5" />
               Empresas ({filteredCompanies.length})
             </CardTitle>
-            <div className="relative max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-8 text-sm"
-              />
+            <div className="flex items-center gap-2">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8 text-sm"
+                />
+              </div>
+              <DateRangeFilter label="Fecha envío" value={filterSentDate} onChange={setFilterSentDate} />
             </div>
           </div>
         </CardHeader>

@@ -31,6 +31,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, safeCreateSignedUrl, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
+import { DateRangeFilter, DateRangeFilterValue, matchesDateRange } from '@/components/admin/campanas-valoracion/shared/DateRangeFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
@@ -573,6 +574,16 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
+
+  // Map company_id -> sent_at for date filtering
+  const emailSentAtMap = useMemo(() => {
+    const m = new Map<string, string | null>();
+    for (const e of campaignEmails) {
+      m.set(e.company_id, e.sent_at ?? null);
+    }
+    return m;
+  }, [campaignEmails]);
 
   const toggleSelection = useCallback((id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]),
@@ -610,10 +621,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       if (!matchesCustomRange(c.revenue, filterRevenue)) return false;
       if (!matchesCustomRange(c.ebitda, filterEbitda)) return false;
       if (!matchesCustomRange(c.valuation_central, filterValuation)) return false;
+      if (filterSentDate.from || filterSentDate.to) {
+        const sentAt = emailSentAtMap.get(c.id);
+        if (!matchesDateRange(sentAt, filterSentDate)) return false;
+      }
       return true;
     });
     return applySortToList(result, sort);
-  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, filterValuation, sort]);
+  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, filterValuation, filterSentDate, emailSentAtMap, sort]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
@@ -1210,13 +1225,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
             <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
-            {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null) && (
+            <DateRangeFilter label="Fecha envío" value={filterSentDate} onChange={setFilterSentDate} />
+            {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null || filterSentDate.from !== null || filterSentDate.to !== null) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                 </span>
-                {(filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null) && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); setFilterValuation({ min: null, max: null }); }}>
+                {(filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null || filterSentDate.from !== null || filterSentDate.to !== null) && (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); setFilterValuation({ min: null, max: null }); setFilterSentDate({ from: null, to: null }); }}>
                     <X className="h-3 w-3 mr-1" />Limpiar filtros
                   </Button>
                 )}
