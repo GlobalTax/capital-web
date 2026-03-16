@@ -110,12 +110,63 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
     }
   };
 
+  const executeSendAllLoop = async () => {
+    if (pendingEmails.length === 0) {
+      toast.info('No hay emails pendientes para enviar');
+      return;
+    }
+    setScheduledCountdown(null);
+    const throttle = createSendThrottle(sendConfig);
+
+    for (let i = 0; i < pendingEmails.length; i++) {
+      const email = pendingEmails[i];
+      setSendingId(email.id);
+      try {
+        await sendEmail(email.id);
+        if (i < pendingEmails.length - 1) {
+          await throttle();
+        }
+      } catch {
+        // handled by hook
+      } finally {
+        setSendingId(null);
+      }
+    }
+  };
+
   const handleSendAll = async () => {
     if (pendingEmails.length === 0) {
       toast.info('No hay emails pendientes para enviar');
       return;
     }
-    await sendAllPending();
+
+    if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
+      const updateCountdown = () => {
+        const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
+        if (diff <= 0) {
+          setScheduledCountdown(null);
+          if (scheduledTimerRef.current) clearInterval(scheduledTimerRef.current);
+          executeSendAllLoop();
+          return;
+        }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        setScheduledCountdown(`${h > 0 ? `${h}h ` : ''}${m}m ${s}s`);
+      };
+      updateCountdown();
+      scheduledTimerRef.current = setInterval(updateCountdown, 1000);
+      toast.success(`Envío programado para ${format(sendConfig.scheduledAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}`);
+      return;
+    }
+
+    await executeSendAllLoop();
+  };
+
+  const handleCancelSchedule = () => {
+    if (scheduledTimerRef.current) clearInterval(scheduledTimerRef.current);
+    setScheduledCountdown(null);
+    toast.info('Envío programado cancelado');
   };
 
   const handleBulkResend = () => {
