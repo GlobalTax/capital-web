@@ -1252,8 +1252,10 @@ export default function ContactListDetailPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredCompanies.map(company => (
-                        <TableRow key={company.id} className="group/row">
+                      {filteredCompanies.map(company => {
+                        const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
+                        return (
+                        <TableRow key={company.id} className={cn("group/row", isAssignedToSublist && "opacity-50")}>
                           <TableCell onClick={e => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
                           </TableCell>
