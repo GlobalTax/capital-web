@@ -1143,6 +1143,9 @@ export default function ContactListDetailPage() {
                 <Copy className="h-4 w-4 mr-2" /> {duplicateGroups.length} duplicados
               </Button>
             )}
+            <Button variant="accent" size="sm" onClick={() => setIsSendToCampaignOpen(true)} disabled={companies.length === 0}>
+              <Megaphone className="h-4 w-4 mr-2" /> Enviar a campaña
+            </Button>
           </div>
 
            {/* Bulk actions */}
