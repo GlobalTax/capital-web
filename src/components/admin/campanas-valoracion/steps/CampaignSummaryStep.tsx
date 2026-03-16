@@ -472,6 +472,10 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 </SelectContent>
               </Select>
 
+              <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
+              <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+              <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+
               {hasActiveFilters && (
                 <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
                   <X className="h-3 w-3 mr-1" />
