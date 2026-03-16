@@ -9500,6 +9500,73 @@ export type Database = {
           },
         ]
       }
+      empresa_sociedades: {
+        Row: {
+          cif: string | null
+          created_at: string | null
+          ebitda: number | null
+          empleados: number | null
+          empresa_id: string
+          facturacion: number | null
+          id: string
+          notas: string | null
+          razon_social: string
+          sitio_web: string | null
+          ubicacion: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cif?: string | null
+          created_at?: string | null
+          ebitda?: number | null
+          empleados?: number | null
+          empresa_id: string
+          facturacion?: number | null
+          id?: string
+          notas?: string | null
+          razon_social: string
+          sitio_web?: string | null
+          ubicacion?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cif?: string | null
+          created_at?: string | null
+          ebitda?: number | null
+          empleados?: number | null
+          empresa_id?: string
+          facturacion?: number | null
+          id?: string
+          notas?: string | null
+          razon_social?: string
+          sitio_web?: string | null
+          ubicacion?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresa_sociedades_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empresa_sociedades_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "empresa_sociedades_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_con_actividad"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           actividades_destacadas: string[] | null
