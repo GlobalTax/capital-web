@@ -1720,7 +1720,8 @@ export default function ContactListDetailPage() {
             <Button variant="outline" onClick={handleCloseImport}>Cancelar</Button>
             {importData.length > 0 && (
               <Button onClick={handleStartValidation} disabled={isValidating}>
-                {isValidating ? 'Validando...' : `Validar ${importData.length} empresas`}
+                {isValidating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isValidating ? 'Validando empresas...' : `Validar ${importData.length} empresas`}
               </Button>
             )}
           </DialogFooter>
