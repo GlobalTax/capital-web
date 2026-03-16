@@ -1,52 +1,50 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Plan: Soporte para +6000 empresas en listados
 
-### Cambios realizados
+### Problema raíz
+Supabase devuelve como máximo 1000 filas por query por defecto. Cuando un listado supera esa cantidad, solo se cargan las primeras 1000 (o se corta al llegar al límite). Esto afecta a:
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+1. **Carga de empresas** (`useContactLists.ts` línea 188) — solo trae 1000 empresas
+2. **Validación de importación** (`useExcelImportValidation.ts` líneas 51-55) — solo verifica contra 1000 CIFs existentes
+3. **Duplicado de lista** (`useContactLists.ts` línea 164) — solo copia 1000 empresas
 
-### Resultado
+### Solución: Paginación automática en todas las queries
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+**Archivo 1: `src/hooks/useContactLists.ts`**
 
----
+- Crear función helper `fetchAllRows` que pagine automáticamente (1000 en 1000) hasta obtener todos los registros:
+```typescript
+async function fetchAllRows(query) {
+  let allData = [];
+  let from = 0;
+  const PAGE = 1000;
+  while (true) {
+    const { data, error } = await query.range(from, from + PAGE - 1);
+    if (error) throw error;
+    allData.push(...data);
+    if (data.length < PAGE) break;
+    from += PAGE;
+  }
+  return allData;
+}
+```
+- Aplicar en la query de `useContactListCompanies` (línea 188)
+- Aplicar en `duplicateList` (línea 164) — también insertar las copias en batches
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+**Archivo 2: `src/hooks/useExcelImportValidation.ts`**
 
-### Cambios realizados
+- Aplicar paginación al fetch de CIFs existentes en la lista (línea 51-55)
+- Aplicar paginación al fetch de CIFs de empresas (línea 59-62)
+- Aplicar paginación a los fetches de sublistas hermanas y parent
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+**Archivo 3: `src/pages/admin/ContactListDetailPage.tsx`**
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
-
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+- Aumentar batch size del insert de 25 a 100 para acelerar importaciones grandes
+- (El insert ya pagina correctamente, solo es lento con batches de 25)
 
 ### Resultado
+- Listas de cualquier tamaño se cargan completas
+- La validación de importación verifica contra todos los CIFs existentes
+- La importación masiva es más rápida con batches de 100
 
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
