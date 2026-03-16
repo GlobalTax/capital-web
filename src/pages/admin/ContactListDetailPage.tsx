@@ -1260,15 +1260,40 @@ export default function ContactListDetailPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredCompanies.map(company => {
-                        const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
-                        return (
-                        <TableRow key={company.id} className={cn("group/row", isAssignedToSublist && "opacity-50")}>
+                      {(() => {
+                        let separatorRendered = false;
+                        return filteredCompanies.map(company => {
+                          const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
+                          // Render separator row before first assigned company
+                          let separatorRow = null;
+                          if (isMadreList && isAssignedToSublist && !separatorRendered && !sortField) {
+                            separatorRendered = true;
+                            const assignedCount = filteredCompanies.filter(c => c.cif && sublistCompanyMap?.map.has(c.cif.toUpperCase().trim())).length;
+                            separatorRow = (
+                              <TableRow key="__separator__" className="hover:bg-transparent border-b-0">
+                                <TableCell colSpan={100} className="py-2 px-3">
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Lock className="h-3 w-3" />
+                                    <span className="font-medium">Asignadas a sublistas ({assignedCount})</span>
+                                    <div className="flex-1 h-px bg-border" />
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          }
+                          return (
+                            <React.Fragment key={company.id}>
+                              {separatorRow}
+                              <TableRow className={cn(
+                                "group/row",
+                                isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
+                              )}>
                           <TableCell onClick={e => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
                           </TableCell>
                           <TableCell>
-                            <button className="text-sm font-medium hover:underline text-left" onClick={() => setDrawerCompany(company)}>
+                            <button className="text-sm font-medium hover:underline text-left flex items-center gap-1.5" onClick={() => setDrawerCompany(company)}>
+                              {isAssignedToSublist && <Lock className="h-3 w-3 text-amber-500 flex-shrink-0" />}
                               {company.empresa}
                             </button>
                           </TableCell>
@@ -1277,7 +1302,8 @@ export default function ContactListDetailPage() {
                               {company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim()) ? (
                                 <div className="flex flex-wrap gap-1">
                                   {sublistCompanyMap.map.get(company.cif.toUpperCase().trim())!.map(name => (
-                                    <Badge key={name} variant="secondary" size="sm" className="bg-accent/10 text-accent-foreground border-0 text-[10px]">
+                                    <Badge key={name} variant="outline" size="sm" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[11px] gap-1">
+                                      <ArrowRight className="h-3 w-3" />
                                       {name}
                                     </Badge>
                                   ))}
@@ -1374,9 +1400,11 @@ export default function ContactListDetailPage() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
-                        </TableRow>
-                        );
-                      })}
+                              </TableRow>
+                            </React.Fragment>
+                          );
+                        });
+                      })()}
                     </TableBody>
                   </Table>
                 </div>
