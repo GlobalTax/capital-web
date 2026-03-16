@@ -211,9 +211,10 @@ export const useContactListCompanies = (listId: string | undefined) => {
     queryKey: ['contact-list-companies', listId],
     enabled: !!listId,
     queryFn: async () => {
-      const { data, error } = await supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as unknown as ContactListCompany[];
+      const data = await fetchAllRows<ContactListCompany>((from, to) =>
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).range(from, to)
+      );
+      return data;
     },
   });
 
