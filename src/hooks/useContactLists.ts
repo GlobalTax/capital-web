@@ -233,34 +233,56 @@ export const useContactListCompanies = (listId: string | undefined) => {
   });
 
   const addCompanies = useMutation({
-    mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }) => {
+    mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }): Promise<{ inserted: number; failed: number; errors: Array<{ startIndex: number; count: number; message: string }> }> => {
       const BATCH_SIZE = 25;
+      const SUB_BATCH_SIZE = 5;
+      const DELAY_MS = 150;
       const total = rows.length;
       let inserted = 0;
+      let failed = 0;
+      const errors: Array<{ startIndex: number; count: number; message: string }> = [];
+
+      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
       for (let i = 0; i < total; i += BATCH_SIZE) {
         const batch = rows.slice(i, i + BATCH_SIZE);
         const { error } = await supabase.from(TB_COMPANIES).insert(batch);
+
         if (error) {
-          // Retry once with smaller sub-batches of 5
-          let subOk = 0;
-          for (let j = 0; j < batch.length; j += 5) {
-            const sub = batch.slice(j, j + 5);
+          // Retry with smaller sub-batches
+          for (let j = 0; j < batch.length; j += SUB_BATCH_SIZE) {
+            const sub = batch.slice(j, j + SUB_BATCH_SIZE);
             const { error: subErr } = await supabase.from(TB_COMPANIES).insert(sub);
             if (subErr) {
               console.error(`[Import] Sub-batch error at row ${i + j}:`, subErr.message);
+              failed += sub.length;
+              errors.push({ startIndex: i + j, count: sub.length, message: subErr.message });
             } else {
-              subOk += sub.length;
+              inserted += sub.length;
             }
           }
-          inserted += subOk;
-          if (subOk === 0) throw new Error(`Error en lote ${Math.floor(i / BATCH_SIZE) + 1}: ${error.message}. Se insertaron ${inserted} de ${total} filas.`);
         } else {
           inserted += batch.length;
         }
-        onProgress?.(inserted, total);
+
+        onProgress?.(inserted + failed, total);
+
+        // Pause between batches to avoid overwhelming the DB
+        if (i + BATCH_SIZE < total) {
+          await delay(DELAY_MS);
+        }
+      }
+
+      return { inserted, failed, errors };
+    },
+    onSuccess: (result) => {
+      invalidate();
+      if (result.failed === 0) {
+        toast.success(`${result.inserted} empresas importadas correctamente`);
+      } else {
+        toast.warning(`Importación parcial: ${result.inserted} insertadas, ${result.failed} con error`, { duration: 8000 });
       }
     },
-    onSuccess: () => { invalidate(); toast.success('Empresas importadas correctamente'); },
     onError: (e: Error) => toast.error('Error en importación', { description: e.message }),
   });
 
