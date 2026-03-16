@@ -756,21 +756,24 @@ const getEmailTemplate = (formType: string, data: any) => {
         ${getContactDataSection({ ...data, fullName: data.fullName, company: data.user_company, phone: data.user_phone })}
         <div style="margin-bottom: 24px;">
           <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px;">
-            📥 Lead Magnet
+            📥 Recurso Descargado
           </h3>
-          <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 14px; font-weight: 500;">ID: ${data.lead_magnet_id}</span>
+          <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0 0 4px; color: #0f172a; font-size: 16px; font-weight: 600;">${data.lead_magnet_title || 'Recurso'}</p>
+            <p style="margin: 0; color: #92400e; font-size: 12px;">ID: ${data.lead_magnet_id}</p>
+          </div>
         </div>
       `;
       
       return {
-        subject: `Nueva descarga Lead Magnet – ${data.fullName} – Capittal`,
+        subject: `📥 Nueva descarga: ${data.lead_magnet_title || 'Recurso'} – ${data.fullName} – Capittal`,
         html: getAdminEmailBaseHtml(
-          'Nueva Descarga de Lead Magnet',
-          'Lead Magnet',
+          'Nueva Descarga de Recurso',
+          data.lead_magnet_title || 'Lead Magnet',
           contentHtml,
           'Lead Magnet',
-          data._crmLink || 'https://capittal.es/admin/crm',
-          'Ver en CRM',
+          'https://capittal.es/admin/lead-magnets',
+          'Ver Recursos',
           utmData
         )
       };
