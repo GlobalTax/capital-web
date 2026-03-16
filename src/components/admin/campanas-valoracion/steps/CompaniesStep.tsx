@@ -823,6 +823,11 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
         </Card>
       )}
 
+      {/* Import from list button */}
+      <Button variant="outline" onClick={() => setIsImportFromListOpen(true)} className="w-full">
+        <List className="h-4 w-4 mr-1" />Importar desde lista de contacto
+      </Button>
+
       {/* Manual Entry */}
       <Card>
         <CardHeader><CardTitle className="text-base">Añadir empresa manualmente</CardTitle></CardHeader>
