@@ -601,10 +601,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       }
       if (!matchesCustomRange(c.revenue, filterRevenue)) return false;
       if (!matchesCustomRange(c.ebitda, filterEbitda)) return false;
+      if (!matchesCustomRange(c.valuation_central, filterValuation)) return false;
       return true;
     });
     return applySortToList(result, sort);
-  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, sort]);
+  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, filterValuation, sort]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
