@@ -520,7 +520,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-center">Múltiplo</TableHead>
                 <TableHead className="text-right">Val. Baja</TableHead>
-                <TableHead className="text-right">Val. Central</TableHead>
+                <TableHead className="text-right"><SortableHeader label="Val. Central" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-right">Val. Alta</TableHead>
                 <TableHead className="text-center">Email</TableHead>
                 <TableHead className="text-center">IA</TableHead>

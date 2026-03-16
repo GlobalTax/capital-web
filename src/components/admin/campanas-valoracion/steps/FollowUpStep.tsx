@@ -750,7 +750,7 @@ function SendList({
                   <TableHead>Email</TableHead>
                   <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                   <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
-                  <TableHead>Valoración</TableHead>
+                  <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                   <TableHead className="text-center">Seguimiento</TableHead>
                   <TableHead className="text-center">Estado envío</TableHead>
                   <TableHead className="text-center">Entrega</TableHead>
