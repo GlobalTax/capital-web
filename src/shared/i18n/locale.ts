@@ -47,11 +47,65 @@ export function detectBrowserLang(): LangCode {
   return 'es';
 }
 
+// Detect language from URL path — canonical routes are Spanish,
+// Catalan/English paths redirect but we detect them just in case.
+export function detectLangFromUrl(): LangCode {
+  const path = window.location.pathname.toLowerCase();
+  // Catalan URL prefixes/paths
+  if (
+    path.startsWith('/serveis/') ||
+    path.startsWith('/sectors/') ||
+    path === '/venda-empreses' ||
+    path === '/compra-empreses' ||
+    path === '/contacte' ||
+    path === '/casos-exit' ||
+    path === '/per-que-triar-nos' ||
+    path === '/equip' ||
+    path === '/inici' ||
+    path === '/ca'
+  ) return 'ca';
+  // English URL prefixes/paths
+  if (
+    path.startsWith('/services/') ||
+    path === '/sell-companies' ||
+    path === '/buy-companies' ||
+    path === '/contact' ||
+    path === '/success-stories' ||
+    path === '/why-choose-us' ||
+    path === '/team' ||
+    path === '/home' ||
+    path === '/en'
+  ) return 'en';
+  // All canonical routes are in Spanish
+  return 'es';
+}
+
+// Detect if running inside a prerender/bot environment (e.g. Prerender.io headless Chrome).
+// In such environments, browser locale is unreliable (often English),
+// so we must use URL-based language detection instead.
+function isPrerenderedOrBot(): boolean {
+  try {
+    // Prerender.io injects this variable
+    if ((window as any).__PRERENDER_INJECTED !== undefined) return true;
+    // Check for common headless/bot user agents
+    const ua = navigator.userAgent.toLowerCase();
+    if (/prerender|headlesschrome|googlebot|bingbot|ahrefsbot|semrushbot|baiduspider|yandexbot/i.test(ua)) return true;
+  } catch {}
+  return false;
+}
+
 const STORAGE_KEY = 'capittal_lang_preference';
 
 export function getPreferredLang(): LangCode {
   const saved = localStorage.getItem(STORAGE_KEY) as LangCode | null;
-  return saved || detectBrowserLang();
+  if (saved) return saved;
+  // In prerender/bot contexts, use URL-based detection only.
+  // Bot browser locale is unreliable (Prerender.io Chrome = English).
+  if (isPrerenderedOrBot()) {
+    return detectLangFromUrl();
+  }
+  // For real users, prefer browser language auto-detection
+  return detectBrowserLang();
 }
 
 export function setPreferredLang(lang: LangCode) {
