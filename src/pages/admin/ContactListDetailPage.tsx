@@ -319,6 +319,7 @@ export default function ContactListDetailPage() {
   const [isCreatingNewList, setIsCreatingNewList] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
+  const [sublistConflict, setSublistConflict] = useState<{ sublistName: string } | null>(null);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
