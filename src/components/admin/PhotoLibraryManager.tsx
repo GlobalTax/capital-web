@@ -361,13 +361,7 @@ const PhotoLibraryManager: React.FC = () => {
                     }`}
                   >
                     <div className="aspect-square bg-muted relative">
-                      <img
-                        src={photo.publicUrl}
-                        alt={photo.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        draggable={false}
-                      />
+                      <PhotoThumbnail src={photo.thumbnailUrl} alt={photo.name} />
                       <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-70 transition-opacity">
                         <GripVertical className="h-4 w-4 text-foreground drop-shadow-md" />
                       </div>
