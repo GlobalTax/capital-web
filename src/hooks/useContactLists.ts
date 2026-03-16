@@ -234,9 +234,9 @@ export const useContactListCompanies = (listId: string | undefined) => {
 
   const addCompanies = useMutation({
     mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }): Promise<{ inserted: number; failed: number; errors: Array<{ startIndex: number; count: number; message: string }> }> => {
-      const BATCH_SIZE = 25;
-      const SUB_BATCH_SIZE = 5;
-      const DELAY_MS = 150;
+      const BATCH_SIZE = 10;
+      const SUB_BATCH_SIZE = 3;
+      const DELAY_MS = 300;
       const total = rows.length;
       let inserted = 0;
       let failed = 0;
