@@ -351,6 +351,54 @@ export default function ContactListDetailPage() {
     return sortDir === 'desc' ? <ArrowDown className="h-3 w-3 ml-1" /> : <ArrowUp className="h-3 w-3 ml-1" />;
   };
 
+  // Query: sublists + their companies (only for madre lists)
+  const { data: sublistCompanyMap } = useQuery({
+    queryKey: ['sublist-company-map', listId],
+    enabled: !!listId,
+    queryFn: async () => {
+      // 1. Get sublists
+      const { data: sublists, error: subErr } = await supabase
+        .from('outbound_lists' as any)
+        .select('id, name')
+        .eq('lista_madre_id', listId!);
+      if (subErr || !sublists || sublists.length === 0) return null;
+
+      const sublistArr = (sublists as unknown) as { id: string; name: string }[];
+      const sublistIds = sublistArr.map(s => s.id);
+      const nameMap = Object.fromEntries(sublistArr.map(s => [s.id, s.name]));
+
+      // 2. Get companies from those sublists
+      const { data: subCompanies, error: compErr } = await supabase
+        .from('outbound_list_companies' as any)
+        .select('cif, list_id')
+        .in('list_id', sublistIds)
+        .not('cif', 'is', null);
+      if (compErr || !subCompanies) return null;
+
+      // 3. Build map: cif → sublist names[]
+      const map = new Map<string, Set<string>>();
+      for (const row of (subCompanies as unknown) as { cif: string; list_id: string }[]) {
+        if (!row.cif) continue;
+        const cifKey = row.cif.toUpperCase().trim();
+        if (!map.has(cifKey)) map.set(cifKey, new Set());
+        map.get(cifKey)!.add(nameMap[row.list_id] || '');
+      }
+
+      // Convert Sets to arrays
+      const result = new Map<string, string[]>();
+      for (const [cif, names] of map) {
+        result.set(cif, Array.from(names));
+      }
+      return { map: result, sublistCount: sublistArr.length };
+    },
+  });
+
+  const isMadreList = !!sublistCompanyMap;
+  const companiesInSublists = useMemo(() => {
+    if (!sublistCompanyMap) return 0;
+    return companies.filter(c => c.cif && sublistCompanyMap.map.has(c.cif.toUpperCase().trim())).length;
+  }, [companies, sublistCompanyMap]);
+
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
     // Search
@@ -398,7 +446,7 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap]);
 
   // Config tab state
   const [configName, setConfigName] = useState('');
@@ -456,54 +504,6 @@ export default function ContactListDetailPage() {
       return data as unknown as { id: string; name: string };
     },
   });
-
-  // Query: sublists + their companies (only for madre lists)
-  const { data: sublistCompanyMap } = useQuery({
-    queryKey: ['sublist-company-map', listId],
-    enabled: !!listId,
-    queryFn: async () => {
-      // 1. Get sublists
-      const { data: sublists, error: subErr } = await supabase
-        .from('outbound_lists' as any)
-        .select('id, name')
-        .eq('lista_madre_id', listId!);
-      if (subErr || !sublists || sublists.length === 0) return null;
-
-      const sublistArr = (sublists as unknown) as { id: string; name: string }[];
-      const sublistIds = sublistArr.map(s => s.id);
-      const nameMap = Object.fromEntries(sublistArr.map(s => [s.id, s.name]));
-
-      // 2. Get companies from those sublists
-      const { data: subCompanies, error: compErr } = await supabase
-        .from('outbound_list_companies' as any)
-        .select('cif, list_id')
-        .in('list_id', sublistIds)
-        .not('cif', 'is', null);
-      if (compErr || !subCompanies) return null;
-
-      // 3. Build map: cif → sublist names[]
-      const map = new Map<string, Set<string>>();
-      for (const row of (subCompanies as unknown) as { cif: string; list_id: string }[]) {
-        if (!row.cif) continue;
-        const cifKey = row.cif.toUpperCase().trim();
-        if (!map.has(cifKey)) map.set(cifKey, new Set());
-        map.get(cifKey)!.add(nameMap[row.list_id] || '');
-      }
-
-      // Convert Sets to arrays
-      const result = new Map<string, string[]>();
-      for (const [cif, names] of map) {
-        result.set(cif, Array.from(names));
-      }
-      return { map: result, sublistCount: sublistArr.length };
-    },
-  });
-
-  const isMadreList = !!sublistCompanyMap;
-  const companiesInSublists = useMemo(() => {
-    if (!sublistCompanyMap) return 0;
-    return companies.filter(c => c.cif && sublistCompanyMap.map.has(c.cif.toUpperCase().trim())).length;
-  }, [companies, sublistCompanyMap]);
 
   // Add manual form state
   const [addForm, setAddForm] = useState({
