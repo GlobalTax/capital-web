@@ -1204,6 +1204,17 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Import from list dialog */}
+      <ImportFromListDialog
+        open={isImportFromListOpen}
+        onOpenChange={setIsImportFromListOpen}
+        campaignId={campaignId}
+        existingCompanies={companies}
+        onImported={() => {
+          // Refetch companies
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }
