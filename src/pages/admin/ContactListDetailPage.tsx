@@ -1822,6 +1822,7 @@ export default function ContactListDetailPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+    </div>
   );
 }
 
