@@ -12,29 +12,19 @@
  * correct SEO meta tags with zero points of failure.
  */
 
-const LOVABLE_UPSTREAM = "https://webcapittal.lovable.app";
-const PUBLIC_HOST = "capittal.es";
-const BASE_URL = "https://capittal.es";
-const PRERENDER_TOKEN = "O4ymoBvl4whx6UQePxL5";
-const SITEMAP_EDGE_FN = "https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap";
-
-const BOT_AGENTS = [
-  "googlebot","yahoo! slurp","bingbot","yandex","baiduspider","facebookexternalhit",
-  "twitterbot","rogerbot","linkedinbot","embedly","quora link preview","showyoubot",
-  "outbrain","pinterest/0.","developers.google.com/+/web/snippet","slackbot","vkshare",
-  "w3c_validator","redditbot","applebot","whatsapp","flipboard","tumblr","bitlybot",
-  "skypeuripreview","nuzzel","discordbot","google page speed","qwantify","pinterestbot",
-  "bitrix link preview","xing-contenttabreceiver","chrome-lighthouse","telegrambot",
-  "oai-searchbot","chatgpt","gptbot","claudebot","amazonbot","perplexity",
-  "google-inspectiontool","integration-test",
-  "ahrefsbot","semrushbot","mj12bot","dotbot","bytespider",
+const BOT_UA_PATTERNS = [
+  'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+  'yandexbot', 'facebookexternalhit', 'facebookcatalog', 'twitterbot',
+  'linkedinbot', 'whatsapp', 'telegrambot', 'applebot',
+  'mj12bot', 'dotbot', 'petalbot', 'sogou', 'ia_archiver',
+  'archive.org_bot', 'screaming frog', 'lighthouse', 'chrome-lighthouse',
+  'pagespeed', 'pingbot', 'rogerbot', 'ahrefsbot',
 ];
 
-const IGNORE_EXTENSIONS = [
-  ".js",".css",".xml",".less",".png",".jpg",".jpeg",".gif",".pdf",".doc",".txt",".ico",
-  ".rss",".zip",".mp3",".rar",".exe",".wmv",".avi",".ppt",".mpg",".mpeg",".tif",".wav",
-  ".mov",".psd",".ai",".xls",".mp4",".m4a",".swf",".dat",".dmg",".iso",".flv",".m4v",
-  ".torrent",".woff",".ttf",".svg",".webmanifest",
+const STATIC_EXTENSIONS = [
+  '.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
+  '.woff', '.woff2', '.ttf', '.eot', '.otf', '.map', '.webp', '.avif',
+  '.mp4', '.webm', '.mp3', '.wav', '.pdf', '.xml', '.json', '.txt',
 ];
 
 // =====================================================================
@@ -316,44 +306,46 @@ ${hreflangTags}</head>
 </html>`;
 }
 
-// =====================================================================
-// Helpers
-// =====================================================================
-function isRedirect(status) { return [301,302,303,307,308].includes(status); }
-
-function isBot(ua) {
-  const lower = ua.toLowerCase();
-  return BOT_AGENTS.some(bot => lower.includes(bot.toLowerCase()));
+function isExcludedPath(pathname) {
+  return EXCLUDED_PATHS.some(p => pathname.startsWith(p));
 }
 
-function isIgnoredExtension(pathname) {
-  const dot = pathname.lastIndexOf(".");
-  if (dot < 0) return false;
-  return IGNORE_EXTENSIONS.includes(pathname.substring(dot).toLowerCase());
+function getCacheTtl(pathname) {
+  return pathname.startsWith('/blog/') ? 300 : 3600;
 }
 
-// =====================================================================
-// Main Worker
-// =====================================================================
 export default {
-  async fetch(request, env) {
-    try { return await handleRequest(request, env); }
-    catch (err) { return new Response(err?.stack || String(err), { status: 500 }); }
-  },
-};
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const pathname = url.pathname;
 
-async function handleRequest(request, env) {
-  const url       = new URL(request.url);
-  const userAgent = (request.headers.get("User-Agent") || "").toLowerCase();
-  const isBotReq  = isBot(userAgent);
-  const isGetLike = request.method === "GET" || request.method === "HEAD";
+    // 0. Intercept /sitemap.xml → serve from edge function (dynamic, correct Content-Type)
+    if (pathname === '/sitemap.xml') {
+      try {
+        const sitemapUrl = `${env.SUPABASE_URL}/functions/v1/generate-sitemap`;
+        const sitemapResponse = await fetch(sitemapUrl, {
+          headers: {
+            'apikey': env.SUPABASE_ANON_KEY,
+          },
+        });
 
-  // ── Sitemap proxy ────────────────────────────────────────────────────
-  if (url.pathname === '/sitemap.xml') {
-    const sitemapResp = await fetch(SITEMAP_EDGE_FN, {
-      headers: {
-        "apikey": env.SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${env.SUPABASE_ANON_KEY}`,
+        if (sitemapResponse.ok) {
+          const xml = await sitemapResponse.text();
+          return new Response(xml, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/xml; charset=utf-8',
+              'Cache-Control': 'public, max-age=3600',
+              'X-Source': 'edge-function',
+            },
+          });
+        }
+        // fallback to origin if edge function fails
+        console.error(`Sitemap edge function failed: ${sitemapResponse.status}`);
+        return fetch(request);
+      } catch (err) {
+        console.error('Sitemap proxy error:', err);
+        return fetch(request);
       }
     });
     const xml = await sitemapResp.text();
@@ -431,13 +423,9 @@ function fetchFromLovable(request, url, isGetLike) {
   upstreamUrl.protocol = upstreamBase.protocol;
   upstreamUrl.hostname = upstreamBase.hostname;
 
-  const h = new Headers(request.headers);
-  h.set("Host", upstreamBase.hostname);
-  h.set("X-Forwarded-Host", PUBLIC_HOST);
-  h.set("X-Forwarded-Proto", "https");
-  h.delete("cf-connecting-ip");
-  h.delete("x-forwarded-for");
-  h.delete("forwarded");
+    // 4. Bot detected — check cache first
+    const cacheKey = new URL(url.origin + pathname);
+    const cache = caches.default;
 
   return fetch(new Request(upstreamUrl.toString(), {
     method: request.method, headers: h,

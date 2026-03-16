@@ -81,8 +81,10 @@ function TemplateEditorSection({
         await onSaveTemplate(newSubject, newBody);
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch {
+      } catch (err) {
         setSaveStatus('idle');
+        toast.error('Error al guardar el template');
+        console.error('Auto-save error:', err);
       }
     }, 1500);
   }, [onSaveTemplate]);
@@ -91,6 +93,17 @@ function TemplateEditorSection({
   useEffect(() => {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, []);
+
+  // Sync local state when campaign data is refetched (cache invalidation)
+  useEffect(() => {
+    const newSubject = (campaign as any).email_subject_template || '';
+    const newBody = (campaign as any).email_body_template || '';
+    // Only sync if not currently saving (to avoid overwriting user edits mid-type)
+    if (saveStatus !== 'saving') {
+      setSubject(newSubject);
+      setBody(newBody);
+    }
+  }, [(campaign as any).email_subject_template, (campaign as any).email_body_template]);
 
   const handleSubjectChange = useCallback((val: string) => {
     setSubject(val);

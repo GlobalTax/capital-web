@@ -7,6 +7,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+/**
+ * Paginate a Supabase query to fetch ALL rows (beyond the 1000-row default limit).
+ * `buildQuery` receives (from, to) and must return a fresh query with .range() applied.
+ */
+async function fetchAllRows<T = any>(
+  buildQuery: (from: number, to: number) => any,
+  pageSize = 1000
+): Promise<T[]> {
+  const allData: T[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await buildQuery(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return allData;
+}
+
 export type ContactListTipo = 'compradores' | 'outbound' | 'madre' | 'otros';
 
 export interface ContactList {
@@ -161,11 +182,16 @@ export const useContactLists = () => {
         .single();
       if (createErr || !newList) throw createErr || new Error('Error al duplicar');
 
-      const { data: companies } = await supabase.from(TB_COMPANIES).select('*').eq('list_id', id);
-      if (companies && companies.length > 0) {
+      const companies = await fetchAllRows((from, to) =>
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).range(from, to)
+      );
+      if (companies.length > 0) {
         const copies = (companies as any[]).map(({ id: _, list_id, created_at, ...rest }) => ({ ...rest, list_id: (newList as any).id }));
-        const { error: insertErr } = await supabase.from(TB_COMPANIES).insert(copies);
-        if (insertErr) throw insertErr;
+        // Insert in batches of 100
+        for (let i = 0; i < copies.length; i += 100) {
+          const { error: insertErr } = await supabase.from(TB_COMPANIES).insert(copies.slice(i, i + 100));
+          if (insertErr) throw insertErr;
+        }
       }
 
       return newList as unknown as { id: string };
@@ -185,9 +211,10 @@ export const useContactListCompanies = (listId: string | undefined) => {
     queryKey: ['contact-list-companies', listId],
     enabled: !!listId,
     queryFn: async () => {
-      const { data, error } = await supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as unknown as ContactListCompany[];
+      const data = await fetchAllRows<ContactListCompany>((from, to) =>
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).range(from, to)
+      );
+      return data;
     },
   });
 
@@ -206,17 +233,56 @@ export const useContactListCompanies = (listId: string | undefined) => {
   });
 
   const addCompanies = useMutation({
-    mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }) => {
+    mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }): Promise<{ inserted: number; failed: number; errors: Array<{ startIndex: number; count: number; message: string }> }> => {
       const BATCH_SIZE = 25;
+      const SUB_BATCH_SIZE = 5;
+      const DELAY_MS = 150;
       const total = rows.length;
+      let inserted = 0;
+      let failed = 0;
+      const errors: Array<{ startIndex: number; count: number; message: string }> = [];
+
+      const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
       for (let i = 0; i < total; i += BATCH_SIZE) {
         const batch = rows.slice(i, i + BATCH_SIZE);
         const { error } = await supabase.from(TB_COMPANIES).insert(batch);
-        if (error) throw new Error(`Error en lote ${Math.floor(i / BATCH_SIZE) + 1}: ${error.message}. Se insertaron ${i} de ${total} filas.`);
-        onProgress?.(Math.min(i + BATCH_SIZE, total), total);
+
+        if (error) {
+          // Retry with smaller sub-batches
+          for (let j = 0; j < batch.length; j += SUB_BATCH_SIZE) {
+            const sub = batch.slice(j, j + SUB_BATCH_SIZE);
+            const { error: subErr } = await supabase.from(TB_COMPANIES).insert(sub);
+            if (subErr) {
+              console.error(`[Import] Sub-batch error at row ${i + j}:`, subErr.message);
+              failed += sub.length;
+              errors.push({ startIndex: i + j, count: sub.length, message: subErr.message });
+            } else {
+              inserted += sub.length;
+            }
+          }
+        } else {
+          inserted += batch.length;
+        }
+
+        onProgress?.(inserted + failed, total);
+
+        // Pause between batches to avoid overwhelming the DB
+        if (i + BATCH_SIZE < total) {
+          await delay(DELAY_MS);
+        }
+      }
+
+      return { inserted, failed, errors };
+    },
+    onSuccess: (result) => {
+      invalidate();
+      if (result.failed === 0) {
+        toast.success(`${result.inserted} empresas importadas correctamente`);
+      } else {
+        toast.warning(`Importación parcial: ${result.inserted} insertadas, ${result.failed} con error`, { duration: 8000 });
       }
     },
-    onSuccess: () => { invalidate(); toast.success('Empresas añadidas'); },
     onError: (e: Error) => toast.error('Error en importación', { description: e.message }),
   });
 

@@ -146,7 +146,7 @@ serve(async (req) => {
     const firstCampaignId = campaignIds[0];
     const { data: campaignRow } = await serviceClient
       .from("valuation_campaigns")
-      .select("cc_recipient_ids")
+      .select("cc_recipient_ids, sender_name, sender_email")
       .eq("id", firstCampaignId)
       .maybeSingle();
     
@@ -235,12 +235,16 @@ serve(async (req) => {
         htmlBody += `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;width:1px;height:1px;border:0;" alt="" />`;
 
         // Send via Resend
+        // Use campaign-specific sender if configured, otherwise fallback
+        const senderName = campaignRow?.sender_name || "Samuel Navarro";
+        const senderEmail = campaignRow?.sender_email || "samuel@capittal.es";
+
         const resendPayload: Record<string, unknown> = {
-          from: "Samuel Navarro <samuel@capittal.es>",
+          from: `${senderName} <${senderEmail}>`,
           to: [toEmail],
           subject: email.subject,
           html: htmlBody,
-          reply_to: "samuel@capittal.es",
+          reply_to: senderEmail,
         };
         if (ccList.length > 0) {
           resendPayload.cc = ccList;

@@ -35,11 +35,12 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List, Megaphone,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { SFFundTagEditor } from '@/components/admin/search-funds/SFFundTagEditor';
+import { SendToCampaignDialog } from '@/components/admin/contact-lists/SendToCampaignDialog';
 import {
   useContactListCompanies,
   useContactListCampaigns,
@@ -308,6 +309,7 @@ export default function ContactListDetailPage() {
   const [isLinkCampaignOpen, setIsLinkCampaignOpen] = useState(false);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
+  const [isSendToCampaignOpen, setIsSendToCampaignOpen] = useState(false);
   const [dedupKeep, setDedupKeep] = useState<'newest' | 'oldest'>('newest');
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
@@ -521,6 +523,7 @@ export default function ContactListDetailPage() {
   const [importData, setImportData] = useState<any[]>([]);
   const [importMapping, setImportMapping] = useState<Record<string, string>>({});
   const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
+  const [isReadingFile, setIsReadingFile] = useState(false);
   const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
   const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
@@ -593,12 +596,15 @@ export default function ContactListDetailPage() {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
+    setIsReadingFile(true);
+    toast.info(`Procesando "${file.name}"...`, { duration: 3000 });
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = new Uint8Array(e.target?.result as ArrayBuffer);
       const wb = XLSX.read(data, { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      setIsReadingFile(false);
       if (json.length === 0) {
         toast.error('El archivo está vacío');
         return;
@@ -612,6 +618,11 @@ export default function ContactListDetailPage() {
       });
       setImportMapping(mapping);
       setImportData(json);
+      toast.success(`${json.length} filas encontradas · ${Object.keys(mapping).length} columnas mapeadas`);
+    };
+    reader.onerror = () => {
+      setIsReadingFile(false);
+      toast.error('Error al leer el archivo');
     };
     reader.readAsArrayBuffer(file);
   }, []);
@@ -661,25 +672,38 @@ export default function ContactListDetailPage() {
 
     setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
 
-    if (rowsToInsert.length > 0) {
-      await addCompanies.mutateAsync({
-        rows: rowsToInsert as any,
-        onProgress: (done, total) => setImportProgress({ done, total }),
-      });
-      await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
-      queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
-    }
+    let importedCount = 0;
+    let failedCount = 0;
 
-    setImportProgress(null);
-    setImportResultData({
-      imported: validationResult.nuevas.length,
-      linked: validationResult.vinculadas.length,
-      linkedRelated: validationResult.enOtraLista.length,
-      skippedDuplicates: validationResult.duplicadas.length,
-      skippedErrors: validationResult.errores.length,
-      errors: validationResult.errores,
-    });
-    setImportStep('result');
+    try {
+      if (rowsToInsert.length > 0) {
+        const result = await addCompanies.mutateAsync({
+          rows: rowsToInsert as any,
+          onProgress: (done, total) => setImportProgress({ done, total }),
+        });
+        importedCount = result.inserted;
+        failedCount = result.failed;
+
+        if (importedCount > 0) {
+          await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
+          queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+        }
+      }
+    } catch (err: any) {
+      console.error('[Import] Unexpected error:', err);
+      toast.error('Error inesperado durante la importación');
+    } finally {
+      setImportProgress(null);
+      setImportResultData({
+        imported: importedCount || validationResult.nuevas.length,
+        linked: validationResult.vinculadas.length,
+        linkedRelated: validationResult.enOtraLista.length,
+        skippedDuplicates: validationResult.duplicadas.length,
+        skippedErrors: validationResult.errores.length + failedCount,
+        errors: validationResult.errores,
+      });
+      setImportStep('result');
+    }
   };
 
   const handleCloseImport = () => {
@@ -1141,6 +1165,9 @@ export default function ContactListDetailPage() {
                 <Copy className="h-4 w-4 mr-2" /> {duplicateGroups.length} duplicados
               </Button>
             )}
+            <Button variant="accent" size="sm" onClick={() => setIsSendToCampaignOpen(true)} disabled={companies.length === 0}>
+              <Megaphone className="h-4 w-4 mr-2" /> Enviar a campaña
+            </Button>
           </div>
 
            {/* Bulk actions */}
@@ -1654,14 +1681,22 @@ export default function ContactListDetailPage() {
           <DialogHeader><DialogTitle>Importar desde Excel</DialogTitle></DialogHeader>
           {importData.length === 0 ? (
             <div className="space-y-3">
-              <div {...getRootProps()} className={cn(
-                'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
-                isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-              )}>
-                <input {...getInputProps()} />
-                <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
-              </div>
+              {isReadingFile ? (
+                <div className="border-2 border-dashed border-primary/30 rounded-lg p-12 text-center bg-primary/5">
+                  <Loader2 className="h-10 w-10 text-primary mx-auto mb-3 animate-spin" />
+                  <p className="text-foreground font-medium">Leyendo archivo Excel...</p>
+                  <p className="text-muted-foreground text-sm mt-1">Esto puede tardar unos segundos</p>
+                </div>
+              ) : (
+                <div {...getRootProps()} className={cn(
+                  'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
+                  isDragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+                )}>
+                  <input {...getInputProps()} />
+                  <Upload className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                  <p className="text-muted-foreground">Arrastra un archivo .xlsx aquí o haz clic para seleccionar</p>
+                </div>
+              )}
               <Button variant="link" size="sm" className="text-xs" onClick={downloadTemplate}>
                 <FileSpreadsheet className="h-3.5 w-3.5 mr-1" /> Descargar plantilla con las cabeceras correctas
               </Button>
@@ -1698,7 +1733,8 @@ export default function ContactListDetailPage() {
             <Button variant="outline" onClick={handleCloseImport}>Cancelar</Button>
             {importData.length > 0 && (
               <Button onClick={handleStartValidation} disabled={isValidating}>
-                {isValidating ? 'Validando...' : `Validar ${importData.length} empresas`}
+                {isValidating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                {isValidating ? 'Validando empresas...' : `Validar ${importData.length} empresas`}
               </Button>
             )}
           </DialogFooter>
@@ -1906,6 +1942,14 @@ export default function ContactListDetailPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Send to Campaign Dialog */}
+      <SendToCampaignDialog
+        open={isSendToCampaignOpen}
+        onOpenChange={setIsSendToCampaignOpen}
+        companies={selectedIds.length > 0 ? companies.filter(c => selectedIds.includes(c.id)) : companies}
+        listId={listId!}
+        listName={list?.name || ''}
+      />
     </div>
   );
 }
