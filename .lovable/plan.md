@@ -1,26 +1,52 @@
 
 
-## Plan: Add search to company assignment dropdown in Presentations
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Problem
-The company assignment `<Select>` in `PresentationsStep.tsx` lists all companies without search. When campaigns have many companies, finding the right one is slow.
+### Cambios realizados
 
-### Solution
-Replace the plain `<Select>` with a searchable `Popover + Command` combo (combobox pattern) using the existing `cmdk`-based components from `src/components/ui/command.tsx`.
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-### Changes
+### Resultado
 
-**File: `src/components/admin/campanas-valoracion/steps/PresentationsStep.tsx`**
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-- Import `Popover`, `PopoverTrigger`, `PopoverContent` and `Command`, `CommandInput`, `CommandList`, `CommandEmpty`, `CommandGroup`, `CommandItem` 
-- Replace the `<Select>` block (lines 208-219) with a `Popover` containing a `Command` searchable list
-- Track open state per presentation row via a `openPopover` state record (similar to `editingAssignment`)
-- When a company is selected from the filtered list, update `manualAssignments` and close the popover
-- Display the selected company name on the trigger button, or "Seleccionar empresa" as placeholder
+---
 
-### UI Behavior
-- Click trigger → opens popover with search input auto-focused
-- Type to filter companies by name
-- Click a company → selects it, closes popover
-- The confirm button (checkmark) remains unchanged
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
+### Cambios realizados
+
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes

@@ -3,7 +3,9 @@ import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { ChevronsUpDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -31,7 +33,7 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const [manualAssignments, setManualAssignments] = useState<Record<string, string>>({});
   const [editingAssignment, setEditingAssignment] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [openPopover, setOpenPopover] = useState<Record<string, boolean>>({});
   const filteredPresentations = useMemo(() => {
     if (!searchQuery.trim()) return presentations;
     const q = searchQuery.toLowerCase().trim();
@@ -205,19 +207,47 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
                     <TableCell>
                       {showDropdown ? (
                         <div className="flex items-center gap-2">
-                          <Select
-                            value={manualAssignments[pres.id] || (isEditing && pres.company_id ? pres.company_id : '')}
-                            onValueChange={(val) => setManualAssignments(prev => ({ ...prev, [pres.id]: val }))}
+                          <Popover
+                            open={openPopover[pres.id] || false}
+                            onOpenChange={(open) => setOpenPopover(prev => ({ ...prev, [pres.id]: open }))}
                           >
-                            <SelectTrigger className="h-8 w-[200px] text-xs">
-                              <SelectValue placeholder="Seleccionar empresa" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {companies.map(c => (
-                                <SelectItem key={c.id} value={c.id}>{c.client_company}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" role="combobox" className="h-8 w-[200px] justify-between text-xs font-normal">
+                                <span className="truncate">
+                                  {manualAssignments[pres.id]
+                                    ? getCompanyName(manualAssignments[pres.id])
+                                    : isEditing && pres.company_id
+                                      ? getCompanyName(pres.company_id)
+                                      : 'Seleccionar empresa'}
+                                </span>
+                                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[250px] p-0" align="start">
+                              <Command>
+                                <CommandInput placeholder="Buscar empresa..." className="h-8 text-xs" />
+                                <CommandList>
+                                  <CommandEmpty className="py-3 text-xs">No se encontró empresa.</CommandEmpty>
+                                  <CommandGroup>
+                                    {companies.map(c => (
+                                      <CommandItem
+                                        key={c.id}
+                                        value={c.client_company || ''}
+                                        onSelect={() => {
+                                          setManualAssignments(prev => ({ ...prev, [pres.id]: c.id }));
+                                          setOpenPopover(prev => ({ ...prev, [pres.id]: false }));
+                                        }}
+                                        className="text-xs"
+                                      >
+                                        <Check className={`mr-2 h-3 w-3 ${(manualAssignments[pres.id] || pres.company_id) === c.id ? 'opacity-100' : 'opacity-0'}`} />
+                                        {c.client_company}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                           <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleManualAssign(pres.id)} disabled={!manualAssignments[pres.id]}>
                             <Check className="h-3 w-3" />
                           </Button>
