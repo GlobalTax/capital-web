@@ -1,81 +1,96 @@
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Cambios realizados
+## Plan: hacer que el Excel de 12.500 empresas vuelva a subir poco a poco
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Qué he encontrado
+No parece haber una sola causa. Hay dos problemas mezclados:
 
-### Resultado
+1. **Siguen existiendo timeouts de base de datos** durante la importación masiva.
+2. **Hay filas con valores numéricos que rompen la inserción**, por ejemplo:
+   - `>€195M`
+   - `30B`
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+Ahora mismo el importador solo entiende números “simples” en formato español. Cuando encuentra esos valores, Postgres devuelve `invalid input syntax for type numeric` y falla el bloque.
 
----
+Además, la importación resiliente actual tiene una limitación importante:
+- si falla un **sub-lote de 3 filas**, se marcan las 3 como fallidas
+- no baja a **fila individual**
+- así que una sola fila mala puede arrastrar varias buenas
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+### Qué voy a cambiar
 
-### Cambios realizados
+#### 1) Robustecer el parseo de números del Excel
+Actualizar el parser para aceptar formatos habituales de datasets grandes:
+- símbolos y prefijos: `€`, `$`, `>`, `<`, `~`
+- sufijos de magnitud:
+  - `K` = miles
+  - `M` = millones
+  - `B` = miles de millones
+- comas y puntos mezclados
+- espacios y textos decorativos
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+Ejemplos:
+```text
+>€195M  -> 195000000
+30B     -> 30000000000
+1,2M    -> 1200000
+2.500k  -> 2500000
+```
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+Si un valor sigue siendo imposible de interpretar, no debe tumbar el lote:
+- se convertirá a `null` o
+- se registrará como error de fila, según el campo
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+#### 2) Hacer la importación realmente resiliente
+En `useContactLists.ts`, ampliar la estrategia actual:
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+```text
+lote 10
+  -> si falla
+     sublotes de 3
+       -> si falla
+          filas de 1 en 1
+```
 
-### Resultado
+Así:
+- una fila mala no bloquea otras 2 buenas
+- una fila con timeout o dato corrupto no para la importación completa
+- el proceso seguirá avanzando lentamente, pero avanzando
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+#### 3) Mejorar el resumen de errores reales
+En `ContactListDetailPage.tsx`:
+- mostrar también los errores que ocurren **durante inserción**
+- no solo los de validación previa
+- indicar cuántas han entrado, cuántas se han omitido y por qué
 
----
+Esto ayudará a distinguir:
+- “fila mala por dato”
+- “fallo puntual por timeout”
+- “duplicado”
+- “error de base de datos”
 
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
+#### 4) Mantener el ritmo lento pero estable
+Conservar la importación por bloques pequeños, pero preparada para volúmenes grandes:
+- lote principal pequeño
+- pausa entre lotes
+- progreso visible constante
+- continuación aunque haya errores parciales
 
-### Cambios realizados
+No cambiaría el enfoque a “todo de golpe”; lo correcto aquí es que vaya **subiendo poco a poco**.
 
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+### Archivos a tocar
+- `src/pages/admin/ContactListDetailPage.tsx`
+  - mejorar `parseSpanishNumber`
+  - pasar mejor detalle de errores al resultado final
+- `src/hooks/useContactLists.ts`
+  - añadir fallback hasta fila individual
+  - devolver errores más precisos por fila/bloque
 
-### Resultado
+### Resultado esperado
+Después de esto:
+- el Excel grande podrá seguir importándose gradualmente
+- valores como `>€195M` o `30B` ya no romperán la subida
+- si hay filas realmente malas, se saltarán sin bloquear el resto
+- verás progreso real hasta el final, aunque tarde bastante
 
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
-
----
-
-## ✅ Completado: Integración Lista de Contacto → Campaña Outbound
-
-### Cambios realizados
-
-1. **Migración SQL**: Añadida columna `source_list_id` (uuid) a `valuation_campaigns` con FK a `outbound_lists`.
-
-2. **`src/components/admin/contact-lists/SendToCampaignDialog.tsx`** (NUEVO): Diálogo completo para enviar empresas de una lista a una campaña outbound. Incluye:
-   - Selección entre crear nueva campaña o añadir a existente
-   - Deduplicación por CIF contra la campaña destino (omite duplicados)
-   - Deduplicación cross-campaña (aviso de empresas ya contactadas en otras campañas)
-   - Mapeo automático de campos lista → campaña
-   - Inserción en batches de 100
-
-3. **`src/components/admin/campanas-valoracion/ImportFromListDialog.tsx`** (NUEVO): Diálogo para importar empresas desde lista dentro del paso 2 (CompaniesStep) de una campaña. Misma lógica de deduplicación.
-
-4. **`src/pages/admin/ContactListDetailPage.tsx`**: Botón "Enviar a campaña" en la toolbar de acciones de la lista.
-
-5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`**: Botón "Importar desde lista de contacto" antes del formulario manual.
-
-6. **`src/pages/admin/CampanasValoracion.tsx`**: Badge con nombre de lista origen junto al nombre de la campaña (clickable, navega a la lista).
-
-7. **`src/hooks/useCampaigns.ts`**: Añadido `source_list_id` al tipo `ValuationCampaign`.
-
-### Resultado
-
-- Flujo directo lista → campaña con un solo clic
-- Protección anti-duplicados a nivel de campaña y cross-campaña
-- Trazabilidad: cada campaña muestra su lista origen
+### Nota técnica
+El warning de React sobre `React.Fragment` que aparece en consola no es la causa del fallo de importación. Es ruido aparte y no está relacionado con la subida del Excel.
