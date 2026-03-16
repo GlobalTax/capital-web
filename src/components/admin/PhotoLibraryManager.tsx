@@ -1,8 +1,10 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { usePhotoLibrary, PhotoFile } from '@/hooks/usePhotoLibrary';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Upload, Trash2, Copy, Loader2, ImageIcon, X, FolderPlus, Folder, ChevronRight, Home, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
