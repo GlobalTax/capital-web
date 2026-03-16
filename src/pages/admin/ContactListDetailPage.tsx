@@ -1365,12 +1365,23 @@ export default function ContactListDetailPage() {
                                     {(() => {
                                       const sublistNames = sublistCompanyMap?.map.get(company.cif!.toUpperCase().trim());
                                       const targetSublist = allLists.find((l: any) => sublistNames?.includes(l.name));
+                                      const currentSublistId = sublistCompanyMap?.cifToListId?.get(company.cif!.toUpperCase().trim());
                                       return (
-                                        <DropdownMenuItem onClick={() => {
-                                          if (targetSublist) navigate(`/admin/empresas/${(targetSublist as any).id}`);
-                                        }}>
-                                          <MoveRight className="h-4 w-4 mr-2" /> Ver en sublista
-                                        </DropdownMenuItem>
+                                        <>
+                                          <DropdownMenuItem onClick={() => {
+                                            if (targetSublist) navigate(`/admin/listas-contacto/${(targetSublist as any).id}`);
+                                          }}>
+                                            <MoveRight className="h-4 w-4 mr-2" /> Ver en sublista
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => {
+                                            setMoveCopyCompany(company);
+                                            setMoveCopyMode('move');
+                                            setMoveCopyTargetId('');
+                                            setMoveCopyFromSublistId(currentSublistId || null);
+                                          }}>
+                                            <ArrowUpDown className="h-4 w-4 mr-2" /> Cambiar de sublista
+                                          </DropdownMenuItem>
+                                        </>
                                       );
                                     })()}
                                   </>
