@@ -24573,6 +24573,16 @@ export type Database = {
         Args: { p_empresa_id: string; p_valuation_id: string }
         Returns: boolean
       }
+      list_admin_photos: {
+        Args: { folder_path?: string }
+        Returns: {
+          created_at: string
+          id: string
+          metadata: Json
+          name: string
+          updated_at: string
+        }[]
+      }
       log_auth_security_event: {
         Args: {
           details?: Json
