@@ -182,11 +182,16 @@ export const useContactLists = () => {
         .single();
       if (createErr || !newList) throw createErr || new Error('Error al duplicar');
 
-      const { data: companies } = await supabase.from(TB_COMPANIES).select('*').eq('list_id', id);
-      if (companies && companies.length > 0) {
+      const companies = await fetchAllRows((from, to) =>
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).range(from, to)
+      );
+      if (companies.length > 0) {
         const copies = (companies as any[]).map(({ id: _, list_id, created_at, ...rest }) => ({ ...rest, list_id: (newList as any).id }));
-        const { error: insertErr } = await supabase.from(TB_COMPANIES).insert(copies);
-        if (insertErr) throw insertErr;
+        // Insert in batches of 100
+        for (let i = 0; i < copies.length; i += 100) {
+          const { error: insertErr } = await supabase.from(TB_COMPANIES).insert(copies.slice(i, i + 100));
+          if (insertErr) throw insertErr;
+        }
       }
 
       return newList as unknown as { id: string };
