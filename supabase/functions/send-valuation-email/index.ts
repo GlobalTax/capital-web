@@ -546,8 +546,11 @@ const handler = async (req: Request): Promise<Response> => {
         email => email.toLowerCase() === leadEmail.toLowerCase()
       );
       if (leadInRecipients) {
-        log('error', 'GUARDRAIL_BLOCKED', { reason: 'Lead email in internal recipients', email: leadEmail });
-        throw new Error('Lead email cannot be in internal recipients');
+        log('warn', 'LEAD_IS_INTERNAL_RECIPIENT', { email: leadEmail });
+        // Remove lead from CC list to avoid duplicate
+        internalRecipients = internalRecipients.filter(
+          email => email.toLowerCase() !== leadEmail.toLowerCase()
+        );
       }
     }
 
