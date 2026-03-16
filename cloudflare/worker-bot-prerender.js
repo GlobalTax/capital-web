@@ -2,11 +2,16 @@
  * Cloudflare Worker - capittal.es
  *
  * Flow:
- *   Bots    → HTMLRewriter (fix SEO meta tags) → Prerender.io (full render)
- *   Users   → Lovable upstream (SPA)
+ *   Bots    → Lovable upstream + HTMLRewriter (guaranteed correct SEO meta tags)
+ *   Users   → Lovable upstream (SPA, unmodified)
  *
- * The HTMLRewriter ensures crawlers always see correct title, description,
- * canonical, og tags, and hreflang — even if Prerender.io cache is stale.
+ * Strategy: Instead of relying on Prerender.io (which may cache stale HTML,
+ * return redirects, or wrong content-types), we fetch the SPA shell from
+ * Lovable for ALL requests and apply HTMLRewriter for bots to ensure
+ * correct title, description, canonical, og tags, and hreflang on every page.
+ *
+ * Googlebot renders JS natively, so the SPA content is fine.
+ * Ahrefs/SEMrush only care about meta tags, which HTMLRewriter guarantees.
  */
 
 const LOVABLE_UPSTREAM = "https://webcapittal.lovable.app";
@@ -233,37 +238,13 @@ const HREFLANGS = {
 // HTMLRewriter handlers
 // =====================================================================
 
+class RemoveElementHandler {
+  element(el) { el.remove(); }
+}
+
 class TitleHandler {
   constructor(title) { this.title = title; }
   element(el) { el.setInnerContent(this.title); }
-}
-
-class MetaDescriptionHandler {
-  constructor(desc) { this.desc = desc; }
-  element(el) {
-    if (el.getAttribute('name') === 'description') el.setAttribute('content', this.desc);
-  }
-}
-
-class OgHandler {
-  constructor(prop, value) { this.prop = prop; this.value = value; }
-  element(el) {
-    if (el.getAttribute('property') === this.prop) el.setAttribute('content', this.value);
-  }
-}
-
-class TwitterHandler {
-  constructor(name, value) { this.name = name; this.value = value; }
-  element(el) {
-    if (el.getAttribute('name') === this.name) el.setAttribute('content', this.value);
-  }
-}
-
-class CanonicalHandler {
-  constructor(url) { this.url = url; }
-  element(el) {
-    if (el.getAttribute('rel') === 'canonical') el.setAttribute('href', this.url);
-  }
 }
 
 class HtmlLangHandler {
@@ -300,33 +281,50 @@ function applyHtmlRewriter(response, pathname) {
   const canonicalUrl = BASE_URL + p;
   const lang = detectLang(p);
 
-  // Build hreflang tags
-  let hreflangHtml = '';
+  // Build extra HTML to inject at end of <head>
+  // This GUARANTEES correct tags even if the original HTML doesn't have them
+  let injectHtml = '';
+
+  // Hreflang tags
   const hl = HREFLANGS[p];
   if (hl) {
     for (const [hrefLang, hrefPath] of Object.entries(hl)) {
-      hreflangHtml += `<link rel="alternate" hreflang="${hrefLang}" href="${BASE_URL}${hrefPath}" />\n`;
+      injectHtml += `<link rel="alternate" hreflang="${hrefLang}" href="${BASE_URL}${hrefPath}" />\n`;
     }
-    hreflangHtml += `<link rel="alternate" hreflang="x-default" href="${BASE_URL}${hl.es || p}" />\n`;
+    injectHtml += `<link rel="alternate" hreflang="x-default" href="${BASE_URL}${hl.es || p}" />\n`;
   }
 
   let rw = new HTMLRewriter()
     .on('html', new HtmlLangHandler(lang))
-    .on('link[rel="canonical"]', new CanonicalHandler(canonicalUrl))
-    .on('meta[property="og:url"]', new OgHandler('og:url', canonicalUrl))
-    .on('head', new HeadEndHandler(hreflangHtml));
+    // Remove ALL existing canonical, og, twitter, hreflang tags to prevent duplicates
+    .on('link[rel="canonical"]', new RemoveElementHandler())
+    .on('link[rel="alternate"][hreflang]', new RemoveElementHandler())
+    .on('meta[property="og:url"]', new RemoveElementHandler())
+    .on('meta[property="og:title"]', new RemoveElementHandler())
+    .on('meta[property="og:description"]', new RemoveElementHandler())
+    .on('meta[name="twitter:title"]', new RemoveElementHandler())
+    .on('meta[name="twitter:description"]', new RemoveElementHandler())
+    .on('meta[name="description"]', new RemoveElementHandler())
+    .on('title', new TitleHandler(meta ? meta.t : `Capittal Transacciones | ${p}`));
 
+  // Inject all SEO tags fresh at end of <head>
+  injectHtml += `<link rel="canonical" href="${canonicalUrl}" />\n`;
   if (meta) {
-    rw = rw
-      .on('title', new TitleHandler(meta.t))
-      .on('meta[name="description"]', new MetaDescriptionHandler(meta.d))
-      .on('meta[property="og:title"]', new OgHandler('og:title', meta.t))
-      .on('meta[property="og:description"]', new OgHandler('og:description', meta.d))
-      .on('meta[name="twitter:title"]', new TwitterHandler('twitter:title', meta.t))
-      .on('meta[name="twitter:description"]', new TwitterHandler('twitter:description', meta.d));
+    injectHtml += `<meta name="description" content="${escAttr(meta.d)}" />\n`;
+    injectHtml += `<meta property="og:title" content="${escAttr(meta.t)}" />\n`;
+    injectHtml += `<meta property="og:description" content="${escAttr(meta.d)}" />\n`;
+    injectHtml += `<meta property="og:url" content="${canonicalUrl}" />\n`;
+    injectHtml += `<meta name="twitter:title" content="${escAttr(meta.t)}" />\n`;
+    injectHtml += `<meta name="twitter:description" content="${escAttr(meta.d)}" />\n`;
   }
 
+  rw = rw.on('head', new HeadEndHandler(injectHtml));
+
   return rw.transform(response);
+}
+
+function escAttr(str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // =====================================================================
@@ -385,38 +383,78 @@ async function handleRequest(request, env) {
     });
   }
 
-  // ── Bots → Prerender.io + HTMLRewriter for SEO meta tags ──────────────
+  // ── SEO Debug endpoint — verify Worker is deployed and meta tags work ──
+  if (url.pathname === '/__seo-debug') {
+    const testPath = url.searchParams.get('path') || '/venta-empresas';
+    const p = testPath.replace(/\/+$/, '') || '/';
+    const meta = ROUTES[p];
+    const hl = HREFLANGS[p];
+    return new Response(JSON.stringify({
+      worker_version: '2.0-direct-rewrite',
+      deployed: true,
+      test_path: p,
+      route_found: !!meta,
+      meta: meta || null,
+      canonical: BASE_URL + p,
+      hreflang: hl || null,
+      lang: detectLang(p),
+      total_routes: Object.keys(ROUTES).length,
+    }, null, 2), {
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+    });
+  }
+
+  // ── Bots → Lovable upstream + HTMLRewriter for guaranteed SEO meta tags ──
   if (isGetLike && isBotReq && !isIgnoredExtension(url.pathname)) {
-    const prerenderUrl = `https://service.prerender.io/${url.href}`;
-    const newHeaders   = new Headers(request.headers);
-    newHeaders.set("X-Prerender-Token", PRERENDER_TOKEN);
-    newHeaders.delete("Host");
+    // Fetch the SPA shell from Lovable upstream (same as user traffic)
+    const upstreamResp = await fetchFromLovable(request, url, isGetLike);
 
-    const prerenderResp = await fetch(new Request(prerenderUrl, {
-      headers: newHeaders,
-      redirect: "manual",
-    }));
+    // If it's a redirect, pass through
+    if (isRedirect(upstreamResp.status)) {
+      const loc = upstreamResp.headers.get("Location") || "";
+      const upstreamBase = new URL(LOVABLE_UPSTREAM);
+      let newLoc = loc.replaceAll(upstreamBase.hostname, PUBLIC_HOST);
+      newLoc = newLoc.replace(/^http:\/\//i, "https://");
+      const newHeaders = new Headers(upstreamResp.headers);
+      if (loc) newHeaders.set("Location", newLoc);
+      return new Response(upstreamResp.body, { status: upstreamResp.status, headers: newHeaders });
+    }
 
-    if (isRedirect(prerenderResp.status)) return prerenderResp;
-
-    // Apply HTMLRewriter to fix/override SEO meta tags on the prerendered HTML
-    const contentType = prerenderResp.headers.get('content-type') || '';
+    // Apply HTMLRewriter to override SEO meta tags on the SPA shell
+    const contentType = upstreamResp.headers.get('content-type') || '';
     if (contentType.includes('text/html')) {
       return applyHtmlRewriter(
-        new Response(prerenderResp.body, {
-          status: prerenderResp.status,
-          headers: prerenderResp.headers,
+        new Response(upstreamResp.body, {
+          status: upstreamResp.status,
+          headers: upstreamResp.headers,
         }),
         url.pathname
       );
     }
 
-    return prerenderResp;
+    return upstreamResp;
   }
 
   // ── Usuarios normales → Lovable ───────────────────────────────────────
+  const resp = await fetchFromLovable(request, url, isGetLike);
+
+  if (isRedirect(resp.status)) {
+    const upstreamBase = new URL(LOVABLE_UPSTREAM);
+    const loc    = resp.headers.get("Location") || "";
+    let newLoc   = loc.replaceAll(upstreamBase.hostname, PUBLIC_HOST);
+    newLoc       = newLoc.replace(/^http:\/\//i, "https://");
+    const newHeaders = new Headers(resp.headers);
+    if (loc) newHeaders.set("Location", newLoc);
+    return new Response(resp.body, { status: resp.status, headers: newHeaders });
+  }
+
+  return resp;
+}
+
+// ── Fetch from Lovable upstream ──────────────────────────────────────
+function fetchFromLovable(request, url, isGetLike) {
   const upstreamBase = new URL(LOVABLE_UPSTREAM);
-  const upstreamUrl  = new URL(request.url);
+  const upstreamUrl  = new URL(url.href);
   upstreamUrl.protocol = upstreamBase.protocol;
   upstreamUrl.hostname = upstreamBase.hostname;
 
@@ -428,21 +466,8 @@ async function handleRequest(request, env) {
   h.delete("x-forwarded-for");
   h.delete("forwarded");
 
-  const upstreamReq = new Request(upstreamUrl.toString(), {
+  return fetch(new Request(upstreamUrl.toString(), {
     method: request.method, headers: h,
     body: isGetLike ? undefined : request.body, redirect: "manual",
-  });
-
-  const resp = await fetch(upstreamReq);
-
-  if (isRedirect(resp.status)) {
-    const loc    = resp.headers.get("Location") || "";
-    let newLoc   = loc.replaceAll(upstreamBase.hostname, PUBLIC_HOST);
-    newLoc       = newLoc.replace(/^http:\/\//i, "https://");
-    const newHeaders = new Headers(resp.headers);
-    if (loc) newHeaders.set("Location", newLoc);
-    return new Response(resp.body, { status: resp.status, headers: newHeaders });
-  }
-
-  return resp;
+  }));
 }
