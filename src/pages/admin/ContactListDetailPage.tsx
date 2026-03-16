@@ -309,6 +309,7 @@ export default function ContactListDetailPage() {
   const [isLinkCampaignOpen, setIsLinkCampaignOpen] = useState(false);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
+  const [isSendToCampaignOpen, setIsSendToCampaignOpen] = useState(false);
   const [dedupKeep, setDedupKeep] = useState<'newest' | 'oldest'>('newest');
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
