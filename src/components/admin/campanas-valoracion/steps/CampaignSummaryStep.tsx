@@ -17,6 +17,8 @@ import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences } from '@/hooks/useFollowupSequences';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
+import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
+import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
