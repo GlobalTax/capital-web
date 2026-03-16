@@ -299,6 +299,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   const filteredCompanies = useMemo(() => {
@@ -309,9 +310,10 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
     }
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
+    result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
     return applySortToList(result, sort);
-  }, [companies, searchQuery, filterRevenue, filterEbitda, sort]);
-  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
+  }, [companies, searchQuery, filterRevenue, filterEbitda, filterValuation, sort]);
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
 
   const handleRecalculateAll = async () => {
     setRecalculating(true);
