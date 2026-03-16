@@ -2144,5 +2144,14 @@ function CompanyDrawer({ company, onClose, onEdit }: {
         )}
       </SheetContent>
     </Sheet>
+
+    {/* Send to Campaign Dialog */}
+    <SendToCampaignDialog
+      open={isSendToCampaignOpen}
+      onOpenChange={setIsSendToCampaignOpen}
+      companies={selectedIds.length > 0 ? companies.filter(c => selectedIds.includes(c.id)) : companies}
+      listId={listId!}
+      listName={list?.name || ''}
+    />
   );
 }
