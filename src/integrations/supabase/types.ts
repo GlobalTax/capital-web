@@ -22539,6 +22539,7 @@ export type Database = {
           name: string
           sector: string
           service_type: string | null
+          source_list_id: string | null
           status: string | null
           strengths_template: string | null
           total_companies: number | null
@@ -22578,6 +22579,7 @@ export type Database = {
           name: string
           sector: string
           service_type?: string | null
+          source_list_id?: string | null
           status?: string | null
           strengths_template?: string | null
           total_companies?: number | null
@@ -22617,6 +22619,7 @@ export type Database = {
           name?: string
           sector?: string
           service_type?: string | null
+          source_list_id?: string | null
           status?: string | null
           strengths_template?: string | null
           total_companies?: number | null
@@ -22631,7 +22634,15 @@ export type Database = {
           weaknesses_template?: string | null
           years_mode?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "valuation_campaigns_source_list_id_fkey"
+            columns: ["source_list_id"]
+            isOneToOne: false
+            referencedRelation: "outbound_lists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       valuation_ranges: {
         Row: {
