@@ -138,11 +138,14 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
 
   const deleteFolder = useCallback(async (name: string) => {
     const folderPath = currentFolder ? `${currentFolder}/${name}` : name;
-    const { data: files, error: listError } = await supabase.storage.from(BUCKET).list(folderPath, { limit: 1000 });
+    // Use RPC to list folder contents (avoids Storage API RLS issue)
+    const { data: rpcFiles, error: listError } = await supabase.rpc('list_admin_photos', { folder_path: folderPath });
     if (listError) {
       toast({ title: 'Error', description: listError.message, variant: 'destructive' });
       return false;
     }
+
+    const files = (rpcFiles as any[]) || [];
 
     if (files && files.length > 0) {
       const filePaths = files.map(f => `${folderPath}/${f.name}`);
