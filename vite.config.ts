@@ -39,6 +39,8 @@ export default defineConfig(({ mode }) => {
             if (id.includes('react-quill') || id.includes('quill')) return 'editor';
             if (id.includes('xlsx') || id.includes('html2canvas')) return 'export';
             if (id.includes('@supabase')) return 'supabase';
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts';
+            if (id.includes('@hello-pangea/dnd')) return 'dnd';
           }
         }
       }
