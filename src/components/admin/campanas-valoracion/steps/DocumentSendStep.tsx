@@ -283,7 +283,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Empresas</CardTitle>
@@ -330,6 +330,26 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-amber-600">{pendingEmails.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              <Users className="h-4 w-4" /> Interesados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-emerald-600">{interesados.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+              <CalendarCheck className="h-4 w-4" /> Reuniones
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-violet-600">{reuniones.length}</p>
           </CardContent>
         </Card>
       </div>
