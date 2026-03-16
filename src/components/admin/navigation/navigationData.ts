@@ -3,6 +3,7 @@ import {
   Users,
   AlertCircle,
   Brain,
+  ImageIcon,
   Workflow,
   TrendingUp,
   BarChart3,
