@@ -811,6 +811,7 @@ export default function ContactListDetailPage() {
       setMoveCopyTargetId('');
       setIsCreatingNewList(false);
       setNewListName('');
+      setMoveCopyFromSublistId(null);
     } catch (err) {
       toast.error('Error al procesar la operación');
     } finally {
