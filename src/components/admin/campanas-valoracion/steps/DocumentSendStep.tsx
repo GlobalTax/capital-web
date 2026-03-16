@@ -500,6 +500,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                           return <Badge variant="outline" className="text-muted-foreground">Enviado</Badge>;
                         })()}
                       </TableCell>
+                      <TableCell className="text-center">
+                        <SeguimientoBadge company={c} campaignId={campaignId} />
+                      </TableCell>
                       <TableCell className="text-right">
                         {email && (
                           <DropdownMenu>
