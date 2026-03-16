@@ -57,7 +57,7 @@ const LeadMagnetFormDialog: React.FC<LeadMagnetFormDialogProps> = ({
   const [slugManual, setSlugManual] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     if (editingMagnet) {
