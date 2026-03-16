@@ -633,6 +633,52 @@ const getUserConfirmationTemplate = (formType: string, data: any) => {
       };
     }
 
+    case 'lead_magnet_download': {
+      const resourceTitle = data.lead_magnet_title || 'el recurso solicitado';
+      const downloadUrl = data.file_url || '';
+      
+      const contentHtml = `
+        <div style="margin-bottom: 24px;">
+          <p style="margin: 0; color: #0f172a; font-size: 16px;">
+            Hola <strong>${data.fullName || 'Usuario'}</strong>,
+          </p>
+          <p style="margin: 12px 0 0; color: #64748b; font-size: 14px; line-height: 1.6;">
+            Gracias por descargar <strong>${resourceTitle}</strong>. Esperamos que este recurso te sea de gran utilidad para la toma de decisiones estratégicas de tu empresa.
+          </p>
+        </div>
+
+        ${downloadUrl ? `
+        <div style="text-align: center; margin-bottom: 24px;">
+          <a href="${downloadUrl}" style="display: inline-block; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+            📥 Descargar recurso
+          </a>
+          <p style="margin: 8px 0 0; color: #94a3b8; font-size: 12px;">Si el botón no funciona, copia este enlace en tu navegador:<br><a href="${downloadUrl}" style="color: #2563eb; font-size: 11px; word-break: break-all;">${downloadUrl}</a></p>
+        </div>
+        ` : ''}
+
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6; margin-bottom: 24px;">
+          <h3 style="color: #0f172a; font-size: 14px; font-weight: 600; margin: 0 0 12px;">
+            ¿Quieres conocer el valor de tu empresa?
+          </h3>
+          <p style="margin: 0 0 16px; color: #64748b; font-size: 13px; line-height: 1.6;">
+            Utiliza nuestra calculadora gratuita de valoración y obtén una estimación en minutos.
+          </p>
+          <a href="https://capittal.es/lp/calculadora" style="display: inline-block; background: #2563eb; color: #ffffff; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px;">
+            Calcular valoración →
+          </a>
+        </div>
+      `;
+
+      return {
+        subject: `Tu descarga: ${resourceTitle} - Capittal`,
+        html: getUserEmailBaseHtml(
+          'Tu Recurso Está Listo',
+          resourceTitle,
+          contentHtml
+        )
+      };
+    }
+
     default:
       return {
         subject: `✅ Hemos recibido tu información - Capittal`,
