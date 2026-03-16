@@ -2153,5 +2153,6 @@ function CompanyDrawer({ company, onClose, onEdit }: {
       listId={listId!}
       listName={list?.name || ''}
     />
+    </div>
   );
 }
