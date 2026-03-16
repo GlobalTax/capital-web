@@ -1,5 +1,3 @@
-
-
 ## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
 ### Cambios realizados
@@ -50,3 +48,34 @@
 
 - Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
 - FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
+
+---
+
+## ✅ Completado: Integración Lista de Contacto → Campaña Outbound
+
+### Cambios realizados
+
+1. **Migración SQL**: Añadida columna `source_list_id` (uuid) a `valuation_campaigns` con FK a `outbound_lists`.
+
+2. **`src/components/admin/contact-lists/SendToCampaignDialog.tsx`** (NUEVO): Diálogo completo para enviar empresas de una lista a una campaña outbound. Incluye:
+   - Selección entre crear nueva campaña o añadir a existente
+   - Deduplicación por CIF contra la campaña destino (omite duplicados)
+   - Deduplicación cross-campaña (aviso de empresas ya contactadas en otras campañas)
+   - Mapeo automático de campos lista → campaña
+   - Inserción en batches de 100
+
+3. **`src/components/admin/campanas-valoracion/ImportFromListDialog.tsx`** (NUEVO): Diálogo para importar empresas desde lista dentro del paso 2 (CompaniesStep) de una campaña. Misma lógica de deduplicación.
+
+4. **`src/pages/admin/ContactListDetailPage.tsx`**: Botón "Enviar a campaña" en la toolbar de acciones de la lista.
+
+5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`**: Botón "Importar desde lista de contacto" antes del formulario manual.
+
+6. **`src/pages/admin/CampanasValoracion.tsx`**: Badge con nombre de lista origen junto al nombre de la campaña (clickable, navega a la lista).
+
+7. **`src/hooks/useCampaigns.ts`**: Añadido `source_list_id` al tipo `ValuationCampaign`.
+
+### Resultado
+
+- Flujo directo lista → campaña con un solo clic
+- Protección anti-duplicados a nivel de campaña y cross-campaña
+- Trazabilidad: cada campaña muestra su lista origen
