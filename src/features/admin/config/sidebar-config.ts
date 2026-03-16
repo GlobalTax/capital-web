@@ -527,6 +527,12 @@ export const sidebarSections: SidebarSection[] = [
         icon: ClipboardList,
         description: "Tests de preparación para venta"
       },
+      { 
+        title: "Biblioteca de Fotos",
+        url: "/admin/photo-library", 
+        icon: Image,
+        description: "Gestiona y organiza fotos"
+      },
     ]
   },
   {
