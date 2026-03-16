@@ -35,7 +35,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
