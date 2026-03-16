@@ -564,6 +564,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [followUpFilter, setFollowUpFilter] = useState<string>('all');
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
 
   const toggleSelection = useCallback((id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]),
@@ -600,10 +601,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       }
       if (!matchesCustomRange(c.revenue, filterRevenue)) return false;
       if (!matchesCustomRange(c.ebitda, filterEbitda)) return false;
+      if (!matchesCustomRange(c.valuation_central, filterValuation)) return false;
       return true;
     });
     return applySortToList(result, sort);
-  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, sort]);
+  }, [companies, statusFilter, followUpFilter, searchQuery, filterRevenue, filterEbitda, filterValuation, sort]);
 
   const toggleSelectAll = useCallback(() =>
     setSelectedIds(prev => {
@@ -1132,13 +1134,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </div>
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null) && (
+            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+            {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                 </span>
-                {(filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null) && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); }}>
+                {(filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null) && (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); setFilterValuation({ min: null, max: null }); }}>
                     <X className="h-3 w-3 mr-1" />Limpiar filtros
                   </Button>
                 )}
@@ -1158,7 +1161,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                 <TableHead>Empresa</TableHead>
                 <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
-                <TableHead className="text-right">Valoración</TableHead>
+                <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-center">PDF Valoración</TableHead>
                 <TableHead className="text-center">PDF Estudio</TableHead>
                 <TableHead className="text-center">Estado</TableHead>

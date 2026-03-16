@@ -299,6 +299,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   const filteredCompanies = useMemo(() => {
@@ -309,9 +310,10 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
     }
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
+    result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
     return applySortToList(result, sort);
-  }, [companies, searchQuery, filterRevenue, filterEbitda, sort]);
-  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null;
+  }, [companies, searchQuery, filterRevenue, filterEbitda, filterValuation, sort]);
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
 
   const handleRecalculateAll = async () => {
     setRecalculating(true);
@@ -489,13 +491,14 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             </div>
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
             {(searchQuery || hasFinancialFilters) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                 </span>
                 {hasFinancialFilters && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); }}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); setFilterValuation({ min: null, max: null }); }}>
                     <X className="h-3 w-3 mr-1" />Limpiar filtros
                   </Button>
                 )}
@@ -517,7 +520,7 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-center">Múltiplo</TableHead>
                 <TableHead className="text-right">Val. Baja</TableHead>
-                <TableHead className="text-right">Val. Central</TableHead>
+                <TableHead className="text-right"><SortableHeader label="Val. Central" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-right">Val. Alta</TableHead>
                 <TableHead className="text-center">Email</TableHead>
                 <TableHead className="text-center">IA</TableHead>

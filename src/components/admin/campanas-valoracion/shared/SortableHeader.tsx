@@ -2,20 +2,20 @@ import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type SortDirection = 'asc' | 'desc' | null;
-export type SortField = 'revenue' | 'ebitda' | null;
+export type SortField = 'revenue' | 'ebitda' | 'valuation_central' | null;
 
 export interface SortState {
   field: SortField;
   direction: SortDirection;
 }
 
-export function toggleSort(current: SortState, field: 'revenue' | 'ebitda'): SortState {
+export function toggleSort(current: SortState, field: 'revenue' | 'ebitda' | 'valuation_central'): SortState {
   if (current.field !== field) return { field, direction: 'desc' };
   if (current.direction === 'desc') return { field, direction: 'asc' };
   return { field: null, direction: null };
 }
 
-export function applySortToList<T extends { revenue?: number | null; ebitda?: number | null }>(
+export function applySortToList<T extends { revenue?: number | null; ebitda?: number | null; valuation_central?: number | null }>(
   list: T[],
   sort: SortState
 ): T[] {
@@ -29,9 +29,9 @@ export function applySortToList<T extends { revenue?: number | null; ebitda?: nu
 
 interface SortableHeaderProps {
   label: string;
-  field: 'revenue' | 'ebitda';
+  field: 'revenue' | 'ebitda' | 'valuation_central';
   sort: SortState;
-  onToggle: (field: 'revenue' | 'ebitda') => void;
+  onToggle: (field: 'revenue' | 'ebitda' | 'valuation_central') => void;
   className?: string;
 }
 

@@ -17,6 +17,8 @@ import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences } from '@/hooks/useFollowupSequences';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
+import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
+import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -224,6 +226,10 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const [filterEstado, setFilterEstado] = useState<string | null>(null);
   const [filterEntrega, setFilterEntrega] = useState<string | null>(null);
   const [filterSeguimiento, setFilterSeguimiento] = useState<string | null>(null);
+  const [filterRevenue, setFilterRevenue] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
+  const [sort, setSort] = useState<SortState>({ field: null, direction: null });
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -260,16 +266,25 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
       result = result.filter(c => (c.seguimiento_estado || 'sin_respuesta') === filterSeguimiento);
     }
 
-    return result;
-  }, [companies, searchQuery, filterEstado, filterEntrega, filterSeguimiento, emailTrackingMap]);
+    // Financial filters
+    result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
+    result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
+    result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
 
-  const hasActiveFilters = !!searchQuery || !!filterEstado || !!filterEntrega || !!filterSeguimiento;
+    return applySortToList(result, sort);
+  }, [companies, searchQuery, filterEstado, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, filterValuation, emailTrackingMap, sort]);
+
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
+  const hasActiveFilters = !!searchQuery || !!filterEstado || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
 
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
     setFilterEstado(null);
     setFilterEntrega(null);
     setFilterSeguimiento(null);
+    setFilterRevenue({ min: null, max: null });
+    setFilterEbitda({ min: null, max: null });
+    setFilterValuation({ min: null, max: null });
   }, []);
 
   const sentCount = companies.filter(c => c.status === 'sent').length;
@@ -457,6 +472,10 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 </SelectContent>
               </Select>
 
+              <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
+              <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+              <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+
               {hasActiveFilters && (
                 <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
                   <X className="h-3 w-3 mr-1" />
@@ -478,7 +497,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
               <TableRow>
                 <TableHead>Empresa</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead className="text-right">Valoración</TableHead>
+                <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                 <TableHead className="text-center">Estado</TableHead>
                 <TableHead className="text-center">Entrega</TableHead>
                 <TableHead className="text-center">Fecha envío</TableHead>
