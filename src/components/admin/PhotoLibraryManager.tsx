@@ -405,6 +405,14 @@ const PhotoLibraryManager: React.FC = () => {
                 ))}
               </div>
             )}
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-1" />
+            {loadingMore && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </div>
         )}
       </div>

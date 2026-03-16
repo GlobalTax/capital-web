@@ -142,6 +142,13 @@ const PhotoLibraryPicker: React.FC<PhotoLibraryPickerProps> = ({ onSelect, trigg
                     <p className="col-span-4 text-sm text-muted-foreground text-center py-8">No hay fotos en esta ubicación</p>
                   )}
                 </div>
+                {/* Infinite scroll sentinel */}
+                <div ref={sentinelRef} className="h-1" />
+                {loadingMore && (
+                  <div className="flex justify-center py-3">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                )}
               )}
             </div>
           </>
