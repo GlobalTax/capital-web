@@ -441,8 +441,8 @@ export default function ContactListDetailPage() {
         return sortDir === 'asc' ? va - vb : vb - va;
       });
     }
-    // For madre lists: sort unassigned first, then assigned
-    if (isMadreList && sublistCompanyMap && !sortField) {
+    // For madre lists: sort unassigned first, then assigned (only in grouped mode without column sort)
+    if (isMadreList && sublistCompanyMap && groupBlocked && !sortField) {
       result.sort((a, b) => {
         const aAssigned = a.cif && sublistCompanyMap.map.has(a.cif.toUpperCase().trim()) ? 1 : 0;
         const bAssigned = b.cif && sublistCompanyMap.map.has(b.cif.toUpperCase().trim()) ? 1 : 0;
@@ -450,7 +450,7 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
   // Config tab state
   const [configName, setConfigName] = useState('');
