@@ -1062,12 +1062,38 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             Se generará el PDF y se enviará el email con la valoración a cada empresa.
           </p>
 
+          {/* Schedule config panel */}
+          <SendScheduleConfig
+            value={sendConfig}
+            onChange={setSendConfig}
+            disabled={isBusy || !!scheduledCountdown}
+          />
+
+          {/* Scheduled countdown */}
+          {scheduledCountdown && !sendingProgress.active && (
+            <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50 border">
+              <Clock className="h-5 w-5 text-muted-foreground animate-pulse" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Envío programado</p>
+                <p className="text-xs text-muted-foreground">
+                  Comienza en <span className="font-mono font-medium text-foreground">{scheduledCountdown}</span>
+                  {sendConfig.scheduledAt && (
+                    <> — {format(sendConfig.scheduledAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}</>
+                  )}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleCancelSchedule}>
+                Cancelar
+              </Button>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2">
-            <Button onClick={handleSendEmails} disabled={isBusy || readyToSend.length === 0}>
+            <Button onClick={handleSendEmails} disabled={isBusy || readyToSend.length === 0 || !!scheduledCountdown}>
               {sendingProgress.active
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Send className="h-4 w-4 mr-2" />}
-              Enviar {readyToSend.length} emails
+              {sendConfig.scheduledAt && !scheduledCountdown ? 'Programar envío' : `Enviar ${readyToSend.length} emails`}
             </Button>
 
             <Button variant="outline" onClick={handleDownloadAll} disabled={isBusy || downloadableCompanies.length === 0}>
