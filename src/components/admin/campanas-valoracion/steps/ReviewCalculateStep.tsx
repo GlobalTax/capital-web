@@ -491,13 +491,14 @@ export function ReviewCalculateStep({ campaignId, campaign }: Props) {
             </div>
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
+            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
             {(searchQuery || hasFinancialFilters) && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   {filteredCompanies.length} {filteredCompanies.length === 1 ? 'resultado' : 'resultados'}
                 </span>
                 {hasFinancialFilters && (
-                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); }}>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={() => { setFilterRevenue({ min: null, max: null }); setFilterEbitda({ min: null, max: null }); setFilterValuation({ min: null, max: null }); }}>
                     <X className="h-3 w-3 mr-1" />Limpiar filtros
                   </Button>
                 )}
