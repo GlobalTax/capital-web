@@ -7,6 +7,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+/**
+ * Paginate a Supabase query to fetch ALL rows (beyond the 1000-row default limit).
+ * `buildQuery` receives (from, to) and must return a fresh query with .range() applied.
+ */
+async function fetchAllRows<T = any>(
+  buildQuery: (from: number, to: number) => any,
+  pageSize = 1000
+): Promise<T[]> {
+  const allData: T[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await buildQuery(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return allData;
+}
+
 export type ContactListTipo = 'compradores' | 'outbound' | 'madre' | 'otros';
 
 export interface ContactList {
@@ -161,11 +182,16 @@ export const useContactLists = () => {
         .single();
       if (createErr || !newList) throw createErr || new Error('Error al duplicar');
 
-      const { data: companies } = await supabase.from(TB_COMPANIES).select('*').eq('list_id', id);
-      if (companies && companies.length > 0) {
+      const companies = await fetchAllRows((from, to) =>
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).range(from, to)
+      );
+      if (companies.length > 0) {
         const copies = (companies as any[]).map(({ id: _, list_id, created_at, ...rest }) => ({ ...rest, list_id: (newList as any).id }));
-        const { error: insertErr } = await supabase.from(TB_COMPANIES).insert(copies);
-        if (insertErr) throw insertErr;
+        // Insert in batches of 100
+        for (let i = 0; i < copies.length; i += 100) {
+          const { error: insertErr } = await supabase.from(TB_COMPANIES).insert(copies.slice(i, i + 100));
+          if (insertErr) throw insertErr;
+        }
       }
 
       return newList as unknown as { id: string };
@@ -185,9 +211,10 @@ export const useContactListCompanies = (listId: string | undefined) => {
     queryKey: ['contact-list-companies', listId],
     enabled: !!listId,
     queryFn: async () => {
-      const { data, error } = await supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as unknown as ContactListCompany[];
+      const data = await fetchAllRows<ContactListCompany>((from, to) =>
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).range(from, to)
+      );
+      return data;
     },
   });
 
@@ -207,7 +234,7 @@ export const useContactListCompanies = (listId: string | undefined) => {
 
   const addCompanies = useMutation({
     mutationFn: async ({ rows, onProgress }: { rows: Omit<ContactListCompany, 'id' | 'created_at'>[]; onProgress?: (done: number, total: number) => void }) => {
-      const BATCH_SIZE = 25;
+      const BATCH_SIZE = 100;
       const total = rows.length;
       for (let i = 0; i < total; i += BATCH_SIZE) {
         const batch = rows.slice(i, i + BATCH_SIZE);

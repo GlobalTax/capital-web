@@ -13,7 +13,7 @@ export interface ErrorRow extends ValidatedRow {
 }
 
 export interface RelatedListRow extends ValidatedRow {
-  listaRelacionada: string; // name of the list where it already exists
+  listaRelacionada: string;
 }
 
 export interface ValidationResult {
@@ -32,6 +32,24 @@ function normalizeCif(cif: string | null | undefined): string | null {
   return trimmed || null;
 }
 
+/** Paginate a Supabase query to fetch ALL rows (beyond the 1000-row default limit). */
+async function fetchAllPaginated<T = any>(
+  buildQuery: (from: number, to: number) => any,
+  pageSize = 1000
+): Promise<T[]> {
+  const all: T[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await buildQuery(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return all;
+}
+
 export function useExcelImportValidation() {
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -43,36 +61,44 @@ export function useExcelImportValidation() {
   ): Promise<ValidationResult> => {
     setIsValidating(true);
     try {
-      // Fetch existing CIFs in this list
-      const { data: listCifs } = await supabase
-        .from('outbound_list_companies' as any)
-        .select('cif')
-        .eq('list_id', listId)
-        .not('cif', 'is', null);
-
-      const existingInListSet = new Set(
-        (listCifs || []).map((r: any) => normalizeCif(r.cif)).filter(Boolean) as string[]
+      // Fetch ALL existing CIFs in this list (paginated)
+      const listCifs = await fetchAllPaginated<{ cif: string }>((from, to) =>
+        supabase
+          .from('outbound_list_companies' as any)
+          .select('cif')
+          .eq('list_id', listId)
+          .not('cif', 'is', null)
+          .range(from, to)
       );
 
-      // Fetch existing CIFs in empresas directory
-      const { data: empresaCifs } = await supabase
-        .from('empresas' as any)
-        .select('cif')
-        .not('cif', 'is', null);
+      const existingInListSet = new Set(
+        listCifs.map((r: any) => normalizeCif(r.cif)).filter(Boolean) as string[]
+      );
+
+      // Fetch ALL existing CIFs in empresas directory (paginated)
+      const empresaCifs = await fetchAllPaginated<{ cif: string }>((from, to) =>
+        supabase
+          .from('empresas' as any)
+          .select('cif')
+          .not('cif', 'is', null)
+          .range(from, to)
+      );
 
       const existingInEmpresasSet = new Set(
-        (empresaCifs || []).map((r: any) => normalizeCif(r.cif)).filter(Boolean) as string[]
+        empresaCifs.map((r: any) => normalizeCif(r.cif)).filter(Boolean) as string[]
       );
 
       // Fetch CIFs from related lists (parent + siblings)
-      const relatedCifMap = new Map<string, string>(); // cif -> list name
+      const relatedCifMap = new Map<string, string>();
       if (listaMadreId) {
-        // Get parent list companies
-        const { data: parentCompanies } = await supabase
-          .from('outbound_list_companies' as any)
-          .select('cif')
-          .eq('list_id', listaMadreId)
-          .not('cif', 'is', null);
+        const parentCompanies = await fetchAllPaginated((from, to) =>
+          supabase
+            .from('outbound_list_companies' as any)
+            .select('cif')
+            .eq('list_id', listaMadreId)
+            .not('cif', 'is', null)
+            .range(from, to)
+        );
 
         const { data: parentListData } = await supabase
           .from('outbound_lists' as any)
@@ -81,7 +107,7 @@ export function useExcelImportValidation() {
           .single();
 
         const parentName = (parentListData as any)?.name || 'Lista madre';
-        (parentCompanies || []).forEach((r: any) => {
+        parentCompanies.forEach((r: any) => {
           const c = normalizeCif(r.cif);
           if (c) relatedCifMap.set(c, parentName);
         });
@@ -94,13 +120,16 @@ export function useExcelImportValidation() {
           .neq('id', listId);
 
         for (const sibling of (siblingLists || []) as any[]) {
-          const { data: sibCifs } = await supabase
-            .from('outbound_list_companies' as any)
-            .select('cif')
-            .eq('list_id', sibling.id)
-            .not('cif', 'is', null);
+          const sibCifs = await fetchAllPaginated((from, to) =>
+            supabase
+              .from('outbound_list_companies' as any)
+              .select('cif')
+              .eq('list_id', sibling.id)
+              .not('cif', 'is', null)
+              .range(from, to)
+          );
 
-          (sibCifs || []).forEach((r: any) => {
+          sibCifs.forEach((r: any) => {
             const c = normalizeCif(r.cif);
             if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, sibling.name);
           });
@@ -113,13 +142,16 @@ export function useExcelImportValidation() {
           .eq('lista_madre_id', listId);
 
         for (const child of (childLists || []) as any[]) {
-          const { data: childCifs } = await supabase
-            .from('outbound_list_companies' as any)
-            .select('cif')
-            .eq('list_id', child.id)
-            .not('cif', 'is', null);
+          const childCifs = await fetchAllPaginated((from, to) =>
+            supabase
+              .from('outbound_list_companies' as any)
+              .select('cif')
+              .eq('list_id', child.id)
+              .not('cif', 'is', null)
+              .range(from, to)
+          );
 
-          (childCifs || []).forEach((r: any) => {
+          childCifs.forEach((r: any) => {
             const c = normalizeCif(r.cif);
             if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, child.name);
           });
@@ -166,7 +198,6 @@ export function useExcelImportValidation() {
           return;
         }
 
-        // Check related lists
         const relatedListName = relatedCifMap.get(cif);
 
         if (existingInEmpresasSet.has(cif)) {
