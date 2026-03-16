@@ -788,6 +788,13 @@ export default function ContactListDetailPage() {
           notas: null,
         } as any);
         toast.success('Empresa copiada a la otra lista');
+      } else if (moveCopyFromSublistId) {
+        // Move from sublist: update the record in the source sublist
+        await supabase.from('outbound_list_companies' as any)
+          .update({ list_id: targetId } as any)
+          .eq('list_id', moveCopyFromSublistId)
+          .eq('cif', moveCopyCompany.cif);
+        toast.success('Empresa reasignada a otra sublista');
       } else {
         // Move: update list_id, clear notas
         await supabase.from('outbound_list_companies' as any)
