@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ImageIcon, Search, Folder, ChevronRight, Home, ArrowLeft } from 'lucide-react';
+import { ImageIcon, Search, Folder, ChevronRight, Home, ArrowLeft, Loader2 } from 'lucide-react';
 import { usePhotoLibrary } from '@/hooks/usePhotoLibrary';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import ImageCropEditor from '@/components/admin/ImageCropEditor';
 
 interface PhotoLibraryPickerProps {
@@ -18,7 +19,9 @@ const PhotoLibraryPicker: React.FC<PhotoLibraryPickerProps> = ({ onSelect, trigg
   const [currentFolder, setCurrentFolder] = useState('');
   const [editingUrl, setEditingUrl] = useState<string | null>(null);
 
-  const { photos, folders, isLoading, isError, error, refetch } = usePhotoLibrary(search, currentFolder);
+  const { photos, folders, totalPhotos, hasMorePhotos, loadMorePhotos, isLoading, isError, error, refetch } = usePhotoLibrary(search, currentFolder);
+
+  const { sentinelRef, loading: loadingMore } = useInfiniteScroll(loadMorePhotos, hasMorePhotos);
 
   const breadcrumbs = currentFolder ? currentFolder.split('/') : [];
 
@@ -114,31 +117,39 @@ const PhotoLibraryPicker: React.FC<PhotoLibraryPickerProps> = ({ onSelect, trigg
                   <Button variant="outline" size="sm" onClick={() => refetch()}>Reintentar</Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-4 gap-3">
-                  {folders.map((folder) => (
-                    <button
-                      key={folder.name}
-                      onClick={() => setCurrentFolder(currentFolder ? `${currentFolder}/${folder.name}` : folder.name)}
-                      className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border hover:bg-accent transition-colors"
-                    >
-                      <Folder className="w-8 h-8 text-muted-foreground" />
-                      <span className="text-xs truncate w-full text-center">{folder.name}</span>
-                    </button>
-                  ))}
-                  {photos.map((photo) => (
-                    <button
-                      key={photo.id}
-                      onClick={() => handleSelect(photo.publicUrl)}
-                      className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary transition-all"
-                    >
-                      <img src={photo.thumbnailUrl || photo.publicUrl} alt={photo.name} className="w-full h-full object-cover" loading="lazy" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                    </button>
-                  ))}
-                  {folders.length === 0 && photos.length === 0 && (
-                    <p className="col-span-4 text-sm text-muted-foreground text-center py-8">No hay fotos en esta ubicación</p>
+                <>
+                  <div className="grid grid-cols-4 gap-3">
+                    {folders.map((folder) => (
+                      <button
+                        key={folder.name}
+                        onClick={() => setCurrentFolder(currentFolder ? `${currentFolder}/${folder.name}` : folder.name)}
+                        className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                      >
+                        <Folder className="w-8 h-8 text-muted-foreground" />
+                        <span className="text-xs truncate w-full text-center">{folder.name}</span>
+                      </button>
+                    ))}
+                    {photos.map((photo) => (
+                      <button
+                        key={photo.id}
+                        onClick={() => handleSelect(photo.publicUrl)}
+                        className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary transition-all"
+                      >
+                        <img src={photo.thumbnailUrl || photo.publicUrl} alt={photo.name} className="w-full h-full object-cover" loading="lazy" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                      </button>
+                    ))}
+                    {folders.length === 0 && photos.length === 0 && (
+                      <p className="col-span-4 text-sm text-muted-foreground text-center py-8">No hay fotos en esta ubicación</p>
+                    )}
+                  </div>
+                  <div ref={sentinelRef} className="h-1" />
+                  {loadingMore && (
+                    <div className="flex justify-center py-3">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </div>
           </>

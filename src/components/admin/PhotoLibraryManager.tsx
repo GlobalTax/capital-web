@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { usePhotoLibrary, PhotoFile } from '@/hooks/usePhotoLibrary';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,7 +67,9 @@ const PhotoLibraryManager: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(debouncedSearch, currentFolder);
+  const { photos, folders, totalPhotos, hasMorePhotos, loadMorePhotos, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(debouncedSearch, currentFolder);
+
+  const { sentinelRef, loading: loadingMore } = useInfiniteScroll(loadMorePhotos, hasMorePhotos);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -188,7 +191,9 @@ const PhotoLibraryManager: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">📸 Biblioteca de Fotos</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {photos.length} fotos · {folders.length} carpetas · Arrastra fotos a carpetas para moverlas
+            {totalPhotos > 0 && photos.length < totalPhotos
+              ? `Mostrando ${photos.length} de ${totalPhotos} fotos`
+              : `${photos.length} fotos`} · {folders.length} carpetas · Arrastra fotos a carpetas para moverlas
             {isMoving && <span className="ml-2 text-primary animate-pulse">Moviendo...</span>}
           </p>
         </div>
@@ -398,6 +403,14 @@ const PhotoLibraryManager: React.FC = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-1" />
+            {loadingMore && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             )}
           </div>

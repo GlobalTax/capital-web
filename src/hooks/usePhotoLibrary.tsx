@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +26,16 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(40);
+
+  // Reset visible count when folder or search changes
+  const prevFolder = useRef(currentFolder);
+  const prevSearch = useRef(search);
+  if (prevFolder.current !== currentFolder || prevSearch.current !== search) {
+    prevFolder.current = currentFolder;
+    prevSearch.current = search;
+    setVisibleCount(40);
+  }
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['photo-library', currentFolder],
@@ -77,11 +87,20 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
   // Client-side filtering by search
   const normalizedSearch = search.trim().toLowerCase();
 
-  const photos = useMemo(() => {
+  const allFilteredPhotos = useMemo(() => {
     const all = data?.photos ?? [];
     if (!normalizedSearch) return all;
     return all.filter(p => p.name.toLowerCase().includes(normalizedSearch));
   }, [data?.photos, normalizedSearch]);
+
+  // Paginated slice
+  const photos = useMemo(() => allFilteredPhotos.slice(0, visibleCount), [allFilteredPhotos, visibleCount]);
+  const totalPhotos = allFilteredPhotos.length;
+  const hasMorePhotos = visibleCount < totalPhotos;
+
+  const loadMorePhotos = useCallback(async () => {
+    setVisibleCount(prev => prev + 40);
+  }, []);
 
   const folders = useMemo(() => {
     const all = data?.folders ?? [];
@@ -211,5 +230,5 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
     return true;
   }, [toast, queryClient]);
 
-  return { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch };
+  return { photos, folders, totalPhotos, hasMorePhotos, loadMorePhotos, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch };
 };
