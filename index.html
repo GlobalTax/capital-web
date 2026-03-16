@@ -243,6 +243,90 @@
         // OG URL (update existing static tag)
         var ogurl=document.querySelector('meta[property="og:url"]');
         if(ogurl) ogurl.setAttribute('content',canon);
+
+        // Hreflang: inject alternate language links for crawlers
+        var H={
+          "/":{es:"/",ca:"/ca",en:"/en"},
+          "/ca":{es:"/",ca:"/ca",en:"/en"},
+          "/en":{es:"/",ca:"/ca",en:"/en"},
+          "/venta-empresas":{es:"/venta-empresas",ca:"/venda-empreses",en:"/sell-companies"},
+          "/venda-empreses":{es:"/venta-empresas",ca:"/venda-empreses",en:"/sell-companies"},
+          "/sell-companies":{es:"/venta-empresas",ca:"/venda-empreses",en:"/sell-companies"},
+          "/compra-empresas":{es:"/compra-empresas",en:"/buy-companies"},
+          "/buy-companies":{es:"/compra-empresas",en:"/buy-companies"},
+          "/contacto":{es:"/contacto",ca:"/contacte",en:"/contact"},
+          "/contacte":{es:"/contacto",ca:"/contacte",en:"/contact"},
+          "/contact":{es:"/contacto",ca:"/contacte",en:"/contact"},
+          "/por-que-elegirnos":{es:"/por-que-elegirnos",ca:"/per-que-triar-nos",en:"/why-choose-us"},
+          "/per-que-triar-nos":{es:"/por-que-elegirnos",ca:"/per-que-triar-nos",en:"/why-choose-us"},
+          "/why-choose-us":{es:"/por-que-elegirnos",ca:"/per-que-triar-nos",en:"/why-choose-us"},
+          "/equipo":{es:"/equipo",ca:"/equip"},
+          "/equip":{es:"/equipo",ca:"/equip"},
+          "/casos-exito":{es:"/casos-exito",ca:"/casos-exit",en:"/success-stories"},
+          "/casos-exit":{es:"/casos-exito",ca:"/casos-exit",en:"/success-stories"},
+          "/success-stories":{es:"/casos-exito",ca:"/casos-exit",en:"/success-stories"},
+          "/programa-colaboradores":{es:"/programa-colaboradores",ca:"/programa-col-laboradors",en:"/collaborators-program"},
+          "/programa-col-laboradors":{es:"/programa-colaboradores",ca:"/programa-col-laboradors",en:"/collaborators-program"},
+          "/collaborators-program":{es:"/programa-colaboradores",ca:"/programa-col-laboradors",en:"/collaborators-program"},
+          "/servicios/valoraciones":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
+          "/serveis/valoracions":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
+          "/services/valuations":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
+          "/servicios/venta-empresas":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
+          "/serveis/venda-empreses":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
+          "/services/sell-companies":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
+          "/servicios/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
+          "/serveis/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
+          "/services/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
+          "/servicios/asesoramiento-legal":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
+          "/serveis/assessorament-legal":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
+          "/services/legal-advisory":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
+          "/servicios/reestructuraciones":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
+          "/serveis/reestructuracions":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
+          "/services/restructuring":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
+          "/servicios/planificacion-fiscal":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
+          "/serveis/planificacio-fiscal":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
+          "/services/tax-planning":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
+          "/sectores/tecnologia":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
+          "/sectors/tecnologia":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
+          "/sectors/technology":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
+          "/sectores/healthcare":{es:"/sectores/healthcare",ca:"/sectors/salut",en:"/sectors/healthcare"},
+          "/sectors/salut":{es:"/sectores/healthcare",ca:"/sectors/salut",en:"/sectors/healthcare"},
+          "/sectores/seguridad":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
+          "/sectors/seguretat":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
+          "/sectors/security":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
+          "/sectores/energia":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
+          "/sectors/energia":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
+          "/sectors/energy":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
+          "/sectores/industrial":{es:"/sectores/industrial",ca:"/sectors/industrial"},
+          "/sectors/industrial":{es:"/sectores/industrial",ca:"/sectors/industrial"},
+          "/sectores/retail-consumer":{es:"/sectores/retail-consumer",ca:"/sectors/retail-consum",en:"/sectors/retail-consumer"},
+          "/sectors/retail-consum":{es:"/sectores/retail-consumer",ca:"/sectors/retail-consum",en:"/sectors/retail-consumer"},
+          "/sectores/construccion":{es:"/sectores/construccion",ca:"/sectors/construccio"},
+          "/sectors/construccio":{es:"/sectores/construccion",ca:"/sectors/construccio"},
+          "/sectores/alimentacion":{es:"/sectores/alimentacion",ca:"/sectors/alimentacio"},
+          "/sectors/alimentacio":{es:"/sectores/alimentacion",ca:"/sectors/alimentacio"},
+          "/sectores/logistica":{es:"/sectores/logistica",ca:"/sectors/logistica"},
+          "/sectors/logistica":{es:"/sectores/logistica",ca:"/sectors/logistica"},
+          "/sectores/medio-ambiente":{es:"/sectores/medio-ambiente",ca:"/sectors/medi-ambient"},
+          "/sectors/medi-ambient":{es:"/sectores/medio-ambiente",ca:"/sectors/medi-ambient"}
+        };
+        document.querySelectorAll('link[hreflang]').forEach(function(el){el.remove();});
+        var hl=H[p];
+        if(hl){
+          var b='https://capittal.es';
+          for(var lang in hl){
+            var link=document.createElement('link');
+            link.setAttribute('rel','alternate');
+            link.setAttribute('hreflang',lang);
+            link.setAttribute('href',b+hl[lang]);
+            document.head.appendChild(link);
+          }
+          var xd=document.createElement('link');
+          xd.setAttribute('rel','alternate');
+          xd.setAttribute('hreflang','x-default');
+          xd.setAttribute('href',b+(hl.es||p));
+          document.head.appendChild(xd);
+        }
       })();
     </script>
     <script type="application/ld+json">
