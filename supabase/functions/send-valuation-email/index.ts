@@ -514,15 +514,30 @@ const handler = async (req: Request): Promise<Response> => {
     const localeMap: Record<string, string> = { es: 'es-ES', ca: 'ca-ES', val: 'ca-ES-valencia', gl: 'gl-ES' };
     const locale = localeMap[lang || 'es'] || 'es-ES';
 
-    const internalRecipients = [
-      "samuel@capittal.es",
-      "marcc@capittal.es",
-      "oriol@capittal.es",
-      "marc@capittal.es",
-      "marcel@capittal.es",
-      "lluis@capittal.es",
-      "albert@capittal.es"
-    ];
+    // Obtener destinatarios internos de email_recipients_config
+    let internalRecipients: string[] = [];
+    try {
+      const { data: recipientsData, error: recipientsError } = await supabase
+        .from('email_recipients_config')
+        .select('email')
+        .eq('is_active', true)
+        .eq('is_default_copy', true);
+      
+      if (recipientsError) {
+        log('warn', 'RECIPIENTS_DB_ERROR', { error: recipientsError.message });
+      }
+      
+      if (recipientsData && recipientsData.length > 0) {
+        internalRecipients = recipientsData.map((r: any) => r.email);
+        log('info', 'RECIPIENTS_LOADED', { count: internalRecipients.length });
+      } else {
+        internalRecipients = ['samuel@capittal.es'];
+        log('warn', 'NO_RECIPIENTS_FOUND_USING_FALLBACK');
+      }
+    } catch (e: any) {
+      log('error', 'RECIPIENTS_FETCH_EXCEPTION', { error: e?.message });
+      internalRecipients = ['samuel@capittal.es'];
+    }
 
     const leadEmail = companyData.email?.trim() || recipientEmail?.trim();
 

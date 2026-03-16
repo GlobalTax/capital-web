@@ -1389,13 +1389,8 @@ const handler = async (req: Request): Promise<Response> => {
       const isCampaignValuation = formType === 'campaign_valuation';
       
       // BCC interno para control de calidad (copia oculta al equipo)
-      // Hardcoded base + dynamic recipients with is_default_copy
-      const CONFIRMATION_BCC_BASE = [
-        'samuel@capittal.es',
-        'lluis@capittal.es',
-        'oriol@capittal.es'
-      ];
-      const CONFIRMATION_BCC_EMAILS = [...new Set([...CONFIRMATION_BCC_BASE, ...dynamicBccEmails])];
+      // Solo destinatarios dinámicos con is_default_copy, fallback mínimo
+      const CONFIRMATION_BCC_EMAILS = dynamicBccEmails.length > 0 ? dynamicBccEmails : [FALLBACK_ADMIN_EMAIL];
       
       const result = await resend.emails.send({
         from: isCampaignValuation 

@@ -125,13 +125,9 @@ async function updateOutboxStatus(
   }
 }
 
-// Fallback: Internal team defaults
+// Fallback mínimo de emergencia si la DB falla
 const DEFAULT_INTERNAL_TEAM = [
-  "samuel@capittal.es",
-  "marcc@capittal.es",
-  "marc@capittal.es",
-  "lluis@capittal.es",
-  "oriol@capittal.es"
+  "samuel@capittal.es"
 ];
 
 async function getInternalRecipients(): Promise<string[]> {
