@@ -248,24 +248,50 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
 
       {/* Actions */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
+          {/* Schedule config panel */}
+          <SendScheduleConfig
+            value={sendConfig}
+            onChange={setSendConfig}
+            disabled={isSendingAll || !!scheduledCountdown}
+          />
+
+          {/* Scheduled countdown */}
+          {scheduledCountdown && (
+            <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50 border">
+              <Clock className="h-5 w-5 text-muted-foreground animate-pulse" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Envío programado</p>
+                <p className="text-xs text-muted-foreground">
+                  Comienza en <span className="font-mono font-medium text-foreground">{scheduledCountdown}</span>
+                  {sendConfig.scheduledAt && (
+                    <> — {format(sendConfig.scheduledAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}</>
+                  )}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleCancelSchedule}>
+                Cancelar
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {pendingEmails.length} pendiente{pendingEmails.length !== 1 ? 's' : ''} · {sentEmails.length} enviado{sentEmails.length !== 1 ? 's' : ''}
             </p>
             <div className="flex items-center gap-2">
               {sentEmails.length > 0 && (
-                <Button variant="outline" onClick={handleBulkResend} disabled={isSendingAll}>
+                <Button variant="outline" onClick={handleBulkResend} disabled={isSendingAll || !!scheduledCountdown}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Reenviar {sentEmails.length} enviados
                 </Button>
               )}
               {pendingEmails.length > 0 && (
-                <Button onClick={handleSendAll} disabled={isSendingAll}>
+                <Button onClick={handleSendAll} disabled={isSendingAll || !!scheduledCountdown}>
                   {isSendingAll ? (
                     <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enviando...</>
                   ) : (
-                    <><Send className="h-4 w-4 mr-2" />Enviar todos ({pendingEmails.length})</>
+                    <><Send className="h-4 w-4 mr-2" />{sendConfig.scheduledAt && !scheduledCountdown ? 'Programar envío' : `Enviar todos (${pendingEmails.length})`}</>
                   )}
                 </Button>
               )}
