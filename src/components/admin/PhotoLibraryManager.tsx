@@ -35,6 +35,7 @@ import {
 
 const PhotoLibraryManager: React.FC = () => {
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [currentFolder, setCurrentFolder] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<PhotoFile | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
@@ -47,7 +48,7 @@ const PhotoLibraryManager: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(search, currentFolder);
+  const { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(debouncedSearch, currentFolder);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
