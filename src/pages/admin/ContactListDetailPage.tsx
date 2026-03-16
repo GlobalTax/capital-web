@@ -17,6 +17,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction,
+} from '@/components/ui/alert-dialog';
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
@@ -315,6 +319,7 @@ export default function ContactListDetailPage() {
   const [isCreatingNewList, setIsCreatingNewList] = useState(false);
   const [newListName, setNewListName] = useState('');
   const [isMoveCopyLoading, setIsMoveCopyLoading] = useState(false);
+  const [sublistConflict, setSublistConflict] = useState<{ sublistName: string } | null>(null);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -746,26 +751,8 @@ export default function ContactListDetailPage() {
   };
 
   // ===== MOVE / COPY COMPANY =====
-  const handleMoveCopy = async () => {
+  const executeMoveCopy = async (targetId: string) => {
     if (!moveCopyCompany || !listId) return;
-    // Determine target list id
-    let targetId = moveCopyTargetId;
-    if (isCreatingNewList) {
-      if (!newListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
-      setIsMoveCopyLoading(true);
-      try {
-        const { data: newList, error: createErr } = await supabase
-          .from('outbound_lists' as any)
-          .insert({ name: newListName.trim(), type: (list as any)?.type || 'outbound' } as any)
-          .select('id')
-          .single();
-        if (createErr || !newList) { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
-        targetId = (newList as any).id;
-      } catch { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
-    } else {
-      if (!targetId) return;
-      setIsMoveCopyLoading(true);
-    }
     try {
       if (moveCopyMode === 'copy') {
         // Check if CIF already exists in target list
@@ -773,10 +760,10 @@ export default function ContactListDetailPage() {
           const { data: existing } = await supabase
             .from('outbound_list_companies' as any)
             .select('id')
-            .eq('list_id', moveCopyTargetId)
+            .eq('list_id', targetId)
             .eq('cif', moveCopyCompany.cif)
             .limit(1);
-        if (existing && existing.length > 0) {
+          if (existing && existing.length > 0) {
             toast.error('Esta empresa ya existe en la lista seleccionada');
             setIsMoveCopyLoading(false);
             return;
@@ -801,6 +788,7 @@ export default function ContactListDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+      queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
       setMoveCopyCompany(null);
       setMoveCopyTargetId('');
       setIsCreatingNewList(false);
@@ -810,6 +798,78 @@ export default function ContactListDetailPage() {
     } finally {
       setIsMoveCopyLoading(false);
     }
+  };
+
+  const [pendingMoveCopyTargetId, setPendingMoveCopyTargetId] = useState('');
+
+  const handleMoveCopy = async () => {
+    if (!moveCopyCompany || !listId) return;
+    // Determine target list id
+    let targetId = moveCopyTargetId;
+    if (isCreatingNewList) {
+      if (!newListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
+      setIsMoveCopyLoading(true);
+      try {
+        const { data: newList, error: createErr } = await supabase
+          .from('outbound_lists' as any)
+          .insert({ name: newListName.trim(), type: (list as any)?.type || 'outbound' } as any)
+          .select('id')
+          .single();
+        if (createErr || !newList) { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+        targetId = (newList as any).id;
+      } catch { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+    } else {
+      if (!targetId) return;
+      setIsMoveCopyLoading(true);
+    }
+
+    // Check sublist conflict: if target is a sublista, check if CIF exists in sister sublists
+    if (moveCopyCompany.cif) {
+      try {
+        // Get target list details to check if it's a sublista
+        const { data: targetList } = await supabase
+          .from('outbound_lists' as any)
+          .select('id, lista_madre_id')
+          .eq('id', targetId)
+          .single();
+
+        const targetMadreId = (targetList as any)?.lista_madre_id;
+        if (targetMadreId) {
+          // It's a sublista — check sister sublists for same CIF
+          const { data: sisterSublists } = await supabase
+            .from('outbound_lists' as any)
+            .select('id, name')
+            .eq('lista_madre_id', targetMadreId)
+            .neq('id', targetId);
+
+          if (sisterSublists && sisterSublists.length > 0) {
+            const sisterIds = (sisterSublists as any[]).map((s: any) => s.id);
+            const sisterNameMap = Object.fromEntries((sisterSublists as any[]).map((s: any) => [s.id, s.name]));
+
+            const { data: existingInSisters } = await supabase
+              .from('outbound_list_companies' as any)
+              .select('list_id')
+              .in('list_id', sisterIds)
+              .eq('cif', moveCopyCompany.cif)
+              .limit(1);
+
+            if (existingInSisters && existingInSisters.length > 0) {
+              const conflictListId = (existingInSisters as any[])[0].list_id;
+              const conflictName = sisterNameMap[conflictListId] || 'otra sublista';
+              setPendingMoveCopyTargetId(targetId);
+              setSublistConflict({ sublistName: conflictName });
+              setIsMoveCopyLoading(false);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error checking sublist conflict:', err);
+        // Continue with operation on error
+      }
+    }
+
+    await executeMoveCopy(targetId);
   };
 
   const handleNoteSaved = useCallback((companyId: string, note: string) => {
@@ -1192,8 +1252,10 @@ export default function ContactListDetailPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredCompanies.map(company => (
-                        <TableRow key={company.id} className="group/row">
+                      {filteredCompanies.map(company => {
+                        const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
+                        return (
+                        <TableRow key={company.id} className={cn("group/row", isAssignedToSublist && "opacity-50")}>
                           <TableCell onClick={e => e.stopPropagation()}>
                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
                           </TableCell>
@@ -1261,33 +1323,52 @@ export default function ContactListDetailPage() {
                                 <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end" className="bg-background">
-                                <DropdownMenuItem onClick={() => setEditingCompany(company)}>
-                                  <Edit className="h-4 w-4 mr-2" /> Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
-                                  <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
-                                  <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
-                                  {aiGenLoading === company.id ? (
-                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
-                                  ) : (
-                                    <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
-                                  )}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onClick={() => deleteCompany.mutate(company.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                                </DropdownMenuItem>
+                                {isAssignedToSublist ? (
+                                  <>
+                                    {(() => {
+                                      const sublistNames = sublistCompanyMap?.map.get(company.cif!.toUpperCase().trim());
+                                      const targetSublist = allLists.find((l: any) => sublistNames?.includes(l.name));
+                                      return (
+                                        <DropdownMenuItem onClick={() => {
+                                          if (targetSublist) navigate(`/admin/empresas/${(targetSublist as any).id}`);
+                                        }}>
+                                          <MoveRight className="h-4 w-4 mr-2" /> Ver en sublista
+                                        </DropdownMenuItem>
+                                      );
+                                    })()}
+                                  </>
+                                ) : (
+                                  <>
+                                    <DropdownMenuItem onClick={() => setEditingCompany(company)}>
+                                      <Edit className="h-4 w-4 mr-2" /> Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                      <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
+                                      <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
+                                      {aiGenLoading === company.id ? (
+                                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
+                                      ) : (
+                                        <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
+                                      )}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => deleteCompany.mutate(company.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
@@ -1722,6 +1803,24 @@ export default function ContactListDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Sublist Conflict AlertDialog */}
+      <AlertDialog open={!!sublistConflict} onOpenChange={(open) => { if (!open) { setSublistConflict(null); setPendingMoveCopyTargetId(''); setIsMoveCopyLoading(false); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Empresa ya asignada a otra sublista</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta empresa ya está asignada a la sublista <strong>"{sublistConflict?.sublistName}"</strong>. Asignarla aquí la mantendrá en ambas sublistas. ¿Quieres continuar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setSublistConflict(null); setPendingMoveCopyTargetId(''); setIsMoveCopyLoading(false); }}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => { setSublistConflict(null); setIsMoveCopyLoading(true); await executeMoveCopy(pendingMoveCopyTargetId); setPendingMoveCopyTargetId(''); }}>
+              Continuar de todas formas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   );
