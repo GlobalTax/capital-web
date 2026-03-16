@@ -7,6 +7,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+/**
+ * Paginate a Supabase query to fetch ALL rows (beyond the 1000-row default limit).
+ * `buildQuery` receives (from, to) and must return a fresh query with .range() applied.
+ */
+async function fetchAllRows<T = any>(
+  buildQuery: (from: number, to: number) => any,
+  pageSize = 1000
+): Promise<T[]> {
+  const allData: T[] = [];
+  let from = 0;
+  while (true) {
+    const { data, error } = await buildQuery(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  return allData;
+}
+
 export type ContactListTipo = 'compradores' | 'outbound' | 'madre' | 'otros';
 
 export interface ContactList {
