@@ -67,7 +67,9 @@ const PhotoLibraryManager: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(debouncedSearch, currentFolder);
+  const { photos, folders, totalPhotos, hasMorePhotos, loadMorePhotos, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(debouncedSearch, currentFolder);
+
+  const { sentinelRef, loading: loadingMore } = useInfiniteScroll(loadMorePhotos, hasMorePhotos);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
