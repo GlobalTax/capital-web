@@ -602,7 +602,7 @@ const CaseStudiesManager = () => {
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-3">
                         {cs.logo_url && (
-                          <img src={cs.logo_url} alt="" className="w-8 h-8 object-contain rounded" />
+                          <img src={cs.logo_url} alt={cs.title || 'Caso de éxito'} className="w-8 h-8 object-contain rounded" />
                         )}
                         <div>
                           <div className="font-medium text-foreground">{cs.title}</div>

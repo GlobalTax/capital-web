@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User, Mail, Lock, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { Link } from 'react-router-dom';
 
 const Auth = () => {
@@ -56,6 +57,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SEOHead title="Autenticación | Capittal" noindex={true} />
       <div className="w-full max-w-md">
         {/* Back to home button */}
         <div className="mb-6">

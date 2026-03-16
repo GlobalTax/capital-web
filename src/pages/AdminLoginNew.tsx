@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, AlertCircle, Loader2 } from 'lucide-react';
+import { SEOHead } from '@/components/seo/SEOHead';
 
 /**
  * Admin Login - Página de autenticación simplificada
@@ -104,6 +105,7 @@ const AdminLoginNew = () => {
   // Formulario de login
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <SEOHead title="Admin Login | Capittal" noindex={true} />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-2xl">
