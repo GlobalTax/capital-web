@@ -33,6 +33,24 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
+/** Thumbnail with skeleton placeholder and fade-in */
+const PhotoThumbnail: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <>
+      {!loaded && <Skeleton className="absolute inset-0 rounded-none" />}
+      <img
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        loading="lazy"
+        draggable={false}
+        onLoad={() => setLoaded(true)}
+      />
+    </>
+  );
+};
+
 const PhotoLibraryManager: React.FC = () => {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
