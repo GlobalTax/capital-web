@@ -1,52 +1,26 @@
 
 
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
+## Fix: "Cannot access 'isMadreList' before initialization"
 
-### Cambios realizados
+### Problema
+`isMadreList` se define en la línea 502 (`const isMadreList = !!sublistCompanyMap`), pero se usa en el `useMemo` de `filteredCompanies` (línea 393) que está declarado antes. Esto causa un `ReferenceError` por temporal dead zone.
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+### Solución
+Mover la línea `const isMadreList = !!sublistCompanyMap;` justo después de la query `sublistCompanyMap` (línea 500) y **antes** del `useMemo` de `filteredCompanies`. Como el `useMemo` de `filteredCompanies` está en las líneas ~350-401, hay que reorganizar:
 
-### Resultado
+**Archivo: `src/pages/admin/ContactListDetailPage.tsx`**
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+1. En la línea 393, reemplazar `isMadreList` por `!!sublistCompanyMap` directamente (inline), ya que `sublistCompanyMap` sí está disponible en ese punto (viene de `useQuery` línea 461).
 
----
+   **Pero** — `sublistCompanyMap` se define en línea 461, que también está **después** del useMemo de línea 393. Así que el verdadero fix es **mover el bloque del `useMemo` de `filteredCompanies`** (líneas ~350-401) después de la definición de `sublistCompanyMap` (línea 500), o mover la query de `sublistCompanyMap` antes del useMemo.
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+   La opción más limpia: mover la query `sublistCompanyMap` (líneas 460-500) y `isMadreList` (línea 502) **antes** del `useMemo` de `filteredCompanies`.
 
-### Cambios realizados
+2. Añadir `sublistCompanyMap` al array de dependencias del `useMemo` (línea 401).
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+### Cambio concreto
+- Cortar líneas 460-502 (query `sublistCompanyMap` + `isMadreList`) y pegarlas antes de la línea ~350 (inicio del `filteredCompanies` useMemo).
+- Añadir `isMadreList, sublistCompanyMap` a las dependencias del useMemo en línea 401.
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+Un solo archivo editado.
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
-
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
-
-### Resultado
-
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
-
----
-
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
-
-### Cambios realizados
-
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
-
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
