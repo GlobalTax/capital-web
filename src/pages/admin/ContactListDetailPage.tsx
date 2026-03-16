@@ -804,6 +804,9 @@ export default function ContactListDetailPage() {
       }
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
+      if (moveCopyFromSublistId) {
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyFromSublistId] });
+      }
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
       queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
