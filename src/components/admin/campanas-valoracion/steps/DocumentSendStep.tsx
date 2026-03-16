@@ -52,6 +52,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
 
   const emailMap = useMemo(() => {
     const map = new Map<string, typeof emails[0]>();
