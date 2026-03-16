@@ -266,19 +266,34 @@ export default function CampanasValoracion() {
                             </Button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5 group">
-                            <span>{c.name}</span>
-                            <button
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingNameId(c.id);
-                                setEditingNameValue(c.name);
-                              }}
-                              title="Renombrar"
-                            >
-                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                            </button>
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1.5 group">
+                              <span>{c.name}</span>
+                              <button
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingNameId(c.id);
+                                  setEditingNameValue(c.name);
+                                }}
+                                title="Renombrar"
+                              >
+                                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                              </button>
+                            </div>
+                            {(c as any).source_list_id && sourceListNames?.[(c as any).source_list_id] && (
+                              <button
+                                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/admin/listas-contacto/${(c as any).source_list_id}`);
+                                }}
+                                title="Ver lista origen"
+                              >
+                                <List className="h-3 w-3" />
+                                {sourceListNames[(c as any).source_list_id]}
+                              </button>
+                            )}
                           </div>
                         )}
                       </TableCell>
