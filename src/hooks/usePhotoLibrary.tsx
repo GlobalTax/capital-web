@@ -87,11 +87,20 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
   // Client-side filtering by search
   const normalizedSearch = search.trim().toLowerCase();
 
-  const photos = useMemo(() => {
+  const allFilteredPhotos = useMemo(() => {
     const all = data?.photos ?? [];
     if (!normalizedSearch) return all;
     return all.filter(p => p.name.toLowerCase().includes(normalizedSearch));
   }, [data?.photos, normalizedSearch]);
+
+  // Paginated slice
+  const photos = useMemo(() => allFilteredPhotos.slice(0, visibleCount), [allFilteredPhotos, visibleCount]);
+  const totalPhotos = allFilteredPhotos.length;
+  const hasMorePhotos = visibleCount < totalPhotos;
+
+  const loadMorePhotos = useCallback(async () => {
+    setVisibleCount(prev => prev + 40);
+  }, []);
 
   const folders = useMemo(() => {
     const all = data?.folders ?? [];
