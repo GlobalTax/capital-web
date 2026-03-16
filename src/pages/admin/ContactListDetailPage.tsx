@@ -1292,7 +1292,7 @@ export default function ContactListDetailPage() {
                           const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
                           // Render separator row before first assigned company
                           let separatorRow = null;
-                          if (isMadreList && isAssignedToSublist && !separatorRendered && !sortField) {
+                          if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
                             separatorRendered = true;
                             const assignedCount = filteredCompanies.filter(c => c.cif && sublistCompanyMap?.map.has(c.cif.toUpperCase().trim())).length;
                             separatorRow = (
