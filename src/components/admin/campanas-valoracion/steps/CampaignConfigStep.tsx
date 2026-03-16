@@ -464,6 +464,9 @@ export function CampaignConfigStep({ data, updateField }: Props) {
         </CardContent>
       </Card>
 
+      {/* Emisor del Email */}
+      <SenderSelector data={data} updateField={updateField} />
+
       {/* Firma del Informe */}
       <Card>
         <CardHeader><CardTitle className="text-base">Firma del Informe</CardTitle></CardHeader>
