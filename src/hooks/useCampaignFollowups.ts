@@ -202,14 +202,15 @@ export function useCampaignFollowups(campaignId: string | undefined) {
     onError: (error: any) => toast.error(error?.message || 'Error al enviar follow up'),
   });
 
-  // Send all pending followups
+  // Send all pending followups with configurable delay
   const sendAllPendingMutation = useMutation({
-    mutationFn: async (onProgress?: (sent: number, total: number) => void) => {
+    mutationFn: async ({ onProgress, intervalMs }: { onProgress?: (sent: number, total: number) => void; intervalMs?: number }) => {
       const pending = followups.filter(f => f.status === 'pending');
       if (pending.length === 0) return { sent: 0, failed: 0 };
 
       let sentCount = 0;
       let failedCount = 0;
+      const delay = intervalMs ?? 1500;
 
       for (const followup of pending) {
         try {
@@ -228,6 +229,9 @@ export function useCampaignFollowups(campaignId: string | undefined) {
           failedCount++;
         }
         onProgress?.(sentCount + failedCount, pending.length);
+        if (sentCount + failedCount < pending.length) {
+          await new Promise(r => setTimeout(r, delay));
+        }
       }
 
       return { sent: sentCount, failed: failedCount };
