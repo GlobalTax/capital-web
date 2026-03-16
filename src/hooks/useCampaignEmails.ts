@@ -68,6 +68,10 @@ export function useCampaignEmails(campaignId: string | undefined) {
         .eq('id', campaignId);
       if (error) throw error;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaigns', campaignId] });
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaigns'] });
+    },
   });
 
   const generateEmailsMutation = useMutation({

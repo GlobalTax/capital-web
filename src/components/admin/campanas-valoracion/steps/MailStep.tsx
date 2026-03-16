@@ -81,8 +81,10 @@ function TemplateEditorSection({
         await onSaveTemplate(newSubject, newBody);
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch {
+      } catch (err) {
         setSaveStatus('idle');
+        toast.error('Error al guardar el template');
+        console.error('Auto-save error:', err);
       }
     }, 1500);
   }, [onSaveTemplate]);
