@@ -22,9 +22,16 @@ export const ConsoleNoiseFilter: React.FC<{ children: React.ReactNode }> = ({ ch
       /_sandbox\/dev-server/,
       /lovable-api\.com.*latest-message/,
       /firestore\.googleapis\.com.*400/,
-      /WebSocket.*handshake.*404.*lovableproject\.com/,
+      /WebSocket.*handshake.*(?:404|412).*lovableproject\.com/,
       /Failed to load resource.*lovableproject\.com/,
       /unsafe-eval.*WebAssembly/,
+      /Max reconnect attempts of \d+ exceeded/,
+      /@firebase\/firestore.*transport errored/,
+      /WebSocket is already in CLOSING or CLOSED state/,
+      /Failed to load resource.*supabase\.co.*(?:400|list)/,
+      /WebSocket is closed before the connection is established/,
+      /Images loaded lazily and replaced with placeholders/,
+      /ERR_QUIC_PROTOCOL_ERROR/,
     ];
 
     // Contador de mensajes por patrón (deduplicación)

@@ -30,23 +30,22 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
     queryKey: ['photo-library', search, currentFolder],
     queryFn: async (): Promise<{ photos: PhotoFile[]; folders: FolderItem[] }> => {
       const normalizedSearch = search.trim().toLowerCase();
-      const listPath = currentFolder || '';
+      const folderPath = currentFolder || '';
 
-      const { data, error } = await supabase.storage
-        .from(BUCKET)
-        .list(listPath, { limit: 500, sortBy: { column: 'name', order: 'asc' } });
+      // Use RPC to bypass Storage API internal RLS issues
+      const { data, error } = await supabase.rpc('list_admin_photos', { folder_path: folderPath });
 
-      console.log('Photo library list result:', { folder: currentFolder, count: data?.length, error });
+      console.log('Photo library RPC result:', { folder: currentFolder, count: data?.length, error });
       if (error) throw error;
       if (!data) return { photos: [], folders: [] };
 
       const folders: FolderItem[] = [];
       const photos: PhotoFile[] = [];
 
-      for (const f of data) {
+      for (const f of data as any[]) {
         if (f.name === '.emptyFolderPlaceholder') continue;
 
-        // En algunos responses de Storage, la carpeta viene con id null o undefined
+        // id is NULL for folders
         if (f.id == null) {
           if (!normalizedSearch || f.name.toLowerCase().includes(normalizedSearch)) {
             folders.push({ name: f.name });
