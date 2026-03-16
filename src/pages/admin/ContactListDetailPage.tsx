@@ -40,6 +40,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { SFFundTagEditor } from '@/components/admin/search-funds/SFFundTagEditor';
+import { SendToCampaignDialog } from '@/components/admin/contact-lists/SendToCampaignDialog';
 import {
   useContactListCompanies,
   useContactListCampaigns,
