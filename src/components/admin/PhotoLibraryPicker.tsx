@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ImageIcon, Search, Folder, ChevronRight, Home, ArrowLeft } from 'lucide-react';
+import { ImageIcon, Search, Folder, ChevronRight, Home, ArrowLeft, Loader2 } from 'lucide-react';
 import { usePhotoLibrary } from '@/hooks/usePhotoLibrary';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import ImageCropEditor from '@/components/admin/ImageCropEditor';
 
 interface PhotoLibraryPickerProps {
