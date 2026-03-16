@@ -230,5 +230,5 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
     return true;
   }, [toast, queryClient]);
 
-  return { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch };
+  return { photos, folders, totalPhotos, hasMorePhotos, loadMorePhotos, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch };
 };
