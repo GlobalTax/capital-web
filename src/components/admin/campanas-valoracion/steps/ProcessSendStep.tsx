@@ -18,7 +18,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2, Search,
+  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2, Search, Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -35,6 +35,9 @@ import { SortableHeader, SortState, toggleSort, applySortToList } from '@/compon
 import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
+import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 function estimateZipSize(count: number): string {
   const estimatedBytes = count * 200 * 1024 * 0.75;
@@ -536,6 +539,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [sendingProgress, setSendingProgress] = useState({ active: false, current: 0, total: 0, name: '', phase: '' });
   const pauseRef = useRef(false);
 
+  // Send schedule config
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
+  const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Download progress
   const [downloadProgress, setDownloadProgress] = useState({ active: false, current: 0, total: 0, name: '' });
 
@@ -834,22 +842,23 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedIds, toggleSelectAll, clearSelection, handleDownloadSelected]);
 
-  // ── Bulk send ──
-  const handleSendEmails = async () => {
+  // ── Bulk send (with schedule support) ──
+  const executeSendLoop = async () => {
     if (readyToSend.length === 0) return;
     setSendingProgress({ active: true, current: 0, total: readyToSend.length, name: '', phase: '' });
+    setScheduledCountdown(null);
     pauseRef.current = false;
 
+    const throttle = createSendThrottle(sendConfig);
     let sent = 0;
+
     for (const c of readyToSend) {
       if (pauseRef.current) break;
       setSendingProgress(p => ({ ...p, current: sent + 1, name: c.client_company, phase: 'Generando PDF valoración' }));
 
       try {
-        // Ensure valuation PDF is uploaded before sending
         await ensureValuationPdfUploaded(c, campaign);
 
-        // Find campaign_email record for this company
         setSendingProgress(p => ({ ...p, phase: 'Buscando email' }));
         const { data: emailRecord, error: emailLookupError } = await (supabase as any)
           .from('campaign_emails')
@@ -883,7 +892,14 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           .eq('id', c.id);
 
         sent++;
-        await new Promise(r => setTimeout(r, 1500));
+
+        // Throttle: wait for interval + hourly limit
+        if (pauseRef.current) break;
+        setSendingProgress(p => ({ ...p, phase: 'Esperando intervalo…' }));
+        await throttle((waitMs) => {
+          const mins = Math.ceil(waitMs / 60000);
+          setSendingProgress(p => ({ ...p, phase: `⏳ Límite/hora alcanzado — pausa ${mins}min` }));
+        });
       } catch (e: any) {
         console.error('Error sending:', c.client_company, e);
         await (supabase as any)
@@ -897,6 +913,39 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
     await refetch();
     setSendingProgress(p => ({ ...p, active: false }));
     toast.success(`${sent} emails enviados`);
+  };
+
+  const handleSendEmails = async () => {
+    if (readyToSend.length === 0) return;
+
+    // If scheduled for future, start countdown
+    if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
+      const updateCountdown = () => {
+        const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
+        if (diff <= 0) {
+          setScheduledCountdown(null);
+          if (scheduledTimerRef.current) clearInterval(scheduledTimerRef.current);
+          executeSendLoop();
+          return;
+        }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        setScheduledCountdown(`${h > 0 ? `${h}h ` : ''}${m}m ${s}s`);
+      };
+      updateCountdown();
+      scheduledTimerRef.current = setInterval(updateCountdown, 1000);
+      toast.success(`Envío programado para ${format(sendConfig.scheduledAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}`);
+      return;
+    }
+
+    await executeSendLoop();
+  };
+
+  const handleCancelSchedule = () => {
+    if (scheduledTimerRef.current) clearInterval(scheduledTimerRef.current);
+    setScheduledCountdown(null);
+    toast.info('Envío programado cancelado');
   };
 
   // ── Retry failed ──
@@ -1013,12 +1062,38 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             Se generará el PDF y se enviará el email con la valoración a cada empresa.
           </p>
 
+          {/* Schedule config panel */}
+          <SendScheduleConfig
+            value={sendConfig}
+            onChange={setSendConfig}
+            disabled={isBusy || !!scheduledCountdown}
+          />
+
+          {/* Scheduled countdown */}
+          {scheduledCountdown && !sendingProgress.active && (
+            <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50 border">
+              <Clock className="h-5 w-5 text-muted-foreground animate-pulse" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Envío programado</p>
+                <p className="text-xs text-muted-foreground">
+                  Comienza en <span className="font-mono font-medium text-foreground">{scheduledCountdown}</span>
+                  {sendConfig.scheduledAt && (
+                    <> — {format(sendConfig.scheduledAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}</>
+                  )}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleCancelSchedule}>
+                Cancelar
+              </Button>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2">
-            <Button onClick={handleSendEmails} disabled={isBusy || readyToSend.length === 0}>
+            <Button onClick={handleSendEmails} disabled={isBusy || readyToSend.length === 0 || !!scheduledCountdown}>
               {sendingProgress.active
                 ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 : <Send className="h-4 w-4 mr-2" />}
-              Enviar {readyToSend.length} emails
+              {sendConfig.scheduledAt && !scheduledCountdown ? 'Programar envío' : `Enviar ${readyToSend.length} emails`}
             </Button>
 
             <Button variant="outline" onClick={handleDownloadAll} disabled={isBusy || downloadableCompanies.length === 0}>

@@ -1,73 +1,52 @@
 
 
-## Plan: Sistema de programación de envíos anti-spam
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Contexto
-Actualmente los emails se envían en ráfaga con solo 1.5s de delay entre cada uno. No hay opción de programar envíos futuros ni limitar la tasa de envío. Esto puede provocar que proveedores como Gmail/Outlook marquen los emails como spam.
+### Cambios realizados
 
-### Solución: Panel de configuración de envío con 3 controles
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-**Archivo principal: `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`**
+### Resultado
 
-Se añade un panel de configuración colapsable antes del botón "Enviar" con 3 opciones:
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-**1. Intervalo entre emails**
-- Selector con opciones: 15s, 30s, 1min, 2min, 5min (actualmente hardcoded 1.5s)
-- Se aplica al bucle `handleSendEmails` reemplazando el `setTimeout(r, 1500)` por el valor seleccionado
-- También aplica a followups en `useCampaignFollowups.ts` y `useCampaignEmails.ts`
+---
 
-**2. Límite por hora**
-- Input numérico: máximo emails/hora (ej: 30, 50, 100)
-- Cuando se alcanza el límite, el sistema pausa automáticamente hasta que pase la ventana de 1 hora
-- Se calcula: si se han enviado N emails en los últimos 60min, pausar hasta que el slot se libere
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-**3. Programar fecha/hora**
-- DateTimePicker para elegir cuándo empezar el envío
-- Funciona 100% client-side: al pulsar "Programar envío", se muestra un countdown y al llegar la hora se dispara el bucle de envío automáticamente
-- La pestaña del navegador debe permanecer abierta (se avisa al usuario)
-- Si se cierra el navegador, el envío se detiene (se guarda progreso como `paused`)
+### Cambios realizados
 
-### Implementación técnica
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-**Nuevo componente: `src/components/admin/campanas-valoracion/shared/SendScheduleConfig.tsx`**
-- Card con Collapsible que contiene los 3 controles
-- Estado devuelto via callback: `{ intervalMs: number, maxPerHour: number | null, scheduledAt: Date | null }`
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-**Cambios en `ProcessSendStep.tsx`:**
-- Nuevo estado `sendConfig` con los 3 parámetros
-- En `handleSendEmails`:
-  - Si `scheduledAt` está en el futuro: iniciar countdown, usar `setTimeout` hasta la hora indicada
-  - Reemplazar delay fijo `1500` por `sendConfig.intervalMs`
-  - Añadir throttle por hora: tracking de timestamps de envío, pausa automática cuando se alcanza `maxPerHour`
-  - Mostrar en la barra de progreso el estado: "Esperando (límite/hora alcanzado)" o "Programado para HH:MM"
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-**Cambios en `DocumentSendStep.tsx`:**
-- Mismo panel de configuración antes del botón de envío masivo
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-**Cambios en hooks (`useCampaignEmails.ts`, `useCampaignFollowups.ts`):**
-- Aceptar `intervalMs` como parámetro opcional en las funciones de envío masivo
-- Añadir delay entre cada invocación del Edge Function
+### Resultado
 
-### UI del panel
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
 
-```text
-┌─ ⚙️ Configuración de envío ──────────────────────┐
-│                                                    │
-│  Intervalo entre emails:  [▼ 30 segundos]          │
-│                                                    │
-│  Límite por hora:  [50] emails/hora                │
-│  ☐ Sin límite                                      │
-│                                                    │
-│  Programar envío:                                  │
-│  ☐ Enviar ahora                                    │
-│  ○ Programar para: [📅 17 Mar 2026] [09:00]        │
-│                                                    │
-│  ⚠️ La pestaña debe permanecer abierta             │
-└────────────────────────────────────────────────────┘
-```
+---
 
-### No se toca
-- Edge Function `send-campaign-outbound-email` (sin cambios server-side)
-- Importador, configuración, notas
-- Lógica de tracking/webhooks
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
 
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes

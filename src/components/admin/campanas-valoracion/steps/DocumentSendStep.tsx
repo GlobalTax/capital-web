@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,12 +21,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye } from 'lucide-react';
+import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye, Clock } from 'lucide-react';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface Props {
   campaignId: string;
@@ -45,6 +48,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [resendConfirm, setResendConfirm] = useState<ResendConfirm>(null);
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
+  const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const emailMap = useMemo(() => {
     const map = new Map<string, typeof emails[0]>();
@@ -104,12 +110,63 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
     }
   };
 
+  const executeSendAllLoop = async () => {
+    if (pendingEmails.length === 0) {
+      toast.info('No hay emails pendientes para enviar');
+      return;
+    }
+    setScheduledCountdown(null);
+    const throttle = createSendThrottle(sendConfig);
+
+    for (let i = 0; i < pendingEmails.length; i++) {
+      const email = pendingEmails[i];
+      setSendingId(email.id);
+      try {
+        await sendEmail(email.id);
+        if (i < pendingEmails.length - 1) {
+          await throttle();
+        }
+      } catch {
+        // handled by hook
+      } finally {
+        setSendingId(null);
+      }
+    }
+  };
+
   const handleSendAll = async () => {
     if (pendingEmails.length === 0) {
       toast.info('No hay emails pendientes para enviar');
       return;
     }
-    await sendAllPending();
+
+    if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
+      const updateCountdown = () => {
+        const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
+        if (diff <= 0) {
+          setScheduledCountdown(null);
+          if (scheduledTimerRef.current) clearInterval(scheduledTimerRef.current);
+          executeSendAllLoop();
+          return;
+        }
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        setScheduledCountdown(`${h > 0 ? `${h}h ` : ''}${m}m ${s}s`);
+      };
+      updateCountdown();
+      scheduledTimerRef.current = setInterval(updateCountdown, 1000);
+      toast.success(`Envío programado para ${format(sendConfig.scheduledAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}`);
+      return;
+    }
+
+    await executeSendAllLoop();
+  };
+
+  const handleCancelSchedule = () => {
+    if (scheduledTimerRef.current) clearInterval(scheduledTimerRef.current);
+    setScheduledCountdown(null);
+    toast.info('Envío programado cancelado');
   };
 
   const handleBulkResend = () => {
@@ -191,24 +248,50 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
 
       {/* Actions */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
+          {/* Schedule config panel */}
+          <SendScheduleConfig
+            value={sendConfig}
+            onChange={setSendConfig}
+            disabled={isSendingAll || !!scheduledCountdown}
+          />
+
+          {/* Scheduled countdown */}
+          {scheduledCountdown && (
+            <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50 border">
+              <Clock className="h-5 w-5 text-muted-foreground animate-pulse" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Envío programado</p>
+                <p className="text-xs text-muted-foreground">
+                  Comienza en <span className="font-mono font-medium text-foreground">{scheduledCountdown}</span>
+                  {sendConfig.scheduledAt && (
+                    <> — {format(sendConfig.scheduledAt, "dd MMM yyyy 'a las' HH:mm", { locale: es })}</>
+                  )}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleCancelSchedule}>
+                Cancelar
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {pendingEmails.length} pendiente{pendingEmails.length !== 1 ? 's' : ''} · {sentEmails.length} enviado{sentEmails.length !== 1 ? 's' : ''}
             </p>
             <div className="flex items-center gap-2">
               {sentEmails.length > 0 && (
-                <Button variant="outline" onClick={handleBulkResend} disabled={isSendingAll}>
+                <Button variant="outline" onClick={handleBulkResend} disabled={isSendingAll || !!scheduledCountdown}>
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Reenviar {sentEmails.length} enviados
                 </Button>
               )}
               {pendingEmails.length > 0 && (
-                <Button onClick={handleSendAll} disabled={isSendingAll}>
+                <Button onClick={handleSendAll} disabled={isSendingAll || !!scheduledCountdown}>
                   {isSendingAll ? (
                     <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Enviando...</>
                   ) : (
-                    <><Send className="h-4 w-4 mr-2" />Enviar todos ({pendingEmails.length})</>
+                    <><Send className="h-4 w-4 mr-2" />{sendConfig.scheduledAt && !scheduledCountdown ? 'Programar envío' : `Enviar todos (${pendingEmails.length})`}</>
                   )}
                 </Button>
               )}
