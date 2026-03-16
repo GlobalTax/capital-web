@@ -1,30 +1,52 @@
 
 
-## Plan: Optimizar rendimiento de la Biblioteca de Fotos
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Problemas identificados
+### Cambios realizados
 
-1. **Cada imagen carga a resolución completa** — En la cuadrícula se muestran como thumbnails (~150x150px) pero se descarga el archivo original (potencialmente varios MB cada uno).
-2. **Búsqueda provoca refetch innecesario** — `search` está en el `queryKey`, pero el filtrado es 100% cliente. Cada tecla dispara una nueva llamada RPC.
-3. **Sin placeholder/skeleton mientras cargan** — Las imágenes aparecen de golpe sin transición.
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-### Cambios
+### Resultado
 
-**Archivo: `src/hooks/usePhotoLibrary.tsx`**
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-1. Quitar `search` del `queryKey` (dejar solo `['photo-library', currentFolder]`). Mover el filtrado fuera del `queryFn` con un `useMemo` que filtre `data` por `search`.
-2. Generar dos URLs por foto: `publicUrl` (original) y `thumbnailUrl` (con params de transformación Supabase: `?width=300&height=300&resize=cover&quality=60`).
-3. Actualizar la interfaz `PhotoFile` para incluir `thumbnailUrl: string`.
+---
 
-**Archivo: `src/components/admin/PhotoLibraryManager.tsx`**
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-4. Usar `photo.thumbnailUrl` en el `<img>` de la cuadrícula en lugar de `photo.publicUrl`.
-5. Añadir un skeleton/placeholder con blur-up mientras la imagen carga (`useState` para loaded + transición opacity).
-6. Añadir `debounce` al input de búsqueda (300ms) para evitar re-renders constantes.
+### Cambios realizados
 
-### Resultado esperado
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-- Cada thumbnail pesa ~10-30KB en vez de varios MB
-- La búsqueda no dispara llamadas de red
-- Transición visual suave al cargar cada imagen
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes

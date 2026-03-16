@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +13,7 @@ export interface PhotoFile {
   updated_at: string;
   metadata: { size: number; mimetype: string } | null;
   publicUrl: string;
+  thumbnailUrl: string;
   fullPath: string;
 }
 
@@ -27,15 +28,12 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['photo-library', search, currentFolder],
+    queryKey: ['photo-library', currentFolder],
     queryFn: async (): Promise<{ photos: PhotoFile[]; folders: FolderItem[] }> => {
-      const normalizedSearch = search.trim().toLowerCase();
       const folderPath = currentFolder || '';
 
-      // Use RPC to bypass Storage API internal RLS issues
       const { data, error } = await supabase.rpc('list_admin_photos', { folder_path: folderPath });
 
-      console.log('Photo library RPC result:', { folder: currentFolder, count: data?.length, error });
       if (error) throw error;
       if (!data) return { photos: [], folders: [] };
 
@@ -45,18 +43,19 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
       for (const f of data as any[]) {
         if (f.name === '.emptyFolderPlaceholder') continue;
 
-        // id is NULL for folders
         if (f.id == null) {
-          if (!normalizedSearch || f.name.toLowerCase().includes(normalizedSearch)) {
-            folders.push({ name: f.name });
-          }
+          folders.push({ name: f.name });
           continue;
         }
 
-        if (normalizedSearch && !f.name.toLowerCase().includes(normalizedSearch)) continue;
-
         const fullPath = currentFolder ? `${currentFolder}/${f.name}` : f.name;
         const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(fullPath);
+        const publicUrl = urlData.publicUrl;
+
+        // Generate thumbnail URL with Supabase image transformation
+        const { data: thumbData } = supabase.storage.from(BUCKET).getPublicUrl(fullPath, {
+          transform: { width: 300, height: 300, resize: 'cover', quality: 60 },
+        });
 
         photos.push({
           name: f.name,
@@ -64,18 +63,31 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
           created_at: f.created_at ?? '',
           updated_at: f.updated_at ?? '',
           metadata: f.metadata as PhotoFile['metadata'],
-          publicUrl: urlData.publicUrl,
+          publicUrl,
+          thumbnailUrl: thumbData.publicUrl,
           fullPath,
         });
       }
 
       return { photos, folders };
     },
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 60 * 2,
   });
 
-  const photos = data?.photos ?? [];
-  const folders = data?.folders ?? [];
+  // Client-side filtering by search
+  const normalizedSearch = search.trim().toLowerCase();
+
+  const photos = useMemo(() => {
+    const all = data?.photos ?? [];
+    if (!normalizedSearch) return all;
+    return all.filter(p => p.name.toLowerCase().includes(normalizedSearch));
+  }, [data?.photos, normalizedSearch]);
+
+  const folders = useMemo(() => {
+    const all = data?.folders ?? [];
+    if (!normalizedSearch) return all;
+    return all.filter(f => f.name.toLowerCase().includes(normalizedSearch));
+  }, [data?.folders, normalizedSearch]);
 
   const uploadPhotos = useCallback(async (files: File[]) => {
     setIsUploading(true);

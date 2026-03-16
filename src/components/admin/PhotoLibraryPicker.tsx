@@ -131,7 +131,7 @@ const PhotoLibraryPicker: React.FC<PhotoLibraryPickerProps> = ({ onSelect, trigg
                       onClick={() => handleSelect(photo.publicUrl)}
                       className="group relative aspect-square rounded-lg overflow-hidden border border-border hover:ring-2 hover:ring-primary transition-all"
                     >
-                      <img src={photo.publicUrl} alt={photo.name} className="w-full h-full object-cover" />
+                      <img src={photo.thumbnailUrl || photo.publicUrl} alt={photo.name} className="w-full h-full object-cover" loading="lazy" />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                     </button>
                   ))}

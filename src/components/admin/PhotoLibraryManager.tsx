@@ -1,8 +1,10 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { usePhotoLibrary, PhotoFile } from '@/hooks/usePhotoLibrary';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Upload, Trash2, Copy, Loader2, ImageIcon, X, FolderPlus, Folder, ChevronRight, Home, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -31,8 +33,27 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 
+/** Thumbnail with skeleton placeholder and fade-in */
+const PhotoThumbnail: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <>
+      {!loaded && <Skeleton className="absolute inset-0 rounded-none" />}
+      <img
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        loading="lazy"
+        draggable={false}
+        onLoad={() => setLoaded(true)}
+      />
+    </>
+  );
+};
+
 const PhotoLibraryManager: React.FC = () => {
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [currentFolder, setCurrentFolder] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<PhotoFile | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
@@ -45,7 +66,7 @@ const PhotoLibraryManager: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(search, currentFolder);
+  const { photos, folders, isLoading, isError, error, isUploading, uploadProgress, uploadPhotos, deletePhoto, createFolder, deleteFolder, movePhoto, refetch } = usePhotoLibrary(debouncedSearch, currentFolder);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -358,13 +379,7 @@ const PhotoLibraryManager: React.FC = () => {
                     }`}
                   >
                     <div className="aspect-square bg-muted relative">
-                      <img
-                        src={photo.publicUrl}
-                        alt={photo.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        draggable={false}
-                      />
+                      <PhotoThumbnail src={photo.thumbnailUrl} alt={photo.name} />
                       <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-70 transition-opacity">
                         <GripVertical className="h-4 w-4 text-foreground drop-shadow-md" />
                       </div>
