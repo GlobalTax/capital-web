@@ -30,23 +30,22 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
     queryKey: ['photo-library', search, currentFolder],
     queryFn: async (): Promise<{ photos: PhotoFile[]; folders: FolderItem[] }> => {
       const normalizedSearch = search.trim().toLowerCase();
-      const listPath = currentFolder || '';
+      const folderPath = currentFolder || '';
 
-      const { data, error } = await supabase.storage
-        .from(BUCKET)
-        .list(listPath, { limit: 500, sortBy: { column: 'name', order: 'asc' } });
+      // Use RPC to bypass Storage API internal RLS issues
+      const { data, error } = await supabase.rpc('list_admin_photos', { folder_path: folderPath });
 
-      console.log('Photo library list result:', { folder: currentFolder, count: data?.length, error });
+      console.log('Photo library RPC result:', { folder: currentFolder, count: data?.length, error });
       if (error) throw error;
       if (!data) return { photos: [], folders: [] };
 
       const folders: FolderItem[] = [];
       const photos: PhotoFile[] = [];
 
-      for (const f of data) {
+      for (const f of data as any[]) {
         if (f.name === '.emptyFolderPlaceholder') continue;
 
-        // En algunos responses de Storage, la carpeta viene con id null o undefined
+        // id is NULL for folders
         if (f.id == null) {
           if (!normalizedSearch || f.name.toLowerCase().includes(normalizedSearch)) {
             folders.push({ name: f.name });
@@ -139,11 +138,14 @@ export const usePhotoLibrary = (search: string = '', currentFolder: string = '')
 
   const deleteFolder = useCallback(async (name: string) => {
     const folderPath = currentFolder ? `${currentFolder}/${name}` : name;
-    const { data: files, error: listError } = await supabase.storage.from(BUCKET).list(folderPath, { limit: 1000 });
+    // Use RPC to list folder contents (avoids Storage API RLS issue)
+    const { data: rpcFiles, error: listError } = await supabase.rpc('list_admin_photos', { folder_path: folderPath });
     if (listError) {
       toast({ title: 'Error', description: listError.message, variant: 'destructive' });
       return false;
     }
+
+    const files = (rpcFiles as any[]) || [];
 
     if (files && files.length > 0) {
       const filePaths = files.map(f => `${folderPath}/${f.name}`);

@@ -1,45 +1,52 @@
 
 
-## Plan: Fix photo library listing + clean console noise
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Problem
-The `supabase.storage.from('admin-photos').list()` API call fails with "new row violates row-level security policy" (status 400). This is NOT a policy issue on `storage.objects` (all CRUD policies exist and work). The error comes from internal Supabase Storage tables (`buckets_analytics`, etc.) that have RLS enabled with no policies. Direct SQL queries to `storage.objects` work perfectly (verified: 58 files exist).
+### Cambios realizados
 
-### Solution
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-**1. Replace Storage list API with direct query in `usePhotoLibrary.tsx`**
+### Resultado
 
-Instead of `supabase.storage.from(BUCKET).list()`, query `storage.objects` directly via PostgREST:
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-```typescript
-const { data, error } = await supabase
-  .from('objects' as any)  // storage.objects via PostgREST
-  ...
-```
+---
 
-Wait - PostgREST only exposes the `public` schema by default, not `storage`. We can't query `storage.objects` directly through the JS client.
+## ✅ Completado: og:url estático + SSR para noticias individuales
 
-**Alternative approach: Create a `public` schema function** that lists files from the storage bucket using `SECURITY DEFINER` to bypass RLS on internal tables:
+### Cambios realizados
 
-```sql
-CREATE OR REPLACE FUNCTION public.list_admin_photos(folder_path TEXT DEFAULT '')
-RETURNS TABLE (name TEXT, id UUID, created_at TIMESTAMPTZ, updated_at TIMESTAMPTZ, metadata JSONB)
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, storage
-AS $$ ... $$;
-```
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
 
-This function queries `storage.objects` directly, bypassing the Storage API's internal analytics tracking that causes the RLS error.
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
 
-**2. Update `src/hooks/usePhotoLibrary.tsx`**
-- Replace the `supabase.storage.list()` call with `supabase.rpc('list_admin_photos', { folder_path })`.
-- Construct public URLs using the known pattern: `{SUPABASE_URL}/storage/v1/object/public/admin-photos/{path}`.
-- Keep all other operations (upload, delete, move) using the Storage API since they work fine.
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
 
-**3. Update `src/core/providers/ConsoleNoiseFilter.tsx`**
-- Add patterns for `Max reconnect attempts`, `@firebase/firestore.*transport errored`, `WebSocket is already in CLOSING`, `Failed to load resource.*supabase.*400`.
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
 
-### Files changed
-- New migration: `list_admin_photos` function
-- `src/hooks/usePhotoLibrary.tsx`: Use RPC for listing
-- `src/core/providers/ConsoleNoiseFilter.tsx`: Add noise patterns
+### Resultado
 
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
