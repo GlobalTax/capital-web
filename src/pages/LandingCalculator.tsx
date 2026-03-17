@@ -165,7 +165,7 @@ const LandingCalculatorInner = () => {
       <SEOHead 
         title={t('landing.title')}
         description={t('landing.description')}
-        canonical={`https://capittal.es${location.pathname}${location.search}`}
+        canonical={`https://capittal.es${location.pathname}`}
         keywords="calculadora valoración empresas, valorar empresa online, calculadora empresarial España"
         ogImage="https://capittal.es/src/assets/calculadora-social-preview.jpg"
         structuredData={[
@@ -177,7 +177,7 @@ const LandingCalculatorInner = () => {
           getWebPageSchema(
             t('landing.title'),
             t('landing.description'),
-            `https://capittal.es${location.pathname}${location.search}`
+            `https://capittal.es${location.pathname}`
           ),
           getFAQSchema(FAQ_DATA)
         ]}

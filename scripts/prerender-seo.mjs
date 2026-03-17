@@ -21,6 +21,10 @@ import path from 'path';
 const DIST_DIR = path.resolve('dist');
 const BASE_URL = 'https://capittal.es';
 
+// Supabase config for fetching blog posts at build time
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://fwhqtzkkvnjkazhaficj.supabase.co";
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I";
+
 // Route meta data - same as the R object in index.html
 const routes = {
   "/":{t:"Capittal Transacciones | Fusiones y Adquisiciones en España - M&A Advisory",d:"Asesoramiento M&A en Barcelona: venta de empresas, valoraciones y due diligence. +70 profesionales especializados en mid-market español."},
@@ -340,6 +344,24 @@ function generateHtmlForRoute(templateHtml, routePath, meta) {
   return html;
 }
 
+// Fetch published blog posts from Supabase to pre-render their pages
+async function fetchBlogPosts() {
+  try {
+    const url = `${SUPABASE_URL}/rest/v1/blog_posts?select=slug,title,excerpt,meta_description&is_published=eq.true&order=published_at.desc`;
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.warn('⚠️  Could not fetch blog posts for pre-rendering:', e.message);
+    return [];
+  }
+}
+
 async function main() {
   // Check dist exists
   if (!fs.existsSync(DIST_DIR)) {
@@ -355,6 +377,21 @@ async function main() {
 
   const templateHtml = fs.readFileSync(templatePath, 'utf-8');
   let count = 0;
+
+  // Fetch blog posts and add them to routes dynamically
+  const blogPosts = await fetchBlogPosts();
+  console.log(`  📝 Fetched ${blogPosts.length} blog posts for pre-rendering`);
+  for (const post of blogPosts) {
+    const blogRoute = `/recursos/blog/${post.slug}`;
+    if (!routes[blogRoute]) {
+      const blogTitle = post.title
+        ? `${post.title} | Blog M&A - Capittal`
+        : `Blog M&A España | Capittal`;
+      const blogDesc = post.meta_description || post.excerpt ||
+        `Artículo sobre fusiones, adquisiciones y valoración de empresas. Contenido M&A especializado por Capittal.`;
+      routes[blogRoute] = { t: blogTitle, d: blogDesc };
+    }
+  }
 
   // First, update the root index.html with homepage meta
   const homeMeta = routes['/'];

@@ -3,7 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://capittal.es/</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/" />
@@ -13,7 +13,7 @@
   </url>
   <url>
     <loc>https://capittal.es/ca</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/" />
@@ -23,7 +23,7 @@
   </url>
   <url>
     <loc>https://capittal.es/en</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/" />
@@ -33,713 +33,775 @@
   </url>
   <url>
     <loc>https://capittal.es/venta-empresas</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/venta-empresas" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/venda-empreses" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sell-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/venta-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/venda-empreses</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/venta-empresas" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/venda-empreses" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sell-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/venta-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/sell-companies</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/venta-empresas" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/venda-empreses" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sell-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/venta-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/compra-empresas</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/compra-empresas" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/buy-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/compra-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/buy-companies</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/compra-empresas" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/buy-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/compra-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/contacto</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/contacto" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/contacte" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/contacto" />
   </url>
   <url>
     <loc>https://capittal.es/contacte</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/contacto" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/contacte" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/contacto" />
   </url>
   <url>
     <loc>https://capittal.es/contact</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/contacto" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/contacte" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/contacto" />
   </url>
   <url>
     <loc>https://capittal.es/por-que-elegirnos</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/por-que-elegirnos" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/per-que-triar-nos" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/why-choose-us" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/por-que-elegirnos" />
   </url>
   <url>
     <loc>https://capittal.es/per-que-triar-nos</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/por-que-elegirnos" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/per-que-triar-nos" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/why-choose-us" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/por-que-elegirnos" />
   </url>
   <url>
     <loc>https://capittal.es/why-choose-us</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/por-que-elegirnos" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/per-que-triar-nos" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/why-choose-us" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/por-que-elegirnos" />
   </url>
   <url>
     <loc>https://capittal.es/equipo</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/equipo" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/equip" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/equipo" />
   </url>
   <url>
     <loc>https://capittal.es/equip</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/equipo" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/equip" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/equipo" />
   </url>
   <url>
     <loc>https://capittal.es/casos-exito</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/casos-exito" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/casos-exit" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/success-stories" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/casos-exito" />
   </url>
   <url>
     <loc>https://capittal.es/casos-exit</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/casos-exito" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/casos-exit" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/success-stories" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/casos-exito" />
   </url>
   <url>
     <loc>https://capittal.es/success-stories</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/casos-exito" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/casos-exit" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/success-stories" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/casos-exito" />
   </url>
   <url>
     <loc>https://capittal.es/programa-colaboradores</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/programa-colaboradores" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/programa-col-laboradors" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/collaborators-program" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/programa-colaboradores" />
   </url>
   <url>
     <loc>https://capittal.es/programa-col-laboradors</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/programa-colaboradores" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/programa-col-laboradors" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/collaborators-program" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/programa-colaboradores" />
   </url>
   <url>
     <loc>https://capittal.es/collaborators-program</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/programa-colaboradores" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/programa-col-laboradors" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/collaborators-program" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/programa-colaboradores" />
   </url>
   <url>
     <loc>https://capittal.es/servicios/valoraciones</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/valoraciones" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/valoracions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/valuations" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/valoraciones" />
   </url>
   <url>
     <loc>https://capittal.es/serveis/valoracions</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/valoraciones" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/valoracions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/valuations" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/valoraciones" />
   </url>
   <url>
     <loc>https://capittal.es/services/valuations</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/valoraciones" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/valoracions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/valuations" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/valoraciones" />
   </url>
   <url>
     <loc>https://capittal.es/servicios/venta-empresas</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/venta-empresas" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/venda-empreses" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/sell-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/venta-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/serveis/venda-empreses</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/venta-empresas" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/venda-empreses" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/sell-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/venta-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/services/sell-companies</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/venta-empresas" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/venda-empreses" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/sell-companies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/venta-empresas" />
   </url>
   <url>
     <loc>https://capittal.es/servicios/due-diligence</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/due-diligence" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/due-diligence" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/due-diligence" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/due-diligence" />
   </url>
   <url>
     <loc>https://capittal.es/serveis/due-diligence</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/due-diligence" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/due-diligence" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/due-diligence" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/due-diligence" />
   </url>
   <url>
     <loc>https://capittal.es/services/due-diligence</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/due-diligence" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/due-diligence" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/due-diligence" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/due-diligence" />
   </url>
   <url>
     <loc>https://capittal.es/servicios/asesoramiento-legal</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/asesoramiento-legal" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/assessorament-legal" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/legal-advisory" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/asesoramiento-legal" />
   </url>
   <url>
     <loc>https://capittal.es/serveis/assessorament-legal</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/asesoramiento-legal" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/assessorament-legal" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/legal-advisory" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/asesoramiento-legal" />
   </url>
   <url>
     <loc>https://capittal.es/services/legal-advisory</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/asesoramiento-legal" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/assessorament-legal" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/legal-advisory" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/asesoramiento-legal" />
   </url>
   <url>
     <loc>https://capittal.es/servicios/reestructuraciones</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/reestructuraciones" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/reestructuracions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/restructuring" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/reestructuraciones" />
   </url>
   <url>
     <loc>https://capittal.es/serveis/reestructuracions</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/reestructuraciones" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/reestructuracions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/restructuring" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/reestructuraciones" />
   </url>
   <url>
     <loc>https://capittal.es/services/restructuring</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/reestructuraciones" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/reestructuracions" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/restructuring" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/reestructuraciones" />
   </url>
   <url>
     <loc>https://capittal.es/servicios/planificacion-fiscal</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/planificacion-fiscal" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/planificacio-fiscal" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/tax-planning" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/planificacion-fiscal" />
   </url>
   <url>
     <loc>https://capittal.es/serveis/planificacio-fiscal</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/planificacion-fiscal" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/planificacio-fiscal" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/tax-planning" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/planificacion-fiscal" />
   </url>
   <url>
     <loc>https://capittal.es/services/tax-planning</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/servicios/planificacion-fiscal" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/serveis/planificacio-fiscal" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/services/tax-planning" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/servicios/planificacion-fiscal" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/tecnologia</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/tecnologia" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/tecnologia" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/technology" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/tecnologia" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/tecnologia</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/tecnologia" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/tecnologia" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/technology" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/tecnologia" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/technology</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/tecnologia" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/tecnologia" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/technology" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/tecnologia" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/healthcare</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/healthcare" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/salut" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/healthcare" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/healthcare" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/salut</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/healthcare" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/salut" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/healthcare" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/healthcare" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/healthcare</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/healthcare" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/salut" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/healthcare" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/healthcare" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/industrial</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/industrial" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/industrial" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/industrial" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/industrial</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/industrial" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/industrial" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/industrial" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/retail-consumer</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/retail-consumer" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/retail-consum" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/retail-consumer" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/retail-consumer" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/retail-consum</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/retail-consumer" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/retail-consum" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/retail-consumer" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/retail-consumer" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/retail-consumer</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/retail-consumer" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/retail-consum" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/retail-consumer" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/retail-consumer" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/energia</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/energia" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/energia" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/energy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/energia" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/energia</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/energia" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/energia" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/energy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/energia" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/energy</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/energia" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/energia" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/energy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/energia" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/seguridad</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/seguridad" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/seguretat" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/security" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/seguridad" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/seguretat</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/seguridad" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/seguretat" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/security" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/seguridad" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/security</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/seguridad" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/seguretat" />
     <xhtml:link rel="alternate" hreflang="en" href="https://capittal.es/sectors/security" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/seguridad" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/construccion</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/construccion" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/construccio" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/construccion" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/construccio</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/construccion" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/construccio" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/construccion" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/alimentacion</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/alimentacion" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/alimentacio" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/alimentacion" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/alimentacio</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/alimentacion" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/alimentacio" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/alimentacion" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/logistica</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/logistica" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/logistica" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/logistica" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/logistica</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/logistica" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/logistica" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/logistica" />
   </url>
   <url>
     <loc>https://capittal.es/sectores/medio-ambiente</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/medio-ambiente" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/medi-ambient" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/medio-ambiente" />
   </url>
   <url>
     <loc>https://capittal.es/sectors/medi-ambient</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
     <xhtml:link rel="alternate" hreflang="es" href="https://capittal.es/sectores/medio-ambiente" />
     <xhtml:link rel="alternate" hreflang="ca" href="https://capittal.es/sectors/medi-ambient" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://capittal.es/sectores/medio-ambiente" />
   </url>
   <url>
     <loc>https://capittal.es/lp/calculadora</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://capittal.es/lp/calculadora-fiscal</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://capittal.es/lp/calculadora-asesores</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://capittal.es/lp/calculadora-meta</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://capittal.es/lp/venta-empresas</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://capittal.es/lp/venta-empresas-v2</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://capittal.es/lp/valoracion-2026</loc>
-    <lastmod>2026-03-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://capittal.es/lp/rod-linkedin</loc>
-    <lastmod>2026-03-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
     <loc>https://capittal.es/lp/suiteloop</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://capittal.es/lp/accountex</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://capittal.es/recursos/blog</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://capittal.es/recursos/noticias</loc>
-    <lastmod>2026-03-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  <url>
     <loc>https://capittal.es/recursos/case-studies</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
+    <loc>https://capittal.es/recursos/guia-vender-empresa</loc>
+    <lastmod>2026-03-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://capittal.es/servicios/search-funds</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://capittal.es/search-funds</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://capittal.es/valoracion-empresas</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://capittal.es/guia-valoracion-empresas</loc>
+    <lastmod>2026-03-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  <url>
     <loc>https://capittal.es/oportunidades</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://capittal.es/search-funds/recursos</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://capittal.es/search-funds/recursos/guia</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
     <loc>https://capittal.es/por-que-elegirnos/experiencia</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
     <loc>https://capittal.es/por-que-elegirnos/metodologia</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
     <loc>https://capittal.es/por-que-elegirnos/resultados</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
+    <loc>https://capittal.es/sectores/retail</loc>
+    <lastmod>2026-03-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
     <loc>https://capittal.es/de-looper-a-capittal</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://capittal.es/seguridad/calculadora</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://capittal.es/oportunidades/empleo</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://capittal.es/politica-privacidad</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://capittal.es/terminos-uso</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://capittal.es/cookies</loc>
-    <lastmod>2026-03-16</lastmod>
+    <lastmod>2026-03-17</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
