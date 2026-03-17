@@ -1557,11 +1557,15 @@ export default function ContactListDetailPage() {
           </Button>
           <div>
             {parentList && (
-              <div className="mb-1">
+              <div className="mb-1 flex items-center gap-2">
                 <Link to={`/admin/listas-contacto/${parentList.id}`} className="text-xs text-primary hover:underline flex items-center gap-1">
                   <Link2 className="h-3 w-3" />
                   Sublista de: {parentList.name}
                 </Link>
+                <Badge variant="accent" size="sm" className="text-[10px]">
+                  <Layers className="h-3 w-3 mr-0.5" />
+                  Lista Madre: {parentList.name}
+                </Badge>
               </div>
             )}
             <h1 className="text-2xl font-semibold">{list.name}</h1>
