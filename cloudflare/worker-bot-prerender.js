@@ -66,6 +66,7 @@ const ROUTES = {
   "/sectores/logistica":{t:"M&A Sector Logística | Capittal",d:"Fusiones y adquisiciones en logística y transporte. Distribución, almacenaje y cadena de suministro en España."},
   "/sectores/medio-ambiente":{t:"M&A Sector Medio Ambiente | Capittal",d:"Operaciones de M&A en medio ambiente. Gestión de residuos, tratamiento de aguas y sostenibilidad en España."},
   "/sectores/retail-consumer":{t:"M&A Sector Retail y Consumo | Capittal",d:"Asesoramiento M&A en retail y consumo. Distribución, franquicias, e-commerce y marcas de consumo en España."},
+  "/sectores/retail":{t:"M&A Sector Retail y Consumo | Capittal",d:"Operaciones de M&A en retail, distribución y bienes de consumo en España."},
   "/sectores/alimentacion":{t:"M&A Sector Alimentación | Capittal",d:"Operaciones de M&A en el sector alimentario. Producción, distribución y marcas de alimentación en España."},
   "/recursos/blog":{t:"Blog M&A España | Fusiones, Adquisiciones y Valoraciones - Capittal",d:"Artículos sobre fusiones, adquisiciones, valoración de empresas y due diligence. Contenido M&A para empresarios e inversores."},
   "/lp/calculadora":{t:"Calculadora de Valoración de Empresas Gratuita | Capittal",d:"Calcula el valor de tu empresa gratis. Estimación basada en facturación, EBITDA y sector. Valoración orientativa en 2 minutos."},
