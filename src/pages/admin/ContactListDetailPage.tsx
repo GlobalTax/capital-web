@@ -1597,26 +1597,28 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
-            {filterProvincias.length > 0 && (
+            {hasAnyColumnFilter && (
               <div className="flex items-center gap-1.5 flex-wrap">
-                {filterProvincias.map(p => (
-                  <Badge key={p} variant="secondary" className="gap-1 text-xs">
-                    {p}
-                    <button
-                      onClick={() => setFilterProvincias(prev => prev.filter(x => x !== p))}
-                      className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
+                {Object.entries(columnFilters).map(([colKey, values]) =>
+                  values.map(val => (
+                    <Badge key={`${colKey}-${val}`} variant="secondary" className="gap-1 text-xs">
+                      <span className="font-medium">{COLUMN_LABELS[colKey] || colKey}:</span> {val}
+                      <button
+                        onClick={() => toggleColumnFilter(colKey, val)}
+                        className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-6 px-2 text-xs"
-                  onClick={() => setFilterProvincias([])}
+                  onClick={clearAllColumnFilters}
                 >
-                  Limpiar
+                  Limpiar todo
                 </Button>
               </div>
             )}
