@@ -547,11 +547,18 @@ export default function ContactListDetailPage() {
       if (selectedValues.length === 0) continue;
       const numRanges = NUMERIC_RANGES[colKey];
       if (numRanges) {
-        // Numeric range filter
+        // Numeric range filter (predefined + custom)
         result = result.filter(c => {
           const val = Number((c as any)[colKey]) || 0;
           const hasData = (c as any)[colKey] != null && (c as any)[colKey] !== '';
           return selectedValues.some(rangeLabel => {
+            // Custom range: "custom:min-max"
+            if (rangeLabel.startsWith('custom:')) {
+              const parts = rangeLabel.slice(7).split('-');
+              const cMin = parts[0] ? Number(parts[0]) : -Infinity;
+              const cMax = parts[1] ? Number(parts[1]) : Infinity;
+              return hasData && val >= cMin && val <= cMax;
+            }
             const range = numRanges.find(r => r.label === rangeLabel);
             if (!range) return false;
             if (range.min === null) return !hasData; // "Sin dato"
