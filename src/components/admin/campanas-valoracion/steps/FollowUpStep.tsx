@@ -21,6 +21,7 @@ import {
   Building2, Clock, Calendar, Search, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
