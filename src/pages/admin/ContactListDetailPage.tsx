@@ -748,6 +748,7 @@ export default function ContactListDetailPage() {
       num_trabajadores: addForm.num_trabajadores ? parseInt(addForm.num_trabajadores) || null : null,
       director_ejecutivo: addForm.director_ejecutivo.trim() || null,
       linkedin: addForm.linkedin.trim() || null,
+      consolidador: false,
     });
     setAddForm({ empresa: '', contacto: '', email: '', telefono: '', cif: '', web: '', provincia: '', facturacion: '', ebitda: '', notas: '', num_trabajadores: '', director_ejecutivo: '', linkedin: '', comunidad_autonoma: '', posicion_contacto: '', cnae: '', descripcion_actividad: '' });
     setIsAddModalOpen(false);
@@ -1165,12 +1166,31 @@ export default function ContactListDetailPage() {
         return <span className="text-right text-sm tabular-nums">{company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}</span>;
       case 'num_trabajadores':
         return <span className="text-right text-sm tabular-nums">{company.num_trabajadores ?? '—'}</span>;
+      case 'consolidador':
+        return (
+          <div className="flex justify-center">
+            <Checkbox
+              checked={!!(company as any).consolidador}
+              onCheckedChange={async (checked) => {
+                try {
+                  await supabase
+                    .from('outbound_list_companies' as any)
+                    .update({ consolidador: !!checked } as any)
+                    .eq('id', company.id);
+                  queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+                } catch {
+                  toast.error('Error al actualizar consolidador');
+                }
+              }}
+            />
+          </div>
+        );
       case 'notas':
         return <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />;
       default:
         return null;
     }
-  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved, columnFilters, toggleColumnFilter]);
+  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved, columnFilters, toggleColumnFilter, queryClient, listId]);
 
   // Column label map for filter badges
   const COLUMN_LABELS: Record<string, string> = {
@@ -1793,7 +1813,7 @@ export default function ContactListDetailPage() {
                                </TableRow>
                              );
                            }
-                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas']);
+                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador']);
                            return (
                              <React.Fragment key={company.id}>
                                {separatorRow}

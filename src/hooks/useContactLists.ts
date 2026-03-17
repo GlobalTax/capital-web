@@ -68,6 +68,7 @@ export interface ContactListCompany {
   posicion_contacto: string | null;
   cnae: string | null;
   descripcion_actividad: string | null;
+  consolidador: boolean;
   created_at: string;
 }
 

@@ -16920,6 +16920,7 @@ export type Database = {
           cif: string | null
           cnae: string | null
           comunidad_autonoma: string | null
+          consolidador: boolean | null
           contacto: string | null
           created_at: string | null
           descripcion_actividad: string | null
@@ -16943,6 +16944,7 @@ export type Database = {
           cif?: string | null
           cnae?: string | null
           comunidad_autonoma?: string | null
+          consolidador?: boolean | null
           contacto?: string | null
           created_at?: string | null
           descripcion_actividad?: string | null
@@ -16966,6 +16968,7 @@ export type Database = {
           cif?: string | null
           cnae?: string | null
           comunidad_autonoma?: string | null
+          consolidador?: boolean | null
           contacto?: string | null
           created_at?: string | null
           descripcion_actividad?: string | null
