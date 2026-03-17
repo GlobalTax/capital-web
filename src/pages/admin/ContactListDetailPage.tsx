@@ -358,6 +358,7 @@ export default function ContactListDetailPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+  const [filterProvincia, setFilterProvincia] = useState<string>('all');
   const [groupBlocked, setGroupBlocked] = useState(true);
 
   // Pagination
@@ -440,6 +441,12 @@ export default function ContactListDetailPage() {
 
 
 
+  const uniqueProvincias = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.provincia) set.add(c.provincia); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+  }, [companies]);
+
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
     // Search
@@ -463,6 +470,7 @@ export default function ContactListDetailPage() {
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
+    if (filterProvincia && filterProvincia !== 'all') result = result.filter(c => c.provincia === filterProvincia);
     // Sort
     if (sortField) {
       result.sort((a, b) => {
@@ -487,12 +495,12 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincia, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
   // Reset page when filters/sort change
   React.useEffect(() => {
     setCurrentPage(0);
-  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, groupBlocked]);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincia, sortField, sortDir, groupBlocked]);
 
   // Pagination derived values
   const totalPages = Math.ceil(filteredCompanies.length / pageSize);
@@ -1352,6 +1360,19 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
+            {uniqueProvincias.length > 0 && (
+              <Select value={filterProvincia} onValueChange={setFilterProvincia}>
+                <SelectTrigger className="h-9 w-[160px]">
+                  <SelectValue placeholder="Provincia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las provincias</SelectItem>
+                  {uniqueProvincias.map(p => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {isMadreList && (
               <Button
                 variant={groupBlocked ? 'default' : 'outline'}
@@ -1363,7 +1384,7 @@ export default function ContactListDetailPage() {
                 {groupBlocked ? 'Agrupada' : 'Unificada'}
               </Button>
             )}
-            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda) && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || filterProvincia !== 'all') && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
