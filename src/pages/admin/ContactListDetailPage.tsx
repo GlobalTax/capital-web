@@ -716,6 +716,14 @@ export default function ContactListDetailPage() {
     }
   };
 
+  const handleSelectAllFiltered = () => {
+    setSelectedIds(filteredCompanies.map(c => c.id));
+  };
+
+  const allPageSelected = paginatedCompanies.length > 0 && paginatedCompanies.every(c => selectedIds.includes(c.id));
+  const allFilteredSelected = filteredCompanies.length > 0 && selectedIds.length === filteredCompanies.length && filteredCompanies.every(c => selectedIds.includes(c.id));
+  const showSelectAllBanner = allPageSelected && filteredCompanies.length > paginatedCompanies.length;
+
   const handleToggleSelect = (id: string) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
