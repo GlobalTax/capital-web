@@ -1813,7 +1813,7 @@ export default function ContactListDetailPage() {
                                </TableRow>
                              );
                            }
-                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas']);
+                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador']);
                            return (
                              <React.Fragment key={company.id}>
                                {separatorRow}
