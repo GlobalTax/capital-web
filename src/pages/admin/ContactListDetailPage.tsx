@@ -1360,6 +1360,19 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
+            {uniqueProvincias.length > 0 && (
+              <Select value={filterProvincia} onValueChange={setFilterProvincia}>
+                <SelectTrigger className="h-9 w-[160px]">
+                  <SelectValue placeholder="Provincia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las provincias</SelectItem>
+                  {uniqueProvincias.map(p => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             {isMadreList && (
               <Button
                 variant={groupBlocked ? 'default' : 'outline'}
@@ -1371,7 +1384,11 @@ export default function ContactListDetailPage() {
                 {groupBlocked ? 'Agrupada' : 'Unificada'}
               </Button>
             )}
-            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda) && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || filterProvincia !== 'all') && (
+              <span className="text-sm text-muted-foreground">
+                {filteredCompanies.length} de {companies.length}
+              </span>
+            )}
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
