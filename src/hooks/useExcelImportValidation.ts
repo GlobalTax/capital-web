@@ -16,11 +16,16 @@ export interface RelatedListRow extends ValidatedRow {
   listaRelacionada: string;
 }
 
+export interface ConflictRow extends ValidatedRow {
+  sublistaConflicto: string;
+}
+
 export interface ValidationResult {
   nuevas: ValidatedRow[];
   vinculadas: ValidatedRow[];
   duplicadas: ValidatedRow[];
   enOtraLista: RelatedListRow[];
+  conflictoSublistado: ConflictRow[];
   errores: ErrorRow[];
 }
 
@@ -89,7 +94,9 @@ export function useExcelImportValidation() {
       );
 
       // Fetch CIFs from related lists (parent + siblings)
-      const relatedCifMap = new Map<string, string>();
+      // relatedCifMap: cif → { name, isConflict }
+      // isConflict=true means sibling sublist (should block), false means parent (informational)
+      const relatedCifMap = new Map<string, { name: string; isConflict: boolean }>();
       if (listaMadreId) {
         const parentCompanies = await fetchAllPaginated((from, to) =>
           supabase
@@ -109,10 +116,10 @@ export function useExcelImportValidation() {
         const parentName = (parentListData as any)?.name || 'Lista madre';
         parentCompanies.forEach((r: any) => {
           const c = normalizeCif(r.cif);
-          if (c) relatedCifMap.set(c, parentName);
+          if (c) relatedCifMap.set(c, { name: parentName, isConflict: false });
         });
 
-        // Get sibling lists
+        // Get sibling lists — these are CONFLICTS
         const { data: siblingLists } = await supabase
           .from('outbound_lists' as any)
           .select('id, name')
@@ -131,11 +138,12 @@ export function useExcelImportValidation() {
 
           sibCifs.forEach((r: any) => {
             const c = normalizeCif(r.cif);
-            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, sibling.name);
+            // Sibling conflicts override parent entries
+            if (c) relatedCifMap.set(c, { name: sibling.name, isConflict: true });
           });
         }
       } else {
-        // This list might be a parent — check its sublists
+        // This list might be a parent — check its sublists (informational only)
         const { data: childLists } = await supabase
           .from('outbound_lists' as any)
           .select('id, name')
@@ -153,7 +161,7 @@ export function useExcelImportValidation() {
 
           childCifs.forEach((r: any) => {
             const c = normalizeCif(r.cif);
-            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, child.name);
+            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, { name: child.name, isConflict: false });
           });
         }
       }
@@ -162,6 +170,7 @@ export function useExcelImportValidation() {
       const vinculadas: ValidatedRow[] = [];
       const duplicadas: ValidatedRow[] = [];
       const enOtraLista: RelatedListRow[] = [];
+      const conflictoSublistado: ConflictRow[] = [];
       const errores: ErrorRow[] = [];
       const seenCifsInExcel = new Set<string>();
 
@@ -198,26 +207,32 @@ export function useExcelImportValidation() {
           return;
         }
 
-        const relatedListName = relatedCifMap.get(cif);
+        const relatedEntry = relatedCifMap.get(cif);
+
+        if (relatedEntry?.isConflict) {
+          // CIF exists in a sibling sublist → BLOCK
+          conflictoSublistado.push({ ...row, sublistaConflicto: relatedEntry.name });
+          return;
+        }
 
         if (existingInEmpresasSet.has(cif)) {
-          if (relatedListName) {
-            enOtraLista.push({ ...row, listaRelacionada: relatedListName });
+          if (relatedEntry) {
+            enOtraLista.push({ ...row, listaRelacionada: relatedEntry.name });
           } else {
             vinculadas.push(row);
           }
           return;
         }
 
-        if (relatedListName) {
-          enOtraLista.push({ ...row, listaRelacionada: relatedListName });
+        if (relatedEntry) {
+          enOtraLista.push({ ...row, listaRelacionada: relatedEntry.name });
           return;
         }
 
         nuevas.push(row);
       });
 
-      const result: ValidationResult = { nuevas, vinculadas, duplicadas, enOtraLista, errores };
+      const result: ValidationResult = { nuevas, vinculadas, duplicadas, enOtraLista, conflictoSublistado, errores };
       setValidationResult(result);
       return result;
     } finally {

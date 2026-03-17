@@ -728,6 +728,40 @@ export default function ContactListDetailPage() {
 
   const handleAddManual = async () => {
     if (!addForm.empresa.trim() || !listId) return;
+
+    // Validate sibling sublist conflict by CIF
+    const cifToCheck = addForm.cif.trim().toUpperCase();
+    if (cifToCheck && list?.lista_madre_id) {
+      try {
+        // Get sibling sublists
+        const { data: siblingLists } = await supabase
+          .from('outbound_lists' as any)
+          .select('id, name')
+          .eq('lista_madre_id', list.lista_madre_id)
+          .neq('id', listId);
+
+        if (siblingLists && siblingLists.length > 0) {
+          const siblingIds = (siblingLists as any[]).map(s => s.id);
+          const nameMap = Object.fromEntries((siblingLists as any[]).map(s => [s.id, s.name]));
+
+          const { data: existing } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('list_id')
+            .in('list_id', siblingIds)
+            .eq('cif', cifToCheck)
+            .limit(1);
+
+          if (existing && existing.length > 0) {
+            const conflictName = nameMap[(existing as any)[0].list_id] || 'otra sublista';
+            toast.error(`Esta empresa (CIF: ${cifToCheck}) ya está en el sublistado "${conflictName}" derivado de la misma Lista Madre.`);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('[AddManual] Error checking sibling conflict:', err);
+      }
+    }
+
     await addCompany.mutateAsync({
       list_id: listId,
       empresa: addForm.empresa.trim(),
@@ -823,7 +857,7 @@ export default function ContactListDetailPage() {
     await validate(rows, listId, list?.lista_madre_id || null);
   };
 
-  // Step 3: Confirm import (only nuevas + vinculadas)
+  // Step 3: Confirm import (nuevas + vinculadas + enOtraLista, excludes conflictoSublistado)
   const handleConfirmImport = async () => {
     if (!listId || !validationResult) return;
     setImportStep('importing');
@@ -831,6 +865,7 @@ export default function ContactListDetailPage() {
       ...validationResult.nuevas.map(r => r.data),
       ...validationResult.vinculadas.map(r => r.data),
       ...validationResult.enOtraLista.map(r => r.data),
+      // conflictoSublistado is intentionally EXCLUDED
     ] as any[];
 
     setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
@@ -862,7 +897,7 @@ export default function ContactListDetailPage() {
         linked: validationResult.vinculadas.length,
         linkedRelated: validationResult.enOtraLista.length,
         skippedDuplicates: validationResult.duplicadas.length,
-        skippedErrors: validationResult.errores.length + failedCount,
+        skippedErrors: validationResult.errores.length + validationResult.conflictoSublistado.length + failedCount,
         errors: validationResult.errores,
       });
       setImportStep('result');
@@ -1522,11 +1557,15 @@ export default function ContactListDetailPage() {
           </Button>
           <div>
             {parentList && (
-              <div className="mb-1">
+              <div className="mb-1 flex items-center gap-2">
                 <Link to={`/admin/listas-contacto/${parentList.id}`} className="text-xs text-primary hover:underline flex items-center gap-1">
                   <Link2 className="h-3 w-3" />
                   Sublista de: {parentList.name}
                 </Link>
+                <Badge variant="accent" size="sm" className="text-[10px]">
+                  <Layers className="h-3 w-3 mr-0.5" />
+                  Lista Madre: {parentList.name}
+                </Badge>
               </div>
             )}
             <h1 className="text-2xl font-semibold">{list.name}</h1>
