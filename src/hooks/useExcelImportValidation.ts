@@ -94,7 +94,9 @@ export function useExcelImportValidation() {
       );
 
       // Fetch CIFs from related lists (parent + siblings)
-      const relatedCifMap = new Map<string, string>();
+      // relatedCifMap: cif → { name, isConflict }
+      // isConflict=true means sibling sublist (should block), false means parent (informational)
+      const relatedCifMap = new Map<string, { name: string; isConflict: boolean }>();
       if (listaMadreId) {
         const parentCompanies = await fetchAllPaginated((from, to) =>
           supabase
@@ -114,10 +116,10 @@ export function useExcelImportValidation() {
         const parentName = (parentListData as any)?.name || 'Lista madre';
         parentCompanies.forEach((r: any) => {
           const c = normalizeCif(r.cif);
-          if (c) relatedCifMap.set(c, parentName);
+          if (c) relatedCifMap.set(c, { name: parentName, isConflict: false });
         });
 
-        // Get sibling lists
+        // Get sibling lists — these are CONFLICTS
         const { data: siblingLists } = await supabase
           .from('outbound_lists' as any)
           .select('id, name')
@@ -136,7 +138,8 @@ export function useExcelImportValidation() {
 
           sibCifs.forEach((r: any) => {
             const c = normalizeCif(r.cif);
-            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, sibling.name);
+            // Sibling conflicts override parent entries
+            if (c) relatedCifMap.set(c, { name: sibling.name, isConflict: true });
           });
         }
       } else {
