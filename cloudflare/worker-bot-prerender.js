@@ -15,9 +15,8 @@ const LOVABLE_UPSTREAM = "https://webcapittal.lovable.app";
 const PUBLIC_HOST = "capittal.es";
 const BASE_URL = "https://capittal.es";
 const PRERENDER_URL = "https://service.prerender.io/";
-// Set PRERENDER_TOKEN in Cloudflare Worker environment variables
-// Fallback to hardcoded value for backwards compatibility during migration
-let PRERENDER_TOKEN = "O4ymoBvl4whx6UQePxL5";
+// PRERENDER_TOKEN is read from Cloudflare Worker environment variables (env.PRERENDER_TOKEN)
+let PRERENDER_TOKEN;
 const SITEMAP_EDGE_FN = "https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap";
 
 const BOT_AGENTS = [
