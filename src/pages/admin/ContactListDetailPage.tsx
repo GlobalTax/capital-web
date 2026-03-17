@@ -447,11 +447,76 @@ export default function ContactListDetailPage() {
 
 
 
-  const uniqueProvincias = useMemo(() => {
-    const set = new Set<string>();
-    companies.forEach(c => { if (c.provincia) set.add(c.provincia); });
-    return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+  // Text columns that support multi-select filtering
+  const TEXT_FILTER_COLUMNS = ['provincia', 'comunidad_autonoma', 'cnae', 'descripcion_actividad', 'posicion_contacto', 'director_ejecutivo'] as const;
+
+  // Numeric range definitions
+  const NUMERIC_RANGES: Record<string, { label: string; min: number | null; max: number | null }[]> = {
+    facturacion: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '0 - 1M€', min: 0, max: 1_000_000 },
+      { label: '1M€ - 5M€', min: 1_000_000, max: 5_000_000 },
+      { label: '5M€ - 20M€', min: 5_000_000, max: 20_000_000 },
+      { label: '20M€ - 50M€', min: 20_000_000, max: 50_000_000 },
+      { label: '> 50M€', min: 50_000_000, max: Infinity },
+    ],
+    ebitda: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '< 0 (negativo)', min: -Infinity, max: 0 },
+      { label: '0 - 500K€', min: 0, max: 500_000 },
+      { label: '500K€ - 2M€', min: 500_000, max: 2_000_000 },
+      { label: '2M€ - 5M€', min: 2_000_000, max: 5_000_000 },
+      { label: '> 5M€', min: 5_000_000, max: Infinity },
+    ],
+    num_trabajadores: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '1 - 10', min: 1, max: 11 },
+      { label: '11 - 50', min: 11, max: 51 },
+      { label: '51 - 200', min: 51, max: 201 },
+      { label: '201 - 500', min: 201, max: 501 },
+      { label: '> 500', min: 501, max: Infinity },
+    ],
+  };
+
+  // Compute unique values for all text filter columns
+  const uniqueColumnValues = useMemo(() => {
+    const result: Record<string, string[]> = {};
+    for (const col of TEXT_FILTER_COLUMNS) {
+      const set = new Set<string>();
+      companies.forEach(c => {
+        const val = (c as any)[col];
+        if (val) set.add(val);
+      });
+      result[col] = Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+    }
+    return result;
   }, [companies]);
+
+  // Helpers for column filters
+  const toggleColumnFilter = useCallback((colKey: string, value: string) => {
+    setColumnFilters(prev => {
+      const current = prev[colKey] || [];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+      if (next.length === 0) {
+        const { [colKey]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [colKey]: next };
+    });
+  }, []);
+
+  const clearColumnFilter = useCallback((colKey: string) => {
+    setColumnFilters(prev => {
+      const { [colKey]: _, ...rest } = prev;
+      return rest;
+    });
+  }, []);
+
+  const clearAllColumnFilters = useCallback(() => {
+    setColumnFilters({});
+  }, []);
+
+  const hasAnyColumnFilter = useMemo(() => Object.keys(columnFilters).length > 0, [columnFilters]);
 
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
