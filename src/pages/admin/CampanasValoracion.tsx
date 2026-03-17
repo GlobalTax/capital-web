@@ -511,7 +511,7 @@ export default function CampanasValoracion() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCampaigns.map((c) => renderCampaignRow(c, true))}
+                {sortedFilteredCampaigns.map((c) => renderCampaignRow(c, true))}
               </TableBody>
             </Table>
           ) : (
