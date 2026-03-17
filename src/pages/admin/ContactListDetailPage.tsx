@@ -360,6 +360,10 @@ export default function ContactListDetailPage() {
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
   const [groupBlocked, setGroupBlocked] = useState(true);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(100);
+
   // AI generation state - stores the company ID currently being generated
   const [aiGenLoading, setAiGenLoading] = useState<string | null>(null);
 
