@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useListColumnPreferences } from '@/hooks/useListColumnPreferences';
+import { ListColumnConfigurator } from '@/components/admin/contact-lists/ListColumnConfigurator';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '@/hooks/useExcelImportValidation';
 import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
@@ -425,10 +427,14 @@ export default function ContactListDetailPage() {
   });
 
   const isMadreList = !!sublistCompanyMap;
+  const { allColumns, visibleColumns: visibleCols, toggleColumn, moveColumn, resetToDefault } = useListColumnPreferences(listId, isMadreList);
   const companiesInSublists = useMemo(() => {
     if (!sublistCompanyMap) return 0;
     return companies.filter(c => c.cif && sublistCompanyMap.map.has(c.cif.toUpperCase().trim())).length;
   }, [companies, sublistCompanyMap]);
+
+
+
 
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
@@ -958,6 +964,81 @@ export default function ContactListDetailPage() {
     });
   }, [queryClient, listId]);
 
+  // Dynamic column cell renderer
+  const renderColumnCell = useCallback((colKey: string, company: ContactListCompany, isAssignedToSublist: boolean) => {
+    switch (colKey) {
+      case 'empresa':
+        return (
+          <button className="text-sm font-medium hover:underline text-left flex items-center gap-1.5" onClick={() => setDrawerCompany(company)}>
+            {isAssignedToSublist && <Lock className="h-3 w-3 text-amber-500 flex-shrink-0" />}
+            {company.empresa}
+          </button>
+        );
+      case 'sublistas':
+        return company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim()) ? (
+          <div className="flex flex-wrap gap-1">
+            {sublistCompanyMap.map.get(company.cif.toUpperCase().trim())!.map(name => (
+              <Badge key={name} variant="outline" size="sm" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[11px] gap-1">
+                <ArrowRight className="h-3 w-3" />
+                {name}
+              </Badge>
+            ))}
+          </div>
+        ) : <span className="text-muted-foreground text-xs">—</span>;
+      case 'cif':
+        return <span className="text-sm text-muted-foreground">{company.cif || '—'}</span>;
+      case 'contacto':
+        return <InlineTextCell companyId={company.id} field="contacto" initialValue={company.contacto} placeholder="Añadir contacto..." onSaved={handleFieldSaved} />;
+      case 'email':
+        return <InlineTextCell companyId={company.id} field="email" initialValue={company.email} placeholder="Añadir email..." onSaved={handleFieldSaved} linkType="email" />;
+      case 'linkedin':
+        return <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} linkType="url" />;
+      case 'director_ejecutivo':
+        return <span className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</span>;
+      case 'web':
+        return company.web ? (
+          <a href={company.web.startsWith('http') ? company.web : `https://${company.web}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="hover:text-primary flex items-center gap-1 transition-colors text-sm text-muted-foreground">
+            <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="truncate max-w-[150px]">{company.web.replace(/^https?:\/\/(www\.)?/, '')}</span>
+          </a>
+        ) : <span className="text-sm text-muted-foreground">—</span>;
+      case 'provincia':
+        return <span className="text-sm text-muted-foreground">{company.provincia || '—'}</span>;
+      case 'facturacion':
+        return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span>;
+      case 'ebitda':
+        return <span className="text-right text-sm tabular-nums">{company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}</span>;
+      case 'num_trabajadores':
+        return <span className="text-right text-sm tabular-nums">{company.num_trabajadores ?? '—'}</span>;
+      case 'notas':
+        return <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />;
+      default:
+        return null;
+    }
+  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved]);
+
+  // Dynamic column header renderer
+  const renderColumnHeader = useCallback((colKey: string) => {
+    const sortableMap: Record<string, 'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores'> = {
+      empresa: 'empresa',
+      facturacion: 'facturacion',
+      ebitda: 'ebitda',
+      num_trabajadores: 'num_trabajadores',
+    };
+    const sortKey = sortableMap[colKey];
+    const col = allColumns.find(c => c.key === colKey);
+    const label = col?.label || colKey;
+    const isRight = col?.align === 'right';
+    if (sortKey) {
+      return (
+        <button className={cn("flex items-center hover:text-foreground", isRight && "ml-auto")} onClick={() => toggleSort(sortKey)}>
+          {label} <SortIcon field={sortKey} />
+        </button>
+      );
+    }
+    return label;
+  }, [allColumns, toggleSort]);
+
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
     const webUrl = (company as any).web;
@@ -1280,6 +1361,13 @@ export default function ContactListDetailPage() {
                 )}
               </Button>
             )}
+            <ListColumnConfigurator
+              columns={allColumns}
+              onToggle={toggleColumn}
+              onMove={moveColumn}
+              onReset={resetToDefault}
+              isMadreList={isMadreList}
+            />
           </div>
           {/* Companies table */}
           <Card>
@@ -1300,135 +1388,66 @@ export default function ContactListDetailPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-10">
-                          <Checkbox checked={selectedIds.length === filteredCompanies.length && filteredCompanies.length > 0} onCheckedChange={handleSelectAll} />
-                        </TableHead>
-                        <TableHead>
-                          <button className="flex items-center hover:text-foreground" onClick={() => toggleSort('empresa')}>
-                            Empresa <SortIcon field="empresa" />
-                          </button>
-                        </TableHead>
-                        {isMadreList && <TableHead>Sublistas</TableHead>}
-                        <TableHead>CIF</TableHead>
-                        <TableHead>Contacto</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>LinkedIn</TableHead>
-                        <TableHead>Director Ejecutivo</TableHead>
-                        <TableHead>Web</TableHead>
-                        <TableHead>Provincia</TableHead>
-                        <TableHead className="text-right">
-                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('facturacion')}>
-                            Facturación <SortIcon field="facturacion" />
-                          </button>
-                        </TableHead>
-                        <TableHead className="text-right">
-                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('ebitda')}>
-                            EBITDA <SortIcon field="ebitda" />
-                          </button>
-                        </TableHead>
-                        <TableHead className="text-right">
-                          <button className="flex items-center ml-auto hover:text-foreground" onClick={() => toggleSort('num_trabajadores')}>
-                            Empleados <SortIcon field="num_trabajadores" />
-                          </button>
-                        </TableHead>
-                        <TableHead className="min-w-[160px]">Notas</TableHead>
-                        <TableHead className="w-12" />
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(() => {
-                        let separatorRendered = false;
-                        return filteredCompanies.map(company => {
-                          const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
-                          // Render separator row before first assigned company
-                          let separatorRow = null;
-                          if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
-                            separatorRendered = true;
-                            const assignedCount = filteredCompanies.filter(c => c.cif && sublistCompanyMap?.map.has(c.cif.toUpperCase().trim())).length;
-                            separatorRow = (
-                              <TableRow key="__separator__" className="hover:bg-transparent border-b-0">
-                                <TableCell colSpan={100} className="py-2 px-3">
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <Lock className="h-3 w-3" />
-                                    <span className="font-medium">Asignadas a sublistas ({assignedCount})</span>
-                                    <div className="flex-1 h-px bg-border" />
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          }
-                          return (
-                            <React.Fragment key={company.id}>
-                              {separatorRow}
-                              <TableRow className={cn(
-                                "group/row",
-                                isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
-                              )}>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
-                          </TableCell>
-                          <TableCell>
-                            <button className="text-sm font-medium hover:underline text-left flex items-center gap-1.5" onClick={() => setDrawerCompany(company)}>
-                              {isAssignedToSublist && <Lock className="h-3 w-3 text-amber-500 flex-shrink-0" />}
-                              {company.empresa}
-                            </button>
-                          </TableCell>
-                          {isMadreList && (
-                            <TableCell>
-                              {company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim()) ? (
-                                <div className="flex flex-wrap gap-1">
-                                  {sublistCompanyMap.map.get(company.cif.toUpperCase().trim())!.map(name => (
-                                    <Badge key={name} variant="outline" size="sm" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[11px] gap-1">
-                                      <ArrowRight className="h-3 w-3" />
-                                      {name}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground text-xs">—</span>
-                              )}
-                            </TableCell>
-                          )}
-                          <TableCell className="text-sm text-muted-foreground">{company.cif || '—'}</TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineTextCell companyId={company.id} field="contacto" initialValue={company.contacto} placeholder="Añadir contacto..." onSaved={handleFieldSaved} />
-                          </TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineTextCell companyId={company.id} field="email" initialValue={company.email} placeholder="Añadir email..." onSaved={handleFieldSaved} linkType="email" />
-                          </TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} linkType="url" />
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {company.web ? (
-                              <a
-                                href={company.web.startsWith('http') ? company.web : `https://${company.web}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={e => e.stopPropagation()}
-                                className="hover:text-primary flex items-center gap-1 transition-colors"
-                              >
-                                <Link2 className="h-3.5 w-3.5 flex-shrink-0" />
-                                <span className="truncate max-w-[150px]">{company.web.replace(/^https?:\/\/(www\.)?/, '')}</span>
-                              </a>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">{company.provincia || '—'}</TableCell>
-                          <TableCell className="text-right text-sm tabular-nums">
-                            {company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}
-                          </TableCell>
-                          <TableCell className="text-right text-sm tabular-nums">
-                            {company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}
-                          </TableCell>
-                          <TableCell className="text-right text-sm tabular-nums">
-                            {company.num_trabajadores ?? '—'}
-                          </TableCell>
-                          <TableCell onClick={e => e.stopPropagation()}>
-                            <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />
-                          </TableCell>
+                     <TableHeader>
+                       <TableRow>
+                         <TableHead className="w-10">
+                           <Checkbox checked={selectedIds.length === filteredCompanies.length && filteredCompanies.length > 0} onCheckedChange={handleSelectAll} />
+                         </TableHead>
+                         {visibleCols.map(col => (
+                           <TableHead
+                             key={col.key}
+                             className={cn(
+                               col.align === 'right' && 'text-right',
+                               col.minWidth && `min-w-[${col.minWidth}]`
+                             )}
+                           >
+                             {renderColumnHeader(col.key)}
+                           </TableHead>
+                         ))}
+                         <TableHead className="w-12" />
+                       </TableRow>
+                     </TableHeader>
+                     <TableBody>
+                       {(() => {
+                         let separatorRendered = false;
+                         return filteredCompanies.map(company => {
+                           const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
+                           let separatorRow = null;
+                           if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
+                             separatorRendered = true;
+                             const assignedCount = filteredCompanies.filter(c => c.cif && sublistCompanyMap?.map.has(c.cif.toUpperCase().trim())).length;
+                             separatorRow = (
+                               <TableRow key="__separator__" className="hover:bg-transparent border-b-0">
+                                 <TableCell colSpan={100} className="py-2 px-3">
+                                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                     <Lock className="h-3 w-3" />
+                                     <span className="font-medium">Asignadas a sublistas ({assignedCount})</span>
+                                     <div className="flex-1 h-px bg-border" />
+                                   </div>
+                                 </TableCell>
+                               </TableRow>
+                             );
+                           }
+                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas']);
+                           return (
+                             <React.Fragment key={company.id}>
+                               {separatorRow}
+                               <TableRow className={cn(
+                                 "group/row",
+                                 isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
+                               )}>
+                           <TableCell onClick={e => e.stopPropagation()}>
+                             <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
+                           </TableCell>
+                           {visibleCols.map(col => (
+                             <TableCell
+                               key={col.key}
+                               className={cn(col.align === 'right' && 'text-right')}
+                               onClick={needsStopPropagation.has(col.key) ? (e) => e.stopPropagation() : undefined}
+                             >
+                               {renderColumnCell(col.key, company, !!isAssignedToSublist)}
+                             </TableCell>
+                           ))}
                           <TableCell onClick={e => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
