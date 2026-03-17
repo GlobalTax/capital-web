@@ -31,6 +31,8 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
+import { useOutboundQueue } from '@/hooks/useOutboundQueue';
 import { DateRangeFilter, DateRangeFilterValue, matchesDateRange } from '@/components/admin/campanas-valoracion/shared/DateRangeFilter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
