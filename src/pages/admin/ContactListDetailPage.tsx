@@ -1407,6 +1407,7 @@ export default function ContactListDetailPage() {
                   <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
               ) : (
+                <>
                 <div className="overflow-x-auto">
                   <Table>
                      <TableHeader>
@@ -1537,11 +1538,10 @@ export default function ContactListDetailPage() {
                     </TableBody>
                   </Table>
                 </div>
-                {/* Pagination controls */}
                 {filteredCompanies.length > pageSize && (
                   <div className="flex items-center justify-between px-4 py-3 border-t border-border">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>Mostrando {currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filteredCompanies.length)} de {filteredCompanies.length.toLocaleString('es-ES')}</span>
+                      <span>Mostrando {(currentPage * pageSize + 1).toLocaleString('es-ES')}–{Math.min((currentPage + 1) * pageSize, filteredCompanies.length).toLocaleString('es-ES')} de {filteredCompanies.length.toLocaleString('es-ES')}</span>
                       <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(0); }}>
                         <SelectTrigger className="h-8 w-[80px]">
                           <SelectValue />
@@ -1568,6 +1568,7 @@ export default function ContactListDetailPage() {
                     </div>
                   </div>
                 )}
+                </>
               )}
             </CardContent>
           </Card>
