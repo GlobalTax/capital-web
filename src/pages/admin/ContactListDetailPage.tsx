@@ -1126,27 +1126,31 @@ export default function ContactListDetailPage() {
           </a>
         ) : <span className="text-sm text-muted-foreground">—</span>;
       case 'provincia':
-        const prov = company.provincia;
-        if (!prov) return <span className="text-sm text-muted-foreground">—</span>;
-        const isProvActive = filterProvincias.includes(prov);
+      case 'comunidad_autonoma':
+      case 'cnae':
+      case 'descripcion_actividad':
+      case 'posicion_contacto':
+      case 'director_ejecutivo': {
+        const cellVal = (company as any)[colKey];
+        if (!cellVal) return <span className="text-sm text-muted-foreground">—</span>;
+        const isActive = (columnFilters[colKey] || []).includes(cellVal);
         return (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setFilterProvincias(prev =>
-                prev.includes(prov) ? prev.filter(p => p !== prov) : [...prev, prov]
-              );
+              toggleColumnFilter(colKey, cellVal);
             }}
             className={cn(
               "text-xs px-2 py-0.5 rounded-full transition-colors cursor-pointer",
-              isProvActive
+              isActive
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}
           >
-            {prov}
+            {cellVal}
           </button>
         );
+      }
       case 'facturacion':
         return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span>;
       case 'ebitda':
@@ -1158,7 +1162,7 @@ export default function ContactListDetailPage() {
       default:
         return null;
     }
-  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved]);
+  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved, columnFilters, toggleColumnFilter]);
 
   // Provincia header popover search state
   const [provinciaHeaderSearch, setProvinciaHeaderSearch] = useState('');
