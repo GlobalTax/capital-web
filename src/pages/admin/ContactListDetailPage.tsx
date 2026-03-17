@@ -362,7 +362,9 @@ export default function ContactListDetailPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
-  const [filterProvincias, setFilterProvincias] = useState<string[]>([]);
+  // Generic column filters: colKey → selected values
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [headerSearches, setHeaderSearches] = useState<Record<string, string>>({});
   const [groupBlocked, setGroupBlocked] = useState(true);
 
   // Pagination
