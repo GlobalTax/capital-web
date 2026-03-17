@@ -212,7 +212,7 @@ export default function CampanasValoracion() {
                 className="h-7 text-sm"
               />
               <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => handleRenameSubmit(c.id)}>
-                <Check className="h-3.5 w-3.5 text-emerald-600" />
+                <Check className="h-3.5 w-3.5 text-primary" />
               </Button>
               <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEditingNameId(null)}>
                 <X className="h-3.5 w-3.5 text-muted-foreground" />
