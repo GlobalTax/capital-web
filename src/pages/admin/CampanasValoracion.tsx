@@ -138,6 +138,45 @@ export default function CampanasValoracion() {
     );
   }, [campaignsByType, searchQuery]);
 
+  // Group campaigns by sector
+  const groupedCampaigns = useMemo(() => {
+    const groups = new Map<string, typeof filteredCampaigns>();
+    for (const c of filteredCampaigns) {
+      const key = c.sector?.trim() || 'Sin sector';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(c);
+    }
+    return [...groups.entries()].sort((a, b) => {
+      if (a[0] === 'Sin sector') return 1;
+      if (b[0] === 'Sin sector') return -1;
+      return a[0].localeCompare(b[0], 'es');
+    });
+  }, [filteredCampaigns]);
+
+  useEffect(() => {
+    if (groupedCampaigns.length > 0 && !foldersInitialized) {
+      setOpenFolders(new Set(groupedCampaigns.map(([key]) => key)));
+      setFoldersInitialized(true);
+    }
+  }, [groupedCampaigns, foldersInitialized]);
+
+  const toggleFolder = useCallback((key: string) => {
+    setOpenFolders(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const toggleViewMode = useCallback(() => {
+    setViewMode(prev => {
+      const next = prev === 'flat' ? 'grouped' : 'flat';
+      localStorage.setItem('campanas-view-mode', next);
+      return next;
+    });
+  }, []);
+
   const totalCompanies = campaignsByType.reduce((s, c) => s + c.total_companies, 0);
   const totalSent = campaignsByType.reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
   const totalValuation = campaignsByType.reduce((s, c) => s + c.total_valuation, 0);
