@@ -1412,7 +1412,7 @@ export default function ContactListDetailPage() {
                      <TableHeader>
                        <TableRow>
                          <TableHead className="w-10">
-                           <Checkbox checked={selectedIds.length === filteredCompanies.length && filteredCompanies.length > 0} onCheckedChange={handleSelectAll} />
+                           <Checkbox checked={paginatedCompanies.length > 0 && paginatedCompanies.every(c => selectedIds.includes(c.id))} onCheckedChange={handleSelectAll} />
                          </TableHead>
                          {visibleCols.map(col => (
                            <TableHead
