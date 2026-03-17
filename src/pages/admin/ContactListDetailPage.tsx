@@ -358,7 +358,7 @@ export default function ContactListDetailPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
-  const [filterProvincia, setFilterProvincia] = useState<string>('all');
+  const [filterProvincias, setFilterProvincias] = useState<string[]>([]);
   const [groupBlocked, setGroupBlocked] = useState(true);
 
   // Pagination
@@ -470,7 +470,7 @@ export default function ContactListDetailPage() {
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
-    if (filterProvincia && filterProvincia !== 'all') result = result.filter(c => c.provincia === filterProvincia);
+    if (filterProvincias.length > 0) result = result.filter(c => c.provincia && filterProvincias.includes(c.provincia));
     // Sort
     if (sortField) {
       result.sort((a, b) => {
@@ -495,12 +495,12 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincia, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincias, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
   // Reset page when filters/sort change
   React.useEffect(() => {
     setCurrentPage(0);
-  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincia, sortField, sortDir, groupBlocked]);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincias, sortField, sortDir, groupBlocked]);
 
   // Pagination derived values
   const totalPages = Math.ceil(filteredCompanies.length / pageSize);
@@ -1032,7 +1032,27 @@ export default function ContactListDetailPage() {
           </a>
         ) : <span className="text-sm text-muted-foreground">—</span>;
       case 'provincia':
-        return <span className="text-sm text-muted-foreground">{company.provincia || '—'}</span>;
+        const prov = company.provincia;
+        if (!prov) return <span className="text-sm text-muted-foreground">—</span>;
+        const isProvActive = filterProvincias.includes(prov);
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setFilterProvincias(prev =>
+                prev.includes(prov) ? prev.filter(p => p !== prov) : [...prev, prov]
+              );
+            }}
+            className={cn(
+              "text-xs px-2 py-0.5 rounded-full transition-colors cursor-pointer",
+              isProvActive
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            {prov}
+          </button>
+        );
       case 'facturacion':
         return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span>;
       case 'ebitda':
@@ -1360,18 +1380,28 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
-            {uniqueProvincias.length > 0 && (
-              <Select value={filterProvincia} onValueChange={setFilterProvincia}>
-                <SelectTrigger className="h-9 w-[160px]">
-                  <SelectValue placeholder="Provincia" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las provincias</SelectItem>
-                  {uniqueProvincias.map(p => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {filterProvincias.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {filterProvincias.map(p => (
+                  <Badge key={p} variant="secondary" className="gap-1 text-xs">
+                    {p}
+                    <button
+                      onClick={() => setFilterProvincias(prev => prev.filter(x => x !== p))}
+                      className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => setFilterProvincias([])}
+                >
+                  Limpiar
+                </Button>
+              </div>
             )}
             {isMadreList && (
               <Button
@@ -1384,7 +1414,7 @@ export default function ContactListDetailPage() {
                 {groupBlocked ? 'Agrupada' : 'Unificada'}
               </Button>
             )}
-            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || filterProvincia !== 'all') && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || filterProvincias.length > 0) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
