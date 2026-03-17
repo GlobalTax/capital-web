@@ -37,6 +37,8 @@ import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
+import { useOutboundQueue } from '@/hooks/useOutboundQueue';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
