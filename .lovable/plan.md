@@ -1,81 +1,82 @@
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Cambios realizados
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+## Plan: Sistema de envío automático server-side para Outbound
 
-### Resultado
+### Problema actual
+El envío programado es **client-side**: usa `setTimeout` en el navegador, por lo que la pestaña debe permanecer abierta. Si se cierra, el envío se cancela.
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+### Solución: Cola de envío server-side con pg_cron
 
----
+#### 1. Nueva tabla `outbound_send_queue`
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+Almacena los trabajos de envío programados:
 
-### Cambios realizados
+```text
+outbound_send_queue
+├── id (uuid PK)
+├── campaign_id (FK → valuation_campaigns)
+├── send_type ('initial' | 'followup')
+├── sequence_id (nullable, para followups)
+├── email_ids (text[] — IDs de campaign_emails o campaign_followup_sends)
+├── interval_ms (int, delay entre emails)
+├── max_per_hour (int nullable)
+├── scheduled_at (timestamptz — cuándo comenzar)
+├── status ('pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled')
+├── progress_current (int default 0)
+├── progress_total (int)
+├── last_processed_at (timestamptz)
+├── error_message (text nullable)
+├── created_by (uuid FK → auth.users)
+├── created_at / updated_at
+```
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+#### 2. Nueva Edge Function `process-outbound-queue`
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+- Invocada por pg_cron cada 2 minutos
+- Busca jobs con `status = 'pending'` y `scheduled_at <= now()`, o `status = 'running'`
+- Para cada job:
+  - Calcula cuántos emails puede enviar respetando `interval_ms` y `max_per_hour` dentro del window de 2 min
+  - Llama a la Edge Function existente `send-campaign-outbound-email` con lotes pequeños (1-3 IDs)
+  - Actualiza `progress_current` y `last_processed_at` tras cada envío
+  - Si se completan todos, marca `status = 'completed'`
+- Timeout safety: si `last_processed_at` es > 10 min sin progreso, marca como `failed`
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+#### 3. Cron job (pg_cron + pg_net)
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+```sql
+SELECT cron.schedule(
+  'process-outbound-queue',
+  '*/2 * * * *',  -- cada 2 minutos
+  $$ SELECT net.http_post(...) $$
+);
+```
 
-### Resultado
+#### 4. Cambios en UI (ProcessSendStep + DocumentSendStep + FollowUpStep)
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+- Al pulsar "Programar envío" con fecha futura → **inserta un registro en `outbound_send_queue`** en lugar de hacer countdown client-side
+- Nuevo indicador visual: badge "Envío programado para [fecha]" con opción de cancelar (marca `status = 'cancelled'`)
+- Progreso en tiempo real: polling cada 10s sobre el registro del queue para mostrar `progress_current / progress_total`
+- Mantener la opción "Enviar ahora" como está (client-side directo, sin pasar por la cola)
 
----
+#### 5. Panel de monitorización
 
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
+Pequeño panel en la vista de campaña que muestra los jobs activos/programados:
+- Estado (Pendiente / En curso / Completado / Fallido)  
+- Progreso (ej: "45/120 emails enviados")
+- Hora programada y última actividad
+- Botones: Pausar / Reanudar / Cancelar
 
-### Cambios realizados
+### Archivos a crear/modificar
 
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+| Archivo | Acción |
+|---------|--------|
+| Migration SQL | Nueva tabla `outbound_send_queue` |
+| `supabase/functions/process-outbound-queue/index.ts` | Nueva Edge Function (worker) |
+| `supabase/config.toml` | Registrar nueva función |
+| pg_cron SQL (insert tool) | Programar cron cada 2 min |
+| `src/components/admin/campanas-valoracion/shared/SendScheduleConfig.tsx` | Añadir modo "server-side" |
+| `src/components/admin/campanas-valoracion/shared/OutboundQueueMonitor.tsx` | Nuevo panel de monitorización |
+| `ProcessSendStep.tsx` | Integrar creación de job en queue |
+| `DocumentSendStep.tsx` | Integrar creación de job en queue |
+| `FollowUpStep.tsx` | Integrar creación de job en queue |
 
-### Resultado
-
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
-
----
-
-## ✅ Completado: Integración Lista de Contacto → Campaña Outbound
-
-### Cambios realizados
-
-1. **Migración SQL**: Añadida columna `source_list_id` (uuid) a `valuation_campaigns` con FK a `outbound_lists`.
-
-2. **`src/components/admin/contact-lists/SendToCampaignDialog.tsx`** (NUEVO): Diálogo completo para enviar empresas de una lista a una campaña outbound. Incluye:
-   - Selección entre crear nueva campaña o añadir a existente
-   - Deduplicación por CIF contra la campaña destino (omite duplicados)
-   - Deduplicación cross-campaña (aviso de empresas ya contactadas en otras campañas)
-   - Mapeo automático de campos lista → campaña
-   - Inserción en batches de 100
-
-3. **`src/components/admin/campanas-valoracion/ImportFromListDialog.tsx`** (NUEVO): Diálogo para importar empresas desde lista dentro del paso 2 (CompaniesStep) de una campaña. Misma lógica de deduplicación.
-
-4. **`src/pages/admin/ContactListDetailPage.tsx`**: Botón "Enviar a campaña" en la toolbar de acciones de la lista.
-
-5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`**: Botón "Importar desde lista de contacto" antes del formulario manual.
-
-6. **`src/pages/admin/CampanasValoracion.tsx`**: Badge con nombre de lista origen junto al nombre de la campaña (clickable, navega a la lista).
-
-7. **`src/hooks/useCampaigns.ts`**: Añadido `source_list_id` al tipo `ValuationCampaign`.
-
-### Resultado
-
-- Flujo directo lista → campaña con un solo clic
-- Protección anti-duplicados a nivel de campaña y cross-campaña
-- Trazabilidad: cada campaña muestra su lista origen
