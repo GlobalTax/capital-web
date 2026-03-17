@@ -121,6 +121,7 @@ export const AdminSidebar: React.FC = () => {
       'contacts': 'contacts',
       'form-submissions': 'contacts',
       'contact-lists': 'contactLists',
+      'listas-contacto': 'contactLists',
       'collaborator-applications': 'collaboratorApplications',
       'alerts': 'alerts',
       'proposals': 'proposals',
