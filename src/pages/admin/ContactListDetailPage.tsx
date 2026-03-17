@@ -1291,9 +1291,49 @@ export default function ContactListDetailPage() {
                 </label>
               ))}
             </div>
+            {/* Custom range inputs */}
+            <div className="px-3 py-2 border-t">
+              <p className="text-[10px] text-muted-foreground mb-1.5 font-medium">Rango personalizado</p>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Mín"
+                  value={customRanges[colKey]?.min || ''}
+                  onChange={e => setCustomRanges(prev => ({ ...prev, [colKey]: { ...prev[colKey], min: e.target.value.replace(/[^\d.-]/g, ''), max: prev[colKey]?.max || '' } }))}
+                  className="h-7 text-xs flex-1"
+                />
+                <span className="text-muted-foreground text-xs">—</span>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Máx"
+                  value={customRanges[colKey]?.max || ''}
+                  onChange={e => setCustomRanges(prev => ({ ...prev, [colKey]: { min: prev[colKey]?.min || '', max: e.target.value.replace(/[^\d.-]/g, '') } }))}
+                  className="h-7 text-xs flex-1"
+                />
+                <Button
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => {
+                    const min = customRanges[colKey]?.min || '';
+                    const max = customRanges[colKey]?.max || '';
+                    if (!min && !max) return;
+                    const customLabel = `custom:${min || ''}-${max || ''}`;
+                    // Remove any existing custom range for this column
+                    setColumnFilters(prev => {
+                      const current = (prev[colKey] || []).filter(v => !v.startsWith('custom:'));
+                      return { ...prev, [colKey]: [...current, customLabel] };
+                    });
+                  }}
+                >
+                  Aplicar
+                </Button>
+              </div>
+            </div>
             {activeFilters.length > 0 && (
               <div className="p-2 border-t">
-                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => { clearColumnFilter(colKey); setCustomRanges(prev => { const { [colKey]: _, ...rest } = prev; return rest; }); }}>
                   <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
                 </Button>
               </div>
