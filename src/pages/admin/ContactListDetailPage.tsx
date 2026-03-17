@@ -495,7 +495,7 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincia, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
   // Reset page when filters/sort change
   React.useEffect(() => {
