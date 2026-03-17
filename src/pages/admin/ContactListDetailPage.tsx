@@ -1648,17 +1648,42 @@ export default function ContactListDetailPage() {
             {hasAnyColumnFilter && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {Object.entries(columnFilters).map(([colKey, values]) =>
-                  values.map(val => (
-                    <Badge key={`${colKey}-${val}`} variant="secondary" className="gap-1 text-xs">
-                      <span className="font-medium">{COLUMN_LABELS[colKey] || colKey}:</span> {val}
-                      <button
-                        onClick={() => toggleColumnFilter(colKey, val)}
-                        className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))
+                  values.map(val => {
+                    let displayVal = val;
+                    if (val.startsWith('custom:')) {
+                      const parts = val.slice(7).split('-');
+                      const fmtNum = (n: string) => {
+                        if (!n) return '';
+                        const num = Number(n);
+                        if (isNaN(num)) return n;
+                        if (Math.abs(num) >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+                        if (Math.abs(num) >= 1_000) return `${(num / 1_000).toFixed(0)}K`;
+                        return n;
+                      };
+                      const suffix = colKey === 'num_trabajadores' ? '' : '€';
+                      const minStr = parts[0] ? `${fmtNum(parts[0])}${suffix}` : '';
+                      const maxStr = parts[1] ? `${fmtNum(parts[1])}${suffix}` : '';
+                      if (minStr && maxStr) displayVal = `${minStr} - ${maxStr}`;
+                      else if (minStr) displayVal = `≥ ${minStr}`;
+                      else if (maxStr) displayVal = `≤ ${maxStr}`;
+                    }
+                    return (
+                      <Badge key={`${colKey}-${val}`} variant="secondary" className="gap-1 text-xs">
+                        <span className="font-medium">{COLUMN_LABELS[colKey] || colKey}:</span> {displayVal}
+                        <button
+                          onClick={() => {
+                            toggleColumnFilter(colKey, val);
+                            if (val.startsWith('custom:')) {
+                              setCustomRanges(prev => { const { [colKey]: _, ...rest } = prev; return rest; });
+                            }
+                          }}
+                          className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })
                 )}
                 <Button
                   variant="ghost"
