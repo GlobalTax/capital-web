@@ -365,6 +365,7 @@ export default function ContactListDetailPage() {
   // Generic column filters: colKey → selected values
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [headerSearches, setHeaderSearches] = useState<Record<string, string>>({});
+  const [customRanges, setCustomRanges] = useState<Record<string, { min: string; max: string }>>({});
   const [groupBlocked, setGroupBlocked] = useState(true);
 
   // Pagination
@@ -546,11 +547,18 @@ export default function ContactListDetailPage() {
       if (selectedValues.length === 0) continue;
       const numRanges = NUMERIC_RANGES[colKey];
       if (numRanges) {
-        // Numeric range filter
+        // Numeric range filter (predefined + custom)
         result = result.filter(c => {
           const val = Number((c as any)[colKey]) || 0;
           const hasData = (c as any)[colKey] != null && (c as any)[colKey] !== '';
           return selectedValues.some(rangeLabel => {
+            // Custom range: "custom:min-max"
+            if (rangeLabel.startsWith('custom:')) {
+              const parts = rangeLabel.slice(7).split('-');
+              const cMin = parts[0] ? Number(parts[0]) : -Infinity;
+              const cMax = parts[1] ? Number(parts[1]) : Infinity;
+              return hasData && val >= cMin && val <= cMax;
+            }
             const range = numRanges.find(r => r.label === rangeLabel);
             if (!range) return false;
             if (range.min === null) return !hasData; // "Sin dato"
@@ -1283,9 +1291,49 @@ export default function ContactListDetailPage() {
                 </label>
               ))}
             </div>
+            {/* Custom range inputs */}
+            <div className="px-3 py-2 border-t">
+              <p className="text-[10px] text-muted-foreground mb-1.5 font-medium">Rango personalizado</p>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Mín"
+                  value={customRanges[colKey]?.min || ''}
+                  onChange={e => setCustomRanges(prev => ({ ...prev, [colKey]: { ...prev[colKey], min: e.target.value.replace(/[^\d.-]/g, ''), max: prev[colKey]?.max || '' } }))}
+                  className="h-7 text-xs flex-1"
+                />
+                <span className="text-muted-foreground text-xs">—</span>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Máx"
+                  value={customRanges[colKey]?.max || ''}
+                  onChange={e => setCustomRanges(prev => ({ ...prev, [colKey]: { min: prev[colKey]?.min || '', max: e.target.value.replace(/[^\d.-]/g, '') } }))}
+                  className="h-7 text-xs flex-1"
+                />
+                <Button
+                  size="sm"
+                  className="h-7 text-xs px-2"
+                  onClick={() => {
+                    const min = customRanges[colKey]?.min || '';
+                    const max = customRanges[colKey]?.max || '';
+                    if (!min && !max) return;
+                    const customLabel = `custom:${min || ''}-${max || ''}`;
+                    // Remove any existing custom range for this column
+                    setColumnFilters(prev => {
+                      const current = (prev[colKey] || []).filter(v => !v.startsWith('custom:'));
+                      return { ...prev, [colKey]: [...current, customLabel] };
+                    });
+                  }}
+                >
+                  Aplicar
+                </Button>
+              </div>
+            </div>
             {activeFilters.length > 0 && (
               <div className="p-2 border-t">
-                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => { clearColumnFilter(colKey); setCustomRanges(prev => { const { [colKey]: _, ...rest } = prev; return rest; }); }}>
                   <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
                 </Button>
               </div>
@@ -1600,17 +1648,42 @@ export default function ContactListDetailPage() {
             {hasAnyColumnFilter && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {Object.entries(columnFilters).map(([colKey, values]) =>
-                  values.map(val => (
-                    <Badge key={`${colKey}-${val}`} variant="secondary" className="gap-1 text-xs">
-                      <span className="font-medium">{COLUMN_LABELS[colKey] || colKey}:</span> {val}
-                      <button
-                        onClick={() => toggleColumnFilter(colKey, val)}
-                        className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))
+                  values.map(val => {
+                    let displayVal = val;
+                    if (val.startsWith('custom:')) {
+                      const parts = val.slice(7).split('-');
+                      const fmtNum = (n: string) => {
+                        if (!n) return '';
+                        const num = Number(n);
+                        if (isNaN(num)) return n;
+                        if (Math.abs(num) >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+                        if (Math.abs(num) >= 1_000) return `${(num / 1_000).toFixed(0)}K`;
+                        return n;
+                      };
+                      const suffix = colKey === 'num_trabajadores' ? '' : '€';
+                      const minStr = parts[0] ? `${fmtNum(parts[0])}${suffix}` : '';
+                      const maxStr = parts[1] ? `${fmtNum(parts[1])}${suffix}` : '';
+                      if (minStr && maxStr) displayVal = `${minStr} - ${maxStr}`;
+                      else if (minStr) displayVal = `≥ ${minStr}`;
+                      else if (maxStr) displayVal = `≤ ${maxStr}`;
+                    }
+                    return (
+                      <Badge key={`${colKey}-${val}`} variant="secondary" className="gap-1 text-xs">
+                        <span className="font-medium">{COLUMN_LABELS[colKey] || colKey}:</span> {displayVal}
+                        <button
+                          onClick={() => {
+                            toggleColumnFilter(colKey, val);
+                            if (val.startsWith('custom:')) {
+                              setCustomRanges(prev => { const { [colKey]: _, ...rest } = prev; return rest; });
+                            }
+                          }}
+                          className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    );
+                  })
                 )}
                 <Button
                   variant="ghost"
