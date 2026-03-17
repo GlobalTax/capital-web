@@ -857,7 +857,7 @@ export default function ContactListDetailPage() {
     await validate(rows, listId, list?.lista_madre_id || null);
   };
 
-  // Step 3: Confirm import (only nuevas + vinculadas)
+  // Step 3: Confirm import (nuevas + vinculadas + enOtraLista, excludes conflictoSublistado)
   const handleConfirmImport = async () => {
     if (!listId || !validationResult) return;
     setImportStep('importing');
@@ -865,6 +865,7 @@ export default function ContactListDetailPage() {
       ...validationResult.nuevas.map(r => r.data),
       ...validationResult.vinculadas.map(r => r.data),
       ...validationResult.enOtraLista.map(r => r.data),
+      // conflictoSublistado is intentionally EXCLUDED
     ] as any[];
 
     setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
