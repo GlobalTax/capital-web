@@ -441,6 +441,12 @@ export default function ContactListDetailPage() {
 
 
 
+  const uniqueProvincias = useMemo(() => {
+    const set = new Set<string>();
+    companies.forEach(c => { if (c.provincia) set.add(c.provincia); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+  }, [companies]);
+
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
     // Search
