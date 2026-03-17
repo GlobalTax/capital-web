@@ -1580,16 +1580,7 @@ const PAGES_DATA: Record<string, PageData> = {
   },
 
   // ─── POR QUÉ ELEGIRNOS SUBPAGES ───
-  "/por-que-elegirnos": {
-    title: "Por Qué Elegirnos | Capittal Transacciones",
-    description: "Experiencia, metodología y resultados. Descubra por qué Capittal es su mejor socio en operaciones de M&A.",
-    keywords: "por qué Capittal, ventajas M&A, experiencia fusiones adquisiciones",
-    canonical: "https://capittal.es/por-que-elegirnos",
-    ogType: "website",
-    hreflang: { es: "https://capittal.es/por-que-elegirnos", ca: "https://capittal.es/per-que-triar-nos", en: "https://capittal.es/why-choose-us", "x-default": "https://capittal.es/por-que-elegirnos" },
-    structuredData: [{ "@context": "https://schema.org", "@type": "WebPage", name: "Por Qué Elegirnos - Capittal", url: "https://capittal.es/por-que-elegirnos" }],
-    content: `<h1>Por Qué Elegirnos</h1><p>Experiencia, metodología y resultados en operaciones de M&A en España.</p>`,
-  },
+  // NOTE: "/por-que-elegirnos" is defined above (line ~863) with richer content — do not duplicate here
   "/por-que-elegirnos/experiencia": {
     title: "Nuestra Experiencia en M&A | Capittal",
     description: "Más de una década de experiencia en fusiones y adquisiciones en España. Track record de operaciones cerradas en múltiples sectores.",
@@ -1728,43 +1719,8 @@ const PAGES_DATA: Record<string, PageData> = {
     content: `<h1>Calculadora de Valoración - Seguridad</h1><p>Calcula el valor de tu empresa de seguridad privada con múltiplos especializados.</p>`,
   },
 
-  // ─── SECTORES FALTANTES ───
-  "/sectores/construccion": {
-    title: "M&A Sector Construcción | Capittal",
-    description: "Operaciones de M&A en construcción e infraestructuras. Promotoras, constructoras e ingeniería civil.",
-    keywords: "M&A construcción, venta constructora, fusiones infraestructuras",
-    canonical: "https://capittal.es/sectores/construccion",
-    ogType: "website",
-    structuredData: [{ "@context": "https://schema.org", "@type": "Service", name: "M&A Sector Construcción", provider: ORG_JSONLD, areaServed: { "@type": "Country", name: "España" }, serviceType: ["M&A sector construcción"] }],
-    content: `<h1>M&A Sector Construcción</h1><p>Operaciones de M&A en construcción e infraestructuras en España.</p>`,
-  },
-  "/sectores/logistica": {
-    title: "M&A Sector Logística | Capittal",
-    description: "Fusiones y adquisiciones en logística y transporte. Distribución, almacenaje y cadena de suministro.",
-    keywords: "M&A logística, venta empresa transporte, fusiones distribución",
-    canonical: "https://capittal.es/sectores/logistica",
-    ogType: "website",
-    structuredData: [{ "@context": "https://schema.org", "@type": "Service", name: "M&A Sector Logística", provider: ORG_JSONLD, areaServed: { "@type": "Country", name: "España" }, serviceType: ["M&A sector logística"] }],
-    content: `<h1>M&A Sector Logística</h1><p>Fusiones y adquisiciones en logística y transporte en España.</p>`,
-  },
-  "/sectores/medio-ambiente": {
-    title: "M&A Sector Medio Ambiente | Capittal",
-    description: "Operaciones de M&A en medio ambiente. Gestión de residuos, tratamiento de aguas y sostenibilidad.",
-    keywords: "M&A medio ambiente, venta empresa residuos, fusiones sostenibilidad",
-    canonical: "https://capittal.es/sectores/medio-ambiente",
-    ogType: "website",
-    structuredData: [{ "@context": "https://schema.org", "@type": "Service", name: "M&A Sector Medio Ambiente", provider: ORG_JSONLD, areaServed: { "@type": "Country", name: "España" }, serviceType: ["M&A sector medio ambiente"] }],
-    content: `<h1>M&A Sector Medio Ambiente</h1><p>Operaciones de M&A en medio ambiente, gestión de residuos y sostenibilidad.</p>`,
-  },
-  "/sectores/alimentacion": {
-    title: "M&A Sector Alimentación | Capittal",
-    description: "Operaciones de M&A en el sector alimentario. Producción, distribución y marcas de alimentación.",
-    keywords: "M&A alimentación, venta empresa alimentaria, fusiones distribución alimentos",
-    canonical: "https://capittal.es/sectores/alimentacion",
-    ogType: "website",
-    structuredData: [{ "@context": "https://schema.org", "@type": "Service", name: "M&A Sector Alimentación", provider: ORG_JSONLD, areaServed: { "@type": "Country", name: "España" }, serviceType: ["M&A sector alimentación"] }],
-    content: `<h1>M&A Sector Alimentación</h1><p>Operaciones de M&A en el sector alimentario en España.</p>`,
-  },
+  // NOTE: "/sectores/construccion", "/sectores/logistica", "/sectores/medio-ambiente", "/sectores/alimentacion"
+  // are defined above (lines ~598-746) with richer content (FAQ schemas, breadcrumbs) — do not duplicate here
 
   // ─── LP CALCULADORA ASESORES ───
   "/lp/calculadora-asesores": {
