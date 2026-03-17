@@ -541,7 +541,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const pauseRef = useRef(false);
 
   // Send schedule config
-  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
 

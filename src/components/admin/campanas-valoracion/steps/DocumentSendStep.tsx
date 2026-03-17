@@ -120,7 +120,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [resendConfirm, setResendConfirm] = useState<ResendConfirm>(null);
-  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
