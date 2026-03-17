@@ -18,6 +18,7 @@ export interface SendScheduleSettings {
   intervalMs: number;
   maxPerHour: number | null;
   scheduledAt: Date | null;
+  serverSide: boolean;
 }
 
 const INTERVAL_OPTIONS = [
