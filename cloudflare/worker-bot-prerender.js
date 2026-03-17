@@ -131,6 +131,43 @@ const ROUTES = {
   "/why-choose-us":{t:"Why Choose Us | Capittal M&A Advisory",d:"Experience, methodology and results. Discover why Capittal is your best partner for M&A transactions and valuations in Spain."},
   "/collaborators-program":{t:"Collaborators Program | Capittal",d:"Join our collaborator network. Refer M&A opportunities and receive compensation for every closed transaction with Capittal."},
   "/partners-program":{t:"Partners Program | Capittal M&A Advisory",d:"Partner with Capittal. Strategic alliances for financial advisors, law firms and consulting firms in M&A deal referrals."},
+  // Legal pages
+  "/politica-privacidad":{t:"Política de Privacidad | Capittal",d:"Política de privacidad y protección de datos de Capittal Transacciones S.L."},
+  "/terminos-uso":{t:"Términos de Uso | Capittal",d:"Términos y condiciones de uso del sitio web de Capittal Transacciones."},
+  "/cookies":{t:"Política de Cookies | Capittal",d:"Información sobre el uso de cookies en el sitio web de Capittal Transacciones."},
+  // Technical sub-page
+  "/servicios/asesoramiento-legal/tecnico":{t:"Asesoramiento Legal Técnico en M&A | Capittal",d:"Soporte jurídico técnico en M&A. Análisis contractual, cumplimiento normativo y cierre de transacciones complejas."},
+  // Catalan service pages
+  "/serveis/valoracions":{t:"Valoració d'Empreses - Múltiples EBITDA i DCF | Capittal",d:"Valoració d'empreses: múltiples EBITDA, fluxos de caixa descomptats (DCF) i comparables de mercat. Calculadora gratuïta online."},
+  "/serveis/venda-empreses":{t:"Venda d'Empreses a Espanya - Assessorament M&A | Capittal",d:"Assessorament en venda d'empreses. Valoració, negociació i tancament amb accés a fons d'inversió i compradors estratègics."},
+  "/serveis/due-diligence":{t:"Due Diligence Financera i Fiscal - M&A Espanya | Capittal",d:"Due diligence financera, fiscal i legal per a compravenda d'empreses. Anàlisi rigourós per a compradors i venedors en M&A."},
+  "/serveis/assessorament-legal":{t:"Assessorament Legal en M&A | Capittal",d:"Suport jurídic en fusions i adquisicions. Contractes, due diligence legal i tancament de transaccions a Espanya."},
+  "/serveis/reestructuracions":{t:"Reestructuració d'Empreses - Assessorament Financer | Capittal",d:"Assessorament en reestructuracions, refinançament de deute i situacions especials. Solucions financeres per a empreses."},
+  "/serveis/planificacio-fiscal":{t:"Planificació Fiscal en Venda d'Empreses | Capittal",d:"Optimització fiscal en compravenda d'empreses. Planificació fiscal pre-venda per maximitzar el valor net de l'operació."},
+  // Catalan sector pages
+  "/sectors/tecnologia":{t:"M&A Tecnologia Espanya - Venda Empreses Tech | Capittal",d:"M&A d'empreses tecnològiques: SaaS, ciberseguretat i infraestructura digital. Compradors estratègics i fons tech a Espanya."},
+  "/sectors/salut":{t:"M&A Salut Espanya - Venda Empreses Sanitàries | Capittal",d:"M&A en el sector sanitari i healthcare. Operacions amb clíniques, laboratoris i empreses de serveis de salut a Espanya."},
+  "/sectors/industrial":{t:"M&A Industrial Espanya - Venda Empreses Industrials | Capittal",d:"Compravenda d'empreses industrials: manufactura, enginyeria i serveis industrials. Fons de Private Equity a Espanya."},
+  "/sectors/retail-consum":{t:"M&A Retail i Consum | Capittal",d:"M&A en retail i consum. Distribució, franquícies, e-commerce i marques de consum a Espanya."},
+  "/sectors/energia":{t:"M&A Energia Espanya - Venda Empreses Energètiques | Capittal",d:"Compravenda d'empreses del sector energètic. Renovables, infraestructura energètica i serveis relacionats a Espanya."},
+  "/sectors/seguretat":{t:"M&A Seguretat Privada Espanya | Capittal",d:"M&A en seguretat privada. Venda d'empreses d'alarmes, vigilància i serveis auxiliars. Experts en el sector a Espanya."},
+  "/sectors/construccio":{t:"M&A Sector Construcció | Capittal",d:"M&A en construcció i infraestructures a Espanya. Promotores, constructores i enginyeria civil."},
+  "/sectors/alimentacio":{t:"M&A Sector Alimentació | Capittal",d:"M&A en el sector alimentari. Producció, distribució i marques d'alimentació a Espanya."},
+  "/sectors/logistica":{t:"M&A Sector Logística | Capittal",d:"Fusions i adquisicions en logística i transport. Distribució, emmagatzematge i cadena de subministrament."},
+  "/sectors/medi-ambient":{t:"M&A Sector Medi Ambient | Capittal",d:"M&A en medi ambient. Gestió de residus, tractament d'aigües i sostenibilitat a Espanya."},
+  // English service pages
+  "/services/valuations":{t:"Business Valuation Services - EBITDA Multiples & DCF | Capittal",d:"Business valuation: EBITDA multiples, discounted cash flows (DCF) and market comparables. Free online valuation calculator."},
+  "/services/sell-companies":{t:"Sell-Side M&A Advisory in Spain | Capittal",d:"Sell-side advisory for business owners. Valuation, buyer identification and negotiation. Confidential process with global reach."},
+  "/services/due-diligence":{t:"Financial & Tax Due Diligence - M&A Spain | Capittal",d:"Financial, tax and legal due diligence for M&A transactions. Rigorous analysis for buyers and sellers in acquisitions."},
+  "/services/legal-advisory":{t:"Legal Advisory in M&A | Capittal",d:"Legal support for mergers and acquisitions. Contract negotiation, legal due diligence and transaction closing across Spain."},
+  "/services/restructuring":{t:"Business Restructuring Advisory | Capittal",d:"Corporate restructuring, debt refinancing and special situations. Financial solutions for companies facing challenges in Spain."},
+  "/services/tax-planning":{t:"Tax Planning for Company Sales | Capittal",d:"Tax optimization for company sales. Pre-sale tax planning to maximize net proceeds. Specialized M&A tax advisory in Spain."},
+  // English sector pages
+  "/sectors/technology":{t:"M&A Technology Spain - Tech Company Sales | Capittal",d:"M&A advisory for tech companies in Spain. SaaS, cybersecurity and digital infrastructure acquisitions."},
+  "/sectors/healthcare":{t:"M&A Healthcare Spain - Health Company Sales | Capittal",d:"M&A in the healthcare sector in Spain. Transactions with clinics, laboratories and healthcare services companies."},
+  "/sectors/retail-consumer":{t:"M&A Retail & Consumer Spain | Capittal",d:"M&A in retail and consumer sectors. Distribution, franchises, e-commerce and consumer brands across Spain."},
+  "/sectors/energy":{t:"M&A Energy Spain - Energy Company Sales | Capittal",d:"M&A for energy sector companies in Spain. Renewables, energy infrastructure and related services acquisitions."},
+  "/sectors/security":{t:"M&A Private Security Spain | Capittal",d:"M&A in private security. Advisory for alarm companies, surveillance firms and auxiliary services in Spain."},
 };
 
 // =====================================================================
@@ -174,6 +211,35 @@ const HREFLANGS = {
   "/sectores/alimentacion":{es:"/sectores/alimentacion",ca:"/sectors/alimentacio"},
   "/sectores/logistica":{es:"/sectores/logistica",ca:"/sectors/logistica"},
   "/sectores/medio-ambiente":{es:"/sectores/medio-ambiente",ca:"/sectors/medi-ambient"},
+  // Bidirectional entries for Catalan/English service routes
+  "/serveis/valoracions":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
+  "/services/valuations":{es:"/servicios/valoraciones",ca:"/serveis/valoracions",en:"/services/valuations"},
+  "/servicios/venta-empresas":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
+  "/serveis/venda-empreses":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
+  "/services/sell-companies":{es:"/servicios/venta-empresas",ca:"/serveis/venda-empreses",en:"/services/sell-companies"},
+  "/serveis/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
+  "/services/due-diligence":{es:"/servicios/due-diligence",ca:"/serveis/due-diligence",en:"/services/due-diligence"},
+  "/serveis/assessorament-legal":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
+  "/services/legal-advisory":{es:"/servicios/asesoramiento-legal",ca:"/serveis/assessorament-legal",en:"/services/legal-advisory"},
+  "/serveis/reestructuracions":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
+  "/services/restructuring":{es:"/servicios/reestructuraciones",ca:"/serveis/reestructuracions",en:"/services/restructuring"},
+  "/serveis/planificacio-fiscal":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
+  "/services/tax-planning":{es:"/servicios/planificacion-fiscal",ca:"/serveis/planificacio-fiscal",en:"/services/tax-planning"},
+  // Bidirectional entries for Catalan/English sector routes
+  "/sectors/tecnologia":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
+  "/sectors/technology":{es:"/sectores/tecnologia",ca:"/sectors/tecnologia",en:"/sectors/technology"},
+  "/sectors/salut":{es:"/sectores/healthcare",ca:"/sectors/salut",en:"/sectors/healthcare"},
+  "/sectors/healthcare":{es:"/sectores/healthcare",ca:"/sectors/salut",en:"/sectors/healthcare"},
+  "/sectors/seguretat":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
+  "/sectors/security":{es:"/sectores/seguridad",ca:"/sectors/seguretat",en:"/sectors/security"},
+  "/sectors/energia":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
+  "/sectors/energy":{es:"/sectores/energia",ca:"/sectors/energia",en:"/sectors/energy"},
+  "/sectors/industrial":{es:"/sectores/industrial",ca:"/sectors/industrial"},
+  "/sectors/retail-consum":{es:"/sectores/retail-consumer",ca:"/sectors/retail-consum",en:"/sectors/retail-consumer"},
+  "/sectors/construccio":{es:"/sectores/construccion",ca:"/sectors/construccio"},
+  "/sectors/alimentacio":{es:"/sectores/alimentacion",ca:"/sectors/alimentacio"},
+  "/sectors/logistica":{es:"/sectores/logistica",ca:"/sectors/logistica"},
+  "/sectors/medi-ambient":{es:"/sectores/medio-ambiente",ca:"/sectors/medi-ambient"},
 };
 
 // =====================================================================
