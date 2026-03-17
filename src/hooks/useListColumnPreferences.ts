@@ -24,7 +24,7 @@ const DEFAULT_COLUMNS: ListColumnDef[] = [
   { key: 'facturacion', label: 'Facturación', visible: true, position: 9, sortable: true, align: 'right' },
   { key: 'ebitda', label: 'EBITDA', visible: true, position: 10, sortable: true, align: 'right' },
   { key: 'num_trabajadores', label: 'Empleados', visible: true, position: 11, sortable: true, align: 'right' },
-  { key: 'consolidador', label: 'Consolidador', visible: true, position: 12 },
+  { key: 'consolidador', label: 'Consolidador', visible: true, position: 12, minWidth: '180px' },
   { key: 'notas', label: 'Notas', visible: true, position: 13, minWidth: '160px' },
 ];
 
