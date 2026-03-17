@@ -1817,10 +1817,12 @@ export default function ContactListDetailPage() {
                            return (
                              <React.Fragment key={company.id}>
                                {separatorRow}
-                               <TableRow className={cn(
-                                 "group/row",
-                                 isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
-                               )}>
+                                <TableRow className={cn(
+                                  "group/row",
+                                  (company as any).consolidador
+                                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-l-2 border-l-emerald-500"
+                                    : isAssignedToSublist && "bg-muted/30 border-l-2 border-l-amber-400"
+                                )}>
                            <TableCell onClick={e => e.stopPropagation()}>
                              <Checkbox checked={selectedIds.includes(company.id)} onCheckedChange={() => handleToggleSelect(company.id)} />
                            </TableCell>
