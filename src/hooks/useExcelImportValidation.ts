@@ -170,6 +170,7 @@ export function useExcelImportValidation() {
       const vinculadas: ValidatedRow[] = [];
       const duplicadas: ValidatedRow[] = [];
       const enOtraLista: RelatedListRow[] = [];
+      const conflictoSublistado: ConflictRow[] = [];
       const errores: ErrorRow[] = [];
       const seenCifsInExcel = new Set<string>();
 
@@ -206,26 +207,32 @@ export function useExcelImportValidation() {
           return;
         }
 
-        const relatedListName = relatedCifMap.get(cif);
+        const relatedEntry = relatedCifMap.get(cif);
+
+        if (relatedEntry?.isConflict) {
+          // CIF exists in a sibling sublist → BLOCK
+          conflictoSublistado.push({ ...row, sublistaConflicto: relatedEntry.name });
+          return;
+        }
 
         if (existingInEmpresasSet.has(cif)) {
-          if (relatedListName) {
-            enOtraLista.push({ ...row, listaRelacionada: relatedListName });
+          if (relatedEntry) {
+            enOtraLista.push({ ...row, listaRelacionada: relatedEntry.name });
           } else {
             vinculadas.push(row);
           }
           return;
         }
 
-        if (relatedListName) {
-          enOtraLista.push({ ...row, listaRelacionada: relatedListName });
+        if (relatedEntry) {
+          enOtraLista.push({ ...row, listaRelacionada: relatedEntry.name });
           return;
         }
 
         nuevas.push(row);
       });
 
-      const result: ValidationResult = { nuevas, vinculadas, duplicadas, enOtraLista, errores };
+      const result: ValidationResult = { nuevas, vinculadas, duplicadas, enOtraLista, conflictoSublistado, errores };
       setValidationResult(result);
       return result;
     } finally {
