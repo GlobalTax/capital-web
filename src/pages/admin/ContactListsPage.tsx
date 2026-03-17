@@ -19,11 +19,13 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
   Crown, Users, Send, Building2, List, CheckCircle, BarChart3, Megaphone,
+  ChevronDown, FolderOpen,
 } from 'lucide-react';
 import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -51,6 +53,8 @@ const TAB_DEFAULT_TIPO: Record<ListTab, ContactListTipo> = {
   outbound: 'outbound',
 };
 
+const NO_SECTOR_KEY = '__sin_sector__';
+
 export default function ContactListsPage() {
   const navigate = useNavigate();
   const { lists, isLoading, createList, deleteList, duplicateList, updateList } = useContactLists();
@@ -60,11 +64,13 @@ export default function ContactListsPage() {
   const debouncedActivitySearch = useDebounce(activitySearch, 400);
   const [estadoFilter, setEstadoFilter] = useState('all');
   const [tipoFilter, setTipoFilter] = useState('all');
+  const [sectorFilter, setSectorFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newSector, setNewSector] = useState('');
   const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
+  const [collapsedSectors, setCollapsedSectors] = useState<Set<string>>(new Set());
 
   // Activity search query
   const { data: activityMatches } = useQuery({
@@ -124,11 +130,80 @@ export default function ContactListsPage() {
     }
     if (estadoFilter !== 'all') result = result.filter(l => l.estado === estadoFilter);
     if (tipoFilter !== 'all') result = result.filter(l => l.tipo === tipoFilter);
+    if (sectorFilter !== 'all') {
+      if (sectorFilter === NO_SECTOR_KEY) {
+        result = result.filter(l => !l.sector || !l.sector.trim());
+      } else {
+        result = result.filter(l => l.sector === sectorFilter);
+      }
+    }
     if (debouncedActivitySearch.trim() && activityMatches) {
       result = result.filter(l => activityMatches[l.id]);
     }
     return result;
-  }, [lists, activeTab, search, estadoFilter, tipoFilter, debouncedActivitySearch, activityMatches]);
+  }, [lists, activeTab, search, estadoFilter, tipoFilter, sectorFilter, debouncedActivitySearch, activityMatches]);
+
+  // Available sectors for filter (from current tab's lists)
+  const availableSectors = useMemo(() => {
+    let tabLists = lists;
+    switch (activeTab) {
+      case 'madre':
+        tabLists = tabLists.filter(l => l.has_children || l.tipo === 'madre');
+        break;
+      case 'compradores':
+        tabLists = tabLists.filter(l => !l.has_children && l.tipo === 'compradores');
+        break;
+      case 'outbound':
+        tabLists = tabLists.filter(l => !l.has_children && l.tipo !== 'compradores' && l.tipo !== 'madre');
+        break;
+    }
+    const sectors = new Set<string>();
+    let hasEmpty = false;
+    tabLists.forEach(l => {
+      if (l.sector && l.sector.trim()) sectors.add(l.sector.trim());
+      else hasEmpty = true;
+    });
+    const sorted = Array.from(sectors).sort((a, b) => a.localeCompare(b, 'es'));
+    return { sectors: sorted, hasEmpty };
+  }, [lists, activeTab]);
+
+  // Group filtered lists by sector
+  const groupedBySector = useMemo(() => {
+    const groups: { sector: string; displayName: string; lists: typeof filtered }[] = [];
+    const sectorMap = new Map<string, typeof filtered>();
+
+    filtered.forEach(l => {
+      const key = l.sector?.trim() || NO_SECTOR_KEY;
+      if (!sectorMap.has(key)) sectorMap.set(key, []);
+      sectorMap.get(key)!.push(l);
+    });
+
+    // Sort: named sectors alphabetically, "Sin sector" last
+    const keys = Array.from(sectorMap.keys()).sort((a, b) => {
+      if (a === NO_SECTOR_KEY) return 1;
+      if (b === NO_SECTOR_KEY) return -1;
+      return a.localeCompare(b, 'es');
+    });
+
+    keys.forEach(key => {
+      groups.push({
+        sector: key,
+        displayName: key === NO_SECTOR_KEY ? 'Sin sector' : key,
+        lists: sectorMap.get(key)!,
+      });
+    });
+
+    return groups;
+  }, [filtered]);
+
+  const toggleSectorCollapse = useCallback((sector: string) => {
+    setCollapsedSectors(prev => {
+      const next = new Set(prev);
+      if (next.has(sector)) next.delete(sector);
+      else next.add(sector);
+      return next;
+    });
+  }, []);
 
   const handleCreate = async () => {
     if (!newName.trim()) return;
@@ -168,6 +243,107 @@ export default function ContactListsPage() {
   const handleInlineSave = useCallback(async (listId: string, field: string, value: string) => {
     await updateList.mutateAsync({ id: listId, [field]: value || null });
   }, [updateList]);
+
+  const renderTableHeaders = () => (
+    <TableHeader>
+      <TableRow>
+        <TableHead>Nombre</TableHead>
+        <TableHead>Tipo</TableHead>
+        <TableHead>Estado</TableHead>
+        <TableHead className="text-right">Nº Empresas</TableHead>
+        <TableHead>Campaña vinculada</TableHead>
+        {activeTab === 'compradores' && <TableHead>Lista Madre</TableHead>}
+        <TableHead>Notas</TableHead>
+        <TableHead>Fecha creación</TableHead>
+        <TableHead className="w-12" />
+      </TableRow>
+    </TableHeader>
+  );
+
+  const renderListRow = (list: ContactList) => {
+    const estado = ESTADO_BADGES[list.estado] || ESTADO_BADGES.borrador;
+    const tipo = TIPO_BADGES[list.tipo] || TIPO_BADGES.outbound;
+    return (
+      <TableRow
+        key={list.id}
+        className="cursor-pointer hover:bg-muted/50"
+        onClick={() => navigate(`/admin/listas-contacto/${list.id}`)}
+      >
+        <TableCell>
+          <div>
+            <EditableCell
+              value={list.name}
+              onSave={async (val) => handleInlineSave(list.id, 'name', val)}
+              placeholder="Nombre de la lista"
+              displayClassName="font-medium"
+            />
+            {debouncedActivitySearch.trim() && activityMatches && activityMatches[list.id] && (
+              <span className="text-xs text-primary">{activityMatches[list.id]} empresas coinciden</span>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>
+          <Badge variant="outline" className={cn('text-xs', tipo.className)}>{tipo.label}</Badge>
+        </TableCell>
+        <TableCell>
+          <Badge variant="outline" className={cn('text-xs', estado.className)}>{estado.label}</Badge>
+        </TableCell>
+        <TableCell className="text-right tabular-nums">{list.contact_count}</TableCell>
+        <TableCell className="text-sm text-muted-foreground">{list.last_campaign_name || '—'}</TableCell>
+        {activeTab === 'compradores' && (
+          <TableCell className="text-sm">
+            {list.lista_madre_id ? (() => {
+              const madre = lists.find(l => l.id === list.lista_madre_id);
+              return madre ? (
+                <Badge
+                  variant="outline"
+                  className="text-xs bg-purple-50 text-purple-700 border-purple-200 cursor-pointer hover:bg-purple-100 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); navigate(`/admin/listas-contacto/${madre.id}`); }}
+                >
+                  <Crown className="h-3 w-3 mr-1" />
+                  {madre.name}
+                </Badge>
+              ) : '—';
+            })() : '—'}
+          </TableCell>
+        )}
+        <TableCell>
+          <EditableCell
+            value={list.notes}
+            onSave={async (val) => handleInlineSave(list.id, 'notes', val)}
+            placeholder="Añadir nota..."
+            emptyText="—"
+          />
+        </TableCell>
+        <TableCell className="text-sm text-muted-foreground">
+          {new Date(list.created_at).toLocaleDateString('es-ES')}
+        </TableCell>
+        <TableCell onClick={e => e.stopPropagation()}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-background">
+              <DropdownMenuItem onClick={() => navigate(`/admin/listas-contacto/${list.id}`)}>
+                <Eye className="h-4 w-4 mr-2" /> Ver detalle
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDuplicate(list)}>
+                <Copy className="h-4 w-4 mr-2" /> Duplicar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleArchive(list)}>
+                <Archive className="h-4 w-4 mr-2" /> Archivar
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDelete(list)} className="text-destructive focus:text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    );
+  };
 
   return (
     <div className="space-y-5">
@@ -215,7 +391,7 @@ export default function ContactListsPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ListTab)}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as ListTab); setSectorFilter('all'); }}>
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="madre" className="gap-2">
             <Crown className="h-4 w-4" />
@@ -253,6 +429,21 @@ export default function ContactListsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Buscar por actividad... (ej: centro especial empleo, instalación eléctrica)" value={activitySearch} onChange={e => setActivitySearch(e.target.value)} className="pl-9" />
             </div>
+            {/* Sector filter */}
+            <Select value={sectorFilter} onValueChange={setSectorFilter}>
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Sector" />
+              </SelectTrigger>
+              <SelectContent className="bg-background">
+                <SelectItem value="all">Todos los sectores</SelectItem>
+                {availableSectors.sectors.map(s => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+                {availableSectors.hasEmpty && (
+                  <SelectItem value={NO_SECTOR_KEY}>Sin sector</SelectItem>
+                )}
+              </SelectContent>
+            </Select>
             {activeTab === 'outbound' && (
               <Select value={tipoFilter} onValueChange={setTipoFilter}>
                 <SelectTrigger className="w-full md:w-[180px]">
@@ -280,7 +471,7 @@ export default function ContactListsPage() {
         </CardContent>
       </Card>
 
-      {/* Table */}
+      {/* Table grouped by sector folders */}
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
@@ -295,117 +486,51 @@ export default function ContactListsPage() {
                 <Plus className="h-4 w-4 mr-2" /> Crear lista
               </Button>
             </div>
-          ) : (
+          ) : groupedBySector.length === 1 && sectorFilter !== 'all' ? (
+            // Single sector selected — flat table without folder header
             <Table>
-              <TableHeader>
-                 <TableRow>
-                   <TableHead>Nombre</TableHead>
-                   <TableHead>Tipo</TableHead>
-                   <TableHead>Sector</TableHead>
-                   <TableHead>Estado</TableHead>
-                   <TableHead className="text-right">Nº Empresas</TableHead>
-                    <TableHead>Campaña vinculada</TableHead>
-                     {activeTab === 'compradores' && <TableHead>Lista Madre</TableHead>}
-                     <TableHead>Notas</TableHead>
-                    <TableHead>Fecha creación</TableHead>
-                   <TableHead className="w-12" />
-                 </TableRow>
-              </TableHeader>
+              {renderTableHeaders()}
               <TableBody>
-                {filtered.map(list => {
-                  const estado = ESTADO_BADGES[list.estado] || ESTADO_BADGES.borrador;
-                  const tipo = TIPO_BADGES[list.tipo] || TIPO_BADGES.outbound;
-                  return (
-                    <TableRow
-                      key={list.id}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() => navigate(`/admin/listas-contacto/${list.id}`)}
-                    >
-                      <TableCell>
-                        <div>
-                          <EditableCell
-                            value={list.name}
-                            onSave={async (val) => handleInlineSave(list.id, 'name', val)}
-                            placeholder="Nombre de la lista"
-                            displayClassName="font-medium"
-                          />
-                          {debouncedActivitySearch.trim() && activityMatches && activityMatches[list.id] && (
-                            <span className="text-xs text-primary">{activityMatches[list.id]} empresas coinciden</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={cn('text-xs', tipo.className)}>{tipo.label}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <EditableCell
-                          value={list.sector}
-                          onSave={async (val) => handleInlineSave(list.id, 'sector', val)}
-                          placeholder="Sector"
-                          emptyText="—"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={cn('text-xs', estado.className)}>{estado.label}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">{list.contact_count}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{list.last_campaign_name || '—'}</TableCell>
-                       {activeTab === 'compradores' && (
-                         <TableCell className="text-sm">
-                           {list.lista_madre_id ? (() => {
-                             const madre = lists.find(l => l.id === list.lista_madre_id);
-                             return madre ? (
-                                <Badge 
-                                  variant="outline" 
-                                  className="text-xs bg-purple-50 text-purple-700 border-purple-200 cursor-pointer hover:bg-purple-100 transition-colors"
-                                  onClick={(e) => { e.stopPropagation(); navigate(`/admin/listas-contacto/${madre.id}`); }}
-                                >
-                                  <Crown className="h-3 w-3 mr-1" />
-                                  {madre.name}
-                                </Badge>
-                             ) : '—';
-                           })() : '—'}
-                         </TableCell>
-                       )}
-                       <TableCell>
-                        <EditableCell
-                          value={list.notes}
-                          onSave={async (val) => handleInlineSave(list.id, 'notes', val)}
-                          placeholder="Añadir nota..."
-                          emptyText="—"
-                        />
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(list.created_at).toLocaleDateString('es-ES')}
-                      </TableCell>
-                      <TableCell onClick={e => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-background">
-                            <DropdownMenuItem onClick={() => navigate(`/admin/listas-contacto/${list.id}`)}>
-                              <Eye className="h-4 w-4 mr-2" /> Ver detalle
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDuplicate(list)}>
-                              <Copy className="h-4 w-4 mr-2" /> Duplicar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleArchive(list)}>
-                              <Archive className="h-4 w-4 mr-2" /> Archivar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDelete(list)} className="text-destructive focus:text-destructive">
-                              <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {groupedBySector[0].lists.map(renderListRow)}
               </TableBody>
             </Table>
+          ) : (
+            // Multiple sectors — collapsible folder groups
+            <div className="divide-y divide-border">
+              {groupedBySector.map(group => {
+                const isCollapsed = collapsedSectors.has(group.sector);
+                const totalEmpresas = group.lists.reduce((acc, l) => acc + (l.contact_count || 0), 0);
+                return (
+                  <Collapsible
+                    key={group.sector}
+                    open={!isCollapsed}
+                    onOpenChange={() => toggleSectorCollapse(group.sector)}
+                  >
+                    <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2.5 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">{group.displayName}</span>
+                        <Badge variant="secondary" size="sm" className="text-[10px]">
+                          {group.lists.length} {group.lists.length === 1 ? 'lista' : 'listas'}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          · {totalEmpresas.toLocaleString('es-ES')} empresas
+                        </span>
+                      </div>
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", !isCollapsed && "rotate-180")} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <Table>
+                        {renderTableHeaders()}
+                        <TableBody>
+                          {group.lists.map(renderListRow)}
+                        </TableBody>
+                      </Table>
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
