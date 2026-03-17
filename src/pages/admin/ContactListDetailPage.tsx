@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useListColumnPreferences } from '@/hooks/useListColumnPreferences';
+import { ListColumnConfigurator } from '@/components/admin/contact-lists/ListColumnConfigurator';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '@/hooks/useExcelImportValidation';
 import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
