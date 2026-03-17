@@ -1,144 +1,63 @@
-## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
-### Cambios realizados
 
-1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
-4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
+## Plan: Corregir y reforzar vinculación Lista Madre ↔ Sublistas
 
-### Resultado
+### Diagnóstico actual
 
-- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
-- Google indexará el contenido directamente en lugar de seguir un refresh.
-- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
+Tras inspeccionar el código y esquema:
 
----
+1. **`lista_madre_id`** ya existe como FK en `outbound_lists` → OK, no se necesita migración.
+2. **Vista Lista Madre** — ya tiene columna "Sublistas" que muestra en qué sublista está cada empresa (por CIF) → OK, funciona.
+3. **Vista Sublista** — tiene `parentList` query para breadcrumb, pero **no muestra una columna "Lista Madre"** en la tabla de empresas.
+4. **Añadir empresa manual (`handleAddManual`)** — **no valida conflicto de sublista** por CIF. Inserta directamente sin comprobar si el CIF ya existe en otra sublista hermana.
+5. **Import Excel** — el `enOtraLista` category actualmente se **importa** (se incluye en `rowsToInsert`). La regla de negocio dice que debería **bloquearse**.
+6. **Validación import** — cuando se importa a una sublista, detecta CIFs en sublistas hermanas y los pone en `enOtraLista`. Pero cuando se importa a una lista madre, clasifica CIFs de hijos como `enOtraLista` → esto es informativo y correcto. El **conflicto real** solo aplica entre sublistas hermanas.
 
-## ✅ Completado: og:url estático + SSR para noticias individuales
+### Cambios necesarios
 
-### Cambios realizados
+#### 1. Separar `enOtraLista` en dos categorías — `useExcelImportValidation.ts`
 
-1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+Actualmente `enOtraLista` mezcla dos situaciones distintas:
+- **(a)** CIF en lista madre/sublista hermana de una madre → **conflicto real**, debe bloquearse
+- **(b)** CIF en lista padre cuando importamos a la madre → informativo, puede importarse
 
-2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+Añadir nueva categoría `conflictoSublistado: ConflictRow[]` al `ValidationResult`:
+- Cuando `listaMadreId` está definido (estamos importando a una sublista): los CIFs encontrados en **sublistas hermanas** van a `conflictoSublistado` (bloqueados). Los de la lista madre siguen en `enOtraLista` (importables con aviso).
+- Para hacer esto, en el bucle de validación, distinguir si `relatedCifMap` entry viene de una sublista hermana vs de la madre.
 
-3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+Modificar el `relatedCifMap` para almacenar `{ name: string, isConflict: boolean }` en lugar de solo `string`.
 
-4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+#### 2. Bloquear conflictos en import — `ContactListDetailPage.tsx`
 
-### Resultado
+En `handleConfirmImport` (línea ~830): excluir `conflictoSublistado` de `rowsToInsert`. Solo importar `nuevas + vinculadas + enOtraLista`.
 
-- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
-- Noticias individuales tienen SSR completo con metadatos únicos por artículo
-- Verificado con curl: título, canonical, og:url y structured data correctos
+#### 3. Mostrar conflictos en modal preview — `ImportPreviewModal.tsx`
 
----
+Añadir nueva sección con icono `XCircle` rojo: **"Conflicto de sublistado (se excluirán)"** mostrando empresa, CIF y nombre de la sublista donde ya existe. No contar en `importable`.
 
-## ✅ Completado: Limpiar schemas JSON-LD en index.html
+#### 4. Validar al añadir empresa manual — `ContactListDetailPage.tsx`
 
-### Cambios realizados
+En `handleAddManual` (~línea 729), antes de `addCompany.mutateAsync`:
+- Si la lista tiene `lista_madre_id` y el CIF no está vacío:
+  - Consultar sublistas hermanas (mismo `lista_madre_id`, distinto `listId`)
+  - Buscar si el CIF existe en `outbound_list_companies` de esas hermanas
+  - Si existe: `toast.error("Esta empresa (CIF) ya está en el sublistado [nombre]...")` y cancelar inserción
 
-- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
-- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
-- **Mantenido** `Organization` schema (válido globalmente)
-- **Mantenido** `WebPage` schema (válido globalmente)
+#### 5. Columna "Lista Madre" en vista sublista — `ContactListDetailPage.tsx` + `useListColumnPreferences.ts`
 
-### Resultado
+- Añadir columna `{ key: 'lista_madre', label: 'Lista Madre', ... }` a `DEFAULT_COLUMNS` en `useListColumnPreferences.ts`
+- En `renderColumnCell`, caso `'lista_madre'`: si `list?.lista_madre_id` existe, mostrar badge con `parentList?.name` como link a la lista madre. Solo visible si la lista actual es sublista.
+- Alternativamente, dado que TODAS las empresas de una sublista comparten la misma madre, en lugar de una columna repetitiva, mostrar un badge/breadcrumb prominente en el header de la página (ya existe como breadcrumb). Dado que el usuario pide "columna o indicador visible", reforzar el breadcrumb existente con un badge más visible tipo `<Badge>Sublista de: [Madre]</Badge>` junto al título.
 
-- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
-- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
+### Archivos afectados
 
----
+| Archivo | Cambio |
+|---------|--------|
+| `src/hooks/useExcelImportValidation.ts` | Añadir `conflictoSublistado` al resultado, separar conflictos reales de informativos |
+| `src/components/admin/contact-lists/ImportPreviewModal.tsx` | Nueva sección "Conflicto de sublistado", excluir del conteo importable |
+| `src/pages/admin/ContactListDetailPage.tsx` | Validación CIF en `handleAddManual`, ajustar `handleConfirmImport`, badge "Lista Madre" en header de sublistas |
+| `src/hooks/useListColumnPreferences.ts` | Añadir columna `lista_madre` a defaults |
 
-## ✅ Completado: Integración Lista de Contacto → Campaña Outbound
+### Sin cambios en base de datos
+Todo se resuelve con lógica client-side. El esquema ya tiene `lista_madre_id`.
 
-### Cambios realizados
-
-1. **Migración SQL**: Añadida columna `source_list_id` (uuid) a `valuation_campaigns` con FK a `outbound_lists`.
-
-2. **`src/components/admin/contact-lists/SendToCampaignDialog.tsx`** (NUEVO): Diálogo completo para enviar empresas de una lista a una campaña outbound. Incluye:
-   - Selección entre crear nueva campaña o añadir a existente
-   - Deduplicación por CIF contra la campaña destino (omite duplicados)
-   - Deduplicación cross-campaña (aviso de empresas ya contactadas en otras campañas)
-   - Mapeo automático de campos lista → campaña
-   - Inserción en batches de 100
-
-3. **`src/components/admin/campanas-valoracion/ImportFromListDialog.tsx`** (NUEVO): Diálogo para importar empresas desde lista dentro del paso 2 (CompaniesStep) de una campaña. Misma lógica de deduplicación.
-
-4. **`src/pages/admin/ContactListDetailPage.tsx`**: Botón "Enviar a campaña" en la toolbar de acciones de la lista.
-
-5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`**: Botón "Importar desde lista de contacto" antes del formulario manual.
-
-6. **`src/pages/admin/CampanasValoracion.tsx`**: Badge con nombre de lista origen junto al nombre de la campaña (clickable, navega a la lista).
-
-7. **`src/hooks/useCampaigns.ts`**: Añadido `source_list_id` al tipo `ValuationCampaign`.
-
-### Resultado
-
-- Flujo directo lista → campaña con un solo clic
-- Protección anti-duplicados a nivel de campaña y cross-campaña
-- Trazabilidad: cada campaña muestra su lista origen
-
----
-
-## ✅ Completado: Sistema de envío automático server-side para Outbound
-
-### Cambios realizados
-
-1. **Migration SQL**: Nueva tabla `outbound_send_queue` con campos: id, campaign_id, send_type, sequence_id, email_ids, interval_ms, max_per_hour, scheduled_at, status, progress_current, progress_total, last_processed_at, error_message, created_by, created_at, updated_at. RLS habilitado.
-
-2. **`supabase/functions/process-outbound-queue/index.ts`** (NUEVO): Worker Edge Function que:
-   - Marca jobs estancados (>10min sin progreso) como `failed`
-   - Busca jobs `pending` con `scheduled_at <= now()` o `running`
-   - Calcula emails a enviar por ventana de 2min respetando `interval_ms` y `max_per_hour`
-   - Llama a `send-campaign-outbound-email` existente para cada email
-   - Actualiza progreso en tiempo real y marca como `completed` al terminar
-   - Re-verifica status del job entre emails (para soportar pausa/cancelación)
-
-3. **`src/hooks/useOutboundQueue.ts`** (NUEVO): Hook React que expone:
-   - `jobs`, `activeJobs`, `hasActiveJob`
-   - `createJob` mutation para insertar en la cola
-   - `updateJobStatus` mutation para pausar/reanudar/cancelar
-   - Polling cada 10s para actualización de progreso en tiempo real
-
-4. **`src/components/admin/campanas-valoracion/shared/OutboundQueueMonitor.tsx`** (NUEVO): Panel de monitorización con:
-   - Lista de jobs con badge de estado (Programado/En curso/Pausado/Completado/Fallido/Cancelado)
-   - Barra de progreso para jobs activos
-   - Botones de Pausar/Reanudar/Cancelar
-
-5. **`src/components/admin/campanas-valoracion/shared/SendScheduleConfig.tsx`**: Añadido campo `serverSide` al tipo `SendScheduleSettings`. Nuevo selector "Modo de envío" con opciones:
-   - "Desde el navegador" (comportamiento actual)
-   - "Server-side (automático)" → inserta job en cola, no requiere navegador abierto
-
-6. **`ProcessSendStep.tsx`**: Integrado `useOutboundQueue`. Al enviar con modo server-side, crea job en cola con IDs de campaign_emails.
-
-7. **`DocumentSendStep.tsx`**: Mismo patrón: modo server-side crea job tipo 'document' en la cola.
-
-8. **`FollowUpStep.tsx`**: Añadido `OutboundQueueMonitor` en la vista.
-
-9. **`supabase/config.toml`**: Registrada función `process-outbound-queue` con `verify_jwt = false`.
-
-### Pendiente: pg_cron job
-
-Ejecutar en el SQL Editor de Supabase:
-```sql
-SELECT cron.schedule(
-  'process-outbound-queue',
-  '*/2 * * * *',
-  $$
-  SELECT net.http_post(
-    url:='https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/process-outbound-queue',
-    headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I"}'::jsonb,
-    body:='{"time": "now"}'::jsonb
-  ) AS request_id;
-  $$
-);
-```
-
-### Resultado
-
-- Los envíos programados pueden ejecutarse en segundo plano sin necesidad de mantener el navegador abierto
-- El worker procesa la cola cada 2 minutos respetando intervalos y límites horarios
-- Soporte para pausar, reanudar y cancelar envíos en curso
-- Panel de monitorización integrado en los 3 pasos de envío (Inicial, Documento, Follow-up)
