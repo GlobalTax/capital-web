@@ -1358,6 +1358,13 @@ export default function ContactListDetailPage() {
                 )}
               </Button>
             )}
+            <ListColumnConfigurator
+              columns={allColumns}
+              onToggle={toggleColumn}
+              onMove={moveColumn}
+              onReset={resetToDefault}
+              isMadreList={isMadreList}
+            />
           </div>
           {/* Companies table */}
           <Card>
