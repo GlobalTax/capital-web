@@ -15,7 +15,9 @@ const LOVABLE_UPSTREAM = "https://webcapittal.lovable.app";
 const PUBLIC_HOST = "capittal.es";
 const BASE_URL = "https://capittal.es";
 const PRERENDER_URL = "https://service.prerender.io/";
-const PRERENDER_TOKEN = "O4ymoBvl4whx6UQePxL5";
+// Set PRERENDER_TOKEN in Cloudflare Worker environment variables
+// Fallback to hardcoded value for backwards compatibility during migration
+let PRERENDER_TOKEN = "O4ymoBvl4whx6UQePxL5";
 const SITEMAP_EDGE_FN = "https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/generate-sitemap";
 
 const BOT_AGENTS = [
@@ -314,6 +316,9 @@ export default {
 };
 
 async function handleRequest(request, env) {
+  // Prefer env var over hardcoded token
+  if (env.PRERENDER_TOKEN) PRERENDER_TOKEN = env.PRERENDER_TOKEN;
+
   const url = new URL(request.url);
   const userAgent = (request.headers.get("User-Agent") || "");
   const isBotReq = isBot(userAgent);

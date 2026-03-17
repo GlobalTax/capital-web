@@ -20,6 +20,15 @@ function safeJsonLd(str: string): string {
   return str.replace(/</g, "\\u003c");
 }
 
+function sanitizeHtmlContent(html: string | null | undefined): string {
+  if (!html) return "";
+  return html
+    .replace(/<script[\s>][\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s>][\s\S]*?<\/iframe>/gi, "")
+    .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/\bon\w+\s*=\s*[^\s>]*/gi, "");
+}
+
 const ORG_JSONLD = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -187,7 +196,7 @@ Deno.serve(async (req) => {
       <div class="meta">${authorName} · ${category} · ${publishedAt ? new Date(publishedAt).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" }) : ""}</div>
       ${article.featured_image_url ? `<img class="hero" src="${escapeHtml(article.featured_image_url)}" alt="${title}">` : ""}
       
-      <div class="content">${article.content}</div>
+      <div class="content">${sanitizeHtmlContent(article.content)}</div>
     </article>
   </main>
   <footer>© ${new Date().getFullYear()} <a href="https://capittal.es">Capittal</a> · <a href="${canonicalUrl}">Ver versión completa</a></footer>

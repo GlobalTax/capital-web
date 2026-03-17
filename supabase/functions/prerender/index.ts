@@ -29,7 +29,7 @@ const SITE_ROUTES = [
   { path: "/sectores/tecnologia", title: "M&A Sector Tecnología | Capittal", description: "Operaciones de M&A en el sector tecnológico.", h1: "Sector Tecnología", changefreq: "monthly", priority: 0.75 },
   { path: "/sectores/healthcare", title: "M&A Sector Healthcare | Capittal", description: "Operaciones de M&A en el sector salud.", h1: "Sector Healthcare", changefreq: "monthly", priority: 0.75 },
   { path: "/sectores/industrial", title: "M&A Sector Industrial | Capittal", description: "Operaciones de M&A en el sector industrial.", h1: "Sector Industrial", changefreq: "monthly", priority: 0.75 },
-  { path: "/sectores/retail", title: "M&A Sector Retail | Capittal", description: "Operaciones de M&A en retail y consumo.", h1: "Sector Retail y Consumo", changefreq: "monthly", priority: 0.75 },
+  { path: "/sectores/retail-consumer", title: "M&A Sector Retail y Consumo | Capittal", description: "Asesoramiento M&A en retail y consumo. Distribución, franquicias, e-commerce y marcas de consumo en España.", h1: "Sector Retail y Consumo", changefreq: "monthly", priority: 0.75 },
   { path: "/sectores/energia", title: "M&A Sector Energía | Capittal", description: "Operaciones de M&A en el sector energético.", h1: "Sector Energía", changefreq: "monthly", priority: 0.75 },
   { path: "/sectores/seguridad", title: "M&A Sector Seguridad | Capittal", description: "M&A en el sector de seguridad privada.", h1: "Sector Seguridad Privada", changefreq: "monthly", priority: 0.8 },
   { path: "/sectores/construccion", title: "M&A Sector Construcción | Capittal", description: "M&A en construcción e infraestructuras.", h1: "Sector Construcción", changefreq: "monthly", priority: 0.75 },

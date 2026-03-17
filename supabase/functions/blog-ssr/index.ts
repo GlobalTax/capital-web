@@ -20,6 +20,15 @@ function safeJsonLd(str: string): string {
   return str.replace(/</g, "\\u003c");
 }
 
+function sanitizeHtmlContent(html: string | null | undefined): string {
+  if (!html) return "";
+  return html
+    .replace(/<script[\s>][\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s>][\s\S]*?<\/iframe>/gi, "")
+    .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/\bon\w+\s*=\s*[^\s>]*/gi, "");
+}
+
 // ─── Organization JSON-LD (shared, matches pages-ssr) ───
 const ORG_JSONLD = {
   "@context": "https://schema.org",
@@ -174,7 +183,7 @@ Deno.serve(async (req) => {
       <div class="meta">${authorName} · ${category} · ${publishedAt ? new Date(publishedAt).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric" }) : ""}</div>
       ${post.featured_image_url ? `<img class="hero" src="${escapeHtml(post.featured_image_url)}" alt="${title}">` : ""}
       
-      <div class="content">${post.content}</div>
+      <div class="content">${sanitizeHtmlContent(post.content)}</div>
     </article>
   </main>
   <footer>© ${new Date().getFullYear()} <a href="https://capittal.es">Capittal</a> · <a href="${canonicalUrl}">Ver versión completa</a></footer>
@@ -210,7 +219,7 @@ function buildErrorHtml(title: string, message: string): string {
 <body>
   <h1>${escapeHtml(title)}</h1>
   <p>${message}</p>
-  <p><a href="https://capittal.es/blog">Volver al blog</a></p>
+  <p><a href="https://capittal.es/recursos/blog">Volver al blog</a></p>
 </body>
 </html>`;
 }
