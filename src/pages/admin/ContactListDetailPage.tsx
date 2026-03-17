@@ -500,7 +500,7 @@ export default function ContactListDetailPage() {
   // Reset page when filters/sort change
   React.useEffect(() => {
     setCurrentPage(0);
-  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincia, sortField, sortDir, groupBlocked]);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincias, sortField, sortDir, groupBlocked]);
 
   // Pagination derived values
   const totalPages = Math.ceil(filteredCompanies.length / pageSize);
