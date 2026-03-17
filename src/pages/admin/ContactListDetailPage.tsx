@@ -1070,6 +1070,9 @@ export default function ContactListDetailPage() {
     }
   }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved]);
 
+  // Provincia header popover search state
+  const [provinciaHeaderSearch, setProvinciaHeaderSearch] = useState('');
+
   // Dynamic column header renderer
   const renderColumnHeader = useCallback((colKey: string) => {
     const sortableMap: Record<string, 'empresa' | 'facturacion' | 'ebitda' | 'num_trabajadores'> = {
@@ -1082,6 +1085,77 @@ export default function ContactListDetailPage() {
     const col = allColumns.find(c => c.key === colKey);
     const label = col?.label || colKey;
     const isRight = col?.align === 'right';
+
+    if (colKey === 'provincia') {
+      const filteredProvs = uniqueProvincias.filter(p =>
+        p.toLowerCase().includes(provinciaHeaderSearch.toLowerCase())
+      );
+      return (
+        <Popover onOpenChange={(open) => { if (!open) setProvinciaHeaderSearch(''); }}>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-1 hover:text-foreground">
+              {label}
+              {filterProvincias.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {filterProvincias.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="p-2 border-b">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar provincia..."
+                  value={provinciaHeaderSearch}
+                  onChange={(e) => setProvinciaHeaderSearch(e.target.value)}
+                  className="h-8 pl-7 text-sm"
+                />
+              </div>
+            </div>
+            <ScrollArea className="h-[220px]">
+              <div className="p-1">
+                {filteredProvs.map((prov) => (
+                  <label
+                    key={prov}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm"
+                  >
+                    <Checkbox
+                      checked={filterProvincias.includes(prov)}
+                      onCheckedChange={() =>
+                        setFilterProvincias(prev =>
+                          prev.includes(prov) ? prev.filter(p => p !== prov) : [...prev, prov]
+                        )
+                      }
+                    />
+                    {prov}
+                  </label>
+                ))}
+                {filteredProvs.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-3">Sin resultados</p>
+                )}
+              </div>
+            </ScrollArea>
+            {filterProvincias.length > 0 && (
+              <div className="p-2 border-t">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full h-7 text-xs"
+                  onClick={() => setFilterProvincias([])}
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Limpiar ({filterProvincias.length})
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
     if (sortKey) {
       return (
         <button className={cn("flex items-center hover:text-foreground", isRight && "ml-auto")} onClick={() => toggleSort(sortKey)}>
@@ -1090,7 +1164,7 @@ export default function ContactListDetailPage() {
       );
     }
     return label;
-  }, [allColumns, toggleSort]);
+  }, [allColumns, toggleSort, uniqueProvincias, filterProvincias, provinciaHeaderSearch]);
 
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
