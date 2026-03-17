@@ -470,6 +470,7 @@ export default function ContactListDetailPage() {
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
+    if (filterProvincia && filterProvincia !== 'all') result = result.filter(c => c.provincia === filterProvincia);
     // Sort
     if (sortField) {
       result.sort((a, b) => {
