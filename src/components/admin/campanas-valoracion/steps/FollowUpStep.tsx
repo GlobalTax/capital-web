@@ -1049,5 +1049,6 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </div>
   );
 }
