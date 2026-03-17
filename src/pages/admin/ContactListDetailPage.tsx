@@ -597,8 +597,13 @@ export default function ContactListDetailPage() {
 
   // ===== HANDLERS =====
   const handleSelectAll = () => {
-    const visible = filteredCompanies.map(c => c.id);
-    setSelectedIds(selectedIds.length === visible.length ? [] : visible);
+    const pageIds = paginatedCompanies.map(c => c.id);
+    const allPageSelected = pageIds.every(id => selectedIds.includes(id));
+    if (allPageSelected) {
+      setSelectedIds(prev => prev.filter(id => !pageIds.includes(id)));
+    } else {
+      setSelectedIds(prev => [...new Set([...prev, ...pageIds])]);
+    }
   };
 
   const handleToggleSelect = (id: string) => {
