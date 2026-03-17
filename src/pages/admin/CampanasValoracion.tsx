@@ -222,6 +222,17 @@ export default function CampanasValoracion() {
     });
   }, []);
 
+  const cycleFolderSort = useCallback((key: FolderSortKey) => {
+    setFolderSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' });
+  }, []);
+
+  const cycleCampaignSort = useCallback((key: CampaignSortKey) => {
+    setCampaignSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' });
+  }, []);
+
+  const folderSortLabels: Record<FolderSortKey, string> = { name: 'Nombre', campaigns: 'Nº campañas', companies: 'Empresas', sent: 'Enviadas' };
+  const campaignSortLabels: Record<CampaignSortKey, string> = { name: 'Nombre', companies: 'Empresas', sent: 'Enviadas', value: 'Valor', date: 'Fecha' };
+
   const totalCompanies = campaignsByType.reduce((s, c) => s + c.total_companies, 0);
   const totalSent = campaignsByType.reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
   const totalValuation = campaignsByType.reduce((s, c) => s + c.total_valuation, 0);
