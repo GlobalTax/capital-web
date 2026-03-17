@@ -1431,7 +1431,7 @@ export default function ContactListDetailPage() {
                      <TableBody>
                        {(() => {
                          let separatorRendered = false;
-                         return filteredCompanies.map(company => {
+                         return paginatedCompanies.map(company => {
                            const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
                            let separatorRow = null;
                            if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
