@@ -18,6 +18,7 @@ export interface SendScheduleSettings {
   intervalMs: number;
   maxPerHour: number | null;
   scheduledAt: Date | null;
+  serverSide: boolean;
 }
 
 const INTERVAL_OPTIONS = [
@@ -137,49 +138,59 @@ export function SendScheduleConfig({ value, onChange, disabled }: Props) {
               </p>
             </div>
 
-            {/* 3. Schedule */}
+            {/* 3. Server-side mode */}
             <div className="space-y-2">
               <Label className="flex items-center gap-1.5 text-sm">
                 <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                Programar envío
+                Modo de envío
               </Label>
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input
                     type="radio"
-                    name="send-schedule"
-                    checked={sendNow}
-                    onChange={() => {
-                      setSendNow(true);
-                      onChange({ ...value, scheduledAt: null });
-                    }}
+                    name="send-mode"
+                    checked={!value.serverSide}
+                    onChange={() => onChange({ ...value, serverSide: false, scheduledAt: null })}
                     disabled={disabled}
                     className="accent-primary"
                   />
-                  Enviar ahora
+                  Desde el navegador
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input
                     type="radio"
-                    name="send-schedule"
-                    checked={!sendNow}
+                    name="send-mode"
+                    checked={value.serverSide}
                     onChange={() => {
-                      setSendNow(false);
                       const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      tomorrow.setHours(9, 0, 0, 0);
+                      tomorrow.setDate(tomorrow.getDate());
+                      tomorrow.setHours(tomorrow.getHours(), tomorrow.getMinutes() + 5, 0, 0);
+                      setSendNow(false);
                       setSelectedDate(tomorrow);
-                      setTimeStr('09:00');
-                      onChange({ ...value, scheduledAt: tomorrow });
+                      setTimeStr(format(tomorrow, 'HH:mm'));
+                      onChange({ ...value, serverSide: true, scheduledAt: tomorrow });
                     }}
                     disabled={disabled}
                     className="accent-primary"
                   />
-                  Programar para…
+                  Server-side (automático)
                 </label>
               </div>
+              <p className="text-xs text-muted-foreground">
+                {value.serverSide
+                  ? 'Los emails se enviarán automáticamente en segundo plano. Puedes cerrar el navegador.'
+                  : 'La pestaña del navegador debe permanecer abierta durante el envío.'
+                }
+              </p>
+            </div>
 
-              {!sendNow && (
+            {/* 4. Schedule (only for server-side or manual future schedule) */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5 text-sm">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                Programar envío
+              </Label>
+              {value.serverSide ? (
                 <div className="flex items-center gap-2 pl-1">
                   <Popover>
                     <PopoverTrigger asChild>
@@ -213,15 +224,89 @@ export function SendScheduleConfig({ value, onChange, disabled }: Props) {
                     disabled={disabled}
                   />
                 </div>
-              )}
+              ) : (
+                <>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="radio"
+                        name="send-schedule"
+                        checked={sendNow}
+                        onChange={() => {
+                          setSendNow(true);
+                          onChange({ ...value, scheduledAt: null });
+                        }}
+                        disabled={disabled}
+                        className="accent-primary"
+                      />
+                      Enviar ahora
+                    </label>
+                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="radio"
+                        name="send-schedule"
+                        checked={!sendNow}
+                        onChange={() => {
+                          setSendNow(false);
+                          const tomorrow = new Date();
+                          tomorrow.setDate(tomorrow.getDate() + 1);
+                          tomorrow.setHours(9, 0, 0, 0);
+                          setSelectedDate(tomorrow);
+                          setTimeStr('09:00');
+                          onChange({ ...value, scheduledAt: tomorrow });
+                        }}
+                        disabled={disabled}
+                        className="accent-primary"
+                      />
+                      Programar para…
+                    </label>
+                  </div>
 
-              {!sendNow && (
-                <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-700 dark:text-amber-300">
-                    La pestaña del navegador debe permanecer abierta para que el envío se ejecute a la hora programada.
-                  </p>
-                </div>
+                  {!sendNow && (
+                    <div className="flex items-center gap-2 pl-1">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className={cn("w-44 justify-start text-left font-normal", !selectedDate && "text-muted-foreground")} disabled={disabled}>
+                            <CalendarIcon className="h-4 w-4 mr-2" />
+                            {selectedDate ? format(selectedDate, 'dd MMM yyyy', { locale: es }) : 'Seleccionar'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(d) => {
+                              setSelectedDate(d);
+                              updateScheduledAt(d, timeStr);
+                            }}
+                            disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <Input
+                        type="time"
+                        value={timeStr}
+                        onChange={(e) => {
+                          setTimeStr(e.target.value);
+                          updateScheduledAt(selectedDate, e.target.value);
+                        }}
+                        className="w-28 h-9"
+                        disabled={disabled}
+                      />
+                    </div>
+                  )}
+
+                  {!sendNow && (
+                    <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        La pestaña del navegador debe permanecer abierta para que el envío se ejecute a la hora programada. Para envío automático sin navegador, usa el modo "Server-side".
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </CardContent>

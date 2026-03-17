@@ -31,6 +31,8 @@ import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
+import { useOutboundQueue } from '@/hooks/useOutboundQueue';
 import { DateRangeFilter, DateRangeFilterValue, matchesDateRange } from '@/components/admin/campanas-valoracion/shared/DateRangeFilter';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -116,11 +118,12 @@ type ResendConfirm =
 export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const { companies } = useCampaignCompanies(campaignId);
   const { emails, sendEmail, sendAllPending, isSendingAll, isLoading } = useCampaignEmails(campaignId);
+  const { createJob, hasActiveJob } = useOutboundQueue(campaignId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [resendConfirm, setResendConfirm] = useState<ResendConfirm>(null);
-  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
@@ -228,6 +231,21 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
       return;
     }
 
+    // SERVER-SIDE MODE
+    if (sendConfig.serverSide) {
+      const emailIds = pendingEmails.map(e => e.id);
+      await createJob.mutateAsync({
+        campaignId,
+        sendType: 'document',
+        emailIds,
+        intervalMs: sendConfig.intervalMs,
+        maxPerHour: sendConfig.maxPerHour,
+        scheduledAt: sendConfig.scheduledAt || new Date(),
+      });
+      return;
+    }
+
+    // CLIENT-SIDE
     if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
       const updateCountdown = () => {
         const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
@@ -282,6 +300,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
 
   return (
     <div className="space-y-6">
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
         <Card>

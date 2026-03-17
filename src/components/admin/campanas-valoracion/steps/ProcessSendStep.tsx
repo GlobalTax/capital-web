@@ -37,6 +37,8 @@ import { toast } from 'sonner';
 import { ProfessionalValuationData } from '@/types/professionalValuation';
 import { useNavigate } from 'react-router-dom';
 import { SendScheduleConfig, SendScheduleSettings, createSendThrottle } from '@/components/admin/campanas-valoracion/shared/SendScheduleConfig';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
+import { useOutboundQueue } from '@/hooks/useOutboundQueue';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -526,6 +528,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const { presentations, isLoading: presentationsLoading } = useCampaignPresentations(campaignId);
   const { updateCampaign } = useCampaigns();
   const { emails: campaignEmails } = useCampaignEmails(campaignId);
+  const { createJob, hasActiveJob } = useOutboundQueue(campaignId);
 
   // Email tracking map: company_id -> { delivery_status, email_opened }
   const emailTrackingMap = useMemo(() => {
@@ -541,7 +544,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const pauseRef = useRef(false);
 
   // Send schedule config
-  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null });
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -933,7 +936,30 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const handleSendEmails = async () => {
     if (readyToSend.length === 0) return;
 
-    // If scheduled for future, start countdown
+    // SERVER-SIDE MODE: create a queue job
+    if (sendConfig.serverSide) {
+      // Get email IDs for ready companies
+      const emailIds: string[] = [];
+      for (const c of readyToSend) {
+        const email = campaignEmails.find(e => e.company_id === c.id);
+        if (email) emailIds.push(email.id);
+      }
+      if (emailIds.length === 0) {
+        toast.error('No hay emails generados. Ve al paso Mail primero.');
+        return;
+      }
+      await createJob.mutateAsync({
+        campaignId,
+        sendType: 'initial',
+        emailIds,
+        intervalMs: sendConfig.intervalMs,
+        maxPerHour: sendConfig.maxPerHour,
+        scheduledAt: sendConfig.scheduledAt || new Date(),
+      });
+      return;
+    }
+
+    // CLIENT-SIDE: If scheduled for future, start countdown
     if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
       const updateCountdown = () => {
         const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
@@ -1063,6 +1089,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
 
       {/* Send emails card */}
       <Card>

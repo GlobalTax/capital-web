@@ -21,6 +21,7 @@ import {
   Building2, Clock, Calendar, Search, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OutboundQueueMonitor } from '@/components/admin/campanas-valoracion/shared/OutboundQueueMonitor';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -934,8 +935,11 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
   }
 
   return (
-    <div className="flex gap-4 min-h-[500px]">
-      {/* Sidebar */}
+    <div className="space-y-4">
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
+      <div className="flex gap-4 min-h-[500px]">
       <div className="w-56 shrink-0 border rounded-lg p-2 space-y-1 bg-muted/20">
         <p className="text-xs font-semibold text-muted-foreground px-2 py-1 uppercase tracking-wide">Rondas</p>
         {sequences.map(seq => {
@@ -1045,6 +1049,7 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
     </div>
   );
 }

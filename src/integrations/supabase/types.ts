@@ -17175,6 +17175,63 @@ export type Database = {
           },
         ]
       }
+      outbound_send_queue: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          created_by: string | null
+          email_ids: string[]
+          error_message: string | null
+          id: string
+          interval_ms: number
+          last_processed_at: string | null
+          max_per_hour: number | null
+          progress_current: number
+          progress_total: number
+          scheduled_at: string
+          send_type: string
+          sequence_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          created_by?: string | null
+          email_ids?: string[]
+          error_message?: string | null
+          id?: string
+          interval_ms?: number
+          last_processed_at?: string | null
+          max_per_hour?: number | null
+          progress_current?: number
+          progress_total?: number
+          scheduled_at?: string
+          send_type: string
+          sequence_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          created_by?: string | null
+          email_ids?: string[]
+          error_message?: string | null
+          id?: string
+          interval_ms?: number
+          last_processed_at?: string | null
+          max_per_hour?: number | null
+          progress_current?: number
+          progress_total?: number
+          scheduled_at?: string
+          send_type?: string
+          sequence_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       paused_reasons: {
         Row: {
           created_at: string
