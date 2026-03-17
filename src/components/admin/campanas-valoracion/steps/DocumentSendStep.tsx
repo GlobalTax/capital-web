@@ -300,6 +300,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
 
   return (
     <div className="space-y-6">
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
         <Card>
