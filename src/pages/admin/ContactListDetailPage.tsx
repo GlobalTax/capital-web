@@ -1537,6 +1537,37 @@ export default function ContactListDetailPage() {
                     </TableBody>
                   </Table>
                 </div>
+                {/* Pagination controls */}
+                {filteredCompanies.length > pageSize && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>Mostrando {currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filteredCompanies.length)} de {filteredCompanies.length.toLocaleString('es-ES')}</span>
+                      <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(0); }}>
+                        <SelectTrigger className="h-8 w-[80px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                          <SelectItem value="250">250</SelectItem>
+                          <SelectItem value="500">500</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span>por página</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" disabled={currentPage === 0} onClick={() => setCurrentPage(p => p - 1)}>
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Página {currentPage + 1} de {totalPages}
+                      </span>
+                      <Button variant="outline" size="sm" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(p => p + 1)}>
+                        Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               )}
             </CardContent>
           </Card>
