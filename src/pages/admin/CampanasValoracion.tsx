@@ -44,6 +44,13 @@ export default function CampanasValoracion() {
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [foldersInitialized, setFoldersInitialized] = useState(false);
 
+  type FolderSortKey = 'name' | 'campaigns' | 'companies' | 'sent';
+  type CampaignSortKey = 'name' | 'companies' | 'sent' | 'value' | 'date';
+  type SortDir = 'asc' | 'desc';
+
+  const [folderSort, setFolderSort] = useState<{ key: FolderSortKey; dir: SortDir }>({ key: 'name', dir: 'asc' });
+  const [campaignSort, setCampaignSort] = useState<{ key: CampaignSortKey; dir: SortDir }>({ key: 'date', dir: 'desc' });
+
   useEffect(() => {
     if (editingNameId && renameInputRef.current) {
       renameInputRef.current.focus();
