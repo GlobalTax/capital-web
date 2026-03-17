@@ -148,6 +148,21 @@ export default function CampanasValoracion() {
     );
   }, [campaignsByType, searchQuery]);
 
+  // Sort campaigns for flat view
+  const sortedFilteredCampaigns = useMemo(() => {
+    return [...filteredCampaigns].sort((a, b) => {
+      let cmp = 0;
+      switch (campaignSort.key) {
+        case 'name': cmp = a.name.localeCompare(b.name, 'es'); break;
+        case 'companies': cmp = a.total_companies - b.total_companies; break;
+        case 'sent': cmp = (stageData?.[a.id]?.emailsSent ?? a.total_sent) - (stageData?.[b.id]?.emailsSent ?? b.total_sent); break;
+        case 'value': cmp = a.total_valuation - b.total_valuation; break;
+        case 'date': cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
+      }
+      return campaignSort.dir === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredCampaigns, campaignSort, stageData]);
+
   // Group campaigns by sector
   const groupedCampaigns = useMemo(() => {
     const groups = new Map<string, typeof filteredCampaigns>();
