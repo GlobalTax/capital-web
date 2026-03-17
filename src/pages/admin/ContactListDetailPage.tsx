@@ -37,7 +37,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List, Megaphone,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List, Megaphone, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -360,6 +360,10 @@ export default function ContactListDetailPage() {
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
   const [groupBlocked, setGroupBlocked] = useState(true);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(100);
+
   // AI generation state - stores the company ID currently being generated
   const [aiGenLoading, setAiGenLoading] = useState<string | null>(null);
 
@@ -485,6 +489,18 @@ export default function ContactListDetailPage() {
     return result;
   }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
+  // Reset page when filters/sort change
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, groupBlocked]);
+
+  // Pagination derived values
+  const totalPages = Math.ceil(filteredCompanies.length / pageSize);
+  const paginatedCompanies = useMemo(() => {
+    const start = currentPage * pageSize;
+    return filteredCompanies.slice(start, start + pageSize);
+  }, [filteredCompanies, currentPage, pageSize]);
+
   // Config tab state
   const [configName, setConfigName] = useState('');
   const [configDesc, setConfigDesc] = useState('');
@@ -581,8 +597,13 @@ export default function ContactListDetailPage() {
 
   // ===== HANDLERS =====
   const handleSelectAll = () => {
-    const visible = filteredCompanies.map(c => c.id);
-    setSelectedIds(selectedIds.length === visible.length ? [] : visible);
+    const pageIds = paginatedCompanies.map(c => c.id);
+    const allPageSelected = pageIds.every(id => selectedIds.includes(id));
+    if (allPageSelected) {
+      setSelectedIds(prev => prev.filter(id => !pageIds.includes(id)));
+    } else {
+      setSelectedIds(prev => [...new Set([...prev, ...pageIds])]);
+    }
   };
 
   const handleToggleSelect = (id: string) => {
@@ -1386,12 +1407,13 @@ export default function ContactListDetailPage() {
                   <p className="text-muted-foreground">No se encontraron resultados</p>
                 </div>
               ) : (
+                <>
                 <div className="overflow-x-auto">
                   <Table>
                      <TableHeader>
                        <TableRow>
                          <TableHead className="w-10">
-                           <Checkbox checked={selectedIds.length === filteredCompanies.length && filteredCompanies.length > 0} onCheckedChange={handleSelectAll} />
+                           <Checkbox checked={paginatedCompanies.length > 0 && paginatedCompanies.every(c => selectedIds.includes(c.id))} onCheckedChange={handleSelectAll} />
                          </TableHead>
                          {visibleCols.map(col => (
                            <TableHead
@@ -1410,7 +1432,7 @@ export default function ContactListDetailPage() {
                      <TableBody>
                        {(() => {
                          let separatorRendered = false;
-                         return filteredCompanies.map(company => {
+                         return paginatedCompanies.map(company => {
                            const isAssignedToSublist = isMadreList && !!company.cif && sublistCompanyMap?.map.has(company.cif.toUpperCase().trim());
                            let separatorRow = null;
                            if (isMadreList && isAssignedToSublist && !separatorRendered && groupBlocked && !sortField) {
@@ -1516,6 +1538,37 @@ export default function ContactListDetailPage() {
                     </TableBody>
                   </Table>
                 </div>
+                {filteredCompanies.length > pageSize && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>Mostrando {(currentPage * pageSize + 1).toLocaleString('es-ES')}–{Math.min((currentPage + 1) * pageSize, filteredCompanies.length).toLocaleString('es-ES')} de {filteredCompanies.length.toLocaleString('es-ES')}</span>
+                      <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setCurrentPage(0); }}>
+                        <SelectTrigger className="h-8 w-[80px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                          <SelectItem value="250">250</SelectItem>
+                          <SelectItem value="500">500</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <span>por página</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" disabled={currentPage === 0} onClick={() => setCurrentPage(p => p - 1)}>
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Página {currentPage + 1} de {totalPages}
+                      </span>
+                      <Button variant="outline" size="sm" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(p => p + 1)}>
+                        Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                </>
               )}
             </CardContent>
           </Card>
