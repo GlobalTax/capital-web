@@ -589,12 +589,12 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincias, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, columnFilters, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
   // Reset page when filters/sort change
   React.useEffect(() => {
     setCurrentPage(0);
-  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincias, sortField, sortDir, groupBlocked]);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, columnFilters, sortField, sortDir, groupBlocked]);
 
   // Pagination derived values
   const totalPages = Math.ceil(filteredCompanies.length / pageSize);
