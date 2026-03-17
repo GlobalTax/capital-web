@@ -79,3 +79,66 @@
 - Flujo directo lista → campaña con un solo clic
 - Protección anti-duplicados a nivel de campaña y cross-campaña
 - Trazabilidad: cada campaña muestra su lista origen
+
+---
+
+## ✅ Completado: Sistema de envío automático server-side para Outbound
+
+### Cambios realizados
+
+1. **Migration SQL**: Nueva tabla `outbound_send_queue` con campos: id, campaign_id, send_type, sequence_id, email_ids, interval_ms, max_per_hour, scheduled_at, status, progress_current, progress_total, last_processed_at, error_message, created_by, created_at, updated_at. RLS habilitado.
+
+2. **`supabase/functions/process-outbound-queue/index.ts`** (NUEVO): Worker Edge Function que:
+   - Marca jobs estancados (>10min sin progreso) como `failed`
+   - Busca jobs `pending` con `scheduled_at <= now()` o `running`
+   - Calcula emails a enviar por ventana de 2min respetando `interval_ms` y `max_per_hour`
+   - Llama a `send-campaign-outbound-email` existente para cada email
+   - Actualiza progreso en tiempo real y marca como `completed` al terminar
+   - Re-verifica status del job entre emails (para soportar pausa/cancelación)
+
+3. **`src/hooks/useOutboundQueue.ts`** (NUEVO): Hook React que expone:
+   - `jobs`, `activeJobs`, `hasActiveJob`
+   - `createJob` mutation para insertar en la cola
+   - `updateJobStatus` mutation para pausar/reanudar/cancelar
+   - Polling cada 10s para actualización de progreso en tiempo real
+
+4. **`src/components/admin/campanas-valoracion/shared/OutboundQueueMonitor.tsx`** (NUEVO): Panel de monitorización con:
+   - Lista de jobs con badge de estado (Programado/En curso/Pausado/Completado/Fallido/Cancelado)
+   - Barra de progreso para jobs activos
+   - Botones de Pausar/Reanudar/Cancelar
+
+5. **`src/components/admin/campanas-valoracion/shared/SendScheduleConfig.tsx`**: Añadido campo `serverSide` al tipo `SendScheduleSettings`. Nuevo selector "Modo de envío" con opciones:
+   - "Desde el navegador" (comportamiento actual)
+   - "Server-side (automático)" → inserta job en cola, no requiere navegador abierto
+
+6. **`ProcessSendStep.tsx`**: Integrado `useOutboundQueue`. Al enviar con modo server-side, crea job en cola con IDs de campaign_emails.
+
+7. **`DocumentSendStep.tsx`**: Mismo patrón: modo server-side crea job tipo 'document' en la cola.
+
+8. **`FollowUpStep.tsx`**: Añadido `OutboundQueueMonitor` en la vista.
+
+9. **`supabase/config.toml`**: Registrada función `process-outbound-queue` con `verify_jwt = false`.
+
+### Pendiente: pg_cron job
+
+Ejecutar en el SQL Editor de Supabase:
+```sql
+SELECT cron.schedule(
+  'process-outbound-queue',
+  '*/2 * * * *',
+  $$
+  SELECT net.http_post(
+    url:='https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/process-outbound-queue',
+    headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I"}'::jsonb,
+    body:='{"time": "now"}'::jsonb
+  ) AS request_id;
+  $$
+);
+```
+
+### Resultado
+
+- Los envíos programados pueden ejecutarse en segundo plano sin necesidad de mantener el navegador abierto
+- El worker procesa la cola cada 2 minutos respetando intervalos y límites horarios
+- Soporte para pausar, reanudar y cancelar envíos en curso
+- Panel de monitorización integrado en los 3 pasos de envío (Inicial, Documento, Follow-up)
