@@ -194,6 +194,100 @@ export default function CampanasValoracion() {
     );
   }
 
+  const renderCampaignRow = (c: typeof filteredCampaigns[0], showSector: boolean) => {
+    const stage = getStageLabel(c.id);
+    return (
+      <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/campanas-valoracion/${c.id}`)}>
+        <TableCell className="font-medium">
+          {editingNameId === c.id ? (
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              <Input
+                ref={renameInputRef}
+                value={editingNameValue}
+                onChange={(e) => setEditingNameValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRenameSubmit(c.id);
+                  if (e.key === 'Escape') setEditingNameId(null);
+                }}
+                className="h-7 text-sm"
+              />
+              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => handleRenameSubmit(c.id)}>
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setEditingNameId(null)}>
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1.5 group">
+                <span>{c.name}</span>
+                <button
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingNameId(c.id);
+                    setEditingNameValue(c.name);
+                  }}
+                  title="Renombrar"
+                >
+                  <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
+              {(c as any).source_list_id && sourceListNames?.[(c as any).source_list_id] && (
+                <button
+                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/admin/listas-contacto/${(c as any).source_list_id}`);
+                  }}
+                  title="Ver lista origen"
+                >
+                  <List className="h-3 w-3" />
+                  {sourceListNames[(c as any).source_list_id]}
+                </button>
+              )}
+            </div>
+          )}
+        </TableCell>
+        {showSector && <TableCell>{c.sector}</TableCell>}
+        <TableCell className="text-center">{c.total_companies}</TableCell>
+        <TableCell className="text-center">{stageData?.[c.id]?.emailsSent ?? c.total_sent}</TableCell>
+        {activeTab === 'valuation' && <TableCell className="text-right">{c.total_valuation > 0 ? formatCurrencyEUR(c.total_valuation) : '—'}</TableCell>}
+        <TableCell className="text-center"><Badge variant={stage.variant}>{stage.label}</Badge></TableCell>
+        <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('es-ES')}</TableCell>
+        <TableCell className="text-right">
+          <div className="flex items-center justify-end gap-1">
+            <Button variant="ghost" size="icon" title="Editar" onClick={(e) => { e.stopPropagation(); navigate(`/admin/campanas-valoracion/${c.id}`); }}>
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" title="Duplicar" disabled={isDuplicating} onClick={async (e) => {
+              e.stopPropagation();
+              const newCampaign = await duplicateCampaign({ id: c.id });
+              if (newCampaign?.id) navigate(`/admin/campanas-valoracion/${newCampaign.id}`);
+            }}>
+              <Copy className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" title={activeTab === 'valuation' ? 'Duplicar como Documento' : 'Duplicar como Valoración'} disabled={isDuplicating} onClick={async (e) => {
+              e.stopPropagation();
+              const targetType = activeTab === 'valuation' ? 'document' : 'valuation';
+              const newCampaign = await duplicateCampaign({ id: c.id, asType: targetType });
+              if (newCampaign?.id) navigate(`/admin/campanas-valoracion/${newCampaign.id}`);
+            }}>
+              <ArrowRightLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" title="Eliminar" disabled={isDeleting} onClick={(e) => {
+              e.stopPropagation();
+              setDeleteTarget({ id: c.id, name: c.name });
+            }}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
