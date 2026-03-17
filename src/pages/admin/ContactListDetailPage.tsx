@@ -541,7 +541,30 @@ export default function ContactListDetailPage() {
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
-    if (filterProvincias.length > 0) result = result.filter(c => c.provincia && filterProvincias.includes(c.provincia));
+    // Generic column filters (text + numeric)
+    for (const [colKey, selectedValues] of Object.entries(columnFilters)) {
+      if (selectedValues.length === 0) continue;
+      const numRanges = NUMERIC_RANGES[colKey];
+      if (numRanges) {
+        // Numeric range filter
+        result = result.filter(c => {
+          const val = Number((c as any)[colKey]) || 0;
+          const hasData = (c as any)[colKey] != null && (c as any)[colKey] !== '';
+          return selectedValues.some(rangeLabel => {
+            const range = numRanges.find(r => r.label === rangeLabel);
+            if (!range) return false;
+            if (range.min === null) return !hasData; // "Sin dato"
+            return hasData && val >= range.min && val < (range.max ?? Infinity);
+          });
+        });
+      } else {
+        // Text filter
+        result = result.filter(c => {
+          const val = (c as any)[colKey];
+          return val && selectedValues.includes(val);
+        });
+      }
+    }
     // Sort
     if (sortField) {
       result.sort((a, b) => {
