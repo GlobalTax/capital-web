@@ -57,6 +57,9 @@ const multilingualPages = [
 ];
 
 // ─── Single-language pages ───
+// NOTE: Do NOT include pages that have noindex (they should not be in sitemap).
+//       Removed: /lp/valoracion-2026 (noindex), /lp/rod-linkedin (noindex),
+//                /recursos/noticias (noindex)
 const singlePages = [
   { loc: '/lp/calculadora', priority: 0.95, changefreq: 'weekly' },
   { loc: '/lp/calculadora-fiscal', priority: 0.95, changefreq: 'weekly' },
@@ -64,22 +67,22 @@ const singlePages = [
   { loc: '/lp/calculadora-meta', priority: 0.9, changefreq: 'monthly' },
   { loc: '/lp/venta-empresas', priority: 0.9, changefreq: 'monthly' },
   { loc: '/lp/venta-empresas-v2', priority: 0.9, changefreq: 'monthly' },
-  { loc: '/lp/valoracion-2026', priority: 0.85, changefreq: 'monthly' },
-  { loc: '/lp/rod-linkedin', priority: 0.85, changefreq: 'monthly' },
   { loc: '/lp/suiteloop', priority: 0.85, changefreq: 'monthly' },
   { loc: '/lp/accountex', priority: 0.8, changefreq: 'monthly' },
   { loc: '/recursos/blog', priority: 0.8, changefreq: 'weekly' },
-  { loc: '/recursos/noticias', priority: 0.75, changefreq: 'daily' },
   { loc: '/recursos/case-studies', priority: 0.75, changefreq: 'monthly' },
+  { loc: '/recursos/guia-vender-empresa', priority: 0.8, changefreq: 'monthly' },
   { loc: '/servicios/search-funds', priority: 0.8, changefreq: 'monthly' },
   { loc: '/search-funds', priority: 0.7, changefreq: 'monthly' },
   { loc: '/valoracion-empresas', priority: 0.8, changefreq: 'monthly' },
+  { loc: '/guia-valoracion-empresas', priority: 0.65, changefreq: 'monthly' },
   { loc: '/oportunidades', priority: 0.75, changefreq: 'weekly' },
   { loc: '/search-funds/recursos', priority: 0.7, changefreq: 'monthly' },
   { loc: '/search-funds/recursos/guia', priority: 0.65, changefreq: 'monthly' },
   { loc: '/por-que-elegirnos/experiencia', priority: 0.65, changefreq: 'monthly' },
   { loc: '/por-que-elegirnos/metodologia', priority: 0.65, changefreq: 'monthly' },
   { loc: '/por-que-elegirnos/resultados', priority: 0.65, changefreq: 'monthly' },
+  { loc: '/sectores/retail', priority: 0.75, changefreq: 'monthly' },
   { loc: '/de-looper-a-capittal', priority: 0.5, changefreq: 'yearly' },
   { loc: '/seguridad/calculadora', priority: 0.75, changefreq: 'monthly' },
   { loc: '/oportunidades/empleo', priority: 0.6, changefreq: 'weekly' },
@@ -94,7 +97,13 @@ function expandMultilingualPages() {
   const seen = new Set();
 
   for (const page of multilingualPages) {
+    // Build alternates list including x-default (defaults to 'es' variant)
     const alternates = Object.entries(page.variants).map(([lang, href]) => ({ lang, href }));
+    // Add x-default pointing to Spanish variant if not explicitly set
+    if (!page.variants['x-default']) {
+      const esHref = page.variants.es || Object.values(page.variants)[0];
+      alternates.push({ lang: 'x-default', href: esHref });
+    }
 
     for (const [lang, href] of Object.entries(page.variants)) {
       if (lang === 'x-default') continue;
