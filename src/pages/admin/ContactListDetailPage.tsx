@@ -1164,8 +1164,12 @@ export default function ContactListDetailPage() {
     }
   }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved, columnFilters, toggleColumnFilter]);
 
-  // Provincia header popover search state
-  const [provinciaHeaderSearch, setProvinciaHeaderSearch] = useState('');
+  // Column label map for filter badges
+  const COLUMN_LABELS: Record<string, string> = {
+    provincia: 'Provincia', comunidad_autonoma: 'C.A.', cnae: 'CNAE',
+    descripcion_actividad: 'Actividad', posicion_contacto: 'Posición', director_ejecutivo: 'Director',
+    facturacion: 'Facturación', ebitda: 'EBITDA', num_trabajadores: 'Empleados',
+  };
 
   // Dynamic column header renderer
   const renderColumnHeader = useCallback((colKey: string) => {
@@ -1180,18 +1184,22 @@ export default function ContactListDetailPage() {
     const label = col?.label || colKey;
     const isRight = col?.align === 'right';
 
-    if (colKey === 'provincia') {
-      const filteredProvs = uniqueProvincias.filter(p =>
-        p.toLowerCase().includes(provinciaHeaderSearch.toLowerCase())
-      );
+    const isTextFilterCol = (TEXT_FILTER_COLUMNS as readonly string[]).includes(colKey);
+    const isNumericFilterCol = !!NUMERIC_RANGES[colKey];
+    const activeFilters = columnFilters[colKey] || [];
+    const searchVal = headerSearches[colKey] || '';
+
+    if (isTextFilterCol) {
+      const values = uniqueColumnValues[colKey] || [];
+      const filtered = values.filter(v => v.toLowerCase().includes(searchVal.toLowerCase()));
       return (
-        <Popover onOpenChange={(open) => { if (!open) setProvinciaHeaderSearch(''); }}>
+        <Popover onOpenChange={(open) => { if (!open) setHeaderSearches(prev => ({ ...prev, [colKey]: '' })); }}>
           <PopoverTrigger asChild>
             <button className="flex items-center gap-1 hover:text-foreground">
               {label}
-              {filterProvincias.length > 0 && (
+              {activeFilters.length > 0 && (
                 <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
-                  {filterProvincias.length}
+                  {activeFilters.length}
                 </Badge>
               )}
               <Filter className="h-3 w-3 text-muted-foreground" />
@@ -1202,46 +1210,83 @@ export default function ContactListDetailPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar provincia..."
-                  value={provinciaHeaderSearch}
-                  onChange={(e) => setProvinciaHeaderSearch(e.target.value)}
+                  placeholder={`Buscar ${label.toLowerCase()}...`}
+                  value={searchVal}
+                  onChange={(e) => setHeaderSearches(prev => ({ ...prev, [colKey]: e.target.value }))}
                   className="h-8 pl-7 text-sm"
                 />
               </div>
             </div>
             <ScrollArea className="h-[220px]">
               <div className="p-1">
-                {filteredProvs.map((prov) => (
-                  <label
-                    key={prov}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm"
-                  >
+                {filtered.map((val) => (
+                  <label key={val} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
                     <Checkbox
-                      checked={filterProvincias.includes(prov)}
-                      onCheckedChange={() =>
-                        setFilterProvincias(prev =>
-                          prev.includes(prov) ? prev.filter(p => p !== prov) : [...prev, prov]
-                        )
-                      }
+                      checked={activeFilters.includes(val)}
+                      onCheckedChange={() => toggleColumnFilter(colKey, val)}
                     />
-                    {prov}
+                    <span className="truncate">{val}</span>
                   </label>
                 ))}
-                {filteredProvs.length === 0 && (
+                {filtered.length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-3">Sin resultados</p>
                 )}
               </div>
             </ScrollArea>
-            {filterProvincias.length > 0 && (
+            {activeFilters.length > 0 && (
               <div className="p-2 border-t">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full h-7 text-xs"
-                  onClick={() => setFilterProvincias([])}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Limpiar ({filterProvincias.length})
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
+    if (isNumericFilterCol) {
+      const ranges = NUMERIC_RANGES[colKey];
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn("flex items-center gap-1 hover:text-foreground", isRight && "ml-auto")}>
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+              {sortKey && <SortIcon field={sortKey} />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-52 p-0" align="start">
+            {sortKey && (
+              <div className="p-2 border-b flex gap-1">
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('asc'); }}>
+                  <ArrowUp className="h-3 w-3 mr-1" /> Asc
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('desc'); }}>
+                  <ArrowDown className="h-3 w-3 mr-1" /> Desc
+                </Button>
+              </div>
+            )}
+            <div className="p-1">
+              {ranges.map((range) => (
+                <label key={range.label} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                  <Checkbox
+                    checked={activeFilters.includes(range.label)}
+                    onCheckedChange={() => toggleColumnFilter(colKey, range.label)}
+                  />
+                  {range.label}
+                </label>
+              ))}
+            </div>
+            {activeFilters.length > 0 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
                 </Button>
               </div>
             )}
@@ -1258,7 +1303,7 @@ export default function ContactListDetailPage() {
       );
     }
     return label;
-  }, [allColumns, toggleSort, uniqueProvincias, filterProvincias, provinciaHeaderSearch]);
+  }, [allColumns, toggleSort, uniqueColumnValues, columnFilters, headerSearches, toggleColumnFilter, clearColumnFilter]);
 
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
