@@ -16,11 +16,16 @@ export interface RelatedListRow extends ValidatedRow {
   listaRelacionada: string;
 }
 
+export interface ConflictRow extends ValidatedRow {
+  sublistaConflicto: string;
+}
+
 export interface ValidationResult {
   nuevas: ValidatedRow[];
   vinculadas: ValidatedRow[];
   duplicadas: ValidatedRow[];
   enOtraLista: RelatedListRow[];
+  conflictoSublistado: ConflictRow[];
   errores: ErrorRow[];
 }
 
