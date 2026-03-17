@@ -1032,7 +1032,27 @@ export default function ContactListDetailPage() {
           </a>
         ) : <span className="text-sm text-muted-foreground">—</span>;
       case 'provincia':
-        return <span className="text-sm text-muted-foreground">{company.provincia || '—'}</span>;
+        const prov = company.provincia;
+        if (!prov) return <span className="text-sm text-muted-foreground">—</span>;
+        const isProvActive = filterProvincias.includes(prov);
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setFilterProvincias(prev =>
+                prev.includes(prov) ? prev.filter(p => p !== prov) : [...prev, prov]
+              );
+            }}
+            className={cn(
+              "text-xs px-2 py-0.5 rounded-full transition-colors cursor-pointer",
+              isProvActive
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            {prov}
+          </button>
+        );
       case 'facturacion':
         return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span>;
       case 'ebitda':
