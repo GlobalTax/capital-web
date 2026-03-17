@@ -283,13 +283,24 @@ function generateHtmlForRoute(templateHtml, routePath, meta) {
     `<meta name="description" content="${escapeHtml(meta.d)}">`
   );
 
-  // Replace canonical
+  // Insert canonical tag (source index.html has no static canonical to prevent SPA fallback duplication)
+  // Replace the comment placeholder with actual canonical link
+  html = html.replace(
+    /<!-- canonical: set dynamically[^>]*-->/,
+    `<link rel="canonical" href="${canonicalUrl}" />`
+  );
+  // Fallback: if there's still an old-style canonical tag, replace it
   html = html.replace(
     /<link rel="canonical" href="[^"]*" \/>/,
     `<link rel="canonical" href="${canonicalUrl}" />`
   );
 
-  // Replace og:url
+  // Insert og:url tag (source index.html has no static og:url to prevent SPA fallback duplication)
+  html = html.replace(
+    /<!-- og:url: set dynamically[^>]*-->/,
+    `<meta property="og:url" content="${canonicalUrl}" />`
+  );
+  // Fallback: if there's still an old-style og:url tag, replace it
   html = html.replace(
     /<meta property="og:url" content="[^"]*" \/>/,
     `<meta property="og:url" content="${canonicalUrl}" />`
@@ -347,66 +358,19 @@ function generateHtmlForRoute(templateHtml, routePath, meta) {
 /**
  * Generate a neutral SPA fallback HTML (200.html / 404.html)
  *
- * When the hosting platform uses SPA catch-all routing, ALL unknown routes
- * get served this file. If it contained the homepage title/canonical/description,
- * crawlers like Ahrefs would report 100+ pages as duplicates of the homepage.
- *
- * This fallback has:
- * - NO canonical tag (prevents wrong canonical pointing to homepage)
- * - A generic, non-route-specific title
- * - NO og:url (prevents wrong og:url)
- * - Minimal noscript content (no homepage H1/H2)
- * - The inline JS script still runs and sets correct meta for JS-capable crawlers
+ * The source index.html already has generic title/description and no canonical/og:url.
+ * This fallback just adds noindex and strips the comment placeholders so they don't
+ * confuse crawlers. The inline JS script still runs and sets correct meta for
+ * JS-capable browsers.
  */
 function generateSpaFallback(templateHtml) {
   let html = templateHtml;
 
-  // Remove canonical tag entirely - the inline JS will set it dynamically
-  // This prevents Ahrefs from seeing canonical=homepage on all SPA-fallback pages
-  html = html.replace(
-    /\s*<link rel="canonical" href="[^"]*" \/>/,
-    ''
-  );
+  // Remove the comment placeholders for canonical and og:url
+  html = html.replace(/\s*<!-- canonical: set dynamically[^>]*-->/, '');
+  html = html.replace(/\s*<!-- og:url: set dynamically[^>]*-->/, '');
 
-  // Remove og:url - same reason, wrong og:url causes duplicate signals
-  html = html.replace(
-    /\s*<meta property="og:url" content="[^"]*" \/>/,
-    ''
-  );
-
-  // Set a generic title that won't match any specific page's title
-  // This way Ahrefs won't flag it as "duplicate title" with any real page
-  html = html.replace(
-    /<title>[^<]*<\/title>/,
-    `<title>Capittal Transacciones</title>`
-  );
-
-  // Set generic og:title and twitter:title
-  html = html.replace(
-    /<meta property="og:title" content="[^"]*">/,
-    `<meta property="og:title" content="Capittal Transacciones">`
-  );
-  html = html.replace(
-    /<meta name="twitter:title" content="[^"]*">/,
-    `<meta name="twitter:title" content="Capittal Transacciones">`
-  );
-
-  // Set a generic description
-  const genericDesc = 'Capittal Transacciones - Firma de asesoramiento en fusiones y adquisiciones en España.';
-  html = html.replace(
-    /<meta name="description" content="[^"]*">/,
-    `<meta name="description" content="${genericDesc}">`
-  );
-  html = html.replace(
-    /<meta property="og:description" content="[^"]*">/,
-    `<meta property="og:description" content="${genericDesc}">`
-  );
-  html = html.replace(
-    /<meta name="twitter:description" content="[^"]*">/,
-    `<meta name="twitter:description" content="${genericDesc}">`
-  );
-
-  // Replace noscript with minimal content (no homepage-specific H1/content)
+  // Replace noscript with minimal content (no specific page H1/content)
   html = html.replace(
     /<noscript>\s*<header>[\s\S]*?<\/noscript>/,
     `<noscript>
