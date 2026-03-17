@@ -1414,7 +1414,7 @@ export default function ContactListDetailPage() {
                 {groupBlocked ? 'Agrupada' : 'Unificada'}
               </Button>
             )}
-            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || filterProvincia !== 'all') && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || filterProvincias.length > 0) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
