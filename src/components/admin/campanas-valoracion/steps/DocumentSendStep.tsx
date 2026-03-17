@@ -118,6 +118,7 @@ type ResendConfirm =
 export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
   const { companies } = useCampaignCompanies(campaignId);
   const { emails, sendEmail, sendAllPending, isSendingAll, isLoading } = useCampaignEmails(campaignId);
+  const { createJob, hasActiveJob } = useOutboundQueue(campaignId);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sendingId, setSendingId] = useState<string | null>(null);
