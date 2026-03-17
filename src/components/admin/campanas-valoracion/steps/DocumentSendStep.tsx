@@ -231,6 +231,21 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
       return;
     }
 
+    // SERVER-SIDE MODE
+    if (sendConfig.serverSide) {
+      const emailIds = pendingEmails.map(e => e.id);
+      await createJob.mutateAsync({
+        campaignId,
+        sendType: 'document',
+        emailIds,
+        intervalMs: sendConfig.intervalMs,
+        maxPerHour: sendConfig.maxPerHour,
+        scheduledAt: sendConfig.scheduledAt || new Date(),
+      });
+      return;
+    }
+
+    // CLIENT-SIDE
     if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
       const updateCountdown = () => {
         const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
