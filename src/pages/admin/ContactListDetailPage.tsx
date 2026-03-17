@@ -489,6 +489,18 @@ export default function ContactListDetailPage() {
     return result;
   }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
+  // Reset page when filters/sort change
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, sortField, sortDir, groupBlocked]);
+
+  // Pagination derived values
+  const totalPages = Math.ceil(filteredCompanies.length / pageSize);
+  const paginatedCompanies = useMemo(() => {
+    const start = currentPage * pageSize;
+    return filteredCompanies.slice(start, start + pageSize);
+  }, [filteredCompanies, currentPage, pageSize]);
+
   // Config tab state
   const [configName, setConfigName] = useState('');
   const [configDesc, setConfigDesc] = useState('');
