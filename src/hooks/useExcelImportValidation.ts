@@ -143,7 +143,7 @@ export function useExcelImportValidation() {
           });
         }
       } else {
-        // This list might be a parent — check its sublists
+        // This list might be a parent — check its sublists (informational only)
         const { data: childLists } = await supabase
           .from('outbound_lists' as any)
           .select('id, name')
@@ -161,7 +161,7 @@ export function useExcelImportValidation() {
 
           childCifs.forEach((r: any) => {
             const c = normalizeCif(r.cif);
-            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, child.name);
+            if (c && !relatedCifMap.has(c)) relatedCifMap.set(c, { name: child.name, isConflict: false });
           });
         }
       }
