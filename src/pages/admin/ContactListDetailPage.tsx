@@ -1670,12 +1670,33 @@ export default function ContactListDetailPage() {
 
            {/* Bulk actions */}
           {selectedIds.length > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <span className="text-sm font-medium">{selectedIds.length} seleccionadas</span>
-              <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
-                <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
+            <div className="space-y-0">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <span className="text-sm font-medium">{selectedIds.length} seleccionadas</span>
+                <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                  <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
+              </div>
+              {showSelectAllBanner && (
+                <div className="text-center py-2 px-3 bg-accent/10 border border-accent/20 rounded-lg text-sm">
+                  {allFilteredSelected ? (
+                    <>
+                      Las <strong>{filteredCompanies.length}</strong> empresas del filtro actual están seleccionadas.{' '}
+                      <button className="text-accent underline underline-offset-2 font-medium hover:text-accent/80" onClick={() => setSelectedIds([])}>
+                        Borrar selección
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Has seleccionado {paginatedCompanies.length} empresas de esta página.{' '}
+                      <button className="text-accent underline underline-offset-2 font-medium hover:text-accent/80" onClick={handleSelectAllFiltered}>
+                        Seleccionar las {filteredCompanies.length} empresas del filtro actual
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
