@@ -1380,18 +1380,28 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
-            {uniqueProvincias.length > 0 && (
-              <Select value={filterProvincia} onValueChange={setFilterProvincia}>
-                <SelectTrigger className="h-9 w-[160px]">
-                  <SelectValue placeholder="Provincia" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas las provincias</SelectItem>
-                  {uniqueProvincias.map(p => (
-                    <SelectItem key={p} value={p}>{p}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {filterProvincias.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {filterProvincias.map(p => (
+                  <Badge key={p} variant="secondary" className="gap-1 text-xs">
+                    {p}
+                    <button
+                      onClick={() => setFilterProvincias(prev => prev.filter(x => x !== p))}
+                      className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => setFilterProvincias([])}
+                >
+                  Limpiar
+                </Button>
+              </div>
             )}
             {isMadreList && (
               <Button
