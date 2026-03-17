@@ -1389,10 +1389,6 @@ export default function ContactListDetailPage() {
                 {filteredCompanies.length} de {companies.length}
               </span>
             )}
-              <span className="text-sm text-muted-foreground">
-                {filteredCompanies.length} de {companies.length}
-              </span>
-            )}
             {companies.length > 0 && (
               <Button
                 variant="outline"
