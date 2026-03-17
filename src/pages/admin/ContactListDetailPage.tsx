@@ -1168,14 +1168,16 @@ export default function ContactListDetailPage() {
         return <span className="text-right text-sm tabular-nums">{company.num_trabajadores ?? '—'}</span>;
       case 'consolidador':
         return (
-          <div className="flex justify-center">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             <Checkbox
               checked={!!(company as any).consolidador}
               onCheckedChange={async (checked) => {
                 try {
+                  const updateData: any = { consolidador: !!checked };
+                  if (!checked) updateData.consolidador_nombre = null;
                   await supabase
                     .from('outbound_list_companies' as any)
-                    .update({ consolidador: !!checked } as any)
+                    .update(updateData)
                     .eq('id', company.id);
                   queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
                 } catch {
@@ -1183,6 +1185,15 @@ export default function ContactListDetailPage() {
                 }
               }}
             />
+            {!!(company as any).consolidador && (
+              <InlineTextCell
+                companyId={company.id}
+                field="consolidador_nombre"
+                initialValue={(company as any).consolidador_nombre}
+                placeholder="Nombre..."
+                onSaved={handleFieldSaved}
+              />
+            )}
           </div>
         );
       case 'notas':

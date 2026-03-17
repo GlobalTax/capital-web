@@ -16921,6 +16921,7 @@ export type Database = {
           cnae: string | null
           comunidad_autonoma: string | null
           consolidador: boolean | null
+          consolidador_nombre: string | null
           contacto: string | null
           created_at: string | null
           descripcion_actividad: string | null
@@ -16945,6 +16946,7 @@ export type Database = {
           cnae?: string | null
           comunidad_autonoma?: string | null
           consolidador?: boolean | null
+          consolidador_nombre?: string | null
           contacto?: string | null
           created_at?: string | null
           descripcion_actividad?: string | null
@@ -16969,6 +16971,7 @@ export type Database = {
           cnae?: string | null
           comunidad_autonoma?: string | null
           consolidador?: boolean | null
+          consolidador_nombre?: string | null
           contacto?: string | null
           created_at?: string | null
           descripcion_actividad?: string | null
