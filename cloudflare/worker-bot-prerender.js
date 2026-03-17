@@ -390,6 +390,19 @@ async function handleRequest(request, env) {
   const isGetLike = request.method === "GET" || request.method === "HEAD";
   const xPrerender = request.headers.get("X-Prerender");
 
+  // ── Robots.txt — serve directly to avoid Lovable upstream 500 ────
+  if (url.pathname === '/robots.txt') {
+    return new Response(
+      `User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /admin-login/\nDisallow: /auth/\nDisallow: /api/private/\nDisallow: /operaciones/\n\nSitemap: https://capittal.es/sitemap.xml\n`,
+      {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'public, max-age=86400',
+        },
+      }
+    );
+  }
+
   // ── Sitemap proxy ──────────────────────────────────────────────────
   if (url.pathname === '/sitemap.xml') {
     const sitemapResp = await fetch(SITEMAP_EDGE_FN, {
