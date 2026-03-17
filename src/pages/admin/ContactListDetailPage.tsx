@@ -728,6 +728,40 @@ export default function ContactListDetailPage() {
 
   const handleAddManual = async () => {
     if (!addForm.empresa.trim() || !listId) return;
+
+    // Validate sibling sublist conflict by CIF
+    const cifToCheck = addForm.cif.trim().toUpperCase();
+    if (cifToCheck && list?.lista_madre_id) {
+      try {
+        // Get sibling sublists
+        const { data: siblingLists } = await supabase
+          .from('outbound_lists' as any)
+          .select('id, name')
+          .eq('lista_madre_id', list.lista_madre_id)
+          .neq('id', listId);
+
+        if (siblingLists && siblingLists.length > 0) {
+          const siblingIds = (siblingLists as any[]).map(s => s.id);
+          const nameMap = Object.fromEntries((siblingLists as any[]).map(s => [s.id, s.name]));
+
+          const { data: existing } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('list_id')
+            .in('list_id', siblingIds)
+            .eq('cif', cifToCheck)
+            .limit(1);
+
+          if (existing && existing.length > 0) {
+            const conflictName = nameMap[(existing as any)[0].list_id] || 'otra sublista';
+            toast.error(`Esta empresa (CIF: ${cifToCheck}) ya está en el sublistado "${conflictName}" derivado de la misma Lista Madre.`);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('[AddManual] Error checking sibling conflict:', err);
+      }
+    }
+
     await addCompany.mutateAsync({
       list_id: listId,
       empresa: addForm.empresa.trim(),
