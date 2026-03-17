@@ -362,7 +362,9 @@ export default function ContactListDetailPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
-  const [filterProvincias, setFilterProvincias] = useState<string[]>([]);
+  // Generic column filters: colKey → selected values
+  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [headerSearches, setHeaderSearches] = useState<Record<string, string>>({});
   const [groupBlocked, setGroupBlocked] = useState(true);
 
   // Pagination
@@ -445,11 +447,76 @@ export default function ContactListDetailPage() {
 
 
 
-  const uniqueProvincias = useMemo(() => {
-    const set = new Set<string>();
-    companies.forEach(c => { if (c.provincia) set.add(c.provincia); });
-    return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+  // Text columns that support multi-select filtering
+  const TEXT_FILTER_COLUMNS = ['provincia', 'comunidad_autonoma', 'cnae', 'descripcion_actividad', 'posicion_contacto', 'director_ejecutivo'] as const;
+
+  // Numeric range definitions
+  const NUMERIC_RANGES: Record<string, { label: string; min: number | null; max: number | null }[]> = {
+    facturacion: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '0 - 1M€', min: 0, max: 1_000_000 },
+      { label: '1M€ - 5M€', min: 1_000_000, max: 5_000_000 },
+      { label: '5M€ - 20M€', min: 5_000_000, max: 20_000_000 },
+      { label: '20M€ - 50M€', min: 20_000_000, max: 50_000_000 },
+      { label: '> 50M€', min: 50_000_000, max: Infinity },
+    ],
+    ebitda: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '< 0 (negativo)', min: -Infinity, max: 0 },
+      { label: '0 - 500K€', min: 0, max: 500_000 },
+      { label: '500K€ - 2M€', min: 500_000, max: 2_000_000 },
+      { label: '2M€ - 5M€', min: 2_000_000, max: 5_000_000 },
+      { label: '> 5M€', min: 5_000_000, max: Infinity },
+    ],
+    num_trabajadores: [
+      { label: 'Sin dato', min: null, max: null },
+      { label: '1 - 10', min: 1, max: 11 },
+      { label: '11 - 50', min: 11, max: 51 },
+      { label: '51 - 200', min: 51, max: 201 },
+      { label: '201 - 500', min: 201, max: 501 },
+      { label: '> 500', min: 501, max: Infinity },
+    ],
+  };
+
+  // Compute unique values for all text filter columns
+  const uniqueColumnValues = useMemo(() => {
+    const result: Record<string, string[]> = {};
+    for (const col of TEXT_FILTER_COLUMNS) {
+      const set = new Set<string>();
+      companies.forEach(c => {
+        const val = (c as any)[col];
+        if (val) set.add(val);
+      });
+      result[col] = Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+    }
+    return result;
   }, [companies]);
+
+  // Helpers for column filters
+  const toggleColumnFilter = useCallback((colKey: string, value: string) => {
+    setColumnFilters(prev => {
+      const current = prev[colKey] || [];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+      if (next.length === 0) {
+        const { [colKey]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [colKey]: next };
+    });
+  }, []);
+
+  const clearColumnFilter = useCallback((colKey: string) => {
+    setColumnFilters(prev => {
+      const { [colKey]: _, ...rest } = prev;
+      return rest;
+    });
+  }, []);
+
+  const clearAllColumnFilters = useCallback(() => {
+    setColumnFilters({});
+  }, []);
+
+  const hasAnyColumnFilter = useMemo(() => Object.keys(columnFilters).length > 0, [columnFilters]);
 
   const filteredCompanies = useMemo(() => {
     let result = [...companies];
@@ -474,7 +541,30 @@ export default function ContactListDetailPage() {
     // Filters
     if (filterHasEmail) result = result.filter(c => c.email);
     if (filterHasEbitda) result = result.filter(c => c.ebitda != null && Number(c.ebitda) > 0);
-    if (filterProvincias.length > 0) result = result.filter(c => c.provincia && filterProvincias.includes(c.provincia));
+    // Generic column filters (text + numeric)
+    for (const [colKey, selectedValues] of Object.entries(columnFilters)) {
+      if (selectedValues.length === 0) continue;
+      const numRanges = NUMERIC_RANGES[colKey];
+      if (numRanges) {
+        // Numeric range filter
+        result = result.filter(c => {
+          const val = Number((c as any)[colKey]) || 0;
+          const hasData = (c as any)[colKey] != null && (c as any)[colKey] !== '';
+          return selectedValues.some(rangeLabel => {
+            const range = numRanges.find(r => r.label === rangeLabel);
+            if (!range) return false;
+            if (range.min === null) return !hasData; // "Sin dato"
+            return hasData && val >= range.min && val < (range.max ?? Infinity);
+          });
+        });
+      } else {
+        // Text filter
+        result = result.filter(c => {
+          const val = (c as any)[colKey];
+          return val && selectedValues.includes(val);
+        });
+      }
+    }
     // Sort
     if (sortField) {
       result.sort((a, b) => {
@@ -499,12 +589,12 @@ export default function ContactListDetailPage() {
       });
     }
     return result;
-  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincias, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
+  }, [companies, searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, columnFilters, sortField, sortDir, isMadreList, sublistCompanyMap, groupBlocked]);
 
   // Reset page when filters/sort change
   React.useEffect(() => {
     setCurrentPage(0);
-  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, filterProvincias, sortField, sortDir, groupBlocked]);
+  }, [searchQuery, activitySearchQuery, filterHasEmail, filterHasEbitda, columnFilters, sortField, sortDir, groupBlocked]);
 
   // Pagination derived values
   const totalPages = Math.ceil(filteredCompanies.length / pageSize);
@@ -1036,27 +1126,31 @@ export default function ContactListDetailPage() {
           </a>
         ) : <span className="text-sm text-muted-foreground">—</span>;
       case 'provincia':
-        const prov = company.provincia;
-        if (!prov) return <span className="text-sm text-muted-foreground">—</span>;
-        const isProvActive = filterProvincias.includes(prov);
+      case 'comunidad_autonoma':
+      case 'cnae':
+      case 'descripcion_actividad':
+      case 'posicion_contacto':
+      case 'director_ejecutivo': {
+        const cellVal = (company as any)[colKey];
+        if (!cellVal) return <span className="text-sm text-muted-foreground">—</span>;
+        const isActive = (columnFilters[colKey] || []).includes(cellVal);
         return (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setFilterProvincias(prev =>
-                prev.includes(prov) ? prev.filter(p => p !== prov) : [...prev, prov]
-              );
+              toggleColumnFilter(colKey, cellVal);
             }}
             className={cn(
               "text-xs px-2 py-0.5 rounded-full transition-colors cursor-pointer",
-              isProvActive
+              isActive
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}
           >
-            {prov}
+            {cellVal}
           </button>
         );
+      }
       case 'facturacion':
         return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span>;
       case 'ebitda':
@@ -1068,10 +1162,14 @@ export default function ContactListDetailPage() {
       default:
         return null;
     }
-  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved]);
+  }, [sublistCompanyMap, handleFieldSaved, handleNoteSaved, columnFilters, toggleColumnFilter]);
 
-  // Provincia header popover search state
-  const [provinciaHeaderSearch, setProvinciaHeaderSearch] = useState('');
+  // Column label map for filter badges
+  const COLUMN_LABELS: Record<string, string> = {
+    provincia: 'Provincia', comunidad_autonoma: 'C.A.', cnae: 'CNAE',
+    descripcion_actividad: 'Actividad', posicion_contacto: 'Posición', director_ejecutivo: 'Director',
+    facturacion: 'Facturación', ebitda: 'EBITDA', num_trabajadores: 'Empleados',
+  };
 
   // Dynamic column header renderer
   const renderColumnHeader = useCallback((colKey: string) => {
@@ -1086,18 +1184,22 @@ export default function ContactListDetailPage() {
     const label = col?.label || colKey;
     const isRight = col?.align === 'right';
 
-    if (colKey === 'provincia') {
-      const filteredProvs = uniqueProvincias.filter(p =>
-        p.toLowerCase().includes(provinciaHeaderSearch.toLowerCase())
-      );
+    const isTextFilterCol = (TEXT_FILTER_COLUMNS as readonly string[]).includes(colKey);
+    const isNumericFilterCol = !!NUMERIC_RANGES[colKey];
+    const activeFilters = columnFilters[colKey] || [];
+    const searchVal = headerSearches[colKey] || '';
+
+    if (isTextFilterCol) {
+      const values = uniqueColumnValues[colKey] || [];
+      const filtered = values.filter(v => v.toLowerCase().includes(searchVal.toLowerCase()));
       return (
-        <Popover onOpenChange={(open) => { if (!open) setProvinciaHeaderSearch(''); }}>
+        <Popover onOpenChange={(open) => { if (!open) setHeaderSearches(prev => ({ ...prev, [colKey]: '' })); }}>
           <PopoverTrigger asChild>
             <button className="flex items-center gap-1 hover:text-foreground">
               {label}
-              {filterProvincias.length > 0 && (
+              {activeFilters.length > 0 && (
                 <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
-                  {filterProvincias.length}
+                  {activeFilters.length}
                 </Badge>
               )}
               <Filter className="h-3 w-3 text-muted-foreground" />
@@ -1108,46 +1210,83 @@ export default function ContactListDetailPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar provincia..."
-                  value={provinciaHeaderSearch}
-                  onChange={(e) => setProvinciaHeaderSearch(e.target.value)}
+                  placeholder={`Buscar ${label.toLowerCase()}...`}
+                  value={searchVal}
+                  onChange={(e) => setHeaderSearches(prev => ({ ...prev, [colKey]: e.target.value }))}
                   className="h-8 pl-7 text-sm"
                 />
               </div>
             </div>
             <ScrollArea className="h-[220px]">
               <div className="p-1">
-                {filteredProvs.map((prov) => (
-                  <label
-                    key={prov}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm"
-                  >
+                {filtered.map((val) => (
+                  <label key={val} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
                     <Checkbox
-                      checked={filterProvincias.includes(prov)}
-                      onCheckedChange={() =>
-                        setFilterProvincias(prev =>
-                          prev.includes(prov) ? prev.filter(p => p !== prov) : [...prev, prov]
-                        )
-                      }
+                      checked={activeFilters.includes(val)}
+                      onCheckedChange={() => toggleColumnFilter(colKey, val)}
                     />
-                    {prov}
+                    <span className="truncate">{val}</span>
                   </label>
                 ))}
-                {filteredProvs.length === 0 && (
+                {filtered.length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-3">Sin resultados</p>
                 )}
               </div>
             </ScrollArea>
-            {filterProvincias.length > 0 && (
+            {activeFilters.length > 0 && (
               <div className="p-2 border-t">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full h-7 text-xs"
-                  onClick={() => setFilterProvincias([])}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Limpiar ({filterProvincias.length})
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
+    if (isNumericFilterCol) {
+      const ranges = NUMERIC_RANGES[colKey];
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn("flex items-center gap-1 hover:text-foreground", isRight && "ml-auto")}>
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+              {sortKey && <SortIcon field={sortKey} />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-52 p-0" align="start">
+            {sortKey && (
+              <div className="p-2 border-b flex gap-1">
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('asc'); }}>
+                  <ArrowUp className="h-3 w-3 mr-1" /> Asc
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('desc'); }}>
+                  <ArrowDown className="h-3 w-3 mr-1" /> Desc
+                </Button>
+              </div>
+            )}
+            <div className="p-1">
+              {ranges.map((range) => (
+                <label key={range.label} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                  <Checkbox
+                    checked={activeFilters.includes(range.label)}
+                    onCheckedChange={() => toggleColumnFilter(colKey, range.label)}
+                  />
+                  {range.label}
+                </label>
+              ))}
+            </div>
+            {activeFilters.length > 0 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar ({activeFilters.length})
                 </Button>
               </div>
             )}
@@ -1164,7 +1303,7 @@ export default function ContactListDetailPage() {
       );
     }
     return label;
-  }, [allColumns, toggleSort, uniqueProvincias, filterProvincias, provinciaHeaderSearch]);
+  }, [allColumns, toggleSort, uniqueColumnValues, columnFilters, headerSearches, toggleColumnFilter, clearColumnFilter]);
 
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
@@ -1458,26 +1597,28 @@ export default function ContactListDetailPage() {
             >
               Con EBITDA
             </Button>
-            {filterProvincias.length > 0 && (
+            {hasAnyColumnFilter && (
               <div className="flex items-center gap-1.5 flex-wrap">
-                {filterProvincias.map(p => (
-                  <Badge key={p} variant="secondary" className="gap-1 text-xs">
-                    {p}
-                    <button
-                      onClick={() => setFilterProvincias(prev => prev.filter(x => x !== p))}
-                      className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
+                {Object.entries(columnFilters).map(([colKey, values]) =>
+                  values.map(val => (
+                    <Badge key={`${colKey}-${val}`} variant="secondary" className="gap-1 text-xs">
+                      <span className="font-medium">{COLUMN_LABELS[colKey] || colKey}:</span> {val}
+                      <button
+                        onClick={() => toggleColumnFilter(colKey, val)}
+                        className="ml-0.5 rounded-full hover:bg-muted-foreground/20"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-6 px-2 text-xs"
-                  onClick={() => setFilterProvincias([])}
+                  onClick={clearAllColumnFilters}
                 >
-                  Limpiar
+                  Limpiar todo
                 </Button>
               </div>
             )}
@@ -1492,7 +1633,7 @@ export default function ContactListDetailPage() {
                 {groupBlocked ? 'Agrupada' : 'Unificada'}
               </Button>
             )}
-            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || filterProvincias.length > 0) && (
+            {(searchQuery || activitySearchQuery || filterHasEmail || filterHasEbitda || hasAnyColumnFilter) && (
               <span className="text-sm text-muted-foreground">
                 {filteredCompanies.length} de {companies.length}
               </span>
