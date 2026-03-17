@@ -9,7 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft, List, FolderOpen, FolderClosed, ChevronRight, LayoutList, FolderTree } from 'lucide-react';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft, List, FolderOpen, FolderClosed, ChevronRight, LayoutList, FolderTree, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -40,6 +43,13 @@ export default function CampanasValoracion() {
   });
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [foldersInitialized, setFoldersInitialized] = useState(false);
+
+  type FolderSortKey = 'name' | 'campaigns' | 'companies' | 'sent';
+  type CampaignSortKey = 'name' | 'companies' | 'sent' | 'value' | 'date';
+  type SortDir = 'asc' | 'desc';
+
+  const [folderSort, setFolderSort] = useState<{ key: FolderSortKey; dir: SortDir }>({ key: 'name', dir: 'asc' });
+  const [campaignSort, setCampaignSort] = useState<{ key: CampaignSortKey; dir: SortDir }>({ key: 'date', dir: 'desc' });
 
   useEffect(() => {
     if (editingNameId && renameInputRef.current) {
@@ -138,6 +148,21 @@ export default function CampanasValoracion() {
     );
   }, [campaignsByType, searchQuery]);
 
+  // Sort campaigns for flat view
+  const sortedFilteredCampaigns = useMemo(() => {
+    return [...filteredCampaigns].sort((a, b) => {
+      let cmp = 0;
+      switch (campaignSort.key) {
+        case 'name': cmp = a.name.localeCompare(b.name, 'es'); break;
+        case 'companies': cmp = a.total_companies - b.total_companies; break;
+        case 'sent': cmp = (stageData?.[a.id]?.emailsSent ?? a.total_sent) - (stageData?.[b.id]?.emailsSent ?? b.total_sent); break;
+        case 'value': cmp = a.total_valuation - b.total_valuation; break;
+        case 'date': cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
+      }
+      return campaignSort.dir === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredCampaigns, campaignSort, stageData]);
+
   // Group campaigns by sector
   const groupedCampaigns = useMemo(() => {
     const groups = new Map<string, typeof filteredCampaigns>();
@@ -146,12 +171,47 @@ export default function CampanasValoracion() {
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(c);
     }
-    return [...groups.entries()].sort((a, b) => {
+
+    // Sort campaigns within each group
+    const sortCampaigns = (arr: typeof filteredCampaigns) => {
+      return [...arr].sort((a, b) => {
+        let cmp = 0;
+        switch (campaignSort.key) {
+          case 'name': cmp = a.name.localeCompare(b.name, 'es'); break;
+          case 'companies': cmp = a.total_companies - b.total_companies; break;
+          case 'sent': cmp = (stageData?.[a.id]?.emailsSent ?? a.total_sent) - (stageData?.[b.id]?.emailsSent ?? b.total_sent); break;
+          case 'value': cmp = a.total_valuation - b.total_valuation; break;
+          case 'date': cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
+        }
+        return campaignSort.dir === 'asc' ? cmp : -cmp;
+      });
+    };
+
+    const entries: [string, typeof filteredCampaigns][] = [...groups.entries()].map(
+      ([key, campaigns]) => [key, sortCampaigns(campaigns)]
+    );
+
+    // Sort folders
+    entries.sort((a, b) => {
       if (a[0] === 'Sin sector') return 1;
       if (b[0] === 'Sin sector') return -1;
-      return a[0].localeCompare(b[0], 'es');
+      let cmp = 0;
+      switch (folderSort.key) {
+        case 'name': cmp = a[0].localeCompare(b[0], 'es'); break;
+        case 'campaigns': cmp = a[1].length - b[1].length; break;
+        case 'companies': cmp = a[1].reduce((s, c) => s + c.total_companies, 0) - b[1].reduce((s, c) => s + c.total_companies, 0); break;
+        case 'sent': {
+          const sentA = a[1].reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
+          const sentB = b[1].reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
+          cmp = sentA - sentB;
+          break;
+        }
+      }
+      return folderSort.dir === 'asc' ? cmp : -cmp;
     });
-  }, [filteredCampaigns]);
+
+    return entries;
+  }, [filteredCampaigns, folderSort, campaignSort, stageData]);
 
   useEffect(() => {
     if (groupedCampaigns.length > 0 && !foldersInitialized) {
@@ -176,6 +236,17 @@ export default function CampanasValoracion() {
       return next;
     });
   }, []);
+
+  const cycleFolderSort = useCallback((key: FolderSortKey) => {
+    setFolderSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' });
+  }, []);
+
+  const cycleCampaignSort = useCallback((key: CampaignSortKey) => {
+    setCampaignSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: key === 'name' ? 'asc' : 'desc' });
+  }, []);
+
+  const folderSortLabels: Record<FolderSortKey, string> = { name: 'Nombre', campaigns: 'Nº campañas', companies: 'Empresas', sent: 'Enviadas' };
+  const campaignSortLabels: Record<CampaignSortKey, string> = { name: 'Nombre', companies: 'Empresas', sent: 'Enviadas', value: 'Valor', date: 'Fecha' };
 
   const totalCompanies = campaignsByType.reduce((s, c) => s + c.total_companies, 0);
   const totalSent = campaignsByType.reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
@@ -353,6 +424,54 @@ export default function CampanasValoracion() {
                 className="pl-9 h-8 text-sm"
               />
             </div>
+
+            {/* Sort controls */}
+            <div className="flex items-center gap-1.5">
+              {viewMode === 'grouped' && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+                      <ArrowUpDown className="h-3.5 w-3.5" />
+                      Carpetas: {folderSortLabels[folderSort.key]}
+                      {folderSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel className="text-xs">Ordenar carpetas por</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {(Object.keys(folderSortLabels) as FolderSortKey[]).map(k => (
+                      <DropdownMenuItem key={k} onClick={() => cycleFolderSort(k)} className="text-xs gap-2">
+                        {folderSort.key === k && (folderSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                        {folderSort.key !== k && <span className="w-3" />}
+                        {folderSortLabels[k]}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    {viewMode === 'grouped' ? 'Campañas' : 'Ordenar'}: {campaignSortLabels[campaignSort.key]}
+                    {campaignSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="text-xs">Ordenar campañas por</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {(Object.keys(campaignSortLabels) as CampaignSortKey[]).map(k => (
+                    <DropdownMenuItem key={k} onClick={() => cycleCampaignSort(k)} className="text-xs gap-2">
+                      {campaignSort.key === k && (campaignSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                      {campaignSort.key !== k && <span className="w-3" />}
+                      {campaignSortLabels[k]}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             <Button
               variant={viewMode === 'grouped' ? 'secondary' : 'ghost'}
               size="sm"
@@ -392,7 +511,7 @@ export default function CampanasValoracion() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCampaigns.map((c) => renderCampaignRow(c, true))}
+                {sortedFilteredCampaigns.map((c) => renderCampaignRow(c, true))}
               </TableBody>
             </Table>
           ) : (
