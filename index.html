@@ -4,15 +4,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Capittal | Asesoramiento M&amp;A en Barcelona</title>
-    <meta name="description" content="Asesoramiento M&A en Barcelona: venta de empresas, valoraciones y due diligence. +70 profesionales especializados en mid-market español.">
+    <title>Capittal Transacciones</title>
+    <meta name="description" content="Firma de asesoramiento en fusiones y adquisiciones en España.">
     <meta name="author" content="Capittal" />
     <meta name="facebook-domain-verification" content="nhokgc0a3dxbl8d34bzuxb7qsth252" />
     
     <!-- Favicon -->
     <link rel="icon" href="/capittal-favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/capittal-favicon.png">
-    <link rel="canonical" href="https://capittal.es/" />
+    <!-- canonical: set dynamically by inline JS + prerender-seo.mjs (no static value to prevent SPA fallback duplication) -->
     <script src="https://analytics.ahrefs.com/analytics.js" data-key="VouNMjljNalPNS/dBxC7Fw" async></script>
     
     <!-- Typography: General Sans (self-hosted) + Google Fonts (non-blocking) -->
@@ -28,7 +28,7 @@
     <link rel="preconnect" href="https://fwhqtzkkvnjkazhaficj.supabase.co" crossorigin>
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://capittal.es/" />
+    <!-- og:url: set dynamically by inline JS + prerender-seo.mjs (no static value to prevent SPA fallback duplication) -->
     <meta property="og:image" content="https://capittal.es/og-image.jpg">
     <meta property="og:site_name" content="Capittal Transacciones" />
     <meta property="og:locale" content="es_ES" />
@@ -36,10 +36,10 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://capittal.es/og-image.jpg">
 
-    <meta property="og:title" content="Capittal Transacciones | Fusiones y Adquisiciones en España - M&A Advisory">
-    <meta name="twitter:title" content="Capittal Transacciones | Fusiones y Adquisiciones en España - M&A Advisory">
-    <meta property="og:description" content="Asesoramiento M&amp;A en Barcelona: venta de empresas, valoraciones y due diligence. +70 profesionales especializados en mid-market español.">
-    <meta name="twitter:description" content="Asesoramiento M&amp;A en Barcelona: venta de empresas, valoraciones y due diligence. +70 profesionales especializados en mid-market español.">
+    <meta property="og:title" content="Capittal Transacciones">
+    <meta name="twitter:title" content="Capittal Transacciones">
+    <meta property="og:description" content="Firma de asesoramiento en fusiones y adquisiciones en España.">
+    <meta name="twitter:description" content="Firma de asesoramiento en fusiones y adquisiciones en España.">
 
     <!-- Structured Data: Organization -->
     <script type="application/ld+json">
@@ -247,13 +247,15 @@
           var twd=document.querySelector('meta[name="twitter:description"]');
           if(twd) twd.setAttribute('content',r.d);
         }
-        // Canonical link (update existing static tag)
+        // Canonical link (create if missing, update if exists)
         var canon='https://capittal.es'+p;
         var cl=document.querySelector('link[rel="canonical"]');
-        if(cl) cl.setAttribute('href',canon);
-        // OG URL (update existing static tag)
+        if(cl){cl.setAttribute('href',canon);}
+        else{cl=document.createElement('link');cl.setAttribute('rel','canonical');cl.setAttribute('href',canon);document.head.appendChild(cl);}
+        // OG URL (create if missing, update if exists)
         var ogurl=document.querySelector('meta[property="og:url"]');
-        if(ogurl) ogurl.setAttribute('content',canon);
+        if(ogurl){ogurl.setAttribute('content',canon);}
+        else{ogurl=document.createElement('meta');ogurl.setAttribute('property','og:url');ogurl.setAttribute('content',canon);document.head.appendChild(ogurl);}
 
         // Hreflang: inject alternate language links for crawlers
         var H={

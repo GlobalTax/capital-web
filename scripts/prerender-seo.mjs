@@ -283,13 +283,24 @@ function generateHtmlForRoute(templateHtml, routePath, meta) {
     `<meta name="description" content="${escapeHtml(meta.d)}">`
   );
 
-  // Replace canonical
+  // Insert canonical tag (source index.html has no static canonical to prevent SPA fallback duplication)
+  // Replace the comment placeholder with actual canonical link
+  html = html.replace(
+    /<!-- canonical: set dynamically[^>]*-->/,
+    `<link rel="canonical" href="${canonicalUrl}" />`
+  );
+  // Fallback: if there's still an old-style canonical tag, replace it
   html = html.replace(
     /<link rel="canonical" href="[^"]*" \/>/,
     `<link rel="canonical" href="${canonicalUrl}" />`
   );
 
-  // Replace og:url
+  // Insert og:url tag (source index.html has no static og:url to prevent SPA fallback duplication)
+  html = html.replace(
+    /<!-- og:url: set dynamically[^>]*-->/,
+    `<meta property="og:url" content="${canonicalUrl}" />`
+  );
+  // Fallback: if there's still an old-style og:url tag, replace it
   html = html.replace(
     /<meta property="og:url" content="[^"]*" \/>/,
     `<meta property="og:url" content="${canonicalUrl}" />`
@@ -344,6 +355,50 @@ function generateHtmlForRoute(templateHtml, routePath, meta) {
   return html;
 }
 
+/**
+ * Generate a neutral SPA fallback HTML (200.html / 404.html)
+ *
+ * The source index.html already has generic title/description and no canonical/og:url.
+ * This fallback just adds noindex and strips the comment placeholders so they don't
+ * confuse crawlers. The inline JS script still runs and sets correct meta for
+ * JS-capable browsers.
+ */
+function generateSpaFallback(templateHtml) {
+  let html = templateHtml;
+
+  // Remove the comment placeholders for canonical and og:url
+  html = html.replace(/\s*<!-- canonical: set dynamically[^>]*-->/, '');
+  html = html.replace(/\s*<!-- og:url: set dynamically[^>]*-->/, '');
+
+  // Replace noscript with minimal content (no specific page H1/content)
+  html = html.replace(
+    /<noscript>\s*<header>[\s\S]*?<\/noscript>/,
+    `<noscript>
+      <header>
+        <nav>
+          <a href="/">Capittal</a>
+          <a href="/venta-empresas">Venta de Empresas</a>
+          <a href="/compra-empresas">Compra de Empresas</a>
+          <a href="/servicios/valoraciones">Valoraciones</a>
+          <a href="/contacto">Contacto</a>
+        </nav>
+      </header>
+      <main>
+        <p>Cargando...</p>
+      </main>
+    </noscript>`
+  );
+
+  // Add noindex to prevent SPA fallback from being indexed as a page
+  // Real pages have their own pre-rendered HTML with correct meta
+  html = html.replace(
+    '</head>',
+    '    <meta name="robots" content="noindex, nofollow" />\n  </head>'
+  );
+
+  return html;
+}
+
 // Fetch published blog posts from Supabase to pre-render their pages
 async function fetchBlogPosts() {
   try {
@@ -377,6 +432,18 @@ async function main() {
 
   const templateHtml = fs.readFileSync(templatePath, 'utf-8');
   let count = 0;
+
+  // === STEP 0: Generate neutral SPA fallback BEFORE modifying any files ===
+  // This is critical: when hosting uses SPA catch-all routing, ALL routes without
+  // a pre-rendered file get served this fallback. Without it, the hosting would
+  // serve index.html (with homepage title/canonical) for all unknown routes,
+  // causing Ahrefs to report 100+ duplicate pages with homepage meta.
+  const fallbackHtml = generateSpaFallback(templateHtml);
+  const fallback200Path = path.join(DIST_DIR, '200.html');
+  const fallback404Path = path.join(DIST_DIR, '404.html');
+  fs.writeFileSync(fallback200Path, fallbackHtml, 'utf-8');
+  fs.writeFileSync(fallback404Path, fallbackHtml, 'utf-8');
+  console.log('  🛡️  Generated 200.html + 404.html (neutral SPA fallback, no homepage meta)');
 
   // Fetch blog posts and add them to routes dynamically
   const blogPosts = await fetchBlogPosts();
@@ -420,6 +487,7 @@ async function main() {
 
   console.log(`\n🎉 Pre-rendered ${count} pages with unique SEO meta tags.`);
   console.log('   Each page now has correct: title, description, canonical, og tags, and hreflang links.');
+  console.log('   SPA fallback (200.html/404.html) has neutral meta to prevent duplicate content.');
 }
 
 main().catch(err => {

@@ -1,0 +1,12 @@
+# Netlify SPA routing with pre-rendered file support
+#
+# IMPORTANT: On Netlify, static files are checked BEFORE redirect rules.
+# So pre-rendered files (e.g., dist/venta-empresas/index.html) are served first.
+# This catch-all only applies to routes WITHOUT a pre-rendered file.
+#
+# We point to 200.html (neutral fallback) instead of index.html (homepage)
+# to prevent Ahrefs/crawlers from seeing homepage title/canonical on all pages.
+# The 200.html has: no canonical, generic title, noindex meta, and the inline
+# JS script still runs to set correct meta for JS-capable browsers.
+
+/*    /200.html   200
