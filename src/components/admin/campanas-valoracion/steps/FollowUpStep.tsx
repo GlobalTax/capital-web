@@ -934,8 +934,11 @@ export function FollowUpStep({ campaignId, campaign }: Props) {
   }
 
   return (
-    <div className="flex gap-4 min-h-[500px]">
-      {/* Sidebar */}
+    <div className="space-y-4">
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
+      <div className="flex gap-4 min-h-[500px]">
       <div className="w-56 shrink-0 border rounded-lg p-2 space-y-1 bg-muted/20">
         <p className="text-xs font-semibold text-muted-foreground px-2 py-1 uppercase tracking-wide">Rondas</p>
         {sequences.map(seq => {
