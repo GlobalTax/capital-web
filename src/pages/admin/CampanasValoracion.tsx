@@ -409,6 +409,54 @@ export default function CampanasValoracion() {
                 className="pl-9 h-8 text-sm"
               />
             </div>
+
+            {/* Sort controls */}
+            <div className="flex items-center gap-1.5">
+              {viewMode === 'grouped' && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+                      <ArrowUpDown className="h-3.5 w-3.5" />
+                      Carpetas: {folderSortLabels[folderSort.key]}
+                      {folderSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel className="text-xs">Ordenar carpetas por</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {(Object.keys(folderSortLabels) as FolderSortKey[]).map(k => (
+                      <DropdownMenuItem key={k} onClick={() => cycleFolderSort(k)} className="text-xs gap-2">
+                        {folderSort.key === k && (folderSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                        {folderSort.key !== k && <span className="w-3" />}
+                        {folderSortLabels[k]}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+                    <ArrowUpDown className="h-3.5 w-3.5" />
+                    {viewMode === 'grouped' ? 'Campañas' : 'Ordenar'}: {campaignSortLabels[campaignSort.key]}
+                    {campaignSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="text-xs">Ordenar campañas por</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {(Object.keys(campaignSortLabels) as CampaignSortKey[]).map(k => (
+                    <DropdownMenuItem key={k} onClick={() => cycleCampaignSort(k)} className="text-xs gap-2">
+                      {campaignSort.key === k && (campaignSort.dir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+                      {campaignSort.key !== k && <span className="w-3" />}
+                      {campaignSortLabels[k]}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             <Button
               variant={viewMode === 'grouped' ? 'secondary' : 'ghost'}
               size="sm"
