@@ -1090,6 +1090,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         </Card>
       </div>
 
+      {/* Queue Monitor */}
+      <OutboundQueueMonitor campaignId={campaignId} />
+
       {/* Send emails card */}
       <Card>
         <CardHeader>
