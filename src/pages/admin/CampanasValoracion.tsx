@@ -156,12 +156,47 @@ export default function CampanasValoracion() {
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(c);
     }
-    return [...groups.entries()].sort((a, b) => {
+
+    // Sort campaigns within each group
+    const sortCampaigns = (arr: typeof filteredCampaigns) => {
+      return [...arr].sort((a, b) => {
+        let cmp = 0;
+        switch (campaignSort.key) {
+          case 'name': cmp = a.name.localeCompare(b.name, 'es'); break;
+          case 'companies': cmp = a.total_companies - b.total_companies; break;
+          case 'sent': cmp = (stageData?.[a.id]?.emailsSent ?? a.total_sent) - (stageData?.[b.id]?.emailsSent ?? b.total_sent); break;
+          case 'value': cmp = a.total_valuation - b.total_valuation; break;
+          case 'date': cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime(); break;
+        }
+        return campaignSort.dir === 'asc' ? cmp : -cmp;
+      });
+    };
+
+    const entries: [string, typeof filteredCampaigns][] = [...groups.entries()].map(
+      ([key, campaigns]) => [key, sortCampaigns(campaigns)]
+    );
+
+    // Sort folders
+    entries.sort((a, b) => {
       if (a[0] === 'Sin sector') return 1;
       if (b[0] === 'Sin sector') return -1;
-      return a[0].localeCompare(b[0], 'es');
+      let cmp = 0;
+      switch (folderSort.key) {
+        case 'name': cmp = a[0].localeCompare(b[0], 'es'); break;
+        case 'campaigns': cmp = a[1].length - b[1].length; break;
+        case 'companies': cmp = a[1].reduce((s, c) => s + c.total_companies, 0) - b[1].reduce((s, c) => s + c.total_companies, 0); break;
+        case 'sent': {
+          const sentA = a[1].reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
+          const sentB = b[1].reduce((s, c) => s + (stageData?.[c.id]?.emailsSent ?? c.total_sent), 0);
+          cmp = sentA - sentB;
+          break;
+        }
+      }
+      return folderSort.dir === 'asc' ? cmp : -cmp;
     });
-  }, [filteredCampaigns]);
+
+    return entries;
+  }, [filteredCampaigns, folderSort, campaignSort, stageData]);
 
   useEffect(() => {
     if (groupedCampaigns.length > 0 && !foldersInitialized) {
