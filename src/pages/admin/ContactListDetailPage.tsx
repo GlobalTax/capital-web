@@ -897,7 +897,7 @@ export default function ContactListDetailPage() {
         linked: validationResult.vinculadas.length,
         linkedRelated: validationResult.enOtraLista.length,
         skippedDuplicates: validationResult.duplicadas.length,
-        skippedErrors: validationResult.errores.length + failedCount,
+        skippedErrors: validationResult.errores.length + validationResult.conflictoSublistado.length + failedCount,
         errors: validationResult.errores,
       });
       setImportStep('result');
