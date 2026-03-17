@@ -528,6 +528,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const { presentations, isLoading: presentationsLoading } = useCampaignPresentations(campaignId);
   const { updateCampaign } = useCampaigns();
   const { emails: campaignEmails } = useCampaignEmails(campaignId);
+  const { createJob, hasActiveJob } = useOutboundQueue(campaignId);
 
   // Email tracking map: company_id -> { delivery_status, email_opened }
   const emailTrackingMap = useMemo(() => {
