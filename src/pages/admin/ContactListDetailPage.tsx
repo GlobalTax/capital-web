@@ -365,6 +365,7 @@ export default function ContactListDetailPage() {
   // Generic column filters: colKey → selected values
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [headerSearches, setHeaderSearches] = useState<Record<string, string>>({});
+  const [customRanges, setCustomRanges] = useState<Record<string, { min: string; max: string }>>({});
   const [groupBlocked, setGroupBlocked] = useState(true);
 
   // Pagination
