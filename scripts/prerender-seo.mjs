@@ -344,6 +344,97 @@ function generateHtmlForRoute(templateHtml, routePath, meta) {
   return html;
 }
 
+/**
+ * Generate a neutral SPA fallback HTML (200.html / 404.html)
+ *
+ * When the hosting platform uses SPA catch-all routing, ALL unknown routes
+ * get served this file. If it contained the homepage title/canonical/description,
+ * crawlers like Ahrefs would report 100+ pages as duplicates of the homepage.
+ *
+ * This fallback has:
+ * - NO canonical tag (prevents wrong canonical pointing to homepage)
+ * - A generic, non-route-specific title
+ * - NO og:url (prevents wrong og:url)
+ * - Minimal noscript content (no homepage H1/H2)
+ * - The inline JS script still runs and sets correct meta for JS-capable crawlers
+ */
+function generateSpaFallback(templateHtml) {
+  let html = templateHtml;
+
+  // Remove canonical tag entirely - the inline JS will set it dynamically
+  // This prevents Ahrefs from seeing canonical=homepage on all SPA-fallback pages
+  html = html.replace(
+    /\s*<link rel="canonical" href="[^"]*" \/>/,
+    ''
+  );
+
+  // Remove og:url - same reason, wrong og:url causes duplicate signals
+  html = html.replace(
+    /\s*<meta property="og:url" content="[^"]*" \/>/,
+    ''
+  );
+
+  // Set a generic title that won't match any specific page's title
+  // This way Ahrefs won't flag it as "duplicate title" with any real page
+  html = html.replace(
+    /<title>[^<]*<\/title>/,
+    `<title>Capittal Transacciones</title>`
+  );
+
+  // Set generic og:title and twitter:title
+  html = html.replace(
+    /<meta property="og:title" content="[^"]*">/,
+    `<meta property="og:title" content="Capittal Transacciones">`
+  );
+  html = html.replace(
+    /<meta name="twitter:title" content="[^"]*">/,
+    `<meta name="twitter:title" content="Capittal Transacciones">`
+  );
+
+  // Set a generic description
+  const genericDesc = 'Capittal Transacciones - Firma de asesoramiento en fusiones y adquisiciones en España.';
+  html = html.replace(
+    /<meta name="description" content="[^"]*">/,
+    `<meta name="description" content="${genericDesc}">`
+  );
+  html = html.replace(
+    /<meta property="og:description" content="[^"]*">/,
+    `<meta property="og:description" content="${genericDesc}">`
+  );
+  html = html.replace(
+    /<meta name="twitter:description" content="[^"]*">/,
+    `<meta name="twitter:description" content="${genericDesc}">`
+  );
+
+  // Replace noscript with minimal content (no homepage-specific H1/content)
+  html = html.replace(
+    /<noscript>\s*<header>[\s\S]*?<\/noscript>/,
+    `<noscript>
+      <header>
+        <nav>
+          <a href="/">Capittal</a>
+          <a href="/venta-empresas">Venta de Empresas</a>
+          <a href="/compra-empresas">Compra de Empresas</a>
+          <a href="/servicios/valoraciones">Valoraciones</a>
+          <a href="/contacto">Contacto</a>
+        </nav>
+      </header>
+      <main>
+        <p>Cargando...</p>
+      </main>
+    </noscript>`
+  );
+
+  // Add noindex to prevent SPA fallback from being indexed as a page
+  // Real pages have their own pre-rendered HTML with correct meta
+  html = html.replace(
+    '</head>',
+    '    <meta name="robots" content="noindex, nofollow" />\n  </head>'
+  );
+
+  return html;
+}
+
 // Fetch published blog posts from Supabase to pre-render their pages
 async function fetchBlogPosts() {
   try {
@@ -377,6 +468,18 @@ async function main() {
 
   const templateHtml = fs.readFileSync(templatePath, 'utf-8');
   let count = 0;
+
+  // === STEP 0: Generate neutral SPA fallback BEFORE modifying any files ===
+  // This is critical: when hosting uses SPA catch-all routing, ALL routes without
+  // a pre-rendered file get served this fallback. Without it, the hosting would
+  // serve index.html (with homepage title/canonical) for all unknown routes,
+  // causing Ahrefs to report 100+ duplicate pages with homepage meta.
+  const fallbackHtml = generateSpaFallback(templateHtml);
+  const fallback200Path = path.join(DIST_DIR, '200.html');
+  const fallback404Path = path.join(DIST_DIR, '404.html');
+  fs.writeFileSync(fallback200Path, fallbackHtml, 'utf-8');
+  fs.writeFileSync(fallback404Path, fallbackHtml, 'utf-8');
+  console.log('  🛡️  Generated 200.html + 404.html (neutral SPA fallback, no homepage meta)');
 
   // Fetch blog posts and add them to routes dynamically
   const blogPosts = await fetchBlogPosts();
@@ -420,6 +523,7 @@ async function main() {
 
   console.log(`\n🎉 Pre-rendered ${count} pages with unique SEO meta tags.`);
   console.log('   Each page now has correct: title, description, canonical, og tags, and hreflang links.');
+  console.log('   SPA fallback (200.html/404.html) has neutral meta to prevent duplicate content.');
 }
 
 main().catch(err => {
