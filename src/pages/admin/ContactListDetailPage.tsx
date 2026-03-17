@@ -358,6 +358,7 @@ export default function ContactListDetailPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [filterHasEmail, setFilterHasEmail] = useState(false);
   const [filterHasEbitda, setFilterHasEbitda] = useState(false);
+  const [filterProvincia, setFilterProvincia] = useState<string>('all');
   const [groupBlocked, setGroupBlocked] = useState(true);
 
   // Pagination
