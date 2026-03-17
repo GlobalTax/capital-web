@@ -936,7 +936,30 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const handleSendEmails = async () => {
     if (readyToSend.length === 0) return;
 
-    // If scheduled for future, start countdown
+    // SERVER-SIDE MODE: create a queue job
+    if (sendConfig.serverSide) {
+      // Get email IDs for ready companies
+      const emailIds: string[] = [];
+      for (const c of readyToSend) {
+        const email = campaignEmails.find(e => e.company_id === c.id);
+        if (email) emailIds.push(email.id);
+      }
+      if (emailIds.length === 0) {
+        toast.error('No hay emails generados. Ve al paso Mail primero.');
+        return;
+      }
+      await createJob.mutateAsync({
+        campaignId,
+        sendType: 'initial',
+        emailIds,
+        intervalMs: sendConfig.intervalMs,
+        maxPerHour: sendConfig.maxPerHour,
+        scheduledAt: sendConfig.scheduledAt || new Date(),
+      });
+      return;
+    }
+
+    // CLIENT-SIDE: If scheduled for future, start countdown
     if (sendConfig.scheduledAt && sendConfig.scheduledAt.getTime() > Date.now()) {
       const updateCountdown = () => {
         const diff = (sendConfig.scheduledAt?.getTime() ?? 0) - Date.now();
