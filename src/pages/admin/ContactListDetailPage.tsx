@@ -355,6 +355,14 @@ export default function ContactListDetailPage() {
   const [sublistConflict, setSublistConflict] = useState<{ sublistName: string } | null>(null);
   const [moveCopyFromSublistId, setMoveCopyFromSublistId] = useState<string | null>(null);
 
+  // Bulk Move/Copy state
+  const [bulkMoveCopyOpen, setBulkMoveCopyOpen] = useState(false);
+  const [bulkMoveCopyMode, setBulkMoveCopyMode] = useState<'move' | 'copy'>('copy');
+  const [bulkMoveCopyTargetId, setBulkMoveCopyTargetId] = useState('');
+  const [bulkIsCreatingNewList, setBulkIsCreatingNewList] = useState(false);
+  const [bulkNewListName, setBulkNewListName] = useState('');
+  const [bulkMoveCopyLoading, setBulkMoveCopyLoading] = useState(false);
+
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
@@ -1125,6 +1133,96 @@ export default function ContactListDetailPage() {
     await executeMoveCopy(targetId);
   };
 
+  // ===== BULK MOVE / COPY =====
+  const handleBulkMoveCopy = async () => {
+    if (!listId || selectedIds.length === 0) return;
+    let targetId = bulkMoveCopyTargetId;
+    
+    if (bulkIsCreatingNewList) {
+      if (!bulkNewListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
+      setBulkMoveCopyLoading(true);
+      try {
+        const { data: newList, error: createErr } = await supabase
+          .from('outbound_lists' as any)
+          .insert({ name: bulkNewListName.trim(), type: (list as any)?.type || 'outbound' } as any)
+          .select('id')
+          .single();
+        if (createErr || !newList) { toast.error('Error al crear la lista'); setBulkMoveCopyLoading(false); return; }
+        targetId = (newList as any).id;
+      } catch { toast.error('Error al crear la lista'); setBulkMoveCopyLoading(false); return; }
+    } else {
+      if (!targetId) return;
+      setBulkMoveCopyLoading(true);
+    }
+
+    const selectedCompanies = companies.filter(c => selectedIds.includes(c.id));
+
+    try {
+      if (bulkMoveCopyMode === 'copy') {
+        // Get existing CIFs in target to deduplicate
+        const selectedCifs = selectedCompanies.map(c => (c as any).cif).filter(Boolean);
+        let existingCifs = new Set<string>();
+        if (selectedCifs.length > 0) {
+          // Query in batches of 50
+          for (let i = 0; i < selectedCifs.length; i += 50) {
+            const batch = selectedCifs.slice(i, i + 50);
+            const { data: existing } = await supabase
+              .from('outbound_list_companies' as any)
+              .select('cif')
+              .eq('list_id', targetId)
+              .in('cif', batch);
+            if (existing) {
+              (existing as any[]).forEach((e: any) => existingCifs.add(e.cif));
+            }
+          }
+        }
+
+        // Filter out duplicates
+        const toInsert = selectedCompanies.filter(c => {
+          const cif = (c as any).cif;
+          return !cif || !existingCifs.has(cif);
+        });
+        const skipped = selectedCompanies.length - toInsert.length;
+
+        // Insert in batches of 50
+        for (let i = 0; i < toInsert.length; i += 50) {
+          const batch = toInsert.slice(i, i + 50).map(c => {
+            const { id, notas, created_at, ...rest } = c as any;
+            return { ...rest, list_id: targetId, notas: null };
+          });
+          await supabase.from('outbound_list_companies' as any).insert(batch as any);
+        }
+
+        const msg = `${toInsert.length} empresas copiadas` + (skipped > 0 ? `, ${skipped} duplicadas omitidas` : '');
+        toast.success(msg);
+      } else {
+        // Move: update list_id in batches
+        for (let i = 0; i < selectedIds.length; i += 50) {
+          const batch = selectedIds.slice(i, i + 50);
+          await supabase.from('outbound_list_companies' as any)
+            .update({ list_id: targetId, notas: null } as any)
+            .in('id', batch);
+        }
+        toast.success(`${selectedIds.length} empresas movidas`);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+      queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
+      setSelectedIds([]);
+      setBulkMoveCopyOpen(false);
+      setBulkMoveCopyTargetId('');
+      setBulkIsCreatingNewList(false);
+      setBulkNewListName('');
+    } catch (err) {
+      toast.error('Error al procesar la operación masiva');
+    } finally {
+      setBulkMoveCopyLoading(false);
+    }
+  };
+
   const handleNoteSaved = useCallback((companyId: string, note: string) => {
     queryClient.setQueryData(['contact-list-companies', listId], (old: any) => {
       if (!Array.isArray(old)) return old;
@@ -1690,8 +1788,14 @@ export default function ContactListDetailPage() {
                   )}
                 </div>
               )}
-              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg flex-wrap">
                 <span className="text-sm font-medium">{selectedIds.length.toLocaleString('es-ES')} seleccionadas</span>
+                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                  <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                  <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
+                </Button>
                 <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
                   <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
                 </Button>
@@ -2465,7 +2569,65 @@ export default function ContactListDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Sublist Conflict AlertDialog */}
+      {/* Bulk Move/Copy Modal */}
+      <Dialog open={bulkMoveCopyOpen} onOpenChange={(open) => { if (!open) { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'} {selectedIds.length.toLocaleString('es-ES')} empresas a otra lista
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{selectedIds.length.toLocaleString('es-ES')}</strong> empresas seleccionadas a:
+            </p>
+            {!bulkIsCreatingNewList ? (
+              <>
+                <Select value={bulkMoveCopyTargetId} onValueChange={setBulkMoveCopyTargetId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar lista destino..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allLists.map((l: any) => (
+                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setBulkIsCreatingNewList(true); setBulkMoveCopyTargetId(''); }}
+                >
+                  + Crear nueva lista
+                </button>
+              </>
+            ) : (
+              <>
+                <Input
+                  placeholder="Nombre de la nueva lista..."
+                  value={bulkNewListName}
+                  onChange={(e) => setBulkNewListName(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setBulkIsCreatingNewList(false); setBulkNewListName(''); }}
+                >
+                  ← Seleccionar lista existente
+                </button>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>Cancelar</Button>
+            <Button onClick={handleBulkMoveCopy} disabled={(!bulkIsCreatingNewList && !bulkMoveCopyTargetId) || (bulkIsCreatingNewList && !bulkNewListName.trim()) || bulkMoveCopyLoading}>
+              {bulkMoveCopyLoading ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Procesando...</> : bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!sublistConflict} onOpenChange={(open) => { if (!open) { setSublistConflict(null); setPendingMoveCopyTargetId(''); setIsMoveCopyLoading(false); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
