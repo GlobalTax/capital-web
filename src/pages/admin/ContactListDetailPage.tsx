@@ -1286,6 +1286,15 @@ export default function ContactListDetailPage() {
             ))}
           </div>
         ) : <span className="text-muted-foreground text-xs">—</span>;
+      case 'lista_madre':
+        return parentList ? (
+          <Link to={`/admin/contact-lists/${parentList.id}`} onClick={e => e.stopPropagation()}>
+            <Badge variant="outline" size="sm" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-[11px] gap-1 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+              <ArrowLeft className="h-3 w-3" />
+              {parentList.name}
+            </Badge>
+          </Link>
+        ) : <span className="text-muted-foreground text-xs">—</span>;
       case 'cif':
         return <span className="text-sm text-muted-foreground">{company.cif || '—'}</span>;
       case 'contacto':
