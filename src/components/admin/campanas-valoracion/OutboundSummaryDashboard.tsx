@@ -1,16 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { LoadingState } from '@/components/admin/shared/LoadingState';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 import {
   Building2, Mail, MailOpen, MailX, CheckCircle2,
   Users, CalendarCheck, MessageCircleX, HelpCircle, Percent,
-  Filter, CheckSquare, Square
+  Filter, CheckSquare, Square, CalendarIcon
 } from 'lucide-react';
 
 interface CampaignSummary {
