@@ -1,16 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { LoadingState } from '@/components/admin/shared/LoadingState';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 import {
   Building2, Mail, MailOpen, MailX, CheckCircle2,
   Users, CalendarCheck, MessageCircleX, HelpCircle, Percent,
-  Filter, CheckSquare, Square
+  Filter, CheckSquare, Square, CalendarIcon
 } from 'lucide-react';
 
 interface CampaignSummary {
@@ -35,19 +40,20 @@ interface RawData {
   companies: Array<{ campaign_id: string; seguimiento_estado: string | null }>;
 }
 
-type DatePreset = 'all' | '7d' | '30d' | '90d';
+type DatePreset = 'all' | '7d' | '30d' | '90d' | 'custom';
 
 const DATE_PRESETS: { key: DatePreset; label: string }[] = [
   { key: 'all', label: 'Todo' },
   { key: '7d', label: '7 días' },
   { key: '30d', label: '30 días' },
   { key: '90d', label: '90 días' },
+  { key: 'custom', label: 'Personalizado' },
 ];
 
 const fmt = (n: number) => n.toLocaleString('es-ES');
 
 const getDateThreshold = (preset: DatePreset): Date | null => {
-  if (preset === 'all') return null;
+  if (preset === 'all' || preset === 'custom') return null;
   const days = preset === '7d' ? 7 : preset === '30d' ? 30 : 90;
   const d = new Date();
   d.setDate(d.getDate() - days);
@@ -57,6 +63,8 @@ const getDateThreshold = (preset: DatePreset): Date | null => {
 export function OutboundSummaryDashboard() {
   const [disabledCampaigns, setDisabledCampaigns] = useState<Set<string>>(new Set());
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
+  const [customFrom, setCustomFrom] = useState<Date | undefined>();
+  const [customTo, setCustomTo] = useState<Date | undefined>();
 
   const { data: raw, isLoading } = useQuery<RawData>({
     queryKey: ['outbound-summary-raw'],
@@ -89,15 +97,23 @@ export function OutboundSummaryDashboard() {
   const computed = useMemo(() => {
     if (!raw?.campaigns.length) return null;
 
-    const threshold = getDateThreshold(datePreset);
+    const threshold = datePreset === 'custom' ? null : getDateThreshold(datePreset);
+    const cFrom = datePreset === 'custom' && customFrom ? customFrom : null;
+    const cTo = datePreset === 'custom' && customTo ? new Date(customTo.getTime() + 86400000 - 1) : null;
     const enabledCampaigns = raw.campaigns.filter(c => !disabledCampaigns.has(c.id));
     const enabledIds = new Set(enabledCampaigns.map(c => c.id));
 
-    // Filter emails by date + enabled campaigns
     const filteredEmails = raw.emails.filter(e => {
       if (!enabledIds.has(e.campaign_id)) return false;
-      if (threshold && e.sent_at) return new Date(e.sent_at) >= threshold;
-      if (threshold && !e.sent_at) return false;
+      if (threshold) {
+        return e.sent_at ? new Date(e.sent_at) >= threshold : false;
+      }
+      if (cFrom || cTo) {
+        if (!e.sent_at) return false;
+        const d = new Date(e.sent_at);
+        if (cFrom && d < cFrom) return false;
+        if (cTo && d > cTo) return false;
+      }
       return true;
     });
 
@@ -160,7 +176,7 @@ export function OutboundSummaryDashboard() {
       sinRespuesta, interesados, reuniones, noInteresados,
       campaigns: summaries,
     };
-  }, [raw, disabledCampaigns, datePreset]);
+  }, [raw, disabledCampaigns, datePreset, customFrom, customTo]);
 
   if (isLoading || !raw) return <LoadingState variant="cards" cards={6} />;
 
@@ -228,6 +244,48 @@ export function OutboundSummaryDashboard() {
             </Button>
           ))}
         </div>
+
+        {datePreset === 'custom' && (
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5 w-[130px] justify-start", !customFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {customFrom ? format(customFrom, 'dd MMM yyyy', { locale: es }) : 'Desde'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customFrom}
+                  onSelect={setCustomFrom}
+                  disabled={(date) => date > new Date() || (customTo ? date > customTo : false)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            <span className="text-xs text-muted-foreground">—</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5 w-[130px] justify-start", !customTo && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {customTo ? format(customTo, 'dd MMM yyyy', { locale: es }) : 'Hasta'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customTo}
+                  onSelect={setCustomTo}
+                  disabled={(date) => date > new Date() || (customFrom ? date < customFrom : false)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
 
         {disabledCampaigns.size > 0 && (
           <Badge variant="secondary" className="ml-auto text-xs">
