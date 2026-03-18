@@ -455,7 +455,8 @@ export default function ContactListDetailPage() {
   });
 
   const isMadreList = !!sublistCompanyMap;
-  const { allColumns, visibleColumns: visibleCols, toggleColumn, moveColumn, resetToDefault } = useListColumnPreferences(listId, isMadreList);
+  const isSublist = !!list?.lista_madre_id;
+  const { allColumns, visibleColumns: visibleCols, toggleColumn, moveColumn, resetToDefault } = useListColumnPreferences(listId, isMadreList, isSublist);
   const companiesInSublists = useMemo(() => {
     if (!sublistCompanyMap) return 0;
     return companies.filter(c => c.cif && sublistCompanyMap.map.has(c.cif.toUpperCase().trim())).length;
