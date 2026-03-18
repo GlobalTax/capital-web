@@ -1043,7 +1043,7 @@ export default function ContactListDetailPage() {
           list_id: targetId,
           notas: null,
         } as any);
-        toast.success('Empresa copiada a la otra lista');
+        toast.success(isMadreList ? 'Empresa añadida a la lista' : 'Empresa copiada a la otra lista');
       } else if (moveCopyFromSublistId) {
         // Move from sublist: update the record in the source sublist
         await supabase.from('outbound_list_companies' as any)
