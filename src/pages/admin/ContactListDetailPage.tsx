@@ -1015,11 +1015,10 @@ export default function ContactListDetailPage() {
   // ===== MOVE / COPY COMPANY =====
   const executeMoveCopy = async (targetId: string) => {
     if (!moveCopyCompany || !listId) return;
-    // Guard: no permitir mover empresas desde lista madre (solo copiar o reasignar sublista)
-    if (moveCopyMode === 'move' && isMadreList && !(moveCopyCompany as any).sublist_id) {
-      toast.error('No se pueden mover empresas desde una lista madre. Usa "Copiar" en su lugar.');
-      setIsMoveCopyLoading(false);
-      return;
+    // Guard: en lista madre, forzar modo copy silenciosamente (nunca eliminar del origen)
+    let effectiveMode = moveCopyMode;
+    if (isMadreList && moveCopyMode === 'move' && !(moveCopyCompany as any).sublist_id) {
+      effectiveMode = 'copy';
     }
     try {
       if (moveCopyMode === 'copy') {
