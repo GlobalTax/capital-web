@@ -188,20 +188,21 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
     fontSize: 26, fontFace: FONT, color: NAVY, bold: true,
   });
 
-  // Description (max ~1000 chars to avoid overflow)
+  // Description (max 600 chars + auto-shrink to prevent overflow)
   const rawDesc = op.description || '';
-  const desc = rawDesc.length > 1000 ? rawDesc.substring(0, 997) + '...' : rawDesc;
+  const desc = rawDesc.length > 600 ? rawDesc.substring(0, 597) + '...' : rawDesc;
   slide.addText(desc, {
     x: M, y: 1.3, w: leftW, h: 2.8,
     fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
     lineSpacingMultiple: 1.4, valign: 'top', wrap: true,
+    shrinkText: true,
   });
 
-  // Highlights bullets
+  // Highlights bullets — positioned well below description box (y=1.3+h=2.8 = 4.1)
   const highlights = op.highlights || [];
   if (highlights.length > 0) {
     slide.addText('Aspectos Destacados', {
-      x: M, y: 4.5, w: leftW, h: 0.35,
+      x: M, y: 5.2, w: leftW, h: 0.35,
       fontSize: 11, fontFace: FONT, color: NAVY, bold: true,
     });
 
@@ -210,7 +211,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
       options: { fontSize: 10, fontFace: FONT, color: TEXT_SECONDARY, bullet: { code: '2022' }, lineSpacingMultiple: 1.3 },
     }));
     slide.addText(bulletText as any, {
-      x: M + 0.2, y: 4.9, w: leftW - 0.4, h: 1.9,
+      x: M + 0.2, y: 5.6, w: leftW - 0.4, h: 1.2,
       valign: 'top',
     });
   }
