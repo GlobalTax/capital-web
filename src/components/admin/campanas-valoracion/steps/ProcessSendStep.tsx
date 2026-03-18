@@ -488,6 +488,7 @@ interface FloatingActionBarProps {
   onClear: () => void;
   onDownload: () => void;
   onSend: () => void;
+  onCopyToList: () => void;
   isBusy: boolean;
   estimatedSize: string;
 }
