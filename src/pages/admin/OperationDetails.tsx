@@ -289,6 +289,14 @@ const OperationDetails = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowPresentationModal(true)}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Generar Presentación
+          </Button>
           <div className="w-40">
             <Select 
               value={operation.status} 
