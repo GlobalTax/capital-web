@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LoadingState } from '@/components/admin/shared/LoadingState';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Building2, Mail, MailOpen, MailX, CheckCircle2,
-  Users, CalendarCheck, MessageCircleX, HelpCircle, Percent
+  Users, CalendarCheck, MessageCircleX, HelpCircle, Percent,
+  Filter, CheckSquare, Square
 } from 'lucide-react';
 
 interface CampaignSummary {
@@ -26,125 +29,167 @@ interface CampaignSummary {
   no_interesado: number;
 }
 
-interface GlobalMetrics {
-  totalCompanies: number;
-  totalSent: number;
-  totalDelivered: number;
-  totalBounced: number;
-  totalOpened: number;
-  openRate: number;
-  sinRespuesta: number;
-  interesados: number;
-  reuniones: number;
-  noInteresados: number;
-  campaigns: CampaignSummary[];
+interface RawData {
+  campaigns: Array<{ id: string; name: string; sector: string | null; campaign_type: string; total_companies: number }>;
+  emails: Array<{ campaign_id: string; status: string; delivery_status: string; email_opened: boolean; sent_at: string | null }>;
+  companies: Array<{ campaign_id: string; seguimiento_estado: string | null }>;
 }
+
+type DatePreset = 'all' | '7d' | '30d' | '90d';
+
+const DATE_PRESETS: { key: DatePreset; label: string }[] = [
+  { key: 'all', label: 'Todo' },
+  { key: '7d', label: '7 días' },
+  { key: '30d', label: '30 días' },
+  { key: '90d', label: '90 días' },
+];
 
 const fmt = (n: number) => n.toLocaleString('es-ES');
 
+const getDateThreshold = (preset: DatePreset): Date | null => {
+  if (preset === 'all') return null;
+  const days = preset === '7d' ? 7 : preset === '30d' ? 30 : 90;
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d;
+};
+
 export function OutboundSummaryDashboard() {
-  const { data, isLoading } = useQuery<GlobalMetrics>({
-    queryKey: ['outbound-summary-dashboard'],
+  const [disabledCampaigns, setDisabledCampaigns] = useState<Set<string>>(new Set());
+  const [datePreset, setDatePreset] = useState<DatePreset>('all');
+
+  const { data: raw, isLoading } = useQuery<RawData>({
+    queryKey: ['outbound-summary-raw'],
     queryFn: async () => {
-      // 1. All campaigns
       const { data: campaigns } = await (supabase as any)
         .from('valuation_campaigns')
         .select('id, name, sector, campaign_type, total_companies')
         .order('created_at', { ascending: false });
 
-      if (!campaigns?.length) {
-        return {
-          totalCompanies: 0, totalSent: 0, totalDelivered: 0, totalBounced: 0,
-          totalOpened: 0, openRate: 0, sinRespuesta: 0, interesados: 0,
-          reuniones: 0, noInteresados: 0, campaigns: [],
-        };
-      }
+      if (!campaigns?.length) return { campaigns: [], emails: [], companies: [] };
 
       const ids = campaigns.map((c: any) => c.id);
 
-      // 2. Email metrics (all at once)
-      const { data: emails } = await (supabase as any)
-        .from('campaign_emails')
-        .select('campaign_id, status, delivery_status, email_opened')
-        .in('campaign_id', ids);
+      const [{ data: emails }, { data: companies }] = await Promise.all([
+        (supabase as any)
+          .from('campaign_emails')
+          .select('campaign_id, status, delivery_status, email_opened, sent_at')
+          .in('campaign_id', ids),
+        (supabase as any)
+          .from('valuation_campaign_companies')
+          .select('campaign_id, seguimiento_estado')
+          .in('campaign_id', ids),
+      ]);
 
-      // 3. Seguimiento states
-      const { data: companies } = await (supabase as any)
-        .from('valuation_campaign_companies')
-        .select('campaign_id, seguimiento_estado')
-        .in('campaign_id', ids);
-
-      // Aggregate per campaign
-      const emailMap: Record<string, { sent: number; delivered: number; bounced: number; opened: number }> = {};
-      const seguimientoMap: Record<string, Record<string, number>> = {};
-
-      for (const id of ids) {
-        emailMap[id] = { sent: 0, delivered: 0, bounced: 0, opened: 0 };
-        seguimientoMap[id] = { sin_respuesta: 0, interesado: 0, reunion_agendada: 0, no_interesado: 0 };
-      }
-
-      for (const e of (emails || [])) {
-        const m = emailMap[e.campaign_id];
-        if (!m) continue;
-        if (e.status === 'sent') m.sent++;
-        if (e.delivery_status === 'delivered') m.delivered++;
-        if (e.delivery_status === 'bounced') m.bounced++;
-        if (e.email_opened) m.opened++;
-      }
-
-      for (const c of (companies || [])) {
-        const s = seguimientoMap[c.campaign_id];
-        if (!s) continue;
-        const estado = c.seguimiento_estado || 'sin_respuesta';
-        if (s[estado] !== undefined) s[estado]++;
-        else s.sin_respuesta++;
-      }
-
-      let totalSent = 0, totalDelivered = 0, totalBounced = 0, totalOpened = 0;
-      let sinRespuesta = 0, interesados = 0, reuniones = 0, noInteresados = 0;
-      let totalCompanies = 0;
-
-      const summaries: CampaignSummary[] = campaigns.map((c: any) => {
-        const em = emailMap[c.id];
-        const seg = seguimientoMap[c.id];
-        totalSent += em.sent;
-        totalDelivered += em.delivered;
-        totalBounced += em.bounced;
-        totalOpened += em.opened;
-        totalCompanies += c.total_companies || 0;
-        sinRespuesta += seg.sin_respuesta;
-        interesados += seg.interesado;
-        reuniones += seg.reunion_agendada;
-        noInteresados += seg.no_interesado;
-
-        return {
-          id: c.id,
-          name: c.name,
-          sector: c.sector,
-          campaign_type: c.campaign_type,
-          total_companies: c.total_companies || 0,
-          sent: em.sent,
-          delivered: em.delivered,
-          bounced: em.bounced,
-          opened: em.opened,
-          sin_respuesta: seg.sin_respuesta,
-          interesado: seg.interesado,
-          reunion_agendada: seg.reunion_agendada,
-          no_interesado: seg.no_interesado,
-        };
-      });
-
-      return {
-        totalCompanies, totalSent, totalDelivered, totalBounced, totalOpened,
-        openRate: totalSent > 0 ? (totalOpened / totalSent) * 100 : 0,
-        sinRespuesta, interesados, reuniones, noInteresados,
-        campaigns: summaries,
-      };
+      return { campaigns, emails: emails || [], companies: companies || [] };
     },
     staleTime: 60_000,
   });
 
-  if (isLoading || !data) return <LoadingState variant="cards" cards={6} />;
+  const computed = useMemo(() => {
+    if (!raw?.campaigns.length) return null;
+
+    const threshold = getDateThreshold(datePreset);
+    const enabledCampaigns = raw.campaigns.filter(c => !disabledCampaigns.has(c.id));
+    const enabledIds = new Set(enabledCampaigns.map(c => c.id));
+
+    // Filter emails by date + enabled campaigns
+    const filteredEmails = raw.emails.filter(e => {
+      if (!enabledIds.has(e.campaign_id)) return false;
+      if (threshold && e.sent_at) return new Date(e.sent_at) >= threshold;
+      if (threshold && !e.sent_at) return false;
+      return true;
+    });
+
+    // Aggregate per campaign
+    const emailMap: Record<string, { sent: number; delivered: number; bounced: number; opened: number }> = {};
+    const seguimientoMap: Record<string, Record<string, number>> = {};
+
+    for (const c of enabledCampaigns) {
+      emailMap[c.id] = { sent: 0, delivered: 0, bounced: 0, opened: 0 };
+      seguimientoMap[c.id] = { sin_respuesta: 0, interesado: 0, reunion_agendada: 0, no_interesado: 0 };
+    }
+
+    for (const e of filteredEmails) {
+      const m = emailMap[e.campaign_id];
+      if (!m) continue;
+      if (e.status === 'sent') m.sent++;
+      if (e.delivery_status === 'delivered') m.delivered++;
+      if (e.delivery_status === 'bounced') m.bounced++;
+      if (e.email_opened) m.opened++;
+    }
+
+    for (const c of raw.companies) {
+      if (!enabledIds.has(c.campaign_id)) continue;
+      const s = seguimientoMap[c.campaign_id];
+      if (!s) continue;
+      const estado = c.seguimiento_estado || 'sin_respuesta';
+      if (s[estado] !== undefined) s[estado]++;
+      else s.sin_respuesta++;
+    }
+
+    let totalSent = 0, totalDelivered = 0, totalBounced = 0, totalOpened = 0;
+    let sinRespuesta = 0, interesados = 0, reuniones = 0, noInteresados = 0;
+    let totalCompanies = 0;
+
+    const summaries: CampaignSummary[] = enabledCampaigns.map((c) => {
+      const em = emailMap[c.id];
+      const seg = seguimientoMap[c.id];
+      totalSent += em.sent;
+      totalDelivered += em.delivered;
+      totalBounced += em.bounced;
+      totalOpened += em.opened;
+      totalCompanies += c.total_companies || 0;
+      sinRespuesta += seg.sin_respuesta;
+      interesados += seg.interesado;
+      reuniones += seg.reunion_agendada;
+      noInteresados += seg.no_interesado;
+
+      return {
+        id: c.id, name: c.name, sector: c.sector,
+        campaign_type: c.campaign_type, total_companies: c.total_companies || 0,
+        sent: em.sent, delivered: em.delivered, bounced: em.bounced, opened: em.opened,
+        sin_respuesta: seg.sin_respuesta, interesado: seg.interesado,
+        reunion_agendada: seg.reunion_agendada, no_interesado: seg.no_interesado,
+      };
+    });
+
+    return {
+      totalCompanies, totalSent, totalDelivered, totalBounced, totalOpened,
+      openRate: totalSent > 0 ? (totalOpened / totalSent) * 100 : 0,
+      sinRespuesta, interesados, reuniones, noInteresados,
+      campaigns: summaries,
+    };
+  }, [raw, disabledCampaigns, datePreset]);
+
+  if (isLoading || !raw) return <LoadingState variant="cards" cards={6} />;
+
+  const data = computed ?? {
+    totalCompanies: 0, totalSent: 0, totalDelivered: 0, totalBounced: 0,
+    totalOpened: 0, openRate: 0, sinRespuesta: 0, interesados: 0,
+    reuniones: 0, noInteresados: 0, campaigns: [] as CampaignSummary[],
+  };
+
+  const allCampaigns = raw.campaigns;
+  const allEnabled = disabledCampaigns.size === 0;
+  const noneEnabled = disabledCampaigns.size === allCampaigns.length;
+
+  const toggleCampaign = (id: string) => {
+    setDisabledCampaigns(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (allEnabled) {
+      setDisabledCampaigns(new Set(allCampaigns.map(c => c.id)));
+    } else {
+      setDisabledCampaigns(new Set());
+    }
+  };
 
   const kpis = [
     { label: 'Empresas', value: fmt(data.totalCompanies), icon: Building2, color: 'text-primary' },
@@ -164,6 +209,33 @@ export function OutboundSummaryDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Filters bar */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Filter className="h-4 w-4" />
+          <span className="font-medium">Período:</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {DATE_PRESETS.map(p => (
+            <Button
+              key={p.key}
+              variant={datePreset === p.key ? 'default' : 'outline'}
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => setDatePreset(p.key)}
+            >
+              {p.label}
+            </Button>
+          ))}
+        </div>
+
+        {disabledCampaigns.size > 0 && (
+          <Badge variant="secondary" className="ml-auto text-xs">
+            {allCampaigns.length - disabledCampaigns.size} de {allCampaigns.length} campañas activas
+          </Badge>
+        )}
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {kpis.map((k) => (
@@ -202,12 +274,24 @@ export function OutboundSummaryDashboard() {
       {/* Campaign breakdown table */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Desglose por Campaña</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Desglose por Campaña</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1.5"
+              onClick={toggleAll}
+            >
+              {allEnabled ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+              {allEnabled ? 'Deseleccionar todas' : 'Seleccionar todas'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <Table density="compact">
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10"></TableHead>
                 <TableHead>Campaña</TableHead>
                 <TableHead>Sector</TableHead>
                 <TableHead className="text-center">Empresas</TableHead>
@@ -219,27 +303,38 @@ export function OutboundSummaryDashboard() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.campaigns.map((c) => {
-                const rate = c.sent > 0 ? ((c.opened / c.sent) * 100).toFixed(1) : '—';
+              {allCampaigns.map((raw_c) => {
+                const enabled = !disabledCampaigns.has(raw_c.id);
+                const c = data.campaigns.find(x => x.id === raw_c.id);
+                const rate = c && c.sent > 0 ? ((c.opened / c.sent) * 100).toFixed(1) : '—';
                 return (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium max-w-[200px] truncate">{c.name}</TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{c.sector || '—'}</TableCell>
-                    <TableCell className="text-center">{c.total_companies}</TableCell>
-                    <TableCell className="text-center">{c.sent}</TableCell>
-                    <TableCell className="text-center">{c.opened}</TableCell>
+                  <TableRow
+                    key={raw_c.id}
+                    className={!enabled ? 'opacity-40' : undefined}
+                  >
+                    <TableCell className="pr-0">
+                      <Checkbox
+                        checked={enabled}
+                        onCheckedChange={() => toggleCampaign(raw_c.id)}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium max-w-[200px] truncate">{raw_c.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{raw_c.sector || '—'}</TableCell>
+                    <TableCell className="text-center">{c?.total_companies ?? raw_c.total_companies}</TableCell>
+                    <TableCell className="text-center">{c?.sent ?? 0}</TableCell>
+                    <TableCell className="text-center">{c?.opened ?? 0}</TableCell>
                     <TableCell className="text-center">
-                      {rate !== '—' ? (
+                      {enabled && rate !== '—' ? (
                         <Badge variant={Number(rate) > 30 ? 'default' : 'secondary'} className="text-xs">
                           {rate}%
                         </Badge>
                       ) : '—'}
                     </TableCell>
                     <TableCell className="text-center">
-                      {c.interesado > 0 ? <span className="text-blue-600 font-medium">{c.interesado}</span> : '0'}
+                      {c && c.interesado > 0 ? <span className="text-blue-600 font-medium">{c.interesado}</span> : '0'}
                     </TableCell>
                     <TableCell className="text-center">
-                      {c.reunion_agendada > 0 ? <span className="text-emerald-600 font-medium">{c.reunion_agendada}</span> : '0'}
+                      {c && c.reunion_agendada > 0 ? <span className="text-emerald-600 font-medium">{c.reunion_agendada}</span> : '0'}
                     </TableCell>
                   </TableRow>
                 );
