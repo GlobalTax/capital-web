@@ -2569,7 +2569,65 @@ export default function ContactListDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Sublist Conflict AlertDialog */}
+      {/* Bulk Move/Copy Modal */}
+      <Dialog open={bulkMoveCopyOpen} onOpenChange={(open) => { if (!open) { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'} {selectedIds.length.toLocaleString('es-ES')} empresas a otra lista
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'} <strong>{selectedIds.length.toLocaleString('es-ES')}</strong> empresas seleccionadas a:
+            </p>
+            {!bulkIsCreatingNewList ? (
+              <>
+                <Select value={bulkMoveCopyTargetId} onValueChange={setBulkMoveCopyTargetId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar lista destino..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allLists.map((l: any) => (
+                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setBulkIsCreatingNewList(true); setBulkMoveCopyTargetId(''); }}
+                >
+                  + Crear nueva lista
+                </button>
+              </>
+            ) : (
+              <>
+                <Input
+                  placeholder="Nombre de la nueva lista..."
+                  value={bulkNewListName}
+                  onChange={(e) => setBulkNewListName(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => { setBulkIsCreatingNewList(false); setBulkNewListName(''); }}
+                >
+                  ← Seleccionar lista existente
+                </button>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>Cancelar</Button>
+            <Button onClick={handleBulkMoveCopy} disabled={(!bulkIsCreatingNewList && !bulkMoveCopyTargetId) || (bulkIsCreatingNewList && !bulkNewListName.trim()) || bulkMoveCopyLoading}>
+              {bulkMoveCopyLoading ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Procesando...</> : bulkMoveCopyMode === 'move' ? 'Mover' : 'Copiar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={!!sublistConflict} onOpenChange={(open) => { if (!open) { setSublistConflict(null); setPendingMoveCopyTargetId(''); setIsMoveCopyLoading(false); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
