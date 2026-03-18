@@ -297,7 +297,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
   // "Más Información" CTA
   slide.addShape(pptx.ShapeType.roundRect, {
     x: rightX + pad, y: cardY + cardH - 0.8, w: innerW, h: 0.45,
-    fill: { color: ACCENT }, rectRadius: 0.05,
+    fill: { color: '3A3F47' }, rectRadius: 0.05,
   });
   slide.addText('Más Información →', {
     x: rightX + pad, y: cardY + cardH - 0.8, w: innerW, h: 0.45,
