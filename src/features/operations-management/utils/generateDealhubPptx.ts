@@ -262,15 +262,15 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
   infoY += 0.7;
 
   // Separator line
-  const sepY = cardY + 2.6;
+  const sepY = infoY + 0.15;
   slide.addShape(pptx.ShapeType.rect, {
-    x: rightX + 0.3, y: sepY, w: rightW - 0.6, h: 0.01,
+    x: rightX + pad, y: sepY, w: innerW, h: 0.01,
     fill: { color: TEXT_MUTED },
   });
 
   // "Datos Clave" header
   slide.addText('Datos Clave', {
-    x: rightX + 0.3, y: sepY + 0.15, w: rightW - 0.6, h: 0.4,
+    x: rightX + pad, y: sepY + 0.15, w: innerW, h: 0.4,
     fontSize: 13, fontFace: FONT, color: WHITE, bold: true,
   });
 
@@ -285,11 +285,11 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
   financialRows.forEach((row, i) => {
     const rowY = sepY + 0.65 + i * 0.55;
     slide.addText(row.label, {
-      x: rightX + 0.3, y: rowY, w: 1.8, h: 0.3,
+      x: rightX + pad, y: rowY, w: 1.8, h: 0.3,
       fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
     });
     slide.addText(row.value, {
-      x: rightX + 2.1, y: rowY, w: rightW - 2.5, h: 0.3,
+      x: rightX + pad + 1.8, y: rowY, w: innerW - 1.8, h: 0.3,
       fontSize: 12, fontFace: FONT, color: WHITE, bold: true, align: 'right',
     });
   });
