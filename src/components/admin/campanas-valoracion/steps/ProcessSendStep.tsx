@@ -571,6 +571,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
 
   // Interaction dialog
   const [interactionCompany, setInteractionCompany] = useState<CampaignCompany | null>(null);
+  const [showCopyToList, setShowCopyToList] = useState(false);
 
   // Multi-selection
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
