@@ -76,7 +76,7 @@ export const useListColumnPreferences = (listId?: string, isMadreList = false, i
         return c.visible;
       })
       .sort((a, b) => a.position - b.position);
-  }, [columns, isMadreList]);
+  }, [columns, isMadreList, isSublist]);
 
   const toggleColumn = useCallback((key: string) => {
     setColumns(prev => {
