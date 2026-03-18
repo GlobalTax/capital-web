@@ -245,6 +245,48 @@ export function OutboundSummaryDashboard() {
           ))}
         </div>
 
+        {datePreset === 'custom' && (
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5 w-[130px] justify-start", !customFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {customFrom ? format(customFrom, 'dd MMM yyyy', { locale: es }) : 'Desde'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customFrom}
+                  onSelect={setCustomFrom}
+                  disabled={(date) => date > new Date() || (customTo ? date > customTo : false)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            <span className="text-xs text-muted-foreground">—</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("h-7 text-xs gap-1.5 w-[130px] justify-start", !customTo && "text-muted-foreground")}>
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {customTo ? format(customTo, 'dd MMM yyyy', { locale: es }) : 'Hasta'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={customTo}
+                  onSelect={setCustomTo}
+                  disabled={(date) => date > new Date() || (customFrom ? date < customFrom : false)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
+
         {disabledCampaigns.size > 0 && (
           <Badge variant="secondary" className="ml-auto text-xs">
             {allCampaigns.length - disabledCampaigns.size} de {allCampaigns.length} campañas activas
