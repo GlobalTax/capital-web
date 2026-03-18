@@ -1248,6 +1248,20 @@ export default function ContactListDetailPage() {
         toast.success(`${selectedIds.length} empresas movidas`);
       }
 
+      // Auto-link target as sublista if source is lista madre
+      if (isMadreList && targetId !== listId) {
+        const { data: targetList } = await supabase
+          .from('outbound_lists' as any)
+          .select('lista_madre_id')
+          .eq('id', targetId)
+          .single();
+        if (targetList && !(targetList as any).lista_madre_id) {
+          await supabase.from('outbound_lists' as any)
+            .update({ lista_madre_id: listId } as any)
+            .eq('id', targetId);
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
