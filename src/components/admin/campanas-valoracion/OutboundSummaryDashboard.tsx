@@ -37,7 +37,7 @@ interface CampaignSummary {
 interface RawData {
   campaigns: Array<{ id: string; name: string; sector: string | null; campaign_type: string; total_companies: number }>;
   emails: Array<{ campaign_id: string; status: string; delivery_status: string; email_opened: boolean; sent_at: string | null; company_id: string | null }>;
-  companies: Array<{ campaign_id: string; seguimiento_estado: string | null }>;
+  companies: Array<{ campaign_id: string; seguimiento_estado: string | null; id: string }>;
 }
 
 type DatePreset = 'all' | '7d' | '30d' | '90d' | 'custom';
