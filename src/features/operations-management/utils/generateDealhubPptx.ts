@@ -194,7 +194,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
   slide.addText(desc, {
     x: M, y: 1.3, w: leftW, h: 2.8,
     fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
-    lineSpacingMultiple: 1.4, valign: 'top', wrap: true, overflow: 'ellipsis',
+    lineSpacingMultiple: 1.4, valign: 'top', wrap: true,
   });
 
   // Highlights bullets
