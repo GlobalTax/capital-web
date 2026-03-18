@@ -370,6 +370,8 @@ serve(async (req: Request) => {
       ${renderKPISection(monthKPIs)}
       ${renderKPISection(globalKPIs)}
 
+      ${renderRespondedCompaniesTable(allCompanies, allCampaigns)}
+
       <p style="color:#94a3b8;font-size:11px;margin-top:32px;text-align:center;border-top:1px solid #f0f0f0;padding-top:16px">
         Reporte automático generado por Capittal · ${now.toISOString()}
       </p>
