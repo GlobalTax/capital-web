@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft, List, FolderOpen, FolderClosed, ChevronRight, LayoutList, FolderTree, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft, List, FolderOpen, FolderClosed, ChevronRight, LayoutList, FolderTree, ArrowUpDown, ArrowUp, ArrowDown, BarChart3 } from 'lucide-react';
+import { OutboundSummaryDashboard } from '@/components/admin/campanas-valoracion/OutboundSummaryDashboard';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel
 } from '@/components/ui/dropdown-menu';
@@ -32,7 +33,7 @@ export default function CampanasValoracion() {
   const navigate = useNavigate();
   const { campaigns, isLoading, deleteCampaign, isDeleting, duplicateCampaign, isDuplicating, updateCampaign } = useCampaigns();
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'valuation' | 'document'>('valuation');
+  const [activeTab, setActiveTab] = useState<'valuation' | 'document' | 'summary'>('valuation');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
@@ -376,7 +377,7 @@ export default function CampanasValoracion() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document')}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document' | 'summary')}>
         <TabsList>
           <TabsTrigger value="valuation" className="flex items-center gap-1.5">
             <TrendingUp className="h-4 w-4" />
@@ -386,8 +387,17 @@ export default function CampanasValoracion() {
             <FileText className="h-4 w-4" />
             Documento PDF
           </TabsTrigger>
+          <TabsTrigger value="summary" className="flex items-center gap-1.5">
+            <BarChart3 className="h-4 w-4" />
+            Resumen General
+          </TabsTrigger>
         </TabsList>
       </Tabs>
+
+      {activeTab === 'summary' ? (
+        <OutboundSummaryDashboard />
+      ) : (
+      <>
 
       {/* Stats */}
       <div className={`grid grid-cols-1 gap-4 ${activeTab === 'valuation' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
@@ -561,6 +571,9 @@ export default function CampanasValoracion() {
           )}
         </CardContent>
       </Card>
+
+      </>
+      )}
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeleteConfirmText(''); } }}>
