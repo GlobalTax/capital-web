@@ -1184,7 +1184,7 @@ export default function ContactListDetailPage() {
     const selectedCompanies = companies.filter(c => selectedIds.includes(c.id));
 
     try {
-      if (bulkMoveCopyMode === 'copy') {
+      if (effectiveBulkMode === 'copy') {
         // Get existing CIFs in target to deduplicate
         const selectedCifs = selectedCompanies.map(c => (c as any).cif).filter(Boolean);
         let existingCifs = new Set<string>();
