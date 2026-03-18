@@ -19,7 +19,7 @@ function getCurrentQuarter(): QuarterType {
 interface GenerateDealhubModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  operations: Operation[];
+  operations: any[];
 }
 
 export const GenerateDealhubModal = ({ open, onOpenChange, operations }: GenerateDealhubModalProps) => {
