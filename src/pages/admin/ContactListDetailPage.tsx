@@ -1075,12 +1075,14 @@ export default function ContactListDetailPage() {
       if (!newListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
       setIsMoveCopyLoading(true);
       try {
+        const insertData: any = { name: newListName.trim(), type: (list as any)?.type || 'outbound' };
+        if (isMadreList) insertData.lista_madre_id = listId;
         const { data: newList, error: createErr } = await supabase
           .from('outbound_lists' as any)
-          .insert({ name: newListName.trim(), type: (list as any)?.type || 'outbound' } as any)
+          .insert(insertData)
           .select('id')
           .single();
-        if (createErr || !newList) { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
+        if (createErr || !newList) { console.error('Error creating list:', createErr); toast.error('Error al crear la lista: ' + (createErr?.message || 'desconocido')); setIsMoveCopyLoading(false); return; }
         targetId = (newList as any).id;
       } catch { toast.error('Error al crear la lista'); setIsMoveCopyLoading(false); return; }
     } else {
