@@ -1518,10 +1518,18 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           onClear={clearSelection}
           onDownload={() => handleDownloadSelected(selectedIds)}
           onSend={() => handleSendSelected(selectedIds)}
+          onCopyToList={() => setShowCopyToList(true)}
           isBusy={isBusy}
           estimatedSize={estimateZipSize(selectedIds.length)}
         />
       )}
+
+      {/* Copy to list dialog */}
+      <CopyToListDialog
+        open={showCopyToList}
+        onOpenChange={setShowCopyToList}
+        selectedCompanies={companies.filter(c => selectedIds.includes(c.id))}
+      />
 
       {/* Resend Confirmation Dialog */}
       <AlertDialog open={!!resendConfirm} onOpenChange={(open) => !open && setResendConfirm(null)}>
