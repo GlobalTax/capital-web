@@ -1122,6 +1122,14 @@ const AdminOperations = () => {
             Guía de Publicación
           </Button>
           <Button
+            onClick={() => setShowDealhubModal(true)}
+            variant="outline"
+            className="border-primary/20 hover:bg-primary/5 text-primary"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Generar Catálogo ROD
+          </Button>
+          <Button
             onClick={() => {
               if (selectedOperations.size === 0) {
                 toast({ title: 'Selecciona una operación', description: 'Marca el checkbox de una operación para generar su presentación', variant: 'destructive' });
