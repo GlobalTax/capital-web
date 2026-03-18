@@ -1800,9 +1800,11 @@ export default function ContactListDetailPage() {
                 <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
                   <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
                 </Button>
-                <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
-                  <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
-                </Button>
+                {!isMadreList && (
+                  <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
               </div>
             </div>
