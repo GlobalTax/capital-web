@@ -18,7 +18,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2, Search, Clock,
+  Send, Loader2, Pause, FileDown, Eye, Download, Mail, RefreshCw, MoreVertical, Archive, X, MessageSquarePlus, Upload, Building2, FileText, CheckCircle2, Search, Clock, List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
@@ -28,6 +28,7 @@ import { CampaignCompanyInteractionDialog } from '@/components/admin/campanas-va
 import { FOLLOW_UP_STATUSES } from '@/hooks/useCampaignCompanyInteractions';
 import { ValuationCampaign, useCampaigns } from '@/hooks/useCampaigns';
 import { supabase } from '@/integrations/supabase/client';
+import { CopyToListDialog } from '@/components/admin/campanas-valoracion/shared/CopyToListDialog';
 import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { buildCampaignPresentationPath, normalizeCampaignPresentationPath, isValidCampaignPresentationPath, safeStorageUpload, safeCreateSignedUrl, CAMPAIGN_PRESENTATIONS_BUCKET } from '@/utils/campaignPresentationStorage';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
@@ -488,11 +489,12 @@ interface FloatingActionBarProps {
   onClear: () => void;
   onDownload: () => void;
   onSend: () => void;
+  onCopyToList: () => void;
   isBusy: boolean;
   estimatedSize: string;
 }
 
-function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy, estimatedSize }: FloatingActionBarProps) {
+function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, onCopyToList, isBusy, estimatedSize }: FloatingActionBarProps) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
       <Card className="shadow-2xl border">
@@ -503,6 +505,10 @@ function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy,
           <div className="h-4 w-px bg-border" />
           <Button size="sm" variant="ghost" onClick={onClear} disabled={isBusy}>
             <X className="h-4 w-4 mr-1.5" />Limpiar
+          </Button>
+          <Button size="sm" variant="outline" onClick={onCopyToList} disabled={isBusy}>
+            <List className="h-4 w-4 mr-1.5" />
+            Copiar a lista
           </Button>
           <Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
             <Download className="h-4 w-4 mr-1.5" />
@@ -566,6 +572,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
 
   // Interaction dialog
   const [interactionCompany, setInteractionCompany] = useState<CampaignCompany | null>(null);
+  const [showCopyToList, setShowCopyToList] = useState(false);
 
   // Multi-selection
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -1512,10 +1519,18 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
           onClear={clearSelection}
           onDownload={() => handleDownloadSelected(selectedIds)}
           onSend={() => handleSendSelected(selectedIds)}
+          onCopyToList={() => setShowCopyToList(true)}
           isBusy={isBusy}
           estimatedSize={estimateZipSize(selectedIds.length)}
         />
       )}
+
+      {/* Copy to list dialog */}
+      <CopyToListDialog
+        open={showCopyToList}
+        onOpenChange={setShowCopyToList}
+        selectedCompanies={companies.filter(c => selectedIds.includes(c.id))}
+      />
 
       {/* Resend Confirmation Dialog */}
       <AlertDialog open={!!resendConfirm} onOpenChange={(open) => !open && setResendConfirm(null)}>

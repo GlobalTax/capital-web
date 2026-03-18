@@ -23,6 +23,7 @@ import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { cn } from '@/lib/utils';
 import { ImportFromListDialog } from '@/components/admin/campanas-valoracion/ImportFromListDialog';
+import { CopyToListDialog } from '@/components/admin/campanas-valoracion/shared/CopyToListDialog';
 
 const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
 
@@ -265,6 +266,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCopyToList, setShowCopyToList] = useState(false);
 
   const toggleSelection = (id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -1034,7 +1036,11 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                   <Trash2 className="h-4 w-4 mr-1" />
                   Eliminar las {companies.length - selectedIds.length} NO seleccionadas
                 </Button>
-              )}
+               )}
+              <Button variant="outline" size="sm" onClick={() => setShowCopyToList(true)}>
+                <List className="h-4 w-4 mr-1" />
+                Copiar a lista
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>
                 Deseleccionar todo
               </Button>
@@ -1214,6 +1220,12 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           // Refetch companies
           window.location.reload();
         }}
+      />
+      {/* Copy to list dialog */}
+      <CopyToListDialog
+        open={showCopyToList}
+        onOpenChange={setShowCopyToList}
+        selectedCompanies={companies.filter(c => selectedIds.includes(c.id))}
       />
     </div>
   );
