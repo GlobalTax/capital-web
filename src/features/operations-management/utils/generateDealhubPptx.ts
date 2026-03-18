@@ -201,7 +201,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
   const highlights = op.highlights || [];
   if (highlights.length > 0) {
     slide.addText('Aspectos Destacados', {
-      x: M, y: 4.2, w: leftW, h: 0.35,
+      x: M, y: 4.5, w: leftW, h: 0.35,
       fontSize: 11, fontFace: FONT, color: NAVY, bold: true,
     });
 
@@ -210,7 +210,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
       options: { fontSize: 10, fontFace: FONT, color: TEXT_SECONDARY, bullet: { code: '2022' }, lineSpacingMultiple: 1.3 },
     }));
     slide.addText(bulletText as any, {
-      x: M + 0.2, y: 4.6, w: leftW - 0.4, h: 2.2,
+      x: M + 0.2, y: 4.9, w: leftW - 0.4, h: 1.9,
       valign: 'top',
     });
   }
