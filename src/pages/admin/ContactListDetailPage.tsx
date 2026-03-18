@@ -737,6 +737,10 @@ export default function ContactListDetailPage() {
   };
 
   const handleDeleteSelected = async () => {
+    if (isMadreList) {
+      toast.warning('No se pueden eliminar empresas de una lista madre. Puedes copiarlas a un sublistado.');
+      return;
+    }
     if (!confirm(`¿Eliminar ${selectedIds.length} empresas de esta lista?`)) return;
     await deleteCompanies.mutateAsync(selectedIds);
     setSelectedIds([]);
@@ -1796,9 +1800,11 @@ export default function ContactListDetailPage() {
                 <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
                   <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
                 </Button>
-                <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
-                  <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
-                </Button>
+                {!isMadreList && (
+                  <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
               </div>
             </div>
@@ -2067,12 +2073,14 @@ export default function ContactListDetailPage() {
                                         <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
                                       )}
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      className="text-destructive focus:text-destructive"
-                                      onClick={() => deleteCompany.mutate(company.id)}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                                    </DropdownMenuItem>
+                                    {!isMadreList && (
+                                      <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() => deleteCompany.mutate(company.id)}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                                      </DropdownMenuItem>
+                                    )}
                                   </>
                                 )}
                               </DropdownMenuContent>
