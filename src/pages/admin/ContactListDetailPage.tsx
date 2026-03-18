@@ -1219,7 +1219,8 @@ export default function ContactListDetailPage() {
           await supabase.from('outbound_list_companies' as any).insert(batch as any);
         }
 
-        const msg = `${toInsert.length} empresas copiadas` + (skipped > 0 ? `, ${skipped} duplicadas omitidas` : '');
+        const actionWord = isMadreList ? 'añadidas' : 'copiadas';
+        const msg = `${toInsert.length} empresas ${actionWord}` + (skipped > 0 ? `, ${skipped} duplicadas omitidas` : '');
         toast.success(msg);
       } else {
         // Move: update list_id in batches
