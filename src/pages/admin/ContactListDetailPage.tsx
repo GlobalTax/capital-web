@@ -1015,6 +1015,12 @@ export default function ContactListDetailPage() {
   // ===== MOVE / COPY COMPANY =====
   const executeMoveCopy = async (targetId: string) => {
     if (!moveCopyCompany || !listId) return;
+    // Guard: no permitir mover empresas desde lista madre (solo copiar o reasignar sublista)
+    if (moveCopyMode === 'move' && isMadreList && !(moveCopyCompany as any).sublist_id) {
+      toast.error('No se pueden mover empresas desde una lista madre. Usa "Copiar" en su lugar.');
+      setIsMoveCopyLoading(false);
+      return;
+    }
     try {
       if (moveCopyMode === 'copy') {
         // Check if CIF already exists in target list
@@ -1150,6 +1156,11 @@ export default function ContactListDetailPage() {
   // ===== BULK MOVE / COPY =====
   const handleBulkMoveCopy = async () => {
     if (!listId || selectedIds.length === 0) return;
+    // Guard: no permitir mover en bulk desde lista madre
+    if (bulkMoveCopyMode === 'move' && isMadreList) {
+      toast.error('No se pueden mover empresas desde una lista madre. Usa "Copiar" en su lugar.');
+      return;
+    }
     let targetId = bulkMoveCopyTargetId;
     
     if (bulkIsCreatingNewList) {
@@ -1637,6 +1648,12 @@ export default function ContactListDetailPage() {
 
   const handleDedup = async () => {
     if (duplicateGroups.length === 0) return;
+    // Guard: no permitir eliminar duplicados en lista madre
+    if (isMadreList) {
+      toast.error('No se pueden eliminar empresas de una lista madre.');
+      setIsDedupModalOpen(false);
+      return;
+    }
     const idsToDelete: string[] = [];
     for (const [, group] of duplicateGroups) {
       const sorted = [...group].sort((a, b) =>
