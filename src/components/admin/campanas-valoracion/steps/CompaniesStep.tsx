@@ -266,6 +266,7 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
   // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCopyToList, setShowCopyToList] = useState(false);
 
   const toggleSelection = (id: string) =>
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
