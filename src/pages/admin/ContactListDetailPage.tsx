@@ -45,7 +45,7 @@ import {
 import {
   ChevronLeft, Upload, Plus, Download, Building2, MoreHorizontal,
   Edit, Trash2, History, Link2, AlertTriangle, Filter, FileSpreadsheet, Linkedin, Copy,
-  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, Layers, List, Megaphone, ChevronRight,
+  Search, ArrowUpDown, ArrowUp, ArrowDown, X, MoveRight, CopyPlus, Sparkles, Loader2, Pencil, Lock, ArrowRight, ArrowLeft, Layers, List, Megaphone, ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -455,7 +455,8 @@ export default function ContactListDetailPage() {
   });
 
   const isMadreList = !!sublistCompanyMap;
-  const { allColumns, visibleColumns: visibleCols, toggleColumn, moveColumn, resetToDefault } = useListColumnPreferences(listId, isMadreList);
+  const isSublist = !!list?.lista_madre_id;
+  const { allColumns, visibleColumns: visibleCols, toggleColumn, moveColumn, resetToDefault } = useListColumnPreferences(listId, isMadreList, isSublist);
   const companiesInSublists = useMemo(() => {
     if (!sublistCompanyMap) return 0;
     return companies.filter(c => c.cif && sublistCompanyMap.map.has(c.cif.toUpperCase().trim())).length;
@@ -1284,6 +1285,15 @@ export default function ContactListDetailPage() {
               </Badge>
             ))}
           </div>
+        ) : <span className="text-muted-foreground text-xs">—</span>;
+      case 'lista_madre':
+        return parentList ? (
+          <Link to={`/admin/contact-lists/${parentList.id}`} onClick={e => e.stopPropagation()}>
+            <Badge variant="outline" size="sm" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800 text-[11px] gap-1 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+              <ArrowLeft className="h-3 w-3" />
+              {parentList.name}
+            </Badge>
+          </Link>
         ) : <span className="text-muted-foreground text-xs">—</span>;
       case 'cif':
         return <span className="text-sm text-muted-foreground">{company.cif || '—'}</span>;

@@ -26,6 +26,7 @@ const DEFAULT_COLUMNS: ListColumnDef[] = [
   { key: 'num_trabajadores', label: 'Empleados', visible: true, position: 11, sortable: true, align: 'right' },
   { key: 'consolidador', label: 'Consolidador', visible: true, position: 12, minWidth: '180px' },
   { key: 'notas', label: 'Notas', visible: true, position: 13, minWidth: '160px' },
+  { key: 'lista_madre', label: 'Lista Madre', visible: true, position: 14, minWidth: '160px' },
 ];
 
 const STORAGE_KEY = 'list-column-prefs';
@@ -50,7 +51,7 @@ function savePreferences(columns: ListColumnDef[], listId?: string) {
   }
 }
 
-export const useListColumnPreferences = (listId?: string, isMadreList = false) => {
+export const useListColumnPreferences = (listId?: string, isMadreList = false, isSublist = false) => {
   const [columns, setColumns] = useState<ListColumnDef[]>(() => {
     const saved = loadPreferences(listId);
     if (saved) {
@@ -71,6 +72,7 @@ export const useListColumnPreferences = (listId?: string, isMadreList = false) =
     return columns
       .filter(c => {
         if (c.key === 'sublistas' && !isMadreList) return false;
+        if (c.key === 'lista_madre' && !isSublist) return false;
         return c.visible;
       })
       .sort((a, b) => a.position - b.position);
