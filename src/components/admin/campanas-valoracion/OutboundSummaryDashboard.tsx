@@ -40,19 +40,20 @@ interface RawData {
   companies: Array<{ campaign_id: string; seguimiento_estado: string | null }>;
 }
 
-type DatePreset = 'all' | '7d' | '30d' | '90d';
+type DatePreset = 'all' | '7d' | '30d' | '90d' | 'custom';
 
 const DATE_PRESETS: { key: DatePreset; label: string }[] = [
   { key: 'all', label: 'Todo' },
   { key: '7d', label: '7 días' },
   { key: '30d', label: '30 días' },
   { key: '90d', label: '90 días' },
+  { key: 'custom', label: 'Personalizado' },
 ];
 
 const fmt = (n: number) => n.toLocaleString('es-ES');
 
 const getDateThreshold = (preset: DatePreset): Date | null => {
-  if (preset === 'all') return null;
+  if (preset === 'all' || preset === 'custom') return null;
   const days = preset === '7d' ? 7 : preset === '30d' ? 30 : 90;
   const d = new Date();
   d.setDate(d.getDate() - days);
@@ -62,6 +63,8 @@ const getDateThreshold = (preset: DatePreset): Date | null => {
 export function OutboundSummaryDashboard() {
   const [disabledCampaigns, setDisabledCampaigns] = useState<Set<string>>(new Set());
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
+  const [customFrom, setCustomFrom] = useState<Date | undefined>();
+  const [customTo, setCustomTo] = useState<Date | undefined>();
 
   const { data: raw, isLoading } = useQuery<RawData>({
     queryKey: ['outbound-summary-raw'],
