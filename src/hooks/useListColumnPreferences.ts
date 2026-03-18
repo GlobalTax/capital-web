@@ -26,6 +26,7 @@ const DEFAULT_COLUMNS: ListColumnDef[] = [
   { key: 'num_trabajadores', label: 'Empleados', visible: true, position: 11, sortable: true, align: 'right' },
   { key: 'consolidador', label: 'Consolidador', visible: true, position: 12, minWidth: '180px' },
   { key: 'notas', label: 'Notas', visible: true, position: 13, minWidth: '160px' },
+  { key: 'lista_madre', label: 'Lista Madre', visible: true, position: 14, minWidth: '160px' },
 ];
 
 const STORAGE_KEY = 'list-column-prefs';
