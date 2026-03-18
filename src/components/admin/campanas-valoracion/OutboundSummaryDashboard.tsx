@@ -207,6 +207,9 @@ export function OutboundSummaryDashboard() {
     }
   };
 
+  const totalContestados = data.interesados + data.reuniones + data.noInteresados;
+  const contestadosRate = data.totalSent > 0 ? (totalContestados / data.totalSent) * 100 : 0;
+
   const kpis = [
     { label: 'Empresas', value: fmt(data.totalCompanies), icon: Building2, color: 'text-primary' },
     { label: 'Enviados', value: fmt(data.totalSent), icon: Mail, color: 'text-blue-600' },
@@ -214,6 +217,7 @@ export function OutboundSummaryDashboard() {
     { label: 'Rebotados', value: fmt(data.totalBounced), icon: MailX, color: 'text-destructive' },
     { label: 'Abiertos', value: fmt(data.totalOpened), icon: MailOpen, color: 'text-amber-600' },
     { label: 'Tasa Apertura', value: `${data.openRate.toFixed(1)}%`, icon: Percent, color: 'text-violet-600' },
+    { label: 'Contestados', value: `${fmt(totalContestados)} (${contestadosRate.toFixed(1)}%)`, icon: MessageCircleX, color: 'text-orange-600' },
   ];
 
   const funnel = [
