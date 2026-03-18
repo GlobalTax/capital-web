@@ -326,6 +326,9 @@ export function OutboundSummaryDashboard() {
               {data.totalSent > 0 && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {((f.value / data.totalSent) * 100).toFixed(1)}% de enviados
+                  {totalContestados > 0 && f.label !== 'Sin respuesta' && (
+                    <span className="ml-1">· {((f.value / totalContestados) * 100).toFixed(1)}% de contestados</span>
+                  )}
                 </p>
               )}
             </CardContent>
