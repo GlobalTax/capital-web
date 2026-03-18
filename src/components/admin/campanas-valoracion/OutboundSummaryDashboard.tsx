@@ -207,6 +207,9 @@ export function OutboundSummaryDashboard() {
     }
   };
 
+  const totalContestados = data.interesados + data.reuniones + data.noInteresados;
+  const contestadosRate = data.totalSent > 0 ? (totalContestados / data.totalSent) * 100 : 0;
+
   const kpis = [
     { label: 'Empresas', value: fmt(data.totalCompanies), icon: Building2, color: 'text-primary' },
     { label: 'Enviados', value: fmt(data.totalSent), icon: Mail, color: 'text-blue-600' },
@@ -214,6 +217,7 @@ export function OutboundSummaryDashboard() {
     { label: 'Rebotados', value: fmt(data.totalBounced), icon: MailX, color: 'text-destructive' },
     { label: 'Abiertos', value: fmt(data.totalOpened), icon: MailOpen, color: 'text-amber-600' },
     { label: 'Tasa Apertura', value: `${data.openRate.toFixed(1)}%`, icon: Percent, color: 'text-violet-600' },
+    { label: 'Contestados', value: `${fmt(totalContestados)} (${contestadosRate.toFixed(1)}%)`, icon: MessageCircleX, color: 'text-orange-600' },
   ];
 
   const funnel = [
@@ -295,7 +299,7 @@ export function OutboundSummaryDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         {kpis.map((k) => (
           <Card key={k.label}>
             <CardContent className="p-4">
@@ -322,6 +326,9 @@ export function OutboundSummaryDashboard() {
               {data.totalSent > 0 && (
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {((f.value / data.totalSent) * 100).toFixed(1)}% de enviados
+                  {totalContestados > 0 && f.label !== 'Sin respuesta' && (
+                    <span className="ml-1">· {((f.value / totalContestados) * 100).toFixed(1)}% de contestados</span>
+                  )}
                 </p>
               )}
             </CardContent>
@@ -356,8 +363,10 @@ export function OutboundSummaryDashboard() {
                 <TableHead className="text-center">Enviados</TableHead>
                 <TableHead className="text-center">Abiertos</TableHead>
                 <TableHead className="text-center">Tasa</TableHead>
+                <TableHead className="text-center">Contestados</TableHead>
                 <TableHead className="text-center">Interesados</TableHead>
                 <TableHead className="text-center">Reuniones</TableHead>
+                <TableHead className="text-center">No interesados</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -389,10 +398,19 @@ export function OutboundSummaryDashboard() {
                       ) : '—'}
                     </TableCell>
                     <TableCell className="text-center">
+                      {(() => {
+                        const total = (c?.interesado ?? 0) + (c?.reunion_agendada ?? 0) + (c?.no_interesado ?? 0);
+                        return total > 0 ? <span className="text-orange-600 font-medium">{total}</span> : '0';
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-center">
                       {c && c.interesado > 0 ? <span className="text-blue-600 font-medium">{c.interesado}</span> : '0'}
                     </TableCell>
                     <TableCell className="text-center">
                       {c && c.reunion_agendada > 0 ? <span className="text-emerald-600 font-medium">{c.reunion_agendada}</span> : '0'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {c && c.no_interesado > 0 ? <span className="text-red-500 font-medium">{c.no_interesado}</span> : '0'}
                     </TableCell>
                   </TableRow>
                 );
