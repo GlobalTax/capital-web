@@ -347,3 +347,6 @@ verify_jwt = false
 
 [functions.send-outbound-report]
 verify_jwt = false
+
+[functions.send-weekly-outbound-pdf]
+verify_jwt = false
