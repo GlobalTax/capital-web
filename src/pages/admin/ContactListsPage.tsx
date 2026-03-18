@@ -486,7 +486,7 @@ export default function ContactListsPage() {
                 <Plus className="h-4 w-4 mr-2" /> Crear lista
               </Button>
             </div>
-          ) : groupedBySector.length === 1 && sectorFilter !== 'all' ? (
+          ) : activeTab === 'madre' || (groupedBySector.length === 1 && sectorFilter !== 'all') ? (
             // Single sector selected — flat table without folder header
             <Table>
               {renderTableHeaders()}
