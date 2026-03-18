@@ -366,6 +366,10 @@ export default function ContactListDetailPage() {
   const [bulkIsCreatingNewList, setBulkIsCreatingNewList] = useState(false);
   const [bulkNewListName, setBulkNewListName] = useState('');
   const [bulkMoveCopyLoading, setBulkMoveCopyLoading] = useState(false);
+  const [moveCopySearchTerm, setMoveCopySearchTerm] = useState('');
+  const [moveCopyPopoverOpen, setMoveCopyPopoverOpen] = useState(false);
+  const [bulkMoveCopySearchTerm, setBulkMoveCopySearchTerm] = useState('');
+  const [bulkMoveCopyPopoverOpen, setBulkMoveCopyPopoverOpen] = useState(false);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
