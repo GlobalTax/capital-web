@@ -737,6 +737,10 @@ export default function ContactListDetailPage() {
   };
 
   const handleDeleteSelected = async () => {
+    if (isMadreList) {
+      toast.warning('No se pueden eliminar empresas de una lista madre. Puedes copiarlas a un sublistado.');
+      return;
+    }
     if (!confirm(`¿Eliminar ${selectedIds.length} empresas de esta lista?`)) return;
     await deleteCompanies.mutateAsync(selectedIds);
     setSelectedIds([]);
