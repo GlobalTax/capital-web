@@ -50,6 +50,14 @@ function getWeekRange(): { from: string; to: string; label: string } {
   return { from, to, label };
 }
 
+function getMonthRange(): { from: string; to: string; label: string } {
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
+  const to = now.toISOString();
+  const monthName = now.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  return { from, to, label: `Mes: ${monthName}` };
+}
+
 // ─── KPI calculation ────────────────────────────────────────────
 interface RawEmail {
   campaign_id: string;
@@ -330,12 +338,19 @@ serve(async (req: Request) => {
     const allCompanies = (companies || []) as RawCompany[];
     const allCampaigns = campaigns as Campaign[];
 
-    // 3. Calculate KPIs for both periods
+    // 3. Calculate KPIs for all 4 periods
     const yesterday = getYesterdayRange();
     const week = getWeekRange();
+    const month = getMonthRange();
 
     const yesterdayKPIs = calcKPIs(yesterday.from, yesterday.to, `📅 Ayer — ${yesterday.label}`, allCampaigns, allEmails, allCompanies);
     const weekKPIs = calcKPIs(week.from, week.to, `📆 ${week.label}`, allCampaigns, allEmails, allCompanies);
+    const monthKPIs = calcKPIs(month.from, month.to, `📆 ${month.label}`, allCampaigns, allEmails, allCompanies);
+
+    // Global: use extreme date range to include everything
+    const globalFrom = "2020-01-01T00:00:00.000Z";
+    const globalTo = new Date().toISOString();
+    const globalKPIs = calcKPIs(globalFrom, globalTo, "🌐 Global (histórico)", allCampaigns, allEmails, allCompanies);
 
     // 4. Build HTML
     const now = new Date();
@@ -350,6 +365,8 @@ serve(async (req: Request) => {
 
       ${renderKPISection(yesterdayKPIs)}
       ${renderKPISection(weekKPIs)}
+      ${renderKPISection(monthKPIs)}
+      ${renderKPISection(globalKPIs)}
 
       <p style="color:#94a3b8;font-size:11px;margin-top:32px;text-align:center;border-top:1px solid #f0f0f0;padding-top:16px">
         Reporte automático generado por Capittal · ${now.toISOString()}
@@ -379,6 +396,8 @@ serve(async (req: Request) => {
       messageId: emailResult?.id,
       yesterday: { enviados: yesterdayKPIs.enviados, abiertos: yesterdayKPIs.abiertos, contestados: yesterdayKPIs.contestados },
       week: { enviados: weekKPIs.enviados, abiertos: weekKPIs.abiertos, contestados: weekKPIs.contestados },
+      month: { enviados: monthKPIs.enviados, abiertos: monthKPIs.abiertos, contestados: monthKPIs.contestados },
+      global: { enviados: globalKPIs.enviados, abiertos: globalKPIs.abiertos, contestados: globalKPIs.contestados },
     });
 
     return new Response(
@@ -386,6 +405,8 @@ serve(async (req: Request) => {
         success: true,
         yesterday: { enviados: yesterdayKPIs.enviados, empresas: yesterdayKPIs.empresas, contestados: yesterdayKPIs.contestados },
         week: { enviados: weekKPIs.enviados, empresas: weekKPIs.empresas, contestados: weekKPIs.contestados },
+        month: { enviados: monthKPIs.enviados, empresas: monthKPIs.empresas, contestados: monthKPIs.contestados },
+        global: { enviados: globalKPIs.enviados, empresas: globalKPIs.empresas, contestados: globalKPIs.contestados },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
