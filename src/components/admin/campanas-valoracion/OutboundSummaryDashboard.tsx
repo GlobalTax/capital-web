@@ -36,8 +36,8 @@ interface CampaignSummary {
 
 interface RawData {
   campaigns: Array<{ id: string; name: string; sector: string | null; campaign_type: string; total_companies: number }>;
-  emails: Array<{ campaign_id: string; status: string; delivery_status: string; email_opened: boolean; sent_at: string | null }>;
-  companies: Array<{ campaign_id: string; seguimiento_estado: string | null }>;
+  emails: Array<{ campaign_id: string; status: string; delivery_status: string; email_opened: boolean; sent_at: string | null; company_id: string | null }>;
+  companies: Array<{ campaign_id: string; seguimiento_estado: string | null; id: string }>;
 }
 
 type DatePreset = 'all' | '7d' | '30d' | '90d' | 'custom';
@@ -81,11 +81,11 @@ export function OutboundSummaryDashboard() {
       const [{ data: emails }, { data: companies }] = await Promise.all([
         (supabase as any)
           .from('campaign_emails')
-          .select('campaign_id, status, delivery_status, email_opened, sent_at')
+          .select('campaign_id, status, delivery_status, email_opened, sent_at, company_id')
           .in('campaign_id', ids),
         (supabase as any)
           .from('valuation_campaign_companies')
-          .select('campaign_id, seguimiento_estado')
+          .select('campaign_id, seguimiento_estado, id')
           .in('campaign_id', ids),
       ]);
 
@@ -117,13 +117,22 @@ export function OutboundSummaryDashboard() {
       return true;
     });
 
+    // Build set of company IDs active in the period
+    const hasDateFilter = threshold || cFrom || cTo;
+    const activeCompanyIds = new Set<string>();
+    for (const e of filteredEmails) {
+      if (e.company_id) activeCompanyIds.add(e.company_id);
+    }
+
     // Aggregate per campaign
     const emailMap: Record<string, { sent: number; delivered: number; bounced: number; opened: number }> = {};
     const seguimientoMap: Record<string, Record<string, number>> = {};
+    const companiesPerCampaign: Record<string, Set<string>> = {};
 
     for (const c of enabledCampaigns) {
       emailMap[c.id] = { sent: 0, delivered: 0, bounced: 0, opened: 0 };
       seguimientoMap[c.id] = { sin_respuesta: 0, interesado: 0, reunion_agendada: 0, no_interesado: 0 };
+      companiesPerCampaign[c.id] = new Set();
     }
 
     for (const e of filteredEmails) {
@@ -133,10 +142,13 @@ export function OutboundSummaryDashboard() {
       if (e.delivery_status === 'delivered') m.delivered++;
       if (e.delivery_status === 'bounced') m.bounced++;
       if (e.email_opened) m.opened++;
+      if (e.company_id) companiesPerCampaign[e.campaign_id]?.add(e.company_id);
     }
 
     for (const c of raw.companies) {
       if (!enabledIds.has(c.campaign_id)) continue;
+      // If date filter active, only count companies with emails in the period
+      if (hasDateFilter && !activeCompanyIds.has(c.id)) continue;
       const s = seguimientoMap[c.campaign_id];
       if (!s) continue;
       const estado = c.seguimiento_estado || 'sin_respuesta';
@@ -151,11 +163,12 @@ export function OutboundSummaryDashboard() {
     const summaries: CampaignSummary[] = enabledCampaigns.map((c) => {
       const em = emailMap[c.id];
       const seg = seguimientoMap[c.id];
+      const campCompanies = hasDateFilter ? companiesPerCampaign[c.id].size : (c.total_companies || 0);
       totalSent += em.sent;
       totalDelivered += em.delivered;
       totalBounced += em.bounced;
       totalOpened += em.opened;
-      totalCompanies += c.total_companies || 0;
+      totalCompanies += campCompanies;
       sinRespuesta += seg.sin_respuesta;
       interesados += seg.interesado;
       reuniones += seg.reunion_agendada;
@@ -163,7 +176,7 @@ export function OutboundSummaryDashboard() {
 
       return {
         id: c.id, name: c.name, sector: c.sector,
-        campaign_type: c.campaign_type, total_companies: c.total_companies || 0,
+        campaign_type: c.campaign_type, total_companies: campCompanies,
         sent: em.sent, delivered: em.delivered, bounced: em.bounced, opened: em.opened,
         sin_respuesta: seg.sin_respuesta, interesado: seg.interesado,
         reunion_agendada: seg.reunion_agendada, no_interesado: seg.no_interesado,
