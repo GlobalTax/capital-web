@@ -398,10 +398,19 @@ export function OutboundSummaryDashboard() {
                       ) : '—'}
                     </TableCell>
                     <TableCell className="text-center">
+                      {(() => {
+                        const total = (c?.interesado ?? 0) + (c?.reunion_agendada ?? 0) + (c?.no_interesado ?? 0);
+                        return total > 0 ? <span className="text-orange-600 font-medium">{total}</span> : '0';
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-center">
                       {c && c.interesado > 0 ? <span className="text-blue-600 font-medium">{c.interesado}</span> : '0'}
                     </TableCell>
                     <TableCell className="text-center">
                       {c && c.reunion_agendada > 0 ? <span className="text-emerald-600 font-medium">{c.reunion_agendada}</span> : '0'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {c && c.no_interesado > 0 ? <span className="text-red-500 font-medium">{c.no_interesado}</span> : '0'}
                     </TableCell>
                   </TableRow>
                 );
