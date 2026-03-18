@@ -1,10 +1,20 @@
 import pptxgen from 'pptxgenjs';
 
+// ─── DESIGN TOKENS ───
+const BLACK = '000000';
 const NAVY = '161B22';
 const WHITE = 'FFFFFF';
-const BG_SECONDARY = 'F3F4F5';
 const TEXT_SECONDARY = '58606E';
 const TEXT_TERTIARY = '6B7280';
+const TEXT_MUTED = '8B919B';
+const BORDER = 'E2E4E8';
+const BG_CARD = 'F3F4F5';
+const FONT = 'Plus Jakarta Sans';
+
+// Slide dimensions (widescreen 13.33 x 7.5)
+const SW = 13.33;
+const SH = 7.5;
+const M = 0.5; // margin
 
 interface OperationData {
   company_name: string;
@@ -24,225 +34,353 @@ interface OperationData {
   company_size_employees?: string | null;
   highlights?: string[] | null;
   logo_url?: string | null;
+  expected_market_text?: string | null;
+  project_status?: string | null;
 }
 
 type TemplateType = 'teaser' | 'cim' | 'pitch_deck';
 
-const formatCurrencyPptx = (amount: number, currency: string): string => {
-  const symbol = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : '£';
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M ${symbol}`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K ${symbol}`;
-  return `${amount.toLocaleString('es-ES')} ${symbol}`;
+// ─── HELPERS ───
+
+const now = new Date();
+const MONTH_YEAR = now.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+const YEAR = String(now.getFullYear());
+
+const fmtCurrency = (amount: number, currency: string): string => {
+  const sym = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : '£';
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M ${sym}`;
+  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K ${sym}`;
+  return `${amount.toLocaleString('es-ES')} ${sym}`;
 };
 
-const getDealTypeLabel = (dt: string) => {
-  const map: Record<string, string> = { sale: 'Venta', acquisition: 'Adquisición', merger: 'Fusión', partnership: 'Asociación' };
-  return map[dt] || dt;
+const dealLabel = (dt: string) => {
+  const m: Record<string, string> = { sale: 'Venta', acquisition: 'Adquisición', merger: 'Fusión', partnership: 'Asociación' };
+  return m[dt] || dt;
 };
 
-const getTemplateLabel = (t: TemplateType) => {
-  const map: Record<TemplateType, string> = { teaser: 'Teaser', cim: 'Cuaderno de Información', pitch_deck: 'Pitch Deck' };
-  return map[t];
+const statusLabel = (s: string) => {
+  const m: Record<string, string> = { available: 'Disponible', negotiation: 'En Negociación', sold: 'Vendida', withdrawn: 'Retirada' };
+  return m[s] || s;
 };
+
+// ─── FOOTER (content slides only) ───
+
+let slideNum = 0;
 
 const addFooter = (slide: pptxgen.Slide) => {
-  slide.addText('CAPITTAL · Confidencial', {
-    x: 0.5, y: 5.1, w: 9, h: 0.3,
-    fontSize: 8, color: TEXT_TERTIARY, fontFace: 'Arial',
+  slideNum++;
+  const y = SH - 0.4;
+  slide.addText(`Material de Debate – ${MONTH_YEAR}`, {
+    x: M, y, w: 4, h: 0.3,
+    fontSize: 8, color: TEXT_TERTIARY, fontFace: FONT,
   });
+  slide.addText('Capittal', {
+    x: SW / 2 - 1, y, w: 2, h: 0.3,
+    fontSize: 8, color: TEXT_TERTIARY, fontFace: FONT, align: 'center',
+  });
+  slide.addText(String(slideNum), {
+    x: SW - M - 1, y, w: 1, h: 0.3,
+    fontSize: 8, color: TEXT_TERTIARY, fontFace: FONT, align: 'right',
+  });
+};
+
+// ─── SECTION SEPARATOR ───
+
+const addSectionSeparator = (pres: pptxgen, title: string) => {
+  const slide = pres.addSlide();
+  slide.background = { color: BLACK };
+  slide.addText(title, {
+    x: M, y: SH / 2 - 0.5, w: SW - M * 2, h: 1,
+    fontSize: 36, color: WHITE, fontFace: FONT, bold: true, valign: 'middle',
+  });
+};
+
+// ─── COVER SLIDE ───
+
+const addCover = (pres: pptxgen, op: OperationData) => {
+  const slide = pres.addSlide();
+  slide.background = { color: BLACK };
+
+  // Company name — bottom left
+  slide.addText(op.company_name, {
+    x: M, y: SH - 2.8, w: SW - M * 2, h: 1.2,
+    fontSize: 44, color: WHITE, fontFace: FONT, bold: true, valign: 'bottom',
+  });
+
+  // Sector + deal type
+  slide.addText(`${op.sector}${op.subsector ? ` · ${op.subsector}` : ''} · ${dealLabel(op.deal_type)}`, {
+    x: M, y: SH - 1.5, w: SW - M * 2 - 4, h: 0.4,
+    fontSize: 16, color: TEXT_MUTED, fontFace: FONT,
+  });
+
+  // Date
+  slide.addText(MONTH_YEAR, {
+    x: M, y: SH - 1.0, w: 4, h: 0.35,
+    fontSize: 11, color: TEXT_TERTIARY, fontFace: FONT,
+  });
+
+  // Branding — bottom right
+  slide.addText('CAPITTAL M&A · CONSULTING', {
+    x: SW - M - 4, y: SH - 1.0, w: 4, h: 0.35,
+    fontSize: 9, color: WHITE, fontFace: FONT, align: 'right',
+  });
+};
+
+// ─── CONTENT SLIDE HELPERS ───
+
+const addContentSlide = (pres: pptxgen, opts: {
+  overline: string;
+  title: string;
+  subtitle?: string;
+}) => {
+  const slide = pres.addSlide();
+  slide.background = { color: WHITE };
+
+  // Overline
+  slide.addText(opts.overline.toUpperCase(), {
+    x: M, y: M, w: SW - M * 2, h: 0.3,
+    fontSize: 9, color: TEXT_TERTIARY, fontFace: FONT,
+  });
+
+  // Title
+  slide.addText(opts.title, {
+    x: M, y: M + 0.4, w: SW - M * 2, h: 0.6,
+    fontSize: 28, color: NAVY, fontFace: FONT, bold: true,
+  });
+
+  // Subtitle
+  if (opts.subtitle) {
+    slide.addText(opts.subtitle, {
+      x: M, y: M + 1.1, w: SW - M * 2, h: 0.4,
+      fontSize: 14, color: TEXT_SECONDARY, fontFace: FONT,
+    });
+  }
+
+  addFooter(slide);
+  return slide;
 };
 
 // ─── SLIDE BUILDERS ───
 
-const addPortada = (pres: pptxgen, op: OperationData, template: TemplateType) => {
-  const slide = pres.addSlide();
-  slide.background = { color: NAVY };
+const buildResumenEjecutivo = (pres: pptxgen, op: OperationData) => {
+  addSectionSeparator(pres, 'Resumen Ejecutivo');
 
-  slide.addText('C A P I T T A L', {
-    x: 0.5, y: 0.4, w: 4, h: 0.4,
-    fontSize: 14, color: TEXT_TERTIARY, fontFace: 'Arial', bold: false,
+  const slide = addContentSlide(pres, {
+    overline: 'Resumen Ejecutivo',
+    title: op.company_name,
+    subtitle: `${op.sector} · ${dealLabel(op.deal_type)}`,
   });
 
-  slide.addText(op.company_name, {
-    x: 0.5, y: 1.8, w: 9, h: 1.2,
-    fontSize: 40, color: WHITE, fontFace: 'Arial', bold: true,
-  });
-
-  slide.addText(`${op.sector}${op.subsector ? ` · ${op.subsector}` : ''}`, {
-    x: 0.5, y: 3.0, w: 9, h: 0.5,
-    fontSize: 16, color: TEXT_TERTIARY, fontFace: 'Arial',
-  });
-
-  slide.addText(getTemplateLabel(template), {
-    x: 0.5, y: 3.6, w: 3, h: 0.4,
-    fontSize: 12, color: TEXT_SECONDARY, fontFace: 'Arial',
-  });
-
-  slide.addText('Documento confidencial · No distribuir', {
-    x: 0.5, y: 4.8, w: 9, h: 0.3,
-    fontSize: 9, color: TEXT_TERTIARY, fontFace: 'Arial', italic: true,
-  });
-};
-
-const addResumenEjecutivo = (pres: pptxgen, op: OperationData) => {
-  const slide = pres.addSlide();
-  slide.addText('Resumen Ejecutivo', {
-    x: 0.5, y: 0.3, w: 9, h: 0.5,
-    fontSize: 22, color: NAVY, fontFace: 'Arial', bold: true,
-  });
-
-  const desc = op.short_description || op.description || 'Sin descripción disponible.';
-  slide.addText(desc.substring(0, 600), {
-    x: 0.5, y: 1.0, w: 9, h: 1.5,
-    fontSize: 12, color: TEXT_SECONDARY, fontFace: 'Arial', lineSpacingMultiple: 1.4,
-  });
-
-  if (op.highlights?.length) {
-    const bullets = op.highlights.filter(Boolean).map(h => ({ text: h, options: { bullet: true, indentLevel: 0 } }));
-    slide.addText(bullets as any, {
-      x: 0.5, y: 2.8, w: 9, h: 2,
-      fontSize: 11, color: NAVY, fontFace: 'Arial', lineSpacingMultiple: 1.5,
+  const desc = op.short_description || op.description || '';
+  if (desc) {
+    slide.addText(desc.substring(0, 800), {
+      x: M, y: 1.9, w: SW - M * 2, h: 2.0,
+      fontSize: 11, color: NAVY, fontFace: FONT, lineSpacingMultiple: 1.5,
     });
   }
-  addFooter(slide);
+
+  // Highlights as bullets
+  if (op.highlights?.filter(Boolean).length) {
+    const bullets = op.highlights.filter(Boolean).map(h => ({
+      text: h,
+      options: { bullet: true, indentLevel: 0 },
+    }));
+    slide.addText(bullets as any, {
+      x: M, y: 4.1, w: SW - M * 2, h: 2.5,
+      fontSize: 11, color: NAVY, fontFace: FONT, lineSpacingMultiple: 1.5,
+    });
+  }
 };
 
-const addLaEmpresa = (pres: pptxgen, op: OperationData) => {
-  const slide = pres.addSlide();
-  slide.addText('La Empresa', {
-    x: 0.5, y: 0.3, w: 9, h: 0.5,
-    fontSize: 22, color: NAVY, fontFace: 'Arial', bold: true,
+const buildEmpresa = (pres: pptxgen, op: OperationData) => {
+  addSectionSeparator(pres, 'La Empresa');
+
+  const slide = addContentSlide(pres, {
+    overline: 'La Empresa',
+    title: op.company_name,
   });
 
+  // Description
   const desc = op.description || '';
-  slide.addText(desc.substring(0, 800), {
-    x: 0.5, y: 1.0, w: 9, h: 2.0,
-    fontSize: 11, color: TEXT_SECONDARY, fontFace: 'Arial', lineSpacingMultiple: 1.4,
-  });
+  if (desc) {
+    slide.addText(desc.substring(0, 1000), {
+      x: M, y: 1.6, w: SW - M * 2, h: 2.5,
+      fontSize: 11, color: TEXT_SECONDARY, fontFace: FONT, lineSpacingMultiple: 1.4,
+    });
+  }
 
-  const details = [
+  // Details table
+  const rows: string[][] = [
     ['Sector', `${op.sector}${op.subsector ? ` — ${op.subsector}` : ''}`],
     ['Empleados', op.company_size_employees || 'N/D'],
     ['Año', String(op.year)],
-    ['Tipo', getDealTypeLabel(op.deal_type)],
+    ['Tipo de operación', dealLabel(op.deal_type)],
+    ['Estado', statusLabel(op.status)],
   ];
 
-  details.forEach(([label, value], i) => {
-    const y = 3.4 + i * 0.4;
-    slide.addText(`${label}:`, { x: 0.5, y, w: 2, h: 0.35, fontSize: 10, color: TEXT_TERTIARY, fontFace: 'Arial', bold: true });
-    slide.addText(value, { x: 2.5, y, w: 7, h: 0.35, fontSize: 10, color: NAVY, fontFace: 'Arial' });
-  });
-  addFooter(slide);
+  slide.addTable(
+    rows.map(([k, v]) => [
+      { text: k, options: { fontSize: 10, color: TEXT_TERTIARY, fontFace: FONT, bold: true } },
+      { text: v, options: { fontSize: 10, color: NAVY, fontFace: FONT } },
+    ]) as any,
+    {
+      x: M, y: 4.4, w: 6, h: 2,
+      border: { type: 'dash', pt: 0.5, color: BORDER },
+      colW: [2.5, 3.5],
+      rowH: 0.35,
+    }
+  );
 };
 
-const addFinancieros = (pres: pptxgen, op: OperationData) => {
-  const slide = pres.addSlide();
-  slide.addText('Datos Financieros', {
-    x: 0.5, y: 0.3, w: 9, h: 0.5,
-    fontSize: 22, color: NAVY, fontFace: 'Arial', bold: true,
+const buildFinancieros = (pres: pptxgen, op: OperationData) => {
+  addSectionSeparator(pres, 'Financieros');
+
+  const slide = addContentSlide(pres, {
+    overline: 'Datos Financieros',
+    title: 'Resumen Financiero',
+    subtitle: `Cifras en ${op.valuation_currency}`,
   });
 
-  const metrics: [string, string][] = [
-    ['Valoración', formatCurrencyPptx(op.valuation_amount, op.valuation_currency)],
-  ];
-  if (op.revenue_amount) metrics.push(['Facturación', formatCurrencyPptx(op.revenue_amount, op.valuation_currency)]);
-  if (op.ebitda_amount) metrics.push(['EBITDA', formatCurrencyPptx(op.ebitda_amount, op.valuation_currency)]);
-  if (op.ebitda_multiple) metrics.push(['Múltiplo EBITDA', `${op.ebitda_multiple}x`]);
-  if (op.growth_percentage) metrics.push(['Crecimiento', `${op.growth_percentage}%`]);
+  // Build KPI cards
+  const kpis: { label: string; value: string }[] = [];
+  kpis.push({ label: 'Valoración', value: fmtCurrency(op.valuation_amount, op.valuation_currency) });
+  if (op.revenue_amount) kpis.push({ label: 'Facturación', value: fmtCurrency(op.revenue_amount, op.valuation_currency) });
+  if (op.ebitda_amount) kpis.push({ label: 'EBITDA', value: fmtCurrency(op.ebitda_amount, op.valuation_currency) });
+  if (op.ebitda_multiple) kpis.push({ label: 'Múltiplo EBITDA', value: `${op.ebitda_multiple}x` });
+  if (op.growth_percentage) kpis.push({ label: 'Crecimiento', value: `${op.growth_percentage}%` });
   if (op.revenue_amount && op.ebitda_amount) {
     const margin = ((op.ebitda_amount / op.revenue_amount) * 100).toFixed(1);
-    metrics.push(['Margen EBITDA', `${margin}%`]);
+    kpis.push({ label: 'Margen EBITDA', value: `${margin}%` });
   }
 
-  const cols = Math.min(metrics.length, 3);
-  const cardW = 2.6;
+  const cols = Math.min(kpis.length, 4);
   const gap = 0.3;
-  const startX = 0.5;
+  const cardW = (SW - M * 2 - gap * (cols - 1)) / cols;
+  const startY = 2.0;
 
-  metrics.forEach(([label, value], i) => {
+  kpis.forEach((kpi, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
-    const x = startX + col * (cardW + gap);
-    const y = 1.2 + row * 1.6;
+    const x = M + col * (cardW + gap);
+    const y = startY + row * 2.0;
 
+    // Card border
     slide.addShape(pres.ShapeType.rect as any, {
-      x, y, w: cardW, h: 1.3,
-      fill: { color: BG_SECONDARY }, rectRadius: 0.08,
+      x, y, w: cardW, h: 1.6,
+      fill: { color: WHITE },
+      line: { color: BORDER, width: 0.75, dashType: 'solid' },
+      rectRadius: 0.05,
     });
-    slide.addText(label, { x: x + 0.2, y: y + 0.15, w: cardW - 0.4, h: 0.35, fontSize: 9, color: TEXT_TERTIARY, fontFace: 'Arial' });
-    slide.addText(value, { x: x + 0.2, y: y + 0.55, w: cardW - 0.4, h: 0.5, fontSize: 20, color: NAVY, fontFace: 'Arial', bold: true });
+
+    // Value
+    slide.addText(kpi.value, {
+      x: x + 0.3, y: y + 0.25, w: cardW - 0.6, h: 0.7,
+      fontSize: 36, color: NAVY, fontFace: FONT, valign: 'middle',
+    });
+
+    // Label
+    slide.addText(kpi.label, {
+      x: x + 0.3, y: y + 1.0, w: cardW - 0.6, h: 0.35,
+      fontSize: 11, color: TEXT_SECONDARY, fontFace: FONT,
+    });
   });
-  addFooter(slide);
 };
 
-const addTesisInversion = (pres: pptxgen, op: OperationData) => {
-  const slide = pres.addSlide();
-  slide.addText('Tesis de Inversión', {
-    x: 0.5, y: 0.3, w: 9, h: 0.5,
-    fontSize: 22, color: NAVY, fontFace: 'Arial', bold: true,
+const buildTesisInversion = (pres: pptxgen, op: OperationData) => {
+  const items = op.highlights?.filter(Boolean);
+  if (!items?.length) return; // skip if no data
+
+  addSectionSeparator(pres, 'Tesis de Inversión');
+
+  const slide = addContentSlide(pres, {
+    overline: 'Tesis de Inversión',
+    title: 'Razones para invertir',
   });
 
-  const items = op.highlights?.filter(Boolean) || ['Información no disponible'];
-  const bullets = items.map(h => ({ text: h, options: { bullet: true, indentLevel: 0 } }));
+  const bullets = items.map(h => ({
+    text: h,
+    options: { bullet: true, indentLevel: 0 },
+  }));
 
   slide.addText(bullets as any, {
-    x: 0.5, y: 1.2, w: 9, h: 3.5,
-    fontSize: 12, color: NAVY, fontFace: 'Arial', lineSpacingMultiple: 1.6,
+    x: M, y: 1.8, w: SW - M * 2, h: 4.5,
+    fontSize: 12, color: NAVY, fontFace: FONT, lineSpacingMultiple: 1.7,
   });
-  addFooter(slide);
 };
 
-const addProcesoMA = (pres: pptxgen, op: OperationData) => {
-  const slide = pres.addSlide();
-  slide.addText('Proceso M&A', {
-    x: 0.5, y: 0.3, w: 9, h: 0.5,
-    fontSize: 22, color: NAVY, fontFace: 'Arial', bold: true,
+const buildProcesoMA = (pres: pptxgen, op: OperationData) => {
+  addSectionSeparator(pres, 'Proceso M&A');
+
+  const slide = addContentSlide(pres, {
+    overline: 'Proceso M&A',
+    title: 'Fases del proceso',
+    subtitle: `Tipo: ${dealLabel(op.deal_type)} · Estado: ${statusLabel(op.status)}`,
   });
 
   const steps = [
-    { label: '1. NDA & Teaser', desc: 'Firma de acuerdo de confidencialidad y envío de teaser.' },
-    { label: '2. Cuaderno de Información', desc: 'Acceso al CIM con información financiera y operativa detallada.' },
-    { label: '3. Indicación de Interés', desc: 'Presentación de oferta indicativa no vinculante.' },
-    { label: '4. Due Diligence', desc: 'Proceso de auditoría legal, financiera y operativa.' },
-    { label: '5. Oferta Vinculante', desc: 'Negociación y firma del SPA.' },
-    { label: '6. Cierre', desc: 'Transferencia de acciones y cierre de la operación.' },
+    ['1', 'NDA & Teaser', 'Firma de acuerdo de confidencialidad y envío del teaser de la operación.'],
+    ['2', 'Cuaderno de Información', 'Acceso al CIM con información financiera y operativa detallada.'],
+    ['3', 'Indicación de Interés', 'Presentación de oferta indicativa no vinculante (IOI).'],
+    ['4', 'Due Diligence', 'Proceso de auditoría legal, financiera y operativa.'],
+    ['5', 'Oferta Vinculante', 'Negociación y firma del contrato de compraventa (SPA).'],
+    ['6', 'Cierre', 'Transferencia de acciones y cierre de la operación.'],
   ];
 
-  steps.forEach((step, i) => {
-    const y = 1.1 + i * 0.6;
-    slide.addText(step.label, { x: 0.5, y, w: 3, h: 0.4, fontSize: 11, color: NAVY, fontFace: 'Arial', bold: true });
-    slide.addText(step.desc, { x: 3.5, y, w: 6, h: 0.4, fontSize: 10, color: TEXT_SECONDARY, fontFace: 'Arial' });
-  });
-  addFooter(slide);
+  // Table with header
+  const headerRow = [
+    { text: '#', options: { fontSize: 10, color: WHITE, fontFace: FONT, bold: true, fill: { color: NAVY } } },
+    { text: 'FASE', options: { fontSize: 10, color: WHITE, fontFace: FONT, bold: true, fill: { color: NAVY } } },
+    { text: 'DESCRIPCIÓN', options: { fontSize: 10, color: WHITE, fontFace: FONT, bold: true, fill: { color: NAVY } } },
+  ];
+
+  const dataRows = steps.map(([n, phase, desc]) => [
+    { text: n, options: { fontSize: 10, color: NAVY, fontFace: FONT, align: 'center' as const } },
+    { text: phase, options: { fontSize: 10, color: NAVY, fontFace: FONT, bold: true } },
+    { text: desc, options: { fontSize: 10, color: TEXT_SECONDARY, fontFace: FONT } },
+  ]);
+
+  slide.addTable(
+    [headerRow, ...dataRows] as any,
+    {
+      x: M, y: 2.0, w: SW - M * 2,
+      border: { type: 'dash', pt: 0.5, color: BORDER },
+      colW: [0.6, 2.8, SW - M * 2 - 3.4],
+      rowH: 0.55,
+    }
+  );
 };
 
-const addContacto = (pres: pptxgen) => {
+const buildContacto = (pres: pptxgen) => {
+  addSectionSeparator(pres, 'Contacto');
+
+  // Closing slide
   const slide = pres.addSlide();
-  slide.background = { color: NAVY };
+  slide.background = { color: WHITE };
 
-  slide.addText('Contacto', {
-    x: 0.5, y: 0.5, w: 9, h: 0.5,
-    fontSize: 22, color: WHITE, fontFace: 'Arial', bold: true,
+  slide.addText('Gracias', {
+    x: M, y: SH / 2 - 1.5, w: SW - M * 2, h: 1.5,
+    fontSize: 72, color: NAVY, fontFace: FONT, bold: true, align: 'center', valign: 'middle',
   });
 
-  const lines = [
-    'CAPITTAL',
-    'Asesoramiento en compraventa de empresas',
-    '',
-    'info@capittal.es',
-    'www.capittal.es',
-    '',
-    'Este documento es confidencial y ha sido preparado',
-    'exclusivamente para el destinatario.',
-  ];
-
-  slide.addText(lines.join('\n'), {
-    x: 0.5, y: 1.5, w: 9, h: 3,
-    fontSize: 13, color: TEXT_TERTIARY, fontFace: 'Arial', lineSpacingMultiple: 1.5,
+  slide.addText([
+    { text: 'Capittal Transacciones', options: { fontSize: 14, bold: true } },
+    { text: '\ninfo@capittal.es · www.capittal.es', options: { fontSize: 12 } },
+  ] as any, {
+    x: SW / 2 - 3, y: SH / 2 + 0.3, w: 6, h: 0.8,
+    color: TEXT_SECONDARY, fontFace: FONT, align: 'center',
   });
+
+  // Disclaimer
+  slide.addText(
+    `Esta presentación ha sido elaborada con fines meramente informativos y no constituye asesoramiento profesional. © ${YEAR} Capittal Transacciones. Todos los derechos reservados.`,
+    {
+      x: M + 1, y: SH - 1.0, w: SW - M * 2 - 2, h: 0.5,
+      fontSize: 8, color: TEXT_TERTIARY, fontFace: FONT, align: 'center',
+    }
+  );
 };
 
-// ─── MAIN ───
+// ─── PUBLIC API ───
 
 export type SectionKey = 'portada' | 'resumen' | 'empresa' | 'financieros' | 'tesis' | 'proceso' | 'contacto';
 
@@ -261,27 +399,31 @@ export const ALL_SECTIONS: SectionKey[] = ['portada', 'resumen', 'empresa', 'fin
 export async function generateOperationPptx(
   operation: OperationData,
   sections: SectionKey[],
-  template: TemplateType
+  _template: TemplateType
 ): Promise<void> {
+  slideNum = 0;
+
   const pres = new pptxgen();
-  pres.layout = 'LAYOUT_WIDE';
+  pres.defineLayout({ name: 'CAPITTAL', width: SW, height: SH });
+  pres.layout = 'CAPITTAL';
   pres.author = 'Capittal';
-  pres.title = `${operation.company_name} — ${getTemplateLabel(template)}`;
+  pres.company = 'Capittal Transacciones';
+  pres.title = `${operation.company_name} – Capittal – ${MONTH_YEAR}`;
 
   const builders: Record<SectionKey, () => void> = {
-    portada: () => addPortada(pres, operation, template),
-    resumen: () => addResumenEjecutivo(pres, operation),
-    empresa: () => addLaEmpresa(pres, operation),
-    financieros: () => addFinancieros(pres, operation),
-    tesis: () => addTesisInversion(pres, operation),
-    proceso: () => addProcesoMA(pres, operation),
-    contacto: () => addContacto(pres),
+    portada: () => addCover(pres, operation),
+    resumen: () => buildResumenEjecutivo(pres, operation),
+    empresa: () => buildEmpresa(pres, operation),
+    financieros: () => buildFinancieros(pres, operation),
+    tesis: () => buildTesisInversion(pres, operation),
+    proceso: () => buildProcesoMA(pres, operation),
+    contacto: () => buildContacto(pres),
   };
 
   for (const s of ALL_SECTIONS) {
     if (sections.includes(s)) builders[s]();
   }
 
-  const safeName = operation.company_name.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '').trim().replace(/\s+/g, '_');
-  await pres.writeFile({ fileName: `${getTemplateLabel(template)}_${safeName}.pptx` });
+  const safeName = operation.company_name.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g, '').trim().replace(/\s+/g, ' ');
+  await pres.writeFile({ fileName: `${safeName} – Capittal – ${MONTH_YEAR}.pptx` });
 }
