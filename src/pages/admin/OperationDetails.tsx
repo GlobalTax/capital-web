@@ -20,6 +20,7 @@ import { AssignmentPanel } from '@/features/operations-management/components/ass
 import { OperationHistoryTimeline } from '@/features/operations-management/components/history';
 import { OperationNotesPanel } from '@/features/operations-management/components/notes';
 import { OperationDocumentsPanel } from '@/features/operations-management/components/documents';
+import { GeneratePresentationModal } from '@/features/operations-management/components/GeneratePresentationModal';
 import { useMandatoInteracciones, type CreateInteraccionInput, type TipoInteraccion } from '@/hooks/useMandatoInteracciones';
 import { MandatoEquipoPanel } from '@/components/admin/mandatos/MandatoEquipoPanel';
 import { MandatoContactosAuditBanner } from '@/components/admin/mandatos/MandatoContactosAuditBanner';
