@@ -175,9 +175,11 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
   const slide = pptx.addSlide();
   slide.background = { color: WHITE };
 
-  const leftW = 7.2;
-  const rightX = 8.2;
-  const rightW = 4.5;
+  const leftW = 6.7;
+  const rightX = 7.7;
+  const rightW = 5.0;
+  const pad = 0.3;
+  const innerW = rightW - pad * 2;
 
   // ─── LEFT COLUMN ───
   // Company name
@@ -186,25 +188,19 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
     fontSize: 26, fontFace: FONT, color: NAVY, bold: true,
   });
 
-  // Sector badge
-  slide.addText(op.sector?.toUpperCase() || '', {
-    x: M, y: 1.2, w: 3, h: 0.35,
-    fontSize: 9, fontFace: FONT, color: ACCENT, bold: true,
-  });
-
   // Description
   const desc = op.description || '';
   slide.addText(desc, {
-    x: M, y: 1.7, w: leftW, h: 2.8,
+    x: M, y: 1.3, w: leftW, h: 3.2,
     fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
-    lineSpacingMultiple: 1.4, valign: 'top', wrap: true, shrinkText: true,
+    lineSpacingMultiple: 1.4, valign: 'top', wrap: true, overflow: 'ellipsis',
   });
 
   // Highlights bullets
   const highlights = op.highlights || [];
   if (highlights.length > 0) {
     slide.addText('Aspectos Destacados', {
-      x: M, y: 4.7, w: leftW, h: 0.35,
+      x: M, y: 4.6, w: leftW, h: 0.35,
       fontSize: 11, fontFace: FONT, color: NAVY, bold: true,
     });
 
@@ -213,7 +209,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
       options: { fontSize: 10, fontFace: FONT, color: TEXT_SECONDARY, bullet: { code: '2022' }, lineSpacingMultiple: 1.3 },
     }));
     slide.addText(bulletText as any, {
-      x: M + 0.2, y: 5.1, w: leftW - 0.4, h: 1.8,
+      x: M + 0.2, y: 5.0, w: leftW - 0.4, h: 1.8,
       valign: 'top',
     });
   }
@@ -229,28 +225,41 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
 
   // "Resumen" header
   slide.addText('Resumen', {
-    x: rightX + 0.3, y: cardY + 0.25, w: rightW - 0.6, h: 0.4,
+    x: rightX + pad, y: cardY + 0.25, w: innerW, h: 0.4,
     fontSize: 13, fontFace: FONT, color: WHITE, bold: true,
   });
 
-  // Info rows
-  const infoRows = [
+  // Info rows — Ubicación & Sector side-by-side label:value
+  const simpleRows = [
     { label: 'Ubicación', value: 'España' },
     { label: 'Sector', value: op.sector || 'N/D' },
-    { label: 'Oportunidad', value: op.short_description || op.deal_type || 'Venta' },
   ];
 
-  infoRows.forEach((row, i) => {
-    const rowY = cardY + 0.8 + i * 0.55;
+  let infoY = cardY + 0.8;
+  simpleRows.forEach((row) => {
     slide.addText(row.label, {
-      x: rightX + 0.3, y: rowY, w: 1.5, h: 0.3,
+      x: rightX + pad, y: infoY, w: 1.5, h: 0.3,
       fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
     });
     slide.addText(row.value, {
-      x: rightX + 1.8, y: rowY, w: rightW - 2.2, h: 0.3,
-      fontSize: 10, fontFace: FONT, color: WHITE, bold: true,
+      x: rightX + pad + 1.5, y: infoY, w: innerW - 1.5, h: 0.3,
+      fontSize: 10, fontFace: FONT, color: WHITE, bold: true, wrap: true,
     });
+    infoY += 0.45;
   });
+
+  // Oportunidad — label stacked above value for full width
+  const oportunidadText = op.short_description || op.deal_type || 'Venta';
+  slide.addText('Oportunidad', {
+    x: rightX + pad, y: infoY, w: innerW, h: 0.25,
+    fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
+  });
+  infoY += 0.25;
+  slide.addText(oportunidadText, {
+    x: rightX + pad, y: infoY, w: innerW, h: 0.7,
+    fontSize: 10, fontFace: FONT, color: WHITE, bold: true, wrap: true, valign: 'top',
+  });
+  infoY += 0.7;
 
   // Separator line
   const sepY = cardY + 2.6;
