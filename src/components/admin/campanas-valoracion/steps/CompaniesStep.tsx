@@ -1036,7 +1036,11 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
                   <Trash2 className="h-4 w-4 mr-1" />
                   Eliminar las {companies.length - selectedIds.length} NO seleccionadas
                 </Button>
-              )}
+               )}
+              <Button variant="outline" size="sm" onClick={() => setShowCopyToList(true)}>
+                <List className="h-4 w-4 mr-1" />
+                Copiar a lista
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>
                 Deseleccionar todo
               </Button>
