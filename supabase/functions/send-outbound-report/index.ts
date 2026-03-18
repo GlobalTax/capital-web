@@ -71,6 +71,8 @@ interface RawEmail {
 interface RawCompany {
   campaign_id: string;
   seguimiento_estado: string | null;
+  seguimiento_notas: string | null;
+  client_company: string | null;
   id: string;
 }
 
