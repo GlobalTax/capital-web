@@ -1015,14 +1015,13 @@ export default function ContactListDetailPage() {
   // ===== MOVE / COPY COMPANY =====
   const executeMoveCopy = async (targetId: string) => {
     if (!moveCopyCompany || !listId) return;
-    // Guard: no permitir mover empresas desde lista madre (solo copiar o reasignar sublista)
-    if (moveCopyMode === 'move' && isMadreList && !(moveCopyCompany as any).sublist_id) {
-      toast.error('No se pueden mover empresas desde una lista madre. Usa "Copiar" en su lugar.');
-      setIsMoveCopyLoading(false);
-      return;
+    // Guard: en lista madre, forzar modo copy silenciosamente (nunca eliminar del origen)
+    let effectiveMode = moveCopyMode;
+    if (isMadreList && moveCopyMode === 'move' && !(moveCopyCompany as any).sublist_id) {
+      effectiveMode = 'copy';
     }
     try {
-      if (moveCopyMode === 'copy') {
+      if (effectiveMode === 'copy') {
         // Check if CIF already exists in target list
         if (moveCopyCompany.cif) {
           const { data: existing } = await supabase
@@ -1044,7 +1043,7 @@ export default function ContactListDetailPage() {
           list_id: targetId,
           notas: null,
         } as any);
-        toast.success('Empresa copiada a la otra lista');
+        toast.success(isMadreList ? 'Empresa añadida a la lista' : 'Empresa copiada a la otra lista');
       } else if (moveCopyFromSublistId) {
         // Move from sublist: update the record in the source sublist
         await supabase.from('outbound_list_companies' as any)
@@ -1156,10 +1155,10 @@ export default function ContactListDetailPage() {
   // ===== BULK MOVE / COPY =====
   const handleBulkMoveCopy = async () => {
     if (!listId || selectedIds.length === 0) return;
-    // Guard: no permitir mover en bulk desde lista madre
-    if (bulkMoveCopyMode === 'move' && isMadreList) {
-      toast.error('No se pueden mover empresas desde una lista madre. Usa "Copiar" en su lugar.');
-      return;
+    // En lista madre, forzar modo copy silenciosamente
+    let effectiveBulkMode = bulkMoveCopyMode;
+    if (isMadreList && bulkMoveCopyMode === 'move') {
+      effectiveBulkMode = 'copy';
     }
     let targetId = bulkMoveCopyTargetId;
     
@@ -1185,7 +1184,7 @@ export default function ContactListDetailPage() {
     const selectedCompanies = companies.filter(c => selectedIds.includes(c.id));
 
     try {
-      if (bulkMoveCopyMode === 'copy') {
+      if (effectiveBulkMode === 'copy') {
         // Get existing CIFs in target to deduplicate
         const selectedCifs = selectedCompanies.map(c => (c as any).cif).filter(Boolean);
         let existingCifs = new Set<string>();
@@ -1220,7 +1219,8 @@ export default function ContactListDetailPage() {
           await supabase.from('outbound_list_companies' as any).insert(batch as any);
         }
 
-        const msg = `${toInsert.length} empresas copiadas` + (skipped > 0 ? `, ${skipped} duplicadas omitidas` : '');
+        const actionWord = isMadreList ? 'añadidas' : 'copiadas';
+        const msg = `${toInsert.length} empresas ${actionWord}` + (skipped > 0 ? `, ${skipped} duplicadas omitidas` : '');
         toast.success(msg);
       } else {
         // Move: update list_id in batches
@@ -1823,14 +1823,14 @@ export default function ContactListDetailPage() {
               )}
               <div className="flex items-center gap-3 p-3 bg-muted rounded-lg flex-wrap">
                 <span className="text-sm font-medium">{selectedIds.length.toLocaleString('es-ES')} seleccionadas</span>
-                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
-                  <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
-                </Button>
                 {!isMadreList && (
-                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
-                    <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
+                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                    <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
                   </Button>
                 )}
+                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                  <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
+                </Button>
                 {!isMadreList && (
                   <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
                     <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
@@ -2091,14 +2091,14 @@ export default function ContactListDetailPage() {
                                     <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                       <Edit className="h-4 w-4 mr-2" /> Editar
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                      <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                    </DropdownMenuItem>
                                     {!isMadreList && (
-                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
-                                        <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
+                                        <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                       </DropdownMenuItem>
                                     )}
-                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
-                                      <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
-                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
                                       {aiGenLoading === company.id ? (
                                         <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
