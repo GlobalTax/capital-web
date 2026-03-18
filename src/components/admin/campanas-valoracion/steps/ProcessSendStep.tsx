@@ -493,7 +493,7 @@ interface FloatingActionBarProps {
   estimatedSize: string;
 }
 
-function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy, estimatedSize }: FloatingActionBarProps) {
+function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, onCopyToList, isBusy, estimatedSize }: FloatingActionBarProps) {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
       <Card className="shadow-2xl border">
@@ -504,6 +504,10 @@ function FloatingActionBar({ selectedCount, onClear, onDownload, onSend, isBusy,
           <div className="h-4 w-px bg-border" />
           <Button size="sm" variant="ghost" onClick={onClear} disabled={isBusy}>
             <X className="h-4 w-4 mr-1.5" />Limpiar
+          </Button>
+          <Button size="sm" variant="outline" onClick={onCopyToList} disabled={isBusy}>
+            <List className="h-4 w-4 mr-1.5" />
+            Copiar a lista
           </Button>
           <Button size="sm" variant="outline" onClick={onDownload} disabled={isBusy}>
             <Download className="h-4 w-4 mr-1.5" />
