@@ -1734,15 +1734,15 @@ export default function ContactListDetailPage() {
           </Button>
           <div>
             {parentList && (
-              <div className="mb-1 flex items-center gap-2">
-                <Link to={`/admin/listas-contacto/${parentList.id}`} className="text-xs text-primary hover:underline flex items-center gap-1">
-                  <Link2 className="h-3 w-3" />
-                  Sublista de: {parentList.name}
+              <div className="mb-2 flex items-center gap-3">
+                <Link 
+                  to={`/admin/listas-contacto/${parentList.id}`} 
+                  className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+                >
+                  <Layers className="h-4 w-4" />
+                  <span className="text-muted-foreground font-normal">Sublista de:</span>
+                  <span className="font-semibold">{parentList.name}</span>
                 </Link>
-                <Badge variant="accent" size="sm" className="text-[10px]">
-                  <Layers className="h-3 w-3 mr-0.5" />
-                  Lista Madre: {parentList.name}
-                </Badge>
               </div>
             )}
             <h1 className="text-2xl font-semibold">{list.name}</h1>
