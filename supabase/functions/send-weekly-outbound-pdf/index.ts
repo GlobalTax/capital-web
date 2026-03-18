@@ -408,6 +408,19 @@ function generatePDF(
       styles: { cellPadding: 2.5, lineColor: COLORS.border, lineWidth: 0.3 },
       alternateRowStyles: { fillColor: COLORS.lightBg },
       margin: { left: margin, right: margin },
+      didParseCell: (data: any) => {
+        if (data.section === 'body' && data.column.index === 2) {
+          const val = String(data.cell.raw || '');
+          const match = responded[data.row.index];
+          if (match) {
+            const color = estadoColors[match.seguimiento_estado!];
+            if (color) {
+              data.cell.styles.textColor = color;
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+        }
+      },
     });
     y = (doc as any).lastAutoTable.finalY + 12;
   } else {
