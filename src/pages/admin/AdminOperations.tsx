@@ -89,6 +89,8 @@ const AdminOperations = () => {
   const [selectedOperations, setSelectedOperations] = useState<Set<string>>(new Set());
   const [viewingOperation, setViewingOperation] = useState<Operation | null>(null);
   const [showSellerGuide, setShowSellerGuide] = useState(false);
+  const [showPresentationModal, setShowPresentationModal] = useState(false);
+  const [presentationOperation, setPresentationOperation] = useState<Operation | null>(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showProjectStatusModal, setShowProjectStatusModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
