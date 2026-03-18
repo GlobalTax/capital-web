@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft, List, FolderOpen, FolderClosed, ChevronRight, LayoutList, FolderTree, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Megaphone, Building2, Mail, TrendingUp, Trash2, Edit, Copy, Search, AlertTriangle, Pencil, Check, X, FileText, ArrowRightLeft, List, FolderOpen, FolderClosed, ChevronRight, LayoutList, FolderTree, ArrowUpDown, ArrowUp, ArrowDown, BarChart3 } from 'lucide-react';
+import { OutboundSummaryDashboard } from '@/components/admin/campanas-valoracion/OutboundSummaryDashboard';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel
 } from '@/components/ui/dropdown-menu';
