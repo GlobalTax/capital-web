@@ -377,7 +377,7 @@ export default function CampanasValoracion() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document')}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document' | 'summary')}>
         <TabsList>
           <TabsTrigger value="valuation" className="flex items-center gap-1.5">
             <TrendingUp className="h-4 w-4" />
@@ -387,8 +387,17 @@ export default function CampanasValoracion() {
             <FileText className="h-4 w-4" />
             Documento PDF
           </TabsTrigger>
+          <TabsTrigger value="summary" className="flex items-center gap-1.5">
+            <BarChart3 className="h-4 w-4" />
+            Resumen General
+          </TabsTrigger>
         </TabsList>
       </Tabs>
+
+      {activeTab === 'summary' ? (
+        <OutboundSummaryDashboard />
+      ) : (
+      <>
 
       {/* Stats */}
       <div className={`grid grid-cols-1 gap-4 ${activeTab === 'valuation' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
