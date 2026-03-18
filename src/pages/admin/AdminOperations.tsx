@@ -1883,6 +1883,12 @@ const AdminOperations = () => {
           operation={presentationOperation}
         />
       )}
+
+      <GenerateDealhubModal
+        open={showDealhubModal}
+        onOpenChange={setShowDealhubModal}
+        operations={operations}
+      />
     </div>
   );
 };
