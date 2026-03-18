@@ -176,7 +176,7 @@ export function OutboundSummaryDashboard() {
 
       return {
         id: c.id, name: c.name, sector: c.sector,
-        campaign_type: c.campaign_type, total_companies: c.total_companies || 0,
+        campaign_type: c.campaign_type, total_companies: campCompanies,
         sent: em.sent, delivered: em.delivered, bounced: em.bounced, opened: em.opened,
         sin_respuesta: seg.sin_respuesta, interesado: seg.interesado,
         reunion_agendada: seg.reunion_agendada, no_interesado: seg.no_interesado,
