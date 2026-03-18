@@ -45,6 +45,7 @@ import { AdvancedSearchPanel } from '@/features/operations-management/components
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import * as XLSX from 'xlsx';
 import { GeneratePresentationModal } from '@/features/operations-management/components/GeneratePresentationModal';
+import { GenerateDealhubModal } from '@/features/operations-management/components/GenerateDealhubModal';
 
 interface Operation {
   id: string;
@@ -92,6 +93,7 @@ const AdminOperations = () => {
   const [showSellerGuide, setShowSellerGuide] = useState(false);
   const [showPresentationModal, setShowPresentationModal] = useState(false);
   const [presentationOperation, setPresentationOperation] = useState<Operation | null>(null);
+  const [showDealhubModal, setShowDealhubModal] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showProjectStatusModal, setShowProjectStatusModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
@@ -1120,6 +1122,14 @@ const AdminOperations = () => {
             Guía de Publicación
           </Button>
           <Button
+            onClick={() => setShowDealhubModal(true)}
+            variant="outline"
+            className="border-primary/20 hover:bg-primary/5 text-primary"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Generar Catálogo ROD
+          </Button>
+          <Button
             onClick={() => {
               if (selectedOperations.size === 0) {
                 toast({ title: 'Selecciona una operación', description: 'Marca el checkbox de una operación para generar su presentación', variant: 'destructive' });
@@ -1873,6 +1883,12 @@ const AdminOperations = () => {
           operation={presentationOperation}
         />
       )}
+
+      <GenerateDealhubModal
+        open={showDealhubModal}
+        onOpenChange={setShowDealhubModal}
+        operations={operations}
+      />
     </div>
   );
 };

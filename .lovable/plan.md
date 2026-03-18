@@ -1,66 +1,144 @@
+## ✅ Completado: Eliminar meta http-equiv="refresh" de todas las funciones SSR
 
+### Cambios realizados
 
-## Plan: Generar catálogo ROD (Relación de Oportunidades) automático desde operaciones
+1. **`blog-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+2. **`news-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+3. **`pages-ssr/index.ts`**: Eliminado `<meta http-equiv="refresh">`, CSS `.redirect-note` y párrafo "Redirigiendo".
+4. **`prerender-proxy/index.ts`**: Eliminado `<meta http-equiv="refresh">` del fallback HTML y reemplazado texto "Redirigiendo" por enlace estático.
 
-### Contexto
-El usuario quiere generar un documento tipo "Capittal Dealhub - Open Deals" que agrupe TODAS las operaciones activas en un solo PPTX, replicando la estructura exacta del PDF subido. Esto es diferente de la funcionalidad actual que genera una presentación para UNA sola operación.
+### Resultado
 
-### Estructura del documento (replicando el PDF)
+- Las páginas SSR son ahora contenido final para bots, sin señales de redirección.
+- Google indexará el contenido directamente en lugar de seguir un refresh.
+- Verificado con curl: la respuesta de pages-ssr ya no contiene `http-equiv="refresh"`.
 
-El PPTX agrupará las operaciones por `project_status` y `deal_type` en 4 secciones:
+---
 
-```text
-1. PORTADA (negra) — "Capittal Dealhub - Open Deals Q[trimestre]"
-2. ÍNDICE — 4 tarjetas: Mandatos de venta, Fase de preparación, Mandatos de compra, En exclusividad
-3. SECCIÓN 01 — "Empresas en proceso de venta" (separador negro)
-   → 1 slide por operación (project_status=active, deal_type=sale)
-4. SECCIÓN 02 — "Próximamente en mercado" (separador negro)
-   → 1 slide por operación (project_status=upcoming)
-5. SECCIÓN 03 — "Empresas en búsqueda de adquisición" (separador negro)
-   → 1 slide por operación (deal_type=acquisition)
-6. SECCIÓN 04 — "Procesos en fase de exclusividad" (separador negro)
-   → 1 slide por operación (project_status=exclusive)
+## ✅ Completado: og:url estático + SSR para noticias individuales
+
+### Cambios realizados
+
+1. **`index.html`**: Añadido `<meta property="og:url">` estático en el `<head>` + actualización dinámica en el script síncrono junto al canonical.
+
+2. **`supabase/functions/news-ssr/index.ts`** (NUEVO): Edge function que genera HTML completo para `/recursos/noticias/:slug` con title, description, canonical, og:url, og:image, structured data (NewsArticle + BreadcrumbList + Organization) y breadcrumbs.
+
+3. **`supabase/functions/prerender-proxy/index.ts`**: Añadido routing de `/recursos/noticias/:slug` → `news-ssr?slug=...` (antes iba a `pages-ssr` que devolvía metadata genérica).
+
+4. **`supabase/config.toml`**: Registrada `news-ssr` con `verify_jwt = false`.
+
+### Resultado
+
+- Bots ven `og:url` en el HTML estático de todas las páginas (sin necesidad de JS)
+- Noticias individuales tienen SSR completo con metadatos únicos por artículo
+- Verificado con curl: título, canonical, og:url y structured data correctos
+
+---
+
+## ✅ Completado: Limpiar schemas JSON-LD en index.html
+
+### Cambios realizados
+
+- **Eliminado** `FinancialService` schema del `<head>` (era específico de páginas de servicios)
+- **Eliminado** `FAQPage` schema del `<head>` (era específico de páginas con FAQ)
+- **Mantenido** `Organization` schema (válido globalmente)
+- **Mantenido** `WebPage` schema (válido globalmente)
+
+### Resultado
+
+- Solo quedan 2 schemas globales en `index.html`: Organization y WebPage
+- FinancialService y FAQPage deben inyectarse dinámicamente vía `SEOHead` en sus páginas correspondientes
+
+---
+
+## ✅ Completado: Integración Lista de Contacto → Campaña Outbound
+
+### Cambios realizados
+
+1. **Migración SQL**: Añadida columna `source_list_id` (uuid) a `valuation_campaigns` con FK a `outbound_lists`.
+
+2. **`src/components/admin/contact-lists/SendToCampaignDialog.tsx`** (NUEVO): Diálogo completo para enviar empresas de una lista a una campaña outbound. Incluye:
+   - Selección entre crear nueva campaña o añadir a existente
+   - Deduplicación por CIF contra la campaña destino (omite duplicados)
+   - Deduplicación cross-campaña (aviso de empresas ya contactadas en otras campañas)
+   - Mapeo automático de campos lista → campaña
+   - Inserción en batches de 100
+
+3. **`src/components/admin/campanas-valoracion/ImportFromListDialog.tsx`** (NUEVO): Diálogo para importar empresas desde lista dentro del paso 2 (CompaniesStep) de una campaña. Misma lógica de deduplicación.
+
+4. **`src/pages/admin/ContactListDetailPage.tsx`**: Botón "Enviar a campaña" en la toolbar de acciones de la lista.
+
+5. **`src/components/admin/campanas-valoracion/steps/CompaniesStep.tsx`**: Botón "Importar desde lista de contacto" antes del formulario manual.
+
+6. **`src/pages/admin/CampanasValoracion.tsx`**: Badge con nombre de lista origen junto al nombre de la campaña (clickable, navega a la lista).
+
+7. **`src/hooks/useCampaigns.ts`**: Añadido `source_list_id` al tipo `ValuationCampaign`.
+
+### Resultado
+
+- Flujo directo lista → campaña con un solo clic
+- Protección anti-duplicados a nivel de campaña y cross-campaña
+- Trazabilidad: cada campaña muestra su lista origen
+
+---
+
+## ✅ Completado: Sistema de envío automático server-side para Outbound
+
+### Cambios realizados
+
+1. **Migration SQL**: Nueva tabla `outbound_send_queue` con campos: id, campaign_id, send_type, sequence_id, email_ids, interval_ms, max_per_hour, scheduled_at, status, progress_current, progress_total, last_processed_at, error_message, created_by, created_at, updated_at. RLS habilitado.
+
+2. **`supabase/functions/process-outbound-queue/index.ts`** (NUEVO): Worker Edge Function que:
+   - Marca jobs estancados (>10min sin progreso) como `failed`
+   - Busca jobs `pending` con `scheduled_at <= now()` o `running`
+   - Calcula emails a enviar por ventana de 2min respetando `interval_ms` y `max_per_hour`
+   - Llama a `send-campaign-outbound-email` existente para cada email
+   - Actualiza progreso en tiempo real y marca como `completed` al terminar
+   - Re-verifica status del job entre emails (para soportar pausa/cancelación)
+
+3. **`src/hooks/useOutboundQueue.ts`** (NUEVO): Hook React que expone:
+   - `jobs`, `activeJobs`, `hasActiveJob`
+   - `createJob` mutation para insertar en la cola
+   - `updateJobStatus` mutation para pausar/reanudar/cancelar
+   - Polling cada 10s para actualización de progreso en tiempo real
+
+4. **`src/components/admin/campanas-valoracion/shared/OutboundQueueMonitor.tsx`** (NUEVO): Panel de monitorización con:
+   - Lista de jobs con badge de estado (Programado/En curso/Pausado/Completado/Fallido/Cancelado)
+   - Barra de progreso para jobs activos
+   - Botones de Pausar/Reanudar/Cancelar
+
+5. **`src/components/admin/campanas-valoracion/shared/SendScheduleConfig.tsx`**: Añadido campo `serverSide` al tipo `SendScheduleSettings`. Nuevo selector "Modo de envío" con opciones:
+   - "Desde el navegador" (comportamiento actual)
+   - "Server-side (automático)" → inserta job en cola, no requiere navegador abierto
+
+6. **`ProcessSendStep.tsx`**: Integrado `useOutboundQueue`. Al enviar con modo server-side, crea job en cola con IDs de campaign_emails.
+
+7. **`DocumentSendStep.tsx`**: Mismo patrón: modo server-side crea job tipo 'document' en la cola.
+
+8. **`FollowUpStep.tsx`**: Añadido `OutboundQueueMonitor` en la vista.
+
+9. **`supabase/config.toml`**: Registrada función `process-outbound-queue` con `verify_jwt = false`.
+
+### Pendiente: pg_cron job
+
+Ejecutar en el SQL Editor de Supabase:
+```sql
+SELECT cron.schedule(
+  'process-outbound-queue',
+  '*/2 * * * *',
+  $$
+  SELECT net.http_post(
+    url:='https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/process-outbound-queue',
+    headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3aHF0emtrdm5qa2F6aGFmaWNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4Mjc5NTMsImV4cCI6MjA2NTQwMzk1M30.Qhb3pRgx3HIoLSjeIulRHorgzw-eqL3WwXhpncHMF7I"}'::jsonb,
+    body:='{"time": "now"}'::jsonb
+  ) AS request_id;
+  $$
+);
 ```
 
-### Layout de cada slide de operación (replicando page 4 del PDF)
+### Resultado
 
-Dos columnas:
-- **Izquierda**: Nombre proyecto (28pt bold), descripción (11pt), bullets/highlights
-- **Derecha**: Tarjeta negra con Resumen (Ubicación, Sector, Oportunidad) + Tabla "Datos Clave" (Facturación, EBITDA, Margen/Empleados) + "Más Información"
-
-### Archivos a modificar/crear
-
-**1. Crear `src/features/operations-management/utils/generateDealhubPptx.ts`**
-- Nueva función `generateDealhubPptx(operations: Operation[])` que recibe TODAS las operaciones activas
-- Filtra por `is_active && !is_deleted`
-- Agrupa por las 4 categorías
-- Genera portada, índice, y 1 slide por operación con el layout de dos columnas
-- Descarga como `Capittal Dealhub - Open Deals Q[X] [Year].pptx`
-
-**2. Crear `src/features/operations-management/components/GenerateDealhubModal.tsx`**
-- Modal nuevo con: selector de trimestre (Q1/Q2/Q3/Q4), checklist de las 4 secciones, botón generar
-- Usa TODAS las operaciones cargadas en AdminOperations (no requiere selección)
-
-**3. Modificar `src/pages/admin/AdminOperations.tsx`**
-- Cambiar el botón "Generar Presentación" actual para abrir el nuevo modal de Dealhub (sin necesidad de selección previa)
-- O bien añadir un segundo botón "Generar Catálogo ROD"
-- Pasar el array `operations` completo al modal
-
-### Data mapping por slide de operación
-
-| Campo visual | Campo DB |
-|---|---|
-| Nombre proyecto | `company_name` |
-| Descripción | `description` (columna izq) |
-| Ubicación | "España" (estático) |
-| Sector | `sector` |
-| Oportunidad | `short_description` |
-| Facturación | `revenue_amount` |
-| EBITDA | `ebitda_amount` |
-| Margen EBITDA | calculado `ebitda/revenue` |
-| Empleados | `company_size_employees` |
-| Highlights | `highlights[]` como bullets |
-
-### Sin backend
-Todo client-side con pptxgenjs ya instalado. Solo se reutilizan los datos ya cargados en la página.
-
+- Los envíos programados pueden ejecutarse en segundo plano sin necesidad de mantener el navegador abierto
+- El worker procesa la cola cada 2 minutos respetando intervalos y límites horarios
+- Soporte para pausar, reanudar y cancelar envíos en curso
+- Panel de monitorización integrado en los 3 pasos de envío (Inicial, Documento, Follow-up)
