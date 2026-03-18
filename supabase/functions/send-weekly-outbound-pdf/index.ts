@@ -370,11 +370,19 @@ function generatePDF(
   const campaignNameMap = new Map(campaigns.map(c => [c.id, c.name]));
 
   const estadoLabels: Record<string, string> = {
-    interesado: '✅ Interesado',
-    reunion_agendada: '📅 Reunión',
-    no_interesado: '❌ No interesado',
-    contactado: '📞 Contactado',
-    en_negociacion: '🤝 En negociación',
+    interesado: 'Interesado',
+    reunion_agendada: 'Reunion',
+    no_interesado: 'No interesado',
+    contactado: 'Contactado',
+    en_negociacion: 'En negociacion',
+  };
+
+  const estadoColors: Record<string, [number, number, number]> = {
+    interesado: [59, 130, 246],
+    reunion_agendada: [34, 197, 94],
+    no_interesado: [239, 68, 68],
+    contactado: [249, 115, 22],
+    en_negociacion: [139, 92, 246],
   };
 
   if (responded.length > 0) {
