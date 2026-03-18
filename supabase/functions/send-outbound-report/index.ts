@@ -329,7 +329,7 @@ serve(async (req: Request) => {
         .in("campaign_id", ids),
       supabase
         .from("valuation_campaign_companies")
-        .select("campaign_id, seguimiento_estado, id")
+        .select("campaign_id, seguimiento_estado, seguimiento_notas, client_company, id")
         .in("campaign_id", ids),
     ]);
 
