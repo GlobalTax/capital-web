@@ -188,9 +188,9 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
     fontSize: 26, fontFace: FONT, color: NAVY, bold: true,
   });
 
-   // Description (max 1200 chars + auto-shrink to prevent overflow)
-   const rawDesc = op.description || '';
-   const desc = rawDesc.length > 1200 ? rawDesc.substring(0, 1197) + '...' : rawDesc;
+    // Description (max 800 chars — safe limit to never overlap with Aspectos Destacados)
+    const rawDesc = op.description || '';
+    const desc = rawDesc.length > 800 ? rawDesc.substring(0, 797) + '...' : rawDesc;
   slide.addText(desc, {
     x: M, y: 1.3, w: leftW, h: 2.8,
     fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
