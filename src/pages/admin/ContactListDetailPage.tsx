@@ -1155,10 +1155,10 @@ export default function ContactListDetailPage() {
   // ===== BULK MOVE / COPY =====
   const handleBulkMoveCopy = async () => {
     if (!listId || selectedIds.length === 0) return;
-    // Guard: no permitir mover en bulk desde lista madre
-    if (bulkMoveCopyMode === 'move' && isMadreList) {
-      toast.error('No se pueden mover empresas desde una lista madre. Usa "Copiar" en su lugar.');
-      return;
+    // En lista madre, forzar modo copy silenciosamente
+    let effectiveBulkMode = bulkMoveCopyMode;
+    if (isMadreList && bulkMoveCopyMode === 'move') {
+      effectiveBulkMode = 'copy';
     }
     let targetId = bulkMoveCopyTargetId;
     
