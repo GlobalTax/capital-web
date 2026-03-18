@@ -23,6 +23,7 @@ import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { cn } from '@/lib/utils';
 import { ImportFromListDialog } from '@/components/admin/campanas-valoracion/ImportFromListDialog';
+import { CopyToListDialog } from '@/components/admin/campanas-valoracion/shared/CopyToListDialog';
 
 const DEFAULT_YEARS = [new Date().getFullYear() - 1, new Date().getFullYear() - 2, new Date().getFullYear() - 3];
 
