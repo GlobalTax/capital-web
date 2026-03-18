@@ -89,6 +89,7 @@ const OperationDetails = () => {
   const [operation, setOperation] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set());
+  const [showPresentationModal, setShowPresentationModal] = useState(false);
 
   // Interacciones
   const { interacciones, isLoading: loadingInteracciones, createInteraccion, isCreating, deleteInteraccion } = useMandatoInteracciones(id);

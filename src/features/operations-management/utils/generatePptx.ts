@@ -58,9 +58,9 @@ const addPortada = (pres: pptxgen, op: OperationData, template: TemplateType) =>
   const slide = pres.addSlide();
   slide.background = { color: NAVY };
 
-  slide.addText('CAPITTAL', {
+  slide.addText('C A P I T T A L', {
     x: 0.5, y: 0.4, w: 4, h: 0.4,
-    fontSize: 14, color: TEXT_TERTIARY, fontFace: 'Arial', bold: false, letterSpacing: 4,
+    fontSize: 14, color: TEXT_TERTIARY, fontFace: 'Arial', bold: false,
   });
 
   slide.addText(op.company_name, {
