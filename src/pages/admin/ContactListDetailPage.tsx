@@ -2539,23 +2539,47 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
-                <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {moveCopyFromSublistId && sublistCompanyMap?.sublists
-                      ? sublistCompanyMap.sublists
-                          .filter(s => s.id !== moveCopyFromSublistId)
-                          .map(s => (
-                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                          ))
-                      : allLists.map((l: any) => (
-                          <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                        ))
-                    }
-                  </SelectContent>
-                </Select>
+                <Popover open={moveCopyPopoverOpen} onOpenChange={setMoveCopyPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between">
+                      {moveCopyTargetId
+                        ? (() => {
+                            if (moveCopyFromSublistId && sublistCompanyMap?.sublists) {
+                              return sublistCompanyMap.sublists.find(s => s.id === moveCopyTargetId)?.name;
+                            }
+                            return allLists.find((l: any) => l.id === moveCopyTargetId)?.name;
+                          })() || 'Seleccionar...'
+                        : (moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino...")}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput placeholder="Buscar lista..." value={moveCopySearchTerm} onValueChange={setMoveCopySearchTerm} />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          {(moveCopyFromSublistId && sublistCompanyMap?.sublists
+                            ? sublistCompanyMap.sublists
+                                .filter(s => s.id !== moveCopyFromSublistId)
+                                .filter(s => s.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                            : allLists.filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                          ).map((item: any) => (
+                            <CommandItem
+                              key={item.id}
+                              value={item.id}
+                              onSelect={() => { setMoveCopyTargetId(item.id); setMoveCopyPopoverOpen(false); setMoveCopySearchTerm(''); }}
+                              className="cursor-pointer"
+                            >
+                              <Check className={cn("mr-2 h-4 w-4", moveCopyTargetId === item.id ? "opacity-100" : "opacity-0")} />
+                              {item.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 {!moveCopyFromSublistId && (
                   <button
                     type="button"
