@@ -72,6 +72,7 @@ export const useListColumnPreferences = (listId?: string, isMadreList = false, i
     return columns
       .filter(c => {
         if (c.key === 'sublistas' && !isMadreList) return false;
+        if (c.key === 'lista_madre' && !isSublist) return false;
         return c.visible;
       })
       .sort((a, b) => a.position - b.position);
