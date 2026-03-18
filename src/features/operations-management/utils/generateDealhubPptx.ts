@@ -188,12 +188,13 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
     fontSize: 26, fontFace: FONT, color: NAVY, bold: true,
   });
 
-  // Description
-  const desc = op.description || '';
+  // Description (max ~1000 chars to avoid overflow)
+  const rawDesc = op.description || '';
+  const desc = rawDesc.length > 1000 ? rawDesc.substring(0, 997) + '...' : rawDesc;
   slide.addText(desc, {
     x: M, y: 1.3, w: leftW, h: 2.8,
     fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
-    lineSpacingMultiple: 1.4, valign: 'top', wrap: true,
+    lineSpacingMultiple: 1.4, valign: 'top', wrap: true, overflow: 'ellipsis',
   });
 
   // Highlights bullets
