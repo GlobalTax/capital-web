@@ -1075,7 +1075,7 @@ export default function ContactListDetailPage() {
       if (!newListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
       setIsMoveCopyLoading(true);
       try {
-        const insertData: any = { name: newListName.trim(), type: (list as any)?.type || 'outbound' };
+        const insertData: any = { name: newListName.trim() };
         if (isMadreList) insertData.lista_madre_id = listId;
         const { data: newList, error: createErr } = await supabase
           .from('outbound_lists' as any)
