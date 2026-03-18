@@ -200,7 +200,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
   const highlights = op.highlights || [];
   if (highlights.length > 0) {
     slide.addText('Aspectos Destacados', {
-      x: M, y: 4.6, w: leftW, h: 0.35,
+      x: M, y: 4.2, w: leftW, h: 0.35,
       fontSize: 11, fontFace: FONT, color: NAVY, bold: true,
     });
 
