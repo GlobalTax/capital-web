@@ -2631,16 +2631,39 @@ export default function ContactListDetailPage() {
             </p>
             {!bulkIsCreatingNewList ? (
               <>
-                <Select value={bulkMoveCopyTargetId} onValueChange={setBulkMoveCopyTargetId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar lista destino..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLists.map((l: any) => (
-                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between">
+                      {bulkMoveCopyTargetId
+                        ? allLists.find((l: any) => l.id === bulkMoveCopyTargetId)?.name || 'Seleccionar...'
+                        : "Seleccionar lista destino..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput placeholder="Buscar lista..." value={bulkMoveCopySearchTerm} onValueChange={setBulkMoveCopySearchTerm} />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          {allLists
+                            .filter((l: any) => l.name.toLowerCase().includes(bulkMoveCopySearchTerm.toLowerCase()))
+                            .map((l: any) => (
+                              <CommandItem
+                                key={l.id}
+                                value={l.id}
+                                onSelect={() => { setBulkMoveCopyTargetId(l.id); setBulkMoveCopyPopoverOpen(false); setBulkMoveCopySearchTerm(''); }}
+                                className="cursor-pointer"
+                              >
+                                <Check className={cn("mr-2 h-4 w-4", bulkMoveCopyTargetId === l.id ? "opacity-100" : "opacity-0")} />
+                                {l.name}
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <button
                   type="button"
                   className="text-xs text-primary hover:underline"
