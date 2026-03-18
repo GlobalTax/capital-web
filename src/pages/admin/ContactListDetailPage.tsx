@@ -1133,7 +1133,96 @@ export default function ContactListDetailPage() {
     await executeMoveCopy(targetId);
   };
 
-  const handleNoteSaved = useCallback((companyId: string, note: string) => {
+  // ===== BULK MOVE / COPY =====
+  const handleBulkMoveCopy = async () => {
+    if (!listId || selectedIds.length === 0) return;
+    let targetId = bulkMoveCopyTargetId;
+    
+    if (bulkIsCreatingNewList) {
+      if (!bulkNewListName.trim()) { toast.error('Introduce un nombre para la nueva lista'); return; }
+      setBulkMoveCopyLoading(true);
+      try {
+        const { data: newList, error: createErr } = await supabase
+          .from('outbound_lists' as any)
+          .insert({ name: bulkNewListName.trim(), type: (list as any)?.type || 'outbound' } as any)
+          .select('id')
+          .single();
+        if (createErr || !newList) { toast.error('Error al crear la lista'); setBulkMoveCopyLoading(false); return; }
+        targetId = (newList as any).id;
+      } catch { toast.error('Error al crear la lista'); setBulkMoveCopyLoading(false); return; }
+    } else {
+      if (!targetId) return;
+      setBulkMoveCopyLoading(true);
+    }
+
+    const selectedCompanies = companies.filter(c => selectedIds.includes(c.id));
+
+    try {
+      if (bulkMoveCopyMode === 'copy') {
+        // Get existing CIFs in target to deduplicate
+        const selectedCifs = selectedCompanies.map(c => (c as any).cif).filter(Boolean);
+        let existingCifs = new Set<string>();
+        if (selectedCifs.length > 0) {
+          // Query in batches of 50
+          for (let i = 0; i < selectedCifs.length; i += 50) {
+            const batch = selectedCifs.slice(i, i + 50);
+            const { data: existing } = await supabase
+              .from('outbound_list_companies' as any)
+              .select('cif')
+              .eq('list_id', targetId)
+              .in('cif', batch);
+            if (existing) {
+              (existing as any[]).forEach((e: any) => existingCifs.add(e.cif));
+            }
+          }
+        }
+
+        // Filter out duplicates
+        const toInsert = selectedCompanies.filter(c => {
+          const cif = (c as any).cif;
+          return !cif || !existingCifs.has(cif);
+        });
+        const skipped = selectedCompanies.length - toInsert.length;
+
+        // Insert in batches of 50
+        for (let i = 0; i < toInsert.length; i += 50) {
+          const batch = toInsert.slice(i, i + 50).map(c => {
+            const { id, notas, created_at, ...rest } = c as any;
+            return { ...rest, list_id: targetId, notas: null };
+          });
+          await supabase.from('outbound_list_companies' as any).insert(batch as any);
+        }
+
+        const msg = `${toInsert.length} empresas copiadas` + (skipped > 0 ? `, ${skipped} duplicadas omitidas` : '');
+        toast.success(msg);
+      } else {
+        // Move: update list_id in batches
+        for (let i = 0; i < selectedIds.length; i += 50) {
+          const batch = selectedIds.slice(i, i + 50);
+          await supabase.from('outbound_list_companies' as any)
+            .update({ list_id: targetId, notas: null } as any)
+            .in('id', batch);
+        }
+        toast.success(`${selectedIds.length} empresas movidas`);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+      queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
+      setSelectedIds([]);
+      setBulkMoveCopyOpen(false);
+      setBulkMoveCopyTargetId('');
+      setBulkIsCreatingNewList(false);
+      setBulkNewListName('');
+    } catch (err) {
+      toast.error('Error al procesar la operación masiva');
+    } finally {
+      setBulkMoveCopyLoading(false);
+    }
+  };
+
     queryClient.setQueryData(['contact-list-companies', listId], (old: any) => {
       if (!Array.isArray(old)) return old;
       return old.map((c: any) => c.id === companyId ? { ...c, notas: note || null } : c);
