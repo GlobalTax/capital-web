@@ -97,15 +97,23 @@ export function OutboundSummaryDashboard() {
   const computed = useMemo(() => {
     if (!raw?.campaigns.length) return null;
 
-    const threshold = getDateThreshold(datePreset);
+    const threshold = datePreset === 'custom' ? null : getDateThreshold(datePreset);
+    const cFrom = datePreset === 'custom' && customFrom ? customFrom : null;
+    const cTo = datePreset === 'custom' && customTo ? new Date(customTo.getTime() + 86400000 - 1) : null;
     const enabledCampaigns = raw.campaigns.filter(c => !disabledCampaigns.has(c.id));
     const enabledIds = new Set(enabledCampaigns.map(c => c.id));
 
-    // Filter emails by date + enabled campaigns
     const filteredEmails = raw.emails.filter(e => {
       if (!enabledIds.has(e.campaign_id)) return false;
-      if (threshold && e.sent_at) return new Date(e.sent_at) >= threshold;
-      if (threshold && !e.sent_at) return false;
+      if (threshold) {
+        return e.sent_at ? new Date(e.sent_at) >= threshold : false;
+      }
+      if (cFrom || cTo) {
+        if (!e.sent_at) return false;
+        const d = new Date(e.sent_at);
+        if (cFrom && d < cFrom) return false;
+        if (cTo && d > cTo) return false;
+      }
       return true;
     });
 
