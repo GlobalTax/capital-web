@@ -355,6 +355,14 @@ export default function ContactListDetailPage() {
   const [sublistConflict, setSublistConflict] = useState<{ sublistName: string } | null>(null);
   const [moveCopyFromSublistId, setMoveCopyFromSublistId] = useState<string | null>(null);
 
+  // Bulk Move/Copy state
+  const [bulkMoveCopyOpen, setBulkMoveCopyOpen] = useState(false);
+  const [bulkMoveCopyMode, setBulkMoveCopyMode] = useState<'move' | 'copy'>('copy');
+  const [bulkMoveCopyTargetId, setBulkMoveCopyTargetId] = useState('');
+  const [bulkIsCreatingNewList, setBulkIsCreatingNewList] = useState(false);
+  const [bulkNewListName, setBulkNewListName] = useState('');
+  const [bulkMoveCopyLoading, setBulkMoveCopyLoading] = useState(false);
+
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
