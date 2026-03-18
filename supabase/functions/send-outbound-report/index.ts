@@ -297,6 +297,58 @@ function renderKPISection(kpis: PeriodKPIs): string {
   </div>`;
 }
 
+// ─── Responded companies table ──────────────────────────────────
+function renderRespondedCompaniesTable(companies: RawCompany[], campaigns: Campaign[]): string {
+  const responded = companies.filter(c =>
+    c.seguimiento_estado && c.seguimiento_estado !== 'sin_respuesta'
+  );
+
+  if (responded.length === 0) return '';
+
+  const estadoMap: Record<string, { label: string; color: string; bg: string }> = {
+    interesado: { label: 'Interesado', color: '#1d4ed8', bg: '#dbeafe' },
+    reunion_agendada: { label: 'Reunión', color: '#047857', bg: '#d1fae5' },
+    no_interesado: { label: 'No interesado', color: '#b91c1c', bg: '#fee2e2' },
+    contactado: { label: 'Contactado', color: '#92400e', bg: '#fef3c7' },
+    en_negociacion: { label: 'En negociación', color: '#7c3aed', bg: '#ede9fe' },
+  };
+
+  const campaignMap = new Map(campaigns.map(c => [c.id, c.name]));
+
+  const rows = responded.map(c => {
+    const estado = estadoMap[c.seguimiento_estado!] || { label: c.seguimiento_estado, color: '#475569', bg: '#f1f5f9' };
+    const campaignName = campaignMap.get(c.campaign_id) || '—';
+    const notas = c.seguimiento_notas || '—';
+    const empresa = c.client_company || '—';
+
+    return `
+      <tr>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:500">${empresa}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#64748b">${campaignName}</td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;text-align:center">
+          <span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;color:${estado.color};background:${estado.bg}">${estado.label}</span>
+        </td>
+        <td style="padding:8px;border-bottom:1px solid #f0f0f0;font-size:11px;color:#475569;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${notas}</td>
+      </tr>`;
+  }).join('');
+
+  return `
+  <div style="margin-bottom:32px">
+    <h3 style="color:#0f172a;font-size:16px;margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0">📋 Empresas con respuesta (${responded.length})</h3>
+    <table style="width:100%;border-collapse:collapse;font-family:'Plus Jakarta Sans',Arial,sans-serif">
+      <thead>
+        <tr style="background:#f1f5f9">
+          <th style="text-align:left;padding:8px;font-size:11px;color:#475569;border-bottom:2px solid #e2e8f0">Empresa</th>
+          <th style="text-align:left;padding:8px;font-size:11px;color:#475569;border-bottom:2px solid #e2e8f0">Campaña</th>
+          <th style="text-align:center;padding:8px;font-size:11px;color:#475569;border-bottom:2px solid #e2e8f0">Estado</th>
+          <th style="text-align:left;padding:8px;font-size:11px;color:#475569;border-bottom:2px solid #e2e8f0">Notas</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
