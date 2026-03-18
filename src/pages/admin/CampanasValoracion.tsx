@@ -572,6 +572,9 @@ export default function CampanasValoracion() {
         </CardContent>
       </Card>
 
+      </>
+      )}
+
       {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeleteConfirmText(''); } }}>
         <AlertDialogContent>
