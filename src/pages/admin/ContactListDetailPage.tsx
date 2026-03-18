@@ -1223,6 +1223,7 @@ export default function ContactListDetailPage() {
     }
   };
 
+  const handleNoteSaved = useCallback((companyId: string, note: string) => {
     queryClient.setQueryData(['contact-list-companies', listId], (old: any) => {
       if (!Array.isArray(old)) return old;
       return old.map((c: any) => c.id === companyId ? { ...c, notas: note || null } : c);
