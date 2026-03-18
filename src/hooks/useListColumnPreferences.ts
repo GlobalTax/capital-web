@@ -51,7 +51,7 @@ function savePreferences(columns: ListColumnDef[], listId?: string) {
   }
 }
 
-export const useListColumnPreferences = (listId?: string, isMadreList = false) => {
+export const useListColumnPreferences = (listId?: string, isMadreList = false, isSublist = false) => {
   const [columns, setColumns] = useState<ListColumnDef[]>(() => {
     const saved = loadPreferences(listId);
     if (saved) {
