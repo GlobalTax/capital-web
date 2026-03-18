@@ -1021,7 +1021,7 @@ export default function ContactListDetailPage() {
       effectiveMode = 'copy';
     }
     try {
-      if (moveCopyMode === 'copy') {
+      if (effectiveMode === 'copy') {
         // Check if CIF already exists in target list
         if (moveCopyCompany.cif) {
           const { data: existing } = await supabase
