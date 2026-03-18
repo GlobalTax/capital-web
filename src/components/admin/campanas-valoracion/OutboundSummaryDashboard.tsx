@@ -176,7 +176,7 @@ export function OutboundSummaryDashboard() {
       sinRespuesta, interesados, reuniones, noInteresados,
       campaigns: summaries,
     };
-  }, [raw, disabledCampaigns, datePreset]);
+  }, [raw, disabledCampaigns, datePreset, customFrom, customTo]);
 
   if (isLoading || !raw) return <LoadingState variant="cards" cards={6} />;
 
