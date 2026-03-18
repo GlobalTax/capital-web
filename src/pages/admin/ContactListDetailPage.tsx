@@ -2091,14 +2091,14 @@ export default function ContactListDetailPage() {
                                     <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                       <Edit className="h-4 w-4 mr-2" /> Editar
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                      <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                    </DropdownMenuItem>
                                     {!isMadreList && (
-                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
-                                        <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
+                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
+                                        <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                       </DropdownMenuItem>
                                     )}
-                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
-                                      <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
-                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleAiGenerate(company)} disabled={aiGenLoading === company.id}>
                                       {aiGenLoading === company.id ? (
                                         <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Generando...</>
