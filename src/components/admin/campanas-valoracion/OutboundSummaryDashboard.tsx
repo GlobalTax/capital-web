@@ -117,13 +117,22 @@ export function OutboundSummaryDashboard() {
       return true;
     });
 
+    // Build set of company IDs active in the period
+    const hasDateFilter = threshold || cFrom || cTo;
+    const activeCompanyIds = new Set<string>();
+    for (const e of filteredEmails) {
+      if (e.company_id) activeCompanyIds.add(e.company_id);
+    }
+
     // Aggregate per campaign
     const emailMap: Record<string, { sent: number; delivered: number; bounced: number; opened: number }> = {};
     const seguimientoMap: Record<string, Record<string, number>> = {};
+    const companiesPerCampaign: Record<string, Set<string>> = {};
 
     for (const c of enabledCampaigns) {
       emailMap[c.id] = { sent: 0, delivered: 0, bounced: 0, opened: 0 };
       seguimientoMap[c.id] = { sin_respuesta: 0, interesado: 0, reunion_agendada: 0, no_interesado: 0 };
+      companiesPerCampaign[c.id] = new Set();
     }
 
     for (const e of filteredEmails) {
@@ -133,10 +142,13 @@ export function OutboundSummaryDashboard() {
       if (e.delivery_status === 'delivered') m.delivered++;
       if (e.delivery_status === 'bounced') m.bounced++;
       if (e.email_opened) m.opened++;
+      if (e.company_id) companiesPerCampaign[e.campaign_id]?.add(e.company_id);
     }
 
     for (const c of raw.companies) {
       if (!enabledIds.has(c.campaign_id)) continue;
+      // If date filter active, only count companies with emails in the period
+      if (hasDateFilter && !activeCompanyIds.has(c.id)) continue;
       const s = seguimientoMap[c.campaign_id];
       if (!s) continue;
       const estado = c.seguimiento_estado || 'sin_respuesta';
@@ -151,11 +163,12 @@ export function OutboundSummaryDashboard() {
     const summaries: CampaignSummary[] = enabledCampaigns.map((c) => {
       const em = emailMap[c.id];
       const seg = seguimientoMap[c.id];
+      const campCompanies = hasDateFilter ? companiesPerCampaign[c.id].size : (c.total_companies || 0);
       totalSent += em.sent;
       totalDelivered += em.delivered;
       totalBounced += em.bounced;
       totalOpened += em.opened;
-      totalCompanies += c.total_companies || 0;
+      totalCompanies += campCompanies;
       sinRespuesta += seg.sin_respuesta;
       interesados += seg.interesado;
       reuniones += seg.reunion_agendada;
