@@ -1864,6 +1864,14 @@ const AdminOperations = () => {
         onConfirm={handleBulkAssign}
         isLoading={isBulkUpdating}
       />
+
+      {presentationOperation && (
+        <GeneratePresentationModal
+          open={showPresentationModal}
+          onOpenChange={setShowPresentationModal}
+          operation={presentationOperation}
+        />
+      )}
     </div>
   );
 };
