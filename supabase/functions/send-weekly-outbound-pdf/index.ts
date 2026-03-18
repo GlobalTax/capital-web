@@ -432,19 +432,19 @@ function generatePDF(
   });
 
   const tipoLabels: Record<string, string> = {
-    email_followup: '📧 Email',
-    llamada: '📞 Llamada',
-    whatsapp: '💬 WhatsApp',
-    reunion: '🤝 Reunión',
-    respuesta_cliente: '💌 Respuesta',
-    nota: '📝 Nota',
+    email_followup: 'Email',
+    llamada: 'Llamada',
+    whatsapp: 'WhatsApp',
+    reunion: 'Reunion',
+    respuesta_cliente: 'Respuesta',
+    nota: 'Nota',
   };
 
   const resultLabels: Record<string, string> = {
-    positivo: '✅ Positivo',
-    neutral: '➖ Neutral',
-    negativo: '❌ Negativo',
-    sin_respuesta: '⏳ Sin resp.',
+    positivo: 'Positivo',
+    neutral: 'Neutral',
+    negativo: 'Negativo',
+    sin_respuesta: 'Sin resp.',
   };
 
   if (weekInteractions.length > 0) {
