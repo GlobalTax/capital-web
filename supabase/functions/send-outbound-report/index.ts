@@ -50,6 +50,14 @@ function getWeekRange(): { from: string; to: string; label: string } {
   return { from, to, label };
 }
 
+function getMonthRange(): { from: string; to: string; label: string } {
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).toISOString();
+  const to = now.toISOString();
+  const monthName = now.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  return { from, to, label: `Mes: ${monthName}` };
+}
+
 // ─── KPI calculation ────────────────────────────────────────────
 interface RawEmail {
   campaign_id: string;
