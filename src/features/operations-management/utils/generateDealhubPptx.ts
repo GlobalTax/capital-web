@@ -296,11 +296,11 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
 
   // "Más Información" CTA
   slide.addShape(pptx.ShapeType.roundRect, {
-    x: rightX + 0.3, y: cardY + cardH - 0.8, w: rightW - 0.6, h: 0.45,
+    x: rightX + pad, y: cardY + cardH - 0.8, w: innerW, h: 0.45,
     fill: { color: ACCENT }, rectRadius: 0.05,
   });
   slide.addText('Más Información →', {
-    x: rightX + 0.3, y: cardY + cardH - 0.8, w: rightW - 0.6, h: 0.45,
+    x: rightX + pad, y: cardY + cardH - 0.8, w: innerW, h: 0.45,
     fontSize: 11, fontFace: FONT, color: WHITE, bold: true, align: 'center', valign: 'middle',
   });
 
