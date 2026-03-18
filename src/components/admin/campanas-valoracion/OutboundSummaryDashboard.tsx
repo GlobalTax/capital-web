@@ -81,11 +81,11 @@ export function OutboundSummaryDashboard() {
       const [{ data: emails }, { data: companies }] = await Promise.all([
         (supabase as any)
           .from('campaign_emails')
-          .select('campaign_id, status, delivery_status, email_opened, sent_at')
+          .select('campaign_id, status, delivery_status, email_opened, sent_at, company_id')
           .in('campaign_id', ids),
         (supabase as any)
           .from('valuation_campaign_companies')
-          .select('campaign_id, seguimiento_estado')
+          .select('campaign_id, seguimiento_estado, id')
           .in('campaign_id', ids),
       ]);
 
