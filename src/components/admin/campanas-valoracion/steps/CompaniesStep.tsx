@@ -1221,6 +1221,12 @@ export function CompaniesStep({ campaignId, financialYears, yearsMode = '3_years
           window.location.reload();
         }}
       />
+      {/* Copy to list dialog */}
+      <CopyToListDialog
+        open={showCopyToList}
+        onOpenChange={setShowCopyToList}
+        selectedCompanies={companies.filter(c => selectedIds.includes(c.id))}
+      />
     </div>
   );
 }
