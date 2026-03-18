@@ -209,7 +209,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation) {
       options: { fontSize: 10, fontFace: FONT, color: TEXT_SECONDARY, bullet: { code: '2022' }, lineSpacingMultiple: 1.3 },
     }));
     slide.addText(bulletText as any, {
-      x: M + 0.2, y: 5.0, w: leftW - 0.4, h: 1.8,
+      x: M + 0.2, y: 4.6, w: leftW - 0.4, h: 2.2,
       valign: 'top',
     });
   }
