@@ -363,8 +363,10 @@ export function OutboundSummaryDashboard() {
                 <TableHead className="text-center">Enviados</TableHead>
                 <TableHead className="text-center">Abiertos</TableHead>
                 <TableHead className="text-center">Tasa</TableHead>
+                <TableHead className="text-center">Contestados</TableHead>
                 <TableHead className="text-center">Interesados</TableHead>
                 <TableHead className="text-center">Reuniones</TableHead>
+                <TableHead className="text-center">No interesados</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
