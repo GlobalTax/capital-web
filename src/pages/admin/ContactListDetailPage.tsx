@@ -26,6 +26,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
+  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
+} from '@/components/ui/command';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import {
   Popover, PopoverContent, PopoverTrigger,
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -362,6 +366,10 @@ export default function ContactListDetailPage() {
   const [bulkIsCreatingNewList, setBulkIsCreatingNewList] = useState(false);
   const [bulkNewListName, setBulkNewListName] = useState('');
   const [bulkMoveCopyLoading, setBulkMoveCopyLoading] = useState(false);
+  const [moveCopySearchTerm, setMoveCopySearchTerm] = useState('');
+  const [moveCopyPopoverOpen, setMoveCopyPopoverOpen] = useState(false);
+  const [bulkMoveCopySearchTerm, setBulkMoveCopySearchTerm] = useState('');
+  const [bulkMoveCopyPopoverOpen, setBulkMoveCopyPopoverOpen] = useState(false);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -2531,23 +2539,47 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
-                <Select value={moveCopyTargetId} onValueChange={setMoveCopyTargetId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {moveCopyFromSublistId && sublistCompanyMap?.sublists
-                      ? sublistCompanyMap.sublists
-                          .filter(s => s.id !== moveCopyFromSublistId)
-                          .map(s => (
-                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                          ))
-                      : allLists.map((l: any) => (
-                          <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                        ))
-                    }
-                  </SelectContent>
-                </Select>
+                <Popover open={moveCopyPopoverOpen} onOpenChange={setMoveCopyPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between">
+                      {moveCopyTargetId
+                        ? (() => {
+                            if (moveCopyFromSublistId && sublistCompanyMap?.sublists) {
+                              return sublistCompanyMap.sublists.find(s => s.id === moveCopyTargetId)?.name;
+                            }
+                            return allLists.find((l: any) => l.id === moveCopyTargetId)?.name;
+                          })() || 'Seleccionar...'
+                        : (moveCopyFromSublistId ? "Seleccionar sublista destino..." : "Seleccionar lista destino...")}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput placeholder="Buscar lista..." value={moveCopySearchTerm} onValueChange={setMoveCopySearchTerm} />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          {(moveCopyFromSublistId && sublistCompanyMap?.sublists
+                            ? sublistCompanyMap.sublists
+                                .filter(s => s.id !== moveCopyFromSublistId)
+                                .filter(s => s.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                            : allLists.filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                          ).map((item: any) => (
+                            <CommandItem
+                              key={item.id}
+                              value={item.id}
+                              onSelect={() => { setMoveCopyTargetId(item.id); setMoveCopyPopoverOpen(false); setMoveCopySearchTerm(''); }}
+                              className="cursor-pointer"
+                            >
+                              <Check className={cn("mr-2 h-4 w-4", moveCopyTargetId === item.id ? "opacity-100" : "opacity-0")} />
+                              {item.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 {!moveCopyFromSublistId && (
                   <button
                     type="button"
@@ -2599,16 +2631,39 @@ export default function ContactListDetailPage() {
             </p>
             {!bulkIsCreatingNewList ? (
               <>
-                <Select value={bulkMoveCopyTargetId} onValueChange={setBulkMoveCopyTargetId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar lista destino..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLists.map((l: any) => (
-                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between">
+                      {bulkMoveCopyTargetId
+                        ? allLists.find((l: any) => l.id === bulkMoveCopyTargetId)?.name || 'Seleccionar...'
+                        : "Seleccionar lista destino..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput placeholder="Buscar lista..." value={bulkMoveCopySearchTerm} onValueChange={setBulkMoveCopySearchTerm} />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          {allLists
+                            .filter((l: any) => l.name.toLowerCase().includes(bulkMoveCopySearchTerm.toLowerCase()))
+                            .map((l: any) => (
+                              <CommandItem
+                                key={l.id}
+                                value={l.id}
+                                onSelect={() => { setBulkMoveCopyTargetId(l.id); setBulkMoveCopyPopoverOpen(false); setBulkMoveCopySearchTerm(''); }}
+                                className="cursor-pointer"
+                              >
+                                <Check className={cn("mr-2 h-4 w-4", bulkMoveCopyTargetId === l.id ? "opacity-100" : "opacity-0")} />
+                                {l.name}
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <button
                   type="button"
                   className="text-xs text-primary hover:underline"
