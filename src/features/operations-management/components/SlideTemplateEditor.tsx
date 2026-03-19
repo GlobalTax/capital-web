@@ -228,7 +228,7 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
       <div
         key={key}
         className={cn(
-          'absolute cursor-move overflow-hidden transition-shadow',
+          'absolute cursor-move transition-shadow',
           isSelected ? 'ring-2 z-20' : 'z-10 hover:ring-1',
           darkBg ? 'text-white' : 'text-foreground'
         )}
