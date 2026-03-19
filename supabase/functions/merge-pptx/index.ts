@@ -85,10 +85,16 @@ serve(async (req: Request) => {
 
     // The ops PPTX has slides in order: section1 ops, section2 ops, etc.
     // We also receive sectionSlideCounts to know how many ops per section
-    const sectionSlideCounts: Record<string, number> = {};
-    // Parse from the request
-    const { sectionSlideCounts: counts } = await parseRequestCounts(req, sectionInsertPoints, opsSlides.length);
-    Object.assign(sectionSlideCounts, counts);
+    // Use client-provided slide counts or distribute evenly
+    const sectionSlideCounts: Record<string, number> = clientSlideCounts || {};
+    if (!clientSlideCounts) {
+      const keys = Object.keys(sectionInsertPoints);
+      const perSection = Math.floor(opsSlides.length / keys.length);
+      const remainder = opsSlides.length % keys.length;
+      keys.forEach((key, i) => {
+        sectionSlideCounts[key] = perSection + (i < remainder ? 1 : 0);
+      });
+    }
 
     // Build the final slide order
     // Template slides: 1, 2, 3, ..., N
