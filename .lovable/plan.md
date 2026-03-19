@@ -1,50 +1,71 @@
 
 
-## Slides estáticas subidas por el usuario + operaciones automáticas
+## Subir PPTX como plantilla base y mergear con slides automáticas
 
 ### Concepto
 
-En vez de intentar replicar pixel a pixel las portadas, índice, separadores y cierre con código, te dejamos **subir imágenes PNG/JPG de cada slide estática**. Esas imágenes se usan como fondo a pantalla completa. Las slides de operaciones siguen generándose automáticamente como hasta ahora.
+El usuario sube un archivo PPTX completo con sus slides estáticas (portada, índice, separadores, cierre) ya diseñadas. Al generar el catálogo ROD, se toman esas slides del PPTX subido y se insertan las slides de operaciones auto-generadas en las posiciones correctas. Resultado: un único PPTX final que combina ambos.
 
-### Tipos de slides estáticas
+### Enfoque técnico
 
-| Slide | Comportamiento |
-|-------|---------------|
-| **Portada** | Imagen fija subida por el usuario |
-| **Índice** | Imagen fija subida por el usuario |
-| **Separador 01** | Imagen fija subida (una por sección) |
-| **Separador 02** | Imagen fija subida |
-| **Separador 03** | Imagen fija subida |
-| **Separador 04** | Imagen fija subida |
-| **Cierre** | Imagen fija subida por el usuario |
+Un PPTX es un archivo ZIP con XMLs dentro. Usaremos **JSZip** en una **edge function** para:
+
+1. Abrir el PPTX plantilla subido por el usuario
+2. Recibir las slides de operaciones generadas (como PPTX blob desde el cliente con pptxgenjs)
+3. Extraer las slides de operaciones del PPTX generado
+4. Insertarlas en las posiciones correctas dentro del PPTX plantilla
+5. Devolver el PPTX combinado
 
 ### Flujo del usuario
 
-1. En el modal de "Generar Catálogo ROD", nueva pestaña **"Slides fijas"**
-2. Campos de upload para: Portada, Índice, cada Separador de sección, y Cierre
-3. Las imágenes se suben a Supabase Storage (bucket `slide-backgrounds`)
-4. Las URLs se guardan en la tabla `slide_templates` dentro de `template_data`
-5. Al generar, si existe imagen para una slide, se usa como background a pantalla completa; si no, se genera con código como ahora (fallback)
+1. En la pestaña "Slides fijas", nuevo botón **"Subir PPTX plantilla"** (además de las imágenes individuales)
+2. El usuario sube su archivo .pptx al bucket `slide-backgrounds`
+3. Al generar, el sistema detecta que hay un PPTX plantilla guardado
+4. Genera solo las slides de operaciones con pptxgenjs
+5. Llama a la edge function `merge-pptx` que combina ambos
+6. Descarga el resultado final
 
-### Cambios técnicos
+### Estructura del PPTX plantilla
 
-**1. Supabase Storage** — Crear bucket `slide-backgrounds` (público)
+El usuario debe organizar su PPTX con marcadores de posición. Definimos una convención:
+- Slides 1-2: Portada + Índice (se mantienen tal cual)
+- Slides 3, 4, 5, 6: Separadores de sección (uno por cada sección habilitada)
+- Última slide: Cierre
+- Las slides de operaciones se insertan DESPUÉS de cada separador correspondiente
 
-**2. `slideTemplate.ts`** — Añadir campos opcionales:
-- `cover.backgroundImage?: string`
-- `index.backgroundImage?: string`
-- `separator.backgroundImages?: Record<string, string>` (key = section key)
-- `closing.backgroundImage?: string`
+### Archivos a crear/modificar
 
-**3. `generateDealhubPptx.ts`** — En cada función `addCoverSlide`, `addIndexSlide`, `addSectionSeparator`, `addClosingSlide`: si existe `backgroundImage`, crear slide con `slide.background = { path: url }` y saltar toda la lógica de renderizado de elementos
-
-**4. `GenerateDealhubModal.tsx`** — Nueva pestaña con componentes de upload para cada slide estática, con preview de la imagen subida y botón para eliminar/cambiar
-
-### Archivos a modificar
 | Archivo | Cambio |
 |---------|--------|
-| `slideTemplate.ts` | Campos `backgroundImage` opcionales |
-| `generateDealhubPptx.ts` | Condicional: si hay imagen de fondo, usarla en vez de generar |
-| `GenerateDealhubModal.tsx` | Pestaña de uploads con previews |
-| Migration SQL | Crear bucket `slide-backgrounds` |
+| `supabase/functions/merge-pptx/index.ts` | Edge function que usa JSZip para mergear dos PPTX |
+| `StaticSlidesUploader.tsx` | Añadir campo de upload para archivo .pptx completo |
+| `slideTemplate.ts` | Añadir campo `templatePptxUrl?: string` al `FullSlideTemplate` |
+| `generateDealhubPptx.ts` | Nueva función que genera solo slides de operaciones + llama a la edge function para merge |
+| `GenerateDealhubModal.tsx` | Lógica condicional: si hay PPTX plantilla, usar flujo merge; si no, flujo actual |
+
+### Edge Function: `merge-pptx`
+
+```text
+Input:
+  - templateUrl: URL del PPTX plantilla en storage
+  - operationsBlob: base64 del PPTX con solo operaciones
+  - sectionInsertPoints: mapa de qué slides del template son separadores
+
+Output:
+  - PPTX combinado como blob
+
+Proceso:
+  1. Descargar template PPTX desde storage
+  2. Parsear ambos PPTX con JSZip
+  3. Extraer slides XML del PPTX de operaciones
+  4. Insertar en el template después de cada separador
+  5. Actualizar [Content_Types].xml y presentation.xml
+  6. Devolver ZIP resultante
+```
+
+### Consideraciones
+
+- Si el PPTX plantilla no está subido, el flujo actual (generación completa con pptxgenjs) sigue funcionando como fallback
+- El merge XML es delicado con relationships y media; la edge function manejará la re-numeración de slides y rels
+- Límite de archivo: 20MB para el PPTX plantilla
 
