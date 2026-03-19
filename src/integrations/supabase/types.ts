@@ -15391,6 +15391,45 @@ export type Database = {
         }
         Relationships: []
       }
+      market_studies: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number
+          id: string
+          sector: string | null
+          storage_path: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size?: number
+          id?: string
+          sector?: string | null
+          storage_path: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number
+          id?: string
+          sector?: string | null
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       marketing_calendar: {
         Row: {
           assigned_to: string | null
