@@ -1,50 +1,81 @@
 
 
-## Nueva sección "Estudios de Mercado" en Campañas Outbound
+## Actualizar generación PPTX Dealhub para ser fiel a la plantilla
 
-### Qué se construye
-Una nueva pestaña en la página de campañas outbound (`/admin/campanas-valoracion`) para subir, listar y descargar PDFs de estudios de mercado. Funciona como un repositorio simple de archivos organizado por sector.
+He analizado las 8 slides de la plantilla y las comparo con el código actual en `generateDealhubPptx.ts`. La estructura general ya es correcta (portada, índice, separadores, operaciones, cierre), pero hay diferencias de layout que corregir.
 
-### Cambios en base de datos
+### Diferencias detectadas y cambios necesarios
 
-**1. Bucket de Storage `market-studies`** (público para lectura con signed URLs)
+**1. Portada (Cover Slide)**
+- Template: "2026" en grande arriba-izquierda (bold, ~80pt), "Capittal M&A · Consulting" como texto arriba-derecha, título "Capittal Dealhub - Open Deals Q2" abajo-izquierda (~40pt bold), subtítulo descriptivo debajo, "Q2 — 2026" en gris abajo
+- Actual: Logo como imagen (no texto), título centrado verticalmente, footer con línea divisoria
+- **Cambio**: Reestructurar el cover para poner el año grande arriba-izquierda, branding como texto arriba-derecha, título e info abajo. Eliminar divider. Ajustar defaults en `CoverTemplate` y añadir campo `yearBlock` al tipo.
 
-**2. Tabla `market_studies`**
-- `id` (uuid, PK)
-- `title` (text, nombre del estudio)
-- `sector` (text, nullable — para agrupar por sector)
-- `description` (text, nullable)
-- `file_name` (text — nombre original del archivo)
-- `storage_path` (text — ruta en el bucket)
-- `file_size` (bigint)
-- `uploaded_by` (uuid, ref auth.users)
-- `created_at`, `updated_at`
-- RLS: solo usuarios autenticados pueden CRUD
+**2. Índice (Index Slide)**
+- Template: Tiene párrafo introductorio ("Apreciado lector, A continuación presentamos...") entre el título y las 4 cards
+- Actual: Solo título + cards, sin párrafo introductorio
+- **Cambio**: Añadir campo `introText` al `IndexTemplate` y renderizarlo en `addIndexSlide`. Ajustar posición Y de las cards para dejar espacio.
 
-### Cambios en frontend
+**3. Separador de Sección**
+- Template: Número "01" grande arriba-izquierda (~120pt), "Capittal M&A · Consulting" arriba-derecha, título de sección abajo-izquierda (~36pt bold), subtítulo debajo
+- Actual: Número y título están centrados verticalmente, sin branding
+- **Cambio**: Mover número arriba-izquierda, título abajo-izquierda. Añadir campo `branding` al `SeparatorTemplate` para el texto Capittal arriba-derecha. Ajustar defaults.
 
-**3. Nueva pestaña en `CampanasValoracion.tsx`**
-- Añadir `'market-studies'` al tipo de `activeTab`
-- Nueva pestaña con icono `BookOpen` y texto "Estudios de Mercado"
-- Cuando está activa, renderizar el nuevo componente `MarketStudiesPanel`
+**4. Slide de Operación**
+- Template: Layout de dos columnas ya correcto. Sin cambios mayores necesarios, la estructura actual coincide bien.
 
-**4. Componente `MarketStudiesPanel`**
-- Grid de cards con los estudios subidos (título, sector, fecha, tamaño)
-- Botón "Subir Estudio" que abre un diálogo con: título, sector (select), descripción, file input (solo PDF)
-- Cada card tiene acciones: descargar (signed URL) y eliminar
-- Filtro por sector y búsqueda por título
-- Usa el patrón existente de `campaign-presentations` para upload/download via edge function o directamente al bucket
+**5. Slide de Cierre (NUEVO)**
+- Template: Mitad superior blanca con logo Capittal arriba-derecha, mitad inferior navy (#161B22) con "Gracias" bold, email debajo, título del documento abajo-derecha
+- Actual: No existe slide de cierre en Dealhub generator (solo en el de operación individual)
+- **Cambio**: Añadir `addClosingSlide()` al final de `generateDealhubPptx`. Añadir tipo `ClosingTemplate` al sistema de templates.
 
-**5. Hook `useMarketStudies`**
-- Queries: listar todos los estudios
-- Mutations: subir (upload a bucket + insert en tabla), eliminar (delete de bucket + delete de tabla)
-- Signed URLs para descarga
+### Archivos a modificar
 
-### Archivos a crear/modificar
 | Archivo | Cambio |
 |---------|--------|
-| `migration` | Crear bucket `market-studies` + tabla `market_studies` + RLS |
-| `src/hooks/useMarketStudies.ts` | Hook con CRUD y storage |
-| `src/components/admin/campanas-valoracion/MarketStudiesPanel.tsx` | Panel principal con grid + upload dialog |
-| `src/pages/admin/CampanasValoracion.tsx` | Añadir tab "Estudios de Mercado" y renderizar panel |
+| `src/features/operations-management/types/slideTemplate.ts` | Añadir `yearBlock` a CoverTemplate, `introText` a IndexTemplate, `branding` a SeparatorTemplate, nuevo `ClosingTemplate`, actualizar `FullSlideTemplate` y defaults |
+| `src/features/operations-management/utils/generateDealhubPptx.ts` | Actualizar `addCoverSlide` (año grande + branding texto), `addIndexSlide` (párrafo intro), `addSectionSeparator` (branding + repositioning), añadir `addClosingSlide` |
+
+### Detalle técnico de posicionamiento
+
+```text
+COVER (13.33 x 7.5 inches):
+┌─────────────────────────────────────┐
+│ 2026 (bold,72pt)     Capittal logo  │
+│                     M&A·Consulting  │
+│                                     │
+│                                     │
+│                                     │
+│ Capittal Dealhub - Open Deals Q2    │
+│ Relación de Oportunidades...        │
+│ Q2 — 2026 (muted)                   │
+└─────────────────────────────────────┘
+
+SEPARATOR:
+┌─────────────────────────────────────┐
+│ 01 (120pt)          Capittal logo   │
+│                     M&A·Consulting  │
+│                                     │
+│                                     │
+│                                     │
+│ Mandatos de Venta (36pt bold)       │
+│ A continuación se presentan...      │
+│                                     │
+└─────────────────────────────────────┘
+
+CLOSING:
+┌─────────────────────────────────────┐
+│                     Capittal logo   │
+│              (white background)     │
+│                                     │
+│─────────────────────────────────────│
+│ Gracias (bold)        (navy bg)     │
+│ lluis@capittal.es                   │
+│              Capittal Dealhub - Q2  │
+└─────────────────────────────────────┘
+```
+
+### Compatibilidad
+
+Los cambios son backward-compatible: los nuevos campos en los tipos tendrán valores por defecto, por lo que los templates guardados en `slide_templates` seguirán funcionando. Los campos opcionales (`yearBlock?`, `branding?`, `introText?`) se resuelven con fallbacks en el código de generación.
 
