@@ -12,43 +12,56 @@ import type { PipelineLead, LeadStatus, LeadActivity, ActivityType } from '../ty
 export const useLeadsPipeline = () => {
   const queryClient = useQueryClient();
 
-  // Fetch leads for pipeline - limited to 100 for performance
+  // Fetch ALL leads for pipeline using pagination (Supabase caps at 1000 per request)
   const { data: leads = [], isLoading, refetch } = useQuery({
     queryKey: ['leads-pipeline'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('company_valuations')
-        .select(`
-          id,
-          contact_name,
-          company_name,
-          email,
-          phone,
-          industry,
-          lead_status_crm,
-          final_valuation,
-          revenue,
-          ebitda,
-          employee_range,
-          location,
-          acquisition_channel_id,
-          lead_form,
-          created_at,
-          assigned_to,
-          email_sent,
-          email_opened,
-          precall_email_sent,
-          call_attempts_count
-        `)
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: false });
+      const PAGE_SIZE = 1000;
+      let allData: PipelineLead[] = [];
+      let from = 0;
+      let hasMore = true;
 
-      if (error) throw error;
-      return data as PipelineLead[];
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('company_valuations')
+          .select(`
+            id,
+            contact_name,
+            company_name,
+            email,
+            phone,
+            industry,
+            lead_status_crm,
+            final_valuation,
+            revenue,
+            ebitda,
+            employee_range,
+            location,
+            acquisition_channel_id,
+            lead_form,
+            created_at,
+            assigned_to,
+            email_sent,
+            email_opened,
+            precall_email_sent,
+            call_attempts_count
+          `)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false })
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) throw error;
+
+        allData = allData.concat(data as PipelineLead[]);
+        hasMore = (data?.length ?? 0) === PAGE_SIZE;
+        from += PAGE_SIZE;
+      }
+
+      return allData;
     },
-    staleTime: 1000 * 60 * 3, // 3 minutes
+    staleTime: 1000 * 60 * 3,
     refetchOnWindowFocus: false,
-    gcTime: 1000 * 60 * 10, // 10 minutes cache
+    gcTime: 1000 * 60 * 10,
   });
 
   // Fetch admin users for assignment
