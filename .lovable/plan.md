@@ -1,40 +1,30 @@
 
 
-## Two changes for the Dealhub catalog generator
+## Fix: PDF generation matches PPTX content and style
 
-### 1. Add hyperlink to "Más Información" CTA button
+### Problem
+The PDF generator (`generateDealhubPdf.tsx`) works correctly in terms of data — it receives the same operations and sections. But visually it produces a completely different-looking document because:
+1. It uses Helvetica on basic white/navy backgrounds instead of the PPTX's custom template styling (Plus Jakarta Sans, background images, etc.)
+2. The page size is `[960, 540]` (px-based, landscape) but `@react-pdf/renderer` expects points — this produces incorrectly sized pages
+3. The layout structure (two-column operation slides, cover, separators) doesn't visually match the PPTX output the user is accustomed to
+4. `React.Fragment` receives `data-lov-id` props causing console errors (dev-mode injection issue)
 
-In `generateDealhubPptx.ts`, the CTA button text is added via `slide.addText()`. pptxgenjs supports hyperlinks natively via the `hyperlink` property on text options. We will add `hyperlink: { url: 'mailto:lluis@capittal.es' }` to the CTA text so that clicking "Más Información →" in the generated PPTX opens the user's email client.
+Additionally, the PPTX download shows errors in console but ultimately works — this is likely the `blobToBase64` conversion warnings which are non-blocking.
 
-**File**: `src/features/operations-management/utils/generateDealhubPptx.ts` (lines ~408-412)
-- Add `hyperlink: { url: 'mailto:lluis@capittal.es' }` to the `addText` options for the CTA.
+### Fix approach
 
-### 2. Add PDF download option for the generated catalog
+**1. Align PDF visual style with PPTX output**
+- Update `generateDealhubPdf.tsx` to match the PPTX's design tokens: navy background (`#161B22`), same typography sizing ratios, same layout structure
+- Use landscape A4 equivalent in points: `[960, 540]` → `[841.89, 595.28]` (A4 landscape in pt)
+- Replicate the same slide structure: full-navy cover, numbered separator pages, operation cards with dark sidebar, closing CTA
 
-Currently the catalog generates a `.pptx` file. We'll add a format selector in the `GenerateDealhubModal` so the user can choose between PPTX and PDF:
+**2. Fix React.Fragment warning**
+- The `React.Fragment` at line ~349 receives `data-lov-id` from the dev tooling — replace with a wrapper `<>` or ensure no extra props leak. This is cosmetic but noisy.
 
-- **PPTX → PDF conversion**: After generating the PPTX blob with pptxgenjs, we can offer PDF as an alternative by converting the PPTX blob. Since client-side PPTX-to-PDF is not natively supported, the most practical approach is:
-  - Generate the PPTX as a Blob (pptxgenjs supports `.write('blob')` instead of `.writeFile()`)
-  - For PDF: use a different generation path — render each slide as a PDF page using `@react-pdf/renderer` or `jspdf`, replicating the slide layout
+**3. Pass template context to PDF**
+- The PDF generator doesn't receive `fullTemplate` — add it as a parameter so cover text, branding, and colors can be driven by the same template config the user customized for PPTX
 
-  **However**, a simpler and more reliable approach: add a toggle in the modal UI. For PDF, we generate the PPTX normally and inform the user that PowerPoint or Google Slides can export to PDF. Or we use `pptxgenjs` to generate the file and then offer both formats.
-
-  **Recommended approach**: Since the project already uses `@react-pdf/renderer`, create a `generateDealhubPdf.ts` that renders the catalog slides as PDF pages with the same layout (background image, title, financial data, CTA). This gives a native PDF without conversion.
-
-**Files to modify/create**:
-- `src/features/operations-management/utils/generateDealhubPdf.ts` — new file, generates PDF version of the catalog using `@react-pdf/renderer`
-- `src/features/operations-management/components/GenerateDealhubModal.tsx` — add format selector (PPTX / PDF)
-- `src/features/operations-management/utils/generateDealhubPptx.ts` — add mailto hyperlink to CTA
-
-### Technical details
-
-**Hyperlink** (pptxgenjs API):
-```typescript
-slide.addText(ctaText, {
-  // ...existing options...
-  hyperlink: { url: 'mailto:lluis@capittal.es' },
-});
-```
-
-**PDF generation**: Will create a React-PDF document component that renders each operation slide as a PDF page with the same visual structure (background, title, info rows, financial data, CTA with mailto link, footer). The modal will have a simple dropdown to pick format before generating.
+### Files to modify
+- `src/features/operations-management/utils/generateDealhubPdf.tsx` — fix page sizes, align visual design with PPTX, accept template parameter, fix Fragment warning
+- `src/features/operations-management/components/GenerateDealhubModal.tsx` — pass `fullTemplate` to `generateDealhubPdf()`
 
