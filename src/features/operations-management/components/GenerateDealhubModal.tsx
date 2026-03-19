@@ -28,6 +28,7 @@ interface GenerateDealhubModalProps {
 
 export const GenerateDealhubModal = ({ open, onOpenChange, operations }: GenerateDealhubModalProps) => {
   const { toast } = useToast();
+  const { loadDefault, save, isSaving } = useSlideTemplates();
   const [quarter, setQuarter] = useState<QuarterType>(getCurrentQuarter());
   const [selectedSections, setSelectedSections] = useState<string[]>(DEALHUB_SECTIONS.map(s => s.key));
   const [generating, setGenerating] = useState(false);
@@ -35,6 +36,13 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('config');
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
+
+  // Load saved template when modal opens
+  useEffect(() => {
+    if (open) {
+      loadDefault().then(t => setFullTemplate(t));
+    }
+  }, [open, loadDefault]);
 
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
   const includedCount = activeOps.filter(op => !excludedOpIds.has(op.id)).length;
