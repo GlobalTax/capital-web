@@ -73,6 +73,15 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
   const slide = pptx.addSlide();
   slide.background = { color: ct.background.color || NAVY };
 
+  // Logo
+  if (ct.logo?.visible && (ct.logo as any).imageUrl) {
+    slide.addImage({
+      path: (ct.logo as any).imageUrl,
+      x: ct.logo.x, y: ct.logo.y, w: ct.logo.w, h: ct.logo.h,
+      sizing: { type: 'contain', w: ct.logo.w, h: ct.logo.h },
+    });
+  }
+
   if (ct.title.visible) {
     slide.addText(ct.title.text || 'Capittal Dealhub', {
       x: ct.title.x, y: ct.title.y, w: ct.title.w, h: ct.title.h,

@@ -235,6 +235,11 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
     const bg = `#${c.background.color}`;
     return (
       <div className="relative w-full h-full" style={{ backgroundColor: bg }}>
+        {renderDraggableBlock('logo', c.logo, COVER_BLOCK_COLORS.logo, 'Logo', true,
+          (c.logo as any).imageUrl
+            ? <img src={(c.logo as any).imageUrl} alt="Logo" className="max-w-full max-h-full object-contain" />
+            : <span className="text-[8px] text-white/50 italic">Logo (sin imagen)</span>
+        )}
         {renderDraggableBlock('title', c.title, COVER_BLOCK_COLORS.title, 'Título', true,
           <span className="font-bold text-[14px] text-white">{(c.title as any).text || 'Capittal Dealhub'}</span>
         )}
