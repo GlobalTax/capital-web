@@ -52,10 +52,10 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [activeTab, setActiveTab] = useState('config');
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
 
-  // Load saved template when modal opens
+  // Load saved template when modal opens, merging with current defaults
   useEffect(() => {
     if (open) {
-      loadDefault().then(t => setFullTemplate(t));
+      loadDefault().then(t => setFullTemplate(mergeWithDefaults(t)));
     }
   }, [open, loadDefault]);
 
