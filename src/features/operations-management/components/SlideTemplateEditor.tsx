@@ -10,11 +10,8 @@ import {
   COVER_BLOCK_LABELS, COVER_BLOCK_COLORS,
   INDEX_BLOCK_LABELS, INDEX_BLOCK_COLORS,
   SEPARATOR_BLOCK_LABELS, SEPARATOR_BLOCK_COLORS,
-  DEALHUB_SECTIONS,
 } from '../types/slideTemplate';
 import { SlideBlockProperties } from './SlideBlockProperties';
-
-// Re-export DEALHUB_SECTIONS from the generator for index preview
 import { DEALHUB_SECTIONS as SECTIONS_DATA } from '../utils/generateDealhubPptx';
 
 interface SlideTemplateEditorProps {
