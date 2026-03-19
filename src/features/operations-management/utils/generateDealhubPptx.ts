@@ -1,15 +1,13 @@
 import pptxgen from 'pptxgenjs';
 import type { Operation } from '../types/operations';
-import type { SlideTemplate } from '../types/slideTemplate';
-import { DEFAULT_SLIDE_TEMPLATE } from '../types/slideTemplate';
+import type { SlideTemplate, FullSlideTemplate, CoverTemplate, IndexTemplate, SeparatorTemplate } from '../types/slideTemplate';
+import { DEFAULT_FULL_TEMPLATE } from '../types/slideTemplate';
 
 // ─── DESIGN TOKENS ───
-const BLACK = '000000';
 const NAVY = '161B22';
 const WHITE = 'FFFFFF';
 const TEXT_SECONDARY = '58606E';
 const TEXT_MUTED = '8B919B';
-const BORDER = 'E2E4E8';
 const BG_CARD = 'F3F4F5';
 const ACCENT = '2563EB';
 const FONT = 'Plus Jakarta Sans';
@@ -71,98 +69,125 @@ const fmtMargin = (ebitda: number | undefined, revenue: number | undefined): str
 
 // ─── SLIDE BUILDERS ───
 
-function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number) {
+function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: CoverTemplate) {
   const slide = pptx.addSlide();
-  slide.background = { color: NAVY };
+  slide.background = { color: ct.background.color || NAVY };
 
-  slide.addText('Capittal Dealhub', {
-    x: M, y: 2.2, w: SW - M * 2, h: 1,
-    fontSize: 40, fontFace: FONT, color: WHITE, bold: true,
-  });
-  slide.addText('Open Deals', {
-    x: M, y: 3.1, w: SW - M * 2, h: 0.7,
-    fontSize: 28, fontFace: FONT, color: WHITE, bold: false,
-  });
+  if (ct.title.visible) {
+    slide.addText(ct.title.text || 'Capittal Dealhub', {
+      x: ct.title.x, y: ct.title.y, w: ct.title.w, h: ct.title.h,
+      fontSize: ct.title.fontSize || 40, fontFace: FONT, color: ct.title.color || WHITE,
+      bold: ct.title.bold ?? true, italic: ct.title.italic,
+      align: ct.title.align, valign: ct.title.valign,
+    });
+  }
 
-  slide.addText(`${quarter} — ${year}`, {
-    x: M, y: 4.2, w: 3, h: 0.5,
-    fontSize: 16, fontFace: FONT, color: TEXT_MUTED,
-  });
+  if (ct.subtitle.visible) {
+    slide.addText(ct.subtitle.text || 'Open Deals', {
+      x: ct.subtitle.x, y: ct.subtitle.y, w: ct.subtitle.w, h: ct.subtitle.h,
+      fontSize: ct.subtitle.fontSize || 28, fontFace: FONT, color: ct.subtitle.color || WHITE,
+      bold: ct.subtitle.bold ?? false, italic: ct.subtitle.italic,
+      align: ct.subtitle.align, valign: ct.subtitle.valign,
+    });
+  }
 
-  slide.addShape(pptx.ShapeType.rect, {
-    x: M, y: SH - 0.8, w: SW - M * 2, h: 0.02, fill: { color: TEXT_MUTED },
-  });
-  slide.addText('CAPITTAL — Información Confidencial', {
-    x: M, y: SH - 0.6, w: SW - M * 2, h: 0.4,
-    fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
-  });
+  if (ct.quarter.visible) {
+    slide.addText(`${quarter} — ${year}`, {
+      x: ct.quarter.x, y: ct.quarter.y, w: ct.quarter.w, h: ct.quarter.h,
+      fontSize: ct.quarter.fontSize || 16, fontFace: FONT, color: ct.quarter.color || TEXT_MUTED,
+      align: ct.quarter.align,
+    });
+  }
+
+  if (ct.divider.visible) {
+    slide.addShape(pptx.ShapeType.rect, {
+      x: ct.divider.x, y: ct.divider.y, w: ct.divider.w, h: ct.divider.h,
+      fill: { color: ct.divider.bgColor || TEXT_MUTED },
+    });
+  }
+
+  if (ct.footer.visible) {
+    slide.addText(ct.footer.text || 'CAPITTAL — Información Confidencial', {
+      x: ct.footer.x, y: ct.footer.y, w: ct.footer.w, h: ct.footer.h,
+      fontSize: ct.footer.fontSize || 9, fontFace: FONT, color: ct.footer.color || TEXT_MUTED,
+      align: ct.footer.align,
+    });
+  }
 }
 
-function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>) {
+function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate) {
   const slide = pptx.addSlide();
-  slide.background = { color: WHITE };
+  slide.background = { color: idx.background.color || WHITE };
 
-  slide.addText('Índice de Oportunidades', {
-    x: M, y: 0.5, w: SW - M * 2, h: 0.8,
-    fontSize: 28, fontFace: FONT, color: NAVY, bold: true,
-  });
-
-  const cardW = 2.8;
-  const cardH = 2.2;
-  const gap = 0.3;
-  const startX = (SW - (cardW * 4 + gap * 3)) / 2;
-  const startY = 2.5;
-
-  const sectionColors = ['2563EB', '7C3AED', 'EA580C', '059669'];
+  if (idx.title.visible) {
+    slide.addText('Índice de Oportunidades', {
+      x: idx.title.x, y: idx.title.y, w: idx.title.w, h: idx.title.h,
+      fontSize: idx.title.fontSize || 28, fontFace: FONT, color: idx.title.color || NAVY,
+      bold: idx.title.bold ?? true, align: idx.title.align,
+    });
+  }
 
   DEALHUB_SECTIONS.forEach((section, i) => {
-    const x = startX + i * (cardW + gap);
+    const x = idx.cardsStartX + i * (idx.cardW + idx.cardGap);
     const count = sectionCounts[section.key] || 0;
     const sectionNum = String(i + 1).padStart(2, '0');
+    const sColor = idx.sectionColors[i] || ACCENT;
 
     slide.addShape(pptx.ShapeType.roundRect, {
-      x, y: startY, w: cardW, h: cardH,
-      fill: { color: BG_CARD }, rectRadius: 0.1,
+      x, y: idx.cardsStartY, w: idx.cardW, h: idx.cardH,
+      fill: { color: idx.cardBgColor || BG_CARD }, rectRadius: idx.cardRadius || 0.1,
     });
 
     slide.addText(sectionNum, {
-      x: x + 0.2, y: startY + 0.2, w: cardW - 0.4, h: 0.4,
-      fontSize: 14, fontFace: FONT, color: sectionColors[i], bold: true,
+      x: x + 0.2, y: idx.cardsStartY + 0.2, w: idx.cardW - 0.4, h: 0.4,
+      fontSize: 14, fontFace: FONT, color: sColor, bold: true,
     });
 
     slide.addText(section.label, {
-      x: x + 0.2, y: startY + 0.7, w: cardW - 0.4, h: 0.5,
+      x: x + 0.2, y: idx.cardsStartY + 0.7, w: idx.cardW - 0.4, h: 0.5,
       fontSize: 13, fontFace: FONT, color: NAVY, bold: true,
     });
 
     slide.addText(`${count} operaciones`, {
-      x: x + 0.2, y: startY + 1.3, w: cardW - 0.4, h: 0.4,
+      x: x + 0.2, y: idx.cardsStartY + 1.3, w: idx.cardW - 0.4, h: 0.4,
       fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
     });
 
     slide.addText(section.subtitle, {
-      x: x + 0.2, y: startY + 1.6, w: cardW - 0.4, h: 0.4,
+      x: x + 0.2, y: idx.cardsStartY + 1.6, w: idx.cardW - 0.4, h: 0.4,
       fontSize: 9, fontFace: FONT, color: TEXT_MUTED, wrap: true,
     });
   });
 }
 
-function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, subtitle: string) {
+function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, subtitle: string, sep: SeparatorTemplate) {
   const slide = pptx.addSlide();
-  slide.background = { color: NAVY };
+  slide.background = { color: sep.background.color || NAVY };
 
-  slide.addText(sectionNum, {
-    x: M, y: 2.0, w: 2, h: 0.8,
-    fontSize: 48, fontFace: FONT, color: ACCENT, bold: true,
-  });
-  slide.addText(title, {
-    x: M, y: 2.9, w: SW - M * 2, h: 0.8,
-    fontSize: 32, fontFace: FONT, color: WHITE, bold: true,
-  });
-  slide.addText(subtitle, {
-    x: M, y: 3.7, w: SW - M * 2, h: 0.5,
-    fontSize: 14, fontFace: FONT, color: TEXT_MUTED,
-  });
+  if (sep.number.visible) {
+    slide.addText(sectionNum, {
+      x: sep.number.x, y: sep.number.y, w: sep.number.w, h: sep.number.h,
+      fontSize: sep.number.fontSize || 48, fontFace: FONT,
+      color: sep.number.color || sep.accentColor || ACCENT,
+      bold: sep.number.bold ?? true, align: sep.number.align,
+    });
+  }
+
+  if (sep.title.visible) {
+    slide.addText(title, {
+      x: sep.title.x, y: sep.title.y, w: sep.title.w, h: sep.title.h,
+      fontSize: sep.title.fontSize || 32, fontFace: FONT, color: sep.title.color || WHITE,
+      bold: sep.title.bold ?? true, align: sep.title.align,
+    });
+  }
+
+  if (sep.subtitle.visible) {
+    slide.addText(subtitle, {
+      x: sep.subtitle.x, y: sep.subtitle.y, w: sep.subtitle.w, h: sep.subtitle.h,
+      fontSize: sep.subtitle.fontSize || 14, fontFace: FONT, color: sep.subtitle.color || TEXT_MUTED,
+      align: sep.subtitle.align,
+    });
+  }
 }
 
 function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
@@ -171,31 +196,35 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
 
   // ─── LEFT COLUMN ───
 
-  // Title
   if (t.title.visible) {
     slide.addText(op.company_name, {
       x: t.title.x, y: t.title.y, w: t.title.w, h: t.title.h,
-      fontSize: t.title.fontSize || 26, fontFace: FONT, color: t.title.color || NAVY, bold: t.title.bold ?? true,
+      fontSize: t.title.fontSize || 26, fontFace: FONT, color: t.title.color || NAVY,
+      bold: t.title.bold ?? true, italic: t.title.italic,
+      align: t.title.align, valign: t.title.valign,
     });
   }
 
-  // Description
   if (t.description.visible) {
     const rawDesc = op.description || '';
     const desc = rawDesc.length > 800 ? rawDesc.substring(0, 797) + '...' : rawDesc;
     slide.addText(desc, {
       x: t.description.x, y: t.description.y, w: t.description.w, h: t.description.h,
       fontSize: t.description.fontSize || 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
-      lineSpacingMultiple: 1.4, valign: 'top', wrap: true, shrinkText: true,
+      lineSpacingMultiple: t.description.lineSpacing || 1.4,
+      valign: t.description.valign || 'top',
+      align: t.description.align,
+      wrap: true, shrinkText: true,
+      italic: t.description.italic,
     });
   }
 
-  // Highlights
   const highlights = op.highlights || [];
   if (t.highlights.visible && highlights.length > 0) {
     slide.addText('Aspectos Destacados', {
       x: t.highlights.x, y: t.highlights.y, w: t.highlights.w, h: 0.35,
-      fontSize: t.highlights.fontSize || 11, fontFace: FONT, color: t.highlights.color || NAVY, bold: t.highlights.bold ?? true,
+      fontSize: t.highlights.fontSize || 11, fontFace: FONT, color: t.highlights.color || NAVY,
+      bold: t.highlights.bold ?? true, align: t.highlights.align,
     });
 
     const bulletText = highlights.map(h => ({
@@ -216,18 +245,17 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
 
     slide.addShape(pptx.ShapeType.roundRect, {
       x: t.summaryCard.x, y: t.summaryCard.y, w: t.summaryCard.w, h: t.summaryCard.h,
-      fill: { color: cardColor }, rectRadius: 0.15,
+      fill: { color: cardColor }, rectRadius: t.summaryCard.rectRadius || 0.15,
     });
 
-    // Summary header
     if (t.summaryHeader.visible) {
       slide.addText('Resumen', {
         x: t.summaryHeader.x, y: t.summaryHeader.y, w: t.summaryHeader.w, h: t.summaryHeader.h,
-        fontSize: t.summaryHeader.fontSize || 13, fontFace: FONT, color: t.summaryHeader.color || WHITE, bold: t.summaryHeader.bold ?? true,
+        fontSize: t.summaryHeader.fontSize || 13, fontFace: FONT, color: t.summaryHeader.color || WHITE,
+        bold: t.summaryHeader.bold ?? true, align: t.summaryHeader.align,
       });
     }
 
-    // Info rows
     if (t.infoRows.visible) {
       const simpleRows = [
         { label: 'Ubicación', value: 'España' },
@@ -247,7 +275,6 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
         infoY += 0.45;
       });
 
-      // Oportunidad
       const oportunidadText = op.short_description || op.deal_type || 'Venta';
       slide.addText('Oportunidad', {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.25,
@@ -260,9 +287,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
       });
     }
 
-    // Financial data
     if (t.financialData.visible) {
-      // Separator
       slide.addShape(pptx.ShapeType.rect, {
         x: t.financialData.x, y: t.financialData.y - 0.15, w: t.financialData.w, h: 0.01,
         fill: { color: TEXT_MUTED },
@@ -270,7 +295,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
 
       slide.addText('Datos Clave', {
         x: t.financialData.x, y: t.financialData.y, w: t.financialData.w, h: 0.4,
-        fontSize: t.financialData.fontSize || 13, fontFace: FONT, color: t.financialData.color || WHITE, bold: t.financialData.bold ?? true,
+        fontSize: t.financialData.fontSize || 13, fontFace: FONT, color: t.financialData.color || WHITE,
+        bold: t.financialData.bold ?? true, align: t.financialData.align,
       });
 
       const financialRows = [
@@ -293,26 +319,26 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
       });
     }
 
-    // CTA
     if (t.cta.visible) {
       const ctaText = (t.cta as any).text || 'Más Información →';
       slide.addShape(pptx.ShapeType.roundRect, {
         x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
-        fill: { color: '3A3F47' }, rectRadius: 0.05,
+        fill: { color: t.cta.bgColor || '3A3F47' }, rectRadius: t.cta.rectRadius || 0.05,
       });
       slide.addText(ctaText, {
         x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
-        fontSize: t.cta.fontSize || 11, fontFace: FONT, color: t.cta.color || WHITE, bold: t.cta.bold ?? true, align: 'center', valign: 'middle',
+        fontSize: t.cta.fontSize || 11, fontFace: FONT, color: t.cta.color || WHITE,
+        bold: t.cta.bold ?? true, align: t.cta.align || 'center', valign: t.cta.valign || 'middle',
       });
     }
   }
 
-  // Footer
   if (t.footer.visible) {
     const footerText = (t.footer as any).text || 'CAPITTAL — Información Confidencial';
     slide.addText(footerText, {
       x: t.footer.x, y: t.footer.y, w: t.footer.w, h: t.footer.h,
       fontSize: t.footer.fontSize || 8, fontFace: FONT, color: t.footer.color || TEXT_MUTED,
+      align: t.footer.align,
     });
   }
 }
@@ -324,28 +350,27 @@ export async function generateDealhubPptx(
   selectedSections: string[],
   quarter: QuarterType,
   year?: number,
-  template?: SlideTemplate,
+  fullTemplate?: FullSlideTemplate,
 ) {
   const currentYear = year || new Date().getFullYear();
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
-  const t = template || DEFAULT_SLIDE_TEMPLATE;
+  const ft = fullTemplate || DEFAULT_FULL_TEMPLATE;
 
   const pptx = new pptxgen();
   pptx.layout = 'LAYOUT_WIDE';
   pptx.author = 'Capittal';
   pptx.title = `Capittal Dealhub - Open Deals ${quarter} ${currentYear}`;
 
-  // Compute section counts
   const sectionCounts: Record<string, number> = {};
   DEALHUB_SECTIONS.forEach(s => {
     sectionCounts[s.key] = activeOps.filter(s.filter).length;
   });
 
   // 1. Cover
-  addCoverSlide(pptx, quarter, currentYear);
+  addCoverSlide(pptx, quarter, currentYear, ft.cover);
 
   // 2. Index
-  addIndexSlide(pptx, sectionCounts);
+  addIndexSlide(pptx, sectionCounts, ft.index);
 
   // 3. Sections
   DEALHUB_SECTIONS.forEach((section, i) => {
@@ -354,9 +379,9 @@ export async function generateDealhubPptx(
     if (ops.length === 0) return;
 
     const sectionNum = String(i + 1).padStart(2, '0');
-    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle);
+    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle, ft.separator);
 
-    ops.forEach(op => addOperationSlide(pptx, op, t));
+    ops.forEach(op => addOperationSlide(pptx, op, ft.operation));
   });
 
   await pptx.writeFile({ fileName: `Capittal_Dealhub_${quarter}_${currentYear}.pptx` });
