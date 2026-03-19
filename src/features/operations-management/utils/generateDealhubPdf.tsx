@@ -451,7 +451,7 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
               alignSelf: 'flex-start',
               marginTop: 12,
             }}>
-              <Link src="mailto:lluis@capittal.es" style={{
+              <Link src={`https://capittal.es/oportunidades?operation=${op.id}`} style={{
                 fontSize: (tmpl.cta.fontSize || 11) * 0.85,
                 color: hexColor(tmpl.cta.color, WHITE),
                 fontFamily: 'Helvetica-Bold',
