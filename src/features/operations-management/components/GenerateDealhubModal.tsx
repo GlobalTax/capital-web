@@ -10,8 +10,6 @@ import { StaticSlidesUploader } from './StaticSlidesUploader';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
 import { useSlideTemplates } from '../hooks/useSlideTemplates';
 
-const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
-
 function getCurrentQuarter(): QuarterType {
   const month = new Date().getMonth();
   if (month < 3) return 'Q1';
@@ -29,7 +27,7 @@ interface GenerateDealhubModalProps {
 export const GenerateDealhubModal = ({ open, onOpenChange, operations }: GenerateDealhubModalProps) => {
   const { toast } = useToast();
   const { loadDefault, save, isSaving } = useSlideTemplates();
-  const [quarter, setQuarter] = useState<QuarterType>(getCurrentQuarter());
+  const quarter = getCurrentQuarter();
   const [selectedSections, setSelectedSections] = useState<string[]>(DEALHUB_SECTIONS.map(s => s.key));
   const [generating, setGenerating] = useState(false);
   const [excludedOpIds, setExcludedOpIds] = useState<Set<string>>(new Set());
@@ -122,27 +120,6 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
           {/* Config tab */}
           <TabsContent value="config" className="flex-1 overflow-hidden mt-0">
             <div className="px-6 py-4">
-              {/* Quarter selector */}
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-                Trimestre
-              </label>
-              <div className="flex gap-1 p-0.5 rounded-[5px] bg-secondary mb-5">
-                {QUARTERS.map(q => (
-                  <button
-                    key={q}
-                    onClick={() => setQuarter(q)}
-                    className={cn(
-                      'flex-1 text-sm py-1.5 rounded-[4px] transition-all font-semibold',
-                      quarter === q
-                        ? 'bg-[hsl(var(--primary))] text-primary-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-
               {/* Section checklist */}
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
                 Secciones a incluir
