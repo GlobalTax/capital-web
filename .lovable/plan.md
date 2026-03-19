@@ -1,81 +1,64 @@
 
 
-## Actualizar generación PPTX Dealhub para ser fiel a la plantilla
+## Ajustar PPTX Dealhub para ser fiel a la plantilla
 
-He analizado las 8 slides de la plantilla y las comparo con el código actual en `generateDealhubPptx.ts`. La estructura general ya es correcta (portada, índice, separadores, operaciones, cierre), pero hay diferencias de layout que corregir.
+He comparado pixel a pixel las 5 slides de la plantilla con los valores actuales en el codigo. Hay varias diferencias de tamano de fuente, posicionamiento y uso de imagen vs texto.
 
-### Diferencias detectadas y cambios necesarios
+### Diferencias detectadas
 
-**1. Portada (Cover Slide)**
-- Template: "2026" en grande arriba-izquierda (bold, ~80pt), "Capittal M&A · Consulting" como texto arriba-derecha, título "Capittal Dealhub - Open Deals Q2" abajo-izquierda (~40pt bold), subtítulo descriptivo debajo, "Q2 — 2026" en gris abajo
-- Actual: Logo como imagen (no texto), título centrado verticalmente, footer con línea divisoria
-- **Cambio**: Reestructurar el cover para poner el año grande arriba-izquierda, branding como texto arriba-derecha, título e info abajo. Eliminar divider. Ajustar defaults en `CoverTemplate` y añadir campo `yearBlock` al tipo.
+**1. Cover Slide**
+- **Branding top-right**: La plantilla usa el LOGO como imagen (no texto "Capittal M&A · Consulting"). Actualmente el codigo renderiza texto porque `logo.visible = false` y `branding.visible = true`. Hay que invertir: usar la imagen del logo y ocultar el texto, o renderizar ambos (logo imagen grande + "M&A · Consulting" debajo)
+- **Titulo**: Template usa ~44pt, codigo tiene 36pt
+- **Year**: Template parece ~80pt, codigo tiene 72pt -- ajustar a 80
 
-**2. Índice (Index Slide)**
-- Template: Tiene párrafo introductorio ("Apreciado lector, A continuación presentamos...") entre el título y las 4 cards
-- Actual: Solo título + cards, sin párrafo introductorio
-- **Cambio**: Añadir campo `introText` al `IndexTemplate` y renderizarlo en `addIndexSlide`. Ajustar posición Y de las cards para dejar espacio.
+**2. Index Slide**
+- **Titulo**: Template usa ~32pt bold, codigo tiene 28pt
+- **Intro text**: Template usa ~14pt, codigo tiene 11pt. Ademas el "Apreciado lector," parece estar en linea separada con bold
+- **Numeros en cards (01, 02...)**: Template los muestra a ~36pt bold. El codigo actual pone 14pt -- este es el error mas grande
+- **Nombres de seccion en cards**: Template ~14pt bold, codigo 13pt
+- **Conteo operaciones**: Template ~12pt, codigo 11pt
 
-**3. Separador de Sección**
-- Template: Número "01" grande arriba-izquierda (~120pt), "Capittal M&A · Consulting" arriba-derecha, título de sección abajo-izquierda (~36pt bold), subtítulo debajo
-- Actual: Número y título están centrados verticalmente, sin branding
-- **Cambio**: Mover número arriba-izquierda, título abajo-izquierda. Añadir campo `branding` al `SeparatorTemplate` para el texto Capittal arriba-derecha. Ajustar defaults.
+**3. Separator Slide**
+- **Branding top-right**: Igual que cover -- es IMAGEN del logo, no texto. Actualmente renderiza texto
+- **Numero**: Template parece ~140-150pt, codigo tiene 120pt
 
-**4. Slide de Operación**
-- Template: Layout de dos columnas ya correcto. Sin cambios mayores necesarios, la estructura actual coincide bien.
+**4. Operation Slide**
+- Se ve bastante correcto, sin cambios mayores necesarios
 
-**5. Slide de Cierre (NUEVO)**
-- Template: Mitad superior blanca con logo Capittal arriba-derecha, mitad inferior navy (#161B22) con "Gracias" bold, email debajo, título del documento abajo-derecha
-- Actual: No existe slide de cierre en Dealhub generator (solo en el de operación individual)
-- **Cambio**: Añadir `addClosingSlide()` al final de `generateDealhubPptx`. Añadir tipo `ClosingTemplate` al sistema de templates.
+**5. Closing Slide**  
+- Se ve correcto en cuanto a estructura. La logo es una imagen (negra sobre blanco)
 
-### Archivos a modificar
+### Cambios a realizar
 
-| Archivo | Cambio |
-|---------|--------|
-| `src/features/operations-management/types/slideTemplate.ts` | Añadir `yearBlock` a CoverTemplate, `introText` a IndexTemplate, `branding` a SeparatorTemplate, nuevo `ClosingTemplate`, actualizar `FullSlideTemplate` y defaults |
-| `src/features/operations-management/utils/generateDealhubPptx.ts` | Actualizar `addCoverSlide` (año grande + branding texto), `addIndexSlide` (párrafo intro), `addSectionSeparator` (branding + repositioning), añadir `addClosingSlide` |
+**Archivo: `src/features/operations-management/types/slideTemplate.ts`**
+- Ajustar `DEFAULT_COVER_TEMPLATE`: yearBlock fontSize 72->80, title fontSize 36->44, logo visible true (para usar imagen), branding como texto pequeno "M&A · Consulting" debajo del logo
+- Ajustar `DEFAULT_INDEX_TEMPLATE`: title fontSize 28->32, introText fontSize 11->14
+- Ajustar `DEFAULT_SEPARATOR_TEMPLATE`: number fontSize 120->140
 
-### Detalle técnico de posicionamiento
+**Archivo: `src/features/operations-management/utils/generateDealhubPptx.ts`**
+- `addIndexSlide`: cambiar fontSize de numeros en cards de 14 a 36, section labels de 13 a 14, counts de 11 to 12. Ajustar posiciones Y dentro de las cards para acomodar numeros mas grandes
+- `addCoverSlide` y `addSectionSeparator`: En el branding, renderizar el logo como imagen (si `logo.imageUrl` existe) + texto "M&A · Consulting" debajo, en vez de solo texto grande
+- Ajustar card heights/positions en index si es necesario para que los numeros grandes quepan
+
+### Resumen de cambios de tamano
 
 ```text
-COVER (13.33 x 7.5 inches):
-┌─────────────────────────────────────┐
-│ 2026 (bold,72pt)     Capittal logo  │
-│                     M&A·Consulting  │
-│                                     │
-│                                     │
-│                                     │
-│ Capittal Dealhub - Open Deals Q2    │
-│ Relación de Oportunidades...        │
-│ Q2 — 2026 (muted)                   │
-└─────────────────────────────────────┘
-
-SEPARATOR:
-┌─────────────────────────────────────┐
-│ 01 (120pt)          Capittal logo   │
-│                     M&A·Consulting  │
-│                                     │
-│                                     │
-│                                     │
-│ Mandatos de Venta (36pt bold)       │
-│ A continuación se presentan...      │
-│                                     │
-└─────────────────────────────────────┘
-
-CLOSING:
-┌─────────────────────────────────────┐
-│                     Capittal logo   │
-│              (white background)     │
-│                                     │
-│─────────────────────────────────────│
-│ Gracias (bold)        (navy bg)     │
-│ lluis@capittal.es                   │
-│              Capittal Dealhub - Q2  │
-└─────────────────────────────────────┘
+Elemento                  Actual -> Plantilla
+─────────────────────────────────────────────
+Cover year                72pt   -> 80pt
+Cover title               36pt   -> 44pt
+Cover branding            texto  -> logo imagen
+Index title               28pt   -> 32pt
+Index intro text          11pt   -> 14pt
+Index card numbers        14pt   -> 36pt
+Index card labels         13pt   -> 14pt
+Separator number          120pt  -> 140pt
+Separator branding        texto  -> logo imagen
 ```
 
-### Compatibilidad
-
-Los cambios son backward-compatible: los nuevos campos en los tipos tendrán valores por defecto, por lo que los templates guardados en `slide_templates` seguirán funcionando. Los campos opcionales (`yearBlock?`, `branding?`, `introText?`) se resuelven con fallbacks en el código de generación.
+### Archivos a modificar
+| Archivo | Cambio |
+|---------|--------|
+| `slideTemplate.ts` | Defaults de fontSize en cover, index, separator |
+| `generateDealhubPptx.ts` | fontSize hardcoded en cards del index, logica de branding con imagen |
 
