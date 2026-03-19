@@ -1096,14 +1096,6 @@ const AdminOperations = () => {
             Dashboard
           </Button>
           <Button
-            onClick={() => navigate('/admin/operations/kanban')}
-            variant="outline"
-            className="border-purple-200 hover:bg-purple-50 text-purple-600"
-          >
-            <Kanban className="h-4 w-4 mr-2" />
-            Vista Kanban
-          </Button>
-          <Button
             onClick={() => setShowAdvancedSearch(true)}
             variant="outline"
             className="border-blue-200 hover:bg-blue-50 text-blue-600"
