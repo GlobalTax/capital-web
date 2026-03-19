@@ -71,6 +71,12 @@ const fmtMargin = (ebitda: number | undefined, revenue: number | undefined): str
 
 function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: CoverTemplate) {
   const slide = pptx.addSlide();
+
+  if (ct.backgroundImage) {
+    slide.background = { path: ct.backgroundImage };
+    return;
+  }
+
   slide.background = { color: ct.background.color || NAVY };
 
   // Year block (top-left, large)
