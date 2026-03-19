@@ -44,9 +44,10 @@ export function MarketStudiesPanel() {
     return studies.filter((s) => {
       const matchesSearch = !searchQuery || s.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSector = !sectorFilter || s.sector === sectorFilter;
-      return matchesSearch && matchesSector;
+      const matchesStatus = !statusFilter || s.status === statusFilter;
+      return matchesSearch && matchesSector && matchesStatus;
     });
-  }, [studies, searchQuery, sectorFilter]);
+  }, [studies, searchQuery, sectorFilter, statusFilter]);
 
   const sectors = useMemo(() => {
     const set = new Set(studies.map((s) => s.sector).filter(Boolean) as string[]);
