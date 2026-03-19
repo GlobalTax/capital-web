@@ -141,6 +141,7 @@ export interface SeparatorTemplate {
   subtitle: BlockConfig;
   accentColor: string;
   branding?: BlockConfig & { text?: string };
+  backgroundImages?: Record<string, string>;
 }
 
 export type SeparatorBlockKey = keyof Omit<SeparatorTemplate, 'accentColor'>;
