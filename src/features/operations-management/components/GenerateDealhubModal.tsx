@@ -231,7 +231,16 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
             {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             Guardar plantilla
           </button>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <Select value={outputFormat} onValueChange={(v: 'pptx' | 'pdf') => setOutputFormat(v)}>
+              <SelectTrigger className="w-[100px] h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pptx">PPTX</SelectItem>
+                <SelectItem value="pdf">PDF</SelectItem>
+              </SelectContent>
+            </Select>
             <button
               onClick={() => onOpenChange(false)}
               disabled={generating}
@@ -250,7 +259,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
               )}
             >
               {generating && <Loader2 className="h-4 w-4 animate-spin" />}
-              {generating ? 'Generando...' : 'Generar y Descargar'}
+              {generating ? 'Generando...' : `Descargar ${outputFormat.toUpperCase()}`}
             </button>
           </div>
         </div>
