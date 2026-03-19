@@ -1,64 +1,50 @@
 
 
-## Ajustar PPTX Dealhub para ser fiel a la plantilla
+## Slides estáticas subidas por el usuario + operaciones automáticas
 
-He comparado pixel a pixel las 5 slides de la plantilla con los valores actuales en el codigo. Hay varias diferencias de tamano de fuente, posicionamiento y uso de imagen vs texto.
+### Concepto
 
-### Diferencias detectadas
+En vez de intentar replicar pixel a pixel las portadas, índice, separadores y cierre con código, te dejamos **subir imágenes PNG/JPG de cada slide estática**. Esas imágenes se usan como fondo a pantalla completa. Las slides de operaciones siguen generándose automáticamente como hasta ahora.
 
-**1. Cover Slide**
-- **Branding top-right**: La plantilla usa el LOGO como imagen (no texto "Capittal M&A · Consulting"). Actualmente el codigo renderiza texto porque `logo.visible = false` y `branding.visible = true`. Hay que invertir: usar la imagen del logo y ocultar el texto, o renderizar ambos (logo imagen grande + "M&A · Consulting" debajo)
-- **Titulo**: Template usa ~44pt, codigo tiene 36pt
-- **Year**: Template parece ~80pt, codigo tiene 72pt -- ajustar a 80
+### Tipos de slides estáticas
 
-**2. Index Slide**
-- **Titulo**: Template usa ~32pt bold, codigo tiene 28pt
-- **Intro text**: Template usa ~14pt, codigo tiene 11pt. Ademas el "Apreciado lector," parece estar en linea separada con bold
-- **Numeros en cards (01, 02...)**: Template los muestra a ~36pt bold. El codigo actual pone 14pt -- este es el error mas grande
-- **Nombres de seccion en cards**: Template ~14pt bold, codigo 13pt
-- **Conteo operaciones**: Template ~12pt, codigo 11pt
+| Slide | Comportamiento |
+|-------|---------------|
+| **Portada** | Imagen fija subida por el usuario |
+| **Índice** | Imagen fija subida por el usuario |
+| **Separador 01** | Imagen fija subida (una por sección) |
+| **Separador 02** | Imagen fija subida |
+| **Separador 03** | Imagen fija subida |
+| **Separador 04** | Imagen fija subida |
+| **Cierre** | Imagen fija subida por el usuario |
 
-**3. Separator Slide**
-- **Branding top-right**: Igual que cover -- es IMAGEN del logo, no texto. Actualmente renderiza texto
-- **Numero**: Template parece ~140-150pt, codigo tiene 120pt
+### Flujo del usuario
 
-**4. Operation Slide**
-- Se ve bastante correcto, sin cambios mayores necesarios
+1. En el modal de "Generar Catálogo ROD", nueva pestaña **"Slides fijas"**
+2. Campos de upload para: Portada, Índice, cada Separador de sección, y Cierre
+3. Las imágenes se suben a Supabase Storage (bucket `slide-backgrounds`)
+4. Las URLs se guardan en la tabla `slide_templates` dentro de `template_data`
+5. Al generar, si existe imagen para una slide, se usa como background a pantalla completa; si no, se genera con código como ahora (fallback)
 
-**5. Closing Slide**  
-- Se ve correcto en cuanto a estructura. La logo es una imagen (negra sobre blanco)
+### Cambios técnicos
 
-### Cambios a realizar
+**1. Supabase Storage** — Crear bucket `slide-backgrounds` (público)
 
-**Archivo: `src/features/operations-management/types/slideTemplate.ts`**
-- Ajustar `DEFAULT_COVER_TEMPLATE`: yearBlock fontSize 72->80, title fontSize 36->44, logo visible true (para usar imagen), branding como texto pequeno "M&A · Consulting" debajo del logo
-- Ajustar `DEFAULT_INDEX_TEMPLATE`: title fontSize 28->32, introText fontSize 11->14
-- Ajustar `DEFAULT_SEPARATOR_TEMPLATE`: number fontSize 120->140
+**2. `slideTemplate.ts`** — Añadir campos opcionales:
+- `cover.backgroundImage?: string`
+- `index.backgroundImage?: string`
+- `separator.backgroundImages?: Record<string, string>` (key = section key)
+- `closing.backgroundImage?: string`
 
-**Archivo: `src/features/operations-management/utils/generateDealhubPptx.ts`**
-- `addIndexSlide`: cambiar fontSize de numeros en cards de 14 a 36, section labels de 13 a 14, counts de 11 to 12. Ajustar posiciones Y dentro de las cards para acomodar numeros mas grandes
-- `addCoverSlide` y `addSectionSeparator`: En el branding, renderizar el logo como imagen (si `logo.imageUrl` existe) + texto "M&A · Consulting" debajo, en vez de solo texto grande
-- Ajustar card heights/positions en index si es necesario para que los numeros grandes quepan
+**3. `generateDealhubPptx.ts`** — En cada función `addCoverSlide`, `addIndexSlide`, `addSectionSeparator`, `addClosingSlide`: si existe `backgroundImage`, crear slide con `slide.background = { path: url }` y saltar toda la lógica de renderizado de elementos
 
-### Resumen de cambios de tamano
-
-```text
-Elemento                  Actual -> Plantilla
-─────────────────────────────────────────────
-Cover year                72pt   -> 80pt
-Cover title               36pt   -> 44pt
-Cover branding            texto  -> logo imagen
-Index title               28pt   -> 32pt
-Index intro text          11pt   -> 14pt
-Index card numbers        14pt   -> 36pt
-Index card labels         13pt   -> 14pt
-Separator number          120pt  -> 140pt
-Separator branding        texto  -> logo imagen
-```
+**4. `GenerateDealhubModal.tsx`** — Nueva pestaña con componentes de upload para cada slide estática, con preview de la imagen subida y botón para eliminar/cambiar
 
 ### Archivos a modificar
 | Archivo | Cambio |
 |---------|--------|
-| `slideTemplate.ts` | Defaults de fontSize en cover, index, separator |
-| `generateDealhubPptx.ts` | fontSize hardcoded en cards del index, logica de branding con imagen |
+| `slideTemplate.ts` | Campos `backgroundImage` opcionales |
+| `generateDealhubPptx.ts` | Condicional: si hay imagen de fondo, usarla en vez de generar |
+| `GenerateDealhubModal.tsx` | Pestaña de uploads con previews |
+| Migration SQL | Crear bucket `slide-backgrounds` |
 
