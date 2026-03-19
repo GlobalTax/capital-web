@@ -156,6 +156,26 @@ export function MarketStudiesPanel() {
                       <Badge variant="secondary" className="mt-1 text-xs">{study.sector}</Badge>
                     )}
                   </div>
+                  <Select
+                    value={study.status}
+                    onValueChange={(v) => updateStatus.mutate({ id: study.id, status: v as 'pending' | 'validated' })}
+                  >
+                    <SelectTrigger className="h-7 w-auto min-w-[120px] text-xs gap-1 border-0 bg-transparent p-0 px-1 hover:bg-muted">
+                      {study.status === 'validated' ? (
+                        <span className="flex items-center gap-1 text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" />Validado</span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-amber-600"><Clock className="h-3.5 w-3.5" />Pendiente</span>
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">
+                        <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-amber-600" />Pendiente</span>
+                      </SelectItem>
+                      <SelectItem value="validated">
+                        <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />Validado</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 {study.description && (
                   <p className="text-xs text-muted-foreground line-clamp-2">{study.description}</p>
