@@ -412,21 +412,22 @@ export default function ContactListDetailPage() {
 
   // Query: sublists + their companies (only for madre lists)
   const { data: sublistCompanyMap } = useQuery({
-    queryKey: ['sublist-company-map', listId],
+    queryKey: ['sublist-company-map', listId, 'v2'],
     enabled: !!listId,
     queryFn: async () => {
       // 1. Get sublists
       const { data: sublists, error: subErr } = await supabase
         .from('outbound_lists' as any)
         .select('id, name')
-        .eq('lista_madre_id', listId!);
+        .eq('lista_madre_id', listId!)
+        .order('name', { ascending: true });
       if (subErr || !sublists || sublists.length === 0) return null;
 
       const sublistArr = (sublists as unknown) as { id: string; name: string }[];
       const sublistIds = sublistArr.map(s => s.id);
       const nameMap = Object.fromEntries(sublistArr.map(s => [s.id, s.name]));
 
-      // 2. Get companies from those sublists (paginated to avoid Supabase 1000-row limit)
+      // 2. Get companies from those sublists (paginated with deterministic ordering)
       const subCompanies = await (async () => {
         const allRows: { cif: string; list_id: string }[] = [];
         let from = 0;
@@ -435,9 +436,10 @@ export default function ContactListDetailPage() {
         while (true) {
           const { data, error } = await supabase
             .from('outbound_list_companies' as any)
-            .select('cif, list_id')
+            .select('id, cif, list_id')
             .in('list_id', sublistIds)
             .not('cif', 'is', null)
+            .order('id', { ascending: true })
             .range(from, from + pageSize - 1);
 
           if (error) throw error;
