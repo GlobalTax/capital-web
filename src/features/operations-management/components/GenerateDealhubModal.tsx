@@ -106,7 +106,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     }
   };
 
-  const isTemplateTab = activeTab === 'template';
+  const isWideTab = activeTab === 'template' || activeTab === 'static';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
