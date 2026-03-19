@@ -281,13 +281,16 @@ export const StaticSlidesUploader: React.FC<StaticSlidesUploaderProps> = ({ temp
 
   return (
     <div className="p-6 space-y-4">
-      {/* PPTX template upload */}
-      <PptxUploader template={template} onChange={onChange} />
+      {/* PPTX template library */}
+      <PptxTemplateLibrary template={template} onChange={onChange} />
 
-      {/* When PPTX is uploaded, show slide mapping editor instead of individual images */}
-      {hasPptx ? (
+      {/* When PPTX is selected, show slide mapping editor */}
+      {hasPptx && (
         <SlideMapEditor template={template} onChange={onChange} />
-      ) : (
+      )}
+
+      {/* Individual image slots as fallback */}
+      {!hasPptx && (
         <>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
