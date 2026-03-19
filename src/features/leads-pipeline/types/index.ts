@@ -71,6 +71,8 @@ export interface PipelineLead {
   notes: string | null;
   valuation_range_min: number | null;
   valuation_range_max: number | null;
+  acquisition_channel_id: string | null;
+  lead_form: string | null;
 }
 
 export interface PipelineColumn {

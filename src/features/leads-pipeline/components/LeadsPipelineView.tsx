@@ -15,13 +15,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { RefreshCw, Search, Users } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { RefreshCw, Search, Users, Filter, CalendarIcon, TrendingUp, BarChart3, X, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { PipelineColumn } from './PipelineColumn';
 import { PipelineColumnsEditor } from './PipelineColumnsEditor';
 import { useLeadsPipeline } from '../hooks/useLeadsPipeline';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
+import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
+import { useLeadForms } from '@/hooks/useLeadForms';
+import { FINANCIAL_RANGES } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import type { LeadStatus } from '../types';
 
 export const LeadsPipelineView: React.FC = () => {
@@ -36,17 +55,34 @@ export const LeadsPipelineView: React.FC = () => {
     registerCall,
   } = useLeadsPipeline();
 
-  // Use unified contact_statuses system
-  const {
-    visibleStatuses,
-    isLoading: isLoadingStatuses,
-  } = useContactStatuses();
+  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
+  const { channels } = useAcquisitionChannels();
+  const { displayNameGroups, resolveDisplayNameToIds } = useLeadForms();
   
   const isLoading = isLoadingLeads || isLoadingStatuses;
 
+  // Existing filters
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAssignee, setFilterAssignee] = useState<string>('all');
   const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
+
+  // New filters
+  const [filterChannel, setFilterChannel] = useState<string | null>(null);
+  const [filterFormDisplay, setFilterFormDisplay] = useState<string | null>(null);
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
+  const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
+  const [filterRevMin, setFilterRevMin] = useState<number>(0);
+  const [filterRevMax, setFilterRevMax] = useState<number>(0);
+  const [filterEbitdaMin, setFilterEbitdaMin] = useState<number>(0);
+  const [filterEbitdaMax, setFilterEbitdaMax] = useState<number>(0);
+
+  // Resolved form IDs for the selected display name
+  const filterFormIds = useMemo(() => {
+    if (!filterFormDisplay) return null;
+    return resolveDisplayNameToIds(filterFormDisplay);
+  }, [filterFormDisplay, resolveDisplayNameToIds]);
+
+  const hasActiveFilters = searchQuery || filterAssignee !== 'all' || filterChannel || filterFormDisplay || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
 
   // Memoized admin users map
   const adminUsersMap = useMemo(() => 
@@ -54,7 +90,13 @@ export const LeadsPipelineView: React.FC = () => {
     [adminUsers]
   );
 
-  // Memoized filtered leads - now based on unified contact_statuses
+  // Channel name map
+  const channelNameMap = useMemo(() => 
+    new Map(channels.map(c => [c.id, c.name])),
+    [channels]
+  );
+
+  // Memoized filtered leads
   const filteredLeadsByStatus = useMemo(() => {
     const result: Record<string, typeof leads> = {} as any;
     
@@ -77,14 +119,45 @@ export const LeadsPipelineView: React.FC = () => {
           columnLeads = columnLeads.filter(lead => lead.assigned_to === filterAssignee);
         }
       }
+
+      if (filterChannel) {
+        columnLeads = columnLeads.filter(lead => lead.acquisition_channel_id === filterChannel);
+      }
+
+      if (filterFormIds) {
+        columnLeads = columnLeads.filter(lead => lead.lead_form && filterFormIds.includes(lead.lead_form));
+      }
+
+      if (filterDateFrom) {
+        columnLeads = columnLeads.filter(lead => new Date(lead.created_at) >= filterDateFrom!);
+      }
+      if (filterDateTo) {
+        const endOfDay = new Date(filterDateTo);
+        endOfDay.setHours(23, 59, 59, 999);
+        columnLeads = columnLeads.filter(lead => new Date(lead.created_at) <= endOfDay);
+      }
+
+      if (filterRevMin > 0) {
+        columnLeads = columnLeads.filter(lead => (lead.revenue || 0) >= filterRevMin);
+      }
+      if (filterRevMax > 0) {
+        columnLeads = columnLeads.filter(lead => (lead.revenue || 0) <= filterRevMax);
+      }
+
+      if (filterEbitdaMin > 0) {
+        columnLeads = columnLeads.filter(lead => (lead.ebitda || 0) >= filterEbitdaMin);
+      }
+      if (filterEbitdaMax > 0) {
+        columnLeads = columnLeads.filter(lead => (lead.ebitda || 0) <= filterEbitdaMax);
+      }
       
       result[status.status_key] = columnLeads;
     });
     
     return result;
-  }, [leadsByStatus, searchQuery, filterAssignee, visibleStatuses]);
+  }, [leadsByStatus, searchQuery, filterAssignee, filterChannel, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
 
-  // Memoized handlers with useCallback
+  // Handlers
   const handleDragEnd = useCallback((result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
@@ -135,9 +208,54 @@ export const LeadsPipelineView: React.FC = () => {
   const clearFilters = useCallback(() => {
     setSearchQuery('');
     setFilterAssignee('all');
+    setFilterChannel(null);
+    setFilterFormDisplay(null);
+    setFilterDateFrom(undefined);
+    setFilterDateTo(undefined);
+    setFilterRevMin(0);
+    setFilterRevMax(0);
+    setFilterEbitdaMin(0);
+    setFilterEbitdaMax(0);
   }, []);
 
-  // Calculate totals
+  const applyDatePreset = useCallback((preset: string) => {
+    const now = new Date();
+    switch (preset) {
+      case '7d':
+        setFilterDateFrom(subDays(now, 7));
+        setFilterDateTo(now);
+        break;
+      case '30d':
+        setFilterDateFrom(subDays(now, 30));
+        setFilterDateTo(now);
+        break;
+      case '90d':
+        setFilterDateFrom(subDays(now, 90));
+        setFilterDateTo(now);
+        break;
+      case 'this_month':
+        setFilterDateFrom(startOfMonth(now));
+        setFilterDateTo(endOfMonth(now));
+        break;
+      case 'last_month': {
+        const lm = subMonths(now, 1);
+        setFilterDateFrom(startOfMonth(lm));
+        setFilterDateTo(endOfMonth(lm));
+        break;
+      }
+    }
+  }, []);
+
+  const applyFinancialPreset = useCallback((rangeValue: string, type: 'revenue' | 'ebitda') => {
+    const range = FINANCIAL_RANGES.find(r => r.value === rangeValue);
+    if (!range) return;
+    const setMin = type === 'revenue' ? setFilterRevMin : setFilterEbitdaMin;
+    const setMax = type === 'revenue' ? setFilterRevMax : setFilterEbitdaMax;
+    setMin(range.min);
+    setMax(range.max === Infinity ? 0 : range.max);
+  }, []);
+
+  // Totals
   const totalLeads = leads.length;
   const filteredTotal = useMemo(() => 
     Object.values(filteredLeadsByStatus).reduce((sum, arr) => sum + arr.length, 0),
@@ -176,21 +294,23 @@ export const LeadsPipelineView: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="relative flex-1 min-w-[200px] max-w-[300px]">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px] max-w-[280px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar empresa, contacto..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-9"
           />
         </div>
         
+        {/* Assignee */}
         <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-          <SelectTrigger className="w-[180px]">
-            <Users className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filtrar por asignado" />
+          <SelectTrigger className="w-[160px] h-9">
+            <Users className="h-3.5 w-3.5 mr-1.5" />
+            <SelectValue placeholder="Asignado" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
@@ -203,9 +323,168 @@ export const LeadsPipelineView: React.FC = () => {
           </SelectContent>
         </Select>
 
-        {(searchQuery || filterAssignee !== 'all') && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Limpiar filtros
+        {/* Channel */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterChannel && "border-primary text-primary")}>
+              <Filter className="h-3.5 w-3.5" />
+              {filterChannel ? channelNameMap.get(filterChannel) || 'Canal' : 'Canal'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setFilterChannel(null)}>Todos</DropdownMenuItem>
+            {channels.map(ch => (
+              <DropdownMenuItem key={ch.id} onClick={() => setFilterChannel(ch.id)}>
+                {ch.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Form */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterFormDisplay && "border-primary text-primary")}>
+              <Filter className="h-3.5 w-3.5" />
+              {filterFormDisplay || 'Formulario'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => setFilterFormDisplay(null)}>Todos</DropdownMenuItem>
+            {displayNameGroups.map(g => (
+              <DropdownMenuItem key={g.displayName} onClick={() => setFilterFormDisplay(g.displayName)}>
+                {g.displayName}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Date */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", (filterDateFrom || filterDateTo) && "border-primary text-primary")}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {filterDateFrom && filterDateTo
+                ? `${format(filterDateFrom, 'dd/MM', { locale: es })} - ${format(filterDateTo, 'dd/MM', { locale: es })}`
+                : 'Fecha'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-3" align="start">
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {[
+                { label: '7 días', value: '7d' },
+                { label: '30 días', value: '30d' },
+                { label: '90 días', value: '90d' },
+                { label: 'Este mes', value: 'this_month' },
+                { label: 'Mes anterior', value: 'last_month' },
+              ].map(p => (
+                <Button key={p.value} variant="outline" size="sm" className="h-7 text-xs" onClick={() => applyDatePreset(p.value)}>
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Desde</p>
+                <Calendar
+                  mode="single"
+                  selected={filterDateFrom}
+                  onSelect={setFilterDateFrom}
+                  className="p-2 pointer-events-auto"
+                  locale={es}
+                />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Hasta</p>
+                <Calendar
+                  mode="single"
+                  selected={filterDateTo}
+                  onSelect={setFilterDateTo}
+                  className="p-2 pointer-events-auto"
+                  locale={es}
+                />
+              </div>
+            </div>
+            {(filterDateFrom || filterDateTo) && (
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => { setFilterDateFrom(undefined); setFilterDateTo(undefined); }}>
+                Limpiar fecha
+              </Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* Revenue */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", (filterRevMin > 0 || filterRevMax > 0) && "border-primary text-primary")}>
+              <TrendingUp className="h-3.5 w-3.5" />
+              Facturación
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="start">
+            <p className="text-xs font-medium mb-2">Rangos rápidos</p>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {FINANCIAL_RANGES.map(r => (
+                <Button key={r.value} variant="outline" size="sm" className="h-7 text-xs" onClick={() => applyFinancialPreset(r.value, 'revenue')}>
+                  {r.label}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs font-medium mb-2">Personalizado</p>
+            <div className="flex gap-2 items-center">
+              <CurrencyInput value={filterRevMin} onChange={setFilterRevMin} placeholder="Mín" className="h-8 text-xs" />
+              <span className="text-xs text-muted-foreground">-</span>
+              <CurrencyInput value={filterRevMax} onChange={setFilterRevMax} placeholder="Máx" className="h-8 text-xs" />
+            </div>
+            {(filterRevMin > 0 || filterRevMax > 0) && (
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => { setFilterRevMin(0); setFilterRevMax(0); }}>
+                Limpiar
+              </Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* EBITDA */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", (filterEbitdaMin > 0 || filterEbitdaMax > 0) && "border-primary text-primary")}>
+              <BarChart3 className="h-3.5 w-3.5" />
+              EBITDA
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="start">
+            <p className="text-xs font-medium mb-2">Rangos rápidos</p>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {FINANCIAL_RANGES.map(r => (
+                <Button key={r.value} variant="outline" size="sm" className="h-7 text-xs" onClick={() => applyFinancialPreset(r.value, 'ebitda')}>
+                  {r.label}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs font-medium mb-2">Personalizado</p>
+            <div className="flex gap-2 items-center">
+              <CurrencyInput value={filterEbitdaMin} onChange={setFilterEbitdaMin} placeholder="Mín" className="h-8 text-xs" />
+              <span className="text-xs text-muted-foreground">-</span>
+              <CurrencyInput value={filterEbitdaMax} onChange={setFilterEbitdaMax} placeholder="Máx" className="h-8 text-xs" />
+            </div>
+            {(filterEbitdaMin > 0 || filterEbitdaMax > 0) && (
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => { setFilterEbitdaMin(0); setFilterEbitdaMax(0); }}>
+                Limpiar
+              </Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* Clear all */}
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" className="h-9 gap-1" onClick={clearFilters}>
+            <X className="h-3.5 w-3.5" />
+            Limpiar
           </Button>
         )}
       </div>

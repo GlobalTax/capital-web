@@ -31,6 +31,8 @@ export const useLeadsPipeline = () => {
           ebitda,
           employee_range,
           location,
+          acquisition_channel_id,
+          lead_form,
           created_at,
           assigned_to,
           email_sent,
