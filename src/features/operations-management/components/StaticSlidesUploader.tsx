@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Upload, X, Image } from 'lucide-react';
+import { Upload, X, Image, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { FullSlideTemplate } from '../types/slideTemplate';
