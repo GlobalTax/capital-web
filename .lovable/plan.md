@@ -1,36 +1,26 @@
 
 
-## Subir PPTX como plantilla base y mergear con slides automáticas
+## Limpiar modal ROD: eliminar pestaña "Plantilla"
 
-### Estado: ✅ Implementado
+### Resumen
 
-### Concepto
+Eliminar la pestaña "Plantilla" (el editor visual de slides `SlideTemplateEditor`) del modal de generación ROD. Se mantienen solo dos pestañas: **Configuración** y **Slides fijas** (subida de PPTX + imágenes).
 
-El usuario sube un archivo PPTX completo con sus slides estáticas (portada, índice, separadores, cierre). Al generar el catálogo ROD, las slides de operaciones auto-generadas se insertan en las posiciones correctas dentro del PPTX plantilla mediante una edge function que usa JSZip para mergear los XMLs internos.
+### Cambios
 
-### Archivos modificados
+**`GenerateDealhubModal.tsx`**
+- Eliminar import de `SlideTemplateEditor`
+- Eliminar la `TabsTrigger` de "Plantilla" y su `TabsContent`
+- Eliminar la función `mergeWithDefaults` (ya no se necesita mezclar defaults del editor visual)
+- Simplificar el `useEffect` de carga: usar el template tal cual viene de `loadDefault()`
+- Ajustar la lógica de `isWideTab`: solo aplica cuando `activeTab === 'static'`
 
-| Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/merge-pptx/index.ts` | Edge function que usa JSZip para mergear dos PPTX + soporte `skipSlides` |
-| `StaticSlidesUploader.tsx` | Uploader para .pptx completo + editor de mapeo de slides |
-| `slideTemplate.ts` | Campos `templatePptxUrl`, `templateSlideMap`, `skipSlides` en `FullSlideTemplate` |
-| `generateDealhubPptx.ts` | Flujo condicional: merge con plantilla usando `templateSlideMap` |
-| `GenerateDealhubModal.tsx` | No aplica `mergeWithDefaults` cuando hay PPTX plantilla |
-| `supabase/config.toml` | Configuración de la edge function |
+**`SlideTemplateEditor.tsx`**
+- Eliminar el archivo completo (ya no se usa)
 
-### Mapeo por defecto (basado en plantilla real)
+### Resultado
 
-- Slide 3: Separador Mandatos de Venta
-- Slide 4: Operación ejemplo → **se elimina** (`skipSlides: [4]`)
-- Slide 5: Separador Fase de Preparación
-- Slide 6: Separador Mandatos de Compra
-- Slide 7: Separador En Exclusividad
-- Slide 8: Cierre (se mantiene)
+El modal queda con 2 pestañas:
+1. **Configuración** — trimestre, secciones, operaciones
+2. **Slides fijas** — subir PPTX plantilla (con mapeo) o imágenes individuales
 
-### Flujo simplificado
-
-1. Subir PPTX → se aplica mapeo por defecto
-2. Ajustar mapeo si es necesario (campos numéricos editables)
-3. Indicar slides a eliminar (ej: slide 4 de ejemplo)
-4. Al generar: sólo se crean slides de operaciones + merge automático
