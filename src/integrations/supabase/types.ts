@@ -20875,6 +20875,36 @@ export type Database = {
         }
         Relationships: []
       }
+      slide_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          template_data: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          template_data: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          template_data?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sync_control: {
         Row: {
           created_at: string | null
