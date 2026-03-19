@@ -80,8 +80,12 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     setGenerating(true);
     try {
       const finalOps = activeOps.filter(op => !excludedOpIds.has(op.id));
-      await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
-      toast({ title: 'Catálogo ROD descargado' });
+      if (outputFormat === 'pdf') {
+        await generateDealhubPdf(finalOps, selectedSections, quarter);
+      } else {
+        await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
+      }
+      toast({ title: `Catálogo ROD descargado (${outputFormat.toUpperCase()})` });
       onOpenChange(false);
     } catch (e) {
       console.error(e);
