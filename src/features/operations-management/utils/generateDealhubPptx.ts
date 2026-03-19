@@ -106,7 +106,7 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
   if (ct.title.visible) {
     slide.addText(ct.title.text || 'Capittal Dealhub — Open Deals', {
       x: ct.title.x, y: ct.title.y, w: ct.title.w, h: ct.title.h,
-      fontSize: ct.title.fontSize || 36, fontFace: FONT, color: ct.title.color || WHITE,
+      fontSize: ct.title.fontSize || 44, fontFace: FONT, color: ct.title.color || WHITE,
       bold: ct.title.bold ?? true, italic: ct.title.italic,
       align: ct.title.align, valign: ct.title.valign,
     });
