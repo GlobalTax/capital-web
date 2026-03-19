@@ -1272,6 +1272,11 @@ export default function ContactListDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
       queryClient.invalidateQueries({ queryKey: ['sublist-company-map', listId] });
+      // Si estamos en sublista, invalidar cache de la madre
+      if (list?.lista_madre_id) {
+        queryClient.invalidateQueries({ queryKey: ['sublist-company-map', list.lista_madre_id] });
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', list.lista_madre_id] });
+      }
       setSelectedIds([]);
       setBulkMoveCopyOpen(false);
       setBulkMoveCopyTargetId('');
