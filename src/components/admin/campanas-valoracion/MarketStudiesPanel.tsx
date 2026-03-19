@@ -172,7 +172,7 @@ export function MarketStudiesPanel() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Subir Estudio de Mercado</DialogTitle>
-            <DialogDescription>Sube un PDF con el estudio de mercado.</DialogDescription>
+            <DialogDescription>Sube un PDF o PPT con el estudio de mercado.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -191,7 +191,7 @@ export function MarketStudiesPanel() {
               <Label>Archivo PDF *</Label>
               <Input
                 type="file"
-                accept=".pdf"
+                accept=".pdf,.ppt,.pptx"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
               {file && <p className="text-xs text-muted-foreground mt-1">{file.name} — {formatFileSize(file.size)}</p>}
