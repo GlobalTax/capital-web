@@ -15,7 +15,11 @@ import {
   DollarSign,
   Clock,
   User,
-  MoreHorizontal
+  MoreHorizontal,
+  MapPin,
+  Users,
+  TrendingUp,
+  BarChart3
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -39,6 +43,12 @@ interface PipelineCardProps {
 
 const formatCurrency = (value: number | null) => {
   if (!value) return null;
+  if (Math.abs(value) >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1).replace('.0', '')}M €`;
+  }
+  if (Math.abs(value) >= 1_000) {
+    return `${Math.round(value / 1_000)}K €`;
+  }
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -113,7 +123,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
           </DropdownMenu>
         </div>
 
-        {/* Sector & Valuation */}
+        {/* Company Profile */}
         <div className="flex flex-wrap gap-1.5">
           <Badge variant="secondary" className="text-xs">
             <Building2 className="h-3 w-3 mr-1" />
@@ -126,6 +136,36 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             </Badge>
           )}
         </div>
+
+        {/* Financial & Location Details */}
+        {(lead.revenue || lead.ebitda || lead.employee_range || lead.location) && (
+          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+            {lead.revenue ? (
+              <span className="flex items-center truncate">
+                <TrendingUp className="h-3 w-3 mr-1 shrink-0" />
+                {formatCurrency(lead.revenue)}
+              </span>
+            ) : null}
+            {lead.ebitda ? (
+              <span className="flex items-center truncate">
+                <BarChart3 className="h-3 w-3 mr-1 shrink-0" />
+                {formatCurrency(lead.ebitda)}
+              </span>
+            ) : null}
+            {lead.employee_range ? (
+              <span className="flex items-center truncate">
+                <Users className="h-3 w-3 mr-1 shrink-0" />
+                {lead.employee_range}
+              </span>
+            ) : null}
+            {lead.location ? (
+              <span className="flex items-center truncate">
+                <MapPin className="h-3 w-3 mr-1 shrink-0" />
+                {lead.location}
+              </span>
+            ) : null}
+          </div>
+        )}
 
         {/* Email Status */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -187,6 +227,10 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.precall_email_sent === next.lead.precall_email_sent &&
     prev.lead.call_attempts_count === next.lead.call_attempts_count &&
     prev.lead.final_valuation === next.lead.final_valuation &&
+    prev.lead.revenue === next.lead.revenue &&
+    prev.lead.ebitda === next.lead.ebitda &&
+    prev.lead.employee_range === next.lead.employee_range &&
+    prev.lead.location === next.lead.location &&
     prev.assignedUserName === next.assignedUserName &&
     prev.isDragging === next.isDragging
   );
