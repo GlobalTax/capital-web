@@ -76,6 +76,7 @@ export type CoverBlockKey = keyof CoverTemplate;
 
 export const COVER_BLOCK_LABELS: Record<CoverBlockKey, string> = {
   background: 'Fondo',
+  logo: 'Logo',
   title: 'Título Principal',
   subtitle: 'Subtítulo',
   quarter: 'Trimestre',
@@ -85,6 +86,7 @@ export const COVER_BLOCK_LABELS: Record<CoverBlockKey, string> = {
 
 export const COVER_BLOCK_COLORS: Record<CoverBlockKey, string> = {
   background: '#374151',
+  logo: '#10b981',
   title: '#3b82f6',
   subtitle: '#8b5cf6',
   quarter: '#f59e0b',
