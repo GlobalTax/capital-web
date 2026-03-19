@@ -350,3 +350,6 @@ verify_jwt = false
 
 [functions.send-weekly-outbound-pdf]
 verify_jwt = false
+
+[functions.merge-pptx]
+verify_jwt = false

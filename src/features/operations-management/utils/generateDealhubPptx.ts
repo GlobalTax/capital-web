@@ -2,6 +2,8 @@ import pptxgen from 'pptxgenjs';
 import type { Operation } from '../types/operations';
 import type { SlideTemplate, FullSlideTemplate, CoverTemplate, IndexTemplate, SeparatorTemplate, ClosingTemplate } from '../types/slideTemplate';
 import { DEFAULT_FULL_TEMPLATE, DEFAULT_CLOSING_TEMPLATE } from '../types/slideTemplate';
+import { supabase } from '@/integrations/supabase/client';
+import { blobToBase64 } from '@/utils/blobToBase64';
 
 // ─── DESIGN TOKENS ───
 const NAVY = '161B22';
@@ -490,7 +492,15 @@ export async function generateDealhubPptx(
   const currentYear = year || new Date().getFullYear();
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
   const ft = fullTemplate || DEFAULT_FULL_TEMPLATE;
+  const fileName = `Capittal_Dealhub_${quarter}_${currentYear}.pptx`;
 
+  // If a template PPTX is uploaded, use the merge flow
+  if (ft.templatePptxUrl) {
+    await generateWithMerge(activeOps, selectedSections, quarter, currentYear, ft, fileName);
+    return;
+  }
+
+  // Standard flow: generate everything with pptxgenjs
   const pptx = new pptxgen();
   pptx.layout = 'LAYOUT_WIDE';
   pptx.author = 'Capittal';
@@ -523,5 +533,80 @@ export async function generateDealhubPptx(
   const closingTemplate = ft.closing || DEFAULT_CLOSING_TEMPLATE;
   addClosingSlide(pptx, quarter, currentYear, closingTemplate);
 
-  await pptx.writeFile({ fileName: `Capittal_Dealhub_${quarter}_${currentYear}.pptx` });
+  await pptx.writeFile({ fileName });
+}
+
+// ─── MERGE FLOW ───
+
+async function generateWithMerge(
+  activeOps: Operation[],
+  selectedSections: string[],
+  quarter: QuarterType,
+  currentYear: number,
+  ft: FullSlideTemplate,
+  fileName: string,
+) {
+  // 1. Generate ops-only PPTX with pptxgenjs
+  const opsPptx = new pptxgen();
+  opsPptx.layout = 'LAYOUT_WIDE';
+  opsPptx.author = 'Capittal';
+
+  const sectionSlideCounts: Record<string, number> = {};
+
+  DEALHUB_SECTIONS.forEach((section) => {
+    if (!selectedSections.includes(section.key)) return;
+    const ops = activeOps.filter(section.filter);
+    if (ops.length === 0) return;
+    sectionSlideCounts[section.key] = ops.length;
+    ops.forEach(op => addOperationSlide(opsPptx, op, ft.operation));
+  });
+
+  // Generate ops PPTX as blob
+  const opsBlob = await opsPptx.write({ outputType: 'blob' }) as Blob;
+  const opsBase64 = await blobToBase64(opsBlob);
+
+  // 2. Build sectionInsertPoints from template convention
+  // Convention: slides 1-2 = cover+index, then one separator per enabled section, last = closing
+  // So separator for section i is at slide position 2 + (i+1) where i is the order among enabled sections
+  const enabledSections = DEALHUB_SECTIONS.filter(s => 
+    selectedSections.includes(s.key) && activeOps.filter(s.filter).length > 0
+  );
+
+  const sectionInsertPoints: Record<string, number> = {};
+  enabledSections.forEach((section, i) => {
+    // Slide 1=cover, 2=index, 3=first separator, 4=second separator, etc.
+    sectionInsertPoints[section.key] = 2 + (i + 1);
+  });
+
+  // 3. Call edge function
+  const { data, error } = await supabase.functions.invoke('merge-pptx', {
+    body: {
+      templateUrl: ft.templatePptxUrl,
+      operationsBase64: opsBase64,
+      sectionInsertPoints,
+      sectionSlideCounts,
+    },
+  });
+
+  if (error) throw new Error(`Merge failed: ${error.message}`);
+  
+  const mergedBase64 = data?.mergedPptxBase64;
+  if (!mergedBase64) throw new Error('No merged PPTX returned');
+
+  // 4. Download the merged file
+  const binaryString = atob(mergedBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+  
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

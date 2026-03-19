@@ -182,6 +182,7 @@ export interface FullSlideTemplate {
   separator: SeparatorTemplate;
   operation: SlideTemplate;
   closing?: ClosingTemplate;
+  templatePptxUrl?: string;
 }
 
 export type SlideType = keyof FullSlideTemplate;
