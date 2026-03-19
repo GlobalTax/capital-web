@@ -5,18 +5,20 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload } from 'lucide-react';
+import { Upload, RotateCcw } from 'lucide-react';
 import { useLogoUpload } from '@/hooks/useLogoUpload';
-import type { BlockConfig, TextAlign, TextValign } from '../types/slideTemplate';
+import type { BlockConfig, TextAlign, TextValign, SlideType } from '../types/slideTemplate';
+import { DEFAULT_FULL_TEMPLATE } from '../types/slideTemplate';
 
 interface SlideBlockPropertiesProps {
   selectedBlock: string | null;
   blockLabel: string;
   block: BlockConfig | null;
   onUpdate: (patch: Partial<BlockConfig>) => void;
+  slideType?: SlideType;
 }
 
-export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdate }: SlideBlockPropertiesProps) => {
+export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdate, slideType = 'operation' }: SlideBlockPropertiesProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadLogo, isUploading } = useLogoUpload();
 
