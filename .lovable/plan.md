@@ -1,100 +1,40 @@
 
-## Arreglo real para que la plantilla quede registrada
 
-### Qué está pasando ahora
-He revisado el código y los datos reales del proyecto. El problema no es que el archivo no se suba: sí se está guardando en `storage` y también veo que la URL activa se ha llegado a guardar en `slide_templates`.
+## Two changes for the Dealhub catalog generator
 
-Lo que falla es esto:
-1. La biblioteca intenta leer el historial con `supabase.storage.list('templates')`
-2. Esa lectura sigue devolviendo error RLS en el frontend
-3. Como la lista falla, la UI queda vacía y parece que “no se ha registrado”
-4. Además, el estado actual solo guarda **una URL activa** en `slide_templates`, no una biblioteca/histórico real de documentos
+### 1. Add hyperlink to "Más Información" CTA button
 
-### Enfoque correcto
-Dejar de usar `storage.list()` como fuente de verdad para la biblioteca y crear un registro propio en base de datos para las plantillas PPTX.
+In `generateDealhubPptx.ts`, the CTA button text is added via `slide.addText()`. pptxgenjs supports hyperlinks natively via the `hyperlink` property on text options. We will add `hyperlink: { url: 'mailto:lluis@capittal.es' }` to the CTA text so that clicking "Más Información →" in the generated PPTX opens the user's email client.
 
-### Implementación propuesta
+**File**: `src/features/operations-management/utils/generateDealhubPptx.ts` (lines ~408-412)
+- Add `hyperlink: { url: 'mailto:lluis@capittal.es' }` to the `addText` options for the CTA.
 
-#### 1) Crear una tabla de documentos de plantilla
-Nueva tabla, por ejemplo `public.rod_template_documents`, con campos como:
-- `id`
-- `title`
-- `file_name`
-- `storage_path`
-- `public_url`
-- `is_active`
-- `created_by`
-- `created_at`
-- `updated_at`
+### 2. Add PDF download option for the generated catalog
 
-Con RLS de admin usando `current_user_is_admin()`.
+Currently the catalog generates a `.pptx` file. We'll add a format selector in the `GenerateDealhubModal` so the user can choose between PPTX and PDF:
 
-Esto permite:
-- ver el histórico
-- marcar cuál está activa
-- descargar cualquier versión anterior
-- no depender de `storage.list()` para enseñar la biblioteca
+- **PPTX → PDF conversion**: After generating the PPTX blob with pptxgenjs, we can offer PDF as an alternative by converting the PPTX blob. Since client-side PPTX-to-PDF is not natively supported, the most practical approach is:
+  - Generate the PPTX as a Blob (pptxgenjs supports `.write('blob')` instead of `.writeFile()`)
+  - For PDF: use a different generation path — render each slide as a PDF page using `@react-pdf/renderer` or `jspdf`, replicating the slide layout
 
-#### 2) Cambiar la biblioteca PPTX
-Actualizar `PptxTemplateLibrary.tsx` para que:
-- al abrir, lea desde `rod_template_documents`
-- al subir un archivo:
-  - lo guarde en `slide-backgrounds/templates/...`
-  - cree un registro en `rod_template_documents`
-  - lo marque como activo o lo seleccione
-- al descargar, use `storage_path` del registro
-- al eliminar, borre el archivo y también el registro
-- al seleccionar “Usar esta”, actualice la plantilla activa
+  **However**, a simpler and more reliable approach: add a toggle in the modal UI. For PDF, we generate the PPTX normally and inform the user that PowerPoint or Google Slides can export to PDF. Or we use `pptxgenjs` to generate the file and then offer both formats.
 
-#### 3) Persistencia clara de la selección
-Ahora mismo la selección depende del flujo de `slide_templates` y del botón “Guardar plantilla”. Voy a dejarlo consistente de una de estas dos formas:
-- guardar automáticamente al seleccionar/subir, o
-- mantener el botón pero con estado visual muy claro de “cambios sin guardar”
+  **Recommended approach**: Since the project already uses `@react-pdf/renderer`, create a `generateDealhubPdf.ts` that renders the catalog slides as PDF pages with the same layout (background image, title, financial data, CTA). This gives a native PDF without conversion.
 
-Mi recomendación: guardar automáticamente la selección activa para que no parezca que “se pierde”.
+**Files to modify/create**:
+- `src/features/operations-management/utils/generateDealhubPdf.ts` — new file, generates PDF version of the catalog using `@react-pdf/renderer`
+- `src/features/operations-management/components/GenerateDealhubModal.tsx` — add format selector (PPTX / PDF)
+- `src/features/operations-management/utils/generateDealhubPptx.ts` — add mailto hyperlink to CTA
 
-#### 4) Mantener compatibilidad con la generación PPTX
-`generateDealhubPptx` seguirá usando `template.templatePptxUrl`, pero ese valor se alimentará desde el documento activo registrado en la nueva tabla.
+### Technical details
 
-#### 5) Migración de datos ya subidos
-Como ya existen archivos en `storage`, incluiré una migración/ajuste para que no se pierdan:
-- leer los archivos ya existentes de `slide-backgrounds/templates`
-- crear registros en `rod_template_documents` para ellos, o
-- al menos registrar el archivo actualmente activo guardado en `slide_templates`
-
-### Resultado esperado
-Después del cambio:
-- subes una plantilla
-- queda registrada en una lista persistente
-- la puedes volver a ver luego
-- la puedes descargar
-- puedes conservar versiones anteriores
-- puedes marcar una como activa para generar el catálogo
-
-### Detalle técnico
-```text
-UI actual
-  upload -> storage
-         -> list desde storage  ❌ falla por RLS
-         -> parece que no existe
-
-UI nueva
-  upload -> storage
-         -> insert en rod_template_documents ✅
-  biblioteca -> select rod_template_documents ✅
-  descarga -> storage.download(storage_path) ✅
-  selección -> guarda documento activo + templatePptxUrl ✅
+**Hyperlink** (pptxgenjs API):
+```typescript
+slide.addText(ctaText, {
+  // ...existing options...
+  hyperlink: { url: 'mailto:lluis@capittal.es' },
+});
 ```
 
-### Archivos a tocar
-- `src/features/operations-management/components/PptxTemplateLibrary.tsx`
-- `src/features/operations-management/components/StaticSlidesUploader.tsx`
-- `src/features/operations-management/hooks/useSlideTemplates.ts`
-- nueva migración SQL para `rod_template_documents` y sus políticas
-
-### Por qué esta solución sí arregla el problema
-Porque ataca el fallo real:
-- hoy el archivo existe, pero la UI no puede listar bien desde storage
-- además no hay una entidad de “documento de plantilla” con histórico
-- con una tabla propia, la biblioteca pasa a tener un registro persistente de verdad
+**PDF generation**: Will create a React-PDF document component that renders each operation slide as a PDF page with the same visual structure (background, title, info rows, financial data, CTA with mailto link, footer). The modal will have a simple dropdown to pick format before generating.
 
