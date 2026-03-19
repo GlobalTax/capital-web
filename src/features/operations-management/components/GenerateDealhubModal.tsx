@@ -36,6 +36,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('config');
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
+  const [outputFormat, setOutputFormat] = useState<'pptx' | 'pdf'>('pptx');
 
   // Load saved template when modal opens
   useEffect(() => {
