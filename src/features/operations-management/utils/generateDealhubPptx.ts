@@ -157,6 +157,12 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
 
 function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate) {
   const slide = pptx.addSlide();
+
+  if (idx.backgroundImage) {
+    slide.background = { path: idx.backgroundImage };
+    return;
+  }
+
   slide.background = { color: idx.background.color || WHITE };
 
   if (idx.title.visible) {
