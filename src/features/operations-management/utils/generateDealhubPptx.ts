@@ -423,6 +423,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
 
 function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate) {
   const slide = pptx.addSlide();
+
+  if (cl.backgroundImage) {
+    slide.background = { path: cl.backgroundImage };
+    return;
+  }
+
   slide.background = { color: cl.background?.color || WHITE };
 
   // Bottom half navy background
