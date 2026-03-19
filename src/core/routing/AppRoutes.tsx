@@ -83,6 +83,7 @@ const LandingCompraEmpresasMeta = lazy(() => import('@/pages/LandingCompraEmpres
 const LandingOpenDeals = lazy(() => import('@/pages/LandingOpenDeals'));
 const LandingOportunidadesMeta = lazy(() => import('@/pages/LandingOportunidadesMeta'));
 const LandingRODLinkedIn = lazy(() => import('@/pages/LandingRODLinkedIn'));
+const LandingConsultaOportunidades = lazy(() => import('@/pages/LandingConsultaOportunidades'));
 const LandingSimuladorSeguridad = lazy(() => import('@/pages/LandingSimuladorSeguridad'));
 const Noticias = lazy(() => import('@/pages/recursos/Noticias'));
 const NewsArticleDetail = lazy(() => import('@/pages/recursos/NewsArticleDetail'));
