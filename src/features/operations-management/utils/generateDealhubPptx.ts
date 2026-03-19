@@ -409,7 +409,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
         x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
         fontSize: t.cta.fontSize || 11, fontFace: FONT, color: t.cta.color || WHITE,
         bold: t.cta.bold ?? true, align: t.cta.align || 'center', valign: t.cta.valign || 'middle',
-        hyperlink: { url: `https://capittal.es/oportunidades?operation=${op.id}` },
+        hyperlink: { url: `https://capittal.es/lp/consulta-oportunidades?operation=${op.id}` },
       });
     }
   }
@@ -467,7 +467,7 @@ function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: 
     slide.addText((email as any).text || 'capittal.es/oportunidades', {
       x: email.x, y: email.y, w: email.w, h: email.h,
       fontSize: email.fontSize || 14, fontFace: FONT, color: email.color || TEXT_MUTED,
-      hyperlink: { url: 'https://capittal.es/oportunidades' },
+      hyperlink: { url: 'https://capittal.es/lp/consulta-oportunidades' },
     });
   }
 
