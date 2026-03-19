@@ -191,7 +191,7 @@ export function MarketStudiesPanel() {
               <Label>Archivo PDF *</Label>
               <Input
                 type="file"
-                accept=".pdf"
+                accept=".pdf,.ppt,.pptx"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
               {file && <p className="text-xs text-muted-foreground mt-1">{file.name} — {formatFileSize(file.size)}</p>}
