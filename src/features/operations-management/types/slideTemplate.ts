@@ -171,6 +171,7 @@ export interface ClosingTemplate {
   email?: BlockConfig & { text?: string };
   docTitle?: BlockConfig;
   bottomBgColor?: string;
+  backgroundImage?: string;
 }
 
 // ─── FULL TEMPLATE ───
