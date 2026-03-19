@@ -15,7 +15,11 @@ import {
   DollarSign,
   Clock,
   User,
-  MoreHorizontal
+  MoreHorizontal,
+  MapPin,
+  Users,
+  TrendingUp,
+  BarChart3
 } from 'lucide-react';
 import {
   DropdownMenu,

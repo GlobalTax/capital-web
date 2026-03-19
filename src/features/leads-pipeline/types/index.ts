@@ -55,6 +55,8 @@ export interface PipelineLead {
   final_valuation: number | null;
   revenue: number | null;
   ebitda: number | null;
+  employee_range: string | null;
+  location: string | null;
   created_at: string;
   assigned_to: string | null;
   assigned_at: string | null;
