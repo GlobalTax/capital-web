@@ -513,7 +513,7 @@ const ClosingPage = ({ quarter, year, t }: { quarter: QuarterType; year: number;
             color: hexColor((cl as any).email?.color, TEXT_MUTED),
             textDecoration: 'none',
           }}>
-            {(cl as any).email?.text || 'lluis@capittal.es'}
+            {(cl as any).email?.text || 'capittal.es/oportunidades'}
           </Link>
         )}
 
