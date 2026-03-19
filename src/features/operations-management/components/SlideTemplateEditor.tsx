@@ -553,11 +553,12 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
     );
   };
 
-  const SLIDE_TYPE_LABELS: Record<SlideType, string> = {
+  const SLIDE_TYPE_LABELS: Record<string, string> = {
     cover: 'Portada',
     index: 'Índice',
     separator: 'Separador',
     operation: 'Operación',
+    closing: 'Cierre',
   };
 
   return (
