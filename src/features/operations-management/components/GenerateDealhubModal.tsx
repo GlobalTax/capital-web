@@ -81,7 +81,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     try {
       const finalOps = activeOps.filter(op => !excludedOpIds.has(op.id));
       if (outputFormat === 'pdf') {
-        await generateDealhubPdf(finalOps, selectedSections, quarter);
+        await generateDealhubPdf(finalOps, selectedSections, quarter, undefined, fullTemplate);
       } else {
         await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
       }
