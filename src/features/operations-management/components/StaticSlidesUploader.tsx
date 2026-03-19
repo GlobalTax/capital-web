@@ -12,6 +12,7 @@ import { PptxTemplateLibrary } from './PptxTemplateLibrary';
 interface StaticSlidesUploaderProps {
   template: FullSlideTemplate;
   onChange: (template: FullSlideTemplate) => void;
+  onPersistTemplate?: (template: FullSlideTemplate) => Promise<boolean>;
 }
 
 interface SlotConfig {
@@ -126,7 +127,6 @@ const SlotUploader: React.FC<{
   );
 };
 
-/** Editable mapping: which template slide corresponds to each section separator */
 const SlideMapEditor: React.FC<{
   template: FullSlideTemplate;
   onChange: (t: FullSlideTemplate) => void;
@@ -190,20 +190,17 @@ const SlideMapEditor: React.FC<{
   );
 };
 
-export const StaticSlidesUploader: React.FC<StaticSlidesUploaderProps> = ({ template, onChange }) => {
+export const StaticSlidesUploader: React.FC<StaticSlidesUploaderProps> = ({ template, onChange, onPersistTemplate }) => {
   const hasPptx = !!template.templatePptxUrl;
 
   return (
     <div className="p-6 space-y-4">
-      {/* PPTX template library */}
-      <PptxTemplateLibrary template={template} onChange={onChange} />
+      <PptxTemplateLibrary template={template} onChange={onChange} onPersistTemplate={onPersistTemplate} />
 
-      {/* When PPTX is selected, show slide mapping editor */}
       {hasPptx && (
         <SlideMapEditor template={template} onChange={onChange} />
       )}
 
-      {/* Individual image slots as fallback */}
       {!hasPptx && (
         <>
           <div className="relative">
