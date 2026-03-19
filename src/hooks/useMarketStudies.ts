@@ -11,6 +11,7 @@ export interface MarketStudy {
   storage_path: string;
   file_size: number;
   uploaded_by: string | null;
+  status: 'pending' | 'validated';
   created_at: string;
   updated_at: string;
 }
@@ -91,6 +92,21 @@ export function useMarketStudies() {
       toast({ title: 'Error al eliminar', description: err.message, variant: 'destructive' });
     },
   });
+  const updateStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'pending' | 'validated' }) => {
+      const { error } = await supabase
+        .from('market_studies' as any)
+        .update({ status } as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['market-studies'] });
+    },
+    onError: (err: any) => {
+      toast({ title: 'Error al actualizar estado', description: err.message, variant: 'destructive' });
+    },
+  });
 
   const getDownloadUrl = async (storagePath: string) => {
     const { data, error } = await supabase.storage
@@ -100,5 +116,5 @@ export function useMarketStudies() {
     return data.signedUrl;
   };
 
-  return { studies, isLoading, uploadStudy, deleteStudy, getDownloadUrl };
+  return { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getDownloadUrl };
 }

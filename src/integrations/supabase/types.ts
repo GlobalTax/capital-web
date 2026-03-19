@@ -15399,6 +15399,7 @@ export type Database = {
           file_size: number
           id: string
           sector: string | null
+          status: string
           storage_path: string
           title: string
           updated_at: string
@@ -15411,6 +15412,7 @@ export type Database = {
           file_size?: number
           id?: string
           sector?: string | null
+          status?: string
           storage_path: string
           title: string
           updated_at?: string
@@ -15423,6 +15425,7 @@ export type Database = {
           file_size?: number
           id?: string
           sector?: string | null
+          status?: string
           storage_path?: string
           title?: string
           updated_at?: string

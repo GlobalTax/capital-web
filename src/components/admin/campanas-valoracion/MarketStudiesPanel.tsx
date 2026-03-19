@@ -14,7 +14,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
-import { Upload, Download, Trash2, Search, FileText, BookOpen } from 'lucide-react';
+import { Upload, Download, Trash2, Search, FileText, BookOpen, CheckCircle2, Clock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMarketStudies, MarketStudy } from '@/hooks/useMarketStudies';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -26,9 +27,10 @@ function formatFileSize(bytes: number) {
 }
 
 export function MarketStudiesPanel() {
-  const { studies, isLoading, uploadStudy, deleteStudy, getDownloadUrl } = useMarketStudies();
+  const { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getDownloadUrl } = useMarketStudies();
   const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [showUpload, setShowUpload] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<MarketStudy | null>(null);
 
@@ -42,9 +44,10 @@ export function MarketStudiesPanel() {
     return studies.filter((s) => {
       const matchesSearch = !searchQuery || s.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSector = !sectorFilter || s.sector === sectorFilter;
-      return matchesSearch && matchesSector;
+      const matchesStatus = !statusFilter || s.status === statusFilter;
+      return matchesSearch && matchesSector && matchesStatus;
     });
-  }, [studies, searchQuery, sectorFilter]);
+  }, [studies, searchQuery, sectorFilter, statusFilter]);
 
   const sectors = useMemo(() => {
     const set = new Set(studies.map((s) => s.sector).filter(Boolean) as string[]);
@@ -110,6 +113,15 @@ export function MarketStudiesPanel() {
               ))}
             </select>
           )}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-10 rounded-md border border-border bg-background px-3 text-sm"
+          >
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendiente</option>
+            <option value="validated">Validado</option>
+          </select>
         </div>
         <Button onClick={() => setShowUpload(true)} size="sm">
           <Upload className="h-4 w-4 mr-1.5" />
@@ -144,6 +156,26 @@ export function MarketStudiesPanel() {
                       <Badge variant="secondary" className="mt-1 text-xs">{study.sector}</Badge>
                     )}
                   </div>
+                  <Select
+                    value={study.status}
+                    onValueChange={(v) => updateStatus.mutate({ id: study.id, status: v as 'pending' | 'validated' })}
+                  >
+                    <SelectTrigger className="h-7 w-auto min-w-[120px] text-xs gap-1 border-0 bg-transparent p-0 px-1 hover:bg-muted">
+                      {study.status === 'validated' ? (
+                        <span className="flex items-center gap-1 text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" />Validado</span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-amber-600"><Clock className="h-3.5 w-3.5" />Pendiente</span>
+                      )}
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">
+                        <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-amber-600" />Pendiente</span>
+                      </SelectItem>
+                      <SelectItem value="validated">
+                        <span className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />Validado</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 {study.description && (
                   <p className="text-xs text-muted-foreground line-clamp-2">{study.description}</p>
