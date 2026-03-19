@@ -346,7 +346,7 @@ export const DEFAULT_CLOSING_TEMPLATE: ClosingTemplate = {
   email: {
     x: 0.8, y: 5.3, w: 6, h: 0.5,
     fontSize: 14, color: '8B919B', visible: true,
-    text: 'lluis@capittal.es',
+    text: 'capittal.es/oportunidades',
   },
   docTitle: {
     x: 7, y: 6.0, w: 5.5, h: 0.5,
