@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Loader2, Check, ChevronDown } from 'lucide-react';
+import { Loader2, Check, ChevronDown, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../utils/generateDealhubPptx';
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
 import { SlideTemplateEditor } from './SlideTemplateEditor';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
+import { useSlideTemplates } from '../hooks/useSlideTemplates';
 
 const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
 
