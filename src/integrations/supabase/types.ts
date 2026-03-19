@@ -19354,6 +19354,42 @@ export type Database = {
         }
         Relationships: []
       }
+      rod_template_documents: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          file_name: string
+          id: string
+          is_active: boolean
+          public_url: string
+          storage_path: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          id?: string
+          is_active?: boolean
+          public_url: string
+          storage_path: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          id?: string
+          is_active?: boolean
+          public_url?: string
+          storage_path?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       saved_operations: {
         Row: {
           created_at: string | null
