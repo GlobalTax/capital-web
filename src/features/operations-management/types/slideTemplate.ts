@@ -72,6 +72,7 @@ export interface CoverTemplate {
   footer: BlockConfig & { text?: string };
   yearBlock?: BlockConfig;
   branding?: BlockConfig & { text?: string };
+  backgroundImage?: string;
 }
 
 export type CoverBlockKey = keyof CoverTemplate;
