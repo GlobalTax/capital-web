@@ -41,23 +41,16 @@ export const useToggleEmpresaFavorite = () => {
       if (!user) throw new Error('No autenticado');
 
       if (isFavorite) {
-        // Eliminar favorito
         const { error } = await supabase
           .from('empresa_favorites')
           .delete()
           .eq('empresa_id', empresaId);
-
         if (error) throw error;
         return { empresaId, wasRemoved: true };
       } else {
-        // Añadir favorito
         const { error } = await supabase
           .from('empresa_favorites')
-          .insert({
-            empresa_id: empresaId,
-            added_by: user.id,
-          });
-
+          .insert({ empresa_id: empresaId, added_by: user.id });
         if (error) throw error;
         return { empresaId, wasRemoved: false };
       }
@@ -65,12 +58,8 @@ export const useToggleEmpresaFavorite = () => {
     onSuccess: ({ wasRemoved }) => {
       queryClient.invalidateQueries({ queryKey: ['empresa-favorite-ids'] });
       queryClient.invalidateQueries({ queryKey: ['empresa-favorites'] });
-      
-      if (wasRemoved) {
-        toast.success('Eliminado de favoritos');
-      } else {
-        toast.success('Añadido a favoritos');
-      }
+      queryClient.invalidateQueries({ queryKey: ['empresas-stats'] });
+      toast.success(wasRemoved ? 'Eliminado de favoritos' : 'Añadido a favoritos');
     },
     onError: () => {
       toast.error('Error al actualizar favorito');
@@ -79,6 +68,7 @@ export const useToggleEmpresaFavorite = () => {
 };
 
 // Hook para obtener empresas favoritas con datos completos (GLOBALES)
+// Optimizado: usa JOIN en lugar de cargar todas las empresas
 export const useFavoriteEmpresas = () => {
   return useQuery({
     queryKey: ['empresa-favorites'],
@@ -86,28 +76,16 @@ export const useFavoriteEmpresas = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // Primero obtener IDs favoritos
-      const { data: favorites, error: favError } = await supabase
+      // Use inner join to fetch only favorite empresas efficiently
+      const { data: favorites, error } = await supabase
         .from('empresa_favorites')
-        .select('empresa_id');
+        .select('empresa_id, empresas!inner(*)');
 
-      if (favError) throw favError;
+      if (error) throw error;
       if (!favorites || favorites.length === 0) return [];
 
-      const empresaIds = favorites.map(f => f.empresa_id);
-
-      // Obtener todas las empresas y filtrar en cliente
-      // Esto evita problemas de tipos con .in() en Supabase
-      const { data: empresas, error: empresasError } = await supabase
-        .from('empresas')
-        .select('*')
-        .order('nombre');
-
-      if (empresasError) throw empresasError;
-      
-      // Filtrar solo las que están en favoritos
-      const filteredEmpresas = (empresas || []).filter(e => empresaIds.includes(e.id));
-      return filteredEmpresas as unknown as Empresa[];
+      // Extract empresa data from the join result
+      return favorites.map((f: any) => f.empresas as Empresa);
     },
   });
 };
