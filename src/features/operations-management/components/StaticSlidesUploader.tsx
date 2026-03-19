@@ -3,7 +3,10 @@ import { Upload, X, Image, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { FullSlideTemplate } from '../types/slideTemplate';
+import { DEFAULT_TEMPLATE_SLIDE_MAP, DEFAULT_SKIP_SLIDES } from '../types/slideTemplate';
 import { DEALHUB_SECTIONS } from '../utils/generateDealhubPptx';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface StaticSlidesUploaderProps {
   template: FullSlideTemplate;
@@ -149,7 +152,12 @@ const PptxUploader: React.FC<{
       const { data, error } = await supabase.storage.from('slide-backgrounds').upload(path, file);
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from('slide-backgrounds').getPublicUrl(data.path);
-      onChange({ ...template, templatePptxUrl: publicUrl });
+      onChange({
+        ...template,
+        templatePptxUrl: publicUrl,
+        templateSlideMap: template.templateSlideMap || { ...DEFAULT_TEMPLATE_SLIDE_MAP },
+        skipSlides: template.skipSlides || [...DEFAULT_SKIP_SLIDES],
+      });
       toast({ title: 'Plantilla PPTX subida correctamente' });
     } catch (err: any) {
       toast({ title: 'Error al subir', description: err.message, variant: 'destructive' });
@@ -160,7 +168,7 @@ const PptxUploader: React.FC<{
   };
 
   const handleRemove = () => {
-    onChange({ ...template, templatePptxUrl: undefined });
+    onChange({ ...template, templatePptxUrl: undefined, templateSlideMap: undefined, skipSlides: undefined });
   };
 
   return (
@@ -203,29 +211,102 @@ const PptxUploader: React.FC<{
   );
 };
 
+/** Editable mapping: which template slide corresponds to each section separator */
+const SlideMapEditor: React.FC<{
+  template: FullSlideTemplate;
+  onChange: (t: FullSlideTemplate) => void;
+}> = ({ template, onChange }) => {
+  const slideMap = template.templateSlideMap || { ...DEFAULT_TEMPLATE_SLIDE_MAP };
+  const skipSlides = template.skipSlides || [...DEFAULT_SKIP_SLIDES];
+
+  const updateMap = (key: string, value: number) => {
+    onChange({
+      ...template,
+      templateSlideMap: { ...slideMap, [key]: value },
+    });
+  };
+
+  const updateSkipSlides = (text: string) => {
+    const nums = text.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n > 0);
+    onChange({ ...template, skipSlides: nums });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          Mapeo de separadores
+        </p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Indica en qué número de slide del PPTX está cada separador de sección. Las operaciones se insertarán después.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {DEALHUB_SECTIONS.map(section => (
+            <div key={section.key} className="flex items-center gap-2">
+              <Label className="text-xs text-foreground flex-1 truncate">{section.label}</Label>
+              <Input
+                type="number"
+                min={1}
+                value={slideMap[section.key] || ''}
+                onChange={e => updateMap(section.key, parseInt(e.target.value) || 0)}
+                className="w-16 h-8 text-xs text-center"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Slides a eliminar
+        </Label>
+        <p className="text-xs text-muted-foreground mt-1 mb-2">
+          Slides de ejemplo o placeholder que se deben eliminar del PPTX antes de mergear (separadas por comas).
+        </p>
+        <Input
+          type="text"
+          value={skipSlides.join(', ')}
+          onChange={e => updateSkipSlides(e.target.value)}
+          placeholder="Ej: 4"
+          className="h-8 text-xs"
+        />
+      </div>
+    </div>
+  );
+};
+
 export const StaticSlidesUploader: React.FC<StaticSlidesUploaderProps> = ({ template, onChange }) => {
+  const hasPptx = !!template.templatePptxUrl;
+
   return (
     <div className="p-6 space-y-4">
       {/* PPTX template upload */}
       <PptxUploader template={template} onChange={onChange} />
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-[hsl(var(--linear-border))]" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-background px-2 text-muted-foreground">o sube imágenes individuales</span>
-        </div>
-      </div>
+      {/* When PPTX is uploaded, show slide mapping editor instead of individual images */}
+      {hasPptx ? (
+        <SlideMapEditor template={template} onChange={onChange} />
+      ) : (
+        <>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-[hsl(var(--linear-border))]" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-2 text-muted-foreground">o sube imágenes individuales</span>
+            </div>
+          </div>
 
-      <p className="text-xs text-muted-foreground">
-        Si no usas plantilla PPTX, puedes subir imágenes PNG/JPG para slides fijas individuales.
-      </p>
-      <div className="space-y-2">
-        {SLOTS.map((slot, i) => (
-          <SlotUploader key={i} slot={slot} template={template} onChange={onChange} />
-        ))}
-      </div>
+          <p className="text-xs text-muted-foreground">
+            Si no usas plantilla PPTX, puedes subir imágenes PNG/JPG para slides fijas individuales.
+          </p>
+          <div className="space-y-2">
+            {SLOTS.map((slot, i) => (
+              <SlotUploader key={i} slot={slot} template={template} onChange={onChange} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

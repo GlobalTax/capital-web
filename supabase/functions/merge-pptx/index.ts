@@ -32,7 +32,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { templateUrl, operationsBase64, sectionInsertPoints, sectionSlideCounts: clientSlideCounts } = await req.json();
+    const { templateUrl, operationsBase64, sectionInsertPoints, sectionSlideCounts: clientSlideCounts, skipSlides } = await req.json();
 
     if (!templateUrl || !operationsBase64 || !sectionInsertPoints) {
       return new Response(
@@ -56,9 +56,72 @@ serve(async (req: Request) => {
     const opsBytes = Uint8Array.from(atob(operationsBase64), c => c.charCodeAt(0));
     const opsZip = await JSZip.loadAsync(opsBytes);
 
+    // 2.5. Remove skip slides from template before merging
+    const slidesToSkip: number[] = Array.isArray(skipSlides) ? skipSlides : [];
+    if (slidesToSkip.length > 0) {
+      console.log(`Removing ${slidesToSkip.length} placeholder slides: ${slidesToSkip.join(', ')}`);
+      for (const slideNum of slidesToSkip) {
+        templateZip.remove(`ppt/slides/slide${slideNum}.xml`);
+        templateZip.remove(`ppt/slides/_rels/slide${slideNum}.xml.rels`);
+      }
+      // Renumber remaining slides sequentially
+      const remainingSlides = getSlideFiles(templateZip);
+      const renameMap = new Map<number, number>();
+      remainingSlides.forEach((path, i) => {
+        const oldNum = parseInt(path.match(/slide(\d+)/)?.[1] || '0');
+        const newNum = i + 1;
+        if (oldNum !== newNum) renameMap.set(oldNum, newNum);
+      });
+      for (const [oldNum, newNum] of renameMap.entries()) {
+        const sc = await templateZip.file(`ppt/slides/slide${oldNum}.xml`)?.async('arraybuffer');
+        const rc = await templateZip.file(`ppt/slides/_rels/slide${oldNum}.xml.rels`)?.async('arraybuffer');
+        templateZip.remove(`ppt/slides/slide${oldNum}.xml`);
+        templateZip.remove(`ppt/slides/_rels/slide${oldNum}.xml.rels`);
+        if (sc) templateZip.file(`ppt/slides/slide${newNum}.xml`, sc);
+        if (rc) templateZip.file(`ppt/slides/_rels/slide${newNum}.xml.rels`, rc);
+      }
+
+      // Adjust sectionInsertPoints for removed slides
+      for (const key of Object.keys(sectionInsertPoints)) {
+        let pos = (sectionInsertPoints as Record<string, number>)[key];
+        const skippedBefore = slidesToSkip.filter(s => s < pos).length;
+        (sectionInsertPoints as Record<string, number>)[key] = pos - skippedBefore;
+      }
+
+      // Update presentation.xml
+      let presXml = await templateZip.file('ppt/presentation.xml')?.async('string') || '';
+      const sldMatch = presXml.match(/<p:sldIdLst>([\s\S]*?)<\/p:sldIdLst>/);
+      if (sldMatch) {
+        const cnt = getSlideFiles(templateZip).length;
+        let lst = '<p:sldIdLst>';
+        for (let i = 0; i < cnt; i++) lst += `<p:sldId id="${256 + i}" r:id="rId${i + 2}"/>`;
+        lst += '</p:sldIdLst>';
+        presXml = presXml.replace(/<p:sldIdLst>[\s\S]*?<\/p:sldIdLst>/, lst);
+        templateZip.file('ppt/presentation.xml', presXml);
+      }
+
+      // Update rels
+      let pr = await templateZip.file('ppt/_rels/presentation.xml.rels')?.async('string') || '';
+      pr = pr.replace(/<Relationship[^>]*Target="slides\/slide\d+\.xml"[^>]*\/>/g, '');
+      const cc = getSlideFiles(templateZip).length;
+      let nr = '';
+      for (let i = 0; i < cc; i++) nr += `<Relationship Id="rId${i + 2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide${i + 1}.xml"/>`;
+      pr = pr.replace('</Relationships>', nr + '</Relationships>');
+      templateZip.file('ppt/_rels/presentation.xml.rels', pr);
+
+      // Update [Content_Types].xml
+      let ct = await templateZip.file('[Content_Types].xml')?.async('string') || '';
+      ct = ct.replace(/<Override[^>]*PartName="\/ppt\/slides\/slide\d+\.xml"[^>]*\/>/g, '');
+      let ov = '';
+      for (let i = 1; i <= cc; i++) ov += `<Override PartName="/ppt/slides/slide${i}.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>`;
+      ct = ct.replace('</Types>', ov + '</Types>');
+      templateZip.file('[Content_Types].xml', ct);
+    }
+
     // 3. Analyze template structure
     const templateSlides = getSlideFiles(templateZip);
     const opsSlides = getSlideFiles(opsZip);
+
 
     if (opsSlides.length === 0) {
       // No operation slides to merge, return template as-is

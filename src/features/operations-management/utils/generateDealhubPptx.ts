@@ -1,7 +1,7 @@
 import pptxgen from 'pptxgenjs';
 import type { Operation } from '../types/operations';
 import type { SlideTemplate, FullSlideTemplate, CoverTemplate, IndexTemplate, SeparatorTemplate, ClosingTemplate } from '../types/slideTemplate';
-import { DEFAULT_FULL_TEMPLATE, DEFAULT_CLOSING_TEMPLATE } from '../types/slideTemplate';
+import { DEFAULT_FULL_TEMPLATE, DEFAULT_CLOSING_TEMPLATE, DEFAULT_TEMPLATE_SLIDE_MAP, DEFAULT_SKIP_SLIDES } from '../types/slideTemplate';
 import { supabase } from '@/integrations/supabase/client';
 import { blobToBase64 } from '@/utils/blobToBase64';
 
@@ -565,18 +565,19 @@ async function generateWithMerge(
   const opsBlob = await opsPptx.write({ outputType: 'blob' }) as Blob;
   const opsBase64 = await blobToBase64(opsBlob);
 
-  // 2. Build sectionInsertPoints from template convention
-  // Convention: slides 1-2 = cover+index, then one separator per enabled section, last = closing
-  // So separator for section i is at slide position 2 + (i+1) where i is the order among enabled sections
-  const enabledSections = DEALHUB_SECTIONS.filter(s => 
-    selectedSections.includes(s.key) && activeOps.filter(s.filter).length > 0
-  );
+  // 2. Use templateSlideMap (user-configured) or defaults
+  const slideMap = ft.templateSlideMap || DEFAULT_TEMPLATE_SLIDE_MAP;
+  const skipSlides = ft.skipSlides || DEFAULT_SKIP_SLIDES;
 
+  // Only include sections that have operations
   const sectionInsertPoints: Record<string, number> = {};
-  enabledSections.forEach((section, i) => {
-    // Slide 1=cover, 2=index, 3=first separator, 4=second separator, etc.
-    sectionInsertPoints[section.key] = 2 + (i + 1);
-  });
+  for (const section of DEALHUB_SECTIONS) {
+    if (!selectedSections.includes(section.key)) continue;
+    if (!sectionSlideCounts[section.key]) continue;
+    if (slideMap[section.key]) {
+      sectionInsertPoints[section.key] = slideMap[section.key];
+    }
+  }
 
   // 3. Call edge function
   const { data, error } = await supabase.functions.invoke('merge-pptx', {
@@ -585,6 +586,7 @@ async function generateWithMerge(
       operationsBase64: opsBase64,
       sectionInsertPoints,
       sectionSlideCounts,
+      skipSlides,
     },
   });
 
