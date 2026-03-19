@@ -115,6 +115,7 @@ export interface IndexTemplate {
   cardBgColor: string;
   cardRadius: number;
   sectionColors: [string, string, string, string];
+  backgroundImage?: string;
 }
 
 export type IndexBlockKey = 'background' | 'title' | 'introText';
