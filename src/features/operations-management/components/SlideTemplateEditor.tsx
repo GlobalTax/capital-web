@@ -605,6 +605,7 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
               blockLabel={getBlockLabel()}
               block={getBlock()}
               onUpdate={handleUpdate}
+              slideType={slideType}
             />
           )}
         </div>
