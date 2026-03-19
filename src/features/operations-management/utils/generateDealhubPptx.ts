@@ -156,7 +156,7 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
   if (idx.title.visible) {
     slide.addText('Índice de Oportunidades', {
       x: idx.title.x, y: idx.title.y, w: idx.title.w, h: idx.title.h,
-      fontSize: idx.title.fontSize || 28, fontFace: FONT, color: idx.title.color || NAVY,
+      fontSize: idx.title.fontSize || 32, fontFace: FONT, color: idx.title.color || NAVY,
       bold: idx.title.bold ?? true, align: idx.title.align,
     });
   }
