@@ -1,22 +1,20 @@
 
 
-## Fix: RLS policies for slide-backgrounds storage bucket
+## Fix: Drop the missing INSERT policy for slide-backgrounds
 
 ### Problem
 
-The `PptxTemplateLibrary` component fails on both `list()` and `upload()` with "new row violates row-level security policy". The current RLS policies on `storage.objects` for `slide-backgrounds` use simple `authenticated` role checks, but Supabase's internal storage operations need admin-verified policies consistent with the rest of the project.
-
-### Root cause
-
-The current policies were created with basic checks (`bucket_id = 'slide-backgrounds'` for `authenticated`), but the project's other buckets use `current_user_is_admin()` or admin_users table lookups. The `list()` operation in Supabase storage can internally trigger write operations (folder metadata), causing RLS violations.
+The previous migration dropped 3 of 4 existing policies but missed the original INSERT policy: `"Allow authenticated uploads to slide-backgrounds"`. This policy still exists in the database and conflicts with the new admin-only `ALL` policy. Supabase's `list()` operation internally triggers write operations that hit this conflicting policy, causing RLS errors on both list and upload.
 
 ### Fix
 
-**Replace the 4 existing RLS policies** on `storage.objects` for `slide-backgrounds` with a single `ALL` policy using `current_user_is_admin()` (matching the pattern from `campaign-presentations` and others), plus keep public SELECT for read access:
+**Single SQL migration** — one line:
 
-1. Drop existing 4 policies for `slide-backgrounds`
-2. Create: `ALL` policy for admin users (SELECT, INSERT, UPDATE, DELETE)
-3. Keep: public `SELECT` policy for reading/downloading files
+```sql
+DROP POLICY IF EXISTS "Allow authenticated uploads to slide-backgrounds" ON storage.objects;
+```
 
-**Single SQL migration** -- no code changes needed. The `PptxTemplateLibrary` component code is correct.
+No code changes needed. After this, only the two correct policies will remain:
+1. `"Admin can manage slide-backgrounds"` — full CRUD for admins
+2. `"Public can read slide-backgrounds"` — read access for all
 
