@@ -100,6 +100,12 @@ export const sidebarSections: SidebarSection[] = [
         badge: "URGENTE",
         description: "Todos los leads del embudo"
       },
+      { 
+        title: "Pipeline",
+        url: "/admin/leads-pipeline", 
+        icon: Kanban,
+        description: "Tablero Kanban de leads"
+      },
     ]
   },
   {
@@ -337,6 +343,12 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/listas-contacto", 
         icon: ClipboardList,
         description: "Gestiona y depura listas de empresas"
+      },
+      { 
+        title: "Pipeline de Leads",
+        url: "/admin/leads-pipeline", 
+        icon: Kanban,
+        description: "Tablero Kanban de leads"
       },
       { 
         title: "Reservas Llamadas",

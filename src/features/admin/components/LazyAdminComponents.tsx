@@ -95,8 +95,8 @@ export const LazyNewsletterPage = lazy(() => import('@/pages/admin/NewsletterPag
 export const LazyBuySideMandatesPage = lazy(() => import('@/pages/admin/BuySideMandatesPage'));
 export const LazyBuySideMandateDetailPage = lazy(() => import('@/pages/admin/BuySideMandateDetailPage'));
 
-// === LEADS PIPELINE (removed - now in ContactsLayout tab) ===
-export const LazyLeadsPipelinePage = lazy(() => Promise.resolve({ default: () => null }));
+// === LEADS PIPELINE ===
+export const LazyLeadsPipelinePage = lazy(() => import('@/pages/admin/LeadsPipelinePage'));
 
 // === BOOKINGS ===
 export const LazyBookingsPage = lazy(() => import('@/components/admin/bookings').then(m => ({ default: m.BookingsManager })));

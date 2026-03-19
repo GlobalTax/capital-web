@@ -12,7 +12,7 @@ import ContactsHeader from './ContactsHeader';
 import ContactsFilters from './ContactsFilters';
 import VirtualContactsTable from './VirtualContactsTable';
 import ContactDetailSheet from '../contacts/ContactDetailSheet';
-import { LeadsPipelineView } from '@/features/leads-pipeline';
+import { ContactsPipelineView } from '../contacts/pipeline';
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
 
 const ContactsLayout: React.FC = () => {
@@ -100,7 +100,11 @@ const ContactsLayout: React.FC = () => {
       
       case 'pipeline':
         return (
-          <LeadsPipelineView />
+          <ContactsPipelineView
+            contacts={displayedContacts as any}
+            onViewDetails={handleViewDetails as any}
+            isLoading={false}
+          />
         );
       
       case 'stats':
