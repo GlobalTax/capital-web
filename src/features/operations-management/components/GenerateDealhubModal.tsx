@@ -53,10 +53,17 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [activeTab, setActiveTab] = useState('config');
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
 
-  // Load saved template when modal opens, merging with current defaults
+  // Load saved template when modal opens
+  // If PPTX template exists, skip mergeWithDefaults to preserve user settings
   useEffect(() => {
     if (open) {
-      loadDefault().then(t => setFullTemplate(mergeWithDefaults(t)));
+      loadDefault().then(t => {
+        if (t.templatePptxUrl) {
+          setFullTemplate(t);
+        } else {
+          setFullTemplate(mergeWithDefaults(t));
+        }
+      });
     }
   }, [open, loadDefault]);
 

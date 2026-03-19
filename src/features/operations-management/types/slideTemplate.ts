@@ -176,6 +176,15 @@ export interface ClosingTemplate {
 
 // ─── FULL TEMPLATE ───
 
+export const DEFAULT_TEMPLATE_SLIDE_MAP: Record<string, number> = {
+  sale_active: 3,
+  upcoming: 5,
+  acquisition: 6,
+  exclusive: 7,
+};
+
+export const DEFAULT_SKIP_SLIDES: number[] = [4];
+
 export interface FullSlideTemplate {
   cover: CoverTemplate;
   index: IndexTemplate;
@@ -183,6 +192,8 @@ export interface FullSlideTemplate {
   operation: SlideTemplate;
   closing?: ClosingTemplate;
   templatePptxUrl?: string;
+  templateSlideMap?: Record<string, number>;
+  skipSlides?: number[];
 }
 
 export type SlideType = keyof FullSlideTemplate;
