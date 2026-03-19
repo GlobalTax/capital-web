@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Allow authenticated uploads to slide-backgrounds" ON storage.objects;
