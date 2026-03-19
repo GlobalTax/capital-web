@@ -46,6 +46,7 @@ export type ActivityType =
 
 export interface PipelineLead {
   id: string;
+  origin: 'valuation' | 'contact';
   contact_name: string;
   company_name: string;
   email: string;
