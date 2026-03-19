@@ -11,6 +11,7 @@ export interface MarketStudy {
   storage_path: string;
   file_size: number;
   uploaded_by: string | null;
+  status: 'pending' | 'validated';
   created_at: string;
   updated_at: string;
 }
