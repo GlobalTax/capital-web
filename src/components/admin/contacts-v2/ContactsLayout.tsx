@@ -20,7 +20,7 @@ const ContactsLayout: React.FC = () => {
   const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact, patchContacts } = useContacts();
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
   
-  const [activeTab, setActiveTab] = useState<TabType>('favorites');
+  const [activeTab, setActiveTab] = useState<TabType>('directory');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
