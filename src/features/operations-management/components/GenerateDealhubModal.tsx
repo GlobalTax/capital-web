@@ -113,7 +113,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
       <DialogContent
         className={cn(
           'p-0 gap-0 border-[hsl(var(--linear-border))] rounded-[5px] shadow-sm transition-all duration-200',
-          isTemplateTab
+          isWideTab
             ? 'sm:max-w-[95vw] h-[85vh] max-h-[85vh]'
             : 'sm:max-w-[560px]'
         )}
