@@ -227,6 +227,10 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.precall_email_sent === next.lead.precall_email_sent &&
     prev.lead.call_attempts_count === next.lead.call_attempts_count &&
     prev.lead.final_valuation === next.lead.final_valuation &&
+    prev.lead.revenue === next.lead.revenue &&
+    prev.lead.ebitda === next.lead.ebitda &&
+    prev.lead.employee_range === next.lead.employee_range &&
+    prev.lead.location === next.lead.location &&
     prev.assignedUserName === next.assignedUserName &&
     prev.isDragging === next.isDragging
   );
