@@ -162,6 +162,11 @@ export type SlideType = keyof FullSlideTemplate;
 
 export const DEFAULT_COVER_TEMPLATE: CoverTemplate = {
   background: { color: '161B22' },
+  logo: {
+    x: 0.6, y: 0.5, w: 2.5, h: 1.2,
+    visible: true,
+    imageUrl: '',
+  },
   title: {
     x: 0.6, y: 2.2, w: 12.13, h: 1,
     fontSize: 40, color: 'FFFFFF', bold: true, visible: true,
