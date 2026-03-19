@@ -27,9 +27,10 @@ function formatFileSize(bytes: number) {
 }
 
 export function MarketStudiesPanel() {
-  const { studies, isLoading, uploadStudy, deleteStudy, getDownloadUrl } = useMarketStudies();
+  const { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getDownloadUrl } = useMarketStudies();
   const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [showUpload, setShowUpload] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<MarketStudy | null>(null);
 
