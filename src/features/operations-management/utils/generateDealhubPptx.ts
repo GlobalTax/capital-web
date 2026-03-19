@@ -514,7 +514,7 @@ export async function generateDealhubPptx(
     if (ops.length === 0) return;
 
     const sectionNum = String(i + 1).padStart(2, '0');
-    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle, ft.separator);
+    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle, ft.separator, section.key);
 
     ops.forEach(op => addOperationSlide(pptx, op, ft.operation));
   });
