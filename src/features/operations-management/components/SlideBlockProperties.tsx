@@ -5,18 +5,20 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload } from 'lucide-react';
+import { Upload, RotateCcw } from 'lucide-react';
 import { useLogoUpload } from '@/hooks/useLogoUpload';
-import type { BlockConfig, TextAlign, TextValign } from '../types/slideTemplate';
+import type { BlockConfig, TextAlign, TextValign, SlideType } from '../types/slideTemplate';
+import { DEFAULT_FULL_TEMPLATE } from '../types/slideTemplate';
 
 interface SlideBlockPropertiesProps {
   selectedBlock: string | null;
   blockLabel: string;
   block: BlockConfig | null;
   onUpdate: (patch: Partial<BlockConfig>) => void;
+  slideType?: SlideType;
 }
 
-export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdate }: SlideBlockPropertiesProps) => {
+export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdate, slideType = 'operation' }: SlideBlockPropertiesProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadLogo, isUploading } = useLogoUpload();
 
@@ -78,9 +80,26 @@ export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdat
 
   return (
     <div className="space-y-4 p-4 overflow-y-auto h-full">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">{blockLabel}</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">Ajusta posición, tamaño y estilo</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">{blockLabel}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Ajusta posición, tamaño y estilo</p>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0"
+          title="Restablecer posición por defecto"
+          onClick={() => {
+            const defaults = (DEFAULT_FULL_TEMPLATE[slideType] as any)?.[selectedBlock];
+            if (defaults) {
+              onUpdate({ x: defaults.x, y: defaults.y, w: defaults.w, h: defaults.h });
+            }
+          }}
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </Button>
       </div>
 
       {/* Visible toggle */}

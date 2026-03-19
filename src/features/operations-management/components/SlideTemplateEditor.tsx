@@ -126,8 +126,8 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
       const block = getBlockForDrag(dragging.key);
       if (!block) return;
       const patch = {
-        x: Math.max(0, Math.min(SLIDE_WIDTH - block.w, parseFloat((dragging.origX + dx).toFixed(2)))),
-        y: Math.max(0, Math.min(SLIDE_HEIGHT - block.h, parseFloat((dragging.origY + dy).toFixed(2)))),
+        x: Math.max(-0.5, Math.min(SLIDE_WIDTH - block.w + 0.5, parseFloat((dragging.origX + dx).toFixed(2)))),
+        y: Math.max(-0.5, Math.min(SLIDE_HEIGHT - block.h + 0.5, parseFloat((dragging.origY + dy).toFixed(2)))),
       };
       // Apply to the right sub-template
       const newTemplate = { ...template };
@@ -174,9 +174,43 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
   }, [dragging, resizing, template, onChange, slideType]);
 
   const handleMouseUp = useCallback(() => {
+    const activeKey = dragging?.key || resizing?.key;
+    if (activeKey) {
+      const block = getBlockForDrag(activeKey);
+      if (block) {
+        const clampedX = Math.max(0, Math.min(block.x, SLIDE_WIDTH - block.w));
+        const clampedY = Math.max(0, Math.min(block.y, SLIDE_HEIGHT - block.h));
+        const clampedW = Math.min(block.w, SLIDE_WIDTH - clampedX);
+        const clampedH = Math.min(block.h, SLIDE_HEIGHT - clampedY);
+        if (clampedX !== block.x || clampedY !== block.y || clampedW !== block.w || clampedH !== block.h) {
+          const patch = {
+            x: parseFloat(clampedX.toFixed(2)),
+            y: parseFloat(clampedY.toFixed(2)),
+            w: parseFloat(clampedW.toFixed(2)),
+            h: parseFloat(clampedH.toFixed(2)),
+          };
+          const newTemplate = { ...template };
+          switch (slideType) {
+            case 'cover':
+              newTemplate.cover = { ...template.cover, [activeKey]: { ...(template.cover as any)[activeKey], ...patch } };
+              break;
+            case 'index':
+              if (activeKey === 'title') newTemplate.index = { ...template.index, title: { ...template.index.title, ...patch } };
+              break;
+            case 'separator':
+              newTemplate.separator = { ...template.separator, [activeKey]: { ...(template.separator as any)[activeKey], ...patch } };
+              break;
+            case 'operation':
+              newTemplate.operation = { ...template.operation, [activeKey]: { ...(template.operation as any)[activeKey], ...patch } };
+              break;
+          }
+          onChange(newTemplate);
+        }
+      }
+    }
     setDragging(null);
     setResizing(null);
-  }, []);
+  }, [dragging, resizing, template, slideType, onChange]);
 
   // ─── RENDER HELPERS ───
 
@@ -194,7 +228,7 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
       <div
         key={key}
         className={cn(
-          'absolute cursor-move overflow-hidden transition-shadow',
+          'absolute cursor-move transition-shadow',
           isSelected ? 'ring-2 z-20' : 'z-10 hover:ring-1',
           darkBg ? 'text-white' : 'text-foreground'
         )}
@@ -571,6 +605,7 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
               blockLabel={getBlockLabel()}
               block={getBlock()}
               onUpdate={handleUpdate}
+              slideType={slideType}
             />
           )}
         </div>
