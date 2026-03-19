@@ -378,7 +378,7 @@ export default function CampanasValoracion() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document' | 'summary')}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'valuation' | 'document' | 'summary' | 'market-studies')}>
         <TabsList>
           <TabsTrigger value="valuation" className="flex items-center gap-1.5">
             <TrendingUp className="h-4 w-4" />
@@ -387,6 +387,10 @@ export default function CampanasValoracion() {
           <TabsTrigger value="document" className="flex items-center gap-1.5">
             <FileText className="h-4 w-4" />
             Documento PDF
+          </TabsTrigger>
+          <TabsTrigger value="market-studies" className="flex items-center gap-1.5">
+            <BookOpen className="h-4 w-4" />
+            Estudios de Mercado
           </TabsTrigger>
           <TabsTrigger value="summary" className="flex items-center gap-1.5">
             <BarChart3 className="h-4 w-4" />
