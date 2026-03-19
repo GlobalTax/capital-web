@@ -36,7 +36,7 @@ import {
   LazyAdminOperations,
   LazyOperationDetails,
   LazyOperationsDashboard,
-  LazyOperationsKanban,
+  
   LazyJobPostsManager,
   LazyJobPostEditor,
   LazyJobApplicationsManager,
@@ -204,7 +204,7 @@ const AdminRouter = () => {
           <Route path="/valoraciones-pro/nueva" element={<LazyValoracionProForm />} />
           <Route path="/valoraciones-pro/:id" element={<LazyValoracionProForm />} />
           <Route path="/operations/dashboard" element={<LazyOperationsDashboard />} />
-          <Route path="/operations/kanban" element={<LazyOperationsKanban />} />
+          
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
           <Route path="/mandatos/workload" element={<LazyMandatoWorkloadPage />} />
