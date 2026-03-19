@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2, Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../utils/generateDealhubPptx';
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
+import { SlideTemplateEditor } from './SlideTemplateEditor';
+import { DEFAULT_SLIDE_TEMPLATE, type SlideTemplate } from '../types/slideTemplate';
 
 const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
 
@@ -29,6 +32,8 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [generating, setGenerating] = useState(false);
   const [excludedOpIds, setExcludedOpIds] = useState<Set<string>>(new Set());
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState('config');
+  const [slideTemplate, setSlideTemplate] = useState<SlideTemplate>({ ...DEFAULT_SLIDE_TEMPLATE });
 
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
   const includedCount = activeOps.filter(op => !excludedOpIds.has(op.id)).length;
@@ -65,7 +70,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     setGenerating(true);
     try {
       const finalOps = activeOps.filter(op => !excludedOpIds.has(op.id));
-      await generateDealhubPptx(finalOps, selectedSections, quarter);
+      await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, slideTemplate);
       toast({ title: 'Catálogo ROD descargado' });
       onOpenChange(false);
     } catch (e) {
@@ -76,10 +81,19 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     }
   };
 
+  const isTemplateTab = activeTab === 'template';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px] p-0 gap-0 border-[hsl(var(--linear-border))] rounded-[5px] shadow-sm">
-        <DialogHeader className="px-6 pt-6 pb-4">
+      <DialogContent
+        className={cn(
+          'p-0 gap-0 border-[hsl(var(--linear-border))] rounded-[5px] shadow-sm transition-all duration-200',
+          isTemplateTab
+            ? 'sm:max-w-[95vw] h-[85vh] max-h-[85vh]'
+            : 'sm:max-w-[560px]'
+        )}
+      >
+        <DialogHeader className="px-6 pt-5 pb-0">
           <DialogTitle className="text-base font-semibold text-foreground">
             Generar Catálogo ROD
           </DialogTitle>
@@ -88,115 +102,131 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
           </p>
         </DialogHeader>
 
-        <div className="px-6 pb-2">
-          {/* Quarter selector */}
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-            Trimestre
-          </label>
-          <div className="flex gap-1 p-0.5 rounded-[5px] bg-secondary mb-5">
-            {QUARTERS.map(q => (
-              <button
-                key={q}
-                onClick={() => setQuarter(q)}
-                className={cn(
-                  'flex-1 text-sm py-1.5 rounded-[4px] transition-all font-semibold',
-                  quarter === q
-                    ? 'bg-[hsl(var(--primary))] text-primary-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {q}
-              </button>
-            ))}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
+          <div className="px-6 pt-3">
+            <TabsList className="w-full">
+              <TabsTrigger value="config" className="flex-1 text-xs">Configuración</TabsTrigger>
+              <TabsTrigger value="template" className="flex-1 text-xs">Plantilla</TabsTrigger>
+            </TabsList>
           </div>
 
-          {/* Section checklist */}
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
-            Secciones a incluir
-          </label>
-          <div className="space-y-1 mb-5 max-h-[40vh] overflow-y-auto pr-1">
-            {DEALHUB_SECTIONS.map(section => {
-              const checked = selectedSections.includes(section.key);
-              const sectionOps = activeOps.filter(section.filter);
-              const includedInSection = sectionOps.filter(op => !excludedOpIds.has(op.id)).length;
-              const isExpanded = expandedSections.has(section.key);
-
-              return (
-                <div key={section.key}>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => toggleSection(section.key)}
-                      className={cn(
-                        'flex items-center gap-3 flex-1 px-3 py-2 rounded-[5px] text-sm transition-colors text-left',
-                        checked ? 'bg-secondary/60' : 'hover:bg-secondary/40'
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          'flex items-center justify-center w-4 h-4 rounded-[3px] border shrink-0 transition-colors',
-                          checked
-                            ? 'bg-[hsl(var(--primary))] border-[hsl(var(--primary))]'
-                            : 'border-[hsl(var(--linear-border))] bg-background'
-                        )}
-                      >
-                        {checked && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />}
-                      </span>
-                      <span className="text-foreground font-normal flex-1">{section.label}</span>
-                      <span className="text-xs text-muted-foreground">{includedInSection}/{sectionOps.length}</span>
-                    </button>
-                    {sectionOps.length > 0 && checked && (
-                      <button
-                        onClick={() => toggleExpandSection(section.key)}
-                        className="p-1.5 rounded-[4px] hover:bg-secondary/60 transition-colors"
-                      >
-                        <ChevronDown className={cn(
-                          'h-3.5 w-3.5 text-muted-foreground transition-transform',
-                          isExpanded && 'rotate-180'
-                        )} />
-                      </button>
+          {/* Config tab */}
+          <TabsContent value="config" className="flex-1 overflow-hidden mt-0">
+            <div className="px-6 py-4">
+              {/* Quarter selector */}
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                Trimestre
+              </label>
+              <div className="flex gap-1 p-0.5 rounded-[5px] bg-secondary mb-5">
+                {QUARTERS.map(q => (
+                  <button
+                    key={q}
+                    onClick={() => setQuarter(q)}
+                    className={cn(
+                      'flex-1 text-sm py-1.5 rounded-[4px] transition-all font-semibold',
+                      quarter === q
+                        ? 'bg-[hsl(var(--primary))] text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
-                  </div>
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
 
-                  {/* Individual operations */}
-                  {isExpanded && checked && sectionOps.length > 0 && (
-                    <div className="ml-7 mt-0.5 mb-1 space-y-0.5">
-                      {sectionOps.map(op => {
-                        const isIncluded = !excludedOpIds.has(op.id);
-                        return (
-                          <button
-                            key={op.id}
-                            onClick={() => toggleOp(op.id)}
-                            className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-[4px] text-sm transition-colors text-left hover:bg-secondary/40"
+              {/* Section checklist */}
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                Secciones a incluir
+              </label>
+              <div className="space-y-1 mb-5 max-h-[40vh] overflow-y-auto pr-1">
+                {DEALHUB_SECTIONS.map(section => {
+                  const checked = selectedSections.includes(section.key);
+                  const sectionOps = activeOps.filter(section.filter);
+                  const includedInSection = sectionOps.filter(op => !excludedOpIds.has(op.id)).length;
+                  const isExpanded = expandedSections.has(section.key);
+
+                  return (
+                    <div key={section.key}>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => toggleSection(section.key)}
+                          className={cn(
+                            'flex items-center gap-3 flex-1 px-3 py-2 rounded-[5px] text-sm transition-colors text-left',
+                            checked ? 'bg-secondary/60' : 'hover:bg-secondary/40'
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              'flex items-center justify-center w-4 h-4 rounded-[3px] border shrink-0 transition-colors',
+                              checked
+                                ? 'bg-[hsl(var(--primary))] border-[hsl(var(--primary))]'
+                                : 'border-[hsl(var(--linear-border))] bg-background'
+                            )}
                           >
-                            <span
-                              className={cn(
-                                'flex items-center justify-center w-3.5 h-3.5 rounded-[2px] border shrink-0 transition-colors',
-                                isIncluded
-                                  ? 'bg-[hsl(var(--primary))] border-[hsl(var(--primary))]'
-                                  : 'border-[hsl(var(--linear-border))] bg-background'
-                              )}
-                            >
-                              {isIncluded && <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />}
-                            </span>
-                            <span className={cn(
-                              'text-foreground text-[13px] truncate',
-                              !isIncluded && 'line-through text-muted-foreground'
-                            )}>
-                              {op.company_name}
-                            </span>
+                            {checked && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />}
+                          </span>
+                          <span className="text-foreground font-normal flex-1">{section.label}</span>
+                          <span className="text-xs text-muted-foreground">{includedInSection}/{sectionOps.length}</span>
+                        </button>
+                        {sectionOps.length > 0 && checked && (
+                          <button
+                            onClick={() => toggleExpandSection(section.key)}
+                            className="p-1.5 rounded-[4px] hover:bg-secondary/60 transition-colors"
+                          >
+                            <ChevronDown className={cn(
+                              'h-3.5 w-3.5 text-muted-foreground transition-transform',
+                              isExpanded && 'rotate-180'
+                            )} />
                           </button>
-                        );
-                      })}
+                        )}
+                      </div>
+
+                      {isExpanded && checked && sectionOps.length > 0 && (
+                        <div className="ml-7 mt-0.5 mb-1 space-y-0.5">
+                          {sectionOps.map(op => {
+                            const isIncluded = !excludedOpIds.has(op.id);
+                            return (
+                              <button
+                                key={op.id}
+                                onClick={() => toggleOp(op.id)}
+                                className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-[4px] text-sm transition-colors text-left hover:bg-secondary/40"
+                              >
+                                <span
+                                  className={cn(
+                                    'flex items-center justify-center w-3.5 h-3.5 rounded-[2px] border shrink-0 transition-colors',
+                                    isIncluded
+                                      ? 'bg-[hsl(var(--primary))] border-[hsl(var(--primary))]'
+                                      : 'border-[hsl(var(--linear-border))] bg-background'
+                                  )}
+                                >
+                                  {isIncluded && <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />}
+                                </span>
+                                <span className={cn(
+                                  'text-foreground text-[13px] truncate',
+                                  !isIncluded && 'line-through text-muted-foreground'
+                                )}>
+                                  {op.company_name}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                  );
+                })}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Template tab */}
+          <TabsContent value="template" className="flex-1 overflow-hidden mt-0">
+            <SlideTemplateEditor template={slideTemplate} onChange={setSlideTemplate} />
+          </TabsContent>
+        </Tabs>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-[hsl(var(--linear-border))]">
+        <div className="flex justify-end gap-2 px-6 py-4 border-t border-[hsl(var(--linear-border))] shrink-0">
           <button
             onClick={() => onOpenChange(false)}
             disabled={generating}
