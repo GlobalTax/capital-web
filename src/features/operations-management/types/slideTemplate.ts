@@ -64,6 +64,7 @@ export const BLOCK_COLORS: Record<SlideBlockKey, string> = {
 
 export interface CoverTemplate {
   background: { color: string };
+  logo: BlockConfig & { imageUrl?: string };
   title: BlockConfig & { text?: string };
   subtitle: BlockConfig & { text?: string };
   quarter: BlockConfig;
