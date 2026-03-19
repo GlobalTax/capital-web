@@ -426,13 +426,31 @@ export default function ContactListDetailPage() {
       const sublistIds = sublistArr.map(s => s.id);
       const nameMap = Object.fromEntries(sublistArr.map(s => [s.id, s.name]));
 
-      // 2. Get companies from those sublists
-      const { data: subCompanies, error: compErr } = await supabase
-        .from('outbound_list_companies' as any)
-        .select('cif, list_id')
-        .in('list_id', sublistIds)
-        .not('cif', 'is', null);
-      if (compErr || !subCompanies) return null;
+      // 2. Get companies from those sublists (paginated to avoid Supabase 1000-row limit)
+      const subCompanies = await (async () => {
+        const allRows: { cif: string; list_id: string }[] = [];
+        let from = 0;
+        const pageSize = 1000;
+
+        while (true) {
+          const { data, error } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('cif, list_id')
+            .in('list_id', sublistIds)
+            .not('cif', 'is', null)
+            .range(from, from + pageSize - 1);
+
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+
+          allRows.push(...((data as unknown) as { cif: string; list_id: string }[]));
+          if (data.length < pageSize) break;
+          from += pageSize;
+        }
+
+        return allRows;
+      })();
+      if (!subCompanies || subCompanies.length === 0) return null;
 
       // 3. Build map: cif → sublist names[] and cifToListId: cif → list_id
       const map = new Map<string, Set<string>>();
