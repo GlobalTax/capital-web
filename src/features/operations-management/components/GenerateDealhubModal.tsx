@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Check, ChevronDown, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../utils/generateDealhubPptx';
+import { generateDealhubPdf } from '../utils/generateDealhubPdf';
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
 import { StaticSlidesUploader } from './StaticSlidesUploader';
