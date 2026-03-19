@@ -828,12 +828,6 @@ const OperationDetails = () => {
           <OperationHistoryTimeline operationId={id!} />
         </div>
       </div>
-      {/* Presentation Modal */}
-      <GeneratePresentationModal
-        open={showPresentationModal}
-        onOpenChange={setShowPresentationModal}
-        operation={operation}
-      />
     </div>
   );
 };

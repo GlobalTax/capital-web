@@ -1857,13 +1857,6 @@ const AdminOperations = () => {
         isLoading={isBulkUpdating}
       />
 
-      {presentationOperation && (
-        <GeneratePresentationModal
-          open={showPresentationModal}
-          onOpenChange={setShowPresentationModal}
-          operation={presentationOperation}
-        />
-      )}
 
       <GenerateDealhubModal
         open={showDealhubModal}
