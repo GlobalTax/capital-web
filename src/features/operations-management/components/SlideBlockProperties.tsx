@@ -1,8 +1,12 @@
+import { useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Upload } from 'lucide-react';
+import { useLogoUpload } from '@/hooks/useLogoUpload';
 import type { BlockConfig, TextAlign, TextValign } from '../types/slideTemplate';
 
 interface SlideBlockPropertiesProps {
@@ -13,6 +17,18 @@ interface SlideBlockPropertiesProps {
 }
 
 export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdate }: SlideBlockPropertiesProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadLogo, isUploading } = useLogoUpload();
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await uploadLogo(file);
+    if (url) {
+      onUpdate({ imageUrl: url } as any);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
   if (!selectedBlock || !block) {
     return (
       <div className="flex items-center justify-center h-full text-sm text-muted-foreground p-4">
@@ -177,13 +193,35 @@ export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdat
       {/* Image URL (for logo blocks) */}
       {'imageUrl' in block && (
         <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">URL del Logo</Label>
-          <Input
-            value={(block as any).imageUrl || ''}
-            onChange={e => onUpdate({ imageUrl: e.target.value } as any)}
-            className="h-8 text-xs"
-            placeholder="https://... o pega la URL de tu logo"
+          <Label className="text-xs text-muted-foreground">Logo</Label>
+          <div className="flex gap-1">
+            <Input
+              value={(block as any).imageUrl || ''}
+              onChange={e => onUpdate({ imageUrl: e.target.value } as any)}
+              className="h-8 text-xs flex-1"
+              placeholder="URL o sube desde tu escritorio"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+            >
+              <Upload className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            onChange={handleFileUpload}
+            className="hidden"
           />
+          {isUploading && (
+            <p className="text-xs text-muted-foreground">Subiendo...</p>
+          )}
           {(block as any).imageUrl && (
             <div className="mt-2 p-2 border border-border rounded bg-muted/30">
               <img
