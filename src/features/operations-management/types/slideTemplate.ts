@@ -187,23 +187,23 @@ export type SlideType = keyof FullSlideTemplate;
 export const DEFAULT_COVER_TEMPLATE: CoverTemplate = {
   background: { color: '161B22' },
   logo: {
-    x: 0.6, y: 0.5, w: 2.5, h: 1.2,
-    visible: false, // hidden — we use yearBlock + branding text instead
+    x: 9.5, y: 0.4, w: 3.23, h: 1.0,
+    visible: true, // logo image top-right per template
     imageUrl: '',
   },
   yearBlock: {
     x: 0.6, y: 0.4, w: 4, h: 1.2,
-    fontSize: 72, color: 'FFFFFF', bold: true, visible: true,
+    fontSize: 80, color: 'FFFFFF', bold: true, visible: true,
   },
   branding: {
-    x: 9.5, y: 0.5, w: 3.23, h: 0.6,
-    fontSize: 14, color: '8B919B', bold: false, visible: true,
-    text: 'Capittal M&A · Consulting',
+    x: 9.5, y: 1.4, w: 3.23, h: 0.4,
+    fontSize: 12, color: '8B919B', bold: false, visible: true,
+    text: 'M&A · Consulting',
     align: 'right',
   },
   title: {
     x: 0.6, y: 4.8, w: 12.13, h: 1,
-    fontSize: 36, color: 'FFFFFF', bold: true, visible: true,
+    fontSize: 44, color: 'FFFFFF', bold: true, visible: true,
     text: 'Capittal Dealhub — Open Deals',
   },
   subtitle: {
@@ -217,7 +217,7 @@ export const DEFAULT_COVER_TEMPLATE: CoverTemplate = {
   },
   divider: {
     x: 0.6, y: 6.7, w: 12.13, h: 0.02,
-    visible: false, bgColor: '8B919B', // hidden per new template
+    visible: false, bgColor: '8B919B',
   },
   footer: {
     x: 0.6, y: 6.9, w: 12.13, h: 0.4,
@@ -230,17 +230,17 @@ export const DEFAULT_INDEX_TEMPLATE: IndexTemplate = {
   background: { color: 'FFFFFF' },
   title: {
     x: 0.6, y: 0.5, w: 12.13, h: 0.8,
-    fontSize: 28, color: '161B22', bold: true, visible: true,
+    fontSize: 32, color: '161B22', bold: true, visible: true,
   },
   introText: {
     x: 0.6, y: 1.3, w: 10, h: 1.2,
-    fontSize: 11, color: '58606E', visible: true,
+    fontSize: 14, color: '58606E', visible: true,
     text: 'Apreciado lector,\n\nA continuación presentamos nuestra selección de oportunidades de inversión vigentes, organizadas por tipología de mandato. Cada operación incluye un resumen ejecutivo con los datos financieros más relevantes.',
   },
   cardsStartX: 1.265,
   cardsStartY: 3.2,
   cardW: 2.8,
-  cardH: 2.2,
+  cardH: 2.6,
   cardGap: 0.3,
   cardBgColor: 'F3F4F5',
   cardRadius: 0.1,
@@ -251,7 +251,7 @@ export const DEFAULT_SEPARATOR_TEMPLATE: SeparatorTemplate = {
   background: { color: '161B22' },
   number: {
     x: 0.6, y: 0.4, w: 3, h: 1.8,
-    fontSize: 120, color: '2563EB', bold: true, visible: true,
+    fontSize: 140, color: '2563EB', bold: true, visible: true,
   },
   branding: {
     x: 9.5, y: 0.5, w: 3.23, h: 0.6,

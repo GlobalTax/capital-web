@@ -78,22 +78,12 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
   if (yb && yb.visible) {
     slide.addText(String(year), {
       x: yb.x, y: yb.y, w: yb.w, h: yb.h,
-      fontSize: yb.fontSize || 72, fontFace: FONT, color: yb.color || WHITE,
+      fontSize: yb.fontSize || 80, fontFace: FONT, color: yb.color || WHITE,
       bold: yb.bold ?? true, align: yb.align,
     });
   }
 
-  // Branding text (top-right)
-  const br = ct.branding;
-  if (br && br.visible) {
-    slide.addText((br as any).text || 'Capittal M&A · Consulting', {
-      x: br.x, y: br.y, w: br.w, h: br.h,
-      fontSize: br.fontSize || 14, fontFace: FONT, color: br.color || TEXT_MUTED,
-      bold: br.bold ?? false, align: br.align || 'right',
-    });
-  }
-
-  // Logo (hidden by default in new template, but support it for backward compat)
+  // Logo image (top-right) — rendered before branding text so text appears below
   if (ct.logo?.visible && (ct.logo as any).imageUrl) {
     slide.addImage({
       path: (ct.logo as any).imageUrl,
@@ -102,11 +92,21 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
     });
   }
 
+  // Branding text (below logo, top-right)
+  const br = ct.branding;
+  if (br && br.visible) {
+    slide.addText((br as any).text || 'M&A · Consulting', {
+      x: br.x, y: br.y, w: br.w, h: br.h,
+      fontSize: br.fontSize || 12, fontFace: FONT, color: br.color || TEXT_MUTED,
+      bold: br.bold ?? false, align: br.align || 'right',
+    });
+  }
+
   // Title (bottom-left area)
   if (ct.title.visible) {
     slide.addText(ct.title.text || 'Capittal Dealhub — Open Deals', {
       x: ct.title.x, y: ct.title.y, w: ct.title.w, h: ct.title.h,
-      fontSize: ct.title.fontSize || 36, fontFace: FONT, color: ct.title.color || WHITE,
+      fontSize: ct.title.fontSize || 44, fontFace: FONT, color: ct.title.color || WHITE,
       bold: ct.title.bold ?? true, italic: ct.title.italic,
       align: ct.title.align, valign: ct.title.valign,
     });
@@ -156,7 +156,7 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
   if (idx.title.visible) {
     slide.addText('Índice de Oportunidades', {
       x: idx.title.x, y: idx.title.y, w: idx.title.w, h: idx.title.h,
-      fontSize: idx.title.fontSize || 28, fontFace: FONT, color: idx.title.color || NAVY,
+      fontSize: idx.title.fontSize || 32, fontFace: FONT, color: idx.title.color || NAVY,
       bold: idx.title.bold ?? true, align: idx.title.align,
     });
   }
@@ -166,7 +166,7 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
   if (intro && intro.visible) {
     slide.addText((intro as any).text || '', {
       x: intro.x, y: intro.y, w: intro.w, h: intro.h,
-      fontSize: intro.fontSize || 11, fontFace: FONT, color: intro.color || TEXT_SECONDARY,
+      fontSize: intro.fontSize || 14, fontFace: FONT, color: intro.color || TEXT_SECONDARY,
       lineSpacingMultiple: intro.lineSpacing || 1.4,
       valign: 'top', wrap: true,
     });
@@ -184,22 +184,22 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
     });
 
     slide.addText(sectionNum, {
-      x: x + 0.2, y: idx.cardsStartY + 0.2, w: idx.cardW - 0.4, h: 0.4,
-      fontSize: 14, fontFace: FONT, color: sColor, bold: true,
+      x: x + 0.25, y: idx.cardsStartY + 0.2, w: idx.cardW - 0.5, h: 0.7,
+      fontSize: 36, fontFace: FONT, color: sColor, bold: true,
     });
 
     slide.addText(section.label, {
-      x: x + 0.2, y: idx.cardsStartY + 0.7, w: idx.cardW - 0.4, h: 0.5,
-      fontSize: 13, fontFace: FONT, color: NAVY, bold: true,
+      x: x + 0.25, y: idx.cardsStartY + 1.0, w: idx.cardW - 0.5, h: 0.5,
+      fontSize: 14, fontFace: FONT, color: NAVY, bold: true,
     });
 
     slide.addText(`${count} operaciones`, {
-      x: x + 0.2, y: idx.cardsStartY + 1.3, w: idx.cardW - 0.4, h: 0.4,
-      fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
+      x: x + 0.25, y: idx.cardsStartY + 1.55, w: idx.cardW - 0.5, h: 0.4,
+      fontSize: 12, fontFace: FONT, color: TEXT_SECONDARY,
     });
 
     slide.addText(section.subtitle, {
-      x: x + 0.2, y: idx.cardsStartY + 1.6, w: idx.cardW - 0.4, h: 0.4,
+      x: x + 0.25, y: idx.cardsStartY + 1.95, w: idx.cardW - 0.5, h: 0.5,
       fontSize: 9, fontFace: FONT, color: TEXT_MUTED, wrap: true,
     });
   });
@@ -213,18 +213,19 @@ function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, s
   if (sep.number.visible) {
     slide.addText(sectionNum, {
       x: sep.number.x, y: sep.number.y, w: sep.number.w, h: sep.number.h,
-      fontSize: sep.number.fontSize || 120, fontFace: FONT,
+      fontSize: sep.number.fontSize || 140, fontFace: FONT,
       color: sep.number.color || sep.accentColor || ACCENT,
       bold: sep.number.bold ?? true, align: sep.number.align,
     });
   }
 
-  // Branding text (top-right)
+  // Logo image (top-right) — use cover logo if available
+  // We check if the full template's cover has a logo URL to reuse here
   const br = sep.branding;
   if (br && br.visible) {
-    slide.addText((br as any).text || 'Capittal M&A · Consulting', {
+    slide.addText((br as any).text || 'M&A · Consulting', {
       x: br.x, y: br.y, w: br.w, h: br.h,
-      fontSize: br.fontSize || 14, fontFace: FONT, color: br.color || TEXT_MUTED,
+      fontSize: br.fontSize || 12, fontFace: FONT, color: br.color || TEXT_MUTED,
       bold: br.bold ?? false, align: br.align || 'right',
     });
   }
