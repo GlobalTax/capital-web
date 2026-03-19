@@ -44,7 +44,7 @@ import { SellerGuideDialog } from '@/components/operations/SellerGuideDialog';
 import { AdvancedSearchPanel } from '@/features/operations-management/components/search';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import * as XLSX from 'xlsx';
-import { GeneratePresentationModal } from '@/features/operations-management/components/GeneratePresentationModal';
+
 import { GenerateDealhubModal } from '@/features/operations-management/components/GenerateDealhubModal';
 
 interface Operation {
