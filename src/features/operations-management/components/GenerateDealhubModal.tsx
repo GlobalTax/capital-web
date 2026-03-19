@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Loader2, Check, ChevronDown } from 'lucide-react';
+import { Loader2, Check, ChevronDown, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../utils/generateDealhubPptx';
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
 import { SlideTemplateEditor } from './SlideTemplateEditor';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
+import { useSlideTemplates } from '../hooks/useSlideTemplates';
 
 const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
 
@@ -27,6 +28,7 @@ interface GenerateDealhubModalProps {
 
 export const GenerateDealhubModal = ({ open, onOpenChange, operations }: GenerateDealhubModalProps) => {
   const { toast } = useToast();
+  const { loadDefault, save, isSaving } = useSlideTemplates();
   const [quarter, setQuarter] = useState<QuarterType>(getCurrentQuarter());
   const [selectedSections, setSelectedSections] = useState<string[]>(DEALHUB_SECTIONS.map(s => s.key));
   const [generating, setGenerating] = useState(false);
@@ -34,6 +36,13 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('config');
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
+
+  // Load saved template when modal opens
+  useEffect(() => {
+    if (open) {
+      loadDefault().then(t => setFullTemplate(t));
+    }
+  }, [open, loadDefault]);
 
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
   const includedCount = activeOps.filter(op => !excludedOpIds.has(op.id)).length;
@@ -226,27 +235,40 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
         </Tabs>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-[hsl(var(--linear-border))] shrink-0">
+        <div className="flex justify-between px-6 py-4 border-t border-[hsl(var(--linear-border))] shrink-0">
           <button
-            onClick={() => onOpenChange(false)}
-            disabled={generating}
-            className="px-4 py-2 text-sm font-semibold rounded-[5px] border border-[hsl(var(--linear-border))] bg-secondary text-foreground hover:-translate-y-[0.5px] transition-all"
+            onClick={async () => {
+              const ok = await save(fullTemplate);
+              toast({ title: ok ? 'Plantilla guardada' : 'Error al guardar', variant: ok ? 'default' : 'destructive' });
+            }}
+            disabled={isSaving}
+            className="px-4 py-2 text-sm font-semibold rounded-[5px] border border-[hsl(var(--linear-border))] bg-secondary text-foreground hover:-translate-y-[0.5px] transition-all flex items-center gap-2"
           >
-            Cancelar
+            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            Guardar plantilla
           </button>
-          <button
-            onClick={handleGenerate}
-            disabled={generating || !selectedSections.length || includedCount === 0}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-[5px] text-primary-foreground transition-all flex items-center gap-2',
-              generating || !selectedSections.length || includedCount === 0
-                ? 'bg-primary/60 cursor-not-allowed'
-                : 'bg-primary hover:-translate-y-[0.5px]'
-            )}
-          >
-            {generating && <Loader2 className="h-4 w-4 animate-spin" />}
-            {generating ? 'Generando...' : 'Generar y Descargar'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onOpenChange(false)}
+              disabled={generating}
+              className="px-4 py-2 text-sm font-semibold rounded-[5px] border border-[hsl(var(--linear-border))] bg-secondary text-foreground hover:-translate-y-[0.5px] transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleGenerate}
+              disabled={generating || !selectedSections.length || includedCount === 0}
+              className={cn(
+                'px-4 py-2 text-sm font-semibold rounded-[5px] text-primary-foreground transition-all flex items-center gap-2',
+                generating || !selectedSections.length || includedCount === 0
+                  ? 'bg-primary/60 cursor-not-allowed'
+                  : 'bg-primary hover:-translate-y-[0.5px]'
+              )}
+            >
+              {generating && <Loader2 className="h-4 w-4 animate-spin" />}
+              {generating ? 'Generando...' : 'Generar y Descargar'}
+            </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
