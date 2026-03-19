@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2, Check, ChevronDown, Save } from 'lucide-react';
@@ -9,6 +9,21 @@ import { useToast } from '@/hooks/use-toast';
 import { SlideTemplateEditor } from './SlideTemplateEditor';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
 import { useSlideTemplates } from '../hooks/useSlideTemplates';
+
+/** Deep-merge saved template with defaults so new fields/values always apply */
+function mergeWithDefaults(saved: FullSlideTemplate): FullSlideTemplate {
+  const def = DEFAULT_FULL_TEMPLATE;
+  const merge = (base: any, over: any): any => {
+    if (!over || typeof over !== 'object' || Array.isArray(over)) return over ?? base;
+    if (!base || typeof base !== 'object' || Array.isArray(base)) return over;
+    const result: any = { ...base };
+    for (const key of Object.keys(over)) {
+      result[key] = merge(base[key], over[key]);
+    }
+    return result;
+  };
+  return merge(def, saved) as FullSlideTemplate;
+}
 
 const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
 
