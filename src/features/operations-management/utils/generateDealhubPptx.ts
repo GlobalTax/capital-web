@@ -71,6 +71,12 @@ const fmtMargin = (ebitda: number | undefined, revenue: number | undefined): str
 
 function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: CoverTemplate) {
   const slide = pptx.addSlide();
+
+  if (ct.backgroundImage) {
+    slide.background = { path: ct.backgroundImage };
+    return;
+  }
+
   slide.background = { color: ct.background.color || NAVY };
 
   // Year block (top-left, large)
@@ -151,6 +157,12 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
 
 function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate) {
   const slide = pptx.addSlide();
+
+  if (idx.backgroundImage) {
+    slide.background = { path: idx.backgroundImage };
+    return;
+  }
+
   slide.background = { color: idx.background.color || WHITE };
 
   if (idx.title.visible) {
@@ -205,8 +217,15 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
   });
 }
 
-function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, subtitle: string, sep: SeparatorTemplate) {
+function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, subtitle: string, sep: SeparatorTemplate, sectionKey?: string) {
   const slide = pptx.addSlide();
+
+  const bgImage = sectionKey && sep.backgroundImages?.[sectionKey];
+  if (bgImage) {
+    slide.background = { path: bgImage };
+    return;
+  }
+
   slide.background = { color: sep.background.color || NAVY };
 
   // Number (top-left, large)
@@ -404,6 +423,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
 
 function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate) {
   const slide = pptx.addSlide();
+
+  if (cl.backgroundImage) {
+    slide.background = { path: cl.backgroundImage };
+    return;
+  }
+
   slide.background = { color: cl.background?.color || WHITE };
 
   // Bottom half navy background
@@ -489,7 +514,7 @@ export async function generateDealhubPptx(
     if (ops.length === 0) return;
 
     const sectionNum = String(i + 1).padStart(2, '0');
-    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle, ft.separator);
+    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle, ft.separator, section.key);
 
     ops.forEach(op => addOperationSlide(pptx, op, ft.operation));
   });

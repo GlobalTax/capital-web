@@ -72,6 +72,7 @@ export interface CoverTemplate {
   footer: BlockConfig & { text?: string };
   yearBlock?: BlockConfig;
   branding?: BlockConfig & { text?: string };
+  backgroundImage?: string;
 }
 
 export type CoverBlockKey = keyof CoverTemplate;
@@ -114,6 +115,7 @@ export interface IndexTemplate {
   cardBgColor: string;
   cardRadius: number;
   sectionColors: [string, string, string, string];
+  backgroundImage?: string;
 }
 
 export type IndexBlockKey = 'background' | 'title' | 'introText';
@@ -139,6 +141,7 @@ export interface SeparatorTemplate {
   subtitle: BlockConfig;
   accentColor: string;
   branding?: BlockConfig & { text?: string };
+  backgroundImages?: Record<string, string>;
 }
 
 export type SeparatorBlockKey = keyof Omit<SeparatorTemplate, 'accentColor'>;
@@ -168,6 +171,7 @@ export interface ClosingTemplate {
   email?: BlockConfig & { text?: string };
   docTitle?: BlockConfig;
   bottomBgColor?: string;
+  backgroundImage?: string;
 }
 
 // ─── FULL TEMPLATE ───

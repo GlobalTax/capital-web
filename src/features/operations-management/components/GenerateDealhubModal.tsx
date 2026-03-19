@@ -7,6 +7,7 @@ import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../util
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
 import { SlideTemplateEditor } from './SlideTemplateEditor';
+import { StaticSlidesUploader } from './StaticSlidesUploader';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
 import { useSlideTemplates } from '../hooks/useSlideTemplates';
 
@@ -105,14 +106,14 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     }
   };
 
-  const isTemplateTab = activeTab === 'template';
+  const isWideTab = activeTab === 'template' || activeTab === 'static';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={cn(
           'p-0 gap-0 border-[hsl(var(--linear-border))] rounded-[5px] shadow-sm transition-all duration-200',
-          isTemplateTab
+          isWideTab
             ? 'sm:max-w-[95vw] h-[85vh] max-h-[85vh]'
             : 'sm:max-w-[560px]'
         )}
@@ -130,6 +131,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
           <div className="px-6 pt-3">
             <TabsList className="w-full">
               <TabsTrigger value="config" className="flex-1 text-xs">Configuración</TabsTrigger>
+              <TabsTrigger value="static" className="flex-1 text-xs">Slides fijas</TabsTrigger>
               <TabsTrigger value="template" className="flex-1 text-xs">Plantilla</TabsTrigger>
             </TabsList>
           </div>
@@ -241,6 +243,11 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
                 })}
               </div>
             </div>
+          </TabsContent>
+
+          {/* Static slides tab */}
+          <TabsContent value="static" className="flex-1 overflow-auto mt-0">
+            <StaticSlidesUploader template={fullTemplate} onChange={setFullTemplate} />
           </TabsContent>
 
           {/* Template tab */}
