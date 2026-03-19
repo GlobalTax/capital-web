@@ -27,7 +27,7 @@ interface GenerateDealhubModalProps {
 export const GenerateDealhubModal = ({ open, onOpenChange, operations }: GenerateDealhubModalProps) => {
   const { toast } = useToast();
   const { loadDefault, save, isSaving } = useSlideTemplates();
-  const [quarter, setQuarter] = useState<QuarterType>(getCurrentQuarter());
+  const quarter = getCurrentQuarter();
   const [selectedSections, setSelectedSections] = useState<string[]>(DEALHUB_SECTIONS.map(s => s.key));
   const [generating, setGenerating] = useState(false);
   const [excludedOpIds, setExcludedOpIds] = useState<Set<string>>(new Set());
