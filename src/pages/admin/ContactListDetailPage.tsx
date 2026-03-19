@@ -914,6 +914,11 @@ export default function ContactListDetailPage() {
         if (importedCount > 0) {
           await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
           queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+          // Si estamos en sublista, invalidar cache de la madre
+          if (list?.lista_madre_id) {
+            queryClient.invalidateQueries({ queryKey: ['sublist-company-map', list.lista_madre_id] });
+            queryClient.invalidateQueries({ queryKey: ['contact-list-companies', list.lista_madre_id] });
+          }
         }
       }
     } catch (err: any) {
