@@ -467,7 +467,7 @@ function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: 
     slide.addText((email as any).text || 'capittal.es/oportunidades', {
       x: email.x, y: email.y, w: email.w, h: email.h,
       fontSize: email.fontSize || 14, fontFace: FONT, color: email.color || TEXT_MUTED,
-      hyperlink: { url: 'https://capittal.es/oportunidades' },
+      hyperlink: { url: 'https://capittal.es/lp/consulta-oportunidades' },
     });
   }
 

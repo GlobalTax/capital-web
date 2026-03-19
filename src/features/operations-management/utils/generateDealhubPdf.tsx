@@ -508,7 +508,7 @@ const ClosingPage = ({ quarter, year, t }: { quarter: QuarterType; year: number;
 
         {/* Email */}
         {(cl as any).email?.visible !== false && (
-          <Link src="https://capittal.es/oportunidades" style={{
+          <Link src="https://capittal.es/lp/consulta-oportunidades" style={{
             fontSize: ((cl as any).email?.fontSize || 14) * 0.85,
             color: hexColor((cl as any).email?.color, TEXT_MUTED),
             textDecoration: 'none',

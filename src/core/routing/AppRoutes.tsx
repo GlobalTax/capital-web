@@ -225,6 +225,7 @@ export const AppRoutes = () => {
         <Route path="/lp/open-deals" element={<LandingOpenDeals />} />
         <Route path="/lp/oportunidades-meta" element={<LandingOportunidadesMeta />} />
         <Route path="/lp/rod-linkedin" element={<LandingRODLinkedIn />} />
+        <Route path="/lp/consulta-oportunidades" element={<LandingConsultaOportunidades />} />
         <Route path="/accountex" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/accountex-2025" element={<Navigate to="/lp/accountex" replace />} />
         <Route path="/seguridad/calculadora" element={<SecurityCalculator />} />
