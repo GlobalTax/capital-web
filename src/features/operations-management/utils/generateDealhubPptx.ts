@@ -184,22 +184,22 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
     });
 
     slide.addText(sectionNum, {
-      x: x + 0.2, y: idx.cardsStartY + 0.2, w: idx.cardW - 0.4, h: 0.4,
-      fontSize: 14, fontFace: FONT, color: sColor, bold: true,
+      x: x + 0.25, y: idx.cardsStartY + 0.2, w: idx.cardW - 0.5, h: 0.7,
+      fontSize: 36, fontFace: FONT, color: sColor, bold: true,
     });
 
     slide.addText(section.label, {
-      x: x + 0.2, y: idx.cardsStartY + 0.7, w: idx.cardW - 0.4, h: 0.5,
-      fontSize: 13, fontFace: FONT, color: NAVY, bold: true,
+      x: x + 0.25, y: idx.cardsStartY + 1.0, w: idx.cardW - 0.5, h: 0.5,
+      fontSize: 14, fontFace: FONT, color: NAVY, bold: true,
     });
 
     slide.addText(`${count} operaciones`, {
-      x: x + 0.2, y: idx.cardsStartY + 1.3, w: idx.cardW - 0.4, h: 0.4,
-      fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY,
+      x: x + 0.25, y: idx.cardsStartY + 1.55, w: idx.cardW - 0.5, h: 0.4,
+      fontSize: 12, fontFace: FONT, color: TEXT_SECONDARY,
     });
 
     slide.addText(section.subtitle, {
-      x: x + 0.2, y: idx.cardsStartY + 1.6, w: idx.cardW - 0.4, h: 0.4,
+      x: x + 0.25, y: idx.cardsStartY + 1.95, w: idx.cardW - 0.5, h: 0.5,
       fontSize: 9, fontFace: FONT, color: TEXT_MUTED, wrap: true,
     });
   });
