@@ -213,7 +213,7 @@ function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, s
   if (sep.number.visible) {
     slide.addText(sectionNum, {
       x: sep.number.x, y: sep.number.y, w: sep.number.w, h: sep.number.h,
-      fontSize: sep.number.fontSize || 120, fontFace: FONT,
+      fontSize: sep.number.fontSize || 140, fontFace: FONT,
       color: sep.number.color || sep.accentColor || ACCENT,
       bold: sep.number.bold ?? true, align: sep.number.align,
     });
