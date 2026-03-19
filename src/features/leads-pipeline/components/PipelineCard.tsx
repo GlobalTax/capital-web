@@ -43,6 +43,12 @@ interface PipelineCardProps {
 
 const formatCurrency = (value: number | null) => {
   if (!value) return null;
+  if (Math.abs(value) >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1).replace('.0', '')}M €`;
+  }
+  if (Math.abs(value) >= 1_000) {
+    return `${Math.round(value / 1_000)}K €`;
+  }
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
