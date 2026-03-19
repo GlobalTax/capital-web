@@ -100,11 +100,7 @@ const ContactsLayout: React.FC = () => {
       
       case 'pipeline':
         return (
-          <ContactsPipelineView
-            contacts={displayedContacts as any}
-            onViewDetails={handleViewDetails as any}
-            isLoading={false}
-          />
+          <LeadsPipelineView />
         );
       
       case 'stats':
