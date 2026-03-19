@@ -78,27 +78,27 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
   if (yb && yb.visible) {
     slide.addText(String(year), {
       x: yb.x, y: yb.y, w: yb.w, h: yb.h,
-      fontSize: yb.fontSize || 72, fontFace: FONT, color: yb.color || WHITE,
+      fontSize: yb.fontSize || 80, fontFace: FONT, color: yb.color || WHITE,
       bold: yb.bold ?? true, align: yb.align,
     });
   }
 
-  // Branding text (top-right)
-  const br = ct.branding;
-  if (br && br.visible) {
-    slide.addText((br as any).text || 'Capittal M&A · Consulting', {
-      x: br.x, y: br.y, w: br.w, h: br.h,
-      fontSize: br.fontSize || 14, fontFace: FONT, color: br.color || TEXT_MUTED,
-      bold: br.bold ?? false, align: br.align || 'right',
-    });
-  }
-
-  // Logo (hidden by default in new template, but support it for backward compat)
+  // Logo image (top-right) — rendered before branding text so text appears below
   if (ct.logo?.visible && (ct.logo as any).imageUrl) {
     slide.addImage({
       path: (ct.logo as any).imageUrl,
       x: ct.logo.x, y: ct.logo.y, w: ct.logo.w, h: ct.logo.h,
       sizing: { type: 'contain', w: ct.logo.w, h: ct.logo.h },
+    });
+  }
+
+  // Branding text (below logo, top-right)
+  const br = ct.branding;
+  if (br && br.visible) {
+    slide.addText((br as any).text || 'M&A · Consulting', {
+      x: br.x, y: br.y, w: br.w, h: br.h,
+      fontSize: br.fontSize || 12, fontFace: FONT, color: br.color || TEXT_MUTED,
+      bold: br.bold ?? false, align: br.align || 'right',
     });
   }
 
