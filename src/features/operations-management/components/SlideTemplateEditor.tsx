@@ -126,8 +126,8 @@ export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorP
       const block = getBlockForDrag(dragging.key);
       if (!block) return;
       const patch = {
-        x: Math.max(0, Math.min(SLIDE_WIDTH - block.w, parseFloat((dragging.origX + dx).toFixed(2)))),
-        y: Math.max(0, Math.min(SLIDE_HEIGHT - block.h, parseFloat((dragging.origY + dy).toFixed(2)))),
+        x: Math.max(-0.5, Math.min(SLIDE_WIDTH - block.w + 0.5, parseFloat((dragging.origX + dx).toFixed(2)))),
+        y: Math.max(-0.5, Math.min(SLIDE_HEIGHT - block.h + 0.5, parseFloat((dragging.origY + dy).toFixed(2)))),
       };
       // Apply to the right sub-template
       const newTemplate = { ...template };
