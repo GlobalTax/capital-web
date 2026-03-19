@@ -10,11 +10,11 @@ import { toast } from 'sonner';
 import type { PipelineLead, LeadStatus, LeadActivity, ActivityType } from '../types';
 
 // Helper to fetch all rows with pagination
-async function fetchAllPaginated<T>(
-  queryFn: (from: number, to: number) => Promise<{ data: T[] | null; error: any }>
-): Promise<T[]> {
+async function fetchAllPaginated(
+  queryFn: (from: number, to: number) => PromiseLike<{ data: any[] | null; error: any }>
+): Promise<any[]> {
   const PAGE_SIZE = 1000;
-  let all: T[] = [];
+  let all: any[] = [];
   let from = 0;
   let hasMore = true;
 
