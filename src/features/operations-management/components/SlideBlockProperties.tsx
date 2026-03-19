@@ -1,17 +1,19 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import type { SlideTemplate, SlideBlockKey } from '../types/slideTemplate';
-import { BLOCK_LABELS } from '../types/slideTemplate';
+import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { BlockConfig, TextAlign, TextValign } from '../types/slideTemplate';
 
 interface SlideBlockPropertiesProps {
-  selectedBlock: SlideBlockKey | null;
-  template: SlideTemplate;
-  onChange: (template: SlideTemplate) => void;
+  selectedBlock: string | null;
+  blockLabel: string;
+  block: BlockConfig | null;
+  onUpdate: (patch: Partial<BlockConfig>) => void;
 }
 
-export const SlideBlockProperties = ({ selectedBlock, template, onChange }: SlideBlockPropertiesProps) => {
-  if (!selectedBlock) {
+export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdate }: SlideBlockPropertiesProps) => {
+  if (!selectedBlock || !block) {
     return (
       <div className="flex items-center justify-center h-full text-sm text-muted-foreground p-4">
         Selecciona un bloque en la preview para editar sus propiedades
@@ -19,14 +21,7 @@ export const SlideBlockProperties = ({ selectedBlock, template, onChange }: Slid
     );
   }
 
-  const block = template[selectedBlock];
-  const label = BLOCK_LABELS[selectedBlock];
-
-  const update = (patch: Partial<typeof block>) => {
-    onChange({ ...template, [selectedBlock]: { ...block, ...patch } });
-  };
-
-  const numField = (key: 'x' | 'y' | 'w' | 'h' | 'fontSize', lbl: string, step = 0.1) => (
+  const numField = (key: 'x' | 'y' | 'w' | 'h' | 'fontSize' | 'rectRadius', lbl: string, step = 0.1) => (
     <div className="space-y-1">
       <Label className="text-xs text-muted-foreground">{lbl}</Label>
       <Input
@@ -34,23 +29,48 @@ export const SlideBlockProperties = ({ selectedBlock, template, onChange }: Slid
         step={step}
         min={0}
         value={(block as any)[key] ?? ''}
-        onChange={e => update({ [key]: parseFloat(e.target.value) || 0 } as any)}
+        onChange={e => onUpdate({ [key]: parseFloat(e.target.value) || 0 } as any)}
         className="h-8 text-xs"
       />
     </div>
   );
 
+  const colorField = (key: 'color' | 'bgColor', label: string) => {
+    const val = (block as any)[key];
+    if (val === undefined) return null;
+    return (
+      <div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{label}</p>
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={`#${val}`}
+            onChange={e => onUpdate({ [key]: e.target.value.replace('#', '') } as any)}
+            className="w-8 h-8 rounded border border-border cursor-pointer"
+          />
+          <Input
+            value={val}
+            onChange={e => onUpdate({ [key]: e.target.value.replace('#', '') } as any)}
+            className="h-8 text-xs font-mono flex-1"
+            maxLength={6}
+            placeholder="161B22"
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 p-4 overflow-y-auto h-full">
       <div>
-        <h3 className="text-sm font-semibold text-foreground">{label}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{blockLabel}</h3>
         <p className="text-xs text-muted-foreground mt-0.5">Ajusta posición, tamaño y estilo</p>
       </div>
 
       {/* Visible toggle */}
       <div className="flex items-center justify-between">
         <Label className="text-xs">Visible</Label>
-        <Switch checked={block.visible} onCheckedChange={v => update({ visible: v })} />
+        <Switch checked={block.visible} onCheckedChange={v => onUpdate({ visible: v })} />
       </div>
 
       {/* Position */}
@@ -79,43 +99,88 @@ export const SlideBlockProperties = ({ selectedBlock, template, onChange }: Slid
         </div>
       )}
 
-      {/* Color */}
-      {block.color !== undefined && (
+      {/* Alignment */}
+      {block.align !== undefined && (
         <div>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Color</p>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={`#${block.color}`}
-              onChange={e => update({ color: e.target.value.replace('#', '') })}
-              className="w-8 h-8 rounded border border-border cursor-pointer"
-            />
-            <Input
-              value={block.color}
-              onChange={e => update({ color: e.target.value.replace('#', '') })}
-              className="h-8 text-xs font-mono flex-1"
-              maxLength={6}
-              placeholder="161B22"
-            />
-          </div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Alineación Horizontal</p>
+          <Select value={block.align || 'left'} onValueChange={(v: TextAlign) => onUpdate({ align: v })}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="left">Izquierda</SelectItem>
+              <SelectItem value="center">Centro</SelectItem>
+              <SelectItem value="right">Derecha</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       )}
+
+      {block.valign !== undefined && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Alineación Vertical</p>
+          <Select value={block.valign || 'top'} onValueChange={(v: TextValign) => onUpdate({ valign: v })}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="top">Arriba</SelectItem>
+              <SelectItem value="middle">Centro</SelectItem>
+              <SelectItem value="bottom">Abajo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Line Spacing */}
+      {block.lineSpacing !== undefined && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Interlineado ({block.lineSpacing?.toFixed(1)})
+          </p>
+          <Slider
+            value={[block.lineSpacing || 1.0]}
+            onValueChange={([v]) => onUpdate({ lineSpacing: parseFloat(v.toFixed(1)) })}
+            min={0.8}
+            max={2.5}
+            step={0.1}
+            className="w-full"
+          />
+        </div>
+      )}
+
+      {/* Border Radius */}
+      {block.rectRadius !== undefined && (
+        <div>
+          {numField('rectRadius', 'Radio bordes (in)', 0.01)}
+        </div>
+      )}
+
+      {/* Color */}
+      {colorField('color', 'Color de Texto')}
+
+      {/* Background Color */}
+      {colorField('bgColor', 'Color de Fondo')}
 
       {/* Bold */}
       {block.bold !== undefined && (
         <div className="flex items-center justify-between">
           <Label className="text-xs">Negrita</Label>
-          <Switch checked={block.bold} onCheckedChange={v => update({ bold: v })} />
+          <Switch checked={block.bold} onCheckedChange={v => onUpdate({ bold: v })} />
         </div>
       )}
 
-      {/* Custom text (cta, footer) */}
+      {/* Italic */}
+      {block.italic !== undefined && (
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Cursiva</Label>
+          <Switch checked={block.italic} onCheckedChange={v => onUpdate({ italic: v })} />
+        </div>
+      )}
+
+      {/* Custom text */}
       {'text' in block && (
         <div className="space-y-1">
           <Label className="text-xs text-muted-foreground">Texto</Label>
           <Input
             value={(block as any).text || ''}
-            onChange={e => update({ text: e.target.value } as any)}
+            onChange={e => onUpdate({ text: e.target.value } as any)}
             className="h-8 text-xs"
           />
         </div>

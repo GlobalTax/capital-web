@@ -7,7 +7,7 @@ import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../util
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
 import { SlideTemplateEditor } from './SlideTemplateEditor';
-import { DEFAULT_SLIDE_TEMPLATE, type SlideTemplate } from '../types/slideTemplate';
+import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
 
 const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
 
@@ -33,7 +33,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [excludedOpIds, setExcludedOpIds] = useState<Set<string>>(new Set());
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('config');
-  const [slideTemplate, setSlideTemplate] = useState<SlideTemplate>({ ...DEFAULT_SLIDE_TEMPLATE });
+  const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
 
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
   const includedCount = activeOps.filter(op => !excludedOpIds.has(op.id)).length;
@@ -70,7 +70,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     setGenerating(true);
     try {
       const finalOps = activeOps.filter(op => !excludedOpIds.has(op.id));
-      await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, slideTemplate);
+      await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
       toast({ title: 'Catálogo ROD descargado' });
       onOpenChange(false);
     } catch (e) {
@@ -221,7 +221,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
 
           {/* Template tab */}
           <TabsContent value="template" className="flex-1 overflow-hidden mt-0">
-            <SlideTemplateEditor template={slideTemplate} onChange={setSlideTemplate} />
+            <SlideTemplateEditor template={fullTemplate} onChange={setFullTemplate} />
           </TabsContent>
         </Tabs>
 
