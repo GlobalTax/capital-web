@@ -235,27 +235,40 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
         </Tabs>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 px-6 py-4 border-t border-[hsl(var(--linear-border))] shrink-0">
+        <div className="flex justify-between px-6 py-4 border-t border-[hsl(var(--linear-border))] shrink-0">
           <button
-            onClick={() => onOpenChange(false)}
-            disabled={generating}
-            className="px-4 py-2 text-sm font-semibold rounded-[5px] border border-[hsl(var(--linear-border))] bg-secondary text-foreground hover:-translate-y-[0.5px] transition-all"
+            onClick={async () => {
+              const ok = await save(fullTemplate);
+              toast({ title: ok ? 'Plantilla guardada' : 'Error al guardar', variant: ok ? 'default' : 'destructive' });
+            }}
+            disabled={isSaving}
+            className="px-4 py-2 text-sm font-semibold rounded-[5px] border border-[hsl(var(--linear-border))] bg-secondary text-foreground hover:-translate-y-[0.5px] transition-all flex items-center gap-2"
           >
-            Cancelar
+            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+            Guardar plantilla
           </button>
-          <button
-            onClick={handleGenerate}
-            disabled={generating || !selectedSections.length || includedCount === 0}
-            className={cn(
-              'px-4 py-2 text-sm font-semibold rounded-[5px] text-primary-foreground transition-all flex items-center gap-2',
-              generating || !selectedSections.length || includedCount === 0
-                ? 'bg-primary/60 cursor-not-allowed'
-                : 'bg-primary hover:-translate-y-[0.5px]'
-            )}
-          >
-            {generating && <Loader2 className="h-4 w-4 animate-spin" />}
-            {generating ? 'Generando...' : 'Generar y Descargar'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onOpenChange(false)}
+              disabled={generating}
+              className="px-4 py-2 text-sm font-semibold rounded-[5px] border border-[hsl(var(--linear-border))] bg-secondary text-foreground hover:-translate-y-[0.5px] transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleGenerate}
+              disabled={generating || !selectedSections.length || includedCount === 0}
+              className={cn(
+                'px-4 py-2 text-sm font-semibold rounded-[5px] text-primary-foreground transition-all flex items-center gap-2',
+                generating || !selectedSections.length || includedCount === 0
+                  ? 'bg-primary/60 cursor-not-allowed'
+                  : 'bg-primary hover:-translate-y-[0.5px]'
+              )}
+            >
+              {generating && <Loader2 className="h-4 w-4 animate-spin" />}
+              {generating ? 'Generando...' : 'Generar y Descargar'}
+            </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
