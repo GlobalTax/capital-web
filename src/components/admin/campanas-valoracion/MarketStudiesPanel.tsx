@@ -113,6 +113,15 @@ export function MarketStudiesPanel() {
               ))}
             </select>
           )}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-10 rounded-md border border-border bg-background px-3 text-sm"
+          >
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendiente</option>
+            <option value="validated">Validado</option>
+          </select>
         </div>
         <Button onClick={() => setShowUpload(true)} size="sm">
           <Upload className="h-4 w-4 mr-1.5" />
