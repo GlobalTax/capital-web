@@ -70,11 +70,13 @@ export interface CoverTemplate {
   quarter: BlockConfig;
   divider: BlockConfig;
   footer: BlockConfig & { text?: string };
+  yearBlock?: BlockConfig;
+  branding?: BlockConfig & { text?: string };
 }
 
 export type CoverBlockKey = keyof CoverTemplate;
 
-export const COVER_BLOCK_LABELS: Record<CoverBlockKey, string> = {
+export const COVER_BLOCK_LABELS: Record<string, string> = {
   background: 'Fondo',
   logo: 'Logo',
   title: 'Título Principal',
@@ -82,9 +84,11 @@ export const COVER_BLOCK_LABELS: Record<CoverBlockKey, string> = {
   quarter: 'Trimestre',
   divider: 'Línea Separadora',
   footer: 'Footer',
+  yearBlock: 'Año (grande)',
+  branding: 'Branding texto',
 };
 
-export const COVER_BLOCK_COLORS: Record<CoverBlockKey, string> = {
+export const COVER_BLOCK_COLORS: Record<string, string> = {
   background: '#374151',
   logo: '#10b981',
   title: '#3b82f6',
@@ -92,6 +96,8 @@ export const COVER_BLOCK_COLORS: Record<CoverBlockKey, string> = {
   quarter: '#f59e0b',
   divider: '#6b7280',
   footer: '#6b7280',
+  yearBlock: '#ef4444',
+  branding: '#06b6d4',
 };
 
 // ─── INDEX SLIDE ───
@@ -99,6 +105,7 @@ export const COVER_BLOCK_COLORS: Record<CoverBlockKey, string> = {
 export interface IndexTemplate {
   background: { color: string };
   title: BlockConfig;
+  introText?: BlockConfig & { text?: string };
   cardsStartX: number;
   cardsStartY: number;
   cardW: number;
@@ -109,16 +116,18 @@ export interface IndexTemplate {
   sectionColors: [string, string, string, string];
 }
 
-export type IndexBlockKey = 'background' | 'title';
+export type IndexBlockKey = 'background' | 'title' | 'introText';
 
 export const INDEX_BLOCK_LABELS: Record<IndexBlockKey, string> = {
   background: 'Fondo',
   title: 'Título',
+  introText: 'Texto introductorio',
 };
 
 export const INDEX_BLOCK_COLORS: Record<IndexBlockKey, string> = {
   background: '#374151',
   title: '#3b82f6',
+  introText: '#8b5cf6',
 };
 
 // ─── SEPARATOR SLIDE ───
@@ -129,23 +138,37 @@ export interface SeparatorTemplate {
   title: BlockConfig;
   subtitle: BlockConfig;
   accentColor: string;
+  branding?: BlockConfig & { text?: string };
 }
 
 export type SeparatorBlockKey = keyof Omit<SeparatorTemplate, 'accentColor'>;
 
-export const SEPARATOR_BLOCK_LABELS: Record<SeparatorBlockKey, string> = {
+export const SEPARATOR_BLOCK_LABELS: Record<string, string> = {
   background: 'Fondo',
   number: 'Número',
   title: 'Título',
   subtitle: 'Subtítulo',
+  branding: 'Branding texto',
 };
 
-export const SEPARATOR_BLOCK_COLORS: Record<SeparatorBlockKey, string> = {
+export const SEPARATOR_BLOCK_COLORS: Record<string, string> = {
   background: '#374151',
   number: '#2563eb',
   title: '#3b82f6',
   subtitle: '#6b7280',
+  branding: '#06b6d4',
 };
+
+// ─── CLOSING SLIDE ───
+
+export interface ClosingTemplate {
+  background: { color: string };
+  logo?: BlockConfig & { imageUrl?: string };
+  thanksText?: BlockConfig & { text?: string };
+  email?: BlockConfig & { text?: string };
+  docTitle?: BlockConfig;
+  bottomBgColor?: string;
+}
 
 // ─── FULL TEMPLATE ───
 
@@ -154,6 +177,7 @@ export interface FullSlideTemplate {
   index: IndexTemplate;
   separator: SeparatorTemplate;
   operation: SlideTemplate;
+  closing?: ClosingTemplate;
 }
 
 export type SlideType = keyof FullSlideTemplate;
@@ -164,30 +188,40 @@ export const DEFAULT_COVER_TEMPLATE: CoverTemplate = {
   background: { color: '161B22' },
   logo: {
     x: 0.6, y: 0.5, w: 2.5, h: 1.2,
-    visible: true,
+    visible: false, // hidden — we use yearBlock + branding text instead
     imageUrl: '',
   },
+  yearBlock: {
+    x: 0.6, y: 0.4, w: 4, h: 1.2,
+    fontSize: 72, color: 'FFFFFF', bold: true, visible: true,
+  },
+  branding: {
+    x: 9.5, y: 0.5, w: 3.23, h: 0.6,
+    fontSize: 14, color: '8B919B', bold: false, visible: true,
+    text: 'Capittal M&A · Consulting',
+    align: 'right',
+  },
   title: {
-    x: 0.6, y: 2.2, w: 12.13, h: 1,
-    fontSize: 40, color: 'FFFFFF', bold: true, visible: true,
-    text: 'Capittal Dealhub',
+    x: 0.6, y: 4.8, w: 12.13, h: 1,
+    fontSize: 36, color: 'FFFFFF', bold: true, visible: true,
+    text: 'Capittal Dealhub — Open Deals',
   },
   subtitle: {
-    x: 0.6, y: 3.1, w: 12.13, h: 0.7,
-    fontSize: 28, color: 'FFFFFF', bold: false, visible: true,
-    text: 'Open Deals',
+    x: 0.6, y: 5.7, w: 12.13, h: 0.7,
+    fontSize: 16, color: '8B919B', bold: false, visible: true,
+    text: 'Relación de Oportunidades de Inversión',
   },
   quarter: {
-    x: 0.6, y: 4.2, w: 3, h: 0.5,
-    fontSize: 16, color: '8B919B', visible: true,
+    x: 0.6, y: 6.4, w: 3, h: 0.5,
+    fontSize: 14, color: '8B919B', visible: true,
   },
   divider: {
     x: 0.6, y: 6.7, w: 12.13, h: 0.02,
-    visible: true, bgColor: '8B919B',
+    visible: false, bgColor: '8B919B', // hidden per new template
   },
   footer: {
     x: 0.6, y: 6.9, w: 12.13, h: 0.4,
-    fontSize: 9, color: '8B919B', visible: true,
+    fontSize: 9, color: '8B919B', visible: false,
     text: 'CAPITTAL — Información Confidencial',
   },
 };
@@ -198,8 +232,13 @@ export const DEFAULT_INDEX_TEMPLATE: IndexTemplate = {
     x: 0.6, y: 0.5, w: 12.13, h: 0.8,
     fontSize: 28, color: '161B22', bold: true, visible: true,
   },
+  introText: {
+    x: 0.6, y: 1.3, w: 10, h: 1.2,
+    fontSize: 11, color: '58606E', visible: true,
+    text: 'Apreciado lector,\n\nA continuación presentamos nuestra selección de oportunidades de inversión vigentes, organizadas por tipología de mandato. Cada operación incluye un resumen ejecutivo con los datos financieros más relevantes.',
+  },
   cardsStartX: 1.265,
-  cardsStartY: 2.5,
+  cardsStartY: 3.2,
   cardW: 2.8,
   cardH: 2.2,
   cardGap: 0.3,
@@ -211,15 +250,21 @@ export const DEFAULT_INDEX_TEMPLATE: IndexTemplate = {
 export const DEFAULT_SEPARATOR_TEMPLATE: SeparatorTemplate = {
   background: { color: '161B22' },
   number: {
-    x: 0.6, y: 2.0, w: 2, h: 0.8,
-    fontSize: 48, color: '2563EB', bold: true, visible: true,
+    x: 0.6, y: 0.4, w: 3, h: 1.8,
+    fontSize: 120, color: '2563EB', bold: true, visible: true,
+  },
+  branding: {
+    x: 9.5, y: 0.5, w: 3.23, h: 0.6,
+    fontSize: 14, color: '8B919B', bold: false, visible: true,
+    text: 'Capittal M&A · Consulting',
+    align: 'right',
   },
   title: {
-    x: 0.6, y: 2.9, w: 12.13, h: 0.8,
-    fontSize: 32, color: 'FFFFFF', bold: true, visible: true,
+    x: 0.6, y: 5.0, w: 12.13, h: 0.8,
+    fontSize: 36, color: 'FFFFFF', bold: true, visible: true,
   },
   subtitle: {
-    x: 0.6, y: 3.7, w: 12.13, h: 0.5,
+    x: 0.6, y: 5.8, w: 12.13, h: 0.5,
     fontSize: 14, color: '8B919B', visible: true,
   },
   accentColor: '2563EB',
@@ -270,11 +315,37 @@ export const DEFAULT_SLIDE_TEMPLATE: SlideTemplate = {
   },
 };
 
+export const DEFAULT_CLOSING_TEMPLATE: ClosingTemplate = {
+  background: { color: 'FFFFFF' },
+  logo: {
+    x: 10.0, y: 0.5, w: 2.5, h: 1.0,
+    visible: true,
+    imageUrl: '',
+  },
+  thanksText: {
+    x: 0.8, y: 4.2, w: 6, h: 1,
+    fontSize: 40, color: 'FFFFFF', bold: true, visible: true,
+    text: 'Gracias',
+  },
+  email: {
+    x: 0.8, y: 5.3, w: 6, h: 0.5,
+    fontSize: 14, color: '8B919B', visible: true,
+    text: 'lluis@capittal.es',
+  },
+  docTitle: {
+    x: 7, y: 6.0, w: 5.5, h: 0.5,
+    fontSize: 12, color: '8B919B', visible: true,
+    align: 'right',
+  },
+  bottomBgColor: '161B22',
+};
+
 export const DEFAULT_FULL_TEMPLATE: FullSlideTemplate = {
   cover: DEFAULT_COVER_TEMPLATE,
   index: DEFAULT_INDEX_TEMPLATE,
   separator: DEFAULT_SEPARATOR_TEMPLATE,
   operation: DEFAULT_SLIDE_TEMPLATE,
+  closing: DEFAULT_CLOSING_TEMPLATE,
 };
 
 // Slide dimensions in inches (LAYOUT_WIDE)

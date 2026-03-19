@@ -1,7 +1,7 @@
 import pptxgen from 'pptxgenjs';
 import type { Operation } from '../types/operations';
-import type { SlideTemplate, FullSlideTemplate, CoverTemplate, IndexTemplate, SeparatorTemplate } from '../types/slideTemplate';
-import { DEFAULT_FULL_TEMPLATE } from '../types/slideTemplate';
+import type { SlideTemplate, FullSlideTemplate, CoverTemplate, IndexTemplate, SeparatorTemplate, ClosingTemplate } from '../types/slideTemplate';
+import { DEFAULT_FULL_TEMPLATE, DEFAULT_CLOSING_TEMPLATE } from '../types/slideTemplate';
 
 // ─── DESIGN TOKENS ───
 const NAVY = '161B22';
@@ -73,7 +73,27 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
   const slide = pptx.addSlide();
   slide.background = { color: ct.background.color || NAVY };
 
-  // Logo
+  // Year block (top-left, large)
+  const yb = ct.yearBlock;
+  if (yb && yb.visible) {
+    slide.addText(String(year), {
+      x: yb.x, y: yb.y, w: yb.w, h: yb.h,
+      fontSize: yb.fontSize || 72, fontFace: FONT, color: yb.color || WHITE,
+      bold: yb.bold ?? true, align: yb.align,
+    });
+  }
+
+  // Branding text (top-right)
+  const br = ct.branding;
+  if (br && br.visible) {
+    slide.addText((br as any).text || 'Capittal M&A · Consulting', {
+      x: br.x, y: br.y, w: br.w, h: br.h,
+      fontSize: br.fontSize || 14, fontFace: FONT, color: br.color || TEXT_MUTED,
+      bold: br.bold ?? false, align: br.align || 'right',
+    });
+  }
+
+  // Logo (hidden by default in new template, but support it for backward compat)
   if (ct.logo?.visible && (ct.logo as any).imageUrl) {
     slide.addImage({
       path: (ct.logo as any).imageUrl,
@@ -82,32 +102,36 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
     });
   }
 
+  // Title (bottom-left area)
   if (ct.title.visible) {
-    slide.addText(ct.title.text || 'Capittal Dealhub', {
+    slide.addText(ct.title.text || 'Capittal Dealhub — Open Deals', {
       x: ct.title.x, y: ct.title.y, w: ct.title.w, h: ct.title.h,
-      fontSize: ct.title.fontSize || 40, fontFace: FONT, color: ct.title.color || WHITE,
+      fontSize: ct.title.fontSize || 36, fontFace: FONT, color: ct.title.color || WHITE,
       bold: ct.title.bold ?? true, italic: ct.title.italic,
       align: ct.title.align, valign: ct.title.valign,
     });
   }
 
+  // Subtitle
   if (ct.subtitle.visible) {
-    slide.addText(ct.subtitle.text || 'Open Deals', {
+    slide.addText(ct.subtitle.text || 'Relación de Oportunidades de Inversión', {
       x: ct.subtitle.x, y: ct.subtitle.y, w: ct.subtitle.w, h: ct.subtitle.h,
-      fontSize: ct.subtitle.fontSize || 28, fontFace: FONT, color: ct.subtitle.color || WHITE,
+      fontSize: ct.subtitle.fontSize || 16, fontFace: FONT, color: ct.subtitle.color || TEXT_MUTED,
       bold: ct.subtitle.bold ?? false, italic: ct.subtitle.italic,
       align: ct.subtitle.align, valign: ct.subtitle.valign,
     });
   }
 
+  // Quarter label
   if (ct.quarter.visible) {
     slide.addText(`${quarter} — ${year}`, {
       x: ct.quarter.x, y: ct.quarter.y, w: ct.quarter.w, h: ct.quarter.h,
-      fontSize: ct.quarter.fontSize || 16, fontFace: FONT, color: ct.quarter.color || TEXT_MUTED,
+      fontSize: ct.quarter.fontSize || 14, fontFace: FONT, color: ct.quarter.color || TEXT_MUTED,
       align: ct.quarter.align,
     });
   }
 
+  // Divider (hidden by default)
   if (ct.divider.visible) {
     slide.addShape(pptx.ShapeType.rect, {
       x: ct.divider.x, y: ct.divider.y, w: ct.divider.w, h: ct.divider.h,
@@ -115,6 +139,7 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
     });
   }
 
+  // Footer (hidden by default)
   if (ct.footer.visible) {
     slide.addText(ct.footer.text || 'CAPITTAL — Información Confidencial', {
       x: ct.footer.x, y: ct.footer.y, w: ct.footer.w, h: ct.footer.h,
@@ -133,6 +158,17 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
       x: idx.title.x, y: idx.title.y, w: idx.title.w, h: idx.title.h,
       fontSize: idx.title.fontSize || 28, fontFace: FONT, color: idx.title.color || NAVY,
       bold: idx.title.bold ?? true, align: idx.title.align,
+    });
+  }
+
+  // Intro text paragraph
+  const intro = idx.introText;
+  if (intro && intro.visible) {
+    slide.addText((intro as any).text || '', {
+      x: intro.x, y: intro.y, w: intro.w, h: intro.h,
+      fontSize: intro.fontSize || 11, fontFace: FONT, color: intro.color || TEXT_SECONDARY,
+      lineSpacingMultiple: intro.lineSpacing || 1.4,
+      valign: 'top', wrap: true,
     });
   }
 
@@ -173,23 +209,36 @@ function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, s
   const slide = pptx.addSlide();
   slide.background = { color: sep.background.color || NAVY };
 
+  // Number (top-left, large)
   if (sep.number.visible) {
     slide.addText(sectionNum, {
       x: sep.number.x, y: sep.number.y, w: sep.number.w, h: sep.number.h,
-      fontSize: sep.number.fontSize || 48, fontFace: FONT,
+      fontSize: sep.number.fontSize || 120, fontFace: FONT,
       color: sep.number.color || sep.accentColor || ACCENT,
       bold: sep.number.bold ?? true, align: sep.number.align,
     });
   }
 
+  // Branding text (top-right)
+  const br = sep.branding;
+  if (br && br.visible) {
+    slide.addText((br as any).text || 'Capittal M&A · Consulting', {
+      x: br.x, y: br.y, w: br.w, h: br.h,
+      fontSize: br.fontSize || 14, fontFace: FONT, color: br.color || TEXT_MUTED,
+      bold: br.bold ?? false, align: br.align || 'right',
+    });
+  }
+
+  // Title (bottom-left)
   if (sep.title.visible) {
     slide.addText(title, {
       x: sep.title.x, y: sep.title.y, w: sep.title.w, h: sep.title.h,
-      fontSize: sep.title.fontSize || 32, fontFace: FONT, color: sep.title.color || WHITE,
+      fontSize: sep.title.fontSize || 36, fontFace: FONT, color: sep.title.color || WHITE,
       bold: sep.title.bold ?? true, align: sep.title.align,
     });
   }
 
+  // Subtitle
   if (sep.subtitle.visible) {
     slide.addText(subtitle, {
       x: sep.subtitle.x, y: sep.subtitle.y, w: sep.subtitle.w, h: sep.subtitle.h,
@@ -352,6 +401,57 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
   }
 }
 
+function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate) {
+  const slide = pptx.addSlide();
+  slide.background = { color: cl.background?.color || WHITE };
+
+  // Bottom half navy background
+  const bottomColor = cl.bottomBgColor || NAVY;
+  slide.addShape(pptx.ShapeType.rect, {
+    x: 0, y: SH / 2, w: SW, h: SH / 2,
+    fill: { color: bottomColor },
+  });
+
+  // Logo (top-right, white area)
+  const logo = cl.logo;
+  if (logo && logo.visible && (logo as any).imageUrl) {
+    slide.addImage({
+      path: (logo as any).imageUrl,
+      x: logo.x, y: logo.y, w: logo.w, h: logo.h,
+      sizing: { type: 'contain', w: logo.w, h: logo.h },
+    });
+  }
+
+  // "Gracias" text (bottom half)
+  const thanks = cl.thanksText;
+  if (thanks && thanks.visible) {
+    slide.addText((thanks as any).text || 'Gracias', {
+      x: thanks.x, y: thanks.y, w: thanks.w, h: thanks.h,
+      fontSize: thanks.fontSize || 40, fontFace: FONT, color: thanks.color || WHITE,
+      bold: thanks.bold ?? true,
+    });
+  }
+
+  // Email
+  const email = cl.email;
+  if (email && email.visible) {
+    slide.addText((email as any).text || 'lluis@capittal.es', {
+      x: email.x, y: email.y, w: email.w, h: email.h,
+      fontSize: email.fontSize || 14, fontFace: FONT, color: email.color || TEXT_MUTED,
+    });
+  }
+
+  // Doc title (bottom-right)
+  const docTitle = cl.docTitle;
+  if (docTitle && docTitle.visible) {
+    slide.addText(`Capittal Dealhub — ${quarter} ${year}`, {
+      x: docTitle.x, y: docTitle.y, w: docTitle.w, h: docTitle.h,
+      fontSize: docTitle.fontSize || 12, fontFace: FONT, color: docTitle.color || TEXT_MUTED,
+      align: docTitle.align || 'right',
+    });
+  }
+}
+
 // ─── MAIN EXPORT ───
 
 export async function generateDealhubPptx(
@@ -392,6 +492,10 @@ export async function generateDealhubPptx(
 
     ops.forEach(op => addOperationSlide(pptx, op, ft.operation));
   });
+
+  // 4. Closing slide
+  const closingTemplate = ft.closing || DEFAULT_CLOSING_TEMPLATE;
+  addClosingSlide(pptx, quarter, currentYear, closingTemplate);
 
   await pptx.writeFile({ fileName: `Capittal_Dealhub_${quarter}_${currentYear}.pptx` });
 }
