@@ -174,6 +174,29 @@ export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdat
         </div>
       )}
 
+      {/* Image URL (for logo blocks) */}
+      {'imageUrl' in block && (
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">URL del Logo</Label>
+          <Input
+            value={(block as any).imageUrl || ''}
+            onChange={e => onUpdate({ imageUrl: e.target.value } as any)}
+            className="h-8 text-xs"
+            placeholder="https://... o pega la URL de tu logo"
+          />
+          {(block as any).imageUrl && (
+            <div className="mt-2 p-2 border border-border rounded bg-muted/30">
+              <img
+                src={(block as any).imageUrl}
+                alt="Logo preview"
+                className="max-h-12 max-w-full object-contain"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Custom text */}
       {'text' in block && (
         <div className="space-y-1">

@@ -64,6 +64,7 @@ export const BLOCK_COLORS: Record<SlideBlockKey, string> = {
 
 export interface CoverTemplate {
   background: { color: string };
+  logo: BlockConfig & { imageUrl?: string };
   title: BlockConfig & { text?: string };
   subtitle: BlockConfig & { text?: string };
   quarter: BlockConfig;
@@ -75,6 +76,7 @@ export type CoverBlockKey = keyof CoverTemplate;
 
 export const COVER_BLOCK_LABELS: Record<CoverBlockKey, string> = {
   background: 'Fondo',
+  logo: 'Logo',
   title: 'Título Principal',
   subtitle: 'Subtítulo',
   quarter: 'Trimestre',
@@ -84,6 +86,7 @@ export const COVER_BLOCK_LABELS: Record<CoverBlockKey, string> = {
 
 export const COVER_BLOCK_COLORS: Record<CoverBlockKey, string> = {
   background: '#374151',
+  logo: '#10b981',
   title: '#3b82f6',
   subtitle: '#8b5cf6',
   quarter: '#f59e0b',
@@ -159,6 +162,11 @@ export type SlideType = keyof FullSlideTemplate;
 
 export const DEFAULT_COVER_TEMPLATE: CoverTemplate = {
   background: { color: '161B22' },
+  logo: {
+    x: 0.6, y: 0.5, w: 2.5, h: 1.2,
+    visible: true,
+    imageUrl: '',
+  },
   title: {
     x: 0.6, y: 2.2, w: 12.13, h: 1,
     fontSize: 40, color: 'FFFFFF', bold: true, visible: true,
