@@ -2,6 +2,8 @@ import pptxgen from 'pptxgenjs';
 import type { Operation } from '../types/operations';
 import type { SlideTemplate, FullSlideTemplate, CoverTemplate, IndexTemplate, SeparatorTemplate, ClosingTemplate } from '../types/slideTemplate';
 import { DEFAULT_FULL_TEMPLATE, DEFAULT_CLOSING_TEMPLATE } from '../types/slideTemplate';
+import { supabase } from '@/integrations/supabase/client';
+import { blobToBase64 } from '@/utils/blobToBase64';
 
 // ─── DESIGN TOKENS ───
 const NAVY = '161B22';
