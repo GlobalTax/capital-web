@@ -6,25 +6,9 @@ import { cn } from '@/lib/utils';
 import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../utils/generateDealhubPptx';
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
-import { SlideTemplateEditor } from './SlideTemplateEditor';
 import { StaticSlidesUploader } from './StaticSlidesUploader';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
 import { useSlideTemplates } from '../hooks/useSlideTemplates';
-
-/** Deep-merge saved template with defaults so new fields/values always apply */
-function mergeWithDefaults(saved: FullSlideTemplate): FullSlideTemplate {
-  const def = DEFAULT_FULL_TEMPLATE;
-  const merge = (base: any, over: any): any => {
-    if (!over || typeof over !== 'object' || Array.isArray(over)) return over ?? base;
-    if (!base || typeof base !== 'object' || Array.isArray(base)) return over;
-    const result: any = { ...base };
-    for (const key of Object.keys(over)) {
-      result[key] = merge(base[key], over[key]);
-    }
-    return result;
-  };
-  return merge(def, saved) as FullSlideTemplate;
-}
 
 const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
 
@@ -54,16 +38,9 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
 
   // Load saved template when modal opens
-  // If PPTX template exists, skip mergeWithDefaults to preserve user settings
   useEffect(() => {
     if (open) {
-      loadDefault().then(t => {
-        if (t.templatePptxUrl) {
-          setFullTemplate(t);
-        } else {
-          setFullTemplate(mergeWithDefaults(t));
-        }
-      });
+      loadDefault().then(t => setFullTemplate(t));
     }
   }, [open, loadDefault]);
 
@@ -113,7 +90,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     }
   };
 
-  const isWideTab = activeTab === 'template' || activeTab === 'static';
+  const isWideTab = activeTab === 'static';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -139,7 +116,6 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
             <TabsList className="w-full">
               <TabsTrigger value="config" className="flex-1 text-xs">Configuración</TabsTrigger>
               <TabsTrigger value="static" className="flex-1 text-xs">Slides fijas</TabsTrigger>
-              <TabsTrigger value="template" className="flex-1 text-xs">Plantilla</TabsTrigger>
             </TabsList>
           </div>
 
@@ -255,11 +231,6 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
           {/* Static slides tab */}
           <TabsContent value="static" className="flex-1 overflow-auto mt-0">
             <StaticSlidesUploader template={fullTemplate} onChange={setFullTemplate} />
-          </TabsContent>
-
-          {/* Template tab */}
-          <TabsContent value="template" className="flex-1 overflow-hidden mt-0">
-            <SlideTemplateEditor template={fullTemplate} onChange={setFullTemplate} />
           </TabsContent>
         </Tabs>
 
