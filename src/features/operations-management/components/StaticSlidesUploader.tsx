@@ -1,0 +1,136 @@
+import React, { useRef } from 'react';
+import { Upload, X, Image } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import type { FullSlideTemplate } from '../types/slideTemplate';
+import { DEALHUB_SECTIONS } from '../utils/generateDealhubPptx';
+
+interface StaticSlidesUploaderProps {
+  template: FullSlideTemplate;
+  onChange: (template: FullSlideTemplate) => void;
+}
+
+interface SlotConfig {
+  label: string;
+  getValue: (t: FullSlideTemplate) => string | undefined;
+  setValue: (t: FullSlideTemplate, url: string | undefined) => FullSlideTemplate;
+}
+
+const SLOTS: SlotConfig[] = [
+  {
+    label: 'Portada',
+    getValue: (t) => t.cover.backgroundImage,
+    setValue: (t, url) => ({ ...t, cover: { ...t.cover, backgroundImage: url } }),
+  },
+  {
+    label: 'Índice',
+    getValue: (t) => t.index.backgroundImage,
+    setValue: (t, url) => ({ ...t, index: { ...t.index, backgroundImage: url } }),
+  },
+  ...DEALHUB_SECTIONS.map((s, i) => ({
+    label: `Separador ${String(i + 1).padStart(2, '0')} — ${s.label}`,
+    getValue: (t: FullSlideTemplate) => t.separator.backgroundImages?.[s.key],
+    setValue: (t: FullSlideTemplate, url: string | undefined) => ({
+      ...t,
+      separator: {
+        ...t.separator,
+        backgroundImages: { ...(t.separator.backgroundImages || {}), [s.key]: url || '' },
+      },
+    }),
+  })),
+  {
+    label: 'Cierre',
+    getValue: (t) => t.closing?.backgroundImage,
+    setValue: (t, url) => ({ ...t, closing: { ...(t.closing || {}), backgroundImage: url } as any }),
+  },
+];
+
+const SlotUploader: React.FC<{
+  slot: SlotConfig;
+  template: FullSlideTemplate;
+  onChange: (t: FullSlideTemplate) => void;
+}> = ({ slot, template, onChange }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const [uploading, setUploading] = React.useState(false);
+  const value = slot.getValue(template);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Solo se permiten imágenes', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'Máximo 10MB', variant: 'destructive' });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `slides/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { data, error } = await supabase.storage.from('slide-backgrounds').upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('slide-backgrounds').getPublicUrl(data.path);
+      onChange(slot.setValue(template, publicUrl));
+    } catch (err: any) {
+      toast({ title: 'Error al subir', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
+    }
+  };
+
+  const handleRemove = () => {
+    onChange(slot.setValue(template, undefined));
+  };
+
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-[5px] border border-[hsl(var(--linear-border))] bg-background">
+      {value ? (
+        <img src={value} alt={slot.label} className="w-20 h-12 object-cover rounded-[4px] border border-[hsl(var(--linear-border))]" />
+      ) : (
+        <div className="w-20 h-12 rounded-[4px] border border-dashed border-[hsl(var(--linear-border))] flex items-center justify-center bg-secondary/40">
+          <Image className="w-4 h-4 text-muted-foreground" />
+        </div>
+      )}
+      <span className="flex-1 text-sm text-foreground font-medium truncate">{slot.label}</span>
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="px-2.5 py-1.5 text-xs font-semibold rounded-[4px] border border-[hsl(var(--linear-border))] bg-secondary text-foreground hover:bg-secondary/80 transition-colors flex items-center gap-1.5"
+        >
+          <Upload className="w-3 h-3" />
+          {uploading ? 'Subiendo...' : value ? 'Cambiar' : 'Subir'}
+        </button>
+        {value && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="px-2 py-1.5 text-xs rounded-[4px] border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+    </div>
+  );
+};
+
+export const StaticSlidesUploader: React.FC<StaticSlidesUploaderProps> = ({ template, onChange }) => {
+  return (
+    <div className="p-6 space-y-2">
+      <p className="text-xs text-muted-foreground mb-4">
+        Sube imágenes PNG/JPG para usar como slides fijas. Si una slide tiene imagen, se usará a pantalla completa en vez de generarse con código.
+      </p>
+      {SLOTS.map((slot, i) => (
+        <SlotUploader key={i} slot={slot} template={template} onChange={onChange} />
+      ))}
+    </div>
+  );
+};
