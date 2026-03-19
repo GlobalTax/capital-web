@@ -100,12 +100,6 @@ export const sidebarSections: SidebarSection[] = [
         badge: "URGENTE",
         description: "Todos los leads del embudo"
       },
-      { 
-        title: "Pipeline",
-        url: "/admin/leads-pipeline", 
-        icon: Kanban,
-        description: "Tablero Kanban de leads"
-      },
     ]
   },
   {
