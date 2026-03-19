@@ -131,6 +131,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
           <div className="px-6 pt-3">
             <TabsList className="w-full">
               <TabsTrigger value="config" className="flex-1 text-xs">Configuración</TabsTrigger>
+              <TabsTrigger value="static" className="flex-1 text-xs">Slides fijas</TabsTrigger>
               <TabsTrigger value="template" className="flex-1 text-xs">Plantilla</TabsTrigger>
             </TabsList>
           </div>
