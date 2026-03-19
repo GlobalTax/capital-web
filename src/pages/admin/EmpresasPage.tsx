@@ -23,6 +23,8 @@ import {
   Zap,
   Globe,
   Calculator,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
 import { useFavoriteEmpresas } from '@/hooks/useEmpresaFavorites';
@@ -30,8 +32,9 @@ import { CompanyFormDialog } from '@/components/admin/companies/CompanyFormDialo
 import { EmpresasTableVirtualized } from '@/components/admin/empresas/EmpresasTableVirtualized';
 import { EmpresasStatsCards } from '@/components/admin/empresas/EmpresasStatsCards';
 import { EmpresasColumnsEditor } from '@/components/admin/empresas/EmpresasColumnsEditor';
+import { useEmpresasStats } from '@/hooks/useEmpresasStats';
 
-// Quick filter chips - extended with new filters
+// Quick filter chips
 const QUICK_FILTERS = [
   { id: 'with-revenue', label: 'Con Facturación', icon: null, filter: (e: Empresa) => !!e.facturacion },
   { id: 'with-ebitda', label: 'Con EBITDA', icon: null, filter: (e: Empresa) => !!e.ebitda },
@@ -39,6 +42,8 @@ const QUICK_FILTERS = [
   { id: 'with-apollo', label: 'Con Apollo', icon: Globe, filter: (e: Empresa) => !!(e as any).apollo_org_id },
   { id: 'high-intent', label: 'Alto Intent', icon: Zap, filter: (e: Empresa) => (e as any).apollo_intent_level === 'High' },
 ] as const;
+
+const PAGE_SIZE = 50;
 
 export default function EmpresasPage() {
   const [activeTab, setActiveTab] = useState('favorites');
@@ -50,67 +55,53 @@ export default function EmpresasPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
   const [isColumnsEditorOpen, setIsColumnsEditorOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
 
-  // Hook para todas las empresas (sin filtros de texto para mantener stats correctas)
+  // Lightweight stats (separate count queries)
+  const { stats, isLoading: isLoadingStats } = useEmpresasStats();
+
+  // Build server-side filters for "all" tab
+  const serverFilters = useMemo(() => ({
+    search: searchQuery || undefined,
+    sector: sectorFilter !== 'all' ? sectorFilter : undefined,
+    esTarget: targetFilter === 'target' ? true : targetFilter === 'no-target' ? false : undefined,
+    source: sourceFilter !== 'all' ? sourceFilter : undefined,
+    page: currentPage,
+    pageSize: PAGE_SIZE,
+  }), [searchQuery, sectorFilter, targetFilter, sourceFilter, currentPage]);
+
+  // Only fetch "all" empresas when that tab (or valuations) is active
+  const isAllTabActive = activeTab === 'all' || activeTab === 'valuations';
   const { 
     empresas: allEmpresas, 
+    totalCount,
     isLoading, 
     sectors, 
     refetch,
     deleteEmpresa 
-  } = useEmpresas();
+  } = useEmpresas(serverFilters, isAllTabActive);
 
-  // Hook para empresas favoritas
+  // Favorites - only when favorites tab is active
   const { data: favoriteEmpresas = [], isLoading: isLoadingFavorites } = useFavoriteEmpresas();
 
-  // Hook para targets
-  const { empresas: targetEmpresas, isLoading: isLoadingTargets } = useEmpresas({
-    esTarget: true,
-  });
+  // Targets - only when targets tab is active
+  const { empresas: targetEmpresas, totalCount: targetCount, isLoading: isLoadingTargets } = useEmpresas(
+    { esTarget: true, page: 0, pageSize: PAGE_SIZE },
+    activeTab === 'targets'
+  );
 
-  // Apply filters client-side for better UX
-  const filteredEmpresas = useMemo(() => {
+  // Client-side quick filters (applied on top of server results)
+  const displayEmpresas = useMemo(() => {
+    if (quickFilters.length === 0) return allEmpresas;
     let result = allEmpresas;
-
-    // Text search
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(e => 
-        e.nombre.toLowerCase().includes(query) ||
-        e.cif?.toLowerCase().includes(query) ||
-        e.sector?.toLowerCase().includes(query)
-      );
-    }
-
-    // Sector filter
-    if (sectorFilter !== 'all') {
-      result = result.filter(e => e.sector === sectorFilter);
-    }
-
-    // Target filter
-    if (targetFilter === 'target') {
-      result = result.filter(e => e.es_target);
-    } else if (targetFilter === 'no-target') {
-      result = result.filter(e => !e.es_target);
-    }
-
-    // Origen filter
-    if (sourceFilter !== 'all') {
-      result = result.filter(e => (e.origen || e.source || '').toLowerCase() === sourceFilter.toLowerCase());
-    }
-
-    // Quick filters
     quickFilters.forEach(filterId => {
-      const quickFilter = QUICK_FILTERS.find(f => f.id === filterId);
-      if (quickFilter) {
-        result = result.filter(quickFilter.filter);
-      }
+      const qf = QUICK_FILTERS.find(f => f.id === filterId);
+      if (qf) result = result.filter(qf.filter);
     });
-
     return result;
-  }, [allEmpresas, searchQuery, sectorFilter, targetFilter, sourceFilter, quickFilters]);
+  }, [allEmpresas, quickFilters]);
 
-  // Count empresas by source for stats
+  // Valuations filtered from current page results
   const valuationEmpresas = useMemo(() => 
     allEmpresas.filter(e => e.source === 'valuation'),
     [allEmpresas]
@@ -140,9 +131,7 @@ export default function EmpresasPage() {
 
   const toggleQuickFilter = (filterId: string) => {
     setQuickFilters(prev => 
-      prev.includes(filterId) 
-        ? prev.filter(f => f !== filterId)
-        : [...prev, filterId]
+      prev.includes(filterId) ? prev.filter(f => f !== filterId) : [...prev, filterId]
     );
   };
 
@@ -152,19 +141,18 @@ export default function EmpresasPage() {
     setTargetFilter('all');
     setSourceFilter('all');
     setQuickFilters([]);
+    setCurrentPage(0);
   };
 
   const hasActiveFilters = searchQuery || sectorFilter !== 'all' || targetFilter !== 'all' || sourceFilter !== 'all' || quickFilters.length > 0;
 
-  // Stats (calculated from all empresas, not filtered)
-  const totalEmpresas = allEmpresas.length;
-  const totalTargets = targetEmpresas?.length || 0;
-  const totalFavorites = favoriteEmpresas.length;
-  const totalFacturacion = allEmpresas.reduce((sum, e) => sum + (e.facturacion || 0), 0);
-  const empresasWithEbitda = allEmpresas.filter(e => e.ebitda).length;
-  const avgEbitda = empresasWithEbitda > 0 
-    ? allEmpresas.reduce((sum, e) => sum + (e.ebitda || 0), 0) / empresasWithEbitda 
-    : 0;
+  // Reset page when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(0);
+  };
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
     <div className="space-y-5">
@@ -180,11 +168,7 @@ export default function EmpresasPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setIsColumnsEditorOpen(true)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setIsColumnsEditorOpen(true)}>
             <Settings2 className="h-4 w-4 mr-2" />
             Columnas
           </Button>
@@ -195,45 +179,42 @@ export default function EmpresasPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - using lightweight count queries */}
       <EmpresasStatsCards
-        totalFavorites={totalFavorites}
-        totalEmpresas={totalEmpresas}
-        totalTargets={totalTargets}
-        totalFacturacion={totalFacturacion}
-        avgEbitda={avgEbitda}
-        empresasWithEbitda={empresasWithEbitda}
+        totalFavorites={stats.favorites}
+        totalEmpresas={stats.total}
+        totalTargets={stats.targets}
+        totalFacturacion={stats.totalFacturacion}
+        avgEbitda={stats.avgEbitda}
+        empresasWithEbitda={stats.empresasWithEbitda}
       />
 
-      {/* Global Filters - Always visible */}
+      {/* Global Filters */}
       <Card>
         <CardContent className="pt-4 pb-3">
           <div className="flex flex-col gap-3">
-            {/* Main filters row */}
             <div className="flex flex-col md:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nombre, CIF o sector..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-9"
                 />
               </div>
-              <Select value={sectorFilter} onValueChange={setSectorFilter}>
+              <Select value={sectorFilter} onValueChange={(v) => { setSectorFilter(v); setCurrentPage(0); }}>
                 <SelectTrigger className="w-full md:w-[180px]">
                   <SelectValue placeholder="Sector" />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
                   <SelectItem value="all">Todos los sectores</SelectItem>
                   {sectors.map((sector) => (
-                    <SelectItem key={sector} value={sector}>
-                      {sector}
-                    </SelectItem>
+                    <SelectItem key={sector} value={sector}>{sector}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={targetFilter} onValueChange={setTargetFilter}>
+              <Select value={targetFilter} onValueChange={(v) => { setTargetFilter(v); setCurrentPage(0); }}>
                 <SelectTrigger className="w-full md:w-[140px]">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
@@ -243,7 +224,7 @@ export default function EmpresasPage() {
                   <SelectItem value="no-target">No Targets</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <Select value={sourceFilter} onValueChange={(v) => { setSourceFilter(v); setCurrentPage(0); }}>
                 <SelectTrigger className="w-full md:w-[160px]">
                   <SelectValue placeholder="Origen" />
                 </SelectTrigger>
@@ -294,34 +275,31 @@ export default function EmpresasPage() {
       </Card>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setCurrentPage(0); }} className="w-full">
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="favorites" className="flex items-center gap-2">
             <Star className="h-4 w-4" />
             <span className="hidden sm:inline">Favoritos</span>
             <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
-              {totalFavorites}
+              {stats.favorites}
             </span>
           </TabsTrigger>
           <TabsTrigger value="all" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             <span className="hidden sm:inline">Todas</span>
             <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
-              {filteredEmpresas.length}
+              {isAllTabActive ? totalCount : stats.total}
             </span>
           </TabsTrigger>
           <TabsTrigger value="valuations" className="flex items-center gap-2">
             <Calculator className="h-4 w-4" />
             <span className="hidden sm:inline">Valoraciones</span>
-            <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
-              {valuationEmpresas.length}
-            </span>
           </TabsTrigger>
           <TabsTrigger value="targets" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">Targets</span>
             <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
-              {totalTargets}
+              {stats.targets}
             </span>
           </TabsTrigger>
         </TabsList>
@@ -342,7 +320,7 @@ export default function EmpresasPage() {
         {/* Tab: Todas */}
         <TabsContent value="all" className="mt-4">
           <EmpresasTableVirtualized
-            empresas={filteredEmpresas}
+            empresas={displayEmpresas}
             isLoading={isLoading}
             showFavorites={true}
             emptyMessage="No se encontraron empresas"
@@ -352,6 +330,37 @@ export default function EmpresasPage() {
             onDelete={handleDelete}
             height={600}
           />
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 px-2">
+              <p className="text-sm text-muted-foreground">
+                Mostrando {currentPage * PAGE_SIZE + 1}–{Math.min((currentPage + 1) * PAGE_SIZE, totalCount)} de {totalCount.toLocaleString()}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 0}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  Página {currentPage + 1} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages - 1}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         {/* Tab: Valoraciones */}

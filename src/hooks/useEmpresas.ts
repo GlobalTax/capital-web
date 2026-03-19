@@ -32,10 +32,8 @@ export interface Empresa {
   cnae_descripcion?: string | null;
   año_datos_financieros?: number | null;
   linkedin_url?: string | null;
-  // Campos de valoración (desde company_valuations)
   valoracion?: number | null;
   fecha_valoracion?: string | null;
-  // Campo calculado de última actividad
   ultima_actividad?: string | null;
 }
 
@@ -45,76 +43,75 @@ export interface EmpresaFilters {
   esTarget?: boolean | null;
   minFacturacion?: number;
   maxFacturacion?: number;
+  source?: string;
+  page?: number;
+  pageSize?: number;
 }
 
-export const useEmpresas = (filters?: EmpresaFilters) => {
+const DEFAULT_PAGE_SIZE = 50;
+
+export const useEmpresas = (filters?: EmpresaFilters, enabled = true) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all empresas with optional filters (includes valuation data and ultima_actividad via view)
-  const { data: empresas, isLoading, refetch } = useQuery({
+  const page = filters?.page ?? 0;
+  const pageSize = filters?.pageSize ?? DEFAULT_PAGE_SIZE;
+
+  // Fetch empresas with server-side pagination
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['empresas', filters],
+    enabled,
     queryFn: async () => {
-      // Fetch all empresas in pages of 1000 to bypass Supabase default limit
-      const PAGE_SIZE = 1000;
-      let allData: any[] = [];
-      let page = 0;
-      let hasMore = true;
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
 
-      while (hasMore) {
-        let query = supabase
-          .from('v_empresas_con_actividad' as any)
-          .select(`
-            *,
-            company_valuations:source_valuation_id (
-              final_valuation,
-              created_at
-            )
-          `)
-          .order('created_at', { ascending: false })
-          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+      let query = supabase
+        .from('v_empresas_con_actividad' as any)
+        .select(`
+          *,
+          company_valuations:source_valuation_id (
+            final_valuation,
+            created_at
+          )
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-        if (filters?.search) {
-          query = query.or(`nombre.ilike.%${filters.search}%,cif.ilike.%${filters.search}%`);
-        }
-
-        if (filters?.sector) {
-          query = query.eq('sector', filters.sector);
-        }
-
-        if (filters?.esTarget !== null && filters?.esTarget !== undefined) {
-          query = query.eq('es_target', filters.esTarget);
-        }
-
-        if (filters?.minFacturacion) {
-          query = query.gte('facturacion', filters.minFacturacion);
-        }
-
-        if (filters?.maxFacturacion) {
-          query = query.lte('facturacion', filters.maxFacturacion);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        allData = allData.concat(data || []);
-        hasMore = (data?.length || 0) === PAGE_SIZE;
-        page++;
+      if (filters?.search) {
+        query = query.or(`nombre.ilike.%${filters.search}%,cif.ilike.%${filters.search}%`);
       }
-      
-      // Map valuation data to empresa fields
-      return allData.map((empresa: any) => ({
+      if (filters?.sector) {
+        query = query.eq('sector', filters.sector);
+      }
+      if (filters?.esTarget !== null && filters?.esTarget !== undefined) {
+        query = query.eq('es_target', filters.esTarget);
+      }
+      if (filters?.minFacturacion) {
+        query = query.gte('facturacion', filters.minFacturacion);
+      }
+      if (filters?.maxFacturacion) {
+        query = query.lte('facturacion', filters.maxFacturacion);
+      }
+      if (filters?.source) {
+        query = query.or(`origen.eq.${filters.source},source.eq.${filters.source}`);
+      }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      const empresas = (data || []).map((empresa: any) => ({
         ...empresa,
         valoracion: empresa.company_valuations?.final_valuation ?? null,
         fecha_valoracion: empresa.company_valuations?.created_at ?? null,
         ultima_actividad: empresa.ultima_actividad ?? null,
         company_valuations: undefined,
       })) as Empresa[];
+
+      return { empresas, totalCount: count ?? 0 };
     },
   });
 
-  // Search empresas
+  // Search empresas (for autocomplete, separate from main listing)
   const searchEmpresas = async (searchQuery: string): Promise<Empresa[]> => {
     const { data, error } = await supabase
       .from('empresas')
@@ -153,15 +150,12 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['empresas-stats'] });
       toast({ title: '✅ Empresa creada correctamente' });
     },
     onError: (error) => {
       console.error('Error creating empresa:', error);
-      toast({ 
-        title: 'Error', 
-        description: 'No se pudo crear la empresa', 
-        variant: 'destructive' 
-      });
+      toast({ title: 'Error', description: 'No se pudo crear la empresa', variant: 'destructive' });
     },
   });
 
@@ -184,81 +178,47 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
     },
     onError: (error) => {
       console.error('Error updating empresa:', error);
-      toast({ 
-        title: 'Error', 
-        description: 'No se pudo actualizar la empresa', 
-        variant: 'destructive' 
-      });
+      toast({ title: 'Error', description: 'No se pudo actualizar la empresa', variant: 'destructive' });
     },
   });
 
   // Delete empresa
   const deleteEmpresaMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('empresas')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('empresas').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['empresas-stats'] });
       toast({ title: 'Empresa eliminada' });
     },
     onError: (error) => {
       console.error('Error deleting empresa:', error);
-      toast({ 
-        title: 'Error', 
-        description: 'No se pudo eliminar la empresa', 
-        variant: 'destructive' 
-      });
+      toast({ title: 'Error', description: 'No se pudo eliminar la empresa', variant: 'destructive' });
     },
   });
 
-  // Link empresa to contact
+  // Link/Unlink empresa to contact
   const linkToContact = async (empresaId: string, contactId: string, origin: string) => {
-    const tableMap: Record<string, string> = {
-      contact: 'contact_leads',
-      valuation: 'company_valuations',
-    };
-
+    const tableMap: Record<string, string> = { contact: 'contact_leads', valuation: 'company_valuations' };
     const table = tableMap[origin];
-    if (!table) {
-      throw new Error('Este tipo de lead no soporta vinculación de empresa');
-    }
+    if (!table) throw new Error('Este tipo de lead no soporta vinculación de empresa');
 
-    const { error } = await supabase
-      .from(table as any)
-      .update({ empresa_id: empresaId })
-      .eq('id', contactId);
-
+    const { error } = await supabase.from(table as any).update({ empresa_id: empresaId }).eq('id', contactId);
     if (error) throw error;
-    
     queryClient.invalidateQueries({ queryKey: ['lead-detail'] });
     queryClient.invalidateQueries({ queryKey: ['empresas'] });
     toast({ title: '✅ Empresa vinculada al contacto' });
   };
 
-  // Unlink empresa from contact
   const unlinkFromContact = async (contactId: string, origin: string) => {
-    const tableMap: Record<string, string> = {
-      contact: 'contact_leads',
-      valuation: 'company_valuations',
-    };
-
+    const tableMap: Record<string, string> = { contact: 'contact_leads', valuation: 'company_valuations' };
     const table = tableMap[origin];
-    if (!table) {
-      throw new Error('Este tipo de lead no soporta vinculación de empresa');
-    }
+    if (!table) throw new Error('Este tipo de lead no soporta vinculación de empresa');
 
-    const { error } = await supabase
-      .from(table as any)
-      .update({ empresa_id: null })
-      .eq('id', contactId);
-
+    const { error } = await supabase.from(table as any).update({ empresa_id: null }).eq('id', contactId);
     if (error) throw error;
-    
     queryClient.invalidateQueries({ queryKey: ['lead-detail'] });
     toast({ title: 'Empresa desvinculada' });
   };
@@ -267,20 +227,15 @@ export const useEmpresas = (filters?: EmpresaFilters) => {
   const { data: sectors } = useQuery({
     queryKey: ['empresas-sectors'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('empresas')
-        .select('sector')
-        .order('sector');
-
+      const { data, error } = await supabase.from('empresas').select('sector').order('sector');
       if (error) throw error;
-      
-      const uniqueSectors = [...new Set(data.map(e => e.sector))].filter(Boolean);
-      return uniqueSectors;
+      return [...new Set(data.map(e => e.sector))].filter(Boolean);
     },
   });
 
   return {
-    empresas: empresas || [],
+    empresas: data?.empresas || [],
+    totalCount: data?.totalCount ?? 0,
     isLoading,
     refetch,
     searchEmpresas,
