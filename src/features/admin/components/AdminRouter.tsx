@@ -152,7 +152,7 @@ const AdminRouter = () => {
           <Route path="/marketplace-analytics" element={<LazyMarketplaceAnalytics />} />
           
           {/* Lead Management */}
-          <Route path="/leads-pipeline" element={<LazyLeadsPipelinePage />} />
+          <Route path="/leads-pipeline" element={<Navigate to="/admin/contacts" replace />} />
           <Route path="/bookings" element={<LazyBookingsPage />} />
           <Route path="/proposals" element={<LazyProposalsManager />} />
           <Route path="/documentos-fase0" element={<Navigate to="/admin/ndas" replace />} />

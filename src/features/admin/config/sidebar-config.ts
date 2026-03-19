@@ -339,12 +339,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestiona y depura listas de empresas"
       },
       { 
-        title: "Pipeline de Leads",
-        url: "/admin/leads-pipeline", 
-        icon: Kanban,
-        description: "Tablero Kanban de leads"
-      },
-      { 
         title: "Reservas Llamadas",
         url: "/admin/bookings", 
         icon: CalendarDays,
