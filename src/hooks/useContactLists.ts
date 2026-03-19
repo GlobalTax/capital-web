@@ -205,7 +205,7 @@ export const useContactLists = () => {
 };
 
 // ===== LIST COMPANIES =====
-export const useContactListCompanies = (listId: string | undefined) => {
+export const useContactListCompanies = (listId: string | undefined, madreListId?: string | null) => {
   const queryClient = useQueryClient();
 
   const { data: companies = [], isLoading } = useQuery({
@@ -222,6 +222,11 @@ export const useContactListCompanies = (listId: string | undefined) => {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
     queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
+    // Si esta lista es sublista, invalidar cache de la madre
+    if (madreListId) {
+      queryClient.invalidateQueries({ queryKey: ['sublist-company-map', madreListId] });
+      queryClient.invalidateQueries({ queryKey: ['contact-list-companies', madreListId] });
+    }
   };
 
   const addCompany = useMutation({

@@ -333,7 +333,7 @@ export default function ContactListDetailPage() {
     },
   });
 
-  const { companies, isLoading: isLoadingCompanies, addCompany, addCompanies, updateCompany, deleteCompany, deleteCompanies } = useContactListCompanies(listId);
+  const { companies, isLoading: isLoadingCompanies, addCompany, addCompanies, updateCompany, deleteCompany, deleteCompanies } = useContactListCompanies(listId, list?.lista_madre_id);
   const { campaigns, isLoading: isLoadingCampaigns, linkCampaign } = useContactListCampaigns(listId);
 
   // State
