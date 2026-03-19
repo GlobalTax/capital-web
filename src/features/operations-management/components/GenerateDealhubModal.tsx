@@ -207,7 +207,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
 
           {/* Static slides tab */}
           <TabsContent value="static" className="flex-1 overflow-auto mt-0">
-            <StaticSlidesUploader template={fullTemplate} onChange={setFullTemplate} />
+            <StaticSlidesUploader template={fullTemplate} onChange={setFullTemplate} onPersistTemplate={save} />
           </TabsContent>
         </Tabs>
 
