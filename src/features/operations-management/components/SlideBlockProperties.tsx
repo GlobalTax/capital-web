@@ -80,9 +80,26 @@ export const SlideBlockProperties = ({ selectedBlock, blockLabel, block, onUpdat
 
   return (
     <div className="space-y-4 p-4 overflow-y-auto h-full">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">{blockLabel}</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">Ajusta posición, tamaño y estilo</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">{blockLabel}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Ajusta posición, tamaño y estilo</p>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 shrink-0"
+          title="Restablecer posición por defecto"
+          onClick={() => {
+            const defaults = (DEFAULT_FULL_TEMPLATE[slideType] as any)?.[selectedBlock];
+            if (defaults) {
+              onUpdate({ x: defaults.x, y: defaults.y, w: defaults.w, h: defaults.h });
+            }
+          }}
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+        </Button>
       </div>
 
       {/* Visible toggle */}
