@@ -41,7 +41,7 @@ const OP_BLOCK_KEYS: SlideBlockKey[] = [
   'summaryHeader', 'infoRows', 'financialData', 'cta', 'footer',
 ];
 
-const COVER_EDITABLE_KEYS: CoverBlockKey[] = ['title', 'subtitle', 'quarter', 'divider', 'footer'];
+const COVER_EDITABLE_KEYS: CoverBlockKey[] = ['logo', 'title', 'subtitle', 'quarter', 'divider', 'footer'];
 const SEPARATOR_EDITABLE_KEYS: SeparatorBlockKey[] = ['number', 'title', 'subtitle'];
 
 export const SlideTemplateEditor = ({ template, onChange }: SlideTemplateEditorProps) => {
