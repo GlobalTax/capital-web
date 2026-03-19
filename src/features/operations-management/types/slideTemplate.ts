@@ -251,7 +251,7 @@ export const DEFAULT_SEPARATOR_TEMPLATE: SeparatorTemplate = {
   background: { color: '161B22' },
   number: {
     x: 0.6, y: 0.4, w: 3, h: 1.8,
-    fontSize: 120, color: '2563EB', bold: true, visible: true,
+    fontSize: 140, color: '2563EB', bold: true, visible: true,
   },
   branding: {
     x: 9.5, y: 0.5, w: 3.23, h: 0.6,

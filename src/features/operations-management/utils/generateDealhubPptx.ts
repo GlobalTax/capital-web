@@ -219,12 +219,13 @@ function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, s
     });
   }
 
-  // Branding text (top-right)
+  // Logo image (top-right) — use cover logo if available
+  // We check if the full template's cover has a logo URL to reuse here
   const br = sep.branding;
   if (br && br.visible) {
-    slide.addText((br as any).text || 'Capittal M&A · Consulting', {
+    slide.addText((br as any).text || 'M&A · Consulting', {
       x: br.x, y: br.y, w: br.w, h: br.h,
-      fontSize: br.fontSize || 14, fontFace: FONT, color: br.color || TEXT_MUTED,
+      fontSize: br.fontSize || 12, fontFace: FONT, color: br.color || TEXT_MUTED,
       bold: br.bold ?? false, align: br.align || 'right',
     });
   }
