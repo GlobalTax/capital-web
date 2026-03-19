@@ -10,8 +10,6 @@ import { StaticSlidesUploader } from './StaticSlidesUploader';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
 import { useSlideTemplates } from '../hooks/useSlideTemplates';
 
-const QUARTERS: QuarterType[] = ['Q1', 'Q2', 'Q3', 'Q4'];
-
 function getCurrentQuarter(): QuarterType {
   const month = new Date().getMonth();
   if (month < 3) return 'Q1';
