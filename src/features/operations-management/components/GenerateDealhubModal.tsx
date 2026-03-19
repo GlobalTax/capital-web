@@ -7,6 +7,7 @@ import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../util
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
 import { SlideTemplateEditor } from './SlideTemplateEditor';
+import { StaticSlidesUploader } from './StaticSlidesUploader';
 import { DEFAULT_FULL_TEMPLATE, type FullSlideTemplate } from '../types/slideTemplate';
 import { useSlideTemplates } from '../hooks/useSlideTemplates';
 
