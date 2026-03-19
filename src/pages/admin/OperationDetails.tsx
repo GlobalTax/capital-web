@@ -20,7 +20,7 @@ import { AssignmentPanel } from '@/features/operations-management/components/ass
 import { OperationHistoryTimeline } from '@/features/operations-management/components/history';
 import { OperationNotesPanel } from '@/features/operations-management/components/notes';
 import { OperationDocumentsPanel } from '@/features/operations-management/components/documents';
-import { GeneratePresentationModal } from '@/features/operations-management/components/GeneratePresentationModal';
+
 import { useMandatoInteracciones, type CreateInteraccionInput, type TipoInteraccion } from '@/hooks/useMandatoInteracciones';
 import { MandatoEquipoPanel } from '@/components/admin/mandatos/MandatoEquipoPanel';
 import { MandatoContactosAuditBanner } from '@/components/admin/mandatos/MandatoContactosAuditBanner';
@@ -89,7 +89,7 @@ const OperationDetails = () => {
   const [operation, setOperation] = useState<Operation | null>(null);
   const [loading, setLoading] = useState(true);
   const [savingFields, setSavingFields] = useState<Set<string>>(new Set());
-  const [showPresentationModal, setShowPresentationModal] = useState(false);
+  
 
   // Interacciones
   const { interacciones, isLoading: loadingInteracciones, createInteraccion, isCreating, deleteInteraccion } = useMandatoInteracciones(id);
@@ -289,14 +289,6 @@ const OperationDetails = () => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPresentationModal(true)}
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Generar Presentación
-          </Button>
           <div className="w-40">
             <Select 
               value={operation.status} 
@@ -836,12 +828,6 @@ const OperationDetails = () => {
           <OperationHistoryTimeline operationId={id!} />
         </div>
       </div>
-      {/* Presentation Modal */}
-      <GeneratePresentationModal
-        open={showPresentationModal}
-        onOpenChange={setShowPresentationModal}
-        operation={operation}
-      />
     </div>
   );
 };

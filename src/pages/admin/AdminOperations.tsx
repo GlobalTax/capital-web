@@ -44,7 +44,7 @@ import { SellerGuideDialog } from '@/components/operations/SellerGuideDialog';
 import { AdvancedSearchPanel } from '@/features/operations-management/components/search';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import * as XLSX from 'xlsx';
-import { GeneratePresentationModal } from '@/features/operations-management/components/GeneratePresentationModal';
+
 import { GenerateDealhubModal } from '@/features/operations-management/components/GenerateDealhubModal';
 
 interface Operation {
@@ -91,8 +91,6 @@ const AdminOperations = () => {
   const [selectedOperations, setSelectedOperations] = useState<Set<string>>(new Set());
   const [viewingOperation, setViewingOperation] = useState<Operation | null>(null);
   const [showSellerGuide, setShowSellerGuide] = useState(false);
-  const [showPresentationModal, setShowPresentationModal] = useState(false);
-  const [presentationOperation, setPresentationOperation] = useState<Operation | null>(null);
   const [showDealhubModal, setShowDealhubModal] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showProjectStatusModal, setShowProjectStatusModal] = useState(false);
@@ -1130,23 +1128,6 @@ const AdminOperations = () => {
             Generar Catálogo ROD
           </Button>
           <Button
-            onClick={() => {
-              if (selectedOperations.size === 0) {
-                toast({ title: 'Selecciona una operación', description: 'Marca el checkbox de una operación para generar su presentación', variant: 'destructive' });
-                return;
-              }
-              const opId = Array.from(selectedOperations)[0];
-              const op = operations.find(o => o.id === opId) || null;
-              setPresentationOperation(op);
-              setShowPresentationModal(true);
-            }}
-            variant="outline"
-            className="border-primary/20 hover:bg-primary/5 text-primary"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Generar Presentación
-          </Button>
-          <Button
             onClick={extractFinancialData}
             disabled={isExtracting}
             variant="outline"
@@ -1876,13 +1857,6 @@ const AdminOperations = () => {
         isLoading={isBulkUpdating}
       />
 
-      {presentationOperation && (
-        <GeneratePresentationModal
-          open={showPresentationModal}
-          onOpenChange={setShowPresentationModal}
-          operation={presentationOperation}
-        />
-      )}
 
       <GenerateDealhubModal
         open={showDealhubModal}
