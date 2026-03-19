@@ -399,7 +399,9 @@ export default function CampanasValoracion() {
         </TabsList>
       </Tabs>
 
-      {activeTab === 'summary' ? (
+      {activeTab === 'market-studies' ? (
+        <MarketStudiesPanel />
+      ) : activeTab === 'summary' ? (
         <OutboundSummaryDashboard />
       ) : (
       <>
