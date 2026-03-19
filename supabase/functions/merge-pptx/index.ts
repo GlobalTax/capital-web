@@ -32,7 +32,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { templateUrl, operationsBase64, sectionInsertPoints, sectionSlideCounts: clientSlideCounts } = await req.json();
+    const { templateUrl, operationsBase64, sectionInsertPoints, sectionSlideCounts: clientSlideCounts, skipSlides } = await req.json();
 
     if (!templateUrl || !operationsBase64 || !sectionInsertPoints) {
       return new Response(
