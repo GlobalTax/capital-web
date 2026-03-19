@@ -187,23 +187,23 @@ export type SlideType = keyof FullSlideTemplate;
 export const DEFAULT_COVER_TEMPLATE: CoverTemplate = {
   background: { color: '161B22' },
   logo: {
-    x: 0.6, y: 0.5, w: 2.5, h: 1.2,
-    visible: false, // hidden — we use yearBlock + branding text instead
+    x: 9.5, y: 0.4, w: 3.23, h: 1.0,
+    visible: true, // logo image top-right per template
     imageUrl: '',
   },
   yearBlock: {
     x: 0.6, y: 0.4, w: 4, h: 1.2,
-    fontSize: 72, color: 'FFFFFF', bold: true, visible: true,
+    fontSize: 80, color: 'FFFFFF', bold: true, visible: true,
   },
   branding: {
-    x: 9.5, y: 0.5, w: 3.23, h: 0.6,
-    fontSize: 14, color: '8B919B', bold: false, visible: true,
-    text: 'Capittal M&A · Consulting',
+    x: 9.5, y: 1.4, w: 3.23, h: 0.4,
+    fontSize: 12, color: '8B919B', bold: false, visible: true,
+    text: 'M&A · Consulting',
     align: 'right',
   },
   title: {
     x: 0.6, y: 4.8, w: 12.13, h: 1,
-    fontSize: 36, color: 'FFFFFF', bold: true, visible: true,
+    fontSize: 44, color: 'FFFFFF', bold: true, visible: true,
     text: 'Capittal Dealhub — Open Deals',
   },
   subtitle: {
@@ -217,7 +217,7 @@ export const DEFAULT_COVER_TEMPLATE: CoverTemplate = {
   },
   divider: {
     x: 0.6, y: 6.7, w: 12.13, h: 0.02,
-    visible: false, bgColor: '8B919B', // hidden per new template
+    visible: false, bgColor: '8B919B',
   },
   footer: {
     x: 0.6, y: 6.9, w: 12.13, h: 0.4,
