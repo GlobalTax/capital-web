@@ -217,8 +217,15 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
   });
 }
 
-function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, subtitle: string, sep: SeparatorTemplate) {
+function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, subtitle: string, sep: SeparatorTemplate, sectionKey?: string) {
   const slide = pptx.addSlide();
+
+  const bgImage = sectionKey && sep.backgroundImages?.[sectionKey];
+  if (bgImage) {
+    slide.background = { path: bgImage };
+    return;
+  }
+
   slide.background = { color: sep.background.color || NAVY };
 
   // Number (top-left, large)
