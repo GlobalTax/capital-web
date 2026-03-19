@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Upload, X, Image, FileText } from 'lucide-react';
+import { Upload, X, Image } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { FullSlideTemplate } from '../types/slideTemplate';
@@ -7,6 +7,7 @@ import { DEFAULT_TEMPLATE_SLIDE_MAP, DEFAULT_SKIP_SLIDES } from '../types/slideT
 import { DEALHUB_SECTIONS } from '../utils/generateDealhubPptx';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PptxTemplateLibrary } from './PptxTemplateLibrary';
 
 interface StaticSlidesUploaderProps {
   template: FullSlideTemplate;
