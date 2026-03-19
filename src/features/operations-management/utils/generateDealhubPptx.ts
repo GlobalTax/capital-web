@@ -409,6 +409,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
         x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
         fontSize: t.cta.fontSize || 11, fontFace: FONT, color: t.cta.color || WHITE,
         bold: t.cta.bold ?? true, align: t.cta.align || 'center', valign: t.cta.valign || 'middle',
+        hyperlink: { url: 'mailto:lluis@capittal.es' },
       });
     }
   }

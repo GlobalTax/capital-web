@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Check, ChevronDown, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../utils/generateDealhubPptx';
+import { generateDealhubPdf } from '../utils/generateDealhubPdf';
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
 import { StaticSlidesUploader } from './StaticSlidesUploader';
@@ -34,6 +36,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('config');
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
+  const [outputFormat, setOutputFormat] = useState<'pptx' | 'pdf'>('pptx');
 
   // Load saved template when modal opens
   useEffect(() => {
@@ -77,8 +80,12 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     setGenerating(true);
     try {
       const finalOps = activeOps.filter(op => !excludedOpIds.has(op.id));
-      await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
-      toast({ title: 'Catálogo ROD descargado' });
+      if (outputFormat === 'pdf') {
+        await generateDealhubPdf(finalOps, selectedSections, quarter);
+      } else {
+        await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
+      }
+      toast({ title: `Catálogo ROD descargado (${outputFormat.toUpperCase()})` });
       onOpenChange(false);
     } catch (e) {
       console.error(e);
@@ -224,7 +231,16 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
             {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             Guardar plantilla
           </button>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <Select value={outputFormat} onValueChange={(v: 'pptx' | 'pdf') => setOutputFormat(v)}>
+              <SelectTrigger className="w-[100px] h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pptx">PPTX</SelectItem>
+                <SelectItem value="pdf">PDF</SelectItem>
+              </SelectContent>
+            </Select>
             <button
               onClick={() => onOpenChange(false)}
               disabled={generating}
@@ -243,7 +259,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
               )}
             >
               {generating && <Loader2 className="h-4 w-4 animate-spin" />}
-              {generating ? 'Generando...' : 'Generar y Descargar'}
+              {generating ? 'Generando...' : `Descargar ${outputFormat.toUpperCase()}`}
             </button>
           </div>
         </div>
