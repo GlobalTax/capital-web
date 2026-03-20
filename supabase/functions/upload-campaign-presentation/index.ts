@@ -154,7 +154,7 @@ serve(async (req) => {
       if (action === "upload_blob") {
         const bucket = body.bucket as string;
         const base64 = body.base64 as string;
-        const allowedBuckets = ["campaign-presentations", "valuations"];
+        const allowedBuckets = ["campaign-presentations", "valuations", "market-studies"];
 
         if (!bucket || !base64) {
           return new Response(
