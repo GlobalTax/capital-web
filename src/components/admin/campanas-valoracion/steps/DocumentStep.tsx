@@ -145,10 +145,10 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Documento PDF
+            Documento PDF / PowerPoint
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Sube el PDF que se adjuntará a todos los emails de esta campaña
+            Sube el PDF o PowerPoint que se adjuntará a todos los emails de esta campaña
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
