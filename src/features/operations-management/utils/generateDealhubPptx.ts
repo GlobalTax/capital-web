@@ -436,8 +436,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
         infoY += 0.45;
       });
 
-      const oportunidadText = op.short_description || op.deal_type || 'Venta';
-      slide.addText('Oportunidad', {
+      const oportunidadText = (locale === 'en' ? (op.short_description_en || op.short_description) : op.short_description) || op.deal_type || (locale === 'en' ? 'Sale' : 'Venta');
+      slide.addText(i18n.opportunity, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.25,
         fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
       });
