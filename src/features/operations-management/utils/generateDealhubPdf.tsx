@@ -397,13 +397,13 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
                 </View>
               ))}
               <View style={{ marginTop: 4 }}>
-                <Text style={{ fontSize: 7.5, color: TEXT_MUTED, marginBottom: 3 }}>Oportunidad</Text>
+                <Text style={{ fontSize: 7.5, color: TEXT_MUTED, marginBottom: 3 }}>{i18n.opportunity}</Text>
                 <Text style={{
                   fontSize: (tmpl.infoRows.fontSize || 10) * 0.85,
                   color: hexColor(tmpl.infoRows.color, WHITE),
                   fontFamily: 'Helvetica-Bold',
                 }}>
-                  {op.short_description || op.deal_type || 'Venta'}
+                  {(locale === 'en' ? (op.short_description_en || op.short_description) : op.short_description) || op.deal_type || (locale === 'en' ? 'Sale' : 'Venta')}
                 </Text>
               </View>
             </View>
