@@ -419,8 +419,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
 
     if (t.infoRows.visible) {
       const simpleRows = [
-        { label: 'Ubicación', value: 'España' },
-        { label: 'Sector', value: op.sector || 'N/D' },
+        { label: i18n.location, value: i18n.locationValue },
+        { label: i18n.sector, value: op.sector || i18n.nd },
       ];
 
       let infoY = t.infoRows.y;
