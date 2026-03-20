@@ -130,5 +130,5 @@ export function useMarketStudies() {
     return data.signedUrl;
   };
 
-  return { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob };
+  return { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob, getSignedUrl };
 }
