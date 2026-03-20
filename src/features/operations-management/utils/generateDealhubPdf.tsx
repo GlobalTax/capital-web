@@ -484,8 +484,9 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
   );
 };
 
-const ClosingPage = ({ quarter, year, t }: { quarter: QuarterType; year: number; t: FullSlideTemplate }) => {
+const ClosingPage = ({ quarter, year, t, locale = 'es' }: { quarter: QuarterType; year: number; t: FullSlideTemplate; locale?: DealhubLocale }) => {
   const cl = t.closing || {};
+  const i18n = getI18n(locale);
   return (
     <Page size={[PW, PH]} style={[styles.page, { backgroundColor: hexColor((cl as any).background?.color, WHITE) }]}>
       {/* Top half — white */}
@@ -506,7 +507,7 @@ const ClosingPage = ({ quarter, year, t }: { quarter: QuarterType; year: number;
             fontFamily: 'Helvetica-Bold',
             marginBottom: 10,
           }}>
-            {(cl as any).thanksText?.text || 'Gracias'}
+            {(cl as any).thanksText?.text || i18n.thanks}
           </Text>
         )}
 
