@@ -381,8 +381,8 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
           {tmpl.infoRows.visible && (
             <View style={{ marginBottom: 10 }}>
               {[
-                { label: 'Ubicación', value: 'España' },
-                { label: 'Sector', value: op.sector || 'N/D' },
+                { label: i18n.location, value: i18n.locationValue },
+                { label: i18n.sector, value: op.sector || i18n.nd },
               ].map((row, i) => (
                 <View key={i} style={{ flexDirection: 'row', marginBottom: 8 }}>
                   <Text style={{ fontSize: 7.5, color: TEXT_MUTED, width: 80 }}>{row.label}</Text>
