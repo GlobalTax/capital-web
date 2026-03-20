@@ -34,6 +34,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { RegisterManualSendDialog } from '../RegisterManualSendDialog';
 
 interface Props {
   campaignId: string;
