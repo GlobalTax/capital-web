@@ -724,13 +724,19 @@ export default function ContactListDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('outbound_lists' as any)
-        .select('id, name, sector')
+        .select('id, name, sector, lista_madre_id')
         .order('name');
       if (error) throw error;
       return (data as any[]).filter((l: any) => l.id !== listId);
     },
   });
-  const uniqueSectors = React.useMemo(() => [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[], [allLists]);
+  const uniqueMadres = React.useMemo(() => {
+    const madreIds = [...new Set(allLists.map((l: any) => l.lista_madre_id).filter(Boolean))];
+    return madreIds.map(id => {
+      const madre = allLists.find((l: any) => l.id === id);
+      return { id, name: madre?.name || 'Lista desconocida' };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  }, [allLists]);
 
   // Query: parent list name for breadcrumb
   const { data: parentList } = useQuery({
@@ -2048,11 +2054,11 @@ export default function ContactListDetailPage() {
               <div className="flex items-center gap-3 p-3 bg-muted rounded-lg flex-wrap">
                 <span className="text-sm font-medium">{selectedIds.length.toLocaleString('es-ES')} seleccionadas</span>
                 {!isMadreList && (
-                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.sector || ''); }}>
+                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                     <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.sector || ''); }}>
+                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                   <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
                 </Button>
                 {!isMadreList && (
@@ -2303,7 +2309,7 @@ export default function ContactListDetailPage() {
                                             setMoveCopyMode('move');
                                             setMoveCopyTargetId('');
                                             setMoveCopyFromSublistId(currentSublistId || null);
-                                            setMoveCopySectorFilter(list?.sector || '');
+                                            setMoveCopySectorFilter(list?.lista_madre_id || '');
                                           }}>
                                             <ArrowUpDown className="h-4 w-4 mr-2" /> Cambiar de sublista
                                           </DropdownMenuItem>
@@ -2316,11 +2322,11 @@ export default function ContactListDetailPage() {
                                     <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                       <Edit className="h-4 w-4 mr-2" /> Editar
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.sector || ''); }}>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                                       <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
                                     </DropdownMenuItem>
                                     {!isMadreList && (
-                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.sector || ''); }}>
+                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                                         <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                       </DropdownMenuItem>
                                     )}
@@ -2784,28 +2790,28 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
-                {!moveCopyFromSublistId && uniqueSectors.length > 0 && (
+                {!moveCopyFromSublistId && uniqueMadres.length > 0 && (
                     <Popover open={moveCopySectorPopoverOpen} onOpenChange={setMoveCopySectorPopoverOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" role="combobox" className="w-full justify-between">
-                          {moveCopySectorFilter || 'Todos los sectores'}
+                          {moveCopySectorFilter ? uniqueMadres.find(m => m.id === moveCopySectorFilter)?.name || 'Lista Madre' : 'Todas las listas madre'}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                         <Command shouldFilter={false}>
-                          <CommandInput placeholder="Buscar sector..." value={moveCopySectorSearch} onValueChange={setMoveCopySectorSearch} />
+                          <CommandInput placeholder="Buscar lista madre..." value={moveCopySectorSearch} onValueChange={setMoveCopySectorSearch} />
                           <CommandList>
-                            <CommandEmpty>No se encontraron sectores</CommandEmpty>
+                            <CommandEmpty>No se encontraron listas madre</CommandEmpty>
                             <CommandGroup>
                               <CommandItem value="all" onSelect={() => { setMoveCopySectorFilter(''); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
                                 <Check className={cn("mr-2 h-4 w-4", !moveCopySectorFilter ? "opacity-100" : "opacity-0")} />
-                                Todos los sectores
+                                Todas las listas madre
                               </CommandItem>
-                              {uniqueSectors.filter(s => s.toLowerCase().includes(moveCopySectorSearch.toLowerCase())).map(s => (
-                                <CommandItem key={s} value={s} onSelect={() => { setMoveCopySectorFilter(s); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
-                                  <Check className={cn("mr-2 h-4 w-4", moveCopySectorFilter === s ? "opacity-100" : "opacity-0")} />
-                                  {s}
+                              {uniqueMadres.filter(m => m.name.toLowerCase().includes(moveCopySectorSearch.toLowerCase())).map(m => (
+                                <CommandItem key={m.id} value={m.id} onSelect={() => { setMoveCopySectorFilter(m.id); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", moveCopySectorFilter === m.id ? "opacity-100" : "opacity-0")} />
+                                  {m.name}
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -2839,7 +2845,7 @@ export default function ContactListDetailPage() {
                                 .filter(s => s.id !== moveCopyFromSublistId)
                                 .filter(s => s.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
                             : allLists
-                                .filter((l: any) => !moveCopySectorFilter || l.sector === moveCopySectorFilter)
+                                .filter((l: any) => !moveCopySectorFilter || l.lista_madre_id === moveCopySectorFilter)
                                 .filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
                           ).map((item: any) => (
                             <CommandItem
@@ -2911,28 +2917,28 @@ export default function ContactListDetailPage() {
             </p>
             {!bulkIsCreatingNewList ? (
               <>
-                {uniqueSectors.length > 0 && (
+                {uniqueMadres.length > 0 && (
                     <Popover open={bulkMoveCopySectorPopoverOpen} onOpenChange={setBulkMoveCopySectorPopoverOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" role="combobox" className="w-full justify-between">
-                          {bulkMoveCopySectorFilter || 'Todos los sectores'}
+                          {bulkMoveCopySectorFilter ? uniqueMadres.find(m => m.id === bulkMoveCopySectorFilter)?.name || 'Lista Madre' : 'Todas las listas madre'}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                         <Command shouldFilter={false}>
-                          <CommandInput placeholder="Buscar sector..." value={bulkMoveCopySectorSearch} onValueChange={setBulkMoveCopySectorSearch} />
+                          <CommandInput placeholder="Buscar lista madre..." value={bulkMoveCopySectorSearch} onValueChange={setBulkMoveCopySectorSearch} />
                           <CommandList>
-                            <CommandEmpty>No se encontraron sectores</CommandEmpty>
+                            <CommandEmpty>No se encontraron listas madre</CommandEmpty>
                             <CommandGroup>
                               <CommandItem value="all" onSelect={() => { setBulkMoveCopySectorFilter(''); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
                                 <Check className={cn("mr-2 h-4 w-4", !bulkMoveCopySectorFilter ? "opacity-100" : "opacity-0")} />
-                                Todos los sectores
+                                Todas las listas madre
                               </CommandItem>
-                              {uniqueSectors.filter(s => s.toLowerCase().includes(bulkMoveCopySectorSearch.toLowerCase())).map(s => (
-                                <CommandItem key={s} value={s} onSelect={() => { setBulkMoveCopySectorFilter(s); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
-                                  <Check className={cn("mr-2 h-4 w-4", bulkMoveCopySectorFilter === s ? "opacity-100" : "opacity-0")} />
-                                  {s}
+                              {uniqueMadres.filter(m => m.name.toLowerCase().includes(bulkMoveCopySectorSearch.toLowerCase())).map(m => (
+                                <CommandItem key={m.id} value={m.id} onSelect={() => { setBulkMoveCopySectorFilter(m.id); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", bulkMoveCopySectorFilter === m.id ? "opacity-100" : "opacity-0")} />
+                                  {m.name}
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -2957,7 +2963,7 @@ export default function ContactListDetailPage() {
                         <CommandEmpty>No se encontraron listas</CommandEmpty>
                         <CommandGroup>
                           {allLists
-                            .filter((l: any) => !bulkMoveCopySectorFilter || l.sector === bulkMoveCopySectorFilter)
+                            .filter((l: any) => !bulkMoveCopySectorFilter || l.lista_madre_id === bulkMoveCopySectorFilter)
                             .filter((l: any) => l.name.toLowerCase().includes(bulkMoveCopySearchTerm.toLowerCase()))
                             .map((l: any) => (
                               <CommandItem
