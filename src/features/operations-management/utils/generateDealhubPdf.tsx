@@ -141,9 +141,10 @@ const CoverPage = ({ quarter, year, t }: { quarter: QuarterType; year: number; t
   );
 };
 
-const IndexPage = ({ sectionCounts, t }: { sectionCounts: Record<string, number>; t: FullSlideTemplate }) => {
+const IndexPage = ({ sectionCounts, t, locale = 'es' }: { sectionCounts: Record<string, number>; t: FullSlideTemplate; locale?: DealhubLocale }) => {
   const idx = t.index;
   const sectionColors = idx.sectionColors || ['#2563EB', '#7C3AED', '#EA580C', '#059669'];
+  const i18n = getI18n(locale);
 
   return (
     <Page size={[PW, PH]} style={[styles.page, { backgroundColor: hexColor(idx.background.color, WHITE) }]}>
@@ -157,7 +158,7 @@ const IndexPage = ({ sectionCounts, t }: { sectionCounts: Record<string, number>
           color: hexColor(idx.title.color, NAVY),
           fontFamily: 'Helvetica-Bold',
         }}>
-          Índice de Oportunidades
+          {i18n.indexTitle}
         </Text>
       )}
 
