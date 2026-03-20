@@ -2790,28 +2790,28 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
-                {!moveCopyFromSublistId && uniqueSectors.length > 0 && (
+                {!moveCopyFromSublistId && uniqueMadres.length > 0 && (
                     <Popover open={moveCopySectorPopoverOpen} onOpenChange={setMoveCopySectorPopoverOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" role="combobox" className="w-full justify-between">
-                          {moveCopySectorFilter || 'Todos los sectores'}
+                          {moveCopySectorFilter ? uniqueMadres.find(m => m.id === moveCopySectorFilter)?.name || 'Lista Madre' : 'Todas las listas madre'}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                         <Command shouldFilter={false}>
-                          <CommandInput placeholder="Buscar sector..." value={moveCopySectorSearch} onValueChange={setMoveCopySectorSearch} />
+                          <CommandInput placeholder="Buscar lista madre..." value={moveCopySectorSearch} onValueChange={setMoveCopySectorSearch} />
                           <CommandList>
-                            <CommandEmpty>No se encontraron sectores</CommandEmpty>
+                            <CommandEmpty>No se encontraron listas madre</CommandEmpty>
                             <CommandGroup>
                               <CommandItem value="all" onSelect={() => { setMoveCopySectorFilter(''); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
                                 <Check className={cn("mr-2 h-4 w-4", !moveCopySectorFilter ? "opacity-100" : "opacity-0")} />
-                                Todos los sectores
+                                Todas las listas madre
                               </CommandItem>
-                              {uniqueSectors.filter(s => s.toLowerCase().includes(moveCopySectorSearch.toLowerCase())).map(s => (
-                                <CommandItem key={s} value={s} onSelect={() => { setMoveCopySectorFilter(s); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
-                                  <Check className={cn("mr-2 h-4 w-4", moveCopySectorFilter === s ? "opacity-100" : "opacity-0")} />
-                                  {s}
+                              {uniqueMadres.filter(m => m.name.toLowerCase().includes(moveCopySectorSearch.toLowerCase())).map(m => (
+                                <CommandItem key={m.id} value={m.id} onSelect={() => { setMoveCopySectorFilter(m.id); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", moveCopySectorFilter === m.id ? "opacity-100" : "opacity-0")} />
+                                  {m.name}
                                 </CommandItem>
                               ))}
                             </CommandGroup>
