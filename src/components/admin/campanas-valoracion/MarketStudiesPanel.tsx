@@ -28,7 +28,7 @@ function formatFileSize(bytes: number) {
 }
 
 export function MarketStudiesPanel() {
-  const { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getDownloadUrl } = useMarketStudies();
+  const { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob } = useMarketStudies();
   const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -71,24 +71,33 @@ export function MarketStudiesPanel() {
 
   const handleDownload = async (study: MarketStudy) => {
     try {
-      const url = await getDownloadUrl(study.storage_path, true);
+      const fileBlob = await getFileBlob(study.storage_path);
+      const url = URL.createObjectURL(fileBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = study.file_name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
-      toast({ title: 'Error al descargar', description: err?.message || 'No se pudo obtener la URL de descarga', variant: 'destructive' });
+      toast({ title: 'Error al descargar', description: err?.message || 'No se pudo descargar el archivo', variant: 'destructive' });
     }
   };
 
   const handlePreview = async (study: MarketStudy) => {
     try {
-      const url = await getDownloadUrl(study.storage_path, false);
-      window.open(url, '_blank');
+      const fileBlob = await getFileBlob(study.storage_path);
+      const url = URL.createObjectURL(fileBlob);
+      const previewWindow = window.open(url, '_blank', 'noopener,noreferrer');
+
+      if (!previewWindow) {
+        window.location.href = url;
+      }
+
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (err: any) {
-      toast({ title: 'Error al previsualizar', description: err?.message || 'No se pudo obtener la URL', variant: 'destructive' });
+      toast({ title: 'Error al previsualizar', description: err?.message || 'No se pudo abrir el archivo', variant: 'destructive' });
     }
   };
 
