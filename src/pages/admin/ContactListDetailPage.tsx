@@ -2043,7 +2043,7 @@ export default function ContactListDetailPage() {
               <div className="flex items-center gap-3 p-3 bg-muted rounded-lg flex-wrap">
                 <span className="text-sm font-medium">{selectedIds.length.toLocaleString('es-ES')} seleccionadas</span>
                 {!isMadreList && (
-                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.sector || ''); }}>
                     <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
                   </Button>
                 )}
