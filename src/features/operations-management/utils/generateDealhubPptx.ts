@@ -350,7 +350,8 @@ function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, s
   }
 }
 
-function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
+function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, locale: DealhubLocale = 'es') {
+  const i18n = getI18n(locale);
   const slide = pptx.addSlide();
   slide.background = { color: WHITE };
 
@@ -366,7 +367,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
   }
 
   if (t.description.visible) {
-    const rawDesc = op.description || '';
+    const rawDesc = (locale === 'en' ? (op.description_en || op.description) : op.description) || '';
     const desc = rawDesc.length > 800 ? rawDesc.substring(0, 797) + '...' : rawDesc;
     slide.addText(desc, {
       x: t.description.x, y: t.description.y, w: t.description.w, h: t.description.h,
@@ -379,9 +380,9 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
     });
   }
 
-  const highlights = op.highlights || [];
+  const highlights = (locale === 'en' ? (op.highlights_en || op.highlights) : op.highlights) || [];
   if (t.highlights.visible && highlights.length > 0) {
-    slide.addText('Aspectos Destacados', {
+    slide.addText(i18n.highlights, {
       x: t.highlights.x, y: t.highlights.y, w: t.highlights.w, h: 0.35,
       fontSize: t.highlights.fontSize || 11, fontFace: FONT, color: t.highlights.color || NAVY,
       bold: t.highlights.bold ?? true, align: t.highlights.align,
