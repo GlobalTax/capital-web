@@ -2047,7 +2047,7 @@ export default function ContactListDetailPage() {
                     <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.sector || ''); }}>
                   <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
                 </Button>
                 {!isMadreList && (
