@@ -603,8 +603,14 @@ export default function ContactListDetailPage() {
             return hasData && val >= range.min && val < (range.max ?? Infinity);
           });
         });
+      } else if ((KEYWORD_FILTER_COLUMNS as readonly string[]).includes(colKey)) {
+        // Keyword contains filter (for descripcion_actividad)
+        result = result.filter(c => {
+          const val = ((c as any)[colKey] || '').toLowerCase();
+          return selectedValues.some(keyword => val.includes(keyword.toLowerCase()));
+        });
       } else {
-        // Text filter
+        // Text exact filter
         result = result.filter(c => {
           const val = (c as any)[colKey];
           return val && selectedValues.includes(val);
