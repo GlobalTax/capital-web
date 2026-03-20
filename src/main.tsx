@@ -35,7 +35,9 @@ const renderApp = () => {
     }
 
     const root = createRoot(rootElement);
-    root.render(<App />);
+    root.render(
+      <App />
+    );
     console.log('✅ Capittal App iniciado correctamente');
 
     // Initialize Web Vitals monitoring (non-blocking)
