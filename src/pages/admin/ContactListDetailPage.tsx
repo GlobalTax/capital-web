@@ -1829,7 +1829,6 @@ export default function ContactListDetailPage() {
     return Object.entries(groups).filter(([, g]) => g.length > 1);
   }, [companies]);
 
-  const [isDedupLoading, setIsDedupLoading] = useState(false);
   const handleDedup = async () => {
     if (duplicateGroups.length === 0) return;
     const idsToDelete: string[] = [];
