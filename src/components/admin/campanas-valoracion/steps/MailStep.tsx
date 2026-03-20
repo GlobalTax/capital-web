@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Send, Loader2, Eye, Mail, MoreVertical, FileText, CheckCircle2, Clock, AlertCircle,
-  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users,
+  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users, MailCheck,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
