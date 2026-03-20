@@ -2765,7 +2765,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Move/Copy Modal */}
-      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); } }}>
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); setMoveCopySectorFilter(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
