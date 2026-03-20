@@ -1820,7 +1820,7 @@ export default function ContactListDetailPage() {
   const duplicateGroups = useMemo(() => {
     const groups: Record<string, ContactListCompany[]> = {};
     companies.forEach(c => {
-      const key = (c.empresa || '').trim().toLowerCase();
+      const key = (c.cif || '').trim().toLowerCase();
       if (!key) return;
       if (!groups[key]) groups[key] = [];
       groups[key].push(c);
