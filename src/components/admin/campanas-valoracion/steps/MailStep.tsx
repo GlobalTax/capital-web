@@ -556,8 +556,14 @@ function MailListSection({
                             >
                               <Send className="h-3.5 w-3.5 mr-2" />Enviar
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                           </>
                         )}
+                        <DropdownMenuItem onClick={() => setManualSendTargets([{
+                          companyId: c.id, companyName: c.client_company, campaignId: campaign.id,
+                        }])}>
+                          <MailCheck className="h-3.5 w-3.5 mr-2" />Registrar envío manual
+                        </DropdownMenuItem>
                         {!email && (
                           <DropdownMenuItem disabled>
                             <Mail className="h-3.5 w-3.5 mr-2" />Sin email generado
