@@ -2940,8 +2940,7 @@ export default function ContactListDetailPage() {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                  ) : null;
-                })()}
+                )}
                 <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
