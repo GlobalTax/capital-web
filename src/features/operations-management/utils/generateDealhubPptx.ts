@@ -505,7 +505,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
   }
 }
 
-function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate) {
+function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate, locale: DealhubLocale = 'es') {
+  const closingLocaleTexts = getI18n(locale);
   const slide = pptx.addSlide();
 
   if (cl.backgroundImage) {
