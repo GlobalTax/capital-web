@@ -730,6 +730,7 @@ export default function ContactListDetailPage() {
       return (data as any[]).filter((l: any) => l.id !== listId);
     },
   });
+  const uniqueSectors = React.useMemo(() => [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[], [allLists]);
 
   // Query: parent list name for breadcrumb
   const { data: parentList } = useQuery({
