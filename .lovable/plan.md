@@ -1,34 +1,24 @@
 
 
-## Incluir envíos manuales en las métricas KPI de "1r Envío"
+## Corregir KPI "Enviadas" para contar solo empresas con dato de entrega
 
-### Problema
+### Problema actual
+`sentCount` cuenta empresas con `status === 'sent'` O que estén en `emailSentMap` (tienen registro en `campaign_emails`). Pero el usuario quiere que cuente solo las que tienen un `delivery_status` real en la columna "Entrega" (no `null`, no `pending`).
 
-`sentCount` solo mira `company.status === 'sent'`, pero algunas empresas con emails registrados manualmente (o previamente) pueden tener status `'calculated'` o `'created'`. Las métricas no reflejan el track completo.
+### Cambio
 
-### Cambio en `CampaignSummaryStep.tsx`
-
-**Línea ~294**: Cambiar el cálculo de `sentCount` para que considere TAMBIÉN las empresas que tienen un registro en `campaign_emails` (a través de `emailSentMap`):
+**Archivo: `src/components/admin/campanas-valoracion/steps/CampaignSummaryStep.tsx`** — Línea 294
 
 ```tsx
 // Antes:
-const sentCount = companies.filter(c => c.status === 'sent').length;
+const sentCount = companies.filter(c => c.status === 'sent' || emailSentMap.has(c.id)).length;
 
 // Después:
-const sentCount = companies.filter(c => 
-  c.status === 'sent' || emailSentMap.has(c.id)
-).length;
+const sentCount = companies.filter(c => {
+  const tracking = emailTrackingMap.get(c.id);
+  return tracking?.delivery_status && tracking.delivery_status !== 'pending';
+}).length;
 ```
 
-Esto captura:
-- Empresas con status `'sent'` (envío normal vía outbound queue)  
-- Empresas con un registro en `campaign_emails` (envío manual registrado, aunque su status no se actualizó)
-
-### También corregir el build error
-
-**`src/main.tsx` y `src/App.tsx`**: Los errores de `duplicate data-lov-id` son artefactos del tagger de Lovable, no del código fuente real. El source está limpio (verificado). Si persiste, se hará un touch mínimo (añadir un comentario) para forzar re-compilación limpia.
-
-### Resultado
-
-Los KPIs de "Enviadas" y "Tasa éxito" incluirán tanto los envíos automáticos como los registrados manualmente, dando el track completo.
+Esto cuenta solo empresas que tienen un `delivery_status` con valor real (`delivered`, `bounced`, `sent`, `opened`), que son exactamente las que muestran un badge en la columna "Entrega".
 
