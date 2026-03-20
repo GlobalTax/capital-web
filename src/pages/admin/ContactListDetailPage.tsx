@@ -346,6 +346,7 @@ export default function ContactListDetailPage() {
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
   const [isSendToCampaignOpen, setIsSendToCampaignOpen] = useState(false);
   const [dedupKeep, setDedupKeep] = useState<'newest' | 'oldest'>('newest');
+  const [isDedupLoading, setIsDedupLoading] = useState(false);
   const [drawerCompany, setDrawerCompany] = useState<ContactListCompany | null>(null);
   const [editingCompany, setEditingCompany] = useState<ContactListCompany | null>(null);
 
@@ -1820,7 +1821,7 @@ export default function ContactListDetailPage() {
   const duplicateGroups = useMemo(() => {
     const groups: Record<string, ContactListCompany[]> = {};
     companies.forEach(c => {
-      const key = (c.empresa || '').trim().toLowerCase();
+      const key = (c.cif || '').trim().toLowerCase();
       if (!key) return;
       if (!groups[key]) groups[key] = [];
       groups[key].push(c);
@@ -1839,10 +1840,18 @@ export default function ContactListDetailPage() {
       toRemove.forEach(c => idsToDelete.push(c.id));
     }
     if (idsToDelete.length === 0) return;
-    await deleteCompanies.mutateAsync(idsToDelete);
-    queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
-    setIsDedupModalOpen(false);
-    toast.success(`${idsToDelete.length} duplicados eliminados`);
+    setIsDedupLoading(true);
+    try {
+      await deleteCompanies.mutateAsync(idsToDelete);
+      await queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+      setIsDedupModalOpen(false);
+      toast.success(`${idsToDelete.length} duplicados eliminados`);
+    } catch (err) {
+      console.error('Error eliminando duplicados:', err);
+      toast.error('Error al eliminar duplicados. Inténtalo de nuevo.');
+    } finally {
+      setIsDedupLoading(false);
+    }
   };
 
   const handleEstadoChange = async (newEstado: string) => {
@@ -2685,8 +2694,8 @@ export default function ContactListDetailPage() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Se han encontrado <strong>{duplicateGroups.length}</strong> empresas duplicadas (por nombre).
-              Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros.
+              Se han encontrado <strong>{duplicateGroups.length}</strong> CIFs duplicados.
+              Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros redundantes.
             </p>
             <div>
               <Label className="mb-2 block">¿Qué registro conservar?</Label>
@@ -2701,18 +2710,21 @@ export default function ContactListDetailPage() {
               </Select>
             </div>
             <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-1">
-              {duplicateGroups.map(([name, group]) => (
-                <div key={name} className="flex justify-between text-sm">
-                  <span className="truncate font-medium">{group[0].empresa}</span>
+              {duplicateGroups.map(([cif, group]) => (
+                <div key={cif} className="flex justify-between text-sm">
+                  <span className="truncate">
+                    <span className="font-medium">{group[0].empresa}</span>
+                    <span className="text-muted-foreground ml-1">({group[0].cif})</span>
+                  </span>
                   <Badge variant="secondary" className="ml-2 flex-shrink-0">{group.length}x</Badge>
                 </div>
               ))}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleDedup}>
-              Eliminar duplicados
+            <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)} disabled={isDedupLoading}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleDedup} disabled={isDedupLoading}>
+              {isDedupLoading ? 'Eliminando...' : 'Eliminar duplicados'}
             </Button>
           </DialogFooter>
         </DialogContent>
