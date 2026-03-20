@@ -2869,7 +2869,7 @@ export default function ContactListDetailPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); }}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); setMoveCopySectorFilter(''); }}>Cancelar</Button>
             <Button onClick={handleMoveCopy} disabled={(!isCreatingNewList && !moveCopyTargetId) || (isCreatingNewList && !newListName.trim()) || isMoveCopyLoading}>
               {isMoveCopyLoading ? 'Procesando...' : moveCopyFromSublistId ? 'Reasignar' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
             </Button>
