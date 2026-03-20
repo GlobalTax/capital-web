@@ -461,10 +461,10 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       });
 
       const financialRows = [
-        { label: 'Facturación', value: fmtCurrency(op.revenue_amount) },
-        { label: 'EBITDA', value: fmtCurrency(op.ebitda_amount) },
-        { label: 'Margen EBITDA', value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
-        { label: 'Empleados', value: op.company_size_employees || 'N/D' },
+        { label: i18n.revenue, value: fmtCurrency(op.revenue_amount) },
+        { label: i18n.ebitda, value: fmtCurrency(op.ebitda_amount) },
+        { label: i18n.ebitdaMargin, value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
+        { label: i18n.employees, value: op.company_size_employees || i18n.nd },
       ];
 
       financialRows.forEach((row, i) => {
