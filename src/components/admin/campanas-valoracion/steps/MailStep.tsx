@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Send, Loader2, Eye, Mail, MoreVertical, FileText, CheckCircle2, Clock, AlertCircle,
-  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users,
+  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users, MailCheck,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { RegisterManualSendDialog } from '../RegisterManualSendDialog';
 
 interface Props {
   campaignId: string;
@@ -429,6 +431,7 @@ function MailListSection({
   onSendEmail,
   onSendAll,
   isSendingAll,
+  onRefresh,
 }: {
   companies: CampaignCompany[];
   emails: CampaignEmail[];
@@ -438,8 +441,10 @@ function MailListSection({
   onSendEmail: (id: string) => Promise<void>;
   onSendAll: () => Promise<void>;
   isSendingAll: boolean;
+  onRefresh: () => void;
 }) {
   const [showSendAllConfirm, setShowSendAllConfirm] = useState(false);
+  const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
   const emailMap = new Map(emails.map(e => [e.company_id, e]));
   const presMap = new Map(presentations.map((p: any) => [p.company_id, p]));
 
@@ -552,8 +557,14 @@ function MailListSection({
                             >
                               <Send className="h-3.5 w-3.5 mr-2" />Enviar
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                           </>
                         )}
+                        <DropdownMenuItem onClick={() => setManualSendTargets([{
+                          companyId: c.id, companyName: c.client_company, campaignId: campaign.id,
+                        }])}>
+                          <MailCheck className="h-3.5 w-3.5 mr-2" />Registrar envío manual
+                        </DropdownMenuItem>
                         {!email && (
                           <DropdownMenuItem disabled>
                             <Mail className="h-3.5 w-3.5 mr-2" />Sin email generado
@@ -589,6 +600,14 @@ function MailListSection({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Manual send dialog */}
+      <RegisterManualSendDialog
+        open={manualSendTargets.length > 0}
+        onOpenChange={(o) => { if (!o) setManualSendTargets([]); }}
+        targets={manualSendTargets}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
@@ -829,6 +848,7 @@ function CcRecipientsSection({ campaignId, campaign }: { campaignId: string; cam
 
 // ─── Main MailStep ──────────────────────────────────────────────────────
 export function MailStep({ campaignId, campaign }: Props) {
+  const queryClient = useQueryClient();
   const { companies } = useCampaignCompanies(campaignId);
   const { presentations } = useCampaignPresentations(campaignId);
   const {
@@ -926,6 +946,10 @@ export function MailStep({ campaignId, campaign }: Props) {
           onSendEmail={sendEmail}
           onSendAll={async () => { await sendAllPending(); }}
           isSendingAll={isSendingAll}
+          onRefresh={() => {
+            queryClient.invalidateQueries({ queryKey: ['campaign-emails', campaignId] });
+            queryClient.invalidateQueries({ queryKey: ['campaign-companies', campaignId] });
+          }}
         />
       </TabsContent>
 
