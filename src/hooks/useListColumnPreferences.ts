@@ -58,7 +58,13 @@ export const useListColumnPreferences = (listId?: string, isMadreList = false, i
     if (saved) {
       // Merge with defaults to pick up any new columns added later
       const savedKeys = new Set(saved.map(c => c.key));
-      const merged = [...saved];
+      const merged = saved.map(c => {
+        // Force descripcion_actividad visible for existing users
+        if (c.key === 'descripcion_actividad' && !c.visible) {
+          return { ...c, visible: true };
+        }
+        return c;
+      });
       DEFAULT_COLUMNS.forEach(def => {
         if (!savedKeys.has(def.key)) {
           merged.push({ ...def, position: merged.length });
