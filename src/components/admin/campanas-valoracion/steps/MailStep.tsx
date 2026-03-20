@@ -944,6 +944,10 @@ export function MailStep({ campaignId, campaign }: Props) {
           onSendEmail={sendEmail}
           onSendAll={async () => { await sendAllPending(); }}
           isSendingAll={isSendingAll}
+          onRefresh={() => {
+            queryClient.invalidateQueries({ queryKey: ['campaign-emails', campaignId] });
+            queryClient.invalidateQueries({ queryKey: ['campaign-companies', campaignId] });
+          }}
         />
       </TabsContent>
 
