@@ -16,12 +16,18 @@ async function fetchAllRows<T = any>(
   pageSize = 1000
 ): Promise<T[]> {
   const allData: T[] = [];
+  const seenIds = new Set<string>();
   let from = 0;
   while (true) {
     const { data, error } = await buildQuery(from, from + pageSize - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
-    allData.push(...data);
+    for (const row of data as any[]) {
+      const id = row?.id;
+      if (id && seenIds.has(id)) continue;
+      if (id) seenIds.add(id);
+      allData.push(row);
+    }
     if (data.length < pageSize) break;
     from += pageSize;
   }
@@ -213,7 +219,7 @@ export const useContactListCompanies = (listId: string | undefined, madreListId?
     enabled: !!listId,
     queryFn: async () => {
       const data = await fetchAllRows<ContactListCompany>((from, to) =>
-        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).range(from, to)
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).order('id').range(from, to)
       );
       return data;
     },
