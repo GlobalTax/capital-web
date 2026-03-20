@@ -1,20 +1,13 @@
 
 
-## Añadir "Descripción Actividad" como columna configurable en listados
+## Hacer visible la columna "Descripción" por defecto
 
 ### Problema
-El campo `descripcion_actividad` ya existe en la base de datos y ya tiene lógica de renderizado en la tabla (filtrado clickable, exportación, formularios), pero no aparece en el menú de columnas visibles porque falta en el array `DEFAULT_COLUMNS` del hook `useListColumnPreferences.ts`.
+La columna `descripcion_actividad` está en `DEFAULT_COLUMNS` con `visible: false`. Además, los usuarios que ya tienen preferencias guardadas en localStorage no verán el cambio del default porque la lógica de merge solo añade columnas nuevas (por key) — y esta key ya existe en sus prefs guardadas como `visible: false`.
 
-### Cambio
+### Cambios
 
 **`src/hooks/useListColumnPreferences.ts`**
-- Añadir una nueva entrada al array `DEFAULT_COLUMNS`:
-  ```
-  { key: 'descripcion_actividad', label: 'Descripción', visible: false, position: 15, minWidth: '200px' }
-  ```
-  Se añade con `visible: false` por defecto para no alterar la vista actual de usuarios existentes, pero aparecerá en el configurador de columnas para activarla.
-
-Eso es todo. El renderizado de la celda ya está implementado (case `descripcion_actividad` en `renderCell`), los filtros multi-selección ya lo soportan, y la exportación Excel ya lo incluye.
-
-**Nota**: Los usuarios que ya tienen preferencias guardadas en localStorage recibirán la nueva columna automáticamente gracias a la lógica de merge existente (líneas 59-64 del hook).
+1. Cambiar `visible: false` → `visible: true` en la entrada `descripcion_actividad` de `DEFAULT_COLUMNS` (línea 30)
+2. En la lógica de merge de preferencias guardadas (líneas 56-65), forzar que si la columna `descripcion_actividad` existe en las prefs guardadas con `visible: false`, se actualice a `visible: true`. Esto es un one-time fix para usuarios existentes.
 
