@@ -1832,14 +1832,25 @@ export default function ContactListDetailPage() {
   const handleDedup = async () => {
     if (duplicateGroups.length === 0) return;
     const idsToDelete: string[] = [];
+    const getCompletenessScore = (c: ContactListCompany) =>
+      Object.values(c).filter(v => v !== null && v !== undefined && v !== '').length;
     for (const [, group] of duplicateGroups) {
-      const sorted = [...group].sort((a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
-      const toRemove = dedupKeep === 'newest' ? sorted.slice(0, -1) : sorted.slice(1);
+      // Deduplicate by actual id first (safety net for pagination ghosts)
+      const uniqueById = [...new Map(group.map(c => [c.id, c])).values()];
+      if (uniqueById.length <= 1) continue;
+      // Keep the most complete record; tie-break by newest
+      const sorted = [...uniqueById].sort((a, b) => {
+        const scoreDiff = getCompletenessScore(b) - getCompletenessScore(a);
+        if (scoreDiff !== 0) return scoreDiff;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+      const [, ...toRemove] = sorted;
       toRemove.forEach(c => idsToDelete.push(c.id));
     }
-    if (idsToDelete.length === 0) return;
+    if (idsToDelete.length === 0) {
+      toast.info('No hay duplicados reales que eliminar.');
+      return;
+    }
     setIsDedupLoading(true);
     try {
       await deleteCompanies.mutateAsync(idsToDelete);

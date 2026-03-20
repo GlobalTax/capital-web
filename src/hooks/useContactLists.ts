@@ -219,7 +219,7 @@ export const useContactListCompanies = (listId: string | undefined, madreListId?
     enabled: !!listId,
     queryFn: async () => {
       const data = await fetchAllRows<ContactListCompany>((from, to) =>
-        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).range(from, to)
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).order('id').range(from, to)
       );
       return data;
     },
