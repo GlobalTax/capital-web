@@ -2963,7 +2963,7 @@ export default function ContactListDetailPage() {
                         <CommandEmpty>No se encontraron listas</CommandEmpty>
                         <CommandGroup>
                           {allLists
-                            .filter((l: any) => !bulkMoveCopySectorFilter || l.sector === bulkMoveCopySectorFilter)
+                            .filter((l: any) => !bulkMoveCopySectorFilter || l.lista_madre_id === bulkMoveCopySectorFilter)
                             .filter((l: any) => l.name.toLowerCase().includes(bulkMoveCopySearchTerm.toLowerCase()))
                             .map((l: any) => (
                               <CommandItem
