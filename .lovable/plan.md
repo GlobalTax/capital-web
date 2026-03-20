@@ -1,32 +1,32 @@
 
 
-## Reemplazar filtro de sector por filtro de Lista Madre en diálogos Mover/Copiar
+## Auto-deshabilitar campañas de pruebas en Resumen General
 
-### Problema
-El selector muestra sectores, pero el usuario quiere filtrar por Lista Madre para ver las sublistas vinculadas a cada madre.
+### Cambio
 
-### Cambios en `src/pages/admin/ContactListDetailPage.tsx`
+**Archivo: `src/components/admin/campanas-valoracion/OutboundSummaryDashboard.tsx`**
 
-**1. Ampliar query `allLists` (línea 727)**
-- Añadir `lista_madre_id` al select: `'id, name, sector, lista_madre_id'`
+Inicializar `disabledCampaigns` con las campañas cuyo sector sea "Pruebas" (o nombre contenga "prueba"), en vez de empezar con un `Set` vacío.
 
-**2. Reemplazar `uniqueSectors` por `uniqueMadres`**
-- Computar un array de madres únicas a partir de `allLists`: extraer los `lista_madre_id` distintos, buscar su nombre en `allLists`, y generar `{ id, name }[]`.
+Como los datos se cargan con React Query, no se puede saber los IDs al inicio. Se usará un `useEffect` que, cuando `raw` se cargue por primera vez, detecte las campañas con `sector?.toLowerCase() === 'pruebas'` y las añada al `disabledCampaigns`.
 
-**3. Renombrar estados de filtro**
-- `moveCopySectorFilter` → filtrará por `lista_madre_id` en vez de sector.
-- La UI del Combobox mostrará nombres de listas madre en vez de sectores.
-- Pre-selección: usar `list?.lista_madre_id` (la madre de la lista actual) al abrir el diálogo.
+Se añadirá un `useRef` para ejecutar esta lógica solo una vez (primera carga), sin sobreescribir selecciones manuales del usuario en cargas posteriores.
 
-**4. Filtrado de listas destino (líneas 2841-2843)**
-- Cambiar `.filter((l: any) => !moveCopySectorFilter || l.sector === moveCopySectorFilter)` por `.filter((l: any) => !moveCopySectorFilter || l.lista_madre_id === moveCopySectorFilter)`.
+```tsx
+const initializedRef = useRef(false);
 
-**5. Aplicar lo mismo al diálogo bulk (líneas 2959-2960)**
-- Misma lógica de filtro por `lista_madre_id`.
+useEffect(() => {
+  if (raw?.campaigns.length && !initializedRef.current) {
+    initializedRef.current = true;
+    const pruebas = raw.campaigns
+      .filter(c => c.sector?.toLowerCase() === 'pruebas')
+      .map(c => c.id);
+    if (pruebas.length) {
+      setDisabledCampaigns(new Set(pruebas));
+    }
+  }
+}, [raw]);
+```
 
-**6. Mostrar sector como info secundaria**
-- En cada `CommandItem` de lista destino, mostrar el sector como texto secundario para contexto adicional.
-
-### Resultado
-Al abrir "Mover/Copiar", el selector mostrará las Listas Madre disponibles (pre-seleccionando la madre de la lista actual). Las listas destino se filtrarán mostrando solo las sublistas de esa madre.
+El usuario podrá re-habilitarlas manualmente con el checkbox de cada campaña.
 
