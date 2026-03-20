@@ -86,8 +86,8 @@ export function MarketStudiesPanel() {
     try {
       const url = await getDownloadUrl(study.storage_path, false);
       window.open(url, '_blank');
-    } catch {
-      // toast handled in hook
+    } catch (err: any) {
+      toast({ title: 'Error al previsualizar', description: err?.message || 'No se pudo obtener la URL', variant: 'destructive' });
     }
   };
 
