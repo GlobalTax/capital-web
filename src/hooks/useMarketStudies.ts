@@ -108,10 +108,15 @@ export function useMarketStudies() {
     },
   });
 
-  const getDownloadUrl = async (storagePath: string) => {
+  const getDownloadUrl = async (storagePath: string, forDownload = false) => {
+    const options: any = {};
+    if (forDownload) {
+      const fileName = storagePath.split('/').pop() || 'document';
+      options.download = fileName;
+    }
     const { data, error } = await supabase.storage
       .from('market-studies')
-      .createSignedUrl(storagePath, 3600);
+      .createSignedUrl(storagePath, 3600, options);
     if (error) throw error;
     return data.signedUrl;
   };
