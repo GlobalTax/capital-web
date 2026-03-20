@@ -506,12 +506,12 @@ export default function ContactListsPage() {
             // Multiple sectors — collapsible folder groups
             <div className="divide-y divide-border">
               {groupedBySector.map(group => {
-                const isCollapsed = collapsedSectors.has(group.sector);
+                const isExpanded = expandedSectors.has(group.sector);
                 const totalEmpresas = group.lists.reduce((acc, l) => acc + (l.contact_count || 0), 0);
                 return (
                   <Collapsible
                     key={group.sector}
-                    open={!isCollapsed}
+                    open={isExpanded}
                     onOpenChange={() => toggleSectorCollapse(group.sector)}
                   >
                     <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2.5 hover:bg-muted/50 transition-colors">
