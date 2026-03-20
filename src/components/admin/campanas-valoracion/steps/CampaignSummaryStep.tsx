@@ -514,7 +514,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
             <TableBody>
               {filteredCompanies.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No se encontraron empresas con los filtros aplicados
                   </TableCell>
                 </TableRow>
