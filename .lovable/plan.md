@@ -1,28 +1,34 @@
 
 
-## Añadir "Registrar envío manual" en la pestaña 1r Envío
+## Incluir envíos manuales en las métricas KPI de "1r Envío"
 
-### Qué cambia
+### Problema
 
-Se añade un botón de acción por fila en la tabla de `CampaignSummaryStep.tsx` (pestaña "1r Envío") para poder registrar envíos manuales directamente desde esta vista, reutilizando el diálogo `RegisterManualSendDialog` que ya existe.
+`sentCount` solo mira `company.status === 'sent'`, pero algunas empresas con emails registrados manualmente (o previamente) pueden tener status `'calculated'` o `'created'`. Las métricas no reflejan el track completo.
 
-### Cambios técnicos
+### Cambio en `CampaignSummaryStep.tsx`
 
-**Archivo: `src/components/admin/campanas-valoracion/steps/CampaignSummaryStep.tsx`**
+**Línea ~294**: Cambiar el cálculo de `sentCount` para que considere TAMBIÉN las empresas que tienen un registro en `campaign_emails` (a través de `emailSentMap`):
 
-1. **Importar** `RegisterManualSendDialog`, `DropdownMenu` components, `MoreVertical` y `MailCheck` icons.
+```tsx
+// Antes:
+const sentCount = companies.filter(c => c.status === 'sent').length;
 
-2. **Añadir estado** `manualSendTargets` (mismo patrón que en `MailStep`).
+// Después:
+const sentCount = companies.filter(c => 
+  c.status === 'sent' || emailSentMap.has(c.id)
+).length;
+```
 
-3. **Añadir columna de acciones** al final de la tabla (nueva `TableHead` vacía + `TableCell` con `DropdownMenu`):
-   - Opción "Registrar envío manual" con icono `MailCheck`
-   - El click en el dropdown se detiene con `e.stopPropagation()` para no disparar la navegación del `TableRow`
+Esto captura:
+- Empresas con status `'sent'` (envío normal vía outbound queue)  
+- Empresas con un registro en `campaign_emails` (envío manual registrado, aunque su status no se actualizó)
 
-4. **Renderizar el diálogo** `RegisterManualSendDialog` al final del componente, con `onSuccess` que invalida las queries de `campaign-emails` y `campaign-companies`.
+### También corregir el build error
 
-### Lo que NO cambia
+**`src/main.tsx` y `src/App.tsx`**: Los errores de `duplicate data-lov-id` son artefactos del tagger de Lovable, no del código fuente real. El source está limpio (verificado). Si persiste, se hará un touch mínimo (añadir un comentario) para forzar re-compilación limpia.
 
-- La navegación al hacer click en la fila sigue funcionando igual
-- Todos los filtros, ordenación, KPIs y gráficos se mantienen intactos
-- La funcionalidad existente en la pestaña "Lista de emails" (MailStep) no se toca
+### Resultado
+
+Los KPIs de "Enviadas" y "Tasa éxito" incluirán tanto los envíos automáticos como los registrados manualmente, dando el track completo.
 
