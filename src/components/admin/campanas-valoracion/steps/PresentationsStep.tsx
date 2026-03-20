@@ -45,7 +45,7 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
 
   const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
     if (rejectedFiles.length > 0) {
-      toast({ title: 'Solo se aceptan archivos en formato PDF', variant: 'destructive' });
+      toast({ title: 'Solo se aceptan archivos en formato PDF o PowerPoint', variant: 'destructive' });
     }
     if (acceptedFiles.length > 0) {
       await uploadFiles(acceptedFiles);
