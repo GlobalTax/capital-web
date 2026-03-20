@@ -496,7 +496,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
   }
 
   if (t.footer.visible) {
-    const footerText = (t.footer as any).text || 'CAPITTAL — Información Confidencial';
+    const footerText = (t.footer as any).text || i18n.confidential;
     slide.addText(footerText, {
       x: t.footer.x, y: t.footer.y, w: t.footer.w, h: t.footer.h,
       fontSize: t.footer.fontSize || 8, fontFace: FONT, color: t.footer.color || TEXT_MUTED,
