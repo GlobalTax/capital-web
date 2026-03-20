@@ -1,32 +1,25 @@
 
 
-## Auto-deshabilitar campañas de pruebas en Resumen General
+## Arreglar descarga y añadir previsualización en Estudios de Mercado
 
-### Cambio
+### Problema
+La descarga usa `window.open(url, '_blank')` con una URL firmada, lo cual abre el archivo en una nueva pestaña pero no fuerza la descarga. Además, no existe botón de previsualización.
 
-**Archivo: `src/components/admin/campanas-valoracion/OutboundSummaryDashboard.tsx`**
+### Cambios
 
-Inicializar `disabledCampaigns` con las campañas cuyo sector sea "Pruebas" (o nombre contenga "prueba"), en vez de empezar con un `Set` vacío.
+**`src/hooks/useMarketStudies.ts`**
+- Añadir función `getPublicUrl` que devuelva la URL firmada sin forzar descarga (para preview).
+- Modificar `getDownloadUrl` para añadir `?download=` o usar `createSignedUrl` con `download` option para forzar descarga real.
 
-Como los datos se cargan con React Query, no se puede saber los IDs al inicio. Se usará un `useEffect` que, cuando `raw` se cargue por primera vez, detecte las campañas con `sector?.toLowerCase() === 'pruebas'` y las añada al `disabledCampaigns`.
+**`src/components/admin/campanas-valoracion/MarketStudiesPanel.tsx`**
 
-Se añadirá un `useRef` para ejecutar esta lógica solo una vez (primera carga), sin sobreescribir selecciones manuales del usuario en cargas posteriores.
+1. **Botón Descargar**: Cambiar `handleDownload` para crear un `<a>` temporal con `download` attribute que fuerce la descarga del archivo en vez de abrirlo en pestaña.
 
-```tsx
-const initializedRef = useRef(false);
+2. **Botón Previsualizar**: Añadir nuevo botón con icono `Eye` que abra la URL firmada en nueva pestaña (el comportamiento actual de `window.open`). Para PDFs se verá el visor del navegador; para PPT se abrirá para descarga.
 
-useEffect(() => {
-  if (raw?.campaigns.length && !initializedRef.current) {
-    initializedRef.current = true;
-    const pruebas = raw.campaigns
-      .filter(c => c.sector?.toLowerCase() === 'pruebas')
-      .map(c => c.id);
-    if (pruebas.length) {
-      setDisabledCampaigns(new Set(pruebas));
-    }
-  }
-}, [raw]);
-```
+3. **Hacer botones siempre visibles**: Quitar el `opacity-0 group-hover:opacity-100` para que los botones sean siempre accesibles (o mantenerlo pero con los botones funcionales).
 
-El usuario podrá re-habilitarlas manualmente con el checkbox de cada campaña.
+### Resultado
+- **Descargar**: Fuerza descarga del archivo al equipo.
+- **Previsualizar**: Abre el documento en nueva pestaña (PDF se ve en el navegador).
 
