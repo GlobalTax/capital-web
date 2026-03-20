@@ -2891,6 +2891,22 @@ export default function ContactListDetailPage() {
             </p>
             {!bulkIsCreatingNewList ? (
               <>
+                {(() => {
+                  const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
+                  return uniqueSectors.length > 0 ? (
+                    <Select value={bulkMoveCopySectorFilter} onValueChange={(v) => { setBulkMoveCopySectorFilter(v === 'all' ? '' : v); setBulkMoveCopyTargetId(''); }}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Filtrar por sector..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los sectores</SelectItem>
+                        {uniqueSectors.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : null;
+                })()}
                 <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
@@ -2907,6 +2923,7 @@ export default function ContactListDetailPage() {
                         <CommandEmpty>No se encontraron listas</CommandEmpty>
                         <CommandGroup>
                           {allLists
+                            .filter((l: any) => !bulkMoveCopySectorFilter || l.sector === bulkMoveCopySectorFilter)
                             .filter((l: any) => l.name.toLowerCase().includes(bulkMoveCopySearchTerm.toLowerCase()))
                             .map((l: any) => (
                               <CommandItem
@@ -2916,7 +2933,10 @@ export default function ContactListDetailPage() {
                                 className="cursor-pointer"
                               >
                                 <Check className={cn("mr-2 h-4 w-4", bulkMoveCopyTargetId === l.id ? "opacity-100" : "opacity-0")} />
-                                {l.name}
+                                <div className="flex flex-col">
+                                  <span>{l.name}</span>
+                                  {l.sector && <span className="text-xs text-muted-foreground">{l.sector}</span>}
+                                </div>
                               </CommandItem>
                             ))}
                         </CommandGroup>
