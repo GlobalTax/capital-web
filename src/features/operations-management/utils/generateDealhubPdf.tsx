@@ -186,6 +186,8 @@ const IndexPage = ({ sectionCounts, t, locale = 'es' }: { sectionCounts: Record<
         const count = sectionCounts[section.key] || 0;
         const sectionNum = String(i + 1).padStart(2, '0');
         const sColor = hexColor(sectionColors[i], ACCENT);
+        const sLabel = i18n.sections[section.key]?.label || section.label;
+        const sSubtitle = i18n.sections[section.key]?.subtitle || section.subtitle;
 
         return (
           <View key={section.key} style={{
@@ -199,13 +201,13 @@ const IndexPage = ({ sectionCounts, t, locale = 'es' }: { sectionCounts: Record<
               {sectionNum}
             </Text>
             <Text style={{ fontSize: 11, color: NAVY, fontFamily: 'Helvetica-Bold', marginBottom: 4 }}>
-              {section.label}
+              {sLabel}
             </Text>
             <Text style={{ fontSize: 10, color: TEXT_SECONDARY, marginBottom: 4 }}>
-              {count} operaciones
+              {count} {i18n.operationsUnit}
             </Text>
             <Text style={{ fontSize: 7.5, color: TEXT_MUTED }}>
-              {section.subtitle}
+              {sSubtitle}
             </Text>
           </View>
         );
