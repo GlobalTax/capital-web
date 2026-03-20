@@ -20,12 +20,90 @@ const M = 0.6;
 
 // ─── TYPES ───
 export type QuarterType = 'Q1' | 'Q2' | 'Q3' | 'Q4';
+export type DealhubLocale = 'es' | 'en';
 
 export interface DealhubSection {
   key: string;
   label: string;
   subtitle: string;
   filter: (op: Operation) => boolean;
+}
+
+// ─── I18N ───
+const I18N: Record<DealhubLocale, {
+  sections: Record<string, { label: string; subtitle: string }>;
+  highlights: string;
+  summary: string;
+  keyData: string;
+  location: string;
+  locationValue: string;
+  sector: string;
+  opportunity: string;
+  revenue: string;
+  ebitda: string;
+  ebitdaMargin: string;
+  employees: string;
+  moreInfo: string;
+  indexTitle: string;
+  operationsUnit: string;
+  thanks: string;
+  confidential: string;
+  nd: string;
+}> = {
+  es: {
+    sections: {
+      sale_active: { label: 'Mandatos de Venta', subtitle: 'Empresas en proceso de venta' },
+      upcoming: { label: 'Fase de Preparación', subtitle: 'Próximamente en mercado' },
+      acquisition: { label: 'Mandatos de Compra', subtitle: 'Empresas en búsqueda de adquisición' },
+      exclusive: { label: 'En Exclusividad', subtitle: 'Procesos en fase de exclusividad' },
+    },
+    highlights: 'Aspectos Destacados',
+    summary: 'Resumen',
+    keyData: 'Datos Clave',
+    location: 'Ubicación',
+    locationValue: 'España',
+    sector: 'Sector',
+    opportunity: 'Oportunidad',
+    revenue: 'Facturación',
+    ebitda: 'EBITDA',
+    ebitdaMargin: 'Margen EBITDA',
+    employees: 'Empleados',
+    moreInfo: 'Más Información →',
+    indexTitle: 'Índice de Oportunidades',
+    operationsUnit: 'operaciones',
+    thanks: 'Gracias',
+    confidential: 'CAPITTAL — Información Confidencial',
+    nd: 'N/D',
+  },
+  en: {
+    sections: {
+      sale_active: { label: 'Sale Mandates', subtitle: 'Companies in sale process' },
+      upcoming: { label: 'Preparation Phase', subtitle: 'Coming soon to market' },
+      acquisition: { label: 'Acquisition Mandates', subtitle: 'Companies seeking acquisition' },
+      exclusive: { label: 'In Exclusivity', subtitle: 'Processes in exclusivity phase' },
+    },
+    highlights: 'Key Highlights',
+    summary: 'Summary',
+    keyData: 'Key Data',
+    location: 'Location',
+    locationValue: 'Spain',
+    sector: 'Sector',
+    opportunity: 'Opportunity',
+    revenue: 'Revenue',
+    ebitda: 'EBITDA',
+    ebitdaMargin: 'EBITDA Margin',
+    employees: 'Employees',
+    moreInfo: 'More Information →',
+    indexTitle: 'Investment Opportunities Index',
+    operationsUnit: 'operations',
+    thanks: 'Thank You',
+    confidential: 'CAPITTAL — Confidential Information',
+    nd: 'N/A',
+  },
+};
+
+export function getI18n(locale: DealhubLocale) {
+  return I18N[locale];
 }
 
 export const DEALHUB_SECTIONS: DealhubSection[] = [
