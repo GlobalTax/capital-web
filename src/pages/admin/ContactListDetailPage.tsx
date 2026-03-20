@@ -1385,7 +1385,6 @@ export default function ContactListDetailPage() {
       case 'provincia':
       case 'comunidad_autonoma':
       case 'cnae':
-      case 'descripcion_actividad':
       case 'posicion_contacto':
       case 'director_ejecutivo': {
         const cellVal = (company as any)[colKey];
@@ -1406,6 +1405,25 @@ export default function ContactListDetailPage() {
           >
             {cellVal}
           </button>
+        );
+      }
+      case 'descripcion_actividad': {
+        const cellVal = (company as any)[colKey];
+        if (!cellVal) return <span className="text-sm text-muted-foreground">—</span>;
+        const activeKeywords = columnFilters['descripcion_actividad'] || [];
+        const isHighlighted = activeKeywords.length > 0 && activeKeywords.some(kw => cellVal.toLowerCase().includes(kw.toLowerCase()));
+        return (
+          <span
+            className={cn(
+              "text-xs px-2 py-0.5 rounded transition-colors",
+              isHighlighted
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground"
+            )}
+            title={cellVal}
+          >
+            {cellVal.length > 80 ? cellVal.slice(0, 80) + '…' : cellVal}
+          </span>
         );
       }
       case 'facturacion':
