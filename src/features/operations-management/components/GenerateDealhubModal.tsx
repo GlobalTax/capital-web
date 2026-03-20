@@ -234,6 +234,15 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
             Guardar plantilla
           </button>
           <div className="flex items-center gap-2">
+            <Select value={locale} onValueChange={(v: DealhubLocale) => setLocale(v)}>
+              <SelectTrigger className="w-[80px] h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="es">ES</SelectItem>
+                <SelectItem value="en">EN</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={outputFormat} onValueChange={(v: 'pptx' | 'pdf') => setOutputFormat(v)}>
               <SelectTrigger className="w-[100px] h-9 text-xs">
                 <SelectValue />

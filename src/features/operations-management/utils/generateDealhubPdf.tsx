@@ -591,10 +591,12 @@ export async function generateDealhubPdf(
   quarter: QuarterType,
   year?: number,
   template?: FullSlideTemplate,
+  locale: DealhubLocale = 'es',
 ): Promise<void> {
   const currentYear = year || new Date().getFullYear();
   const fullTemplate = template || DEFAULT_FULL_TEMPLATE;
-  const fileName = `Capittal_Dealhub_${quarter}_${currentYear}.pdf`;
+  const localeSuffix = locale === 'en' ? '_EN' : '';
+  const fileName = `Capittal_Dealhub${localeSuffix}_${quarter}_${currentYear}.pdf`;
 
   const doc = (
     <DealhubPDFDocument
@@ -603,6 +605,7 @@ export async function generateDealhubPdf(
       quarter={quarter}
       year={currentYear}
       template={fullTemplate}
+      locale={locale}
     />
   );
 
