@@ -9,8 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign,
   Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2,
-  Search, X
+  Search, X, MoreVertical, MailCheck
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { RegisterManualSendDialog } from '@/components/admin/campanas-valoracion/RegisterManualSendDialog';
 import { Input } from '@/components/ui/input';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
