@@ -3,7 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Link, pdf } from '@react-pdf/re
 import type { Operation } from '../types/operations';
 import type { FullSlideTemplate } from '../types/slideTemplate';
 import { DEFAULT_FULL_TEMPLATE } from '../types/slideTemplate';
-import { DEALHUB_SECTIONS, type QuarterType } from './generateDealhubPptx';
+import { DEALHUB_SECTIONS, type QuarterType, type DealhubLocale, getI18n } from './generateDealhubPptx';
 
 // ─── DESIGN TOKENS (matching PPTX) ───
 const NAVY = '#161B22';
