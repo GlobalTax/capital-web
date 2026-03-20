@@ -1,26 +1,19 @@
 
 
-## Filtro por sector en diálogos de Mover/Copiar empresa
+## Pre-seleccionar el sector de la lista actual en los diálogos de Mover/Copiar
 
-### Cambios en `src/pages/admin/ContactListDetailPage.tsx`
+### Problema
+El filtro de sector existe pero arranca en "Todos los sectores". El usuario quiere que si la lista actual es del sector "Salud", el diálogo abra ya filtrado por "Salud" para sugerir sublistas del mismo sector.
 
-**1. Ampliar la query `allLists` (línea ~720)**
-- Cambiar `.select('id, name')` → `.select('id, name, sector')` para disponer del sector de cada lista.
+### Solución
 
-**2. Extraer sectores únicos**
-- Computar un array de sectores únicos a partir de `allLists` (filtrando nulls).
+**Archivo: `src/pages/admin/ContactListDetailPage.tsx`**
 
-**3. Añadir estado de filtro por sector**
-- Nuevo estado `moveCopySectorFilter` (string, por defecto `''` = todos).
+1. **Inicializar `moveCopySectorFilter` con el sector de la lista actual** — En lugar de inicializar el estado como `''`, al abrir el diálogo individual, setear `moveCopySectorFilter` al valor de `list.sector` (si existe). Esto se hará en los puntos donde se dispara la apertura del diálogo (donde se llama `setMoveCopyCompany(...)`).
 
-**4. Modificar el diálogo individual de mover/copiar (líneas ~2779-2818)**
-- Antes del Popover de selección de lista, insertar un `<Select>` con las opciones: "Todos los sectores" + cada sector único.
-- Filtrar `allLists` por sector seleccionado además de por el término de búsqueda existente.
-- Mostrar el sector como texto secundario (`text-xs text-muted-foreground`) junto al nombre de cada lista en los `CommandItem`.
+2. **Inicializar `bulkMoveCopySectorFilter` igual** — Al abrir el diálogo bulk (`setBulkMoveCopyOpen(true)`), setear `bulkMoveCopySectorFilter` al sector de la lista actual.
 
-**5. Modificar el diálogo bulk de mover/copiar (líneas ~2871-2903)**
-- Aplicar el mismo patrón: estado `bulkMoveCopySectorFilter`, Select de sector, y filtrado de `allLists`.
+3. **El usuario puede cambiar a "Todos los sectores"** si quiere ver todas las listas, manteniendo la flexibilidad actual.
 
-**6. Reset del filtro**
-- Al cerrar cualquiera de los dos diálogos, resetear el filtro de sector a `''`.
+Cambios mínimos: solo añadir `setMoveCopySectorFilter(list?.sector || '')` junto a cada `setMoveCopyCompany(...)` y `setBulkMoveCopySectorFilter(list?.sector || '')` junto a cada `setBulkMoveCopyOpen(true)`.
 
