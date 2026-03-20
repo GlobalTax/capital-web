@@ -399,7 +399,11 @@ export default function ContactListDetailPage() {
   const [bulkMoveCopySearchTerm, setBulkMoveCopySearchTerm] = useState('');
   const [bulkMoveCopyPopoverOpen, setBulkMoveCopyPopoverOpen] = useState(false);
   const [moveCopySectorFilter, setMoveCopySectorFilter] = useState('');
+  const [moveCopySectorSearch, setMoveCopySectorSearch] = useState('');
+  const [moveCopySectorPopoverOpen, setMoveCopySectorPopoverOpen] = useState(false);
   const [bulkMoveCopySectorFilter, setBulkMoveCopySectorFilter] = useState('');
+  const [bulkMoveCopySectorSearch, setBulkMoveCopySectorSearch] = useState('');
+  const [bulkMoveCopySectorPopoverOpen, setBulkMoveCopySectorPopoverOpen] = useState(false);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -726,6 +730,7 @@ export default function ContactListDetailPage() {
       return (data as any[]).filter((l: any) => l.id !== listId);
     },
   });
+  const uniqueSectors = React.useMemo(() => [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[], [allLists]);
 
   // Query: parent list name for breadcrumb
   const { data: parentList } = useQuery({
@@ -2779,22 +2784,36 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
-                {!moveCopyFromSublistId && (() => {
-                  const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
-                  return uniqueSectors.length > 0 ? (
-                    <Select value={moveCopySectorFilter} onValueChange={(v) => { setMoveCopySectorFilter(v === 'all' ? '' : v); setMoveCopyTargetId(''); }}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Filtrar por sector..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los sectores</SelectItem>
-                        {uniqueSectors.map(s => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : null;
-                })()}
+                {!moveCopyFromSublistId && uniqueSectors.length > 0 && (
+                    <Popover open={moveCopySectorPopoverOpen} onOpenChange={setMoveCopySectorPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between">
+                          {moveCopySectorFilter || 'Todos los sectores'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput placeholder="Buscar sector..." value={moveCopySectorSearch} onValueChange={setMoveCopySectorSearch} />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron sectores</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem value="all" onSelect={() => { setMoveCopySectorFilter(''); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                <Check className={cn("mr-2 h-4 w-4", !moveCopySectorFilter ? "opacity-100" : "opacity-0")} />
+                                Todos los sectores
+                              </CommandItem>
+                              {uniqueSectors.filter(s => s.toLowerCase().includes(moveCopySectorSearch.toLowerCase())).map(s => (
+                                <CommandItem key={s} value={s} onSelect={() => { setMoveCopySectorFilter(s); setMoveCopyTargetId(''); setMoveCopySectorPopoverOpen(false); setMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", moveCopySectorFilter === s ? "opacity-100" : "opacity-0")} />
+                                  {s}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                )}
                 <Popover open={moveCopyPopoverOpen} onOpenChange={setMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
@@ -2892,22 +2911,36 @@ export default function ContactListDetailPage() {
             </p>
             {!bulkIsCreatingNewList ? (
               <>
-                {(() => {
-                  const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
-                  return uniqueSectors.length > 0 ? (
-                    <Select value={bulkMoveCopySectorFilter} onValueChange={(v) => { setBulkMoveCopySectorFilter(v === 'all' ? '' : v); setBulkMoveCopyTargetId(''); }}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Filtrar por sector..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los sectores</SelectItem>
-                        {uniqueSectors.map(s => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : null;
-                })()}
+                {uniqueSectors.length > 0 && (
+                    <Popover open={bulkMoveCopySectorPopoverOpen} onOpenChange={setBulkMoveCopySectorPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between">
+                          {bulkMoveCopySectorFilter || 'Todos los sectores'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput placeholder="Buscar sector..." value={bulkMoveCopySectorSearch} onValueChange={setBulkMoveCopySectorSearch} />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron sectores</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem value="all" onSelect={() => { setBulkMoveCopySectorFilter(''); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                <Check className={cn("mr-2 h-4 w-4", !bulkMoveCopySectorFilter ? "opacity-100" : "opacity-0")} />
+                                Todos los sectores
+                              </CommandItem>
+                              {uniqueSectors.filter(s => s.toLowerCase().includes(bulkMoveCopySectorSearch.toLowerCase())).map(s => (
+                                <CommandItem key={s} value={s} onSelect={() => { setBulkMoveCopySectorFilter(s); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", bulkMoveCopySectorFilter === s ? "opacity-100" : "opacity-0")} />
+                                  {s}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                )}
                 <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
