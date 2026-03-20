@@ -634,6 +634,7 @@ async function generateWithMerge(
   currentYear: number,
   ft: FullSlideTemplate,
   fileName: string,
+  locale: DealhubLocale = 'es',
 ) {
   // 1. Generate ops-only PPTX with pptxgenjs
   const opsPptx = new pptxgen();
@@ -647,7 +648,7 @@ async function generateWithMerge(
     const ops = activeOps.filter(section.filter);
     if (ops.length === 0) return;
     sectionSlideCounts[section.key] = ops.length;
-    ops.forEach(op => addOperationSlide(opsPptx, op, ft.operation));
+    ops.forEach(op => addOperationSlide(opsPptx, op, ft.operation, locale));
   });
 
   // Generate ops PPTX as blob
