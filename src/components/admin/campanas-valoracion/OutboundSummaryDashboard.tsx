@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -66,6 +66,8 @@ export function OutboundSummaryDashboard() {
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
 
+  const initializedRef = useRef(false);
+
   const { data: raw, isLoading } = useQuery<RawData>({
     queryKey: ['outbound-summary-raw'],
     queryFn: async () => {
@@ -93,6 +95,19 @@ export function OutboundSummaryDashboard() {
     },
     staleTime: 60_000,
   });
+
+  // Auto-deshabilitar campañas de pruebas en la primera carga
+  useEffect(() => {
+    if (raw?.campaigns.length && !initializedRef.current) {
+      initializedRef.current = true;
+      const pruebas = raw.campaigns
+        .filter(c => c.sector?.toLowerCase() === 'pruebas')
+        .map(c => c.id);
+      if (pruebas.length) {
+        setDisabledCampaigns(new Set(pruebas));
+      }
+    }
+  }, [raw]);
 
   const computed = useMemo(() => {
     if (!raw?.campaigns.length) return null;
