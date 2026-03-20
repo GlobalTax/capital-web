@@ -574,12 +574,38 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                   <TableCell className="text-center">
                     <NotasPopover company={c} campaignId={campaignId} />
                   </TableCell>
+                  <TableCell className="text-center" onClick={e => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setManualSendTargets([{ companyId: c.id, companyName: c.client_company || '', campaignId }])}>
+                          <MailCheck className="h-4 w-4 mr-2" />
+                          Registrar envío manual
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <RegisterManualSendDialog
+        open={manualSendTargets.length > 0}
+        onOpenChange={(open) => { if (!open) setManualSendTargets([]); }}
+        targets={manualSendTargets}
+        onSuccess={() => {
+          setManualSendTargets([]);
+          queryClient.invalidateQueries({ queryKey: ['campaign-emails', campaignId] });
+          queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+        }}
+      />
 
       {/* Navigation */}
       <div className="flex items-center gap-3">
