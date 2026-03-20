@@ -2878,7 +2878,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Bulk Move/Copy Modal */}
-      <Dialog open={bulkMoveCopyOpen} onOpenChange={(open) => { if (!open) { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); } }}>
+      <Dialog open={bulkMoveCopyOpen} onOpenChange={(open) => { if (!open) { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
