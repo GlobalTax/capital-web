@@ -112,9 +112,23 @@ export function useMarketStudies() {
     const { data, error } = await supabase.storage
       .from('market-studies')
       .download(storagePath);
-    if (error) throw error;
+    if (error) {
+      const msg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+      throw new Error(msg);
+    }
     return data;
   };
 
-  return { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob };
+  const getSignedUrl = async (storagePath: string) => {
+    const { data, error } = await supabase.storage
+      .from('market-studies')
+      .createSignedUrl(storagePath, 3600);
+    if (error) {
+      const msg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+      throw new Error(msg);
+    }
+    return data.signedUrl;
+  };
+
+  return { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob, getSignedUrl };
 }

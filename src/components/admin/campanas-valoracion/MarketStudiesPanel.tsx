@@ -28,7 +28,7 @@ function formatFileSize(bytes: number) {
 }
 
 export function MarketStudiesPanel() {
-  const { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob } = useMarketStudies();
+  const { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob, getSignedUrl } = useMarketStudies();
   const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -71,6 +71,19 @@ export function MarketStudiesPanel() {
 
   const handleDownload = async (study: MarketStudy) => {
     try {
+      // Try signed URL first, fall back to blob download
+      try {
+        const url = await getSignedUrl(study.storage_path);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = study.file_name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return;
+      } catch {
+        // Fall back to blob
+      }
       const fileBlob = await getFileBlob(study.storage_path);
       const url = URL.createObjectURL(fileBlob);
       const a = document.createElement('a');
@@ -87,14 +100,18 @@ export function MarketStudiesPanel() {
 
   const handlePreview = async (study: MarketStudy) => {
     try {
+      // Try signed URL first, fall back to blob
+      try {
+        const url = await getSignedUrl(study.storage_path);
+        window.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      } catch {
+        // Fall back to blob
+      }
       const fileBlob = await getFileBlob(study.storage_path);
       const url = URL.createObjectURL(fileBlob);
       const previewWindow = window.open(url, '_blank', 'noopener,noreferrer');
-
-      if (!previewWindow) {
-        window.location.href = url;
-      }
-
+      if (!previewWindow) window.location.href = url;
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (err: any) {
       toast({ title: 'Error al previsualizar', description: err?.message || 'No se pudo abrir el archivo', variant: 'destructive' });
