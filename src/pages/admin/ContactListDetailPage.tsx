@@ -2911,9 +2911,7 @@ export default function ContactListDetailPage() {
             </p>
             {!bulkIsCreatingNewList ? (
               <>
-                {(() => {
-                  const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
-                  return uniqueSectors.length > 0 ? (
+                {uniqueSectors.length > 0 && (
                     <Popover open={bulkMoveCopySectorPopoverOpen} onOpenChange={setBulkMoveCopySectorPopoverOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" role="combobox" className="w-full justify-between">
