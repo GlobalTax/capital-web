@@ -461,11 +461,11 @@ function ReuploadStudyModal({ companyName, companyId, campaignId, currentPresent
           <div className="space-y-2">
             <Input
               type="file"
-              accept="application/pdf,.pdf"
+              accept="application/pdf,.pdf,application/vnd.ms-powerpoint,.ppt,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pptx"
               onChange={handleFileChange}
               className="cursor-pointer"
             />
-            <p className="text-xs text-muted-foreground">Solo se aceptan archivos en formato PDF</p>
+            <p className="text-xs text-muted-foreground">Se aceptan archivos en formato PDF o PowerPoint</p>
             <p className="text-xs text-destructive">Esto sobrescribirá el estudio actual sin posibilidad de recuperarlo</p>
           </div>
         </div>
