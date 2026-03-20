@@ -525,7 +525,7 @@ export default function ContactListsPage() {
                           · {totalEmpresas.toLocaleString('es-ES')} empresas
                         </span>
                       </div>
-                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", !isCollapsed && "rotate-180")} />
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <Table>
