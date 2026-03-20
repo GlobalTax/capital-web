@@ -9,8 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign,
   Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2,
-  Search, X
+  Search, X, MoreVertical, MailCheck
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { RegisterManualSendDialog } from '@/components/admin/campanas-valoracion/RegisterManualSendDialog';
 import { Input } from '@/components/ui/input';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
@@ -230,6 +232,8 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
+  const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
+  const queryClient = useQueryClient();
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
@@ -504,12 +508,13 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Follow Up</TableHead>
                 <TableHead className="text-center w-[40px]">Notas</TableHead>
+                <TableHead className="w-[40px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCompanies.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No se encontraron empresas con los filtros aplicados
                   </TableCell>
                 </TableRow>
@@ -569,12 +574,38 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                   <TableCell className="text-center">
                     <NotasPopover company={c} campaignId={campaignId} />
                   </TableCell>
+                  <TableCell className="text-center" onClick={e => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setManualSendTargets([{ companyId: c.id, companyName: c.client_company || '', campaignId }])}>
+                          <MailCheck className="h-4 w-4 mr-2" />
+                          Registrar envío manual
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      <RegisterManualSendDialog
+        open={manualSendTargets.length > 0}
+        onOpenChange={(open) => { if (!open) setManualSendTargets([]); }}
+        targets={manualSendTargets}
+        onSuccess={() => {
+          setManualSendTargets([]);
+          queryClient.invalidateQueries({ queryKey: ['campaign-emails', campaignId] });
+          queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+        }}
+      />
 
       {/* Navigation */}
       <div className="flex items-center gap-3">
