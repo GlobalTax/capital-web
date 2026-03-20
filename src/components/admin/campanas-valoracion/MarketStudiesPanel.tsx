@@ -70,7 +70,21 @@ export function MarketStudiesPanel() {
 
   const handleDownload = async (study: MarketStudy) => {
     try {
-      const url = await getDownloadUrl(study.storage_path);
+      const url = await getDownloadUrl(study.storage_path, true);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = study.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      // toast handled in hook
+    }
+  };
+
+  const handlePreview = async (study: MarketStudy) => {
+    try {
+      const url = await getDownloadUrl(study.storage_path, false);
       window.open(url, '_blank');
     } catch {
       // toast handled in hook
