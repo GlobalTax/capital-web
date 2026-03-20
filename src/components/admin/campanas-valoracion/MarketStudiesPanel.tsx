@@ -77,8 +77,8 @@ export function MarketStudiesPanel() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch {
-      // toast handled in hook
+    } catch (err: any) {
+      toast({ title: 'Error al descargar', description: err?.message || 'No se pudo obtener la URL de descarga', variant: 'destructive' });
     }
   };
 
