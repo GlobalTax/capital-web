@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { toast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,8 +78,8 @@ export function MarketStudiesPanel() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch {
-      // toast handled in hook
+    } catch (err: any) {
+      toast({ title: 'Error al descargar', description: err?.message || 'No se pudo obtener la URL de descarga', variant: 'destructive' });
     }
   };
 
@@ -86,8 +87,8 @@ export function MarketStudiesPanel() {
     try {
       const url = await getDownloadUrl(study.storage_path, false);
       window.open(url, '_blank');
-    } catch {
-      // toast handled in hook
+    } catch (err: any) {
+      toast({ title: 'Error al previsualizar', description: err?.message || 'No se pudo obtener la URL', variant: 'destructive' });
     }
   };
 
