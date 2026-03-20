@@ -461,7 +461,7 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
                 fontFamily: 'Helvetica-Bold',
                 textDecoration: 'none',
               }}>
-                {tmpl.cta.text || 'Más Información →'}
+                {tmpl.cta.text || i18n.moreInfo}
               </Link>
             </View>
           )}
