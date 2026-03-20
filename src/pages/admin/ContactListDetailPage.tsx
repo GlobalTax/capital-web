@@ -724,13 +724,19 @@ export default function ContactListDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('outbound_lists' as any)
-        .select('id, name, sector')
+        .select('id, name, sector, lista_madre_id')
         .order('name');
       if (error) throw error;
       return (data as any[]).filter((l: any) => l.id !== listId);
     },
   });
-  const uniqueSectors = React.useMemo(() => [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[], [allLists]);
+  const uniqueMadres = React.useMemo(() => {
+    const madreIds = [...new Set(allLists.map((l: any) => l.lista_madre_id).filter(Boolean))];
+    return madreIds.map(id => {
+      const madre = allLists.find((l: any) => l.id === id);
+      return { id, name: madre?.name || 'Lista desconocida' };
+    }).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  }, [allLists]);
 
   // Query: parent list name for breadcrumb
   const { data: parentList } = useQuery({
