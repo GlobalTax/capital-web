@@ -70,7 +70,7 @@ export default function ContactListsPage() {
   const [newDesc, setNewDesc] = useState('');
   const [newSector, setNewSector] = useState('');
   const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
-  const [collapsedSectors, setCollapsedSectors] = useState<Set<string>>(new Set());
+  const [expandedSectors, setExpandedSectors] = useState<Set<string>>(new Set());
 
   // Activity search query
   const { data: activityMatches } = useQuery({
@@ -197,7 +197,7 @@ export default function ContactListsPage() {
   }, [filtered]);
 
   const toggleSectorCollapse = useCallback((sector: string) => {
-    setCollapsedSectors(prev => {
+    setExpandedSectors(prev => {
       const next = new Set(prev);
       if (next.has(sector)) next.delete(sector);
       else next.add(sector);
@@ -506,12 +506,12 @@ export default function ContactListsPage() {
             // Multiple sectors — collapsible folder groups
             <div className="divide-y divide-border">
               {groupedBySector.map(group => {
-                const isCollapsed = collapsedSectors.has(group.sector);
+                const isExpanded = expandedSectors.has(group.sector);
                 const totalEmpresas = group.lists.reduce((acc, l) => acc + (l.contact_count || 0), 0);
                 return (
                   <Collapsible
                     key={group.sector}
-                    open={!isCollapsed}
+                    open={isExpanded}
                     onOpenChange={() => toggleSectorCollapse(group.sector)}
                   >
                     <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2.5 hover:bg-muted/50 transition-colors">
@@ -525,7 +525,7 @@ export default function ContactListsPage() {
                           · {totalEmpresas.toLocaleString('es-ES')} empresas
                         </span>
                       </div>
-                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", !isCollapsed && "rotate-180")} />
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-180")} />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <Table>
