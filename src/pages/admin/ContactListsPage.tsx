@@ -167,7 +167,7 @@ export default function ContactListsPage() {
     return { sectors: sorted, hasEmpty };
   }, [lists, activeTab]);
 
-  // Group filtered lists by sector
+  // Group filtered lists by sector (used for madre tab fallback)
   const groupedBySector = useMemo(() => {
     const groups: { sector: string; displayName: string; lists: typeof filtered }[] = [];
     const sectorMap = new Map<string, typeof filtered>();
@@ -178,7 +178,6 @@ export default function ContactListsPage() {
       sectorMap.get(key)!.push(l);
     });
 
-    // Sort: named sectors alphabetically, "Sin sector" last
     const keys = Array.from(sectorMap.keys()).sort((a, b) => {
       if (a === NO_SECTOR_KEY) return 1;
       if (b === NO_SECTOR_KEY) return -1;
@@ -195,6 +194,34 @@ export default function ContactListsPage() {
 
     return groups;
   }, [filtered]);
+
+  // Group filtered lists by Lista Madre (for Outbound & Compradores tabs)
+  const groupedByMadre = useMemo(() => {
+    const madreMap = new Map<string, { madreName: string; madreId: string; lists: typeof filtered }>();
+    const orphanLists: typeof filtered = [];
+
+    filtered.forEach(l => {
+      if (l.lista_madre_id) {
+        if (!madreMap.has(l.lista_madre_id)) {
+          const madre = lists.find(m => m.id === l.lista_madre_id);
+          madreMap.set(l.lista_madre_id, {
+            madreId: l.lista_madre_id,
+            madreName: madre?.name || 'Lista Madre desconocida',
+            lists: [],
+          });
+        }
+        madreMap.get(l.lista_madre_id)!.lists.push(l);
+      } else {
+        orphanLists.push(l);
+      }
+    });
+
+    const groups = Array.from(madreMap.values()).sort((a, b) =>
+      a.madreName.localeCompare(b.madreName, 'es')
+    );
+
+    return { groups, orphanLists };
+  }, [filtered, lists]);
 
   const toggleSectorCollapse = useCallback((sector: string) => {
     setExpandedSectors(prev => {
