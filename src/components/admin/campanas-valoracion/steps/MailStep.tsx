@@ -599,6 +599,14 @@ function MailListSection({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Manual send dialog */}
+      <RegisterManualSendDialog
+        open={manualSendTargets.length > 0}
+        onOpenChange={(o) => { if (!o) setManualSendTargets([]); }}
+        targets={manualSendTargets}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 }
