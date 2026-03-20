@@ -514,39 +514,29 @@ export default function ContactListsPage() {
               </Button>
             </div>
           ) : activeTab === 'madre' ? (
-            // Madre tab — flat table without folder grouping
             <Table>
               {renderTableHeaders()}
               <TableBody>
                 {filtered.map(renderListRow)}
               </TableBody>
             </Table>
-          ) : groupedBySector.length === 1 && sectorFilter !== 'all' ? (
-            // Single sector selected — flat table without folder header
-            <Table>
-              {renderTableHeaders()}
-              <TableBody>
-                {groupedBySector[0].lists.map(renderListRow)}
-              </TableBody>
-            </Table>
           ) : (
-            // Multiple sectors — collapsible folder groups
             <div className="divide-y divide-border">
-              {groupedBySector.map(group => {
-                const isExpanded = expandedSectors.has(group.sector);
+              {groupedByMadre.groups.map(group => {
+                const isExpanded = expandedSectors.has(group.madreId);
                 const totalEmpresas = group.lists.reduce((acc, l) => acc + (l.contact_count || 0), 0);
                 return (
                   <Collapsible
-                    key={group.sector}
+                    key={group.madreId}
                     open={isExpanded}
-                    onOpenChange={() => toggleSectorCollapse(group.sector)}
+                    onOpenChange={() => toggleSectorCollapse(group.madreId)}
                   >
                     <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2.5 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-2">
-                        <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{group.displayName}</span>
+                        <Crown className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-medium">{group.madreName}</span>
                         <Badge variant="secondary" size="sm" className="text-[10px]">
-                          {group.lists.length} {group.lists.length === 1 ? 'lista' : 'listas'}
+                          {group.lists.length} {group.lists.length === 1 ? 'sublista' : 'sublistas'}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
                           · {totalEmpresas.toLocaleString('es-ES')} empresas
@@ -565,6 +555,21 @@ export default function ContactListsPage() {
                   </Collapsible>
                 );
               })}
+              {groupedByMadre.orphanLists.length > 0 && (
+                <>
+                  {groupedByMadre.groups.length > 0 && (
+                    <div className="px-4 py-2 text-xs text-muted-foreground font-medium bg-muted/30">
+                      Sin lista madre vinculada
+                    </div>
+                  )}
+                  <Table>
+                    {renderTableHeaders()}
+                    <TableBody>
+                      {groupedByMadre.orphanLists.map(renderListRow)}
+                    </TableBody>
+                  </Table>
+                </>
+              )}
             </div>
           )}
         </CardContent>
