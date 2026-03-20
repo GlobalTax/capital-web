@@ -134,7 +134,7 @@ export const DocumentStep: React.FC<DocumentStepProps> = ({ campaignId }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: (files) => files[0] && uploadFile(files[0]),
-    accept: { 'application/pdf': ['.pdf'] },
+    accept: { 'application/pdf': ['.pdf'], 'application/vnd.ms-powerpoint': ['.ppt'], 'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'] },
     multiple: false,
     disabled: isUploading,
   });
