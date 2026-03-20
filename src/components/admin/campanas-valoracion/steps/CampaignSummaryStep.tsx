@@ -291,7 +291,10 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     setFilterValuation({ min: null, max: null });
   }, []);
 
-  const sentCount = companies.filter(c => c.status === 'sent' || emailSentMap.has(c.id)).length;
+  const sentCount = companies.filter(c => {
+    const tracking = emailTrackingMap.get(c.id);
+    return tracking?.delivery_status && tracking.delivery_status !== 'pending';
+  }).length;
   const createdCount = companies.filter(c => ['created', 'sent'].includes(c.status)).length;
   const failedCount = companies.filter(c => c.status === 'failed').length;
   const successRate = stats.total > 0 ? ((sentCount / stats.total) * 100).toFixed(0) : '0';
