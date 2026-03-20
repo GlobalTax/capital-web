@@ -1,25 +1,44 @@
 
 
-## Arreglar descarga y añadir previsualización en Estudios de Mercado
+## Fix: Botones Ver y Descargar no reaccionan en Estudios de Mercado
 
-### Problema
-La descarga usa `window.open(url, '_blank')` con una URL firmada, lo cual abre el archivo en una nueva pestaña pero no fuerza la descarga. Además, no existe botón de previsualización.
+### Diagnóstico
+
+Los handlers `handleDownload` y `handlePreview` tienen un `catch` vacío con comentario "toast handled in hook", pero `getDownloadUrl` **no es una mutación** — es una función async normal que lanza errores sin mostrar toast. El error se traga silenciosamente.
+
+Causa probable: `createSignedUrl` falla (permisos del bucket, path incorrecto, o bucket no público) y el `catch {}` oculta el error.
 
 ### Cambios
 
-**`src/hooks/useMarketStudies.ts`**
-- Añadir función `getPublicUrl` que devuelva la URL firmada sin forzar descarga (para preview).
-- Modificar `getDownloadUrl` para añadir `?download=` o usar `createSignedUrl` con `download` option para forzar descarga real.
-
 **`src/components/admin/campanas-valoracion/MarketStudiesPanel.tsx`**
 
-1. **Botón Descargar**: Cambiar `handleDownload` para crear un `<a>` temporal con `download` attribute que fuerce la descarga del archivo en vez de abrirlo en pestaña.
+1. Añadir toast de error en los `catch` de `handleDownload` y `handlePreview` para que el usuario vea qué falla:
 
-2. **Botón Previsualizar**: Añadir nuevo botón con icono `Eye` que abra la URL firmada en nueva pestaña (el comportamiento actual de `window.open`). Para PDFs se verá el visor del navegador; para PPT se abrirá para descarga.
+```tsx
+const handleDownload = async (study: MarketStudy) => {
+  try {
+    const url = await getDownloadUrl(study.storage_path, true);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = study.file_name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err: any) {
+    toast({ title: 'Error al descargar', description: err?.message || 'No se pudo obtener la URL', variant: 'destructive' });
+  }
+};
+```
 
-3. **Hacer botones siempre visibles**: Quitar el `opacity-0 group-hover:opacity-100` para que los botones sean siempre accesibles (o mantenerlo pero con los botones funcionales).
+2. Lo mismo para `handlePreview`.
+
+**`src/hooks/useMarketStudies.ts`** — Verificar que `getDownloadUrl` no tiene un bug lógico. La función actual se ve correcta, pero el parámetro `options` con `download` podría no estar pasándose bien a `createSignedUrl`. Revisar la firma: `createSignedUrl(path, expiresIn, options)` — el tercer parámetro acepta `{ download: string | boolean }`. La implementación actual es correcta.
+
+### Posible causa raíz: Bucket no configurado
+
+Si `createSignedUrl` devuelve error tipo "Bucket not found" o "Object not found", el problema es de Supabase Storage. Tras añadir los toasts de error, el usuario verá el mensaje exacto y podremos actuar.
 
 ### Resultado
-- **Descargar**: Fuerza descarga del archivo al equipo.
-- **Previsualizar**: Abre el documento en nueva pestaña (PDF se ve en el navegador).
+- Los botones mostrarán un toast con el error específico si falla la obtención de URL.
+- Si la URL se obtiene correctamente, la descarga y preview funcionarán como se espera.
 
