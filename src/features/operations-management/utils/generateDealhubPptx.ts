@@ -235,7 +235,8 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
   }
 }
 
-function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate) {
+function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate, locale: DealhubLocale = 'es') {
+  const t = getI18n(locale);
   const slide = pptx.addSlide();
 
   if (idx.backgroundImage) {
@@ -246,14 +247,13 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
   slide.background = { color: idx.background.color || WHITE };
 
   if (idx.title.visible) {
-    slide.addText('Índice de Oportunidades', {
+    slide.addText(t.indexTitle, {
       x: idx.title.x, y: idx.title.y, w: idx.title.w, h: idx.title.h,
       fontSize: idx.title.fontSize || 32, fontFace: FONT, color: idx.title.color || NAVY,
       bold: idx.title.bold ?? true, align: idx.title.align,
     });
   }
 
-  // Intro text paragraph
   const intro = idx.introText;
   if (intro && intro.visible) {
     slide.addText((intro as any).text || '', {
@@ -269,6 +269,8 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
     const count = sectionCounts[section.key] || 0;
     const sectionNum = String(i + 1).padStart(2, '0');
     const sColor = idx.sectionColors[i] || ACCENT;
+    const sLabel = t.sections[section.key]?.label || section.label;
+    const sSubtitle = t.sections[section.key]?.subtitle || section.subtitle;
 
     slide.addShape(pptx.ShapeType.roundRect, {
       x, y: idx.cardsStartY, w: idx.cardW, h: idx.cardH,
@@ -280,17 +282,17 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
       fontSize: 36, fontFace: FONT, color: sColor, bold: true,
     });
 
-    slide.addText(section.label, {
+    slide.addText(sLabel, {
       x: x + 0.25, y: idx.cardsStartY + 1.0, w: idx.cardW - 0.5, h: 0.5,
       fontSize: 14, fontFace: FONT, color: NAVY, bold: true,
     });
 
-    slide.addText(`${count} operaciones`, {
+    slide.addText(`${count} ${t.operationsUnit}`, {
       x: x + 0.25, y: idx.cardsStartY + 1.55, w: idx.cardW - 0.5, h: 0.4,
       fontSize: 12, fontFace: FONT, color: TEXT_SECONDARY,
     });
 
-    slide.addText(section.subtitle, {
+    slide.addText(sSubtitle, {
       x: x + 0.25, y: idx.cardsStartY + 1.95, w: idx.cardW - 0.5, h: 0.5,
       fontSize: 9, fontFace: FONT, color: TEXT_MUTED, wrap: true,
     });
