@@ -2043,11 +2043,11 @@ export default function ContactListDetailPage() {
               <div className="flex items-center gap-3 p-3 bg-muted rounded-lg flex-wrap">
                 <span className="text-sm font-medium">{selectedIds.length.toLocaleString('es-ES')} seleccionadas</span>
                 {!isMadreList && (
-                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                  <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('copy'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.sector || ''); }}>
                     <CopyPlus className="h-4 w-4 mr-1" /> Copiar a lista
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); }}>
+                <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.sector || ''); }}>
                   <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
                 </Button>
                 {!isMadreList && (
@@ -2298,6 +2298,7 @@ export default function ContactListDetailPage() {
                                             setMoveCopyMode('move');
                                             setMoveCopyTargetId('');
                                             setMoveCopyFromSublistId(currentSublistId || null);
+                                            setMoveCopySectorFilter(list?.sector || '');
                                           }}>
                                             <ArrowUpDown className="h-4 w-4 mr-2" /> Cambiar de sublista
                                           </DropdownMenuItem>
@@ -2310,11 +2311,11 @@ export default function ContactListDetailPage() {
                                     <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                       <Edit className="h-4 w-4 mr-2" /> Editar
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); }}>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.sector || ''); }}>
                                       <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
                                     </DropdownMenuItem>
                                     {!isMadreList && (
-                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); }}>
+                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.sector || ''); }}>
                                         <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                       </DropdownMenuItem>
                                     )}
