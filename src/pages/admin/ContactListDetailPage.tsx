@@ -398,6 +398,8 @@ export default function ContactListDetailPage() {
   const [moveCopyPopoverOpen, setMoveCopyPopoverOpen] = useState(false);
   const [bulkMoveCopySearchTerm, setBulkMoveCopySearchTerm] = useState('');
   const [bulkMoveCopyPopoverOpen, setBulkMoveCopyPopoverOpen] = useState(false);
+  const [moveCopySectorFilter, setMoveCopySectorFilter] = useState('');
+  const [bulkMoveCopySectorFilter, setBulkMoveCopySectorFilter] = useState('');
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -718,7 +720,7 @@ export default function ContactListDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('outbound_lists' as any)
-        .select('id, name')
+        .select('id, name, sector')
         .order('name');
       if (error) throw error;
       return (data as any[]).filter((l: any) => l.id !== listId);
@@ -2763,7 +2765,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Move/Copy Modal */}
-      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); } }}>
+      <Dialog open={!!moveCopyCompany} onOpenChange={(open) => { if (!open) { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); setMoveCopySectorFilter(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -2776,6 +2778,22 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
+                {!moveCopyFromSublistId && (() => {
+                  const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
+                  return uniqueSectors.length > 0 ? (
+                    <Select value={moveCopySectorFilter} onValueChange={(v) => { setMoveCopySectorFilter(v === 'all' ? '' : v); setMoveCopyTargetId(''); }}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Filtrar por sector..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los sectores</SelectItem>
+                        {uniqueSectors.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : null;
+                })()}
                 <Popover open={moveCopyPopoverOpen} onOpenChange={setMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
@@ -2800,7 +2818,9 @@ export default function ContactListDetailPage() {
                             ? sublistCompanyMap.sublists
                                 .filter(s => s.id !== moveCopyFromSublistId)
                                 .filter(s => s.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
-                            : allLists.filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                            : allLists
+                                .filter((l: any) => !moveCopySectorFilter || l.sector === moveCopySectorFilter)
+                                .filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
                           ).map((item: any) => (
                             <CommandItem
                               key={item.id}
@@ -2809,7 +2829,10 @@ export default function ContactListDetailPage() {
                               className="cursor-pointer"
                             >
                               <Check className={cn("mr-2 h-4 w-4", moveCopyTargetId === item.id ? "opacity-100" : "opacity-0")} />
-                              {item.name}
+                              <div className="flex flex-col">
+                                <span>{item.name}</span>
+                                {item.sector && <span className="text-xs text-muted-foreground">{item.sector}</span>}
+                              </div>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -2846,7 +2869,7 @@ export default function ContactListDetailPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); }}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => { setMoveCopyCompany(null); setIsCreatingNewList(false); setNewListName(''); setMoveCopyFromSublistId(null); setMoveCopySectorFilter(''); }}>Cancelar</Button>
             <Button onClick={handleMoveCopy} disabled={(!isCreatingNewList && !moveCopyTargetId) || (isCreatingNewList && !newListName.trim()) || isMoveCopyLoading}>
               {isMoveCopyLoading ? 'Procesando...' : moveCopyFromSublistId ? 'Reasignar' : moveCopyMode === 'move' ? 'Mover' : 'Copiar'}
             </Button>
@@ -2855,7 +2878,7 @@ export default function ContactListDetailPage() {
       </Dialog>
 
       {/* Bulk Move/Copy Modal */}
-      <Dialog open={bulkMoveCopyOpen} onOpenChange={(open) => { if (!open) { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); } }}>
+      <Dialog open={bulkMoveCopyOpen} onOpenChange={(open) => { if (!open) { setBulkMoveCopyOpen(false); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -2868,6 +2891,22 @@ export default function ContactListDetailPage() {
             </p>
             {!bulkIsCreatingNewList ? (
               <>
+                {(() => {
+                  const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
+                  return uniqueSectors.length > 0 ? (
+                    <Select value={bulkMoveCopySectorFilter} onValueChange={(v) => { setBulkMoveCopySectorFilter(v === 'all' ? '' : v); setBulkMoveCopyTargetId(''); }}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Filtrar por sector..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los sectores</SelectItem>
+                        {uniqueSectors.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : null;
+                })()}
                 <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
@@ -2884,6 +2923,7 @@ export default function ContactListDetailPage() {
                         <CommandEmpty>No se encontraron listas</CommandEmpty>
                         <CommandGroup>
                           {allLists
+                            .filter((l: any) => !bulkMoveCopySectorFilter || l.sector === bulkMoveCopySectorFilter)
                             .filter((l: any) => l.name.toLowerCase().includes(bulkMoveCopySearchTerm.toLowerCase()))
                             .map((l: any) => (
                               <CommandItem
@@ -2893,7 +2933,10 @@ export default function ContactListDetailPage() {
                                 className="cursor-pointer"
                               >
                                 <Check className={cn("mr-2 h-4 w-4", bulkMoveCopyTargetId === l.id ? "opacity-100" : "opacity-0")} />
-                                {l.name}
+                                <div className="flex flex-col">
+                                  <span>{l.name}</span>
+                                  {l.sector && <span className="text-xs text-muted-foreground">{l.sector}</span>}
+                                </div>
                               </CommandItem>
                             ))}
                         </CommandGroup>
