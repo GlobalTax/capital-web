@@ -481,7 +481,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     }
 
     if (t.cta.visible) {
-      const ctaText = (t.cta as any).text || 'Más Información →';
+      const ctaText = (t.cta as any).text || i18n.moreInfo;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
         fill: { color: t.cta.bgColor || '3A3F47' }, rectRadius: t.cta.rectRadius || 0.05,
