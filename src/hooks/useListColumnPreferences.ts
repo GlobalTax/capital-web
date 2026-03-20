@@ -27,6 +27,7 @@ const DEFAULT_COLUMNS: ListColumnDef[] = [
   { key: 'consolidador', label: 'Consolidador', visible: true, position: 12, minWidth: '180px' },
   { key: 'notas', label: 'Notas', visible: true, position: 13, minWidth: '160px' },
   { key: 'lista_madre', label: 'Lista Madre', visible: true, position: 14, minWidth: '160px' },
+  { key: 'descripcion_actividad', label: 'Descripción', visible: false, position: 15, minWidth: '200px' },
 ];
 
 const STORAGE_KEY = 'list-column-prefs';
