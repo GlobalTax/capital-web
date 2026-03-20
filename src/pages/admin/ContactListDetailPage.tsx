@@ -2813,8 +2813,7 @@ export default function ContactListDetailPage() {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                  ) : null;
-                })()}
+                )}
                 <Popover open={moveCopyPopoverOpen} onOpenChange={setMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
