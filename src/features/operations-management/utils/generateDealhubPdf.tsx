@@ -423,13 +423,13 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
                 fontFamily: 'Helvetica-Bold',
                 marginBottom: 10,
               }}>
-                Datos Clave
+                {i18n.keyData}
               </Text>
               {[
-                { label: 'Facturación', value: fmtCurrency(op.revenue_amount) },
-                { label: 'EBITDA', value: fmtCurrency(op.ebitda_amount) },
-                { label: 'Margen EBITDA', value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
-                { label: 'Empleados', value: op.company_size_employees || 'N/D' },
+                { label: i18n.revenue, value: fmtCurrency(op.revenue_amount) },
+                { label: i18n.ebitda, value: fmtCurrency(op.ebitda_amount) },
+                { label: i18n.ebitdaMargin, value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
+                { label: i18n.employees, value: op.company_size_employees || i18n.nd },
               ].map((row, i) => (
                 <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
                   <Text style={{ fontSize: 7.5, color: TEXT_MUTED }}>{row.label}</Text>
