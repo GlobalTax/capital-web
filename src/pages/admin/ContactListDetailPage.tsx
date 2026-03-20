@@ -2916,17 +2916,34 @@ export default function ContactListDetailPage() {
                 {(() => {
                   const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
                   return uniqueSectors.length > 0 ? (
-                    <Select value={bulkMoveCopySectorFilter} onValueChange={(v) => { setBulkMoveCopySectorFilter(v === 'all' ? '' : v); setBulkMoveCopyTargetId(''); }}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Filtrar por sector..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos los sectores</SelectItem>
-                        {uniqueSectors.map(s => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={bulkMoveCopySectorPopoverOpen} onOpenChange={setBulkMoveCopySectorPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between">
+                          {bulkMoveCopySectorFilter || 'Todos los sectores'}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command shouldFilter={false}>
+                          <CommandInput placeholder="Buscar sector..." value={bulkMoveCopySectorSearch} onValueChange={setBulkMoveCopySectorSearch} />
+                          <CommandList>
+                            <CommandEmpty>No se encontraron sectores</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem value="all" onSelect={() => { setBulkMoveCopySectorFilter(''); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                <Check className={cn("mr-2 h-4 w-4", !bulkMoveCopySectorFilter ? "opacity-100" : "opacity-0")} />
+                                Todos los sectores
+                              </CommandItem>
+                              {uniqueSectors.filter(s => s.toLowerCase().includes(bulkMoveCopySectorSearch.toLowerCase())).map(s => (
+                                <CommandItem key={s} value={s} onSelect={() => { setBulkMoveCopySectorFilter(s); setBulkMoveCopyTargetId(''); setBulkMoveCopySectorPopoverOpen(false); setBulkMoveCopySectorSearch(''); }} className="cursor-pointer">
+                                  <Check className={cn("mr-2 h-4 w-4", bulkMoveCopySectorFilter === s ? "opacity-100" : "opacity-0")} />
+                                  {s}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   ) : null;
                 })()}
                 <Popover open={bulkMoveCopyPopoverOpen} onOpenChange={setBulkMoveCopyPopoverOpen}>
