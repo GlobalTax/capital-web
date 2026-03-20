@@ -30,7 +30,7 @@ const DEFAULT_COLUMNS: ListColumnDef[] = [
   { key: 'lista_madre', label: 'Lista Madre', visible: true, position: 15, minWidth: '160px' },
 ];
 
-const STORAGE_KEY = 'list-column-prefs';
+const STORAGE_KEY = 'list-column-prefs-v2';
 
 function loadPreferences(listId?: string): ListColumnDef[] | null {
   try {
