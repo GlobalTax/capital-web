@@ -82,11 +82,12 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     try {
       const finalOps = activeOps.filter(op => !excludedOpIds.has(op.id));
       if (outputFormat === 'pdf') {
-        await generateDealhubPdf(finalOps, selectedSections, quarter, undefined, fullTemplate);
+        await generateDealhubPdf(finalOps, selectedSections, quarter, undefined, fullTemplate, locale);
       } else {
-        await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
+        await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate, locale);
       }
-      toast({ title: `Catálogo ROD descargado (${outputFormat.toUpperCase()})` });
+      const langLabel = locale === 'en' ? ' (EN)' : '';
+      toast({ title: `Catálogo ROD descargado${langLabel} (${outputFormat.toUpperCase()})` });
       onOpenChange(false);
     } catch (e) {
       console.error(e);
