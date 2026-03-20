@@ -108,26 +108,29 @@ export function useMarketStudies() {
     },
   });
 
-  const getFileBlob = async (storagePath: string) => {
-    const { data, error } = await supabase.storage
-      .from('market-studies')
-      .download(storagePath);
-    if (error) {
-      const msg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-      throw new Error(msg);
-    }
-    return data;
+  const getFileBlob = async (storagePath: string, fileName?: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('No hay sesión activa');
+
+    const res = await supabase.functions.invoke('upload-campaign-presentation', {
+      body: { action: 'download_blob', bucket: 'market-studies', path: storagePath, fileName },
+    });
+
+    if (res.error) throw new Error(res.error.message || 'Error al descargar');
+    return res.data as Blob;
   };
 
   const getSignedUrl = async (storagePath: string) => {
-    const { data, error } = await supabase.storage
-      .from('market-studies')
-      .createSignedUrl(storagePath, 3600);
-    if (error) {
-      const msg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-      throw new Error(msg);
-    }
-    return data.signedUrl;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('No hay sesión activa');
+
+    const { data, error } = await supabase.functions.invoke('upload-campaign-presentation', {
+      body: { action: 'sign', bucket: 'market-studies', path: storagePath },
+    });
+
+    if (error) throw new Error(error.message || 'Error al obtener URL');
+    if (!data?.signedUrl) throw new Error('No se recibió URL firmada');
+    return data.signedUrl as string;
   };
 
   return { studies, isLoading, uploadStudy, deleteStudy, updateStatus, getFileBlob, getSignedUrl };
