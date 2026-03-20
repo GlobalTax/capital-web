@@ -14,7 +14,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
-import { Upload, Download, Trash2, Search, FileText, BookOpen, CheckCircle2, Clock } from 'lucide-react';
+import { Upload, Download, Trash2, Search, FileText, BookOpen, CheckCircle2, Clock, Eye } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMarketStudies, MarketStudy } from '@/hooks/useMarketStudies';
 import { format } from 'date-fns';
@@ -70,7 +70,21 @@ export function MarketStudiesPanel() {
 
   const handleDownload = async (study: MarketStudy) => {
     try {
-      const url = await getDownloadUrl(study.storage_path);
+      const url = await getDownloadUrl(study.storage_path, true);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = study.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      // toast handled in hook
+    }
+  };
+
+  const handlePreview = async (study: MarketStudy) => {
+    try {
+      const url = await getDownloadUrl(study.storage_path, false);
       window.open(url, '_blank');
     } catch {
       // toast handled in hook
@@ -184,7 +198,11 @@ export function MarketStudiesPanel() {
                   <span>{formatFileSize(study.file_size)}</span>
                   <span>{format(new Date(study.created_at), 'dd MMM yyyy', { locale: es })}</span>
                 </div>
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-2">
+                  <Button variant="outline" size="xs" onClick={() => handlePreview(study)}>
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    Ver
+                  </Button>
                   <Button variant="outline" size="xs" onClick={() => handleDownload(study)}>
                     <Download className="h-3.5 w-3.5 mr-1" />
                     Descargar
