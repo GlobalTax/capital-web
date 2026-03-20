@@ -2778,6 +2778,22 @@ export default function ContactListDetailPage() {
             </p>
             {!isCreatingNewList ? (
               <>
+                {!moveCopyFromSublistId && (() => {
+                  const uniqueSectors = [...new Set(allLists.map((l: any) => l.sector).filter(Boolean))].sort() as string[];
+                  return uniqueSectors.length > 0 ? (
+                    <Select value={moveCopySectorFilter} onValueChange={(v) => { setMoveCopySectorFilter(v === 'all' ? '' : v); setMoveCopyTargetId(''); }}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Filtrar por sector..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los sectores</SelectItem>
+                        {uniqueSectors.map(s => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : null;
+                })()}
                 <Popover open={moveCopyPopoverOpen} onOpenChange={setMoveCopyPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" role="combobox" className="w-full justify-between">
@@ -2802,7 +2818,9 @@ export default function ContactListDetailPage() {
                             ? sublistCompanyMap.sublists
                                 .filter(s => s.id !== moveCopyFromSublistId)
                                 .filter(s => s.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
-                            : allLists.filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
+                            : allLists
+                                .filter((l: any) => !moveCopySectorFilter || l.sector === moveCopySectorFilter)
+                                .filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
                           ).map((item: any) => (
                             <CommandItem
                               key={item.id}
@@ -2811,7 +2829,10 @@ export default function ContactListDetailPage() {
                               className="cursor-pointer"
                             >
                               <Check className={cn("mr-2 h-4 w-4", moveCopyTargetId === item.id ? "opacity-100" : "opacity-0")} />
-                              {item.name}
+                              <div className="flex flex-col">
+                                <span>{item.name}</span>
+                                {item.sector && <span className="text-xs text-muted-foreground">{item.sector}</span>}
+                              </div>
                             </CommandItem>
                           ))}
                         </CommandGroup>
