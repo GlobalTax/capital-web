@@ -20,12 +20,90 @@ const M = 0.6;
 
 // ─── TYPES ───
 export type QuarterType = 'Q1' | 'Q2' | 'Q3' | 'Q4';
+export type DealhubLocale = 'es' | 'en';
 
 export interface DealhubSection {
   key: string;
   label: string;
   subtitle: string;
   filter: (op: Operation) => boolean;
+}
+
+// ─── I18N ───
+const I18N: Record<DealhubLocale, {
+  sections: Record<string, { label: string; subtitle: string }>;
+  highlights: string;
+  summary: string;
+  keyData: string;
+  location: string;
+  locationValue: string;
+  sector: string;
+  opportunity: string;
+  revenue: string;
+  ebitda: string;
+  ebitdaMargin: string;
+  employees: string;
+  moreInfo: string;
+  indexTitle: string;
+  operationsUnit: string;
+  thanks: string;
+  confidential: string;
+  nd: string;
+}> = {
+  es: {
+    sections: {
+      sale_active: { label: 'Mandatos de Venta', subtitle: 'Empresas en proceso de venta' },
+      upcoming: { label: 'Fase de Preparación', subtitle: 'Próximamente en mercado' },
+      acquisition: { label: 'Mandatos de Compra', subtitle: 'Empresas en búsqueda de adquisición' },
+      exclusive: { label: 'En Exclusividad', subtitle: 'Procesos en fase de exclusividad' },
+    },
+    highlights: 'Aspectos Destacados',
+    summary: 'Resumen',
+    keyData: 'Datos Clave',
+    location: 'Ubicación',
+    locationValue: 'España',
+    sector: 'Sector',
+    opportunity: 'Oportunidad',
+    revenue: 'Facturación',
+    ebitda: 'EBITDA',
+    ebitdaMargin: 'Margen EBITDA',
+    employees: 'Empleados',
+    moreInfo: 'Más Información →',
+    indexTitle: 'Índice de Oportunidades',
+    operationsUnit: 'operaciones',
+    thanks: 'Gracias',
+    confidential: 'CAPITTAL — Información Confidencial',
+    nd: 'N/D',
+  },
+  en: {
+    sections: {
+      sale_active: { label: 'Sale Mandates', subtitle: 'Companies in sale process' },
+      upcoming: { label: 'Preparation Phase', subtitle: 'Coming soon to market' },
+      acquisition: { label: 'Acquisition Mandates', subtitle: 'Companies seeking acquisition' },
+      exclusive: { label: 'In Exclusivity', subtitle: 'Processes in exclusivity phase' },
+    },
+    highlights: 'Key Highlights',
+    summary: 'Summary',
+    keyData: 'Key Data',
+    location: 'Location',
+    locationValue: 'Spain',
+    sector: 'Sector',
+    opportunity: 'Opportunity',
+    revenue: 'Revenue',
+    ebitda: 'EBITDA',
+    ebitdaMargin: 'EBITDA Margin',
+    employees: 'Employees',
+    moreInfo: 'More Information →',
+    indexTitle: 'Investment Opportunities Index',
+    operationsUnit: 'operations',
+    thanks: 'Thank You',
+    confidential: 'CAPITTAL — Confidential Information',
+    nd: 'N/A',
+  },
+};
+
+export function getI18n(locale: DealhubLocale) {
+  return I18N[locale];
 }
 
 export const DEALHUB_SECTIONS: DealhubSection[] = [
@@ -157,7 +235,8 @@ function addCoverSlide(pptx: pptxgen, quarter: QuarterType, year: number, ct: Co
   }
 }
 
-function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate) {
+function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx: IndexTemplate, locale: DealhubLocale = 'es') {
+  const t = getI18n(locale);
   const slide = pptx.addSlide();
 
   if (idx.backgroundImage) {
@@ -168,14 +247,13 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
   slide.background = { color: idx.background.color || WHITE };
 
   if (idx.title.visible) {
-    slide.addText('Índice de Oportunidades', {
+    slide.addText(t.indexTitle, {
       x: idx.title.x, y: idx.title.y, w: idx.title.w, h: idx.title.h,
       fontSize: idx.title.fontSize || 32, fontFace: FONT, color: idx.title.color || NAVY,
       bold: idx.title.bold ?? true, align: idx.title.align,
     });
   }
 
-  // Intro text paragraph
   const intro = idx.introText;
   if (intro && intro.visible) {
     slide.addText((intro as any).text || '', {
@@ -191,6 +269,8 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
     const count = sectionCounts[section.key] || 0;
     const sectionNum = String(i + 1).padStart(2, '0');
     const sColor = idx.sectionColors[i] || ACCENT;
+    const sLabel = t.sections[section.key]?.label || section.label;
+    const sSubtitle = t.sections[section.key]?.subtitle || section.subtitle;
 
     slide.addShape(pptx.ShapeType.roundRect, {
       x, y: idx.cardsStartY, w: idx.cardW, h: idx.cardH,
@@ -202,17 +282,17 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
       fontSize: 36, fontFace: FONT, color: sColor, bold: true,
     });
 
-    slide.addText(section.label, {
+    slide.addText(sLabel, {
       x: x + 0.25, y: idx.cardsStartY + 1.0, w: idx.cardW - 0.5, h: 0.5,
       fontSize: 14, fontFace: FONT, color: NAVY, bold: true,
     });
 
-    slide.addText(`${count} operaciones`, {
+    slide.addText(`${count} ${t.operationsUnit}`, {
       x: x + 0.25, y: idx.cardsStartY + 1.55, w: idx.cardW - 0.5, h: 0.4,
       fontSize: 12, fontFace: FONT, color: TEXT_SECONDARY,
     });
 
-    slide.addText(section.subtitle, {
+    slide.addText(sSubtitle, {
       x: x + 0.25, y: idx.cardsStartY + 1.95, w: idx.cardW - 0.5, h: 0.5,
       fontSize: 9, fontFace: FONT, color: TEXT_MUTED, wrap: true,
     });
@@ -270,7 +350,8 @@ function addSectionSeparator(pptx: pptxgen, sectionNum: string, title: string, s
   }
 }
 
-function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
+function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, locale: DealhubLocale = 'es') {
+  const i18n = getI18n(locale);
   const slide = pptx.addSlide();
   slide.background = { color: WHITE };
 
@@ -286,7 +367,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
   }
 
   if (t.description.visible) {
-    const rawDesc = op.description || '';
+    const rawDesc = (locale === 'en' ? (op.description_en || op.description) : op.description) || '';
     const desc = rawDesc.length > 800 ? rawDesc.substring(0, 797) + '...' : rawDesc;
     slide.addText(desc, {
       x: t.description.x, y: t.description.y, w: t.description.w, h: t.description.h,
@@ -299,9 +380,9 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
     });
   }
 
-  const highlights = op.highlights || [];
+  const highlights = (locale === 'en' ? (op.highlights_en || op.highlights) : op.highlights) || [];
   if (t.highlights.visible && highlights.length > 0) {
-    slide.addText('Aspectos Destacados', {
+    slide.addText(i18n.highlights, {
       x: t.highlights.x, y: t.highlights.y, w: t.highlights.w, h: 0.35,
       fontSize: t.highlights.fontSize || 11, fontFace: FONT, color: t.highlights.color || NAVY,
       bold: t.highlights.bold ?? true, align: t.highlights.align,
@@ -329,7 +410,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
     });
 
     if (t.summaryHeader.visible) {
-      slide.addText('Resumen', {
+      slide.addText(i18n.summary, {
         x: t.summaryHeader.x, y: t.summaryHeader.y, w: t.summaryHeader.w, h: t.summaryHeader.h,
         fontSize: t.summaryHeader.fontSize || 13, fontFace: FONT, color: t.summaryHeader.color || WHITE,
         bold: t.summaryHeader.bold ?? true, align: t.summaryHeader.align,
@@ -338,8 +419,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
 
     if (t.infoRows.visible) {
       const simpleRows = [
-        { label: 'Ubicación', value: 'España' },
-        { label: 'Sector', value: op.sector || 'N/D' },
+        { label: i18n.location, value: i18n.locationValue },
+        { label: i18n.sector, value: op.sector || i18n.nd },
       ];
 
       let infoY = t.infoRows.y;
@@ -355,8 +436,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
         infoY += 0.45;
       });
 
-      const oportunidadText = op.short_description || op.deal_type || 'Venta';
-      slide.addText('Oportunidad', {
+      const oportunidadText = (locale === 'en' ? (op.short_description_en || op.short_description) : op.short_description) || op.deal_type || (locale === 'en' ? 'Sale' : 'Venta');
+      slide.addText(i18n.opportunity, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.25,
         fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
       });
@@ -373,17 +454,17 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
         fill: { color: TEXT_MUTED },
       });
 
-      slide.addText('Datos Clave', {
+      slide.addText(i18n.keyData, {
         x: t.financialData.x, y: t.financialData.y, w: t.financialData.w, h: 0.4,
         fontSize: t.financialData.fontSize || 13, fontFace: FONT, color: t.financialData.color || WHITE,
         bold: t.financialData.bold ?? true, align: t.financialData.align,
       });
 
       const financialRows = [
-        { label: 'Facturación', value: fmtCurrency(op.revenue_amount) },
-        { label: 'EBITDA', value: fmtCurrency(op.ebitda_amount) },
-        { label: 'Margen EBITDA', value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
-        { label: 'Empleados', value: op.company_size_employees || 'N/D' },
+        { label: i18n.revenue, value: fmtCurrency(op.revenue_amount) },
+        { label: i18n.ebitda, value: fmtCurrency(op.ebitda_amount) },
+        { label: i18n.ebitdaMargin, value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
+        { label: i18n.employees, value: op.company_size_employees || i18n.nd },
       ];
 
       financialRows.forEach((row, i) => {
@@ -400,7 +481,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
     }
 
     if (t.cta.visible) {
-      const ctaText = (t.cta as any).text || 'Más Información →';
+      const ctaText = (t.cta as any).text || i18n.moreInfo;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: t.cta.x, y: t.cta.y, w: t.cta.w, h: t.cta.h,
         fill: { color: t.cta.bgColor || '3A3F47' }, rectRadius: t.cta.rectRadius || 0.05,
@@ -415,7 +496,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
   }
 
   if (t.footer.visible) {
-    const footerText = (t.footer as any).text || 'CAPITTAL — Información Confidencial';
+    const footerText = (t.footer as any).text || i18n.confidential;
     slide.addText(footerText, {
       x: t.footer.x, y: t.footer.y, w: t.footer.w, h: t.footer.h,
       fontSize: t.footer.fontSize || 8, fontFace: FONT, color: t.footer.color || TEXT_MUTED,
@@ -424,7 +505,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate) {
   }
 }
 
-function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate) {
+function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: ClosingTemplate, locale: DealhubLocale = 'es') {
+  const closingLocaleTexts = getI18n(locale);
   const slide = pptx.addSlide();
 
   if (cl.backgroundImage) {
@@ -451,10 +533,10 @@ function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: 
     });
   }
 
-  // "Gracias" text (bottom half)
+  // "Gracias" / "Thank You" text (bottom half)
   const thanks = cl.thanksText;
   if (thanks && thanks.visible) {
-    slide.addText((thanks as any).text || 'Gracias', {
+    slide.addText((thanks as any).text || closingLocaleTexts.thanks, {
       x: thanks.x, y: thanks.y, w: thanks.w, h: thanks.h,
       fontSize: thanks.fontSize || 40, fontFace: FONT, color: thanks.color || WHITE,
       bold: thanks.bold ?? true,
@@ -490,15 +572,18 @@ export async function generateDealhubPptx(
   quarter: QuarterType,
   year?: number,
   fullTemplate?: FullSlideTemplate,
+  locale: DealhubLocale = 'es',
 ) {
   const currentYear = year || new Date().getFullYear();
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
   const ft = fullTemplate || DEFAULT_FULL_TEMPLATE;
-  const fileName = `Capittal_Dealhub_${quarter}_${currentYear}.pptx`;
+  const localeSuffix = locale === 'en' ? '_EN' : '';
+  const fileName = `Capittal_Dealhub${localeSuffix}_${quarter}_${currentYear}.pptx`;
+  const i18n = getI18n(locale);
 
   // If a template PPTX is uploaded, use the merge flow
   if (ft.templatePptxUrl) {
-    await generateWithMerge(activeOps, selectedSections, quarter, currentYear, ft, fileName);
+    await generateWithMerge(activeOps, selectedSections, quarter, currentYear, ft, fileName, locale);
     return;
   }
 
@@ -517,23 +602,25 @@ export async function generateDealhubPptx(
   addCoverSlide(pptx, quarter, currentYear, ft.cover);
 
   // 2. Index
-  addIndexSlide(pptx, sectionCounts, ft.index);
+  addIndexSlide(pptx, sectionCounts, ft.index, locale);
 
   // 3. Sections
-  DEALHUB_SECTIONS.forEach((section, i) => {
+  DEALHUB_SECTIONS.forEach((section, idx) => {
     if (!selectedSections.includes(section.key)) return;
     const ops = activeOps.filter(section.filter);
     if (ops.length === 0) return;
 
-    const sectionNum = String(i + 1).padStart(2, '0');
-    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle, ft.separator, section.key);
+    const sectionNum = String(idx + 1).padStart(2, '0');
+    const sLabel = i18n.sections[section.key]?.label || section.label;
+    const sSubtitle = i18n.sections[section.key]?.subtitle || section.subtitle;
+    addSectionSeparator(pptx, sectionNum, sLabel, sSubtitle, ft.separator, section.key);
 
-    ops.forEach(op => addOperationSlide(pptx, op, ft.operation));
+    ops.forEach(op => addOperationSlide(pptx, op, ft.operation, locale));
   });
 
   // 4. Closing slide
   const closingTemplate = ft.closing || DEFAULT_CLOSING_TEMPLATE;
-  addClosingSlide(pptx, quarter, currentYear, closingTemplate);
+  addClosingSlide(pptx, quarter, currentYear, closingTemplate, locale);
 
   await pptx.writeFile({ fileName });
 }
@@ -547,6 +634,7 @@ async function generateWithMerge(
   currentYear: number,
   ft: FullSlideTemplate,
   fileName: string,
+  locale: DealhubLocale = 'es',
 ) {
   // 1. Generate ops-only PPTX with pptxgenjs
   const opsPptx = new pptxgen();
@@ -560,7 +648,7 @@ async function generateWithMerge(
     const ops = activeOps.filter(section.filter);
     if (ops.length === 0) return;
     sectionSlideCounts[section.key] = ops.length;
-    ops.forEach(op => addOperationSlide(opsPptx, op, ft.operation));
+    ops.forEach(op => addOperationSlide(opsPptx, op, ft.operation, locale));
   });
 
   // Generate ops PPTX as blob

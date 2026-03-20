@@ -3,7 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Link, pdf } from '@react-pdf/re
 import type { Operation } from '../types/operations';
 import type { FullSlideTemplate } from '../types/slideTemplate';
 import { DEFAULT_FULL_TEMPLATE } from '../types/slideTemplate';
-import { DEALHUB_SECTIONS, type QuarterType } from './generateDealhubPptx';
+import { DEALHUB_SECTIONS, type QuarterType, type DealhubLocale, getI18n } from './generateDealhubPptx';
 
 // ─── DESIGN TOKENS (matching PPTX) ───
 const NAVY = '#161B22';
@@ -141,9 +141,10 @@ const CoverPage = ({ quarter, year, t }: { quarter: QuarterType; year: number; t
   );
 };
 
-const IndexPage = ({ sectionCounts, t }: { sectionCounts: Record<string, number>; t: FullSlideTemplate }) => {
+const IndexPage = ({ sectionCounts, t, locale = 'es' }: { sectionCounts: Record<string, number>; t: FullSlideTemplate; locale?: DealhubLocale }) => {
   const idx = t.index;
   const sectionColors = idx.sectionColors || ['#2563EB', '#7C3AED', '#EA580C', '#059669'];
+  const i18n = getI18n(locale);
 
   return (
     <Page size={[PW, PH]} style={[styles.page, { backgroundColor: hexColor(idx.background.color, WHITE) }]}>
@@ -157,7 +158,7 @@ const IndexPage = ({ sectionCounts, t }: { sectionCounts: Record<string, number>
           color: hexColor(idx.title.color, NAVY),
           fontFamily: 'Helvetica-Bold',
         }}>
-          Índice de Oportunidades
+          {i18n.indexTitle}
         </Text>
       )}
 
@@ -185,6 +186,8 @@ const IndexPage = ({ sectionCounts, t }: { sectionCounts: Record<string, number>
         const count = sectionCounts[section.key] || 0;
         const sectionNum = String(i + 1).padStart(2, '0');
         const sColor = hexColor(sectionColors[i], ACCENT);
+        const sLabel = i18n.sections[section.key]?.label || section.label;
+        const sSubtitle = i18n.sections[section.key]?.subtitle || section.subtitle;
 
         return (
           <View key={section.key} style={{
@@ -198,13 +201,13 @@ const IndexPage = ({ sectionCounts, t }: { sectionCounts: Record<string, number>
               {sectionNum}
             </Text>
             <Text style={{ fontSize: 11, color: NAVY, fontFamily: 'Helvetica-Bold', marginBottom: 4 }}>
-              {section.label}
+              {sLabel}
             </Text>
             <Text style={{ fontSize: 10, color: TEXT_SECONDARY, marginBottom: 4 }}>
-              {count} operaciones
+              {count} {i18n.operationsUnit}
             </Text>
             <Text style={{ fontSize: 7.5, color: TEXT_MUTED }}>
-              {section.subtitle}
+              {sSubtitle}
             </Text>
           </View>
         );
@@ -279,10 +282,11 @@ const SeparatorPage = ({ num, label, subtitle, t }: {
   );
 };
 
-const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
+const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTemplate; locale?: DealhubLocale }) => {
   const tmpl = t.operation;
-  const desc = (op.description || '').substring(0, 800);
-  const highlights = op.highlights || [];
+  const i18n = getI18n(locale);
+  const desc = ((locale === 'en' ? (op.description_en || op.description) : op.description) || '').substring(0, 800);
+  const highlights = (locale === 'en' ? (op.highlights_en || op.highlights) : op.highlights) || [];
 
   const cardX = (tmpl.summaryCard.x || 7.7) * S;
   const cardY = (tmpl.summaryCard.y || 0.4) * S;
@@ -336,7 +340,7 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
             fontFamily: 'Helvetica-Bold',
             marginBottom: 6,
           }}>
-            Aspectos Destacados
+            {i18n.highlights}
           </Text>
           {highlights.map((h, i) => (
             <Text key={i} style={{
@@ -369,7 +373,7 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
               fontFamily: 'Helvetica-Bold',
               marginBottom: 12,
             }}>
-              Resumen
+              {i18n.summary}
             </Text>
           )}
 
@@ -377,8 +381,8 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
           {tmpl.infoRows.visible && (
             <View style={{ marginBottom: 10 }}>
               {[
-                { label: 'Ubicación', value: 'España' },
-                { label: 'Sector', value: op.sector || 'N/D' },
+                { label: i18n.location, value: i18n.locationValue },
+                { label: i18n.sector, value: op.sector || i18n.nd },
               ].map((row, i) => (
                 <View key={i} style={{ flexDirection: 'row', marginBottom: 8 }}>
                   <Text style={{ fontSize: 7.5, color: TEXT_MUTED, width: 80 }}>{row.label}</Text>
@@ -393,13 +397,13 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
                 </View>
               ))}
               <View style={{ marginTop: 4 }}>
-                <Text style={{ fontSize: 7.5, color: TEXT_MUTED, marginBottom: 3 }}>Oportunidad</Text>
+                <Text style={{ fontSize: 7.5, color: TEXT_MUTED, marginBottom: 3 }}>{i18n.opportunity}</Text>
                 <Text style={{
                   fontSize: (tmpl.infoRows.fontSize || 10) * 0.85,
                   color: hexColor(tmpl.infoRows.color, WHITE),
                   fontFamily: 'Helvetica-Bold',
                 }}>
-                  {op.short_description || op.deal_type || 'Venta'}
+                  {(locale === 'en' ? (op.short_description_en || op.short_description) : op.short_description) || op.deal_type || (locale === 'en' ? 'Sale' : 'Venta')}
                 </Text>
               </View>
             </View>
@@ -419,13 +423,13 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
                 fontFamily: 'Helvetica-Bold',
                 marginBottom: 10,
               }}>
-                Datos Clave
+                {i18n.keyData}
               </Text>
               {[
-                { label: 'Facturación', value: fmtCurrency(op.revenue_amount) },
-                { label: 'EBITDA', value: fmtCurrency(op.ebitda_amount) },
-                { label: 'Margen EBITDA', value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
-                { label: 'Empleados', value: op.company_size_employees || 'N/D' },
+                { label: i18n.revenue, value: fmtCurrency(op.revenue_amount) },
+                { label: i18n.ebitda, value: fmtCurrency(op.ebitda_amount) },
+                { label: i18n.ebitdaMargin, value: fmtMargin(op.ebitda_amount, op.revenue_amount) },
+                { label: i18n.employees, value: op.company_size_employees || i18n.nd },
               ].map((row, i) => (
                 <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
                   <Text style={{ fontSize: 7.5, color: TEXT_MUTED }}>{row.label}</Text>
@@ -457,7 +461,7 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
                 fontFamily: 'Helvetica-Bold',
                 textDecoration: 'none',
               }}>
-                {tmpl.cta.text || 'Más Información →'}
+                {tmpl.cta.text || i18n.moreInfo}
               </Link>
             </View>
           )}
@@ -473,15 +477,16 @@ const OperationPage = ({ op, t }: { op: Operation; t: FullSlideTemplate }) => {
           fontSize: (tmpl.footer.fontSize || 8) * 0.85,
           color: hexColor(tmpl.footer.color, TEXT_MUTED),
         }}>
-          {tmpl.footer.text || 'CAPITTAL — Información Confidencial'}
+          {tmpl.footer.text || i18n.confidential}
         </Text>
       )}
     </Page>
   );
 };
 
-const ClosingPage = ({ quarter, year, t }: { quarter: QuarterType; year: number; t: FullSlideTemplate }) => {
+const ClosingPage = ({ quarter, year, t, locale = 'es' }: { quarter: QuarterType; year: number; t: FullSlideTemplate; locale?: DealhubLocale }) => {
   const cl = t.closing || {};
+  const i18n = getI18n(locale);
   return (
     <Page size={[PW, PH]} style={[styles.page, { backgroundColor: hexColor((cl as any).background?.color, WHITE) }]}>
       {/* Top half — white */}
@@ -502,7 +507,7 @@ const ClosingPage = ({ quarter, year, t }: { quarter: QuarterType; year: number;
             fontFamily: 'Helvetica-Bold',
             marginBottom: 10,
           }}>
-            {(cl as any).thanksText?.text || 'Gracias'}
+            {(cl as any).thanksText?.text || i18n.thanks}
           </Text>
         )}
 
@@ -542,10 +547,11 @@ interface DealhubPDFProps {
   quarter: QuarterType;
   year: number;
   template: FullSlideTemplate;
+  locale: DealhubLocale;
 }
 
-const DealhubPDFDocument = ({ operations, selectedSections, quarter, year, template }: DealhubPDFProps) => {
-  // Build section counts for index page
+const DealhubPDFDocument = ({ operations, selectedSections, quarter, year, template, locale }: DealhubPDFProps) => {
+  const i18n = getI18n(locale);
   const sectionCounts: Record<string, number> = {};
   DEALHUB_SECTIONS.forEach(s => {
     sectionCounts[s.key] = operations.filter(s.filter).length;
@@ -554,23 +560,25 @@ const DealhubPDFDocument = ({ operations, selectedSections, quarter, year, templ
   return (
     <Document title={`Capittal Dealhub - Open Deals ${quarter} ${year}`} author="Capittal">
       <CoverPage quarter={quarter} year={year} t={template} />
-      <IndexPage sectionCounts={sectionCounts} t={template} />
+      <IndexPage sectionCounts={sectionCounts} t={template} locale={locale} />
 
-      {DEALHUB_SECTIONS.map((section, i) => {
+      {DEALHUB_SECTIONS.map((section, idx) => {
         if (!selectedSections.includes(section.key)) return null;
         const ops = operations.filter(section.filter);
         if (ops.length === 0) return null;
-        const sectionNum = String(i + 1).padStart(2, '0');
+        const sectionNum = String(idx + 1).padStart(2, '0');
+        const sLabel = i18n.sections[section.key]?.label || section.label;
+        const sSubtitle = i18n.sections[section.key]?.subtitle || section.subtitle;
 
         return [
-          <SeparatorPage key={`sep-${section.key}`} num={sectionNum} label={section.label} subtitle={section.subtitle} t={template} />,
+          <SeparatorPage key={`sep-${section.key}`} num={sectionNum} label={sLabel} subtitle={sSubtitle} t={template} />,
           ...ops.map(op => (
-            <OperationPage key={op.id} op={op} t={template} />
+            <OperationPage key={op.id} op={op} t={template} locale={locale} />
           )),
         ];
       })}
 
-      <ClosingPage quarter={quarter} year={year} t={template} />
+      <ClosingPage quarter={quarter} year={year} t={template} locale={locale} />
     </Document>
   );
 };
@@ -583,10 +591,12 @@ export async function generateDealhubPdf(
   quarter: QuarterType,
   year?: number,
   template?: FullSlideTemplate,
+  locale: DealhubLocale = 'es',
 ): Promise<void> {
   const currentYear = year || new Date().getFullYear();
   const fullTemplate = template || DEFAULT_FULL_TEMPLATE;
-  const fileName = `Capittal_Dealhub_${quarter}_${currentYear}.pdf`;
+  const localeSuffix = locale === 'en' ? '_EN' : '';
+  const fileName = `Capittal_Dealhub${localeSuffix}_${quarter}_${currentYear}.pdf`;
 
   const doc = (
     <DealhubPDFDocument
@@ -595,6 +605,7 @@ export async function generateDealhubPdf(
       quarter={quarter}
       year={currentYear}
       template={fullTemplate}
+      locale={locale}
     />
   );
 

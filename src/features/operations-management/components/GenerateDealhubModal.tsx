@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Check, ChevronDown, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType } from '../utils/generateDealhubPptx';
+import { generateDealhubPptx, DEALHUB_SECTIONS, type QuarterType, type DealhubLocale } from '../utils/generateDealhubPptx';
 import { generateDealhubPdf } from '../utils/generateDealhubPdf';
 import type { Operation } from '../types/operations';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +37,7 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
   const [activeTab, setActiveTab] = useState('config');
   const [fullTemplate, setFullTemplate] = useState<FullSlideTemplate>({ ...DEFAULT_FULL_TEMPLATE });
   const [outputFormat, setOutputFormat] = useState<'pptx' | 'pdf'>('pptx');
+  const [locale, setLocale] = useState<DealhubLocale>('es');
 
   // Load saved template when modal opens
   useEffect(() => {
@@ -81,11 +82,12 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
     try {
       const finalOps = activeOps.filter(op => !excludedOpIds.has(op.id));
       if (outputFormat === 'pdf') {
-        await generateDealhubPdf(finalOps, selectedSections, quarter, undefined, fullTemplate);
+        await generateDealhubPdf(finalOps, selectedSections, quarter, undefined, fullTemplate, locale);
       } else {
-        await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate);
+        await generateDealhubPptx(finalOps, selectedSections, quarter, undefined, fullTemplate, locale);
       }
-      toast({ title: `Catálogo ROD descargado (${outputFormat.toUpperCase()})` });
+      const langLabel = locale === 'en' ? ' (EN)' : '';
+      toast({ title: `Catálogo ROD descargado${langLabel} (${outputFormat.toUpperCase()})` });
       onOpenChange(false);
     } catch (e) {
       console.error(e);
@@ -232,6 +234,15 @@ export const GenerateDealhubModal = ({ open, onOpenChange, operations }: Generat
             Guardar plantilla
           </button>
           <div className="flex items-center gap-2">
+            <Select value={locale} onValueChange={(v: DealhubLocale) => setLocale(v)}>
+              <SelectTrigger className="w-[80px] h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="es">ES</SelectItem>
+                <SelectItem value="en">EN</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={outputFormat} onValueChange={(v: 'pptx' | 'pdf') => setOutputFormat(v)}>
               <SelectTrigger className="w-[100px] h-9 text-xs">
                 <SelectValue />
