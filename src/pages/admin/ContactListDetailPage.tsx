@@ -1830,12 +1830,6 @@ export default function ContactListDetailPage() {
 
   const handleDedup = async () => {
     if (duplicateGroups.length === 0) return;
-    // Guard: no permitir eliminar duplicados en lista madre
-    if (isMadreList) {
-      toast.error('No se pueden eliminar empresas de una lista madre.');
-      setIsDedupModalOpen(false);
-      return;
-    }
     const idsToDelete: string[] = [];
     for (const [, group] of duplicateGroups) {
       const sorted = [...group].sort((a, b) =>
