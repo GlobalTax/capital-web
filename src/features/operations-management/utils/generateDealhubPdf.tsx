@@ -373,7 +373,7 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
               fontFamily: 'Helvetica-Bold',
               marginBottom: 12,
             }}>
-              Resumen
+              {i18n.summary}
             </Text>
           )}
 
