@@ -61,6 +61,33 @@ import {
 import * as XLSX from 'xlsx';
 import { useDropzone } from 'react-dropzone';
 
+// ===== EXPANDABLE DESCRIPTION COMPONENT =====
+const ExpandableDescription = ({ text, maxLength = 80, highlighted = false }: { text: string; maxLength?: number; highlighted?: boolean }) => {
+  const [expanded, setExpanded] = useState(false);
+  const needsTruncation = text.length > maxLength;
+  const displayText = expanded || !needsTruncation ? text : text.slice(0, maxLength) + '…';
+
+  return (
+    <span
+      className={cn(
+        "text-xs px-2 py-0.5 rounded transition-colors inline",
+        highlighted ? "bg-primary/10 text-primary" : "text-muted-foreground"
+      )}
+    >
+      {displayText}
+      {needsTruncation && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+          className="ml-1 text-xs font-medium text-primary hover:underline focus:outline-none"
+        >
+          {expanded ? 'ver menos' : 'ver más'}
+        </button>
+      )}
+    </span>
+  );
+};
+
 // ===== UTILS =====
 const normalizeColumnName = (name: string): string =>
   name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '_').trim();
