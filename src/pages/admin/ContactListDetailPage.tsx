@@ -2845,7 +2845,7 @@ export default function ContactListDetailPage() {
                                 .filter(s => s.id !== moveCopyFromSublistId)
                                 .filter(s => s.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
                             : allLists
-                                .filter((l: any) => !moveCopySectorFilter || l.sector === moveCopySectorFilter)
+                                .filter((l: any) => !moveCopySectorFilter || l.lista_madre_id === moveCopySectorFilter)
                                 .filter((l: any) => l.name.toLowerCase().includes(moveCopySearchTerm.toLowerCase()))
                           ).map((item: any) => (
                             <CommandItem
