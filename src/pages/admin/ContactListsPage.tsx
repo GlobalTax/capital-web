@@ -70,7 +70,7 @@ export default function ContactListsPage() {
   const [newDesc, setNewDesc] = useState('');
   const [newSector, setNewSector] = useState('');
   const [newTipo, setNewTipo] = useState<ContactListTipo>('outbound');
-  const [collapsedSectors, setCollapsedSectors] = useState<Set<string>>(new Set());
+  const [expandedSectors, setExpandedSectors] = useState<Set<string>>(new Set());
 
   // Activity search query
   const { data: activityMatches } = useQuery({
