@@ -2694,8 +2694,8 @@ export default function ContactListDetailPage() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Se han encontrado <strong>{duplicateGroups.length}</strong> empresas duplicadas (por nombre).
-              Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros.
+              Se han encontrado <strong>{duplicateGroups.length}</strong> CIFs duplicados.
+              Se eliminarán <strong>{duplicateGroups.reduce((acc, [, g]) => acc + g.length - 1, 0)}</strong> registros redundantes.
             </p>
             <div>
               <Label className="mb-2 block">¿Qué registro conservar?</Label>
@@ -2710,18 +2710,21 @@ export default function ContactListDetailPage() {
               </Select>
             </div>
             <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-1">
-              {duplicateGroups.map(([name, group]) => (
-                <div key={name} className="flex justify-between text-sm">
-                  <span className="truncate font-medium">{group[0].empresa}</span>
+              {duplicateGroups.map(([cif, group]) => (
+                <div key={cif} className="flex justify-between text-sm">
+                  <span className="truncate">
+                    <span className="font-medium">{group[0].empresa}</span>
+                    <span className="text-muted-foreground ml-1">({group[0].cif})</span>
+                  </span>
                   <Badge variant="secondary" className="ml-2 flex-shrink-0">{group.length}x</Badge>
                 </div>
               ))}
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)}>Cancelar</Button>
-            <Button variant="destructive" onClick={handleDedup}>
-              Eliminar duplicados
+            <Button variant="ghost" onClick={() => setIsDedupModalOpen(false)} disabled={isDedupLoading}>Cancelar</Button>
+            <Button variant="destructive" onClick={handleDedup} disabled={isDedupLoading}>
+              {isDedupLoading ? 'Eliminando...' : 'Eliminar duplicados'}
             </Button>
           </DialogFooter>
         </DialogContent>
