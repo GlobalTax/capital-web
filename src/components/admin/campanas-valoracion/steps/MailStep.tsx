@@ -847,6 +847,7 @@ function CcRecipientsSection({ campaignId, campaign }: { campaignId: string; cam
 
 // ─── Main MailStep ──────────────────────────────────────────────────────
 export function MailStep({ campaignId, campaign }: Props) {
+  const queryClient = useQueryClient();
   const { companies } = useCampaignCompanies(campaignId);
   const { presentations } = useCampaignPresentations(campaignId);
   const {
