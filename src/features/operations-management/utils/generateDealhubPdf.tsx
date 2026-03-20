@@ -340,7 +340,7 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
             fontFamily: 'Helvetica-Bold',
             marginBottom: 6,
           }}>
-            Aspectos Destacados
+            {i18n.highlights}
           </Text>
           {highlights.map((h, i) => (
             <Text key={i} style={{
