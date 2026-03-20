@@ -477,7 +477,7 @@ const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTe
           fontSize: (tmpl.footer.fontSize || 8) * 0.85,
           color: hexColor(tmpl.footer.color, TEXT_MUTED),
         }}>
-          {tmpl.footer.text || 'CAPITTAL — Información Confidencial'}
+          {tmpl.footer.text || i18n.confidential}
         </Text>
       )}
     </Page>
