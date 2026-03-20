@@ -1441,17 +1441,11 @@ export default function ContactListDetailPage() {
         const activeKeywords = columnFilters['descripcion_actividad'] || [];
         const isHighlighted = activeKeywords.length > 0 && activeKeywords.some(kw => cellVal.toLowerCase().includes(kw.toLowerCase()));
         return (
-          <span
-            className={cn(
-              "text-xs px-2 py-0.5 rounded transition-colors",
-              isHighlighted
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground"
-            )}
-            title={cellVal}
-          >
-            {cellVal.length > 80 ? cellVal.slice(0, 80) + '…' : cellVal}
-          </span>
+          <ExpandableDescription
+            text={cellVal}
+            maxLength={80}
+            highlighted={isHighlighted}
+          />
         );
       }
       case 'facturacion':
