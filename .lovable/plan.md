@@ -1,23 +1,39 @@
 
 
-## Hacer visible la columna "Descripción" en la tabla de listados
+## Filtro por palabras clave en "Descripción de Actividad"
 
-### Diagnóstico
-La columna ya tiene datos: **13.583 de 13.696 empresas** en esta lista tienen `descripcion_actividad` relleno. El problema es puramente de UI — el `localStorage` guarda las preferencias de columnas por lista, y las preferencias guardadas para esta lista concreta no recogen correctamente la nueva columna, o la sitúan al final (posición 15) donde queda fuera de la pantalla.
+### Problema
+El filtro actual de `descripcion_actividad` funciona igual que el de Provincia o CNAE: lista valores únicos exactos. Como cada descripción es prácticamente única, seleccionar una opción solo muestra 1 empresa. El usuario necesita buscar por **palabras clave** (ej: "peluquería") y filtrar todas las empresas cuya descripción contenga esa palabra.
 
-Además, la tabla `empresas` del CRM NO tiene descripciones adicionales que falten (la query cruzada por CIF devuelve 0 resultados), así que no hay datos que sincronizar desde allí.
+### Solución
+Cambiar el comportamiento del filtro de `descripcion_actividad` de "multi-select exacto" a "búsqueda por texto contenido" (contains/includes).
 
-### Cambios
+### Cambios en `src/pages/admin/ContactListDetailPage.tsx`
 
-**1. `src/hooks/useListColumnPreferences.ts`**
-- Mover `descripcion_actividad` a una posición más visible en `DEFAULT_COLUMNS` (posición 3, justo después de CIF), para que quede a la vista sin scroll horizontal.
-- Añadir un mecanismo de versión al `STORAGE_KEY` (ej: `list-column-prefs-v2`) que fuerce a todos los usuarios a resetear sus preferencias guardadas, asegurando que la nueva columna aparezca en la posición correcta.
-- Eliminar el hack de force-visible (ya no será necesario con el reset de versión).
+**1. Separar `descripcion_actividad` de TEXT_FILTER_COLUMNS**
+- Excluir `descripcion_actividad` de la lista `TEXT_FILTER_COLUMNS` (que usa match exacto).
+- Tratarla como un caso especial en el renderizado del header.
 
-**2. Sincronización automática (futuro)**
-- Actualmente los datos ya están en `outbound_list_companies.descripcion_actividad` y no hay datos adicionales en la tabla `empresas` que falten.
-- Si en el futuro se suben descripciones a la tabla `empresas`, se puede crear un trigger DB que las propague a `outbound_list_companies` por coincidencia de CIF. Esto se implementaría en un segundo paso si se detectan gaps de datos.
+**2. Nuevo header filter para descripción**
+- En lugar de listar valores únicos con checkboxes, mostrar un **input de búsqueda de texto libre**.
+- Al escribir una palabra (ej: "peluqueria"), filtrar en tiempo real y mostrar un **preview** del número de empresas que coinciden.
+- Botón "Aplicar filtro" para confirmar, o aplicación directa al escribir.
+
+**3. Lógica de filtrado (líneas 605-611)**
+- Para `descripcion_actividad`, usar `includes` en vez de exact match:
+  ```
+  if (colKey === 'descripcion_actividad') {
+    result = result.filter(c => {
+      const val = (c as any)[colKey]?.toLowerCase() || '';
+      return selectedValues.some(keyword => val.includes(keyword.toLowerCase()));
+    });
+  }
+  ```
+- Los "selectedValues" para esta columna serán las palabras clave buscadas en vez de valores exactos.
+
+**4. Click en celda de descripción**
+- Actualmente al hacer click en una celda de descripción, se añade el valor exacto como filtro. Cambiar para que en vez de eso, abra el popover del header con el texto pre-rellenado, o use la búsqueda de actividad existente (`activitySearchQuery`).
 
 ### Resultado
-La columna "Descripción" aparecerá en posición prominente (4ª columna) para todos los usuarios, mostrando las descripciones que ya existen en la base de datos.
+El usuario podrá escribir "peluqueria" y ver todas las empresas cuya descripción contenga esa palabra, en vez de solo la empresa con ese valor exacto.
 
