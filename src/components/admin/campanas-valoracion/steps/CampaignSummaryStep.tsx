@@ -232,6 +232,8 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
+  const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
+  const queryClient = useQueryClient();
 
   const filteredCompanies = useMemo(() => {
     let result = companies;
