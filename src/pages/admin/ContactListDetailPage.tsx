@@ -720,7 +720,7 @@ export default function ContactListDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('outbound_lists' as any)
-        .select('id, name')
+        .select('id, name, sector')
         .order('name');
       if (error) throw error;
       return (data as any[]).filter((l: any) => l.id !== listId);
