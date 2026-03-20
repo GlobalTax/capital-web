@@ -2322,11 +2322,11 @@ export default function ContactListDetailPage() {
                                     <DropdownMenuItem onClick={() => setEditingCompany(company)}>
                                       <Edit className="h-4 w-4 mr-2" /> Editar
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.sector || ''); }}>
+                                    <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('move'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                                       <MoveRight className="h-4 w-4 mr-2" /> Mover a otra lista
                                     </DropdownMenuItem>
                                     {!isMadreList && (
-                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.sector || ''); }}>
+                                      <DropdownMenuItem onClick={() => { setMoveCopyCompany(company); setMoveCopyMode('copy'); setMoveCopyTargetId(''); setMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                                         <CopyPlus className="h-4 w-4 mr-2" /> Copiar a otra lista
                                       </DropdownMenuItem>
                                     )}
