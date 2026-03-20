@@ -1828,6 +1828,7 @@ export default function ContactListDetailPage() {
     return Object.entries(groups).filter(([, g]) => g.length > 1);
   }, [companies]);
 
+  const [isDedupLoading, setIsDedupLoading] = useState(false);
   const handleDedup = async () => {
     if (duplicateGroups.length === 0) return;
     const idsToDelete: string[] = [];
@@ -1839,10 +1840,18 @@ export default function ContactListDetailPage() {
       toRemove.forEach(c => idsToDelete.push(c.id));
     }
     if (idsToDelete.length === 0) return;
-    await deleteCompanies.mutateAsync(idsToDelete);
-    queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
-    setIsDedupModalOpen(false);
-    toast.success(`${idsToDelete.length} duplicados eliminados`);
+    setIsDedupLoading(true);
+    try {
+      await deleteCompanies.mutateAsync(idsToDelete);
+      await queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+      setIsDedupModalOpen(false);
+      toast.success(`${idsToDelete.length} duplicados eliminados`);
+    } catch (err) {
+      console.error('Error eliminando duplicados:', err);
+      toast.error('Error al eliminar duplicados. Inténtalo de nuevo.');
+    } finally {
+      setIsDedupLoading(false);
+    }
   };
 
   const handleEstadoChange = async (newEstado: string) => {
