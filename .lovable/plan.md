@@ -1,33 +1,32 @@
 
 
-## Agrupar listas por Lista Madre en pestañas Outbound y Compradores
+## Reemplazar filtro de sector por filtro de Lista Madre en diálogos Mover/Copiar
 
-### Qué cambia
+### Problema
+El selector muestra sectores, pero el usuario quiere filtrar por Lista Madre para ver las sublistas vinculadas a cada madre.
 
-En las pestañas **Outbound** y **Potenciales Compradores**, las carpetas colapsables pasarán de agruparse por **sector** a agruparse por **Lista Madre**. Las listas sin madre aparecerán sueltas al final, sin carpeta.
+### Cambios en `src/pages/admin/ContactListDetailPage.tsx`
 
-### Cómo funciona
+**1. Ampliar query `allLists` (línea 727)**
+- Añadir `lista_madre_id` al select: `'id, name, sector, lista_madre_id'`
 
-- Cada carpeta colapsable mostrará el **nombre de la Lista Madre** como título (con icono Crown), junto al badge de cantidad de sublistas y total de empresas.
-- Dentro de cada carpeta: tabla con las sublistas vinculadas a esa madre.
-- Las listas que **no tienen `lista_madre_id`** se renderizan como filas sueltas en una tabla plana debajo de los grupos.
-- La pestaña **Listados Madre** sigue igual (tabla plana sin carpetas).
+**2. Reemplazar `uniqueSectors` por `uniqueMadres`**
+- Computar un array de madres únicas a partir de `allLists`: extraer los `lista_madre_id` distintos, buscar su nombre en `allLists`, y generar `{ id, name }[]`.
 
-### Cambios técnicos
+**3. Renombrar estados de filtro**
+- `moveCopySectorFilter` → filtrará por `lista_madre_id` en vez de sector.
+- La UI del Combobox mostrará nombres de listas madre en vez de sectores.
+- Pre-selección: usar `list?.lista_madre_id` (la madre de la lista actual) al abrir el diálogo.
 
-**Archivo: `src/pages/admin/ContactListsPage.tsx`**
+**4. Filtrado de listas destino (líneas 2841-2843)**
+- Cambiar `.filter((l: any) => !moveCopySectorFilter || l.sector === moveCopySectorFilter)` por `.filter((l: any) => !moveCopySectorFilter || l.lista_madre_id === moveCopySectorFilter)`.
 
-1. **Nuevo `useMemo` para agrupar por madre** — Reemplazar/complementar `groupedBySector` con un `groupedByMadre` que:
-   - Recorre `filtered` y agrupa por `lista_madre_id`
-   - Para cada madre, busca su nombre en `lists` (ya disponible en el hook)
-   - Las listas sin `lista_madre_id` van a un array separado (`orphanLists`)
-   - Ordena los grupos alfabéticamente por nombre de madre
+**5. Aplicar lo mismo al diálogo bulk (líneas 2959-2960)**
+- Misma lógica de filtro por `lista_madre_id`.
 
-2. **Renderizado condicional en las pestañas Outbound/Compradores** — En la zona donde actualmente se usa `groupedBySector.map(...)`, usar `groupedByMadre` en su lugar:
-   - Carpetas colapsables con nombre de madre + Crown icon
-   - Debajo, tabla plana con `orphanLists` (si las hay)
+**6. Mostrar sector como info secundaria**
+- En cada `CommandItem` de lista destino, mostrar el sector como texto secundario para contexto adicional.
 
-3. **Mantener `groupedBySector` y filtros de sector** — No se elimina nada. Los filtros de sector siguen funcionando para filtrar la lista antes del agrupamiento por madre. Solo cambia la agrupación visual.
-
-4. **Estado `expandedSectors`** — Se reutiliza renombrándolo conceptualmente (o usando un segundo Set `expandedMadres`) para controlar qué carpetas de madre están abiertas/cerradas (colapsadas por defecto).
+### Resultado
+Al abrir "Mover/Copiar", el selector mostrará las Listas Madre disponibles (pre-seleccionando la madre de la lista actual). Las listas destino se filtrarán mostrando solo las sublistas de esa madre.
 
