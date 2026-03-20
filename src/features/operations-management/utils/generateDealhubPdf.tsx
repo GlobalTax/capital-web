@@ -547,6 +547,7 @@ interface DealhubPDFProps {
   quarter: QuarterType;
   year: number;
   template: FullSlideTemplate;
+  locale: DealhubLocale;
 }
 
 const DealhubPDFDocument = ({ operations, selectedSections, quarter, year, template }: DealhubPDFProps) => {
