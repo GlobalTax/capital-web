@@ -532,10 +532,10 @@ function addClosingSlide(pptx: pptxgen, quarter: QuarterType, year: number, cl: 
     });
   }
 
-  // "Gracias" text (bottom half)
+  // "Gracias" / "Thank You" text (bottom half)
   const thanks = cl.thanksText;
   if (thanks && thanks.visible) {
-    slide.addText((thanks as any).text || 'Gracias', {
+    slide.addText((thanks as any).text || closingLocaleTexts.thanks, {
       x: thanks.x, y: thanks.y, w: thanks.w, h: thanks.h,
       fontSize: thanks.fontSize || 40, fontFace: FONT, color: thanks.color || WHITE,
       bold: thanks.bold ?? true,
