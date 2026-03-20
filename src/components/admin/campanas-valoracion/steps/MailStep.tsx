@@ -430,6 +430,7 @@ function MailListSection({
   onSendEmail,
   onSendAll,
   isSendingAll,
+  onRefresh,
 }: {
   companies: CampaignCompany[];
   emails: CampaignEmail[];
@@ -439,8 +440,10 @@ function MailListSection({
   onSendEmail: (id: string) => Promise<void>;
   onSendAll: () => Promise<void>;
   isSendingAll: boolean;
+  onRefresh: () => void;
 }) {
   const [showSendAllConfirm, setShowSendAllConfirm] = useState(false);
+  const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
   const emailMap = new Map(emails.map(e => [e.company_id, e]));
   const presMap = new Map(presentations.map((p: any) => [p.company_id, p]));
 
