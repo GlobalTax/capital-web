@@ -454,7 +454,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
         fill: { color: TEXT_MUTED },
       });
 
-      slide.addText('Datos Clave', {
+      slide.addText(i18n.keyData, {
         x: t.financialData.x, y: t.financialData.y, w: t.financialData.w, h: 0.4,
         fontSize: t.financialData.fontSize || 13, fontFace: FONT, color: t.financialData.color || WHITE,
         bold: t.financialData.bold ?? true, align: t.financialData.align,
