@@ -2298,6 +2298,7 @@ export default function ContactListDetailPage() {
                                             setMoveCopyMode('move');
                                             setMoveCopyTargetId('');
                                             setMoveCopyFromSublistId(currentSublistId || null);
+                                            setMoveCopySectorFilter(list?.sector || '');
                                           }}>
                                             <ArrowUpDown className="h-4 w-4 mr-2" /> Cambiar de sublista
                                           </DropdownMenuItem>
