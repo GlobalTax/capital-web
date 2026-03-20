@@ -508,6 +508,7 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                 <TableHead className="text-center">Seguimiento</TableHead>
                 <TableHead className="text-center">Follow Up</TableHead>
                 <TableHead className="text-center w-[40px]">Notas</TableHead>
+                <TableHead className="w-[40px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
