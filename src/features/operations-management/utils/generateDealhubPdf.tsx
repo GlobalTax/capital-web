@@ -550,8 +550,8 @@ interface DealhubPDFProps {
   locale: DealhubLocale;
 }
 
-const DealhubPDFDocument = ({ operations, selectedSections, quarter, year, template }: DealhubPDFProps) => {
-  // Build section counts for index page
+const DealhubPDFDocument = ({ operations, selectedSections, quarter, year, template, locale }: DealhubPDFProps) => {
+  const i18n = getI18n(locale);
   const sectionCounts: Record<string, number> = {};
   DEALHUB_SECTIONS.forEach(s => {
     sectionCounts[s.key] = operations.filter(s.filter).length;
@@ -560,23 +560,25 @@ const DealhubPDFDocument = ({ operations, selectedSections, quarter, year, templ
   return (
     <Document title={`Capittal Dealhub - Open Deals ${quarter} ${year}`} author="Capittal">
       <CoverPage quarter={quarter} year={year} t={template} />
-      <IndexPage sectionCounts={sectionCounts} t={template} />
+      <IndexPage sectionCounts={sectionCounts} t={template} locale={locale} />
 
-      {DEALHUB_SECTIONS.map((section, i) => {
+      {DEALHUB_SECTIONS.map((section, idx) => {
         if (!selectedSections.includes(section.key)) return null;
         const ops = operations.filter(section.filter);
         if (ops.length === 0) return null;
-        const sectionNum = String(i + 1).padStart(2, '0');
+        const sectionNum = String(idx + 1).padStart(2, '0');
+        const sLabel = i18n.sections[section.key]?.label || section.label;
+        const sSubtitle = i18n.sections[section.key]?.subtitle || section.subtitle;
 
         return [
-          <SeparatorPage key={`sep-${section.key}`} num={sectionNum} label={section.label} subtitle={section.subtitle} t={template} />,
+          <SeparatorPage key={`sep-${section.key}`} num={sectionNum} label={sLabel} subtitle={sSubtitle} t={template} />,
           ...ops.map(op => (
-            <OperationPage key={op.id} op={op} t={template} />
+            <OperationPage key={op.id} op={op} t={template} locale={locale} />
           )),
         ];
       })}
 
-      <ClosingPage quarter={quarter} year={year} t={template} />
+      <ClosingPage quarter={quarter} year={year} t={template} locale={locale} />
     </Document>
   );
 };
