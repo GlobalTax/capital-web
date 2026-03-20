@@ -66,6 +66,8 @@ export function OutboundSummaryDashboard() {
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
 
+  const initializedRef = useRef(false);
+
   const { data: raw, isLoading } = useQuery<RawData>({
     queryKey: ['outbound-summary-raw'],
     queryFn: async () => {
