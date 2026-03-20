@@ -1490,9 +1490,93 @@ export default function ContactListDetailPage() {
     const isRight = col?.align === 'right';
 
     const isTextFilterCol = (TEXT_FILTER_COLUMNS as readonly string[]).includes(colKey);
+    const isKeywordFilterCol = (KEYWORD_FILTER_COLUMNS as readonly string[]).includes(colKey);
     const isNumericFilterCol = !!NUMERIC_RANGES[colKey];
     const activeFilters = columnFilters[colKey] || [];
     const searchVal = headerSearches[colKey] || '';
+
+    if (isKeywordFilterCol) {
+      const matchCount = searchVal.trim()
+        ? companies.filter(c => ((c as any)[colKey] || '').toLowerCase().includes(searchVal.toLowerCase())).length
+        : 0;
+      return (
+        <Popover onOpenChange={(open) => { if (!open && !activeFilters.length) setHeaderSearches(prev => ({ ...prev, [colKey]: '' })); }}>
+          <PopoverTrigger asChild>
+            <button className="flex items-center gap-1 hover:text-foreground">
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-0" align="start">
+            <div className="p-3 space-y-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por palabra clave..."
+                  value={searchVal}
+                  onChange={(e) => setHeaderSearches(prev => ({ ...prev, [colKey]: e.target.value }))}
+                  className="h-8 pl-7 text-sm"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchVal.trim()) {
+                      const keyword = searchVal.trim();
+                      if (!activeFilters.includes(keyword)) {
+                        setColumnFilters(prev => ({
+                          ...prev,
+                          [colKey]: [...(prev[colKey] || []), keyword]
+                        }));
+                      }
+                      setHeaderSearches(prev => ({ ...prev, [colKey]: '' }));
+                    }
+                  }}
+                />
+              </div>
+              {searchVal.trim() && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{matchCount} empresas coinciden</span>
+                  <Button
+                    size="sm"
+                    className="h-6 text-xs px-2"
+                    onClick={() => {
+                      const keyword = searchVal.trim();
+                      if (keyword && !activeFilters.includes(keyword)) {
+                        setColumnFilters(prev => ({
+                          ...prev,
+                          [colKey]: [...(prev[colKey] || []), keyword]
+                        }));
+                      }
+                      setHeaderSearches(prev => ({ ...prev, [colKey]: '' }));
+                    }}
+                  >
+                    Añadir filtro
+                  </Button>
+                </div>
+              )}
+              {activeFilters.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1 border-t">
+                  {activeFilters.map(kw => (
+                    <Badge key={kw} variant="secondary" className="text-xs flex items-center gap-1">
+                      {kw}
+                      <X
+                        className="h-3 w-3 cursor-pointer"
+                        onClick={() => toggleColumnFilter(colKey, kw)}
+                      />
+                    </Badge>
+                  ))}
+                  <Button variant="ghost" size="sm" className="h-5 text-[10px] px-1" onClick={() => clearColumnFilter(colKey)}>
+                    Limpiar todo
+                  </Button>
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      );
+    }
 
     if (isTextFilterCol) {
       const values = uniqueColumnValues[colKey] || [];
