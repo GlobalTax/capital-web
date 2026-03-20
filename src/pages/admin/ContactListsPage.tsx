@@ -25,7 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ClipboardList, Plus, Search, MoreHorizontal, Eye, Copy, Archive, Trash2,
   Crown, Users, Send, Building2, List, CheckCircle, BarChart3, Megaphone,
-  ChevronDown, FolderOpen,
+  ChevronDown,
 } from 'lucide-react';
 import { useContactLists, ContactList, ContactListTipo } from '@/hooks/useContactLists';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -167,7 +167,7 @@ export default function ContactListsPage() {
     return { sectors: sorted, hasEmpty };
   }, [lists, activeTab]);
 
-  // Group filtered lists by sector
+  // Group filtered lists by sector (used for madre tab fallback)
   const groupedBySector = useMemo(() => {
     const groups: { sector: string; displayName: string; lists: typeof filtered }[] = [];
     const sectorMap = new Map<string, typeof filtered>();
@@ -178,7 +178,6 @@ export default function ContactListsPage() {
       sectorMap.get(key)!.push(l);
     });
 
-    // Sort: named sectors alphabetically, "Sin sector" last
     const keys = Array.from(sectorMap.keys()).sort((a, b) => {
       if (a === NO_SECTOR_KEY) return 1;
       if (b === NO_SECTOR_KEY) return -1;
@@ -195,6 +194,34 @@ export default function ContactListsPage() {
 
     return groups;
   }, [filtered]);
+
+  // Group filtered lists by Lista Madre (for Outbound & Compradores tabs)
+  const groupedByMadre = useMemo(() => {
+    const madreMap = new Map<string, { madreName: string; madreId: string; lists: typeof filtered }>();
+    const orphanLists: typeof filtered = [];
+
+    filtered.forEach(l => {
+      if (l.lista_madre_id) {
+        if (!madreMap.has(l.lista_madre_id)) {
+          const madre = lists.find(m => m.id === l.lista_madre_id);
+          madreMap.set(l.lista_madre_id, {
+            madreId: l.lista_madre_id,
+            madreName: madre?.name || 'Lista Madre desconocida',
+            lists: [],
+          });
+        }
+        madreMap.get(l.lista_madre_id)!.lists.push(l);
+      } else {
+        orphanLists.push(l);
+      }
+    });
+
+    const groups = Array.from(madreMap.values()).sort((a, b) =>
+      a.madreName.localeCompare(b.madreName, 'es')
+    );
+
+    return { groups, orphanLists };
+  }, [filtered, lists]);
 
   const toggleSectorCollapse = useCallback((sector: string) => {
     setExpandedSectors(prev => {
@@ -487,39 +514,29 @@ export default function ContactListsPage() {
               </Button>
             </div>
           ) : activeTab === 'madre' ? (
-            // Madre tab — flat table without folder grouping
             <Table>
               {renderTableHeaders()}
               <TableBody>
                 {filtered.map(renderListRow)}
               </TableBody>
             </Table>
-          ) : groupedBySector.length === 1 && sectorFilter !== 'all' ? (
-            // Single sector selected — flat table without folder header
-            <Table>
-              {renderTableHeaders()}
-              <TableBody>
-                {groupedBySector[0].lists.map(renderListRow)}
-              </TableBody>
-            </Table>
           ) : (
-            // Multiple sectors — collapsible folder groups
             <div className="divide-y divide-border">
-              {groupedBySector.map(group => {
-                const isExpanded = expandedSectors.has(group.sector);
+              {groupedByMadre.groups.map(group => {
+                const isExpanded = expandedSectors.has(group.madreId);
                 const totalEmpresas = group.lists.reduce((acc, l) => acc + (l.contact_count || 0), 0);
                 return (
                   <Collapsible
-                    key={group.sector}
+                    key={group.madreId}
                     open={isExpanded}
-                    onOpenChange={() => toggleSectorCollapse(group.sector)}
+                    onOpenChange={() => toggleSectorCollapse(group.madreId)}
                   >
                     <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-2.5 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-2">
-                        <FolderOpen className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">{group.displayName}</span>
+                        <Crown className="h-4 w-4 text-purple-600" />
+                        <span className="text-sm font-medium">{group.madreName}</span>
                         <Badge variant="secondary" size="sm" className="text-[10px]">
-                          {group.lists.length} {group.lists.length === 1 ? 'lista' : 'listas'}
+                          {group.lists.length} {group.lists.length === 1 ? 'sublista' : 'sublistas'}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
                           · {totalEmpresas.toLocaleString('es-ES')} empresas
@@ -538,6 +555,21 @@ export default function ContactListsPage() {
                   </Collapsible>
                 );
               })}
+              {groupedByMadre.orphanLists.length > 0 && (
+                <>
+                  {groupedByMadre.groups.length > 0 && (
+                    <div className="px-4 py-2 text-xs text-muted-foreground font-medium bg-muted/30">
+                      Sin lista madre vinculada
+                    </div>
+                  )}
+                  <Table>
+                    {renderTableHeaders()}
+                    <TableBody>
+                      {groupedByMadre.orphanLists.map(renderListRow)}
+                    </TableBody>
+                  </Table>
+                </>
+              )}
             </div>
           )}
         </CardContent>
