@@ -572,15 +572,18 @@ export async function generateDealhubPptx(
   quarter: QuarterType,
   year?: number,
   fullTemplate?: FullSlideTemplate,
+  locale: DealhubLocale = 'es',
 ) {
   const currentYear = year || new Date().getFullYear();
   const activeOps = operations.filter(op => op.is_active && !op.is_deleted);
   const ft = fullTemplate || DEFAULT_FULL_TEMPLATE;
-  const fileName = `Capittal_Dealhub_${quarter}_${currentYear}.pptx`;
+  const localeSuffix = locale === 'en' ? '_EN' : '';
+  const fileName = `Capittal_Dealhub${localeSuffix}_${quarter}_${currentYear}.pptx`;
+  const i18n = getI18n(locale);
 
   // If a template PPTX is uploaded, use the merge flow
   if (ft.templatePptxUrl) {
-    await generateWithMerge(activeOps, selectedSections, quarter, currentYear, ft, fileName);
+    await generateWithMerge(activeOps, selectedSections, quarter, currentYear, ft, fileName, locale);
     return;
   }
 
@@ -599,23 +602,25 @@ export async function generateDealhubPptx(
   addCoverSlide(pptx, quarter, currentYear, ft.cover);
 
   // 2. Index
-  addIndexSlide(pptx, sectionCounts, ft.index);
+  addIndexSlide(pptx, sectionCounts, ft.index, locale);
 
   // 3. Sections
-  DEALHUB_SECTIONS.forEach((section, i) => {
+  DEALHUB_SECTIONS.forEach((section, idx) => {
     if (!selectedSections.includes(section.key)) return;
     const ops = activeOps.filter(section.filter);
     if (ops.length === 0) return;
 
-    const sectionNum = String(i + 1).padStart(2, '0');
-    addSectionSeparator(pptx, sectionNum, section.label, section.subtitle, ft.separator, section.key);
+    const sectionNum = String(idx + 1).padStart(2, '0');
+    const sLabel = i18n.sections[section.key]?.label || section.label;
+    const sSubtitle = i18n.sections[section.key]?.subtitle || section.subtitle;
+    addSectionSeparator(pptx, sectionNum, sLabel, sSubtitle, ft.separator, section.key);
 
-    ops.forEach(op => addOperationSlide(pptx, op, ft.operation));
+    ops.forEach(op => addOperationSlide(pptx, op, ft.operation, locale));
   });
 
   // 4. Closing slide
   const closingTemplate = ft.closing || DEFAULT_CLOSING_TEMPLATE;
-  addClosingSlide(pptx, quarter, currentYear, closingTemplate);
+  addClosingSlide(pptx, quarter, currentYear, closingTemplate, locale);
 
   await pptx.writeFile({ fileName });
 }
