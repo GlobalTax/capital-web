@@ -198,7 +198,11 @@ export function MarketStudiesPanel() {
                   <span>{formatFileSize(study.file_size)}</span>
                   <span>{format(new Date(study.created_at), 'dd MMM yyyy', { locale: es })}</span>
                 </div>
-                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-2">
+                  <Button variant="outline" size="xs" onClick={() => handlePreview(study)}>
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    Ver
+                  </Button>
                   <Button variant="outline" size="xs" onClick={() => handleDownload(study)}>
                     <Download className="h-3.5 w-3.5 mr-1" />
                     Descargar
