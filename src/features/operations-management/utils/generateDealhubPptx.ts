@@ -410,7 +410,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     });
 
     if (t.summaryHeader.visible) {
-      slide.addText('Resumen', {
+      slide.addText(i18n.summary, {
         x: t.summaryHeader.x, y: t.summaryHeader.y, w: t.summaryHeader.w, h: t.summaryHeader.h,
         fontSize: t.summaryHeader.fontSize || 13, fontFace: FONT, color: t.summaryHeader.color || WHITE,
         bold: t.summaryHeader.bold ?? true, align: t.summaryHeader.align,
