@@ -96,6 +96,19 @@ export function OutboundSummaryDashboard() {
     staleTime: 60_000,
   });
 
+  // Auto-deshabilitar campañas de pruebas en la primera carga
+  useEffect(() => {
+    if (raw?.campaigns.length && !initializedRef.current) {
+      initializedRef.current = true;
+      const pruebas = raw.campaigns
+        .filter(c => c.sector?.toLowerCase() === 'pruebas')
+        .map(c => c.id);
+      if (pruebas.length) {
+        setDisabledCampaigns(new Set(pruebas));
+      }
+    }
+  }, [raw]);
+
   const computed = useMemo(() => {
     if (!raw?.campaigns.length) return null;
 
