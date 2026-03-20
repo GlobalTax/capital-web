@@ -197,7 +197,7 @@ export default function ContactListsPage() {
   }, [filtered]);
 
   const toggleSectorCollapse = useCallback((sector: string) => {
-    setCollapsedSectors(prev => {
+    setExpandedSectors(prev => {
       const next = new Set(prev);
       if (next.has(sector)) next.delete(sector);
       else next.add(sector);
