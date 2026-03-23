@@ -418,6 +418,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     }
 
     if (t.infoRows.visible) {
+      const LABEL_W = 1.8;
+      const LABEL_COLOR = 'B0B7C3';
       const simpleRows = [
         { label: i18n.location, value: i18n.locationValue },
         { label: i18n.sector, value: op.sector || i18n.nd },
@@ -426,12 +428,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       let infoY = t.infoRows.y;
       simpleRows.forEach((row) => {
         slide.addText(row.label, {
-          x: t.infoRows.x, y: infoY, w: 1.5, h: 0.3,
-          fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
+          x: t.infoRows.x, y: infoY, w: LABEL_W, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: LABEL_COLOR,
         });
         slide.addText(row.value, {
-          x: t.infoRows.x + 1.5, y: infoY, w: innerW - 1.5, h: 0.3,
-          fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true,
+          x: t.infoRows.x + LABEL_W, y: infoY, w: innerW - LABEL_W, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true,
         });
         infoY += 0.45;
       });
@@ -439,12 +441,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       const oportunidadText = (locale === 'en' ? (op.short_description_en || op.short_description) : op.short_description) || op.deal_type || (locale === 'en' ? 'Sale' : 'Venta');
       slide.addText(i18n.opportunity, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.25,
-        fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
+        fontSize: 11, fontFace: FONT, color: LABEL_COLOR,
       });
       infoY += 0.25;
       slide.addText(oportunidadText, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.7,
-        fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top', align: 'justify',
+        fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top', align: 'justify',
       });
     }
 
