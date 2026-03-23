@@ -606,22 +606,31 @@ const handler = async (req: Request): Promise<Response> => {
       content: pdfAttachmentContent,
     }] : undefined;
 
-    // Determine CC recipients
-    let internalTeam: string[];
+    // Determine CC and BCC recipients
+    let ccRecipients: string[] = [];
+    let bccRecipients: string[] = [];
+    
     if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
-      internalTeam = requestData.selectedRecipients;
-      log('info', 'USING_SELECTED_RECIPIENTS', { count: internalTeam.length });
+      ccRecipients = requestData.selectedRecipients;
+      log('info', 'USING_SELECTED_RECIPIENTS', { count: ccRecipients.length });
     } else {
-      internalTeam = await getInternalRecipients();
+      const recipients = await getInternalRecipients();
+      ccRecipients = recipients.cc;
+      bccRecipients = recipients.bcc;
     }
 
-    const ccRecipients = internalTeam.filter(email => 
+    // Filter out the main recipient from CC/BCC to avoid duplicates
+    ccRecipients = ccRecipients.filter(email => 
+      email.toLowerCase() !== requestData.recipientEmail.toLowerCase()
+    );
+    bccRecipients = bccRecipients.filter(email => 
       email.toLowerCase() !== requestData.recipientEmail.toLowerCase()
     );
 
     log('info', 'SENDING_EMAIL', {
       to: requestData.recipientEmail,
       ccCount: ccRecipients.length,
+      bccCount: bccRecipients.length,
       hasAttachment: !!attachments
     });
 
@@ -630,6 +639,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: "Capittal <samuel@capittal.es>",
       to: [requestData.recipientEmail],
       cc: ccRecipients.length > 0 ? ccRecipients : undefined,
+      bcc: bccRecipients.length > 0 ? bccRecipients : undefined,
       subject: subject,
       html: clientEmailHtml,
       reply_to: requestData.advisorEmail || "info@capittal.es",
