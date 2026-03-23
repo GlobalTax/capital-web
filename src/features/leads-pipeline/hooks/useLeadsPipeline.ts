@@ -103,6 +103,7 @@ export const useLeadsPipeline = () => {
         valuation_range_max: null,
         acquisition_channel_id: c.acquisition_channel_id || null,
         lead_form: c.lead_form || null,
+        empresa_id: c.empresa_id || null,
       }));
 
       // Merge: deduplicate by email (prefer valuations)

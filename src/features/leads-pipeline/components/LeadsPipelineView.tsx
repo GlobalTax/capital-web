@@ -203,8 +203,12 @@ export const LeadsPipelineView: React.FC = () => {
 
   const handleViewDetails = useCallback((leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
-    const prefix = lead?.origin === 'contact' ? 'contact' : 'valuation';
-    navigate(`/admin/contacts/${prefix}_${leadId}`);
+    if (lead?.empresa_id) {
+      window.open(`https://godeal.es/empresas/${lead.empresa_id}`, '_blank');
+    } else {
+      const prefix = lead?.origin === 'contact' ? 'contact' : 'valuation';
+      navigate(`/admin/contacts/${prefix}_${leadId}`);
+    }
   }, [navigate, leads]);
 
   const clearFilters = useCallback(() => {
