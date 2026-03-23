@@ -1,58 +1,65 @@
 
 
-## Corregir vinculación automática para que lead, contacto y empresa vayan siempre unidos
+## Corregir la asociación automática para que replique exactamente la asociación manual en el perfil CRM
 
-### Qué está pasando ahora
-He revisado la lógica actual y el problema no es del pipeline, sino de la sincronización en base de datos:
+### Diagnóstico real
+He revisado la lógica actual y el problema no está en el diálogo manual: ese flujo sí funciona porque escribe directamente en `contactos.empresa_principal_id`, que es justo lo que usa el perfil CRM/GoDeal para mostrar la pestaña de contactos.
 
-- El trigger `auto_link_contact_lead_to_empresa` solo asegura `contact_leads.empresa_id`
-- La sincronización hacia `contactos` no está unificada en el mismo flujo
-- El backfill reciente solo actualiza contactos cuyo `empresa_principal_id IS NULL`
-- Si ya existe un contacto con ese email pero vinculado a otra empresa, no se corrige
+La asociación automática falla por dos razones:
 
-Resultado real en BD ahora mismo:
-- `216` `contact_leads` ya tienen `empresa_id`
-- `211` ya tienen contacto vinculado correctamente
-- `5` siguen desalineados
-- Además, la solución actual no garantiza re-sincronización si el lead cambia después
+1. **La sincronización automática está intentando apoyarse en `external_capittal_id`**
+   - pero ese campo está contaminado en muchos contactos históricos
+   - ahora mismo hay **500 contactos** cuyo `external_capittal_id` apunta a su **propio `contactos.id`**, no al `contact_leads.id`
+   - además, esos 500 anchors ni siquiera apuntan a leads existentes
 
-### Plan
-**Objetivo:** que cada oportunidad tenga un único vínculo consistente:
-`contact_lead -> empresa_id -> contacto(empresa_principal_id)`  
-y que ese vínculo se mantenga automáticamente siempre.
+2. **Ya existe un vínculo mejor y más fiable: `contact_leads.crm_contacto_id`**
+   - el sistema ya lo guarda en muchos leads
+   - pero la función nueva de sync no lo usa como referencia principal
+   - resultado: el automático no reproduce la misma asociación que haces tú manualmente
 
-### Implementación
+### Qué voy a cambiar
+La idea es que la asociación automática haga exactamente esto:
 
-#### 1. Unificar la lógica en una sola función de sincronización
-Crear una función SQL dedicada, por ejemplo `sync_contact_lead_to_contacto()`, que:
+```text
+contact_lead
+  -> crm_contacto_id (contacto real)
+  -> empresa_id del lead
+  -> actualizar contactos.empresa_principal_id
+```
 
-- reciba los datos del `contact_lead`
-- busque primero por `external_capittal_id = contact_lead.id`
-- si no existe, busque por email normalizado
-- si existe contacto con ese email:
-  - actualice `empresa_principal_id`
-  - actualice nombre/teléfono si faltan o están vacíos
-  - guarde `external_capittal_id = contact_lead.id`
-- si no existe:
-  - cree el contacto con:
-    - `nombre`
-    - `email`
-    - `telefono`
-    - `empresa_principal_id`
-    - `source = 'lead'`
-    - `external_capittal_id = contact_lead.id`
+Es decir:
+- el **lead**
+- el **contacto CRM**
+- y la **empresa**
+quedan unidos siempre sobre el mismo registro real de `contactos`.
 
-Esto evita depender solo del email y deja una relación estable entre lead y contacto.
+---
 
-#### 2. Hacer que se ejecute siempre, no solo al insertar
-Mantener el trigger que asigna `empresa_id`, pero añadir sincronización también en cambios posteriores:
+## Plan de implementación
 
-- `BEFORE INSERT` en `contact_leads`:
-  - seguir resolviendo/creando empresa
-- `AFTER INSERT OR UPDATE` en `contact_leads`:
-  - ejecutar la sincronización a `contactos`
+### 1. Rehacer la lógica automática para usar `crm_contacto_id` como referencia principal
+Actualizar la función SQL de sincronización para que el orden sea:
 
-Debe dispararse al cambiar cualquiera de estos campos:
+1. Si `NEW.crm_contacto_id` existe:
+   - usar ese contacto directamente
+   - actualizar `contactos.empresa_principal_id = NEW.empresa_id`
+   - completar nombre/teléfono si faltan
+2. Si no hay `crm_contacto_id`, entonces:
+   - buscar por `external_capittal_id = NEW.id`
+3. Si tampoco existe:
+   - buscar por email normalizado
+4. Si no existe nada:
+   - crear el contacto y guardar:
+     - `empresa_principal_id`
+     - `external_capittal_id = NEW.id`
+   - además dejar `crm_contacto_id` apuntando al contacto creado
+
+Con esto el automático usará primero el mismo contacto que ya reconoce el CRM.
+
+### 2. Mantener sincronización continua cuando cambie el lead
+Ampliar el trigger `AFTER INSERT OR UPDATE` de `contact_leads` para que también reaccione a cambios en:
+
+- `crm_contacto_id`
 - `empresa_id`
 - `email`
 - `full_name`
@@ -60,78 +67,82 @@ Debe dispararse al cambiar cualquiera de estos campos:
 - `company`
 - `is_deleted`
 
-Así no se rompe si el lead se corrige después manualmente.
+Así, si el lead se corrige o se religa, el perfil CRM se corrige solo.
 
-#### 3. Corregir los datos ya existentes
-Hacer un backfill robusto para:
+### 3. Backfill robusto sobre datos existentes
+Hacer una migración de saneamiento para:
 
-- enlazar contactos existentes por `external_capittal_id`
-- si no existe, enlazar por email normalizado
-- corregir casos donde el contacto existe pero apunta a otra empresa
-- insertar los contactos que falten
-- rellenar `external_capittal_id` en los contactos creados desde leads
+- corregir leads que ya tienen `crm_contacto_id` pero cuyo contacto está en otra empresa
+- rellenar `empresa_principal_id` en el contacto correcto
+- rellenar `external_capittal_id` solo cuando falte o esté mal
+- crear contacto solo si no existe ninguno
 
-Esto resolverá los 5 casos detectados y dejará preparada la base para que no vuelva a pasar.
+Esto permitirá que lo ya capturado aparezca también automáticamente en el perfil CRM.
 
-#### 4. Tratar los leads borrados o archivados
-Definir comportamiento claro para no dejar basura lógica:
+### 4. Dejar de confiar en anchors históricos rotos
+No usar `external_capittal_id` histórico como fuente de verdad si:
+- apunta a un UUID que no existe en `contact_leads`
+- o entra en conflicto con `crm_contacto_id`
 
-- si `contact_lead.is_deleted = true`, no crear nuevos contactos
-- opcionalmente, no desasociar el contacto histórico de la empresa
-- mantener el vínculo CRM salvo que quieras una política explícita de desvinculación
+La prioridad debe quedar así:
 
-Mi recomendación: **no romper el vínculo histórico automáticamente**.
+```text
+crm_contacto_id > external_capittal_id válido > email
+```
+
+### 5. Ajustar el punto de entrada donde se crea el lead
+En `send-form-notifications`, reforzar que cuando se crea o encuentra un contacto:
+
+- ese `contactoId` se guarde siempre en `contact_leads.crm_contacto_id`
+- y el contacto ya quede con `empresa_principal_id = empresaId`
+
+Eso reduce dependencia del trigger posterior y deja el dato bien desde origen.
 
 ---
 
-## Detalle técnico
+## Archivos / zonas a tocar
 
-### Causa raíz detectada
-El SQL actual de backfill es demasiado conservador:
+### Base de datos
+**Nueva migración SQL**
+- Reemplazar `sync_contact_lead_to_contacto()`
+- Recrear trigger `trg_sync_contact_lead_to_contacto`
+- Ejecutar backfill correctivo
 
-```sql
-UPDATE contactos
-SET empresa_principal_id = sub.empresa_id
-WHERE LOWER(c.email) = LOWER(sub.email)
-  AND c.empresa_principal_id IS NULL;
-```
+### Edge Function
+**`supabase/functions/send-form-notifications/index.ts`**
+- reforzar upsert del contacto
+- asegurar consistencia entre:
+  - `contact_leads.crm_contacto_id`
+  - `contact_leads.empresa_id`
+  - `contactos.empresa_principal_id`
 
-Eso deja fuera los casos donde:
-- el contacto ya existe
-- el email coincide
-- pero `empresa_principal_id` ya apunta a otra empresa
+---
 
-Y justo esos son los que hoy siguen sin verse en GoDeal.
+## Lo que NO hace falta tocar
+No hace falta modificar la UI del perfil de empresa ni el diálogo manual para resolver este bug.
 
-### Mejora clave
-Usar `external_capittal_id` como ancla estable entre tablas:
+El comportamiento manual ya demuestra cuál es el dato que el CRM necesita:
+- `contactos.empresa_principal_id`
 
-- `contact_leads.id` -> `contactos.external_capittal_id`
+El fallo está en cómo llega ahí la asociación automática.
 
-Ventajas:
-- evita depender solo del email
-- permite re-sincronizar aunque cambie la empresa
-- permite distinguir contactos históricos creados por otras vías
+---
 
-### Seguridad de datos
-La corrección debe respetar:
-- índice único `idx_contactos_email_unique`
-- índice único `idx_contactos_external_capittal_id`
-
-Por eso el backfill y la sincronización deben hacerse con orden de prioridad:
-1. buscar por `external_capittal_id`
-2. si no existe, buscar por email
-3. si no existe, insertar
-
-### Alcance
-No hace falta tocar UI para resolver este bug.  
-El problema está en la capa de sincronización de datos.
-
-### Resultado esperado
+## Resultado esperado
 Después del cambio:
 
-- cada `contact_lead` con empresa tendrá siempre su contacto enlazado
-- GoDeal mostrará ese contacto en la pestaña de contactos
-- si cambia la empresa o el email del lead, el contacto se actualizará automáticamente
-- lead y empresa quedarán siempre “de la mano”, como una única oportunidad vista desde dos entradas
+- si entra un `contact_lead`, el contacto aparecerá automáticamente en la empresa correcta
+- el perfil CRM mostrará el mismo vínculo que hoy puedes crear manualmente
+- si el lead ya tiene `crm_contacto_id`, ese será el contacto oficial
+- si cambia el lead, el contacto se re-sincronizará solo
+- empresa, lead y contacto irán siempre “de la mano”
+
+## Detalle técnico clave
+El mayor hallazgo es este:
+
+- la lógica actual se apoya demasiado en `external_capittal_id`
+- pero ese campo está históricamente contaminado en muchos registros
+- el campo fiable para replicar la asociación manual es `contact_leads.crm_contacto_id`
+
+Por tanto, la corrección buena no es “seguir afinando email matching”, sino **cambiar la fuente de verdad de la sincronización**.
 
