@@ -195,8 +195,8 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
                 variant="ghost" 
                 size="icon" 
                 className="h-8 w-8"
-                onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
-                title="Ver ficha completa"
+                onClick={() => window.open(`https://godeal.es/empresas/${empresa.id}`, '_blank')}
+                title="Ver ficha completa en GoDeal"
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>
@@ -226,7 +226,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
           <div>
             <h3 
               className="text-lg font-semibold cursor-pointer hover:text-primary hover:underline transition-colors"
-              onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+              onClick={() => window.open(`https://godeal.es/empresas/${empresa.id}`, '_blank')}
             >
               {empresa.nombre}
             </h3>
@@ -354,10 +354,10 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+              onClick={() => window.open(`https://godeal.es/empresas/${empresa.id}`, '_blank')}
             >
               <Building2 className="h-4 w-4 mr-2" />
-              Ver Ficha Completa
+              Ver en GoDeal
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>

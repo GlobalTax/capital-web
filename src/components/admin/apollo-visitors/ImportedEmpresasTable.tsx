@@ -52,12 +52,14 @@ export function ImportedEmpresasTable({
                 <div className="flex items-start gap-2">
                   <Building2 className="h-4 w-4 mt-0.5 text-muted-foreground" />
                   <div>
-                    <Link 
-                      to={`/admin/empresas/${empresa.id}`}
+                    <a 
+                      href={`https://godeal.es/empresas/${empresa.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="font-medium hover:underline"
                     >
                       {empresa.nombre}
-                    </Link>
+                    </a>
                     {empresa.sitio_web && (
                       <a
                         href={empresa.sitio_web.startsWith('http') ? empresa.sitio_web : `https://${empresa.sitio_web}`}
@@ -138,9 +140,9 @@ export function ImportedEmpresasTable({
                     size="sm"
                     asChild
                   >
-                    <Link to={`/admin/empresas/${empresa.id}`}>
+                    <a href={`https://godeal.es/empresas/${empresa.id}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
-                    </Link>
+                    </a>
                   </Button>
                 </div>
               </TableCell>
