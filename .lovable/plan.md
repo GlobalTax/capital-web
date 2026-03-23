@@ -1,27 +1,36 @@
 
 
-## Añadir fecha de inicio de envío en la vista general de campañas
+## Rediseñar email ROD + enviar test a oriol@capittal.es
 
-### Qué cambia
+### Problema
+El email actual que recibe el usuario tras descargar la ROD es genérico, con diseño básico (gradiente azul, emojis, Arial). No refleja la marca Capittal ni el tono boutique/profesional.
 
-Se añade una columna "1r Envío" junto a la columna "Fecha" (creación) que muestra la fecha del primer email enviado en cada campaña.
+### Rediseño del template
 
-### Cambios técnicos
+**Archivo: `supabase/functions/generate-rod-document/index.ts`** — función `generateEmailHTML` (líneas 498-635)
 
-**Archivo: `src/pages/admin/CampanasValoracion.tsx`**
+Reemplazar ambas versiones (EN + ES) con un diseño profesional:
 
-1. **Ampliar la query de `stageData`** (línea ~81): Añadir `sent_at` al select de `campaign_emails` y calcular `firstSentAt` (el `MIN(sent_at)`) por campaña en el bucle de procesamiento. El tipo pasa a `{ emailsSent: number; maxFollowup: number; firstSentAt: string | null }`.
+- **Tipografía**: Plus Jakarta Sans (importada via Google Fonts link en el `<head>`, fallback Arial)
+- **Colores**: Navy oscuro `#1a1f2e` (primary), indigo `#4f46e5` como acento, fondo `#f8f9fa`
+- **Logo**: Incluir `https://webcapittal.lovable.app/logotipo.png` en la cabecera sobre fondo oscuro
+- **Cabecera**: Fondo navy `#1a1f2e`, logo centrado, sin gradientes llamativos
+- **Cuerpo**: Tono profesional y conciso. Eliminar emojis. Saludo personalizado con nombre. Breve párrafo de agradecimiento.
+- **Bloque ROD**: Card con borde sutil mostrando el número de operaciones y un CTA "Descargar ROD" / "Download ROD" con botón indigo
+- **Próximos pasos**: Lista limpia sin emojis, con icono de check o numeración elegante
+- **Firma**: "Equipo Capittal" con email oportunidades@capittal.es y teléfono +34 695 717 490
+- **Footer**: Texto legal discreto, copyright, link a web
 
-2. **Columna en headers** (líneas ~525 y ~564): Añadir `<TableHead>1r Envío</TableHead>` después de la columna "Fecha".
+### Enviar test
 
-3. **Celda en `renderCampaignRow`** (línea ~331): Después de la celda de `created_at`, añadir:
-   ```tsx
-   <TableCell className="text-sm text-muted-foreground">
-     {stageData?.[c.id]?.firstSentAt
-       ? new Date(stageData[c.id].firstSentAt).toLocaleDateString('es-ES')
-       : '—'}
-   </TableCell>
-   ```
+Después de desplegar, invocar la edge function con datos de prueba para enviar a `oriol@capittal.es`:
+- Nombre: "Oriol Test"
+- Email: oriol@capittal.es
+- Para que llegue el email real necesitamos que exista un ROD activo (ya debería existir)
 
-4. **Header de vista plana** (línea ~525): Mismo cambio para la tabla sin carpetas.
+Se usará `supabase--curl_edge_functions` para invocar `generate-rod-document` con los datos de test.
+
+### Archivos modificados
+1. `supabase/functions/generate-rod-document/index.ts` — reescribir `generateEmailHTML`
+2. Deploy de la edge function
 
