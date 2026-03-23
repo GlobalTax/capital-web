@@ -1201,6 +1201,20 @@ async function upsertLeadFromForm(
         .update(updatePayload)
         .eq('id', existingLead.id);
 
+      // Ensure contacto is linked to correct empresa (replicate manual association)
+      const { data: leadFull } = await supabase
+        .from('contact_leads')
+        .select('empresa_id, crm_contacto_id')
+        .eq('id', existingLead.id)
+        .single();
+
+      if (leadFull?.empresa_id && leadFull?.crm_contacto_id) {
+        await supabase
+          .from('contactos')
+          .update({ empresa_principal_id: leadFull.empresa_id, updated_at: new Date().toISOString() })
+          .eq('id', leadFull.crm_contacto_id);
+      }
+
       // Add activity
       await supabase
         .from('lead_activities')
@@ -1260,6 +1274,13 @@ async function upsertLeadFromForm(
 
     if (existingContacto) {
       contactoId = existingContacto.id;
+      // Always ensure empresa_principal_id is set on existing contacto
+      if (empresaId) {
+        await supabase
+          .from('contactos')
+          .update({ empresa_principal_id: empresaId, updated_at: new Date().toISOString() })
+          .eq('id', existingContacto.id);
+      }
     } else {
       const nameParts = fullName.trim().split(' ');
       const nombre = nameParts[0] || '';
