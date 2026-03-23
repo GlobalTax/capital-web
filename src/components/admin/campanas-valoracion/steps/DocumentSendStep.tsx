@@ -22,7 +22,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye, Clock, Users, CalendarCheck } from 'lucide-react';
+import { Send, Loader2, Mail, CheckCircle2, AlertCircle, Search, Building2, MoreVertical, RefreshCw, Eye, Clock, Users, CalendarCheck, MessageCircle } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useCampaignCompanies } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { ValuationCampaign } from '@/hooks/useCampaigns';
