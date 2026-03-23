@@ -169,6 +169,7 @@ type ResendConfirm =
   | null;
 
 export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
   const { companies } = useCampaignCompanies(campaignId);
   const { emails, sendEmail, sendAllPending, isSendingAll, isLoading } = useCampaignEmails(campaignId);
   const { createJob, hasActiveJob } = useOutboundQueue(campaignId);

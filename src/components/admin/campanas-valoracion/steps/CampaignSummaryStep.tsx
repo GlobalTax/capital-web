@@ -173,6 +173,7 @@ function NotasPopover({ company, campaignId }: { company: CampaignCompany; campa
 // ─── Main Component ─────────────────────────────────────────────────────
 export function CampaignSummaryStep({ campaignId, campaign }: Props) {
   const navigate = useNavigate();
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
   const { companies, stats } = useCampaignCompanies(campaignId);
   const { emails } = useCampaignEmails(campaignId);
   const { sequences, allSends } = useFollowupSequences(campaignId);
