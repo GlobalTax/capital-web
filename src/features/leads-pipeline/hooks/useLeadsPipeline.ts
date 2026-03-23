@@ -141,8 +141,16 @@ export const useLeadsPipeline = () => {
   const getTableName = (origin: 'valuation' | 'contact') =>
     origin === 'valuation' ? 'company_valuations' : 'contact_leads';
 
-  // Update lead status mutation
+  // Update lead status mutation (optimistic)
   const updateStatusMutation = useMutation({
+    onMutate: async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
+      await queryClient.cancelQueries({ queryKey: ['leads-pipeline'] });
+      const previous = queryClient.getQueryData<PipelineLead[]>(['leads-pipeline']);
+      queryClient.setQueryData<PipelineLead[]>(['leads-pipeline'], (old = []) =>
+        old.map(l => l.id === leadId ? { ...l, lead_status_crm: status } : l)
+      );
+      return { previous };
+    },
     mutationFn: async ({ leadId, status }: { leadId: string; status: LeadStatus }) => {
       const origin = getLeadOrigin(leadId);
       const table = getTableName(origin);
@@ -158,18 +166,27 @@ export const useLeadsPipeline = () => {
         .eq('id', leadId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onError: (error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['leads-pipeline'], context.previous);
+      toast.error('Error al actualizar el estado', { description: error.message });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['leads-pipeline'] });
       queryClient.invalidateQueries({ queryKey: ['lead-activities'] });
       queryClient.invalidateQueries({ queryKey: ['unified-contacts'] });
     },
-    onError: (error) => {
-      toast.error('Error al actualizar el estado', { description: error.message });
-    },
   });
 
-  // Assign lead mutation
+  // Assign lead mutation (optimistic)
   const assignLeadMutation = useMutation({
+    onMutate: async ({ leadId, userId }: { leadId: string; userId: string | null }) => {
+      await queryClient.cancelQueries({ queryKey: ['leads-pipeline'] });
+      const previous = queryClient.getQueryData<PipelineLead[]>(['leads-pipeline']);
+      queryClient.setQueryData<PipelineLead[]>(['leads-pipeline'], (old = []) =>
+        old.map(l => l.id === leadId ? { ...l, assigned_to: userId } : l)
+      );
+      return { previous };
+    },
     mutationFn: async ({ leadId, userId }: { leadId: string; userId: string | null }) => {
       const origin = getLeadOrigin(leadId);
       const table = getTableName(origin);
@@ -186,12 +203,15 @@ export const useLeadsPipeline = () => {
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['leads-pipeline'] });
-      queryClient.invalidateQueries({ queryKey: ['lead-activities'] });
       toast.success(variables.userId ? 'Lead asignado correctamente' : 'Lead desasignado');
     },
-    onError: (error) => {
+    onError: (error, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['leads-pipeline'], context.previous);
       toast.error('Error al asignar el lead', { description: error.message });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['leads-pipeline'] });
+      queryClient.invalidateQueries({ queryKey: ['lead-activities'] });
     },
   });
 
