@@ -1,23 +1,30 @@
 
 
-## Reemplazar logo por texto "Capittal" en blanco
+## Añadir columna de Notas en DocumentSendStep (campañas documento PDF)
 
-### Cambio
+### Problema
+En las campañas de tipo "documento PDF", el paso de Envío (`DocumentSendStep`) no tiene la columna de notas que sí existe en el paso equivalente de las campañas de valoración (`CampaignSummaryStep`). El campo `seguimiento_notas` ya existe en la tabla y el modelo de datos.
 
-**Archivo: `supabase/functions/generate-rod-document/index.ts`** — líneas 559-569
+### Cambios
 
-Eliminar la imagen del logo y los condicionales MSO. Sustituir por texto "Capittal" en blanco, grande y elegante:
+**Archivo: `src/components/admin/campanas-valoracion/steps/DocumentSendStep.tsx`**
 
-```html
-<td style="background-color:#1a1f2e;padding:32px 40px;text-align:center;border-radius:12px 12px 0 0;">
-  <h1 style="margin:0;font-size:28px;font-weight:700;color:#ffffff;font-family:'Plus Jakarta Sans',Arial,sans-serif;letter-spacing:1px;">Capittal</h1>
-  <p style="margin:8px 0 0;font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-family:'Plus Jakarta Sans',Arial,sans-serif;">M&amp;A · CONSULTING</p>
-</td>
-```
+1. **Añadir imports**: `Textarea`, `Popover/PopoverContent/PopoverTrigger`, `MessageCircle`
 
-Se elimina: `<img>`, los bloques `<!--[if mso]>`, y el `<div>` spacer.
+2. **Copiar el componente `NotasPopover`** desde `CampaignSummaryStep` (líneas 122-175) — mismo popover que guarda `seguimiento_notas` en `valuation_campaign_companies`
 
-### Después
-- Desplegar edge function
-- Enviar test a `orioliglesiasayuso@gmail.com`
+3. **Añadir `<TableHead>` de Notas** (línea ~486, después de "Seguimiento"):
+   ```tsx
+   <TableHead className="text-center w-[40px]">Notas</TableHead>
+   ```
+
+4. **Añadir `<TableCell>` con `NotasPopover`** (línea ~526, después del `SeguimientoBadge`):
+   ```tsx
+   <TableCell className="text-center">
+     <NotasPopover company={c} campaignId={campaignId} />
+   </TableCell>
+   ```
+
+### Resultado
+Cada empresa en el paso de envío de campañas documento tendrá el mismo icono de burbuja de notas que las campañas de valoración, permitiendo escribir y guardar notas por empresa.
 
