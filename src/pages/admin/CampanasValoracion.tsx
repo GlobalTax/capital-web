@@ -78,7 +78,7 @@ export default function CampanasValoracion() {
       // Get emails sent per campaign
       const { data: emailCounts } = await (supabase as any)
         .from('campaign_emails')
-        .select('campaign_id, status')
+        .select('campaign_id, status, sent_at')
         .in('campaign_id', campaignIds)
         .eq('status', 'sent');
 
