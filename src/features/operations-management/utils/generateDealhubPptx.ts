@@ -433,7 +433,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
         });
         slide.addText(row.value, {
           x: t.infoRows.x + LABEL_W, y: infoY, w: innerW - LABEL_W, h: 0.3,
-          fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true,
+          fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, align: 'right',
         });
         infoY += 0.45;
       });
