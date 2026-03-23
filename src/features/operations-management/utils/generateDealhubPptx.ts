@@ -368,7 +368,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
 
   if (t.description.visible) {
     const rawDesc = (locale === 'en' ? (op.description_en || op.description) : op.description) || '';
-    const desc = rawDesc.length > 800 ? rawDesc.substring(0, 797) + '...' : rawDesc;
+    const desc = rawDesc.length > 1320 ? rawDesc.substring(0, 1317) + '...' : rawDesc;
     slide.addText(desc, {
       x: t.description.x, y: t.description.y, w: t.description.w, h: t.description.h,
       fontSize: t.description.fontSize || 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
