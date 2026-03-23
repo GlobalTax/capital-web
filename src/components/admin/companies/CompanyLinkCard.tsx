@@ -354,10 +354,10 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+              onClick={() => window.open(`https://godeal.es/empresas/${empresa.id}`, '_blank')}
             >
               <Building2 className="h-4 w-4 mr-2" />
-              Ver Ficha Completa
+              Ver en GoDeal
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </div>

@@ -169,7 +169,7 @@ export default function DealsPausedPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => navigate(`/admin/empresas/${item.company_id}`)}
+                          onClick={() => window.open(`https://godeal.es/empresas/${item.company_id}`, '_blank')}
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Button>

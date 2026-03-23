@@ -140,9 +140,9 @@ export function ImportedEmpresasTable({
                     size="sm"
                     asChild
                   >
-                    <Link to={`/admin/empresas/${empresa.id}`}>
+                    <a href={`https://godeal.es/empresas/${empresa.id}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
-                    </Link>
+                    </a>
                   </Button>
                 </div>
               </TableCell>

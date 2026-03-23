@@ -557,8 +557,8 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   const listRef = useRef<List>(null);
 
   const handleNavigate = useCallback((id: string) => {
-    navigate(`/admin/empresas/${id}`);
-  }, [navigate]);
+    window.open(`https://godeal.es/empresas/${id}`, '_blank');
+  }, []);
 
   const handleSort = useCallback((key: string) => {
     setSortConfig(current => {
