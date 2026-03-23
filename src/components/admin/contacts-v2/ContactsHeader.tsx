@@ -14,6 +14,7 @@ import { BulkLeadFormSelect } from '../contacts/BulkLeadFormSelect';
 import { BulkDateSelect } from '../contacts/BulkDateSelect';
 import { StatusesEditor } from '../contacts/StatusesEditor';
 import { LeadFormsEditor } from '../contacts/LeadFormsEditor';
+import DuplicatesDialog from './DuplicatesDialog';
 
 interface ContactsHeaderProps {
   activeTab: TabType;
