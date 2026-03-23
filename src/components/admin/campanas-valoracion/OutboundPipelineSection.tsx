@@ -32,7 +32,7 @@ export function OutboundPipelineSection({ enabledCampaignIds }: OutboundPipeline
       if (!enabledCampaignIds.length) return [];
       const { data, error } = await (supabase as any)
         .from('valuation_campaign_companies')
-        .select('id, company_name, campaign_id, seguimiento_estado')
+        .select('id, client_company, campaign_id, seguimiento_estado')
         .in('campaign_id', enabledCampaignIds);
       if (error) throw error;
 
@@ -46,6 +46,7 @@ export function OutboundPipelineSection({ enabledCampaignIds }: OutboundPipeline
 
       return (data || []).map((c: any) => ({
         ...c,
+        company_name: c.client_company || 'Sin nombre',
         campaign_name: nameMap[c.campaign_id] || '',
       }));
     },
