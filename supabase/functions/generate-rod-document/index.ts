@@ -253,13 +253,6 @@ serve(async (req) => {
           to: [requestData.email],
           subject: emailSubject,
           html: generateEmailHTML(requestData.full_name, selectedROD.file_url, operations?.length || 0, selectedROD.language),
-          attachments: [
-            {
-              path: 'https://webcapittal.lovable.app/logotipo-white.png',
-              filename: 'logotipo-white.png',
-              content_id: 'capittal-logo',
-            }
-          ]
         });
 
         if (emailError) {
@@ -564,7 +557,7 @@ function generateEmailHTML(name: string, downloadUrl: string, operationsCount: n
         <!-- Header -->
         <tr>
           <td style="background-color:#1a1f2e;padding:32px 40px;text-align:center;border-radius:12px 12px 0 0;">
-            <img src="cid:capittal-logo" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
+            <img src="https://webcapittal.lovable.app/logotipo-white.png" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
           </td>
         </tr>
 
