@@ -279,6 +279,13 @@ const EmailRecipientsConfig: React.FC = () => {
                     </TableCell>
                     <TableCell className="text-center">
                       <Switch
+                        checked={recipient.is_bcc}
+                        onCheckedChange={(checked) => toggleBcc.mutate({ id: recipient.id, is_bcc: checked })}
+                        disabled={!recipient.is_active || !recipient.is_default_copy}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Switch
                         checked={recipient.is_active}
                         onCheckedChange={(checked) => toggleActive.mutate({ id: recipient.id, is_active: checked })}
                       />
