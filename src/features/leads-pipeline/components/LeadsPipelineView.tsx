@@ -552,6 +552,72 @@ export const LeadsPipelineView: React.FC = () => {
           </div>
         </DragDropContext>
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="flex items-center gap-3 bg-background border rounded-lg shadow-lg px-4 py-2.5">
+              <Badge variant="default" className="text-sm">
+                ✓ {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+              </Badge>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" disabled={isBulkMoving} className="gap-1.5">
+                    Mover a
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="max-h-64 overflow-y-auto">
+                  {visibleStatuses.map(status => (
+                    <DropdownMenuItem
+                      key={status.id}
+                      onClick={async () => {
+                        setIsBulkMoving(true);
+                        const ids = Array.from(selectedIds);
+                        const results = await Promise.allSettled(
+                          ids.map(leadId =>
+                            new Promise<void>((resolve, reject) => {
+                              updateStatus(
+                                { leadId, status: status.status_key as LeadStatus },
+                                { onSuccess: () => resolve(), onError: (e: any) => reject(e) }
+                              );
+                            })
+                          )
+                        );
+                        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+                        const failed = results.filter(r => r.status === 'rejected').length;
+                        if (failed === 0) {
+                          toast.success(`${succeeded} lead${succeeded !== 1 ? 's' : ''} movido${succeeded !== 1 ? 's' : ''} a "${status.label}"`);
+                        } else {
+                          toast.warning(`${succeeded} movidos, ${failed} fallidos`);
+                        }
+                        clearSelection();
+                        setIsBulkMoving(false);
+                      }}
+                    >
+                      <span className="mr-2">{status.icon}</span>
+                      {status.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button variant="ghost" size="sm" onClick={clearSelection} className="gap-1">
+                <X className="h-3.5 w-3.5" />
+                Limpiar
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
