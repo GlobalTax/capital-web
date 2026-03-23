@@ -36,7 +36,7 @@ const EmailRecipientsConfig: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_bcc: false, is_active: true });
 
   const resetForm = () => {
-    setFormData({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_active: true });
+    setFormData({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_bcc: false, is_active: true });
     setEditingRecipient(null);
   };
 
