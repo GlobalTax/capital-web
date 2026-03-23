@@ -134,6 +134,7 @@ export const PipelineColumn = memo(PipelineColumnComponent, (prev, next) => {
   for (let i = 0; i < prev.leads.length; i++) {
     if (prev.leads[i].id !== next.leads[i].id) return false;
     if (prev.leads[i].lead_status_crm !== next.leads[i].lead_status_crm) return false;
+    if (prev.leads[i].assigned_to !== next.leads[i].assigned_to) return false;
   }
   
   return true;
