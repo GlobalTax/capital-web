@@ -516,10 +516,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Obtener destinatarios internos de email_recipients_config
     let internalRecipients: string[] = [];
+    let internalBccRecipients: string[] = [];
     try {
       const { data: recipientsData, error: recipientsError } = await supabase
         .from('email_recipients_config')
-        .select('email')
+        .select('email, is_bcc')
         .eq('is_active', true)
         .eq('is_default_copy', true);
       
@@ -528,8 +529,9 @@ const handler = async (req: Request): Promise<Response> => {
       }
       
       if (recipientsData && recipientsData.length > 0) {
-        internalRecipients = recipientsData.map((r: any) => r.email);
-        log('info', 'RECIPIENTS_LOADED', { count: internalRecipients.length });
+        internalRecipients = recipientsData.filter((r: any) => !r.is_bcc).map((r: any) => r.email);
+        internalBccRecipients = recipientsData.filter((r: any) => r.is_bcc).map((r: any) => r.email);
+        log('info', 'RECIPIENTS_LOADED', { cc: internalRecipients.length, bcc: internalBccRecipients.length });
       } else {
         internalRecipients = ['samuel@capittal.es'];
         log('warn', 'NO_RECIPIENTS_FOUND_USING_FALLBACK');
@@ -782,6 +784,7 @@ const handler = async (req: Request): Promise<Response> => {
       emailResponse = await resend.emails.send({
         from: `${fromName} <samuel@capittal.es>`,
         to: internalRecipients,
+        bcc: internalBccRecipients.length > 0 ? internalBccRecipients : undefined,
         subject,
         html: htmlInternal,
         text: internalText,
@@ -797,6 +800,7 @@ const handler = async (req: Request): Promise<Response> => {
       emailResponse = await resend.emails.send({
         from: "Capittal (Test) <onboarding@resend.dev>",
         to: internalRecipients,
+        bcc: internalBccRecipients.length > 0 ? internalBccRecipients : undefined,
         subject: `${subject} (pruebas)`,
         html: `${htmlInternal}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,

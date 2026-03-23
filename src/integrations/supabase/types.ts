@@ -8995,6 +8995,7 @@ export type Database = {
           email: string
           id: string
           is_active: boolean | null
+          is_bcc: boolean | null
           is_default_copy: boolean | null
           name: string
           phone: string | null
@@ -9006,6 +9007,7 @@ export type Database = {
           email: string
           id?: string
           is_active?: boolean | null
+          is_bcc?: boolean | null
           is_default_copy?: boolean | null
           name: string
           phone?: string | null
@@ -9017,6 +9019,7 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean | null
+          is_bcc?: boolean | null
           is_default_copy?: boolean | null
           name?: string
           phone?: string | null

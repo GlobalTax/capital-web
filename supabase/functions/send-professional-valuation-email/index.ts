@@ -130,30 +130,31 @@ const DEFAULT_INTERNAL_TEAM = [
   "samuel@capittal.es"
 ];
 
-async function getInternalRecipients(): Promise<string[]> {
+async function getInternalRecipients(): Promise<{ cc: string[]; bcc: string[] }> {
   try {
     const { data, error } = await supabase
       .from('email_recipients_config')
-      .select('email')
+      .select('email, is_bcc')
       .eq('is_active', true)
       .eq('is_default_copy', true);
     
     if (error) {
       log('warn', 'GET_RECIPIENTS_DB_ERROR', { error: error.message });
-      return DEFAULT_INTERNAL_TEAM;
+      return { cc: DEFAULT_INTERNAL_TEAM, bcc: [] };
     }
     
     if (!data || data.length === 0) {
       log('warn', 'NO_RECIPIENTS_IN_DB');
-      return DEFAULT_INTERNAL_TEAM;
+      return { cc: DEFAULT_INTERNAL_TEAM, bcc: [] };
     }
     
-    const emails = data.map(r => r.email);
-    log('info', 'RECIPIENTS_LOADED', { count: emails.length });
-    return emails;
+    const cc = data.filter(r => !r.is_bcc).map(r => r.email);
+    const bcc = data.filter(r => r.is_bcc).map(r => r.email);
+    log('info', 'RECIPIENTS_LOADED', { cc: cc.length, bcc: bcc.length });
+    return { cc, bcc };
   } catch (e) {
     log('error', 'GET_RECIPIENTS_EXCEPTION', { error: (e as any)?.message });
-    return DEFAULT_INTERNAL_TEAM;
+    return { cc: DEFAULT_INTERNAL_TEAM, bcc: [] };
   }
 }
 
@@ -605,22 +606,31 @@ const handler = async (req: Request): Promise<Response> => {
       content: pdfAttachmentContent,
     }] : undefined;
 
-    // Determine CC recipients
-    let internalTeam: string[];
+    // Determine CC and BCC recipients
+    let ccRecipients: string[] = [];
+    let bccRecipients: string[] = [];
+    
     if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
-      internalTeam = requestData.selectedRecipients;
-      log('info', 'USING_SELECTED_RECIPIENTS', { count: internalTeam.length });
+      ccRecipients = requestData.selectedRecipients;
+      log('info', 'USING_SELECTED_RECIPIENTS', { count: ccRecipients.length });
     } else {
-      internalTeam = await getInternalRecipients();
+      const recipients = await getInternalRecipients();
+      ccRecipients = recipients.cc;
+      bccRecipients = recipients.bcc;
     }
 
-    const ccRecipients = internalTeam.filter(email => 
+    // Filter out the main recipient from CC/BCC to avoid duplicates
+    ccRecipients = ccRecipients.filter(email => 
+      email.toLowerCase() !== requestData.recipientEmail.toLowerCase()
+    );
+    bccRecipients = bccRecipients.filter(email => 
       email.toLowerCase() !== requestData.recipientEmail.toLowerCase()
     );
 
     log('info', 'SENDING_EMAIL', {
       to: requestData.recipientEmail,
       ccCount: ccRecipients.length,
+      bccCount: bccRecipients.length,
       hasAttachment: !!attachments
     });
 
@@ -629,6 +639,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: "Capittal <samuel@capittal.es>",
       to: [requestData.recipientEmail],
       cc: ccRecipients.length > 0 ? ccRecipients : undefined,
+      bcc: bccRecipients.length > 0 ? bccRecipients : undefined,
       subject: subject,
       html: clientEmailHtml,
       reply_to: requestData.advisorEmail || "info@capittal.es",
