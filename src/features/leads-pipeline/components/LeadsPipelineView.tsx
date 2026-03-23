@@ -236,7 +236,7 @@ export const LeadsPipelineView: React.FC = () => {
   }, [registerCall]);
 
   const handleAssignLead = useCallback((leadId: string, userId: string | null) => {
-    assignLead({ leadId, userId: userId as string });
+    assignLead({ leadId, userId });
   }, [assignLead]);
 
   const handleViewDetails = useCallback((leadId: string) => {
