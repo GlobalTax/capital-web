@@ -1,43 +1,24 @@
 
 
-## Eliminar duplicados en Gestión de Leads
+## Fix: duplicados eliminando también el que debería conservarse
 
-### Concepto
-Añadir un botón "Eliminar duplicados" en el header de Leads que analice y agrupe registros duplicados por email, CIF o teléfono, permitiendo revisar y fusionar/eliminar los duplicados.
+### Problema
+Un contacto puede aparecer en varios grupos de duplicados (ej: mismo email en grupo 1, mismo teléfono en grupo 2). Si se selecciona como "conservar" en un grupo pero no en otro, el sistema lo elimina igualmente al procesar el segundo grupo.
 
-### Flujo UX
-1. Botón en el header (junto a StatusesEditor/LeadFormsEditor)
-2. Al pulsar, se abre un diálogo que:
-   - Escanea los contactos cargados en memoria buscando coincidencias por email, CIF o teléfono
-   - Muestra grupos de duplicados con sus datos clave (nombre, email, CIF, teléfono, origen, fecha)
-   - Para cada grupo, el usuario selecciona cuál conservar (por defecto el más reciente/completo)
-   - Botón "Eliminar duplicados" que soft-deletes los registros sobrantes
+### Solución
 
-### Cambios
+**Archivo: `src/components/admin/contacts-v2/DuplicatesDialog.tsx`** — función `handleDelete` (líneas 93-123)
 
-**1. Nuevo componente: `src/components/admin/contacts-v2/DuplicatesDialog.tsx`**
-- Recibe la lista de `allContacts` del hook `useContacts`
-- Agrupa client-side por `LOWER(email)`, `cif` y `phone` (normalizados)
-- Muestra tabla de grupos con: campo coincidente, nº duplicados, detalle expandible
-- Permite seleccionar cuál mantener en cada grupo
-- Al confirmar, ejecuta soft-delete (update `is_deleted=true` o `status='archived'`) en los registros descartados, diferenciando por tabla origen (`company_valuations` vs `contact_leads`)
+1. **Recopilar TODOS los IDs a conservar antes de eliminar**: Crear un `Set<string>` con todos los `keepId` de todos los grupos.
+2. **Al iterar para eliminar, comprobar contra el Set global**: Si un contacto está en el Set de conservar, no eliminarlo aunque en ese grupo concreto no sea el elegido.
 
-**2. Archivo: `src/components/admin/contacts-v2/ContactsHeader.tsx`**
-- Importar `DuplicatesDialog`
-- Añadir botón con icono `Copy` (lucide) junto a los editores existentes
-- Pasar `allContacts` como prop (ya disponible en `ContactsLayout`)
+```typescript
+// Antes de iterar:
+const allKeepIds = new Set(groups.map(g => getKeepId(g)));
 
-**3. Archivo: `src/components/admin/contacts-v2/ContactsLayout.tsx`**
-- Pasar `allContacts` al `ContactsHeader` para que el diálogo pueda escanear todos los registros
+// Al filtrar:
+const toRemove = g.contacts.filter(c => !allKeepIds.has(c.id));
+```
 
-### Lógica de detección
-- Normalizar: `email.toLowerCase().trim()`, `cif.toUpperCase().trim()`, `phone.replace(/\s/g, '')`
-- Ignorar campos vacíos/null
-- Un registro puede aparecer en múltiples grupos (mismo email Y mismo CIF)
-- Prioridad para conservar: más campos rellenos > más reciente
-
-### Lógica de eliminación
-- Para `origin === 'valuation'`: update `company_valuations` set `is_deleted = true`
-- Para `origin === 'contact'`: update `contact_leads` set `is_deleted = true`
-- Tras eliminar, invalidar queries y refetch
+Cambio de 2 líneas en un solo archivo.
 
