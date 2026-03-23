@@ -285,7 +285,7 @@ const SeparatorPage = ({ num, label, subtitle, t }: {
 const OperationPage = ({ op, t, locale = 'es' }: { op: Operation; t: FullSlideTemplate; locale?: DealhubLocale }) => {
   const tmpl = t.operation;
   const i18n = getI18n(locale);
-  const desc = ((locale === 'en' ? (op.description_en || op.description) : op.description) || '').substring(0, 800);
+  const desc = ((locale === 'en' ? (op.description_en || op.description) : op.description) || '').substring(0, 1320);
   const highlights = (locale === 'en' ? (op.highlights_en || op.highlights) : op.highlights) || [];
 
   const cardX = (tmpl.summaryCard.x || 7.7) * S;
