@@ -169,7 +169,9 @@ export function MarketStudiesPanel() {
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-md bg-muted">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    {/\.(pptx?|ppt)$/i.test(study.file_name)
+                      ? <Presentation className="h-5 w-5 text-orange-500" />
+                      : <FileText className="h-5 w-5 text-red-500" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-sm truncate">{study.title}</h4>

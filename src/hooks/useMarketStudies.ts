@@ -112,12 +112,23 @@ export function useMarketStudies() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) throw new Error('No hay sesión activa');
 
-    const res = await supabase.functions.invoke('upload-campaign-presentation', {
-      body: { action: 'download_blob', bucket: 'market-studies', path: storagePath, fileName },
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const response = await fetch(`${supabaseUrl}/functions/v1/upload-campaign-presentation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        action: 'download_blob',
+        bucket: 'market-studies',
+        path: storagePath,
+        fileName,
+      }),
     });
 
-    if (res.error) throw new Error(res.error.message || 'Error al descargar');
-    return res.data as Blob;
+    if (!response.ok) throw new Error('Error al descargar el archivo');
+    return await response.blob();
   };
 
   const getSignedUrl = async (storagePath: string) => {
