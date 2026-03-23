@@ -20,6 +20,8 @@ interface PipelineColumnProps {
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onSelectAllInColumn: (columnId: string, leadIds: string[]) => void;
+  adminUsers?: { user_id: string; full_name: string | null; email: string | null }[];
+  onAssignLead?: (leadId: string, userId: string | null) => void;
 }
 
 const formatTotal = (leads: PipelineLead[]) => {
@@ -39,6 +41,8 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   selectedIds,
   onToggleSelect,
   onSelectAllInColumn,
+  adminUsers,
+  onAssignLead,
 }) => {
   const totalValue = formatTotal(leads);
   const leadIds = leads.map(l => l.id);
@@ -99,6 +103,8 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                         isDragging={snapshot.isDragging}
                         isSelected={selectedIds.has(lead.id)}
                         onToggleSelect={onToggleSelect}
+                        adminUsers={adminUsers}
+                        onAssignLead={onAssignLead}
                       />
                     </div>
                   )}

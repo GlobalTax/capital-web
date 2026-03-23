@@ -55,6 +55,7 @@ export const LeadsPipelineView: React.FC = () => {
     refetch,
     updateStatus,
     updateStatusAsync,
+    assignLead,
     registerCall,
   } = useLeadsPipeline();
 
@@ -233,6 +234,10 @@ export const LeadsPipelineView: React.FC = () => {
   const handleRegisterCall = useCallback((leadId: string, answered: boolean) => {
     registerCall({ leadId, answered });
   }, [registerCall]);
+
+  const handleAssignLead = useCallback((leadId: string, userId: string | null) => {
+    assignLead({ leadId, userId: userId as string });
+  }, [assignLead]);
 
   const handleViewDetails = useCallback((leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
@@ -549,6 +554,8 @@ export const LeadsPipelineView: React.FC = () => {
                 selectedIds={selectedIds}
                 onToggleSelect={toggleSelect}
                 onSelectAllInColumn={handleSelectAllInColumn}
+                adminUsers={adminUsers}
+                onAssignLead={handleAssignLead}
               />
             ))}
           </div>
