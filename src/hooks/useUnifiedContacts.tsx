@@ -350,6 +350,8 @@ export const useUnifiedContacts = () => {
             ai_negative_tags: (lead as any).ai_negative_tags,
             ai_classification_confidence: (lead as any).ai_classification_confidence,
             ai_classification_at: (lead as any).ai_classification_at,
+            // Duplicate detection
+            is_possible_duplicate: (lead as any).is_possible_duplicate || false,
           };
         }),
         
