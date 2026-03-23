@@ -334,6 +334,11 @@ export default function CampanasValoracion() {
         {activeTab === 'valuation' && <TableCell className="text-right">{c.total_valuation > 0 ? formatCurrencyEUR(c.total_valuation) : '—'}</TableCell>}
         <TableCell className="text-center"><Badge variant={stage.variant}>{stage.label}</Badge></TableCell>
         <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('es-ES')}</TableCell>
+        <TableCell className="text-sm text-muted-foreground">
+          {stageData?.[c.id]?.firstSentAt
+            ? new Date(stageData[c.id].firstSentAt!).toLocaleDateString('es-ES')
+            : '—'}
+        </TableCell>
         <TableCell className="text-right">
           <div className="flex items-center justify-end gap-1">
             <Button variant="ghost" size="icon" title="Editar" onClick={(e) => { e.stopPropagation(); navigate(`/admin/campanas-valoracion/${c.id}`); }}>
