@@ -371,7 +371,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     const desc = rawDesc.length > 1320 ? rawDesc.substring(0, 1317) + '...' : rawDesc;
     slide.addText(desc, {
       x: t.description.x, y: t.description.y, w: t.description.w, h: t.description.h,
-      fontSize: t.description.fontSize || 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
+      fontSize: 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
       lineSpacingMultiple: t.description.lineSpacing || 1.4,
       valign: t.description.valign || 'top',
       align: 'justify',
