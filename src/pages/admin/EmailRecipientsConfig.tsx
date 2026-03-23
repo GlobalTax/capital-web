@@ -203,12 +203,12 @@ const EmailRecipientsConfig: React.FC = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Con Copia por Defecto</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Copia Oculta (BCC)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-blue-500" />
-              <span className="text-2xl font-bold">{defaultCount}</span>
+              <EyeOff className="h-5 w-5 text-muted-foreground" />
+              <span className="text-2xl font-bold">{bccCount}</span>
             </div>
           </CardContent>
         </Card>
