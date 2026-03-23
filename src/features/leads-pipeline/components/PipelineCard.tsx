@@ -333,7 +333,13 @@ const AssignmentPopover: React.FC<{
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="end" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent
+        className="w-56 p-2"
+        align="end"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <Input
           placeholder="Buscar usuario..."
           value={search}
