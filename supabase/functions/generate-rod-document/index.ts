@@ -557,7 +557,7 @@ function generateEmailHTML(name: string, downloadUrl: string, operationsCount: n
         <!-- Header -->
         <tr>
           <td style="background-color:#1a1f2e;padding:32px 40px;text-align:center;border-radius:12px 12px 0 0;">
-            <img src="${logoUrl}" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
+            <img src="cid:capittal-logo" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
           </td>
         </tr>
 
