@@ -44,7 +44,7 @@ export const useLeadsPipeline = () => {
             lead_status_crm, final_valuation, revenue, ebitda,
             employee_range, location, acquisition_channel_id, lead_form,
             created_at, assigned_to, email_sent, email_opened,
-            precall_email_sent, call_attempts_count
+            precall_email_sent, call_attempts_count, empresa_id
           `)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
