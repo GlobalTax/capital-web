@@ -103,7 +103,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     if (wasDragging.current) return;
     const target = e.target as HTMLElement;
-    if (target.closest('button, [role="menuitem"], [data-radix-collection-item], [role="checkbox"]')) return;
+    if (target.closest('button, [role="menuitem"], [data-radix-collection-item], [role="checkbox"], [data-assign-popover]')) return;
     onViewDetails();
   };
 
