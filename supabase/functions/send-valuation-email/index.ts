@@ -800,6 +800,7 @@ const handler = async (req: Request): Promise<Response> => {
       emailResponse = await resend.emails.send({
         from: "Capittal (Test) <onboarding@resend.dev>",
         to: internalRecipients,
+        bcc: internalBccRecipients.length > 0 ? internalBccRecipients : undefined,
         subject: `${subject} (pruebas)`,
         html: `${htmlInternal}\n<p style=\"margin-top:12px;color:#9ca3af;font-size:12px;\">Enviado con remitente de pruebas por dominio no verificado.</p>`,
         text: internalText,
