@@ -36,14 +36,27 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
+  selectedIds,
+  onToggleSelect,
+  onSelectAllInColumn,
 }) => {
   const totalValue = formatTotal(leads);
+  const leadIds = leads.map(l => l.id);
+  const allSelected = leads.length > 0 && leadIds.every(id => selectedIds.has(id));
+  const someSelected = leads.length > 0 && leadIds.some(id => selectedIds.has(id)) && !allSelected;
 
   return (
     <Card className="flex flex-col h-full min-w-[280px] max-w-[320px]">
       <CardHeader className="py-3 px-4 border-b shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
+            {leads.length > 0 && (
+              <Checkbox
+                checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                onCheckedChange={() => onSelectAllInColumn(column.id, leadIds)}
+                className="shrink-0"
+              />
+            )}
             <span className="text-lg">{column.icon}</span>
             <h3 className="font-semibold text-sm">{column.label}</h3>
             <Badge variant="secondary" className="text-xs">
