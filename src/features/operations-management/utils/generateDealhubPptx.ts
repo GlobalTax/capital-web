@@ -260,7 +260,7 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
       x: intro.x, y: intro.y, w: intro.w, h: intro.h,
       fontSize: intro.fontSize || 14, fontFace: FONT, color: intro.color || TEXT_SECONDARY,
       lineSpacingMultiple: intro.lineSpacing || 1.4,
-      valign: 'top', wrap: true,
+      valign: 'top', wrap: true, align: 'justify',
     });
   }
 
