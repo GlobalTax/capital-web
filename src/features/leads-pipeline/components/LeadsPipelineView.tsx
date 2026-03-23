@@ -235,6 +235,10 @@ export const LeadsPipelineView: React.FC = () => {
     registerCall({ leadId, answered });
   }, [registerCall]);
 
+  const handleAssignLead = useCallback((leadId: string, userId: string | null) => {
+    assignLead({ leadId, userId: userId as string });
+  }, [assignLead]);
+
   const handleViewDetails = useCallback((leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
     if (lead?.empresa_id) {
