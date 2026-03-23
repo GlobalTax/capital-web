@@ -346,6 +346,7 @@ const AssignmentPopover: React.FC<{
           onChange={(e) => setSearch(e.target.value)}
           className="h-8 text-xs mb-2"
           autoFocus
+          onPointerDown={(e) => e.stopPropagation()}
         />
         <div className="max-h-48 overflow-y-auto space-y-0.5">
           {lead.assigned_to && (
