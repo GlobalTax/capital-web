@@ -203,11 +203,8 @@ export const LeadsPipelineView: React.FC = () => {
 
   const handleViewDetails = useCallback((leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
-    if (lead?.origin === 'contact') {
-      navigate(`/admin/contacts/${leadId}`);
-    } else {
-      navigate(`/admin/valuations/${leadId}`);
-    }
+    const prefix = lead?.origin === 'contact' ? 'contact' : 'valuation';
+    navigate(`/admin/contacts/${prefix}_${leadId}`);
   }, [navigate, leads]);
 
   const clearFilters = useCallback(() => {
