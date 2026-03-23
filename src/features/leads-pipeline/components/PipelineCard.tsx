@@ -313,6 +313,9 @@ const AssignmentPopover: React.FC<{
         <button
           data-assign-popover
           onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
           className="flex items-center gap-1 hover:opacity-70 transition-opacity cursor-pointer"
         >
           {assignedUserName ? (
