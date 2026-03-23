@@ -374,7 +374,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       fontSize: t.description.fontSize || 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
       lineSpacingMultiple: t.description.lineSpacing || 1.4,
       valign: t.description.valign || 'top',
-      align: t.description.align,
+      align: 'justify',
       wrap: true, shrinkText: true,
       italic: t.description.italic,
     });
