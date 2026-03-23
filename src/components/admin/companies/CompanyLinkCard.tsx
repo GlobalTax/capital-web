@@ -195,8 +195,8 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
                 variant="ghost" 
                 size="icon" 
                 className="h-8 w-8"
-                onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
-                title="Ver ficha completa"
+                onClick={() => window.open(`https://godeal.es/empresas/${empresa.id}`, '_blank')}
+                title="Ver ficha completa en GoDeal"
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>
