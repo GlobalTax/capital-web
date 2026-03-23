@@ -260,7 +260,7 @@ function addIndexSlide(pptx: pptxgen, sectionCounts: Record<string, number>, idx
       x: intro.x, y: intro.y, w: intro.w, h: intro.h,
       fontSize: intro.fontSize || 14, fontFace: FONT, color: intro.color || TEXT_SECONDARY,
       lineSpacingMultiple: intro.lineSpacing || 1.4,
-      valign: 'top', wrap: true,
+      valign: 'top', wrap: true, align: 'justify',
     });
   }
 
@@ -374,7 +374,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       fontSize: t.description.fontSize || 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
       lineSpacingMultiple: t.description.lineSpacing || 1.4,
       valign: t.description.valign || 'top',
-      align: t.description.align,
+      align: 'justify',
       wrap: true, shrinkText: true,
       italic: t.description.italic,
     });
@@ -394,7 +394,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     }));
     slide.addText(bulletText as any, {
       x: t.highlights.x + 0.2, y: t.highlights.y + 0.4, w: t.highlights.w - 0.4, h: t.highlights.h - 0.4,
-      valign: 'top',
+      valign: 'top', align: 'justify',
     });
   }
 
@@ -444,7 +444,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       infoY += 0.25;
       slide.addText(oportunidadText, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.7,
-        fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top',
+        fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top', align: 'justify',
       });
     }
 
