@@ -264,11 +264,129 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   );
 };
 
+// Assignment Popover sub-component
+const AssignmentPopover: React.FC<{
+  lead: PipelineLead;
+  assignedUserName?: string;
+  avatarInitials: string | null;
+  firstName: string | null;
+  adminUsers: AdminUserSimple[];
+  onAssignLead?: (leadId: string, userId: string | null) => void;
+}> = ({ lead, assignedUserName, avatarInitials, firstName, adminUsers, onAssignLead }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    if (!search) return adminUsers;
+    const q = search.toLowerCase();
+    return adminUsers.filter(u =>
+      (u.full_name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    );
+  }, [adminUsers, search]);
+
+  const handleSelect = useCallback((userId: string | null) => {
+    onAssignLead?.(lead.id, userId);
+    setOpen(false);
+    setSearch('');
+  }, [onAssignLead, lead.id]);
+
+  if (!onAssignLead) {
+    return assignedUserName ? (
+      <span className="flex items-center gap-1">
+        <Avatar className="h-4 w-4">
+          <AvatarFallback className="text-[8px]">{avatarInitials}</AvatarFallback>
+        </Avatar>
+        <span className="truncate max-w-[60px]">{firstName}</span>
+      </span>
+    ) : (
+      <span className="flex items-center text-orange-500">
+        <User className="h-3 w-3 mr-1" />
+        Sin asignar
+      </span>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setSearch(''); }}>
+      <PopoverTrigger asChild>
+        <button
+          data-assign-popover
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 hover:opacity-70 transition-opacity cursor-pointer"
+        >
+          {assignedUserName ? (
+            <>
+              <Avatar className="h-4 w-4">
+                <AvatarFallback className="text-[8px]">{avatarInitials}</AvatarFallback>
+              </Avatar>
+              <span className="truncate max-w-[60px]">{firstName}</span>
+            </>
+          ) : (
+            <span className="flex items-center text-orange-500">
+              <User className="h-3 w-3 mr-1" />
+              Sin asignar
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 p-2" align="end" onClick={(e) => e.stopPropagation()}>
+        <Input
+          placeholder="Buscar usuario..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-8 text-xs mb-2"
+          autoFocus
+        />
+        <div className="max-h-48 overflow-y-auto space-y-0.5">
+          {lead.assigned_to && (
+            <button
+              onClick={() => handleSelect(null)}
+              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded-sm hover:bg-accent text-muted-foreground"
+            >
+              <XIcon className="h-3 w-3" />
+              Desasignar
+            </button>
+          )}
+          {filtered.map(user => (
+            <button
+              key={user.user_id}
+              onClick={() => handleSelect(user.user_id)}
+              className={`flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded-sm hover:bg-accent ${
+                lead.assigned_to === user.user_id ? 'bg-accent font-medium' : ''
+              }`}
+            >
+              <Avatar className="h-5 w-5">
+                <AvatarFallback className="text-[8px]">
+                  {(user.full_name || user.email || '?').charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="text-left min-w-0">
+                <div className="truncate">{user.full_name || user.email}</div>
+                {user.full_name && user.email && (
+                  <div className="text-muted-foreground truncate text-[10px]">{user.email}</div>
+                )}
+              </div>
+              {lead.assigned_to === user.user_id && (
+                <UserCheck className="h-3 w-3 ml-auto text-primary shrink-0" />
+              )}
+            </button>
+          ))}
+          {filtered.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-2">Sin resultados</p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 // Memoized with custom comparison
 export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
   return (
     prev.lead.id === next.lead.id &&
     prev.lead.lead_status_crm === next.lead.lead_status_crm &&
+    prev.lead.assigned_to === next.lead.assigned_to &&
     prev.lead.email_opened === next.lead.email_opened &&
     prev.lead.email_sent === next.lead.email_sent &&
     prev.lead.precall_email_sent === next.lead.precall_email_sent &&

@@ -103,6 +103,8 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                         isDragging={snapshot.isDragging}
                         isSelected={selectedIds.has(lead.id)}
                         onToggleSelect={onToggleSelect}
+                        adminUsers={adminUsers}
+                        onAssignLead={onAssignLead}
                       />
                     </div>
                   )}
