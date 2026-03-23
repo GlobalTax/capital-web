@@ -1,6 +1,6 @@
 // ─── SLIDE TEMPLATE TYPES ───
 
-export type TextAlign = 'left' | 'center' | 'right';
+export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 export type TextValign = 'top' | 'middle' | 'bottom';
 
 export interface BlockConfig {

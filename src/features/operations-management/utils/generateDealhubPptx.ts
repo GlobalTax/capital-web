@@ -444,7 +444,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       infoY += 0.25;
       slide.addText(oportunidadText, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.7,
-        fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top',
+        fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top', align: 'justify',
       });
     }
 
