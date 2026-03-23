@@ -89,13 +89,18 @@ export default function CampanasValoracion() {
         .in('campaign_followup_sequences.campaign_id', campaignIds)
         .eq('status', 'sent');
 
-      const stages: Record<string, { emailsSent: number; maxFollowup: number }> = {};
+      const stages: Record<string, { emailsSent: number; maxFollowup: number; firstSentAt: string | null }> = {};
       for (const id of campaignIds) {
-        stages[id] = { emailsSent: 0, maxFollowup: 0 };
+        stages[id] = { emailsSent: 0, maxFollowup: 0, firstSentAt: null };
       }
 
       for (const e of (emailCounts || [])) {
-        if (stages[e.campaign_id]) stages[e.campaign_id].emailsSent++;
+        if (stages[e.campaign_id]) {
+          stages[e.campaign_id].emailsSent++;
+          if (e.sent_at && (!stages[e.campaign_id].firstSentAt || e.sent_at < stages[e.campaign_id].firstSentAt!)) {
+            stages[e.campaign_id].firstSentAt = e.sent_at;
+          }
+        }
       }
 
       for (const f of (followupData || [])) {
