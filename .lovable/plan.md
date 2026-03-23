@@ -1,28 +1,44 @@
 
 
-## Pipeline: abrir perfil GoDeal + auto-vincular contact_leads a empresa
+## Auto-vincular contacto a empresa cuando se crea un contact_lead
 
-### Cambios
+### Problema
+El trigger `auto_link_contact_lead_to_empresa` vincula el contact_lead a una empresa (vía `empresa_id`), pero NO crea un registro en la tabla `contactos` con `empresa_principal_id`. Por eso la pestaña "Contactos" de la empresa en GoDeal aparece vacía.
 
-**1. Añadir `empresa_id` al pipeline**
+### Solución
 
-- **`src/features/leads-pipeline/types/index.ts`**: Añadir `empresa_id: string | null` a `PipelineLead`
-- **`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`**: Añadir `empresa_id` a los SELECT de ambas tablas (company_valuations y contact_leads)
+**Migración SQL**: Ampliar la función `auto_link_contact_lead_to_empresa` para que, además de asignar `empresa_id`, también inserte (o vincule) un registro en `contactos`:
 
-**2. Cambiar navegación al clicar tarjeta**
+1. Buscar en `contactos` si ya existe uno con el mismo email y `empresa_principal_id` = la empresa
+2. Si no existe, buscar por email sin empresa vinculada y asignarle la empresa
+3. Si no existe en absoluto, crear nuevo registro en `contactos` con nombre, email, teléfono y `empresa_principal_id`
 
-- **`src/features/leads-pipeline/components/LeadsPipelineView.tsx`**: En `handleViewDetails`, si el lead tiene `empresa_id`, abrir `https://godeal.es/empresas/${empresa_id}` en nueva pestaña. Si no tiene empresa vinculada, seguir abriendo el LeadDetailPage como fallback.
+**Backfill**: Un UPDATE/INSERT masivo para vincular los contact_leads existentes que ya tienen `empresa_id` pero no tienen registro correspondiente en `contactos`.
 
-**3. Trigger SQL: auto-vincular contact_leads a empresa (igual que company_valuations)**
+### Detalle del trigger actualizado
 
-- **Migración SQL**: Crear trigger `BEFORE INSERT` en `contact_leads` que:
-  1. Busque empresa existente por nombre normalizado (case-insensitive)
-  2. Si no existe, cree una nueva empresa con los datos disponibles
-  3. Asigne `empresa_id` al contact_lead
+```sql
+-- Después de asignar NEW.empresa_id...
+
+-- Auto-crear/vincular contacto en tabla contactos
+IF NOT EXISTS (
+  SELECT 1 FROM contactos 
+  WHERE email = NEW.email 
+  AND empresa_principal_id = v_empresa_id
+) THEN
+  -- Buscar contacto existente por email sin empresa
+  SELECT id INTO v_contacto_id FROM contactos 
+  WHERE email = NEW.email AND empresa_principal_id IS NULL LIMIT 1;
   
-- **Backfill**: UPDATE masivo para vincular contact_leads existentes sin `empresa_id` a empresas por nombre
+  IF v_contacto_id IS NOT NULL THEN
+    UPDATE contactos SET empresa_principal_id = v_empresa_id WHERE id = v_contacto_id;
+  ELSE
+    INSERT INTO contactos (nombre, email, telefono, empresa_principal_id, source)
+    VALUES (NEW.full_name, NEW.email, NEW.phone, v_empresa_id, 'lead');
+  END IF;
+END IF;
+```
 
 ### Resultado
-- Clic en tarjeta del pipeline → abre perfil GoDeal de la empresa
-- Todos los contact_leads se vinculan automáticamente a su empresa (como ya hacen los valuations)
+Cada vez que entra un lead → se crea empresa + se crea contacto vinculado. La pestaña "Contactos" de GoDeal mostrara siempre el contacto asociado automáticamente.
 
