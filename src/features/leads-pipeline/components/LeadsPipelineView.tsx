@@ -550,6 +550,8 @@ export const LeadsPipelineView: React.FC = () => {
                 selectedIds={selectedIds}
                 onToggleSelect={toggleSelect}
                 onSelectAllInColumn={handleSelectAllInColumn}
+                adminUsers={adminUsers}
+                onAssignLead={assignLead}
               />
             ))}
           </div>
