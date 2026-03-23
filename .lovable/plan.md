@@ -1,51 +1,39 @@
 
 
-## Actualización instantánea del pipeline sin refrescar página
+## Fix: asignación de dueño no se refleja en el pipeline
 
-### Problema
-Las mutaciones (cambiar estado, asignar dueño) invalidan la query pero el usuario no ve el cambio hasta que se refresca. Esto ocurre porque la invalidación marca la query como stale, pero la UI no refleja el cambio inmediatamente de forma visible.
+### Causa raíz
 
-### Solución: Optimistic updates en todas las mutaciones
+Dos bugs encontrados:
 
-Modificar **`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`** para que cada mutación actualice el cache local de React Query **antes** de que responda el servidor:
+**Bug 1 — El memo de `PipelineColumn` bloquea el re-render**
 
-**1. `updateStatusMutation`** - Actualizar `lead_status_crm` optimísticamente
-- En `onMutate`: cancelar queries en vuelo, actualizar el lead en cache con el nuevo status
-- En `onError`: restaurar snapshot anterior
-- En `onSettled`: invalidar para sincronizar con servidor
+La comparación custom del `memo` en `PipelineColumn.tsx` (línea 129-139) solo compara `lead.id`, `lead.lead_status_crm` y `selectedIds`. NO compara `lead.assigned_to`. Cuando el optimistic update cambia `assigned_to` en el cache, React ve que las props "no han cambiado" según el memo, y no re-renderiza la columna.
 
-**2. `assignLeadMutation`** - Actualizar `assigned_to` optimísticamente
-- En `onMutate`: cancelar queries, actualizar `assigned_to` del lead en cache
-- En `onError`: rollback
-- En `onSettled`: invalidar
+**Bug 2 — Cast incorrecto de `null`**
 
-**3. Patrón común para ambas mutaciones:**
+En `LeadsPipelineView.tsx` línea 239, `userId` se castea como `string` incluso cuando es `null`, lo que puede causar problemas al desasignar.
+
+### Cambios
+
+**1. `PipelineColumn.tsx`** — Añadir `assigned_to` a la comparación del memo
 
 ```typescript
-onMutate: async (variables) => {
-  await queryClient.cancelQueries({ queryKey: ['leads-pipeline'] });
-  const previous = queryClient.getQueryData(['leads-pipeline']);
-  
-  queryClient.setQueryData(['leads-pipeline'], (old: PipelineLead[]) =>
-    old.map(lead => lead.id === variables.leadId 
-      ? { ...lead, /* campo actualizado */ } 
-      : lead
-    )
-  );
-  
-  return { previous };
-},
-onError: (err, vars, context) => {
-  queryClient.setQueryData(['leads-pipeline'], context?.previous);
-},
-onSettled: () => {
-  queryClient.invalidateQueries({ queryKey: ['leads-pipeline'] });
-},
+for (let i = 0; i < prev.leads.length; i++) {
+  if (prev.leads[i].id !== next.leads[i].id) return false;
+  if (prev.leads[i].lead_status_crm !== next.leads[i].lead_status_crm) return false;
+  if (prev.leads[i].assigned_to !== next.leads[i].assigned_to) return false;  // AÑADIR
+}
+```
+
+**2. `LeadsPipelineView.tsx`** — Quitar el cast incorrecto
+
+```typescript
+const handleAssignLead = useCallback((leadId: string, userId: string | null) => {
+  assignLead({ leadId, userId });  // sin "as string"
+}, [assignLead]);
 ```
 
 ### Resultado
-- Cambiar estado de un lead → la tarjeta se mueve a la columna correcta al instante
-- Asignar dueño → el nombre aparece inmediatamente en la tarjeta
-- Si el servidor falla → rollback automático al estado anterior
-- Se mantiene la invalidación para sincronizar datos reales en background
+Al seleccionar un usuario en el popover, la tarjeta se actualizará al instante mostrando el nuevo dueño asignado.
 
