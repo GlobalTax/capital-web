@@ -9,6 +9,7 @@ export interface EmailRecipient {
   role: string;
   phone?: string;
   is_default_copy: boolean;
+  is_bcc: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
