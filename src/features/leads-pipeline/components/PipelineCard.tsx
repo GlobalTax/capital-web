@@ -2,12 +2,14 @@
  * Pipeline Lead Card Component - Memoized for performance
  */
 
-import React, { memo, useMemo, useRef } from 'react';
+import React, { memo, useMemo, useRef, useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Phone, 
   Mail, 
@@ -20,7 +22,9 @@ import {
   MapPin,
   Users,
   TrendingUp,
-  BarChart3
+  BarChart3,
+  UserCheck,
+  X as XIcon
 } from 'lucide-react';
 import {
   DropdownMenu,
