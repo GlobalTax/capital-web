@@ -107,7 +107,65 @@ function SeguimientoBadge({ company, campaignId }: { company: any; campaignId: s
   );
 }
 
-interface Props {
+// ─── Notes Popover ──────────────────────────────────────────────────────
+function NotasPopover({ company, campaignId }: { company: any; campaignId: string }) {
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState(company.seguimiento_notas || '');
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const hasNotes = !!(company.seguimiento_notas && company.seguimiento_notas.trim());
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('valuation_campaign_companies')
+        .update({ seguimiento_notas: notes })
+        .eq('id', company.id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaign-companies', campaignId] });
+      toast.success('Notas guardadas');
+      setOpen(false);
+    } catch (e: any) {
+      toast.error('Error al guardar notas: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  }, [notes, company.id, campaignId, queryClient]);
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (o) setNotes(company.seguimiento_notas || ''); }}>
+      <PopoverTrigger asChild>
+        <button
+          onClick={e => e.stopPropagation()}
+          className="relative p-1 rounded hover:bg-muted/50 transition-colors"
+          title={hasNotes ? 'Ver/editar notas' : 'Añadir nota'}
+        >
+          <MessageCircle className={cn("h-4 w-4", hasNotes ? 'text-primary' : 'text-muted-foreground')} />
+          {hasNotes && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-3" align="end" onClick={e => e.stopPropagation()}>
+        <p className="text-xs font-medium text-muted-foreground mb-2">Notas — {company.client_company}</p>
+        <Textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="Escribe notas sobre esta empresa..."
+          className="text-sm min-h-[80px] resize-none"
+        />
+        <div className="flex justify-end mt-2">
+          <Button size="sm" onClick={handleSave} disabled={saving} className="text-xs h-7">
+            {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+            Guardar notas
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
   campaignId: string;
   campaign: ValuationCampaign;
 }
