@@ -1391,13 +1391,15 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       const { data: allActive } = await supabase
         .from('email_recipients_config')
-        .select('email, is_default_copy')
+        .select('email, is_default_copy, is_bcc')
         .eq('is_active', true);
       
       if (allActive && allActive.length > 0) {
         dynamicEmails = allActive.map((r: any) => r.email);
-        dynamicBccEmails = allActive.filter((r: any) => r.is_default_copy).map((r: any) => r.email);
-        console.log(`[dynamic] Fetched ${dynamicEmails.length} active recipients, ${dynamicBccEmails.length} with default_copy`);
+        // CC = default_copy + NOT bcc; BCC = default_copy + bcc
+        dynamicBccEmails = allActive.filter((r: any) => r.is_default_copy && r.is_bcc).map((r: any) => r.email);
+        const dynamicCcEmails = allActive.filter((r: any) => r.is_default_copy && !r.is_bcc).map((r: any) => r.email);
+        console.log(`[dynamic] Fetched ${dynamicEmails.length} active recipients, ${dynamicCcEmails.length} CC, ${dynamicBccEmails.length} BCC`);
       }
     } catch (e) {
       console.error('[dynamic] Error fetching email_recipients_config, using hardcoded fallback:', e);
