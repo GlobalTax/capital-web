@@ -40,6 +40,8 @@ interface PipelineCardProps {
   onRegisterCall: (answered: boolean) => void;
   onViewDetails: () => void;
   isDragging?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
 const formatCurrency = (value: number | null) => {
