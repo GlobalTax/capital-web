@@ -35,17 +35,8 @@ import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
-// Seguimiento config (same as CampaignSummaryStep)
-const SEGUIMIENTO_OPTIONS = [
-  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
-  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
-  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
-] as const;
-
-function getSeguimientoOption(value: string | null) {
-  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
-}
+// Seguimiento states loaded from DB
+import { useSeguimientoOptions, getSeguimientoOption } from '@/hooks/useSeguimientoOptions';
 
 interface Props {
   campaignId: string;
@@ -291,7 +282,8 @@ function FUSeguimientoBadge({
 
   // Per-round state: use send record's seguimiento, fallback to sin_respuesta
   const currentValue = sendRecord?.seguimiento_estado || 'sin_respuesta';
-  const current = getSeguimientoOption(currentValue);
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
+  const current = getSeguimientoOption(SEGUIMIENTO_OPTIONS, currentValue);
 
   const handleChange = useCallback(async (newValue: string) => {
     if (newValue === currentValue) return;

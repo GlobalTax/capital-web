@@ -17,6 +17,8 @@ import {
   Users, CalendarCheck, MessageCircleX, HelpCircle, Percent,
   Filter, CheckSquare, Square, CalendarIcon
 } from 'lucide-react';
+import { OutboundPipelineSection } from './OutboundPipelineSection';
+import { OutboundStagesEditor } from './OutboundStagesEditor';
 
 interface CampaignSummary {
   id: string;
@@ -364,12 +366,19 @@ export function OutboundSummaryDashboard() {
         ))}
       </div>
 
+      {/* Pipeline */}
+      <OutboundPipelineSection
+        enabledCampaignIds={allCampaigns.filter(c => !disabledCampaigns.has(c.id)).map(c => c.id)}
+      />
+
       {/* Campaign breakdown table */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Desglose por Campaña</CardTitle>
-            <Button
+            <div className="flex items-center gap-2">
+              <OutboundStagesEditor />
+              <Button
               variant="ghost"
               size="sm"
               className="h-7 text-xs gap-1.5"
@@ -378,6 +387,7 @@ export function OutboundSummaryDashboard() {
               {allEnabled ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
               {allEnabled ? 'Deseleccionar todas' : 'Seleccionar todas'}
             </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">

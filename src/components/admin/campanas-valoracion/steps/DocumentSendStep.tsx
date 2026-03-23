@@ -39,23 +39,15 @@ import { DateRangeFilter, DateRangeFilterValue, matchesDateRange } from '@/compo
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-// Seguimiento states config
-const SEGUIMIENTO_OPTIONS = [
-  { value: 'sin_respuesta', label: 'Sin respuesta', className: 'bg-muted text-muted-foreground border-border' },
-  { value: 'interesado', label: 'Interesado', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { value: 'no_interesado', label: 'No interesado', className: 'bg-red-50 text-red-600 border-red-200' },
-  { value: 'reunion_agendada', label: 'Reunión agendada', className: 'bg-violet-50 text-violet-700 border-violet-200' },
-] as const;
-
-function getSeguimientoOption(value: string | null) {
-  return SEGUIMIENTO_OPTIONS.find(o => o.value === (value || 'sin_respuesta')) || SEGUIMIENTO_OPTIONS[0];
-}
+// Seguimiento states loaded from DB
+import { useSeguimientoOptions, getSeguimientoOption } from '@/hooks/useSeguimientoOptions';
 
 // ─── Inline Seguimiento Badge Select ────────────────────────────────────
 function SeguimientoBadge({ company, campaignId }: { company: any; campaignId: string }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const current = getSeguimientoOption(company.seguimiento_estado);
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
+  const current = getSeguimientoOption(SEGUIMIENTO_OPTIONS, company.seguimiento_estado);
 
   const handleChange = useCallback(async (newValue: string) => {
     if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;
@@ -177,6 +169,7 @@ type ResendConfirm =
   | null;
 
 export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
   const { companies } = useCampaignCompanies(campaignId);
   const { emails, sendEmail, sendAllPending, isSendingAll, isLoading } = useCampaignEmails(campaignId);
   const { createJob, hasActiveJob } = useOutboundQueue(campaignId);
