@@ -246,7 +246,14 @@ const EmailRecipientsConfig: React.FC = () => {
               <TableBody>
                 {recipients?.map((recipient) => (
                   <TableRow key={recipient.id} className={!recipient.is_active ? 'opacity-50' : ''}>
-                    <TableCell className="font-medium">{recipient.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {recipient.name}
+                        {recipient.is_bcc && recipient.is_default_copy && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">BCC</Badge>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{recipient.email}</TableCell>
                     <TableCell>
                       {recipient.phone ? (
