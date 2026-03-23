@@ -1201,6 +1201,20 @@ async function upsertLeadFromForm(
         .update(updatePayload)
         .eq('id', existingLead.id);
 
+      // Ensure contacto is linked to correct empresa (replicate manual association)
+      const { data: leadFull } = await supabase
+        .from('contact_leads')
+        .select('empresa_id, crm_contacto_id')
+        .eq('id', existingLead.id)
+        .single();
+
+      if (leadFull?.empresa_id && leadFull?.crm_contacto_id) {
+        await supabase
+          .from('contactos')
+          .update({ empresa_principal_id: leadFull.empresa_id, updated_at: new Date().toISOString() })
+          .eq('id', leadFull.crm_contacto_id);
+      }
+
       // Add activity
       await supabase
         .from('lead_activities')
