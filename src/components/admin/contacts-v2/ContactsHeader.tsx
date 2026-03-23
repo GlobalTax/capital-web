@@ -14,6 +14,7 @@ import { BulkLeadFormSelect } from '../contacts/BulkLeadFormSelect';
 import { BulkDateSelect } from '../contacts/BulkDateSelect';
 import { StatusesEditor } from '../contacts/StatusesEditor';
 import { LeadFormsEditor } from '../contacts/LeadFormsEditor';
+import DuplicatesDialog from './DuplicatesDialog';
 
 interface ContactsHeaderProps {
   activeTab: TabType;
@@ -23,6 +24,7 @@ interface ContactsHeaderProps {
   contacts: Contact[];
   onClearSelection: () => void;
   onPatchContacts?: (ids: string[], updates: Partial<Contact>) => void;
+  allContacts?: Contact[];
 }
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
@@ -33,6 +35,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   contacts,
   onClearSelection,
   onPatchContacts,
+  allContacts = [],
 }) => {
   const { syncBulkContacts, isSyncing } = useBrevoSync();
   const { bulkSoftDelete, bulkHardDelete } = useContactActions();
@@ -79,6 +82,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
         
         <StatusesEditor />
         <LeadFormsEditor />
+        <DuplicatesDialog allContacts={allContacts} onDone={onClearSelection} />
       </div>
 
       {/* Bulk Actions */}
