@@ -238,6 +238,7 @@ const EmailRecipientsConfig: React.FC = () => {
                   <TableHead>Teléfono</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead className="text-center">Copia por Defecto</TableHead>
+                  <TableHead className="text-center">BCC</TableHead>
                   <TableHead className="text-center">Activo</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
