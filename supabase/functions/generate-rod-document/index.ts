@@ -497,139 +497,148 @@ function generateInternalLeadEmailHTML(data: InternalEmailData): string {
 
 function generateEmailHTML(name: string, downloadUrl: string, operationsCount: number, language: string = 'es'): string {
   const isEnglish = language === 'en';
-  
-  if (isEnglish) {
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
-            .button { display: inline-block; background: #1e40af; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-            .stats { background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; }
-            .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Thank you for your interest, ${name}!</h1>
-              <p>Your Open Deals Report is ready</p>
-            </div>
+  const year = new Date().getFullYear();
+  const logoUrl = 'https://webcapittal.lovable.app/logotipo.png';
+
+  const t = isEnglish ? {
+    preheader: 'Your Open Deals Report is ready',
+    greeting: `Dear ${name},`,
+    intro: 'Thank you for your interest in our investment opportunities. Your personalised Open Deals Report (ROD) is ready for download.',
+    cardLabel: 'Your report includes',
+    cardOps: `${operationsCount} active operations`,
+    cardDetail: 'Valuations, financials, sectors & locations',
+    cta: 'Download ROD',
+    stepsTitle: 'Next steps',
+    step1: 'Review the operations that best match your investment profile.',
+    step2: 'Our team will contact you within 24–48 hours.',
+    step3: 'Schedule a call to discuss specific opportunities.',
+    closing: 'If you have any questions, feel free to reach out.',
+    signoff: 'Best regards,',
+    team: 'Capittal Team',
+    legal: `© ${year} Capittal. All rights reserved. This email contains confidential information intended solely for its recipient.`,
+  } : {
+    preheader: 'Tu Relación de Open Deals está lista',
+    greeting: `Hola ${name},`,
+    intro: 'Gracias por tu interés en nuestras oportunidades de inversión. Tu Relación de Open Deals (ROD) personalizada ya está disponible para descarga.',
+    cardLabel: 'Tu informe incluye',
+    cardOps: `${operationsCount} operaciones activas`,
+    cardDetail: 'Valoraciones, datos financieros, sectores y ubicaciones',
+    cta: 'Descargar ROD',
+    stepsTitle: 'Próximos pasos',
+    step1: 'Revisa las operaciones que mejor encajen con tu perfil inversor.',
+    step2: 'Nuestro equipo te contactará en las próximas 24–48 horas.',
+    step3: 'Agenda una llamada para comentar oportunidades específicas.',
+    closing: 'Si tienes alguna pregunta, no dudes en contactarnos.',
+    signoff: 'Un cordial saludo,',
+    team: 'Equipo Capittal',
+    legal: `© ${year} Capittal. Todos los derechos reservados. Este email contiene información confidencial destinada únicamente a su destinatario.`,
+  };
+
+  return `<!DOCTYPE html>
+<html lang="${isEnglish ? 'en' : 'es'}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${t.preheader}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    body, table, td, p, a, li { font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif; }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f8f9fa;">
+  <!-- Preheader -->
+  <div style="display:none;max-height:0;overflow:hidden;">${t.preheader}</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa;">
+    <tr><td style="padding:24px 16px;">
+
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="margin:0 auto;max-width:600px;">
+        
+        <!-- Header -->
+        <tr>
+          <td style="background-color:#1a1f2e;padding:32px 40px;text-align:center;border-radius:12px 12px 0 0;">
+            <img src="${logoUrl}" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="background-color:#ffffff;padding:40px;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;">
             
-            <div class="content">
-              <p>Dear ${name},</p>
-              
-              <p>Thank you for your interest in our investment opportunities. We have prepared your personalized Open Deals Report (ROD) with detailed information about our active operations.</p>
-              
-              <div class="stats">
-                <strong>📊 Your ROD includes:</strong>
-                <ul>
-                  <li>${operationsCount} active operations</li>
-                  <li>Detailed valuation information</li>
-                  <li>Key financial data</li>
-                  <li>Sectors and locations</li>
-                </ul>
-              </div>
-              
-              <div style="text-align: center;">
-                <a href="${downloadUrl}" class="button">
-                  📥 Download ROD
-                </a>
-              </div>
-              
-              <p><strong>Next steps:</strong></p>
-              <ol>
-                <li>Review the operations that best match your profile</li>
-                <li>Our team will contact you within 24-48 hours</li>
-                <li>Schedule a meeting to discuss specific opportunities</li>
-              </ol>
-              
-              <p>If you have any questions or need additional information, please don't hesitate to contact us.</p>
-              
-              <p>Best regards,<br>
-              <strong>Capittal Team</strong><br>
-              oportunidades@capittal.es</p>
-            </div>
-            
-            <div class="footer">
-              <p>© ${new Date().getFullYear()} Capittal. All rights reserved.</p>
-              <p>This email contains confidential information. If you received it by mistake, please delete it.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-  }
-  
-  // Spanish version (default)
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-          .content { background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
-          .button { display: inline-block; background: #1e40af; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-          .stats { background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; }
-          .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>¡Gracias por tu interés, ${name}!</h1>
-            <p>Tu Relación de Open Deals está lista</p>
-          </div>
-          
-          <div class="content">
-            <p>Hola ${name},</p>
-            
-            <p>Gracias por tu interés en nuestras oportunidades de inversión. Hemos preparado tu Relación de Open Deals (ROD) personalizada con información detallada sobre nuestras operaciones activas.</p>
-            
-            <div class="stats">
-              <strong>📊 Tu ROD incluye:</strong>
-              <ul>
-                <li>${operationsCount} operaciones activas</li>
-                <li>Información detallada de valoración</li>
-                <li>Datos financieros clave</li>
-                <li>Sectores y ubicaciones</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center;">
-              <a href="${downloadUrl}" class="button">
-                📥 Descargar ROD
-              </a>
-            </div>
-            
-            <p><strong>Próximos pasos:</strong></p>
-            <ol>
-              <li>Revisa las operaciones que más se ajusten a tu perfil</li>
-              <li>Nuestro equipo te contactará en las próximas 24-48 horas</li>
-              <li>Agenda una reunión para discutir oportunidades específicas</li>
-            </ol>
-            
-            <p>Si tienes alguna pregunta o necesitas información adicional, no dudes en contactarnos.</p>
-            
-            <p>Saludos cordiales,<br>
-            <strong>Equipo Capittal</strong><br>
-            oportunidades@capittal.es</p>
-          </div>
-          
-          <div class="footer">
-            <p>© ${new Date().getFullYear()} Capittal. Todos los derechos reservados.</p>
-            <p>Este email contiene información confidencial. Si lo has recibido por error, por favor elimínalo.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+            <p style="margin:0 0 20px;font-size:16px;color:#1a1f2e;line-height:1.6;">${t.greeting}</p>
+            <p style="margin:0 0 28px;font-size:15px;color:#4b5563;line-height:1.7;">${t.intro}</p>
+
+            <!-- ROD Card -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+              <tr>
+                <td style="background-color:#f9fafb;padding:24px 28px;">
+                  <p style="margin:0 0 8px;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;font-weight:600;">${t.cardLabel}</p>
+                  <p style="margin:0 0 4px;font-size:18px;color:#1a1f2e;font-weight:700;">${t.cardOps}</p>
+                  <p style="margin:0;font-size:14px;color:#6b7280;">${t.cardDetail}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:20px 28px 24px;text-align:center;">
+                  <a href="${downloadUrl}" style="display:inline-block;background-color:#4f46e5;color:#ffffff;padding:14px 36px;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;letter-spacing:0.3px;">${t.cta}</a>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Steps -->
+            <p style="margin:0 0 16px;font-size:15px;color:#1a1f2e;font-weight:600;">${t.stepsTitle}</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+              <tr>
+                <td style="padding:8px 0;vertical-align:top;width:28px;">
+                  <span style="display:inline-block;width:22px;height:22px;background-color:#4f46e5;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:22px;border-radius:50%;">1</span>
+                </td>
+                <td style="padding:8px 0 8px 12px;font-size:14px;color:#4b5563;line-height:1.6;">${t.step1}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;vertical-align:top;width:28px;">
+                  <span style="display:inline-block;width:22px;height:22px;background-color:#4f46e5;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:22px;border-radius:50%;">2</span>
+                </td>
+                <td style="padding:8px 0 8px 12px;font-size:14px;color:#4b5563;line-height:1.6;">${t.step2}</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;vertical-align:top;width:28px;">
+                  <span style="display:inline-block;width:22px;height:22px;background-color:#4f46e5;color:#fff;font-size:12px;font-weight:700;text-align:center;line-height:22px;border-radius:50%;">3</span>
+                </td>
+                <td style="padding:8px 0 8px 12px;font-size:14px;color:#4b5563;line-height:1.6;">${t.step3}</td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 28px;font-size:14px;color:#6b7280;line-height:1.6;">${t.closing}</p>
+
+            <!-- Signature -->
+            <table role="presentation" cellpadding="0" cellspacing="0" style="border-top:1px solid #e5e7eb;padding-top:20px;">
+              <tr>
+                <td style="padding-top:20px;">
+                  <p style="margin:0 0 4px;font-size:14px;color:#6b7280;">${t.signoff}</p>
+                  <p style="margin:0 0 8px;font-size:15px;color:#1a1f2e;font-weight:700;">${t.team}</p>
+                  <p style="margin:0;font-size:13px;color:#9ca3af;">
+                    oportunidades@capittal.es &nbsp;|&nbsp; +34 695 717 490
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background-color:#f9fafb;padding:24px 40px;text-align:center;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:12px;color:#9ca3af;">
+              <a href="https://capittal.es" style="color:#4f46e5;text-decoration:none;font-weight:500;">capittal.es</a>
+            </p>
+            <p style="margin:0;font-size:11px;color:#c0c5ce;line-height:1.5;">${t.legal}</p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }
