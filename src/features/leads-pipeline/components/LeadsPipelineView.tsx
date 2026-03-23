@@ -66,6 +66,36 @@ export const LeadsPipelineView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAssignee, setFilterAssignee] = useState<string>('all');
   const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
+  
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkMoving, setIsBulkMoving] = useState(false);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleSelectAllInColumn = useCallback((_columnId: string, leadIds: string[]) => {
+    setSelectedIds(prev => {
+      const allSelected = leadIds.every(id => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) {
+        leadIds.forEach(id => next.delete(id));
+      } else {
+        leadIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
 
   // New filters
   const [filterChannel, setFilterChannel] = useState<string | null>(null);
