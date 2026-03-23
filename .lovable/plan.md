@@ -1,28 +1,46 @@
 
 
-## Unificar perfil: Pipeline usa el mismo perfil que Gestión de Leads
+## Fix: "Ver en CRM" enlace roto en emails de notificación
 
 ### Problema
-El pipeline navega a dos páginas distintas según el origen:
-- `contact` → `/admin/contacts/contact_${id}` → **LeadDetailPage** (completo: asignación, estado CRM, notas, Brevo, canal, edición inline)
-- `valuation` → `/admin/valuations/${id}` → **ValuationDetailPage** (básico: solo lectura, sin CRM)
+El email de notificación genera un enlace como:
+`/admin/contacts/bf2f13da-cddd-4013-bb19-6d6572f0469f`
 
-### Solución
-Cambiar la navegación del pipeline para que siempre use **LeadDetailPage** (`/admin/contacts/:id`), que ya soporta ambos orígenes (contact y valuation) con el formato `origin_uuid`.
+Pero `LeadDetailPage` espera el formato `origin_uuid`:
+`/admin/contacts/contact_bf2f13da-cddd-4013-bb19-6d6572f0469f`
 
-### Cambio
+Sin el prefijo `contact_`, la página no sabe en qué tabla buscar y muestra "Lead no encontrado".
 
-**Archivo: `src/features/leads-pipeline/components/LeadsPipelineView.tsx`** (líneas 204-211)
+### Cambios
 
-Cambiar `handleViewDetails` para que construya la URL con prefijo de origen, igual que hace la tabla de contactos:
+**1. Edge Function: `supabase/functions/send-form-notifications/index.ts`** (línea 1371)
+
+Añadir el prefijo `contact_` al construir el CRM link, ya que `upsertLeadFromForm` siempre escribe en `contact_leads`:
 
 ```typescript
-const handleViewDetails = useCallback((leadId: string) => {
-  const lead = leads.find(l => l.id === leadId);
-  const prefix = lead?.origin === 'contact' ? 'contact' : 'valuation';
-  navigate(`/admin/contacts/${prefix}_${leadId}`);
-}, [navigate, leads]);
+const crmLink = leadId
+  ? `https://capittal.es/admin/contacts/contact_${leadId}`
+  : 'https://capittal.es/admin/crm';
 ```
 
-Un cambio de 2 líneas en un solo archivo. El `LeadDetailPage` ya maneja ambos orígenes con toda la funcionalidad CRM (estado, asignación, notas, Brevo, canal, archivado, edición financiera inline).
+**2. Fallback en `src/pages/admin/LeadDetailPage.tsx`** (líneas 89-91)
+
+Para emails ya enviados con URLs sin prefijo, añadir un fallback: si el ID no contiene `_` (no tiene prefijo), asumir origen `contact` y buscar en `contact_leads`. Si no se encuentra, probar en `company_valuations`.
+
+```typescript
+const parts = id.split('_');
+let origin: string;
+let leadId: string;
+
+if (parts.length < 2 || !['contact','valuation','collaborator','general','acquisition','company_acquisition'].includes(parts[0])) {
+  // ID sin prefijo — fallback a contact
+  origin = 'contact';
+  leadId = id;
+} else {
+  origin = parts[0];
+  leadId = parts.slice(1).join('_');
+}
+```
+
+Dos cambios pequeños. Los emails futuros llevarán el prefijo correcto, y los antiguos seguirán funcionando gracias al fallback.
 
