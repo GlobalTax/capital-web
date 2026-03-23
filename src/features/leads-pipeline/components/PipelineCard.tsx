@@ -2,7 +2,7 @@
  * Pipeline Lead Card Component - Memoized for performance
  */
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,30 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   onViewDetails,
   isDragging,
 }) => {
+  // Drag detection to avoid navigating on drag
+  const mouseDownPos = useRef<{x:number,y:number}|null>(null);
+  const wasDragging = useRef(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    mouseDownPos.current = { x: e.clientX, y: e.clientY };
+    wasDragging.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (mouseDownPos.current) {
+      const dx = Math.abs(e.clientX - mouseDownPos.current.x);
+      const dy = Math.abs(e.clientY - mouseDownPos.current.y);
+      if (dx > 5 || dy > 5) wasDragging.current = true;
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (wasDragging.current) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button, [role="menuitem"], [data-radix-collection-item]')) return;
+    onViewDetails();
+  };
+
   // Memoize expensive calculations
   const daysAgo = useMemo(() => 
     formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: es }),
@@ -90,7 +114,9 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
       className={`cursor-pointer transition-shadow hover:shadow-md ${
         isDragging ? 'shadow-lg ring-2 ring-primary/20' : ''
       }`}
-      onClick={onViewDetails}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onClick={handleClick}
     >
       <CardContent className="p-3 space-y-2">
         {/* Header */}
