@@ -544,6 +544,9 @@ export const LeadsPipelineView: React.FC = () => {
                 onSendPrecallEmail={handleSendPrecallEmail}
                 onRegisterCall={handleRegisterCall}
                 onViewDetails={handleViewDetails}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                onSelectAllInColumn={handleSelectAllInColumn}
               />
             ))}
           </div>
