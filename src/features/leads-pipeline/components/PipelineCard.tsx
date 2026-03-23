@@ -313,6 +313,9 @@ const AssignmentPopover: React.FC<{
         <button
           data-assign-popover
           onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
           className="flex items-center gap-1 hover:opacity-70 transition-opacity cursor-pointer"
         >
           {assignedUserName ? (
@@ -330,13 +333,20 @@ const AssignmentPopover: React.FC<{
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-56 p-2" align="end" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent
+        className="w-56 p-2"
+        align="end"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <Input
           placeholder="Buscar usuario..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="h-8 text-xs mb-2"
           autoFocus
+          onPointerDown={(e) => e.stopPropagation()}
         />
         <div className="max-h-48 overflow-y-auto space-y-0.5">
           {lead.assigned_to && (
