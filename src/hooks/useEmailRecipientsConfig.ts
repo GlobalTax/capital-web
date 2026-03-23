@@ -122,6 +122,20 @@ export const useEmailRecipientsConfig = () => {
     }
   });
 
+  const toggleBcc = useMutation({
+    mutationFn: async ({ id, is_bcc }: { id: string; is_bcc: boolean }) => {
+      const { error } = await supabase
+        .from('email_recipients_config')
+        .update({ is_bcc })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['email-recipients-config'] });
+    }
+  });
+
   return {
     recipients,
     isLoading,
@@ -129,7 +143,8 @@ export const useEmailRecipientsConfig = () => {
     updateRecipient,
     deleteRecipient,
     toggleDefaultCopy,
-    toggleActive
+    toggleActive,
+    toggleBcc
   };
 };
 
