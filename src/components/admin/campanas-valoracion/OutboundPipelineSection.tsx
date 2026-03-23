@@ -102,7 +102,7 @@ export function OutboundPipelineSection({ enabledCampaignIds }: OutboundPipeline
         <DragDropContext onDragEnd={handleDragEnd}>
           <ScrollArea className="w-full">
             <div className="flex gap-3 px-4 pb-2 min-w-max">
-              {activeStages.map(stage => (
+              {activeStages.filter(s => s.stage_key !== 'sin_respuesta').map(stage => (
                 <PipelineColumn
                   key={stage.id}
                   stage={stage}
@@ -163,7 +163,9 @@ function PipelineColumn({ stage, companies }: { stage: OutboundPipelineStage; co
                         <Building2 className="h-3 w-3 text-muted-foreground shrink-0" />
                         <span className="font-medium truncate">{c.company_name}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground truncate block">{c.campaign_name}</span>
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 mt-0.5 max-w-full truncate font-normal text-muted-foreground">
+                        {c.campaign_name}
+                      </Badge>
                     </div>
                   )}
                 </Draggable>
