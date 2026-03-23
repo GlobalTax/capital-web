@@ -15,7 +15,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
-import { Upload, Download, Trash2, Search, FileText, BookOpen, CheckCircle2, Clock, Eye } from 'lucide-react';
+import { Upload, Download, Trash2, Search, FileText, BookOpen, CheckCircle2, Clock, Eye, Presentation } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMarketStudies, MarketStudy } from '@/hooks/useMarketStudies';
 import { format } from 'date-fns';
@@ -71,22 +71,28 @@ export function MarketStudiesPanel() {
 
   const handleDownload = async (study: MarketStudy) => {
     try {
-      const url = await getSignedUrl(study.storage_path);
+      const blob = await getFileBlob(study.storage_path, study.file_name);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = study.file_name;
-      document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       toast({ title: 'Error al descargar', description: err?.message || 'No se pudo descargar el archivo', variant: 'destructive' });
     }
   };
 
   const handlePreview = async (study: MarketStudy) => {
+    const ext = study.file_name.split('.').pop()?.toLowerCase();
+    if (ext === 'ppt' || ext === 'pptx') {
+      toast({ title: 'Los archivos PPT no se pueden previsualizar', description: 'Usa el botón Descargar para abrirlo en tu equipo.' });
+      return;
+    }
     try {
-      const url = await getSignedUrl(study.storage_path);
-      window.open(url, '_blank', 'noopener,noreferrer');
+      const blob = await getFileBlob(study.storage_path, study.file_name);
+      const url = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      window.open(url, '_blank');
     } catch (err: any) {
       toast({ title: 'Error al previsualizar', description: err?.message || 'No se pudo abrir el archivo', variant: 'destructive' });
     }
@@ -163,7 +169,9 @@ export function MarketStudiesPanel() {
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-md bg-muted">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    {/\.(pptx?|ppt)$/i.test(study.file_name)
+                      ? <Presentation className="h-5 w-5 text-orange-500" />
+                      : <FileText className="h-5 w-5 text-red-500" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-sm truncate">{study.title}</h4>
