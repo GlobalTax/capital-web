@@ -1,42 +1,51 @@
 
 
-## Asignar usuario desde la tarjeta del pipeline con Popover + buscador
+## Actualización instantánea del pipeline sin refrescar página
 
 ### Problema
-Al hacer clic en "Sin asignar" o en el nombre del usuario asignado, se abre el perfil de la empresa. El usuario quiere poder asignar directamente desde la tarjeta sin salir del pipeline.
+Las mutaciones (cambiar estado, asignar dueño) invalidan la query pero el usuario no ve el cambio hasta que se refresca. Esto ocurre porque la invalidación marca la query como stale, pero la UI no refleja el cambio inmediatamente de forma visible.
 
-### Cambios
+### Solución: Optimistic updates en todas las mutaciones
 
-**1. `PipelineCard.tsx`** - Reemplazar el texto estático de asignación por un Popover interactivo
+Modificar **`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`** para que cada mutación actualice el cache local de React Query **antes** de que responda el servidor:
 
-- Envolver la zona de asignación (líneas 239-253) en un `Popover` con `PopoverTrigger`
-- El trigger será el botón/badge actual ("Sin asignar" o nombre del usuario)
-- El `PopoverContent` mostrará:
-  - Input de búsqueda para filtrar usuarios
-  - Lista scrollable de `adminUsers` filtrados por nombre/email
-  - Opción "Sin asignar" para desasignar
-- Al seleccionar un usuario, llamar `onAssignLead(lead.id, userId)` y cerrar el popover
-- Añadir `e.stopPropagation()` en el trigger para evitar navegación
+**1. `updateStatusMutation`** - Actualizar `lead_status_crm` optimísticamente
+- En `onMutate`: cancelar queries en vuelo, actualizar el lead en cache con el nuevo status
+- En `onError`: restaurar snapshot anterior
+- En `onSettled`: invalidar para sincronizar con servidor
 
-**2. `PipelineCard.tsx`** - Nuevas props
+**2. `assignLeadMutation`** - Actualizar `assigned_to` optimísticamente
+- En `onMutate`: cancelar queries, actualizar `assigned_to` del lead en cache
+- En `onError`: rollback
+- En `onSettled`: invalidar
 
-- `adminUsers: { user_id: string; full_name: string | null; email: string | null }[]`
-- `onAssignLead: (leadId: string, userId: string | null) => void`
+**3. Patrón común para ambas mutaciones:**
 
-**3. `PipelineColumn.tsx`** - Pasar nuevas props
+```typescript
+onMutate: async (variables) => {
+  await queryClient.cancelQueries({ queryKey: ['leads-pipeline'] });
+  const previous = queryClient.getQueryData(['leads-pipeline']);
+  
+  queryClient.setQueryData(['leads-pipeline'], (old: PipelineLead[]) =>
+    old.map(lead => lead.id === variables.leadId 
+      ? { ...lead, /* campo actualizado */ } 
+      : lead
+    )
+  );
+  
+  return { previous };
+},
+onError: (err, vars, context) => {
+  queryClient.setQueryData(['leads-pipeline'], context?.previous);
+},
+onSettled: () => {
+  queryClient.invalidateQueries({ queryKey: ['leads-pipeline'] });
+},
+```
 
-- Recibir `adminUsers` y `onAssignLead` como props
-- Pasarlos a cada `PipelineCard`
-
-**4. `LeadsPipelineView.tsx`** - Conectar asignación
-
-- Pasar `adminUsers` y `assignLead` a cada `PipelineColumn`
-
-**5. Memo comparison** - Añadir `assigned_to` a la comparación del memo para que se re-renderice al cambiar asignación
-
-### UX
-- Clic en "Sin asignar" / nombre → abre popover inline con buscador
-- Escribir filtra la lista en tiempo real
-- Seleccionar usuario → asigna y cierra
-- No interfiere con drag-and-drop ni con la navegación al perfil
+### Resultado
+- Cambiar estado de un lead → la tarjeta se mueve a la columna correcta al instante
+- Asignar dueño → el nombre aparece inmediatamente en la tarjeta
+- Si el servidor falla → rollback automático al estado anterior
+- Se mantiene la invalidación para sincronizar datos reales en background
 
