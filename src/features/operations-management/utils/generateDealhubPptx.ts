@@ -371,7 +371,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     const desc = rawDesc.length > 1320 ? rawDesc.substring(0, 1317) + '...' : rawDesc;
     slide.addText(desc, {
       x: t.description.x, y: t.description.y, w: t.description.w, h: t.description.h,
-      fontSize: t.description.fontSize || 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
+      fontSize: 11, fontFace: FONT, color: t.description.color || TEXT_SECONDARY,
       lineSpacingMultiple: t.description.lineSpacing || 1.4,
       valign: t.description.valign || 'top',
       align: 'justify',
@@ -384,16 +384,16 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
   if (t.highlights.visible && highlights.length > 0) {
     slide.addText(i18n.highlights, {
       x: t.highlights.x, y: t.highlights.y, w: t.highlights.w, h: 0.35,
-      fontSize: t.highlights.fontSize || 11, fontFace: FONT, color: t.highlights.color || NAVY,
+      fontSize: 11, fontFace: FONT, color: t.highlights.color || NAVY,
       bold: t.highlights.bold ?? true, align: t.highlights.align,
     });
 
     const bulletText = highlights.map(h => ({
       text: h,
-      options: { fontSize: (t.highlights.fontSize || 11) - 1, fontFace: FONT, color: TEXT_SECONDARY, bullet: { code: '2022' }, lineSpacingMultiple: 1.3 },
+      options: { fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY, bullet: { type: 'bullet' as const }, lineSpacingMultiple: 1.4, indentLevel: 0 },
     }));
     slide.addText(bulletText as any, {
-      x: t.highlights.x + 0.2, y: t.highlights.y + 0.4, w: t.highlights.w - 0.4, h: t.highlights.h - 0.4,
+      x: t.highlights.x + 0.15, y: t.highlights.y + 0.4, w: t.highlights.w - 0.3, h: t.highlights.h - 0.4,
       valign: 'top', align: 'justify',
     });
   }
@@ -418,6 +418,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     }
 
     if (t.infoRows.visible) {
+      const LABEL_W = 1.8;
+      const LABEL_COLOR = 'B0B7C3';
       const simpleRows = [
         { label: i18n.location, value: i18n.locationValue },
         { label: i18n.sector, value: op.sector || i18n.nd },
@@ -426,12 +428,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       let infoY = t.infoRows.y;
       simpleRows.forEach((row) => {
         slide.addText(row.label, {
-          x: t.infoRows.x, y: infoY, w: 1.5, h: 0.3,
-          fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
+          x: t.infoRows.x, y: infoY, w: LABEL_W, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: LABEL_COLOR,
         });
         slide.addText(row.value, {
-          x: t.infoRows.x + 1.5, y: infoY, w: innerW - 1.5, h: 0.3,
-          fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true,
+          x: t.infoRows.x + LABEL_W, y: infoY, w: innerW - LABEL_W, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true,
         });
         infoY += 0.45;
       });
@@ -439,12 +441,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       const oportunidadText = (locale === 'en' ? (op.short_description_en || op.short_description) : op.short_description) || op.deal_type || (locale === 'en' ? 'Sale' : 'Venta');
       slide.addText(i18n.opportunity, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.25,
-        fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
+        fontSize: 11, fontFace: FONT, color: LABEL_COLOR,
       });
       infoY += 0.25;
       slide.addText(oportunidadText, {
         x: t.infoRows.x, y: infoY, w: innerW, h: 0.7,
-        fontSize: t.infoRows.fontSize || 10, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top', align: 'justify',
+        fontSize: 11, fontFace: FONT, color: t.infoRows.color || WHITE, bold: true, wrap: true, valign: 'top', align: 'justify',
       });
     }
 
@@ -460,6 +462,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
         bold: t.financialData.bold ?? true, align: t.financialData.align,
       });
 
+      const LABEL_W_FIN = 1.8;
+      const LABEL_COLOR_FIN = 'B0B7C3';
       const financialRows = [
         { label: i18n.revenue, value: fmtCurrency(op.revenue_amount) },
         { label: i18n.ebitda, value: fmtCurrency(op.ebitda_amount) },
@@ -470,12 +474,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       financialRows.forEach((row, i) => {
         const rowY = t.financialData.y + 0.5 + i * 0.55;
         slide.addText(row.label, {
-          x: t.financialData.x, y: rowY, w: 1.8, h: 0.3,
-          fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
+          x: t.financialData.x, y: rowY, w: LABEL_W_FIN, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: LABEL_COLOR_FIN,
         });
         slide.addText(row.value, {
-          x: t.financialData.x + 1.8, y: rowY, w: t.financialData.w - 1.8, h: 0.3,
-          fontSize: t.financialData.fontSize || 12, fontFace: FONT, color: t.financialData.color || WHITE, bold: t.financialData.bold ?? true, align: 'right',
+          x: t.financialData.x + LABEL_W_FIN, y: rowY, w: t.financialData.w - LABEL_W_FIN, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: t.financialData.color || WHITE, bold: t.financialData.bold ?? true, align: 'right',
         });
       });
     }
