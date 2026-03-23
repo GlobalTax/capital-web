@@ -387,6 +387,7 @@ export function OutboundSummaryDashboard() {
               {allEnabled ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
               {allEnabled ? 'Deseleccionar todas' : 'Seleccionar todas'}
             </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
