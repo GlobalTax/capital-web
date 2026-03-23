@@ -1,24 +1,31 @@
 
 
-## Fix: duplicados eliminando también el que debería conservarse
+## Recuperar contactos eliminados por la herramienta de duplicados
 
-### Problema
-Un contacto puede aparecer en varios grupos de duplicados (ej: mismo email en grupo 1, mismo teléfono en grupo 2). Si se selecciona como "conservar" en un grupo pero no en otro, el sistema lo elimina igualmente al procesar el segundo grupo.
+### Situación
+Se eliminaron (soft-delete) 215 registros el 23/03/2026 entre 15:22 y 15:24 durante el proceso de deduplicación:
+- 168 en `company_valuations`
+- 47 en `contact_leads`
 
-### Solución
+### Acción
+Ejecutar dos UPDATEs para restaurarlos:
 
-**Archivo: `src/components/admin/contacts-v2/DuplicatesDialog.tsx`** — función `handleDelete` (líneas 93-123)
+```sql
+UPDATE company_valuations 
+SET is_deleted = false, deleted_at = NULL 
+WHERE is_deleted = true 
+  AND deleted_at >= '2026-03-23 15:22:00' 
+  AND deleted_at <= '2026-03-23 15:24:00';
 
-1. **Recopilar TODOS los IDs a conservar antes de eliminar**: Crear un `Set<string>` con todos los `keepId` de todos los grupos.
-2. **Al iterar para eliminar, comprobar contra el Set global**: Si un contacto está en el Set de conservar, no eliminarlo aunque en ese grupo concreto no sea el elegido.
-
-```typescript
-// Antes de iterar:
-const allKeepIds = new Set(groups.map(g => getKeepId(g)));
-
-// Al filtrar:
-const toRemove = g.contacts.filter(c => !allKeepIds.has(c.id));
+UPDATE contact_leads 
+SET is_deleted = false, deleted_at = NULL 
+WHERE is_deleted = true 
+  AND deleted_at >= '2026-03-23 15:22:00' 
+  AND deleted_at <= '2026-03-23 15:24:00';
 ```
 
-Cambio de 2 líneas en un solo archivo.
+Esto usa el "insert tool" (que permite UPDATEs) — no requiere migración porque no cambia esquema.
+
+### Resultado
+Los 215 contactos volverán a aparecer en el listado de Leads inmediatamente.
 
