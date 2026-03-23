@@ -6,6 +6,7 @@ import React, { memo } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { PipelineCard } from './PipelineCard';
 import type { PipelineLead, PipelineColumn as ColumnType } from '../types';
 
@@ -16,6 +17,9 @@ interface PipelineColumnProps {
   onSendPrecallEmail: (leadId: string) => void;
   onRegisterCall: (leadId: string, answered: boolean) => void;
   onViewDetails: (leadId: string) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onSelectAllInColumn: (columnId: string, leadIds: string[]) => void;
 }
 
 const formatTotal = (leads: PipelineLead[]) => {
