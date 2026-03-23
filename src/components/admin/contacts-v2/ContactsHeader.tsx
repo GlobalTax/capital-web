@@ -82,6 +82,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
         
         <StatusesEditor />
         <LeadFormsEditor />
+        <DuplicatesDialog allContacts={allContacts} onDone={onClearSelection} />
       </div>
 
       {/* Bulk Actions */}
