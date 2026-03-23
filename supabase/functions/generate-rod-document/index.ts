@@ -557,7 +557,15 @@ function generateEmailHTML(name: string, downloadUrl: string, operationsCount: n
         <!-- Header -->
         <tr>
           <td style="background-color:#1a1f2e;padding:32px 40px;text-align:center;border-radius:12px 12px 0 0;">
-            <img src="https://webcapittal.lovable.app/logotipo-white.png" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
+            <!--[if mso]>
+            <table role="presentation" width="160" cellpadding="0" cellspacing="0" align="center"><tr><td>
+            <![endif]-->
+            <img src="https://webcapittal.lovable.app/logotipo-white.png" alt="Capittal" width="160" height="auto" border="0" style="display:block;margin:0 auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;max-width:160px;height:auto;" />
+            <!--[if mso]>
+            </td></tr></table>
+            <![endif]-->
+            <div style="font-size:0;line-height:0;mso-hide:all;">&nbsp;</div>
+            <p style="margin:8px 0 0;font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:2px;text-transform:uppercase;font-family:'Plus Jakarta Sans',Arial,sans-serif;">M&amp;A · CONSULTING</p>
           </td>
         </tr>
 
