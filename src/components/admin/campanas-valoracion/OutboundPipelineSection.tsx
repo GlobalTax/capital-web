@@ -46,6 +46,7 @@ export function OutboundPipelineSection({ enabledCampaignIds }: OutboundPipeline
 
       return (data || []).map((c: any) => ({
         ...c,
+        company_name: c.client_company || 'Sin nombre',
         campaign_name: nameMap[c.campaign_id] || '',
       }));
     },
