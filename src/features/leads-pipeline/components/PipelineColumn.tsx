@@ -90,13 +90,15 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                     >
-                      <PipelineCard
+                    <PipelineCard
                         lead={lead}
                         assignedUserName={lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : undefined}
                         onSendPrecallEmail={() => onSendPrecallEmail(lead.id)}
                         onRegisterCall={(answered) => onRegisterCall(lead.id, answered)}
                         onViewDetails={() => onViewDetails(lead.id)}
                         isDragging={snapshot.isDragging}
+                        isSelected={selectedIds.has(lead.id)}
+                        onToggleSelect={onToggleSelect}
                       />
                     </div>
                   )}
