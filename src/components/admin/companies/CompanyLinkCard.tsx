@@ -226,7 +226,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
           <div>
             <h3 
               className="text-lg font-semibold cursor-pointer hover:text-primary hover:underline transition-colors"
-              onClick={() => navigate(`/admin/empresas/${empresa.id}`)}
+              onClick={() => window.open(`https://godeal.es/empresas/${empresa.id}`, '_blank')}
             >
               {empresa.nombre}
             </h3>
