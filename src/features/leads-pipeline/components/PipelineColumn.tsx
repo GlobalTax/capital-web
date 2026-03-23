@@ -121,11 +121,10 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
 
 // Memoize with custom comparison
 export const PipelineColumn = memo(PipelineColumnComponent, (prev, next) => {
-  // Compare lead IDs and count
   if (prev.leads.length !== next.leads.length) return false;
   if (prev.column.id !== next.column.id) return false;
+  if (prev.selectedIds !== next.selectedIds) return false;
   
-  // Check if lead IDs are the same in the same order
   for (let i = 0; i < prev.leads.length; i++) {
     if (prev.leads[i].id !== next.leads[i].id) return false;
     if (prev.leads[i].lead_status_crm !== next.leads[i].lead_status_crm) return false;

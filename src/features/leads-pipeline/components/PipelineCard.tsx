@@ -272,6 +272,7 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.employee_range === next.lead.employee_range &&
     prev.lead.location === next.lead.location &&
     prev.assignedUserName === next.assignedUserName &&
-    prev.isDragging === next.isDragging
+    prev.isDragging === next.isDragging &&
+    prev.isSelected === next.isSelected
   );
 });
