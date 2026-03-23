@@ -71,22 +71,28 @@ export function MarketStudiesPanel() {
 
   const handleDownload = async (study: MarketStudy) => {
     try {
-      const url = await getSignedUrl(study.storage_path);
+      const blob = await getFileBlob(study.storage_path, study.file_name);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = study.file_name;
-      document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       toast({ title: 'Error al descargar', description: err?.message || 'No se pudo descargar el archivo', variant: 'destructive' });
     }
   };
 
   const handlePreview = async (study: MarketStudy) => {
+    const ext = study.file_name.split('.').pop()?.toLowerCase();
+    if (ext === 'ppt' || ext === 'pptx') {
+      toast({ title: 'Los archivos PPT no se pueden previsualizar', description: 'Usa el botón Descargar para abrirlo en tu equipo.' });
+      return;
+    }
     try {
-      const url = await getSignedUrl(study.storage_path);
-      window.open(url, '_blank', 'noopener,noreferrer');
+      const blob = await getFileBlob(study.storage_path, study.file_name);
+      const url = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      window.open(url, '_blank');
     } catch (err: any) {
       toast({ title: 'Error al previsualizar', description: err?.message || 'No se pudo abrir el archivo', variant: 'destructive' });
     }
