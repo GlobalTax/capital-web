@@ -250,21 +250,14 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             {daysAgo}
           </span>
           
-          {assignedUserName ? (
-            <span className="flex items-center gap-1">
-              <Avatar className="h-4 w-4">
-                <AvatarFallback className="text-[8px]">
-                  {avatarInitials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="truncate max-w-[60px]">{firstName}</span>
-            </span>
-          ) : (
-            <span className="flex items-center text-orange-500">
-              <User className="h-3 w-3 mr-1" />
-              Sin asignar
-            </span>
-          )}
+          <AssignmentPopover
+            lead={lead}
+            assignedUserName={assignedUserName}
+            avatarInitials={avatarInitials}
+            firstName={firstName}
+            adminUsers={adminUsers}
+            onAssignLead={onAssignLead}
+          />
         </div>
       </CardContent>
     </Card>
