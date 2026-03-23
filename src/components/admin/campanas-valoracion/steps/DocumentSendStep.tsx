@@ -486,6 +486,7 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                    <TableHead className="text-center">Fecha envío</TableHead>
                    <TableHead className="text-center">Entrega</TableHead>
                    <TableHead className="text-center">Seguimiento</TableHead>
+                   <TableHead className="text-center w-[40px]">Notas</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
