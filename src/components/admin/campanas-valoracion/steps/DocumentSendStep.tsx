@@ -46,7 +46,8 @@ import { useSeguimientoOptions, getSeguimientoOption } from '@/hooks/useSeguimie
 function SeguimientoBadge({ company, campaignId }: { company: any; campaignId: string }) {
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
-  const current = getSeguimientoOption(company.seguimiento_estado);
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
+  const current = getSeguimientoOption(SEGUIMIENTO_OPTIONS, company.seguimiento_estado);
 
   const handleChange = useCallback(async (newValue: string) => {
     if (newValue === (company.seguimiento_estado || 'sin_respuesta')) return;

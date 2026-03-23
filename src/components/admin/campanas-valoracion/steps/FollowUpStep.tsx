@@ -282,7 +282,8 @@ function FUSeguimientoBadge({
 
   // Per-round state: use send record's seguimiento, fallback to sin_respuesta
   const currentValue = sendRecord?.seguimiento_estado || 'sin_respuesta';
-  const current = getSeguimientoOption(currentValue);
+  const SEGUIMIENTO_OPTIONS = useSeguimientoOptions();
+  const current = getSeguimientoOption(SEGUIMIENTO_OPTIONS, currentValue);
 
   const handleChange = useCallback(async (newValue: string) => {
     if (newValue === currentValue) return;
