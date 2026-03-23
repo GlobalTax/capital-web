@@ -784,6 +784,7 @@ const handler = async (req: Request): Promise<Response> => {
       emailResponse = await resend.emails.send({
         from: `${fromName} <samuel@capittal.es>`,
         to: internalRecipients,
+        bcc: internalBccRecipients.length > 0 ? internalBccRecipients : undefined,
         subject,
         html: htmlInternal,
         text: internalText,
