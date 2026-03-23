@@ -66,7 +66,7 @@ const EmailRecipientsConfig: React.FC = () => {
   };
 
   const activeCount = recipients?.filter(r => r.is_active).length || 0;
-  const defaultCount = recipients?.filter(r => r.is_default_copy && r.is_active).length || 0;
+  const bccCount = recipients?.filter(r => r.is_bcc && r.is_default_copy && r.is_active).length || 0;
 
   return (
     <div className="space-y-6">
