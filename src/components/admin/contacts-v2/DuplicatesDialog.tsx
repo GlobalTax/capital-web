@@ -96,9 +96,10 @@ const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone
     let deleted = 0;
     let errors = 0;
 
+    const allKeepIds = new Set(groups.map(g => getKeepId(g)));
+
     for (const g of groups) {
-      const keep = getKeepId(g);
-      const toRemove = g.contacts.filter(c => c.id !== keep);
+      const toRemove = g.contacts.filter(c => !allKeepIds.has(c.id));
       for (const c of toRemove) {
         const table = c.origin === 'valuation' ? 'company_valuations'
           : c.origin === 'advisor' ? 'advisor_valuations'
