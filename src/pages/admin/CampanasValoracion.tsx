@@ -534,6 +534,7 @@ export default function CampanasValoracion() {
                   {activeTab === 'valuation' && <TableHead className="text-right">Valor Total</TableHead>}
                   <TableHead className="text-center">Estado</TableHead>
                   <TableHead>Fecha</TableHead>
+                  <TableHead>1r Envío</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
