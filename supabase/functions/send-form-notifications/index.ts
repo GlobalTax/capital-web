@@ -1137,6 +1137,7 @@ async function upsertLeadFromForm(
   try {
     const normalizedEmail = email.toLowerCase().trim();
     const company = formData.company || formData.companyName || '';
+    const employeeCount = formData.employeeCount || formData.company_size || formData.employees || null;
     const phone = formData.phone || null;
     const cif = formData.cif || null;
     const channel = mapFormTypeToChannel(formType);
@@ -1215,6 +1216,29 @@ async function upsertLeadFromForm(
           .eq('id', leadFull.crm_contacto_id);
       }
 
+      // Enrich empresa with financial data (COALESCE - don't overwrite existing)
+      if (leadFull?.empresa_id && (revenue || ebitda || employeeCount || cif || serviceType)) {
+        const { data: currentEmpresa } = await supabase
+          .from('empresas')
+          .select('facturacion, revenue, ebitda, empleados, cif, sector')
+          .eq('id', leadFull.empresa_id)
+          .single();
+
+        if (currentEmpresa) {
+          const enrichUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+          if (!currentEmpresa.facturacion && revenue) enrichUpdate.facturacion = revenue;
+          if (!currentEmpresa.revenue && revenue) enrichUpdate.revenue = revenue;
+          if (!currentEmpresa.ebitda && ebitda) enrichUpdate.ebitda = ebitda;
+          if (!currentEmpresa.empleados && employeeCount) enrichUpdate.empleados = parseInt(String(employeeCount)) || null;
+          if (!currentEmpresa.cif && cif) enrichUpdate.cif = cif;
+          if (!currentEmpresa.sector && serviceType) enrichUpdate.sector = serviceType;
+
+          if (Object.keys(enrichUpdate).length > 1) {
+            await supabase.from('empresas').update(enrichUpdate).eq('id', leadFull.empresa_id);
+          }
+        }
+      }
+
       // Add activity
       await supabase
         .from('lead_activities')
@@ -1242,13 +1266,25 @@ async function upsertLeadFromForm(
     if (company) {
       const { data: existingEmpresa } = await supabase
         .from('empresas')
-        .select('id')
+        .select('id, facturacion, revenue, ebitda, empleados, cif, sector')
         .ilike('nombre', company.trim())
         .limit(1)
         .maybeSingle();
 
       if (existingEmpresa) {
         empresaId = existingEmpresa.id;
+        // Enrich existing empresa with COALESCE logic
+        const enrichUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+        if (!existingEmpresa.facturacion && revenue) enrichUpdate.facturacion = revenue;
+        if (!existingEmpresa.revenue && revenue) enrichUpdate.revenue = revenue;
+        if (!existingEmpresa.ebitda && ebitda) enrichUpdate.ebitda = ebitda;
+        if (!existingEmpresa.empleados && employeeCount) enrichUpdate.empleados = parseInt(String(employeeCount)) || null;
+        if (!existingEmpresa.cif && cif) enrichUpdate.cif = cif;
+        if (!existingEmpresa.sector && serviceType) enrichUpdate.sector = serviceType;
+
+        if (Object.keys(enrichUpdate).length > 1) {
+          await supabase.from('empresas').update(enrichUpdate).eq('id', empresaId);
+        }
       } else {
         const { data: newEmpresa } = await supabase
           .from('empresas')
@@ -1256,6 +1292,10 @@ async function upsertLeadFromForm(
             nombre: company.trim(),
             cif: cif || null,
             facturacion: revenue,
+            revenue: revenue,
+            ebitda: ebitda,
+            empleados: employeeCount ? (parseInt(String(employeeCount)) || null) : null,
+            sector: serviceType,
           })
           .select('id')
           .single();
