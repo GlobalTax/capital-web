@@ -86,12 +86,20 @@ export default function LeadDetailPage() {
     queryFn: async () => {
       if (!id) throw new Error('No lead ID provided');
 
-      // Parse ID format: origin_uuid
+      // Parse ID format: origin_uuid (with fallback for legacy links without prefix)
       const parts = id.split('_');
-      if (parts.length < 2) throw new Error('Invalid lead ID format');
+      let origin: LeadData['origin'];
+      let leadId: string;
       
-      const origin = parts[0] as LeadData['origin'];
-      const leadId = parts.slice(1).join('_');
+      const validOrigins = ['contact', 'valuation', 'collaborator', 'general', 'acquisition', 'company_acquisition', 'advisor'];
+      if (parts.length < 2 || !validOrigins.includes(parts[0])) {
+        // Legacy URL without prefix — default to contact
+        origin = 'contact';
+        leadId = id;
+      } else {
+        origin = parts[0] as LeadData['origin'];
+        leadId = parts.slice(1).join('_');
+      }
 
       let tableName: any = '';
       let nameField = '';
