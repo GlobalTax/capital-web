@@ -1368,7 +1368,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Build CRM link with real leadId
     const crmLink = leadId
-      ? `https://capittal.es/admin/contacts/${leadId}`
+      ? `https://capittal.es/admin/contacts/contact_${leadId}`
       : 'https://capittal.es/admin/crm';
 
     // ====== STEP 2: Generate email templates ======
