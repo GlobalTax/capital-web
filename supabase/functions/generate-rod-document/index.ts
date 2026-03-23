@@ -252,7 +252,14 @@ serve(async (req) => {
           from: 'Capittal <oportunidades@capittal.es>',
           to: [requestData.email],
           subject: emailSubject,
-          html: generateEmailHTML(requestData.full_name, selectedROD.file_url, operations?.length || 0, selectedROD.language)
+          html: generateEmailHTML(requestData.full_name, selectedROD.file_url, operations?.length || 0, selectedROD.language),
+          attachments: [
+            {
+              path: 'https://webcapittal.lovable.app/logotipo-white.png',
+              filename: 'logotipo-white.png',
+              content_id: 'capittal-logo',
+            }
+          ]
         });
 
         if (emailError) {
@@ -498,7 +505,7 @@ function generateInternalLeadEmailHTML(data: InternalEmailData): string {
 function generateEmailHTML(name: string, downloadUrl: string, operationsCount: number, language: string = 'es'): string {
   const isEnglish = language === 'en';
   const year = new Date().getFullYear();
-  const logoUrl = 'https://webcapittal.lovable.app/logotipo-white.png';
+  
 
   const t = isEnglish ? {
     preheader: 'Your Open Deals Report is ready',
@@ -557,7 +564,7 @@ function generateEmailHTML(name: string, downloadUrl: string, operationsCount: n
         <!-- Header -->
         <tr>
           <td style="background-color:#1a1f2e;padding:32px 40px;text-align:center;border-radius:12px 12px 0 0;">
-            <img src="${logoUrl}" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
+            <img src="cid:capittal-logo" alt="Capittal" width="160" style="display:inline-block;max-width:160px;height:auto;" />
           </td>
         </tr>
 
