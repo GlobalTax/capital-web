@@ -74,6 +74,7 @@ export interface PipelineLead {
   valuation_range_max: number | null;
   acquisition_channel_id: string | null;
   lead_form: string | null;
+  empresa_id: string | null;
 }
 
 export interface PipelineColumn {

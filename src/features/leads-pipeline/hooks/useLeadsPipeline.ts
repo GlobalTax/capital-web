@@ -44,7 +44,7 @@ export const useLeadsPipeline = () => {
             lead_status_crm, final_valuation, revenue, ebitda,
             employee_range, location, acquisition_channel_id, lead_form,
             created_at, assigned_to, email_sent, email_opened,
-            precall_email_sent, call_attempts_count
+            precall_email_sent, call_attempts_count, empresa_id
           `)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false })
@@ -58,7 +58,7 @@ export const useLeadsPipeline = () => {
           .select(`
             id, full_name, company, email, phone, service_type,
             lead_status_crm, acquisition_channel_id, lead_form,
-            created_at, assigned_to, email_sent, email_opened, notes
+            created_at, assigned_to, email_sent, email_opened, notes, empresa_id
           `)
           .eq('is_deleted', false)
           .not('lead_status_crm', 'is', null)
@@ -103,6 +103,7 @@ export const useLeadsPipeline = () => {
         valuation_range_max: null,
         acquisition_channel_id: c.acquisition_channel_id || null,
         lead_form: c.lead_form || null,
+        empresa_id: c.empresa_id || null,
       }));
 
       // Merge: deduplicate by email (prefer valuations)
