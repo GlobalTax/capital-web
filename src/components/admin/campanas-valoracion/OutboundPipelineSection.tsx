@@ -102,7 +102,7 @@ export function OutboundPipelineSection({ enabledCampaignIds }: OutboundPipeline
         <DragDropContext onDragEnd={handleDragEnd}>
           <ScrollArea className="w-full">
             <div className="flex gap-3 px-4 pb-2 min-w-max">
-              {activeStages.map(stage => (
+              {activeStages.filter(s => s.stage_key !== 'sin_respuesta').map(stage => (
                 <PipelineColumn
                   key={stage.id}
                   stage={stage}
