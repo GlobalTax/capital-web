@@ -54,6 +54,7 @@ export const LeadsPipelineView: React.FC = () => {
     isLoading: isLoadingLeads,
     refetch,
     updateStatus,
+    updateStatusAsync,
     registerCall,
   } = useLeadsPipeline();
 
