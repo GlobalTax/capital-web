@@ -462,6 +462,8 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
         bold: t.financialData.bold ?? true, align: t.financialData.align,
       });
 
+      const LABEL_W_FIN = 1.8;
+      const LABEL_COLOR_FIN = 'B0B7C3';
       const financialRows = [
         { label: i18n.revenue, value: fmtCurrency(op.revenue_amount) },
         { label: i18n.ebitda, value: fmtCurrency(op.ebitda_amount) },
@@ -472,12 +474,12 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
       financialRows.forEach((row, i) => {
         const rowY = t.financialData.y + 0.5 + i * 0.55;
         slide.addText(row.label, {
-          x: t.financialData.x, y: rowY, w: 1.8, h: 0.3,
-          fontSize: 9, fontFace: FONT, color: TEXT_MUTED,
+          x: t.financialData.x, y: rowY, w: LABEL_W_FIN, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: LABEL_COLOR_FIN,
         });
         slide.addText(row.value, {
-          x: t.financialData.x + 1.8, y: rowY, w: t.financialData.w - 1.8, h: 0.3,
-          fontSize: t.financialData.fontSize || 12, fontFace: FONT, color: t.financialData.color || WHITE, bold: t.financialData.bold ?? true, align: 'right',
+          x: t.financialData.x + LABEL_W_FIN, y: rowY, w: t.financialData.w - LABEL_W_FIN, h: 0.3,
+          fontSize: 11, fontFace: FONT, color: t.financialData.color || WHITE, bold: t.financialData.bold ?? true, align: 'right',
         });
       });
     }
