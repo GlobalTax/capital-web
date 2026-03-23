@@ -1,13 +1,28 @@
 
 
-## Cambiar "Volver al Dashboard" por "Volver al Pipeline"
+## Unificar perfil: Pipeline usa el mismo perfil que Gestión de Leads
+
+### Problema
+El pipeline navega a dos páginas distintas según el origen:
+- `contact` → `/admin/contacts/contact_${id}` → **LeadDetailPage** (completo: asignación, estado CRM, notas, Brevo, canal, edición inline)
+- `valuation` → `/admin/valuations/${id}` → **ValuationDetailPage** (básico: solo lectura, sin CRM)
+
+### Solución
+Cambiar la navegación del pipeline para que siempre use **LeadDetailPage** (`/admin/contacts/:id`), que ya soporta ambos orígenes (contact y valuation) con el formato `origin_uuid`.
 
 ### Cambio
 
-**Archivo: `src/pages/admin/ValuationDetailPage.tsx`** (líneas 100-104)
+**Archivo: `src/features/leads-pipeline/components/LeadsPipelineView.tsx`** (líneas 204-211)
 
-- Cambiar la navegación de `/admin/` a `/admin/leads-pipeline`
-- Cambiar el texto de "Volver al Dashboard" a "Volver al Pipeline"
+Cambiar `handleViewDetails` para que construya la URL con prefijo de origen, igual que hace la tabla de contactos:
 
-Idealmente usar `navigate(-1)` para volver a la página anterior (que puede ser pipeline u otra), pero con texto "Volver al Pipeline" y fallback a `/admin/leads-pipeline`.
+```typescript
+const handleViewDetails = useCallback((leadId: string) => {
+  const lead = leads.find(l => l.id === leadId);
+  const prefix = lead?.origin === 'contact' ? 'contact' : 'valuation';
+  navigate(`/admin/contacts/${prefix}_${leadId}`);
+}, [navigate, leads]);
+```
+
+Un cambio de 2 líneas en un solo archivo. El `LeadDetailPage` ya maneja ambos orígenes con toda la funcionalidad CRM (estado, asignación, notas, Brevo, canal, archivado, edición financiera inline).
 
