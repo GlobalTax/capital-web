@@ -1,44 +1,137 @@
 
 
-## Auto-vincular contacto a empresa cuando se crea un contact_lead
+## Corregir vinculación automática para que lead, contacto y empresa vayan siempre unidos
 
-### Problema
-El trigger `auto_link_contact_lead_to_empresa` vincula el contact_lead a una empresa (vía `empresa_id`), pero NO crea un registro en la tabla `contactos` con `empresa_principal_id`. Por eso la pestaña "Contactos" de la empresa en GoDeal aparece vacía.
+### Qué está pasando ahora
+He revisado la lógica actual y el problema no es del pipeline, sino de la sincronización en base de datos:
 
-### Solución
+- El trigger `auto_link_contact_lead_to_empresa` solo asegura `contact_leads.empresa_id`
+- La sincronización hacia `contactos` no está unificada en el mismo flujo
+- El backfill reciente solo actualiza contactos cuyo `empresa_principal_id IS NULL`
+- Si ya existe un contacto con ese email pero vinculado a otra empresa, no se corrige
 
-**Migración SQL**: Ampliar la función `auto_link_contact_lead_to_empresa` para que, además de asignar `empresa_id`, también inserte (o vincule) un registro en `contactos`:
+Resultado real en BD ahora mismo:
+- `216` `contact_leads` ya tienen `empresa_id`
+- `211` ya tienen contacto vinculado correctamente
+- `5` siguen desalineados
+- Además, la solución actual no garantiza re-sincronización si el lead cambia después
 
-1. Buscar en `contactos` si ya existe uno con el mismo email y `empresa_principal_id` = la empresa
-2. Si no existe, buscar por email sin empresa vinculada y asignarle la empresa
-3. Si no existe en absoluto, crear nuevo registro en `contactos` con nombre, email, teléfono y `empresa_principal_id`
+### Plan
+**Objetivo:** que cada oportunidad tenga un único vínculo consistente:
+`contact_lead -> empresa_id -> contacto(empresa_principal_id)`  
+y que ese vínculo se mantenga automáticamente siempre.
 
-**Backfill**: Un UPDATE/INSERT masivo para vincular los contact_leads existentes que ya tienen `empresa_id` pero no tienen registro correspondiente en `contactos`.
+### Implementación
 
-### Detalle del trigger actualizado
+#### 1. Unificar la lógica en una sola función de sincronización
+Crear una función SQL dedicada, por ejemplo `sync_contact_lead_to_contacto()`, que:
+
+- reciba los datos del `contact_lead`
+- busque primero por `external_capittal_id = contact_lead.id`
+- si no existe, busque por email normalizado
+- si existe contacto con ese email:
+  - actualice `empresa_principal_id`
+  - actualice nombre/teléfono si faltan o están vacíos
+  - guarde `external_capittal_id = contact_lead.id`
+- si no existe:
+  - cree el contacto con:
+    - `nombre`
+    - `email`
+    - `telefono`
+    - `empresa_principal_id`
+    - `source = 'lead'`
+    - `external_capittal_id = contact_lead.id`
+
+Esto evita depender solo del email y deja una relación estable entre lead y contacto.
+
+#### 2. Hacer que se ejecute siempre, no solo al insertar
+Mantener el trigger que asigna `empresa_id`, pero añadir sincronización también en cambios posteriores:
+
+- `BEFORE INSERT` en `contact_leads`:
+  - seguir resolviendo/creando empresa
+- `AFTER INSERT OR UPDATE` en `contact_leads`:
+  - ejecutar la sincronización a `contactos`
+
+Debe dispararse al cambiar cualquiera de estos campos:
+- `empresa_id`
+- `email`
+- `full_name`
+- `phone`
+- `company`
+- `is_deleted`
+
+Así no se rompe si el lead se corrige después manualmente.
+
+#### 3. Corregir los datos ya existentes
+Hacer un backfill robusto para:
+
+- enlazar contactos existentes por `external_capittal_id`
+- si no existe, enlazar por email normalizado
+- corregir casos donde el contacto existe pero apunta a otra empresa
+- insertar los contactos que falten
+- rellenar `external_capittal_id` en los contactos creados desde leads
+
+Esto resolverá los 5 casos detectados y dejará preparada la base para que no vuelva a pasar.
+
+#### 4. Tratar los leads borrados o archivados
+Definir comportamiento claro para no dejar basura lógica:
+
+- si `contact_lead.is_deleted = true`, no crear nuevos contactos
+- opcionalmente, no desasociar el contacto histórico de la empresa
+- mantener el vínculo CRM salvo que quieras una política explícita de desvinculación
+
+Mi recomendación: **no romper el vínculo histórico automáticamente**.
+
+---
+
+## Detalle técnico
+
+### Causa raíz detectada
+El SQL actual de backfill es demasiado conservador:
 
 ```sql
--- Después de asignar NEW.empresa_id...
-
--- Auto-crear/vincular contacto en tabla contactos
-IF NOT EXISTS (
-  SELECT 1 FROM contactos 
-  WHERE email = NEW.email 
-  AND empresa_principal_id = v_empresa_id
-) THEN
-  -- Buscar contacto existente por email sin empresa
-  SELECT id INTO v_contacto_id FROM contactos 
-  WHERE email = NEW.email AND empresa_principal_id IS NULL LIMIT 1;
-  
-  IF v_contacto_id IS NOT NULL THEN
-    UPDATE contactos SET empresa_principal_id = v_empresa_id WHERE id = v_contacto_id;
-  ELSE
-    INSERT INTO contactos (nombre, email, telefono, empresa_principal_id, source)
-    VALUES (NEW.full_name, NEW.email, NEW.phone, v_empresa_id, 'lead');
-  END IF;
-END IF;
+UPDATE contactos
+SET empresa_principal_id = sub.empresa_id
+WHERE LOWER(c.email) = LOWER(sub.email)
+  AND c.empresa_principal_id IS NULL;
 ```
 
-### Resultado
-Cada vez que entra un lead → se crea empresa + se crea contacto vinculado. La pestaña "Contactos" de GoDeal mostrara siempre el contacto asociado automáticamente.
+Eso deja fuera los casos donde:
+- el contacto ya existe
+- el email coincide
+- pero `empresa_principal_id` ya apunta a otra empresa
+
+Y justo esos son los que hoy siguen sin verse en GoDeal.
+
+### Mejora clave
+Usar `external_capittal_id` como ancla estable entre tablas:
+
+- `contact_leads.id` -> `contactos.external_capittal_id`
+
+Ventajas:
+- evita depender solo del email
+- permite re-sincronizar aunque cambie la empresa
+- permite distinguir contactos históricos creados por otras vías
+
+### Seguridad de datos
+La corrección debe respetar:
+- índice único `idx_contactos_email_unique`
+- índice único `idx_contactos_external_capittal_id`
+
+Por eso el backfill y la sincronización deben hacerse con orden de prioridad:
+1. buscar por `external_capittal_id`
+2. si no existe, buscar por email
+3. si no existe, insertar
+
+### Alcance
+No hace falta tocar UI para resolver este bug.  
+El problema está en la capa de sincronización de datos.
+
+### Resultado esperado
+Después del cambio:
+
+- cada `contact_lead` con empresa tendrá siempre su contacto enlazado
+- GoDeal mostrará ese contacto en la pestaña de contactos
+- si cambia la empresa o el email del lead, el contacto se actualizará automáticamente
+- lead y empresa quedarán siempre “de la mano”, como una única oportunidad vista desde dos entradas
 
