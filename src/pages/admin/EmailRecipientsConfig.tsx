@@ -59,6 +59,7 @@ const EmailRecipientsConfig: React.FC = () => {
       phone: recipient.phone || '',
       role: recipient.role,
       is_default_copy: recipient.is_default_copy,
+      is_bcc: recipient.is_bcc,
       is_active: recipient.is_active
     });
     setIsAddDialogOpen(true);
