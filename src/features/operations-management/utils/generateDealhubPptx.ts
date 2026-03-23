@@ -384,16 +384,16 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
   if (t.highlights.visible && highlights.length > 0) {
     slide.addText(i18n.highlights, {
       x: t.highlights.x, y: t.highlights.y, w: t.highlights.w, h: 0.35,
-      fontSize: t.highlights.fontSize || 11, fontFace: FONT, color: t.highlights.color || NAVY,
+      fontSize: 11, fontFace: FONT, color: t.highlights.color || NAVY,
       bold: t.highlights.bold ?? true, align: t.highlights.align,
     });
 
     const bulletText = highlights.map(h => ({
       text: h,
-      options: { fontSize: (t.highlights.fontSize || 11) - 1, fontFace: FONT, color: TEXT_SECONDARY, bullet: { code: '2022' }, lineSpacingMultiple: 1.3 },
+      options: { fontSize: 11, fontFace: FONT, color: TEXT_SECONDARY, bullet: { type: 'bullet' as const }, lineSpacingMultiple: 1.4, indentLevel: 0 },
     }));
     slide.addText(bulletText as any, {
-      x: t.highlights.x + 0.2, y: t.highlights.y + 0.4, w: t.highlights.w - 0.4, h: t.highlights.h - 0.4,
+      x: t.highlights.x + 0.15, y: t.highlights.y + 0.4, w: t.highlights.w - 0.3, h: t.highlights.h - 0.4,
       valign: 'top', align: 'justify',
     });
   }
