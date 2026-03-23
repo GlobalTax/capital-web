@@ -366,12 +366,19 @@ export function OutboundSummaryDashboard() {
         ))}
       </div>
 
+      {/* Pipeline */}
+      <OutboundPipelineSection
+        enabledCampaignIds={allCampaigns.filter(c => !disabledCampaigns.has(c.id)).map(c => c.id)}
+      />
+
       {/* Campaign breakdown table */}
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Desglose por Campaña</CardTitle>
-            <Button
+            <div className="flex items-center gap-2">
+              <OutboundStagesEditor />
+              <Button
               variant="ghost"
               size="sm"
               className="h-7 text-xs gap-1.5"
