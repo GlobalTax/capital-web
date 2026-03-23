@@ -250,6 +250,9 @@ serve(async (req) => {
         if (ccList.length > 0) {
           resendPayload.cc = ccList;
         }
+        if (bccList.length > 0) {
+          resendPayload.bcc = bccList;
+        }
         if (attachments.length > 0) {
           resendPayload.attachments = attachments;
         }
