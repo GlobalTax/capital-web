@@ -394,7 +394,7 @@ function addOperationSlide(pptx: pptxgen, op: Operation, t: SlideTemplate, local
     }));
     slide.addText(bulletText as any, {
       x: t.highlights.x + 0.2, y: t.highlights.y + 0.4, w: t.highlights.w - 0.4, h: t.highlights.h - 0.4,
-      valign: 'top',
+      valign: 'top', align: 'justify',
     });
   }
 
