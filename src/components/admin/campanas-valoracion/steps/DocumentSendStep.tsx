@@ -166,6 +166,7 @@ function NotasPopover({ company, campaignId }: { company: any; campaignId: strin
   );
 }
 
+interface Props {
   campaignId: string;
   campaign: ValuationCampaign;
 }
