@@ -20,6 +20,8 @@ interface PipelineColumnProps {
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onSelectAllInColumn: (columnId: string, leadIds: string[]) => void;
+  adminUsers?: { user_id: string; full_name: string | null; email: string | null }[];
+  onAssignLead?: (leadId: string, userId: string | null) => void;
 }
 
 const formatTotal = (leads: PipelineLead[]) => {
