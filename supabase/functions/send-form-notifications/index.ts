@@ -1137,6 +1137,7 @@ async function upsertLeadFromForm(
   try {
     const normalizedEmail = email.toLowerCase().trim();
     const company = formData.company || formData.companyName || '';
+    const employeeCount = formData.employeeCount || formData.company_size || formData.employees || null;
     const phone = formData.phone || null;
     const cif = formData.cif || null;
     const channel = mapFormTypeToChannel(formType);
