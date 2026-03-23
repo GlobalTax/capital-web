@@ -134,7 +134,7 @@ export default function DealsPausedPage() {
                   <TableRow key={item.id}>
                     <TableCell>
                       <button
-                        onClick={() => navigate(`/admin/empresas/${item.company_id}`)}
+                        onClick={() => window.open(`https://godeal.es/empresas/${item.company_id}`, '_blank')}
                         className="font-medium text-primary hover:underline text-left"
                       >
                         {item.empresa?.nombre || 'Sin nombre'}
