@@ -4,9 +4,11 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
   Select,
@@ -28,7 +30,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { CurrencyInput } from '@/components/ui/currency-input';
-import { RefreshCw, Search, Users, Filter, CalendarIcon, TrendingUp, BarChart3, X, ChevronDown } from 'lucide-react';
+import { RefreshCw, Search, Users, Filter, CalendarIcon, TrendingUp, BarChart3, X, ChevronDown, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -52,6 +54,7 @@ export const LeadsPipelineView: React.FC = () => {
     isLoading: isLoadingLeads,
     refetch,
     updateStatus,
+    updateStatusAsync,
     registerCall,
   } = useLeadsPipeline();
 
@@ -65,6 +68,36 @@ export const LeadsPipelineView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAssignee, setFilterAssignee] = useState<string>('all');
   const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
+  
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkMoving, setIsBulkMoving] = useState(false);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleSelectAllInColumn = useCallback((_columnId: string, leadIds: string[]) => {
+    setSelectedIds(prev => {
+      const allSelected = leadIds.every(id => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) {
+        leadIds.forEach(id => next.delete(id));
+      } else {
+        leadIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
 
   // New filters
   const [filterChannel, setFilterChannel] = useState<string | null>(null);
@@ -513,11 +546,75 @@ export const LeadsPipelineView: React.FC = () => {
                 onSendPrecallEmail={handleSendPrecallEmail}
                 onRegisterCall={handleRegisterCall}
                 onViewDetails={handleViewDetails}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                onSelectAllInColumn={handleSelectAllInColumn}
               />
             ))}
           </div>
         </DragDropContext>
       </div>
+
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="flex items-center gap-3 bg-background border rounded-lg shadow-lg px-4 py-2.5">
+              <Badge variant="default" className="text-sm">
+                ✓ {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+              </Badge>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" disabled={isBulkMoving} className="gap-1.5">
+                    Mover a
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="max-h-64 overflow-y-auto">
+                  {visibleStatuses.map(status => (
+                    <DropdownMenuItem
+                      key={status.id}
+                      onClick={async () => {
+                        setIsBulkMoving(true);
+                        const ids = Array.from(selectedIds);
+                        const results = await Promise.allSettled(
+                          ids.map(leadId =>
+                            updateStatusAsync({ leadId, status: status.status_key as LeadStatus })
+                          )
+                        );
+                        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+                        const failed = results.filter(r => r.status === 'rejected').length;
+                        if (failed === 0) {
+                          toast.success(`${succeeded} lead${succeeded !== 1 ? 's' : ''} movido${succeeded !== 1 ? 's' : ''} a "${status.label}"`);
+                        } else {
+                          toast.warning(`${succeeded} movidos, ${failed} fallidos`);
+                        }
+                        clearSelection();
+                        setIsBulkMoving(false);
+                      }}
+                    >
+                      <span className="mr-2">{status.icon}</span>
+                      {status.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button variant="ghost" size="sm" onClick={clearSelection} className="gap-1">
+                <X className="h-3.5 w-3.5" />
+                Limpiar
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

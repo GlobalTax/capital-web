@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Phone, 
   Mail, 
@@ -39,6 +40,8 @@ interface PipelineCardProps {
   onRegisterCall: (answered: boolean) => void;
   onViewDetails: () => void;
   isDragging?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
 const formatCurrency = (value: number | null) => {
@@ -63,6 +66,8 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   onRegisterCall,
   onViewDetails,
   isDragging,
+  isSelected,
+  onToggleSelect,
 }) => {
   // Drag detection to avoid navigating on drag
   const mouseDownPos = useRef<{x:number,y:number}|null>(null);
@@ -84,7 +89,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     if (wasDragging.current) return;
     const target = e.target as HTMLElement;
-    if (target.closest('button, [role="menuitem"], [data-radix-collection-item]')) return;
+    if (target.closest('button, [role="menuitem"], [data-radix-collection-item], [role="checkbox"]')) return;
     onViewDetails();
   };
 
@@ -121,6 +126,14 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
       <CardContent className="p-3 space-y-2">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
+          {onToggleSelect && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect(lead.id)}
+              className="mt-0.5 shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm truncate">{lead.company_name}</h4>
             <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
@@ -259,6 +272,7 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.employee_range === next.lead.employee_range &&
     prev.lead.location === next.lead.location &&
     prev.assignedUserName === next.assignedUserName &&
-    prev.isDragging === next.isDragging
+    prev.isDragging === next.isDragging &&
+    prev.isSelected === next.isSelected
   );
 });

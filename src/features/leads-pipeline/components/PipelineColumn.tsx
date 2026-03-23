@@ -6,6 +6,7 @@ import React, { memo } from 'react';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { PipelineCard } from './PipelineCard';
 import type { PipelineLead, PipelineColumn as ColumnType } from '../types';
 
@@ -16,6 +17,9 @@ interface PipelineColumnProps {
   onSendPrecallEmail: (leadId: string) => void;
   onRegisterCall: (leadId: string, answered: boolean) => void;
   onViewDetails: (leadId: string) => void;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onSelectAllInColumn: (columnId: string, leadIds: string[]) => void;
 }
 
 const formatTotal = (leads: PipelineLead[]) => {
@@ -32,14 +36,27 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
+  selectedIds,
+  onToggleSelect,
+  onSelectAllInColumn,
 }) => {
   const totalValue = formatTotal(leads);
+  const leadIds = leads.map(l => l.id);
+  const allSelected = leads.length > 0 && leadIds.every(id => selectedIds.has(id));
+  const someSelected = leads.length > 0 && leadIds.some(id => selectedIds.has(id)) && !allSelected;
 
   return (
     <Card className="flex flex-col h-full min-w-[280px] max-w-[320px]">
       <CardHeader className="py-3 px-4 border-b shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
+            {leads.length > 0 && (
+              <Checkbox
+                checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                onCheckedChange={() => onSelectAllInColumn(column.id, leadIds)}
+                className="shrink-0"
+              />
+            )}
             <span className="text-lg">{column.icon}</span>
             <h3 className="font-semibold text-sm">{column.label}</h3>
             <Badge variant="secondary" className="text-xs">
@@ -73,13 +90,15 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                     >
-                      <PipelineCard
+                    <PipelineCard
                         lead={lead}
                         assignedUserName={lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : undefined}
                         onSendPrecallEmail={() => onSendPrecallEmail(lead.id)}
                         onRegisterCall={(answered) => onRegisterCall(lead.id, answered)}
                         onViewDetails={() => onViewDetails(lead.id)}
                         isDragging={snapshot.isDragging}
+                        isSelected={selectedIds.has(lead.id)}
+                        onToggleSelect={onToggleSelect}
                       />
                     </div>
                   )}
@@ -102,11 +121,10 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
 
 // Memoize with custom comparison
 export const PipelineColumn = memo(PipelineColumnComponent, (prev, next) => {
-  // Compare lead IDs and count
   if (prev.leads.length !== next.leads.length) return false;
   if (prev.column.id !== next.column.id) return false;
+  if (prev.selectedIds !== next.selectedIds) return false;
   
-  // Check if lead IDs are the same in the same order
   for (let i = 0; i < prev.leads.length; i++) {
     if (prev.leads[i].id !== next.leads[i].id) return false;
     if (prev.leads[i].lead_status_crm !== next.leads[i].lead_status_crm) return false;

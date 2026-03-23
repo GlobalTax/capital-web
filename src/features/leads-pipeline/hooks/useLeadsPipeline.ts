@@ -325,6 +325,7 @@ export const useLeadsPipeline = () => {
     isLoading,
     refetch,
     updateStatus: updateStatusMutation.mutate,
+    updateStatusAsync: updateStatusMutation.mutateAsync,
     isUpdatingStatus: updateStatusMutation.isPending,
     assignLead: assignLeadMutation.mutate,
     isAssigning: assignLeadMutation.isPending,
