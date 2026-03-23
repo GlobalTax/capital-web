@@ -90,6 +90,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
       className={`cursor-pointer transition-shadow hover:shadow-md ${
         isDragging ? 'shadow-lg ring-2 ring-primary/20' : ''
       }`}
+      onClick={onViewDetails}
     >
       <CardContent className="p-3 space-y-2">
         {/* Header */}
