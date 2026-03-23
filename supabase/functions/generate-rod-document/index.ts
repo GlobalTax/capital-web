@@ -498,7 +498,7 @@ function generateInternalLeadEmailHTML(data: InternalEmailData): string {
 function generateEmailHTML(name: string, downloadUrl: string, operationsCount: number, language: string = 'es'): string {
   const isEnglish = language === 'en';
   const year = new Date().getFullYear();
-  const logoUrl = 'https://webcapittal.lovable.app/logotipo.png';
+  const logoUrl = 'https://webcapittal.lovable.app/logotipo-white.png';
 
   const t = isEnglish ? {
     preheader: 'Your Open Deals Report is ready',
