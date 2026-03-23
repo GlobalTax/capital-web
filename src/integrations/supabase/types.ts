@@ -17119,6 +17119,45 @@ export type Database = {
           },
         ]
       }
+      outbound_pipeline_stages: {
+        Row: {
+          color: string
+          created_at: string | null
+          icon: string
+          id: string
+          is_active: boolean
+          is_system: boolean
+          label: string
+          position: number
+          stage_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string
+          created_at?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          label: string
+          position?: number
+          stage_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string
+          created_at?: string | null
+          icon?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          label?: string
+          position?: number
+          stage_key?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       outbound_prospects: {
         Row: {
           apellidos: string | null
