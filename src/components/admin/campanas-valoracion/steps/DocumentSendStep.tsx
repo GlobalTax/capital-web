@@ -527,6 +527,9 @@ export const DocumentSendStep: React.FC<Props> = ({ campaignId, campaign }) => {
                       <TableCell className="text-center">
                         <SeguimientoBadge company={c} campaignId={campaignId} />
                       </TableCell>
+                      <TableCell className="text-center">
+                        <NotasPopover company={c} campaignId={campaignId} />
+                      </TableCell>
                       <TableCell className="text-right">
                         {email && (
                           <DropdownMenu>
