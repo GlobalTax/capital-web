@@ -586,12 +586,7 @@ export const LeadsPipelineView: React.FC = () => {
                         const ids = Array.from(selectedIds);
                         const results = await Promise.allSettled(
                           ids.map(leadId =>
-                            new Promise<void>((resolve, reject) => {
-                              updateStatus(
-                                { leadId, status: status.status_key as LeadStatus },
-                                { onSuccess: () => resolve(), onError: (e: any) => reject(e) }
-                              );
-                            })
+                            updateStatusAsync({ leadId, status: status.status_key as LeadStatus })
                           )
                         );
                         const succeeded = results.filter(r => r.status === 'fulfilled').length;
