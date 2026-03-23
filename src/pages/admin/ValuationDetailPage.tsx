@@ -97,11 +97,11 @@ const ValuationDetailPage = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/admin/')}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Volver al Dashboard
+          Volver al Pipeline
         </Button>
         <div>
           <h1 className="text-2xl font-bold">Detalle de Valoración</h1>
