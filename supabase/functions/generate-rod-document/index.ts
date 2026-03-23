@@ -252,7 +252,14 @@ serve(async (req) => {
           from: 'Capittal <oportunidades@capittal.es>',
           to: [requestData.email],
           subject: emailSubject,
-          html: generateEmailHTML(requestData.full_name, selectedROD.file_url, operations?.length || 0, selectedROD.language)
+          html: generateEmailHTML(requestData.full_name, selectedROD.file_url, operations?.length || 0, selectedROD.language),
+          attachments: [
+            {
+              path: 'https://webcapittal.lovable.app/logotipo-white.png',
+              filename: 'logotipo-white.png',
+              content_id: 'capittal-logo',
+            }
+          ]
         });
 
         if (emailError) {
