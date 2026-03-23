@@ -126,6 +126,14 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
       <CardContent className="p-3 space-y-2">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
+          {onToggleSelect && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect(lead.id)}
+              className="mt-0.5 shrink-0"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           <div className="flex-1 min-w-0">
             <h4 className="font-medium text-sm truncate">{lead.company_name}</h4>
             <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
