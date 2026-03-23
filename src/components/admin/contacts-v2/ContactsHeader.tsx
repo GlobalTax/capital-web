@@ -24,6 +24,7 @@ interface ContactsHeaderProps {
   contacts: Contact[];
   onClearSelection: () => void;
   onPatchContacts?: (ids: string[], updates: Partial<Contact>) => void;
+  allContacts?: Contact[];
 }
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
