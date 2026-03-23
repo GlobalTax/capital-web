@@ -17,6 +17,8 @@ import {
   Users, CalendarCheck, MessageCircleX, HelpCircle, Percent,
   Filter, CheckSquare, Square, CalendarIcon
 } from 'lucide-react';
+import { OutboundPipelineSection } from './OutboundPipelineSection';
+import { OutboundStagesEditor } from './OutboundStagesEditor';
 
 interface CampaignSummary {
   id: string;
