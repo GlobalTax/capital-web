@@ -174,7 +174,12 @@ const ContactRow: React.FC<ContactRowProps> = ({
             <LeadFavoriteButton leadId={contact.id} size="sm" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-medium truncate text-foreground">{contact.name || 'Sin nombre'}</p>
+            <div className="flex items-center gap-1">
+              <p className="font-medium truncate text-foreground">{contact.name || 'Sin nombre'}</p>
+              {contact.is_possible_duplicate && (
+                <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 border-orange-400 text-orange-500 shrink-0">Dup</Badge>
+              )}
+            </div>
             <p className="text-muted-foreground truncate text-[10px]">{contact.email}</p>
           </div>
         </div>
