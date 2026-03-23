@@ -15,7 +15,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import SectorSelect from '@/components/admin/shared/SectorSelect';
-import { Upload, Download, Trash2, Search, FileText, BookOpen, CheckCircle2, Clock, Eye } from 'lucide-react';
+import { Upload, Download, Trash2, Search, FileText, BookOpen, CheckCircle2, Clock, Eye, Presentation } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMarketStudies, MarketStudy } from '@/hooks/useMarketStudies';
 import { format } from 'date-fns';
