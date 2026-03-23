@@ -225,6 +225,7 @@ export type Database = {
           investment_range: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          is_possible_duplicate: boolean | null
           last_campaign_id: number | null
           last_campaign_name: string | null
           last_email_click_at: string | null
@@ -293,6 +294,7 @@ export type Database = {
           investment_range?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
@@ -361,6 +363,7 @@ export type Database = {
           investment_range?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
@@ -4279,6 +4282,7 @@ export type Database = {
           id: string
           ip_address: unknown
           is_deleted: boolean | null
+          is_possible_duplicate: boolean | null
           last_campaign_id: number | null
           last_campaign_name: string | null
           last_email_click_at: string | null
@@ -4343,6 +4347,7 @@ export type Database = {
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
@@ -4407,6 +4412,7 @@ export type Database = {
           id?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_email_click_at?: string | null
@@ -5095,6 +5101,7 @@ export type Database = {
           industry: string
           ip_address: unknown
           is_deleted: boolean | null
+          is_possible_duplicate: boolean | null
           last_activity_at: string | null
           last_call_attempt_at: string | null
           last_campaign_id: number | null
@@ -5218,6 +5225,7 @@ export type Database = {
           industry: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
           last_campaign_id?: number | null
@@ -5341,6 +5349,7 @@ export type Database = {
           industry?: string
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_activity_at?: string | null
           last_call_attempt_at?: string | null
           last_campaign_id?: number | null
@@ -5523,6 +5532,7 @@ export type Database = {
           investment_budget: string | null
           ip_address: unknown
           is_deleted: boolean | null
+          is_possible_duplicate: boolean | null
           last_campaign_id: number | null
           last_campaign_name: string | null
           last_clicked_url: string | null
@@ -5603,6 +5613,7 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_clicked_url?: string | null
@@ -5683,6 +5694,7 @@ export type Database = {
           investment_budget?: string | null
           ip_address?: unknown
           is_deleted?: boolean | null
+          is_possible_duplicate?: boolean | null
           last_campaign_id?: number | null
           last_campaign_name?: string | null
           last_clicked_url?: string | null

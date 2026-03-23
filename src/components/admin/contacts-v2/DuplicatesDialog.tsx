@@ -16,19 +16,18 @@ interface DuplicatesDialogProps {
   onDone: () => void;
 }
 
-interface DuplicateGroup {
-  key: string;
-  field: 'email' | 'cif' | 'phone';
-  value: string;
+interface DuplicateCluster {
+  id: number;
   contacts: Contact[];
-  keepId: string; // id to keep
+  matchFields: Set<string>; // which fields caused the merge
+  keepId: string;
 }
 
 function normalize(val: string | undefined | null, field: 'email' | 'cif' | 'phone'): string | null {
   if (!val || !val.trim()) return null;
   if (field === 'email') return val.toLowerCase().trim();
   if (field === 'cif') return val.toUpperCase().trim();
-  return val.replace(/\s/g, '').trim();
+  return val.replace(/[\s\-\.]/g, '').trim();
 }
 
 function fieldsFilled(c: Contact): number {
@@ -45,50 +44,111 @@ function fieldsFilled(c: Contact): number {
   return count;
 }
 
-function findDuplicates(contacts: Contact[]): DuplicateGroup[] {
-  const groups: DuplicateGroup[] = [];
-  const seen = new Set<string>();
+// ---- Union-Find ----
+class UnionFind {
+  parent: number[];
+  rank: number[];
+  constructor(n: number) {
+    this.parent = Array.from({ length: n }, (_, i) => i);
+    this.rank = new Array(n).fill(0);
+  }
+  find(x: number): number {
+    if (this.parent[x] !== x) this.parent[x] = this.find(this.parent[x]);
+    return this.parent[x];
+  }
+  union(a: number, b: number) {
+    const ra = this.find(a), rb = this.find(b);
+    if (ra === rb) return;
+    if (this.rank[ra] < this.rank[rb]) this.parent[ra] = rb;
+    else if (this.rank[ra] > this.rank[rb]) this.parent[rb] = ra;
+    else { this.parent[rb] = ra; this.rank[ra]++; }
+  }
+}
+
+function findDuplicateClusters(contacts: Contact[]): DuplicateCluster[] {
+  const n = contacts.length;
+  if (n === 0) return [];
+  const uf = new UnionFind(n);
+
+  // Track which fields caused merges
+  const mergeFields = new Map<string, Set<string>>(); // "i-j" -> Set<field>
 
   for (const field of ['email', 'cif', 'phone'] as const) {
-    const map = new Map<string, Contact[]>();
-    for (const c of contacts) {
-      const raw = field === 'email' ? c.email : field === 'cif' ? c.cif : c.phone;
+    const map = new Map<string, number[]>();
+    for (let i = 0; i < n; i++) {
+      const raw = field === 'email' ? contacts[i].email : field === 'cif' ? contacts[i].cif : contacts[i].phone;
       const norm = normalize(raw, field);
       if (!norm) continue;
       const list = map.get(norm) || [];
-      list.push(c);
+      // union all in this group with the first
+      if (list.length > 0) {
+        const first = list[0];
+        uf.union(first, i);
+        const key = [Math.min(first, i), Math.max(first, i)].join('-');
+        if (!mergeFields.has(key)) mergeFields.set(key, new Set());
+        mergeFields.get(key)!.add(field);
+      }
+      list.push(i);
       map.set(norm, list);
     }
-    for (const [value, list] of map.entries()) {
-      if (list.length < 2) continue;
-      const key = `${field}:${value}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      // pick best to keep: most fields filled, then most recent
-      const sorted = [...list].sort((a, b) => {
+  }
+
+  // Group by root
+  const groups = new Map<number, number[]>();
+  for (let i = 0; i < n; i++) {
+    const root = uf.find(i);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root)!.push(i);
+  }
+
+  const FIELD_LABELS: Record<string, string> = { email: 'Email', cif: 'CIF', phone: 'Tel' };
+
+  const clusters: DuplicateCluster[] = [];
+  let clusterId = 0;
+  for (const [, indices] of groups) {
+    if (indices.length < 2) continue;
+
+    // Collect all match fields for this cluster
+    const fields = new Set<string>();
+    for (let a = 0; a < indices.length; a++) {
+      for (let b = a + 1; b < indices.length; b++) {
+        const key = [Math.min(indices[a], indices[b]), Math.max(indices[a], indices[b])].join('-');
+        const f = mergeFields.get(key);
+        if (f) f.forEach(ff => fields.add(FIELD_LABELS[ff] || ff));
+      }
+    }
+
+    // Sort: best first
+    const sorted = indices
+      .map(i => contacts[i])
+      .sort((a, b) => {
         const diff = fieldsFilled(b) - fieldsFilled(a);
         if (diff !== 0) return diff;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
-      groups.push({ key, field, value, contacts: sorted, keepId: sorted[0].id });
-    }
-  }
-  return groups;
-}
 
-const FIELD_LABELS: Record<string, string> = { email: 'Email', cif: 'CIF', phone: 'Teléfono' };
+    clusters.push({
+      id: clusterId++,
+      contacts: sorted,
+      matchFields: fields,
+      keepId: sorted[0].id,
+    });
+  }
+
+  return clusters;
+}
 
 const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone }) => {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = useQueryClient();
 
-  const groups = useMemo(() => (open ? findDuplicates(allContacts) : []), [allContacts, open]);
-  const [keepIds, setKeepIds] = useState<Record<string, string>>({});
+  const clusters = useMemo(() => (open ? findDuplicateClusters(allContacts) : []), [allContacts, open]);
+  const [keepIds, setKeepIds] = useState<Record<number, string>>({});
 
-  const getKeepId = (g: DuplicateGroup) => keepIds[g.key] ?? g.keepId;
+  const getKeepId = (c: DuplicateCluster) => keepIds[c.id] ?? c.keepId;
 
-  const totalToDelete = groups.reduce((acc, g) => acc + g.contacts.length - 1, 0);
+  const totalToDelete = clusters.reduce((acc, c) => acc + c.contacts.length - 1, 0);
 
   const handleDelete = async () => {
     if (totalToDelete === 0) return;
@@ -96,10 +156,10 @@ const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone
     let deleted = 0;
     let errors = 0;
 
-    const allKeepIds = new Set(groups.map(g => getKeepId(g)));
+    for (const cluster of clusters) {
+      const keepId = getKeepId(cluster);
+      const toRemove = cluster.contacts.filter(c => c.id !== keepId);
 
-    for (const g of groups) {
-      const toRemove = g.contacts.filter(c => !allKeepIds.has(c.id));
       for (const c of toRemove) {
         const table = c.origin === 'valuation' ? 'company_valuations'
           : c.origin === 'advisor' ? 'advisor_valuations'
@@ -109,7 +169,7 @@ const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone
 
         const { error } = await (supabase as any)
           .from(table)
-          .update({ is_deleted: true } as any)
+          .update({ is_deleted: true, deleted_at: new Date().toISOString() } as any)
           .eq('id', c.id);
 
         if (error) { errors++; } else { deleted++; }
@@ -135,27 +195,31 @@ const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone
           <DialogHeader>
             <DialogTitle>Eliminar duplicados</DialogTitle>
             <DialogDescription>
-              {groups.length === 0
+              {clusters.length === 0
                 ? 'No se han encontrado duplicados.'
-                : `${groups.length} grupo(s) con ${totalToDelete} registro(s) duplicado(s) detectados.`}
+                : `${clusters.length} grupo(s) con ${totalToDelete} registro(s) duplicado(s). Se conservará 1 por grupo.`}
             </DialogDescription>
           </DialogHeader>
 
-          {groups.length > 0 && (
+          {clusters.length > 0 && (
             <ScrollArea className="flex-1 min-h-0 pr-2">
               <div className="space-y-2">
-                {groups.map(g => (
-                  <Collapsible key={g.key}>
+                {clusters.map(cluster => (
+                  <Collapsible key={cluster.id}>
                     <CollapsibleTrigger className="flex items-center gap-2 w-full text-left p-2 rounded-md hover:bg-muted/50 text-sm">
                       <ChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
-                      <Badge variant="secondary" className="text-[10px]">{FIELD_LABELS[g.field]}</Badge>
-                      <span className="font-medium truncate">{g.value}</span>
-                      <span className="ml-auto text-muted-foreground text-xs">{g.contacts.length} registros</span>
+                      {[...cluster.matchFields].map(f => (
+                        <Badge key={f} variant="secondary" className="text-[10px]">{f}</Badge>
+                      ))}
+                      <span className="font-medium truncate">
+                        {cluster.contacts[0].name || cluster.contacts[0].email}
+                      </span>
+                      <span className="ml-auto text-muted-foreground text-xs">{cluster.contacts.length} registros</span>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="pl-6 space-y-1 pb-2">
-                        {g.contacts.map(c => {
-                          const isKept = getKeepId(g) === c.id;
+                        {cluster.contacts.map(c => {
+                          const isKept = getKeepId(cluster) === c.id;
                           return (
                             <div
                               key={c.id}
@@ -163,10 +227,11 @@ const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone
                             >
                               <Checkbox
                                 checked={isKept}
-                                onCheckedChange={() => setKeepIds(prev => ({ ...prev, [g.key]: c.id }))}
+                                onCheckedChange={() => setKeepIds(prev => ({ ...prev, [cluster.id]: c.id }))}
                               />
                               <span className="font-medium truncate max-w-[140px]">{c.name}</span>
                               <span className="text-muted-foreground truncate max-w-[160px]">{c.email}</span>
+                              {c.cif && <span className="text-muted-foreground text-[10px]">{c.cif}</span>}
                               <Badge variant="outline" className="text-[9px] shrink-0">{c.origin}</Badge>
                               <span className="ml-auto text-muted-foreground text-[10px] shrink-0">
                                 {new Date(c.created_at).toLocaleDateString('es')}
@@ -185,7 +250,7 @@ const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone
 
           <DialogFooter>
             <Button variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={isDeleting}>Cancelar</Button>
-            {groups.length > 0 && (
+            {clusters.length > 0 && (
               <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting}>
                 {isDeleting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Trash2 className="h-3 w-3 mr-1" />}
                 Eliminar {totalToDelete} duplicados
