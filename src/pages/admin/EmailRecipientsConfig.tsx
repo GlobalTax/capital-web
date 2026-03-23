@@ -33,7 +33,7 @@ const EmailRecipientsConfig: React.FC = () => {
   const { recipients, isLoading, createRecipient, updateRecipient, deleteRecipient, toggleDefaultCopy, toggleActive, toggleBcc } = useEmailRecipientsConfig();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingRecipient, setEditingRecipient] = useState<EmailRecipient | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_active: true });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_bcc: false, is_active: true });
 
   const resetForm = () => {
     setFormData({ name: '', email: '', phone: '', role: 'asesor', is_default_copy: true, is_active: true });
