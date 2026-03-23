@@ -149,6 +149,14 @@ const EmailRecipientsConfig: React.FC = () => {
                 />
               </div>
               <div className="flex items-center justify-between">
+                <Label htmlFor="is_bcc">Copia oculta (BCC)</Label>
+                <Switch
+                  id="is_bcc"
+                  checked={formData.is_bcc}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_bcc: checked })}
+                />
+              </div>
+              <div className="flex items-center justify-between">
                 <Label htmlFor="is_active">Activo</Label>
                 <Switch
                   id="is_active"
