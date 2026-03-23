@@ -37,6 +37,12 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { PipelineLead } from '../types';
 
+interface AdminUserSimple {
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+}
+
 interface PipelineCardProps {
   lead: PipelineLead;
   assignedUserName?: string;
@@ -46,6 +52,8 @@ interface PipelineCardProps {
   isDragging?: boolean;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
+  adminUsers?: AdminUserSimple[];
+  onAssignLead?: (leadId: string, userId: string | null) => void;
 }
 
 const formatCurrency = (value: number | null) => {
