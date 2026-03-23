@@ -1,31 +1,28 @@
 
 
-## Redirigir perfil de empresa de Capittal a GoDeal
-
-### Concepto
-En lugar de mantener dos perfiles paralelos, cuando se abra una empresa en Capittal admin se abrirá directamente el perfil de GoDeal (`https://godeal.es/empresas/{id}`). GoDeal pasa a ser la fuente única de verdad para el perfil de empresa.
+## Pipeline: abrir perfil GoDeal + auto-vincular contact_leads a empresa
 
 ### Cambios
 
-**1. Cambiar todas las navegaciones a empresas** (6 archivos)
+**1. Añadir `empresa_id` al pipeline**
 
-Reemplazar `navigate('/admin/empresas/${id}')` por `window.open('https://godeal.es/empresas/${id}', '_blank')` en:
+- **`src/features/leads-pipeline/types/index.ts`**: Añadir `empresa_id: string | null` a `PipelineLead`
+- **`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`**: Añadir `empresa_id` a los SELECT de ambas tablas (company_valuations y contact_leads)
 
-- `src/components/admin/empresas/EmpresasTableVirtualized.tsx` (handleNavigate)
-- `src/components/admin/companies/CompanyLinkCard.tsx` (3 ubicaciones)
-- `src/components/admin/apollo-visitors/ImportedEmpresasTable.tsx` (2 Links)
-- `src/pages/admin/DealsPausedPage.tsx` (2 ubicaciones)
-- `src/pages/admin/EmpresasPage.tsx` (si hay alguna)
+**2. Cambiar navegación al clicar tarjeta**
 
-**2. Ruta `/admin/empresas/:id`** 
+- **`src/features/leads-pipeline/components/LeadsPipelineView.tsx`**: En `handleViewDetails`, si el lead tiene `empresa_id`, abrir `https://godeal.es/empresas/${empresa_id}` en nueva pestaña. Si no tiene empresa vinculada, seguir abriendo el LeadDetailPage como fallback.
 
-Convertir `EmpresaDetailPage` en un redirect: si alguien accede directamente a la URL, redirige a GoDeal y muestra un mensaje de "Abriendo en GoDeal...". Esto cubre links guardados en favoritos, emails antiguos, etc.
+**3. Trigger SQL: auto-vincular contact_leads a empresa (igual que company_valuations)**
 
-**3. Lo que NO cambia**
-- La tabla/listado de empresas en Capittal (`EmpresasPage`) se mantiene como está
-- Los hooks, datos financieros y triggers de sincronización siguen funcionando (alimentan la DB que GoDeal consume)
-- La funcionalidad de crear/editar empresa sigue disponible desde el listado
+- **Migración SQL**: Crear trigger `BEFORE INSERT` en `contact_leads` que:
+  1. Busque empresa existente por nombre normalizado (case-insensitive)
+  2. Si no existe, cree una nueva empresa con los datos disponibles
+  3. Asigne `empresa_id` al contact_lead
+  
+- **Backfill**: UPDATE masivo para vincular contact_leads existentes sin `empresa_id` a empresas por nombre
 
 ### Resultado
-Un solo perfil de empresa (GoDeal) alimentado por los datos de Capittal. Sin duplicidad de interfaces.
+- Clic en tarjeta del pipeline → abre perfil GoDeal de la empresa
+- Todos los contact_leads se vinculan automáticamente a su empresa (como ya hacen los valuations)
 
