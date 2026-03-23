@@ -61,6 +61,9 @@ export interface Contact {
   // Pro detection
   is_from_pro_valuation?: boolean;
   
+  // Duplicate detection
+  is_possible_duplicate?: boolean;
+  
   // Channel & Form
   acquisition_channel_id?: string;
   acquisition_channel_name?: string;
