@@ -80,6 +80,8 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   isDragging,
   isSelected,
   onToggleSelect,
+  adminUsers = [],
+  onAssignLead,
 }) => {
   // Drag detection to avoid navigating on drag
   const mouseDownPos = useRef<{x:number,y:number}|null>(null);
