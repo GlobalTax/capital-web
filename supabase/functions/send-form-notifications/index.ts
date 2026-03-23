@@ -1266,13 +1266,25 @@ async function upsertLeadFromForm(
     if (company) {
       const { data: existingEmpresa } = await supabase
         .from('empresas')
-        .select('id')
+        .select('id, facturacion, revenue, ebitda, empleados, cif, sector')
         .ilike('nombre', company.trim())
         .limit(1)
         .maybeSingle();
 
       if (existingEmpresa) {
         empresaId = existingEmpresa.id;
+        // Enrich existing empresa with COALESCE logic
+        const enrichUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+        if (!existingEmpresa.facturacion && revenue) enrichUpdate.facturacion = revenue;
+        if (!existingEmpresa.revenue && revenue) enrichUpdate.revenue = revenue;
+        if (!existingEmpresa.ebitda && ebitda) enrichUpdate.ebitda = ebitda;
+        if (!existingEmpresa.empleados && employeeCount) enrichUpdate.empleados = parseInt(String(employeeCount)) || null;
+        if (!existingEmpresa.cif && cif) enrichUpdate.cif = cif;
+        if (!existingEmpresa.sector && serviceType) enrichUpdate.sector = serviceType;
+
+        if (Object.keys(enrichUpdate).length > 1) {
+          await supabase.from('empresas').update(enrichUpdate).eq('id', empresaId);
+        }
       } else {
         const { data: newEmpresa } = await supabase
           .from('empresas')
@@ -1280,6 +1292,10 @@ async function upsertLeadFromForm(
             nombre: company.trim(),
             cif: cif || null,
             facturacion: revenue,
+            revenue: revenue,
+            ebitda: ebitda,
+            empleados: employeeCount ? (parseInt(String(employeeCount)) || null) : null,
+            sector: serviceType,
           })
           .select('id')
           .single();
