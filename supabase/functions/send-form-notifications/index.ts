@@ -1274,6 +1274,13 @@ async function upsertLeadFromForm(
 
     if (existingContacto) {
       contactoId = existingContacto.id;
+      // Always ensure empresa_principal_id is set on existing contacto
+      if (empresaId) {
+        await supabase
+          .from('contactos')
+          .update({ empresa_principal_id: empresaId, updated_at: new Date().toISOString() })
+          .eq('id', existingContacto.id);
+      }
     } else {
       const nameParts = fullName.trim().split(' ');
       const nombre = nameParts[0] || '';
