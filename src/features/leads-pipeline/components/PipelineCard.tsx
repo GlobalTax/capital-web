@@ -191,6 +191,11 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
               {valuationFormatted}
             </Badge>
           )}
+          {leadFormName && (
+            <Badge variant="outline" className="text-xs text-muted-foreground">
+              📋 {leadFormName}
+            </Badge>
+          )}
         </div>
 
         {/* Financial & Location Details */}
