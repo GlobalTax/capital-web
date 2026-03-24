@@ -396,8 +396,6 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.id === next.lead.id &&
     prev.lead.lead_status_crm === next.lead.lead_status_crm &&
     prev.lead.assigned_to === next.lead.assigned_to &&
-    prev.lead.email_opened === next.lead.email_opened &&
-    prev.lead.email_sent === next.lead.email_sent &&
     prev.lead.precall_email_sent === next.lead.precall_email_sent &&
     prev.lead.call_attempts_count === next.lead.call_attempts_count &&
     prev.lead.final_valuation === next.lead.final_valuation &&
