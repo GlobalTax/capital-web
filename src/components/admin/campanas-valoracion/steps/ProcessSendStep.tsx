@@ -1339,17 +1339,21 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                     <TableCell className="text-right tabular-nums text-sm">
                       {c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge
-                        variant={hasValuation ? 'default' : 'secondary'}
-                        className={cn('text-xs', hasValuation && 'bg-green-600 hover:bg-green-700 text-white')}
-                      >
-                        {hasValuation ? 'Listo' : 'Pendiente'}
-                      </Badge>
-                    </TableCell>
+                    {!isDocument && (
+                      <TableCell className="text-right tabular-nums">
+                        {c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}
+                      </TableCell>
+                    )}
+                    {!isDocument && (
+                      <TableCell className="text-center">
+                        <Badge
+                          variant={hasValuation ? 'default' : 'secondary'}
+                          className={cn('text-xs', hasValuation && 'bg-green-600 hover:bg-green-700 text-white')}
+                        >
+                          {hasValuation ? 'Listo' : 'Pendiente'}
+                        </Badge>
+                      </TableCell>
+                    )}
                     <TableCell className="text-center">
                       <Badge
                         variant={hasStudy ? 'default' : 'outline'}
