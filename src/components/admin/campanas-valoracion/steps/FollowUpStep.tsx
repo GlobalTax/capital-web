@@ -451,6 +451,7 @@ function SendList({
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [sort, setSort] = useState<SortState>({ field: null, direction: null });
+  const isDocument = campaign.campaign_type === 'document';
 
   // Send records for THIS round
   const sendMap = useMemo(() => {
@@ -527,12 +528,12 @@ function SendList({
 
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
-    result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
+    if (!isDocument) result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
 
     return applySortToList(result, sort);
   }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, filterValuation, sendMap, sort]);
 
-  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || (!isDocument && (filterValuation.min !== null || filterValuation.max !== null));
   const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
@@ -718,7 +719,7 @@ function SendList({
 
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+            {!isDocument && <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />}
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
@@ -743,7 +744,7 @@ function SendList({
                   <TableHead>Email</TableHead>
                   <TableHead className="text-right"><SortableHeader label="Facturación" field="revenue" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
                   <TableHead className="text-right"><SortableHeader label="EBITDA" field="ebitda" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
-                  <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>
+                  {!isDocument && <TableHead className="text-right"><SortableHeader label="Valoración" field="valuation_central" sort={sort} onToggle={f => setSort(toggleSort(sort, f))} /></TableHead>}
                   <TableHead className="text-center">Seguimiento</TableHead>
                   <TableHead className="text-center">Estado envío</TableHead>
                   <TableHead className="text-center">Entrega</TableHead>
@@ -771,7 +772,7 @@ function SendList({
                       <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm">{c.revenue ? formatCurrencyEUR(c.revenue) : '—'}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm">{c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}</TableCell>
-                      <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
+                      {!isDocument && <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>}
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <FUSeguimientoBadge company={c} campaignId={campaignId} sequenceId={sequence.id} sendRecord={send} onChanged={onSeguimientoChanged} />
