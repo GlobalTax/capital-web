@@ -46,6 +46,7 @@ interface AdminUserSimple {
 interface PipelineCardProps {
   lead: PipelineLead;
   assignedUserName?: string;
+  leadFormName?: string;
   onSendPrecallEmail: () => void;
   onRegisterCall: (answered: boolean) => void;
   onViewDetails: () => void;
@@ -74,6 +75,7 @@ const formatCurrency = (value: number | null) => {
 const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   lead,
   assignedUserName,
+  leadFormName,
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
@@ -187,6 +189,11 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             <Badge variant="outline" className="text-xs font-medium">
               <DollarSign className="h-3 w-3 mr-0.5" />
               {valuationFormatted}
+            </Badge>
+          )}
+          {leadFormName && (
+            <Badge variant="outline" className="text-xs text-muted-foreground">
+              📋 {leadFormName}
             </Badge>
           )}
         </div>
@@ -407,6 +414,7 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.employee_range === next.lead.employee_range &&
     prev.lead.location === next.lead.location &&
     prev.assignedUserName === next.assignedUserName &&
+    prev.leadFormName === next.leadFormName &&
     prev.isDragging === next.isDragging &&
     prev.isSelected === next.isSelected
   );

@@ -14,6 +14,7 @@ interface PipelineColumnProps {
   column: ColumnType;
   leads: PipelineLead[];
   adminUsersMap: Map<string, string>;
+  leadFormsMap?: Map<string, string>;
   onSendPrecallEmail: (leadId: string) => void;
   onRegisterCall: (leadId: string, answered: boolean) => void;
   onViewDetails: (leadId: string) => void;
@@ -35,6 +36,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   column,
   leads,
   adminUsersMap,
+  leadFormsMap,
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
@@ -97,6 +99,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                     <PipelineCard
                         lead={lead}
                         assignedUserName={lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : undefined}
+                        leadFormName={lead.lead_form && leadFormsMap ? leadFormsMap.get(lead.lead_form) : undefined}
                         onSendPrecallEmail={() => onSendPrecallEmail(lead.id)}
                         onRegisterCall={(answered) => onRegisterCall(lead.id, answered)}
                         onViewDetails={() => onViewDetails(lead.id)}
