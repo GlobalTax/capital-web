@@ -1,35 +1,19 @@
 
 
-## Filtro de Responsable multiselección en el Pipeline
+## Asegurar vista agrupada por defecto en Campañas
 
-### Problema
-El filtro "Asignado" (Responsable) usa un `Select` de selección única, mientras que Canal y Formulario ya permiten multiselección. El usuario quiere poder filtrar por varios responsables a la vez.
+### Situación actual
+El código ya tiene `'grouped'` como valor por defecto, pero si en algún momento el usuario cambió a vista plana, el valor `'flat'` queda guardado en `localStorage` y se usa en cargas futuras.
 
-### Cambios
+### Cambio
 
-**`src/features/leads-pipeline/components/LeadsPipelineView.tsx`**
+**`src/pages/admin/CampanasValoracion.tsx`** (línea 43-44)
 
-1. **Estado**: Cambiar `filterAssignee: string` (`'all'`) → `filterAssignees: string[]` (array vacío = todos)
-   - El valor especial `'unassigned'` se mantiene como opción seleccionable dentro del array
+Forzar que el valor inicial sea siempre `'grouped'`, ignorando el valor de localStorage:
 
-2. **UI**: Reemplazar el `<Select>` (líneas 396-410) por un `<Popover>` con checkboxes, idéntico al patrón de Canal/Formulario:
-   - Checkbox "Sin asignar" + checkbox por cada admin
-   - Botón muestra "Asignado (N)" cuando hay selección
-   - Botón "Limpiar" dentro del popover
+```typescript
+const [viewMode, setViewMode] = useState<'flat' | 'grouped'>('grouped');
+```
 
-3. **Lógica de filtrado** (líneas 191-196): Adaptar:
-   ```
-   if (filterAssignees.length > 0) {
-     columnLeads = columnLeads.filter(lead => {
-       if (filterAssignees.includes('unassigned')) return !lead.assigned_to || filterAssignees.includes(lead.assigned_to);
-       return lead.assigned_to && filterAssignees.includes(lead.assigned_to);
-     });
-   }
-   ```
-
-4. **`hasActiveFilters` / `clearFilters`**: Cambiar `filterAssignee !== 'all'` → `filterAssignees.length > 0`
-
-5. **Vistas guardadas**: Actualizar `PipelineViewFilters` en `usePipelineSavedViews.ts` para que `filterAssignee` sea `string[]` en vez de `string`. Añadir retrocompatibilidad para vistas guardadas antiguas (convertir string a array).
-
-6. **`getCurrentFilters` / `handleLoadView`**: Adaptar para el nuevo formato array
+Esto hará que cada vez que se entre a la página, se muestre agrupada por sector. El usuario puede cambiar a vista plana durante la sesión, pero al volver siempre verá la agrupada primero.
 
