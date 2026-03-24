@@ -1113,7 +1113,9 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Se generará el PDF y se enviará el email con la valoración a cada empresa.
+            {isDocument
+              ? 'Se enviará el email con el documento a cada empresa.'
+              : 'Se generará el PDF y se enviará el email con la valoración a cada empresa.'}
           </p>
 
           {/* Schedule config panel */}
