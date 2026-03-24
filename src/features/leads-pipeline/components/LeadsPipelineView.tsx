@@ -371,43 +371,71 @@ export const LeadsPipelineView: React.FC = () => {
           </SelectContent>
         </Select>
 
-        {/* Channel */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterChannel && "border-primary text-primary")}>
+        {/* Channel - Multi-select */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterChannels.length > 0 && "border-primary text-primary")}>
               <Filter className="h-3.5 w-3.5" />
-              {filterChannel ? channelNameMap.get(filterChannel) || 'Canal' : 'Canal'}
+              {filterChannels.length > 0 ? `Canal (${filterChannels.length})` : 'Canal'}
               <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setFilterChannel(null)}>Todos</DropdownMenuItem>
-            {channels.map(ch => (
-              <DropdownMenuItem key={ch.id} onClick={() => setFilterChannel(ch.id)}>
-                {ch.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              {channels.map(ch => (
+                <label key={ch.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox
+                    checked={filterChannels.includes(ch.id)}
+                    onCheckedChange={() => setFilterChannels(prev =>
+                      prev.includes(ch.id) ? prev.filter(id => id !== ch.id) : [...prev, ch.id]
+                    )}
+                  />
+                  <span className="text-sm">{ch.name}</span>
+                </label>
+              ))}
+            </div>
+            {filterChannels.length > 0 && (
+              <div className="border-t p-1">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterChannels([])}>
+                  Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
-        {/* Form */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterFormDisplay && "border-primary text-primary")}>
+        {/* Form - Multi-select */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterFormDisplays.length > 0 && "border-primary text-primary")}>
               <Filter className="h-3.5 w-3.5" />
-              {filterFormDisplay || 'Formulario'}
+              {filterFormDisplays.length > 0 ? `Formulario (${filterFormDisplays.length})` : 'Formulario'}
               <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setFilterFormDisplay(null)}>Todos</DropdownMenuItem>
-            {displayNameGroups.map(g => (
-              <DropdownMenuItem key={g.displayName} onClick={() => setFilterFormDisplay(g.displayName)}>
-                {g.displayName}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              {displayNameGroups.map(g => (
+                <label key={g.displayName} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox
+                    checked={filterFormDisplays.includes(g.displayName)}
+                    onCheckedChange={() => setFilterFormDisplays(prev =>
+                      prev.includes(g.displayName) ? prev.filter(n => n !== g.displayName) : [...prev, g.displayName]
+                    )}
+                  />
+                  <span className="text-sm">{g.displayName}</span>
+                </label>
+              ))}
+            </div>
+            {filterFormDisplays.length > 0 && (
+              <div className="border-t p-1">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterFormDisplays([])}>
+                  Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
         {/* Date */}
         <Popover>
