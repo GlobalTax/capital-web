@@ -533,7 +533,7 @@ function SendList({
     return applySortToList(result, sort);
   }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, filterValuation, sendMap, sort]);
 
-  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null;
+  const hasFinancialFilters = filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || (!isDocument && (filterValuation.min !== null || filterValuation.max !== null));
   const hasActiveFilters = !!searchQuery || !!filterEstadoEnvio || !!filterEntrega || !!filterSeguimiento || hasFinancialFilters;
   const clearAllFilters = useCallback(() => {
     setSearchQuery('');
