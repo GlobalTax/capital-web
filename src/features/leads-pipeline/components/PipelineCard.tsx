@@ -12,8 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Phone, 
-  Mail, 
-  MailOpen, 
   Building2, 
   DollarSign,
   Clock,
