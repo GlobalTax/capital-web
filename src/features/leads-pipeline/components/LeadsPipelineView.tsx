@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
