@@ -77,6 +77,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   lead,
   assignedUserName,
   leadFormName,
+  channelName,
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
