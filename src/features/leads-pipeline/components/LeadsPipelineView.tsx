@@ -114,11 +114,11 @@ export const LeadsPipelineView: React.FC = () => {
   const [filterEbitdaMin, setFilterEbitdaMin] = useState<number>(0);
   const [filterEbitdaMax, setFilterEbitdaMax] = useState<number>(0);
 
-  // Resolved form IDs for the selected display name
+  // Resolved form IDs for the selected display names
   const filterFormIds = useMemo(() => {
-    if (!filterFormDisplay) return null;
-    return resolveDisplayNameToIds(filterFormDisplay);
-  }, [filterFormDisplay, resolveDisplayNameToIds]);
+    if (filterFormDisplays.length === 0) return null;
+    return filterFormDisplays.flatMap(dn => resolveDisplayNameToIds(dn));
+  }, [filterFormDisplays, resolveDisplayNameToIds]);
 
   const hasActiveFilters = searchQuery || filterAssignee !== 'all' || filterChannel || filterFormDisplay || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
 
