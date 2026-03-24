@@ -72,7 +72,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   // Existing filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterAssignee, setFilterAssignee] = useState<string>('all');
+  const [filterAssignees, setFilterAssignees] = useState<string[]>([]);
   const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
   
   // Bulk selection
