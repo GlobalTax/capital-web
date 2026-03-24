@@ -585,6 +585,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const [filterEbitda, setFilterEbitda] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterValuation, setFilterValuation] = useState<FinancialFilterValue>({ min: null, max: null });
   const [filterSentDate, setFilterSentDate] = useState<DateRangeFilterValue>({ from: null, to: null });
+  const isDocument = campaign.campaign_type === 'document';
 
   // Map company_id -> sent_at for date filtering
   const emailSentAtMap = useMemo(() => {
