@@ -61,7 +61,7 @@ export const useContacts = () => {
         formDisplayMap[f.id] = f.display_name || f.name;
       }
 
-      // Parallel fetch all contact sources (including legacy tables)
+      // Parallel fetch all contact sources (including legacy tables) + professional valuations for financial fallback
       const [
         { data: contactLeads },
         { data: valuationLeads },
@@ -70,6 +70,7 @@ export const useContacts = () => {
         { data: advisorLeads },
         { data: sellLeads },
         { data: generalContactLeads },
+        { data: proValData },
       ] = await Promise.all([
         supabase
           .from('contact_leads')
@@ -103,7 +104,30 @@ export const useContacts = () => {
           .from('general_contact_leads')
           .select('*')
           .order('created_at', { ascending: false }),
+        supabase
+          .from('professional_valuations')
+          .select('linked_lead_id, linked_lead_type, reported_ebitda, normalized_ebitda, valuation_central, financial_years')
+          .not('linked_lead_id', 'is', null),
       ]);
+
+      // Build professional valuations lookup map (lead_id -> financial data)
+      const proValMap = new Map<string, { revenue?: number; ebitda?: number; valuation?: number }>();
+      for (const pv of (proValData || []) as any[]) {
+        if (pv.linked_lead_id) {
+          // Extract revenue from financial_years (latest year)
+          let revenue: number | undefined;
+          if (Array.isArray(pv.financial_years) && pv.financial_years.length > 0) {
+            const sorted = [...pv.financial_years].sort((a: any, b: any) => (b.year || 0) - (a.year || 0));
+            revenue = sorted[0]?.revenue ? Number(sorted[0].revenue) : undefined;
+          }
+          const ebitda = pv.normalized_ebitda ? Number(pv.normalized_ebitda) : (pv.reported_ebitda ? Number(pv.reported_ebitda) : undefined);
+          proValMap.set(pv.linked_lead_id, {
+            revenue,
+            ebitda,
+            valuation: pv.valuation_central ? Number(pv.valuation_central) : undefined,
+          });
+        }
+      }
 
       // Collect emails already in contact_leads to avoid duplicating legacy records
       const contactLeadEmails = new Set(
@@ -112,11 +136,11 @@ export const useContacts = () => {
 
       // Transform to unified format
       const unified: Contact[] = [
-        ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap)),
-        ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap)),
-        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap)),
-        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap)),
-        ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap)),
+        ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap, proValMap)),
+        ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap, proValMap)),
+        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap, proValMap)),
+        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap, proValMap)),
+        ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap, proValMap)),
         // Legacy tables - only include if not already in contact_leads
         ...(sellLeads || [])
           .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
@@ -290,7 +314,8 @@ export const useContacts = () => {
 };
 
 // Transform helpers
-function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Record<string, string>): Contact {
+function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin,
@@ -306,9 +331,9 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
     empresa_id: lead.empresa_id,
     empresa_nombre: lead.empresas?.nombre,
     empresa_facturacion: lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined,
-    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
-    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : pvFallback?.revenue),
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : pvFallback?.ebitda),
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
     cif: lead.cif,
     industry: lead.industry || lead.sectors_of_interest,
     employee_range: lead.employee_range || lead.company_size,
@@ -325,7 +350,8 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
   };
 }
 
-function transformValuation(lead: any, formDisplayMap: Record<string, string>): Contact {
+function transformValuation(lead: any, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin: 'valuation',
@@ -340,9 +366,9 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>): 
     cif: lead.cif,
     industry: lead.industry,
     employee_range: lead.employee_range,
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
-    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : pvFallback?.ebitda),
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : pvFallback?.revenue),
     location: lead.location,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
@@ -365,7 +391,8 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>): 
   };
 }
 
-function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Contact {
+function transformAdvisor(lead: any, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin: 'advisor',
@@ -378,9 +405,9 @@ function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Co
     cif: lead.cif,
     industry: lead.firm_type,
     employee_range: lead.employee_range,
-    revenue: lead.revenue ? Number(lead.revenue) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : pvFallback?.revenue,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : pvFallback?.ebitda,
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     acquisition_channel_id: lead.acquisition_channel_id,
