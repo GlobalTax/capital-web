@@ -115,7 +115,44 @@ export const LeadsPipelineView: React.FC = () => {
   const [filterEbitdaMin, setFilterEbitdaMin] = useState<number>(0);
   const [filterEbitdaMax, setFilterEbitdaMax] = useState<number>(0);
 
-  // Resolved form IDs for the selected display names
+  // Saved views
+  const { savedViews, saveView, deleteView } = usePipelineSavedViews();
+  const [saveViewName, setSaveViewName] = useState('');
+  const [isSavePopoverOpen, setIsSavePopoverOpen] = useState(false);
+
+  const getCurrentFilters = useCallback((): PipelineViewFilters => ({
+    searchQuery,
+    filterAssignee,
+    filterChannels,
+    filterFormDisplays,
+    filterDateFrom: filterDateFrom ? filterDateFrom.toISOString() : null,
+    filterDateTo: filterDateTo ? filterDateTo.toISOString() : null,
+    filterRevMin,
+    filterRevMax,
+    filterEbitdaMin,
+    filterEbitdaMax,
+  }), [searchQuery, filterAssignee, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax]);
+
+  const handleSaveView = useCallback(() => {
+    if (!saveViewName.trim()) return;
+    saveView(saveViewName.trim(), getCurrentFilters());
+    setSaveViewName('');
+    setIsSavePopoverOpen(false);
+  }, [saveViewName, saveView, getCurrentFilters]);
+
+  const handleLoadView = useCallback((filters: PipelineViewFilters) => {
+    setSearchQuery(filters.searchQuery);
+    setFilterAssignee(filters.filterAssignee);
+    setFilterChannels(filters.filterChannels);
+    setFilterFormDisplays(filters.filterFormDisplays);
+    setFilterDateFrom(filters.filterDateFrom ? new Date(filters.filterDateFrom) : undefined);
+    setFilterDateTo(filters.filterDateTo ? new Date(filters.filterDateTo) : undefined);
+    setFilterRevMin(filters.filterRevMin);
+    setFilterRevMax(filters.filterRevMax);
+    setFilterEbitdaMin(filters.filterEbitdaMin);
+    setFilterEbitdaMax(filters.filterEbitdaMax);
+  }, []);
+
   const filterFormIds = useMemo(() => {
     if (filterFormDisplays.length === 0) return null;
     return filterFormDisplays.flatMap(dn => resolveDisplayNameToIds(dn));
