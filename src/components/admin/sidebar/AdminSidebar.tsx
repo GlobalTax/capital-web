@@ -163,6 +163,8 @@ export const AdminSidebar: React.FC = () => {
       'fund-intelligence': 'dashboard',
       'cr-apollo-import': 'dashboard',
       'sector-intelligence': 'dashboard',
+      'leads-pipeline': 'dashboard',
+      'prospectos': 'dashboard',
     };
 
     const permissionKey = routePermissionMap[route];
