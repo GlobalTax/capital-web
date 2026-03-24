@@ -136,11 +136,11 @@ export const useContacts = () => {
 
       // Transform to unified format
       const unified: Contact[] = [
-        ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap)),
-        ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap)),
-        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap)),
-        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap)),
-        ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap)),
+        ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap, proValMap)),
+        ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap, proValMap)),
+        ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap, proValMap)),
+        ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap, proValMap)),
+        ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap, proValMap)),
         // Legacy tables - only include if not already in contact_leads
         ...(sellLeads || [])
           .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
