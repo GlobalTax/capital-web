@@ -394,7 +394,7 @@ export default function CampanasValoracion() {
           </TabsTrigger>
           <TabsTrigger value="document" className="flex items-center gap-1.5">
             <FileText className="h-4 w-4" />
-            Estudio Sectorial
+            Campañas - Informe
           </TabsTrigger>
           <TabsTrigger value="market-studies" className="flex items-center gap-1.5">
             <BookOpen className="h-4 w-4" />
