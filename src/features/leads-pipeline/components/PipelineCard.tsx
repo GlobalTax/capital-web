@@ -232,27 +232,15 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
           </div>
         )}
 
-        {/* Email Status */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {lead.email_opened ? (
-            <span className="flex items-center text-green-600">
-              <MailOpen className="h-3 w-3 mr-1" />
-              Email abierto
-            </span>
-          ) : lead.email_sent ? (
-            <span className="flex items-center text-yellow-600">
-              <Mail className="h-3 w-3 mr-1" />
-              Email enviado
-            </span>
-          ) : null}
-          
-          {lead.call_attempts_count && lead.call_attempts_count > 0 && (
+        {/* Call attempts */}
+        {lead.call_attempts_count && lead.call_attempts_count > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="flex items-center">
               <Phone className="h-3 w-3 mr-1" />
               {lead.call_attempts_count} llamada{lead.call_attempts_count > 1 ? 's' : ''}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
