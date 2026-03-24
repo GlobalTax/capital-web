@@ -27,6 +27,7 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
   onOpenChange,
   onSelect,
   initialSearch,
+  isLinking = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [results, setResults] = useState<Empresa[]>([]);
