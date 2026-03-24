@@ -380,7 +380,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                     <TableRow key={ct.company.id}>
                       <TableCell className="font-medium text-sm max-w-[180px] truncate">{ct.company.client_company}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{ct.company.client_email || '—'}</TableCell>
-                      <TableCell className="text-right text-sm">{ct.company.valuation_central ? formatCurrencyEUR(ct.company.valuation_central) : '—'}</TableCell>
+                      {!isDocument && <TableCell className="text-right text-sm">{ct.company.valuation_central ? formatCurrencyEUR(ct.company.valuation_central) : '—'}</TableCell>}
                       <TableCell className="text-center">
                         {ct.emailSent ? (
                           <CheckCircle2 className="h-4 w-4 mx-auto text-emerald-500" />

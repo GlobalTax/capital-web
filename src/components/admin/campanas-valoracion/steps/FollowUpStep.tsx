@@ -772,7 +772,7 @@ function SendList({
                       <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm">{c.revenue ? formatCurrencyEUR(c.revenue) : '—'}</TableCell>
                       <TableCell className="text-right tabular-nums text-sm">{c.ebitda ? formatCurrencyEUR(c.ebitda) : '—'}</TableCell>
-                      <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>
+                      {!isDocument && <TableCell className="text-sm">{c.valuation_central ? formatCurrencyEUR(c.valuation_central) : '—'}</TableCell>}
                       <TableCell>
                         <div className="flex items-center justify-center gap-1">
                           <FUSeguimientoBadge company={c} campaignId={campaignId} sequenceId={sequence.id} sendRecord={send} onChanged={onSeguimientoChanged} />

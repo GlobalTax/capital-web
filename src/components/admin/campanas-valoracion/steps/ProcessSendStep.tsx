@@ -1428,21 +1428,25 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52">
                           {/* Valuation actions */}
-                          <DropdownMenuItem onClick={() => setPreviewCompany(c)} disabled={!hasValuation}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver Valoración
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => downloadSingle(c)} disabled={isRowDownloading || !hasValuation}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Descargar Valoración
-                          </DropdownMenuItem>
-                          {c.professional_valuation_id && (
-                            <DropdownMenuItem onClick={() => navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}>
-                              <FileText className="h-4 w-4 mr-2" />
-                              Editar Valoración
-                            </DropdownMenuItem>
+                          {!isDocument && (
+                            <>
+                              <DropdownMenuItem onClick={() => setPreviewCompany(c)} disabled={!hasValuation}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver Valoración
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => downloadSingle(c)} disabled={isRowDownloading || !hasValuation}>
+                                <Download className="h-4 w-4 mr-2" />
+                                Descargar Valoración
+                              </DropdownMenuItem>
+                              {c.professional_valuation_id && (
+                                <DropdownMenuItem onClick={() => navigate(`/admin/valoraciones-pro/${c.professional_valuation_id}`)}>
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  Editar Valoración
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                            </>
                           )}
-                          <DropdownMenuSeparator />
                           {/* Study actions */}
                           <DropdownMenuItem
                             disabled={!hasStudy}
