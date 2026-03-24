@@ -1,10 +1,10 @@
 
 
-## Cambio de nombre: "Estudio Sectorial" → "Campañas - Informe"
+## Cambio de nombre: "Valoración" → "Campañas - Informe + Valoración"
 
 ### Cambio
 
-**`src/pages/admin/CampanasValoracion.tsx`** (línea 397)
+**`src/pages/admin/CampanasValoracion.tsx`** (línea 393)
 
-Reemplazar el texto `Estudio Sectorial` por `Campañas - Informe` en el `TabsTrigger`.
+Reemplazar el texto `Valoración` por `Campañas - Informe + Valoración` en el `TabsTrigger`.
 
