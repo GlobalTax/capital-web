@@ -196,12 +196,12 @@ export const LeadsPipelineView: React.FC = () => {
         );
       }
       
-      if (filterAssignee !== 'all') {
-        if (filterAssignee === 'unassigned') {
-          columnLeads = columnLeads.filter(lead => !lead.assigned_to);
-        } else {
-          columnLeads = columnLeads.filter(lead => lead.assigned_to === filterAssignee);
-        }
+      if (filterAssignees.length > 0) {
+        columnLeads = columnLeads.filter(lead => {
+          const isUnassigned = !lead.assigned_to;
+          if (isUnassigned) return filterAssignees.includes('unassigned');
+          return lead.assigned_to ? filterAssignees.includes(lead.assigned_to) : false;
+        });
       }
 
       if (filterChannels.length > 0) {
