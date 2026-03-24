@@ -1261,7 +1261,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             </div>
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+            {!isDocument && <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />}
             <DateRangeFilter label="Fecha envío" value={filterSentDate} onChange={setFilterSentDate} />
             {(searchQuery || filterRevenue.min !== null || filterRevenue.max !== null || filterEbitda.min !== null || filterEbitda.max !== null || filterValuation.min !== null || filterValuation.max !== null || filterSentDate.from !== null || filterSentDate.to !== null) && (
               <div className="flex items-center gap-2">
