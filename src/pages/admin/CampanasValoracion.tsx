@@ -390,7 +390,7 @@ export default function CampanasValoracion() {
         <TabsList>
           <TabsTrigger value="valuation" className="flex items-center gap-1.5">
             <TrendingUp className="h-4 w-4" />
-            Valoración
+            Campañas - Informe + Valoración
           </TabsTrigger>
           <TabsTrigger value="document" className="flex items-center gap-1.5">
             <FileText className="h-4 w-4" />
