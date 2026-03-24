@@ -25053,6 +25053,16 @@ export type Database = {
           updated_at: string
         }[]
       }
+      search_global: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          id: string
+          ruta: string
+          subtitulo: string
+          tipo: string
+          titulo: string
+        }[]
+      }
       search_news_articles: {
         Args: {
           filter_category?: string
