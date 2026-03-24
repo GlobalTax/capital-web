@@ -166,7 +166,7 @@ export const LeadsPipelineView: React.FC = () => {
     return filterFormDisplays.flatMap(dn => resolveDisplayNameToIds(dn));
   }, [filterFormDisplays, resolveDisplayNameToIds]);
 
-  const hasActiveFilters = searchQuery || filterAssignee !== 'all' || filterChannels.length > 0 || filterFormDisplays.length > 0 || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
+  const hasActiveFilters = searchQuery || filterAssignees.length > 0 || filterChannels.length > 0 || filterFormDisplays.length > 0 || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
 
   // Memoized admin users map
   const adminUsersMap = useMemo(() => 
