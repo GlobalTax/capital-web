@@ -350,7 +350,8 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
   };
 }
 
-function transformValuation(lead: any, formDisplayMap: Record<string, string>): Contact {
+function transformValuation(lead: any, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin: 'valuation',
@@ -365,9 +366,9 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>): 
     cif: lead.cif,
     industry: lead.industry,
     employee_range: lead.employee_range,
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
-    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : pvFallback?.ebitda),
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : pvFallback?.revenue),
     location: lead.location,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
