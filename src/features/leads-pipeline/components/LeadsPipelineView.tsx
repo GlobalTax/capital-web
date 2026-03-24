@@ -239,7 +239,7 @@ export const LeadsPipelineView: React.FC = () => {
     });
     
     return result;
-  }, [leadsByStatus, searchQuery, filterAssignee, filterChannels, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
+  }, [leadsByStatus, searchQuery, filterAssignees, filterChannels, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
 
   // Handlers
   const handleDragEnd = useCallback((result: DropResult) => {
