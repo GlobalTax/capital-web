@@ -122,7 +122,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   const getCurrentFilters = useCallback((): PipelineViewFilters => ({
     searchQuery,
-    filterAssignee,
+    filterAssignee: filterAssignees,
     filterChannels,
     filterFormDisplays,
     filterDateFrom: filterDateFrom ? filterDateFrom.toISOString() : null,
@@ -131,7 +131,7 @@ export const LeadsPipelineView: React.FC = () => {
     filterRevMax,
     filterEbitdaMin,
     filterEbitdaMax,
-  }), [searchQuery, filterAssignee, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax]);
+  }), [searchQuery, filterAssignees, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax]);
 
   const handleSaveView = useCallback(() => {
     if (!saveViewName.trim()) return;
