@@ -1108,7 +1108,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <Send className="h-4 w-4" />
-            Enviar Valoraciones ({readyToSend.length} listas para enviar)
+            {isDocument ? 'Enviar Documentos' : 'Enviar Valoraciones'} ({readyToSend.length} listas para enviar)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
