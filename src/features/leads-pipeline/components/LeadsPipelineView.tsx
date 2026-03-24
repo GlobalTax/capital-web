@@ -301,7 +301,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   const clearFilters = useCallback(() => {
     setSearchQuery('');
-    setFilterAssignee('all');
+    setFilterAssignees([]);
     setFilterChannels([]);
     setFilterFormDisplays([]);
     setFilterDateFrom(undefined);
