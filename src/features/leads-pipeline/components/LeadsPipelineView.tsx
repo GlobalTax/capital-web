@@ -105,8 +105,8 @@ export const LeadsPipelineView: React.FC = () => {
   }, []);
 
   // New filters
-  const [filterChannel, setFilterChannel] = useState<string | null>(null);
-  const [filterFormDisplay, setFilterFormDisplay] = useState<string | null>(null);
+  const [filterChannels, setFilterChannels] = useState<string[]>([]);
+  const [filterFormDisplays, setFilterFormDisplays] = useState<string[]>([]);
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
   const [filterRevMin, setFilterRevMin] = useState<number>(0);
