@@ -422,6 +422,7 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.location === next.lead.location &&
     prev.assignedUserName === next.assignedUserName &&
     prev.leadFormName === next.leadFormName &&
+    prev.channelName === next.channelName &&
     prev.isDragging === next.isDragging &&
     prev.isSelected === next.isSelected
   );

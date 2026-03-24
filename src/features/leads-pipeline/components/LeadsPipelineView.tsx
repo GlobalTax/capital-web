@@ -552,6 +552,7 @@ export const LeadsPipelineView: React.FC = () => {
                 leads={filteredLeadsByStatus[status.status_key] || []}
                 adminUsersMap={adminUsersMap}
                 leadFormsMap={leadFormsMap}
+                channelsMap={channelNameMap}
                 onSendPrecallEmail={handleSendPrecallEmail}
                 onRegisterCall={handleRegisterCall}
                 onViewDetails={handleViewDetails}
