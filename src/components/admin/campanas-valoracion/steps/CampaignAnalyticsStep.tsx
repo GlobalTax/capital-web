@@ -37,6 +37,7 @@ interface StageMetrics {
 }
 
 export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
+  const isDocument = campaign.campaign_type === 'document';
   const { companies } = useCampaignCompanies(campaignId);
   const { emails } = useCampaignEmails(campaignId);
   const { sequences, allSends } = useFollowupSequences(campaignId);
