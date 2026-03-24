@@ -19,6 +19,7 @@ interface CompanySearchDialogProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (empresa: Empresa) => void;
   initialSearch?: string;
+  isLinking?: boolean;
 }
 
 export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({

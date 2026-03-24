@@ -177,6 +177,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
           onOpenChange={setIsSearchOpen}
           onSelect={handleLink}
           initialSearch={companyName}
+          isLinking={isLinking}
         />
 
         <CompanyFormDialog
