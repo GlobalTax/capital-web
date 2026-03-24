@@ -528,7 +528,7 @@ function SendList({
 
     result = result.filter(c => matchesCustomRange(c.revenue, filterRevenue));
     result = result.filter(c => matchesCustomRange(c.ebitda, filterEbitda));
-    result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
+    if (!isDocument) result = result.filter(c => matchesCustomRange(c.valuation_central, filterValuation));
 
     return applySortToList(result, sort);
   }, [visible, searchQuery, filterEstadoEnvio, filterEntrega, filterSeguimiento, filterRevenue, filterEbitda, filterValuation, sendMap, sort]);
