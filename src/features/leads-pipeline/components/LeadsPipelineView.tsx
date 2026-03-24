@@ -158,8 +158,8 @@ export const LeadsPipelineView: React.FC = () => {
         }
       }
 
-      if (filterChannel) {
-        columnLeads = columnLeads.filter(lead => lead.acquisition_channel_id === filterChannel);
+      if (filterChannels.length > 0) {
+        columnLeads = columnLeads.filter(lead => lead.acquisition_channel_id && filterChannels.includes(lead.acquisition_channel_id));
       }
 
       if (filterFormIds) {
