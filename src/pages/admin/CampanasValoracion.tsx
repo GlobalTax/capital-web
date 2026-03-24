@@ -523,7 +523,6 @@ export default function CampanasValoracion() {
                   <TableHead>Sector</TableHead>
                   <TableHead className="text-center">Empresas</TableHead>
                   <TableHead className="text-center">Enviadas</TableHead>
-                  {activeTab === 'valuation' && <TableHead className="text-right">Valor Total</TableHead>}
                   <TableHead className="text-center">Estado</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>1r Envío</TableHead>
