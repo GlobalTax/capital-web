@@ -363,7 +363,7 @@ export function CampaignAnalyticsStep({ campaignId, campaign }: Props) {
                 <TableRow>
                   <TableHead>Empresa</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead className="text-right">Valoración</TableHead>
+                  {!isDocument && <TableHead className="text-right">Valoración</TableHead>}
                   <TableHead className="text-center">1r Envío</TableHead>
                   {sequences.sort((a, b) => a.sequence_number - b.sequence_number).map(seq => (
                     <TableHead key={seq.id} className="text-center text-xs">
