@@ -329,7 +329,7 @@ export default function CampanasValoracion() {
         {showSector && <TableCell>{c.sector}</TableCell>}
         <TableCell className="text-center">{c.total_companies}</TableCell>
         <TableCell className="text-center">{stageData?.[c.id]?.emailsSent ?? c.total_sent}</TableCell>
-        {activeTab === 'valuation' && <TableCell className="text-right">{c.total_valuation > 0 ? formatCurrencyEUR(c.total_valuation) : '—'}</TableCell>}
+        
         <TableCell className="text-center"><Badge variant={stage.variant}>{stage.label}</Badge></TableCell>
         <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('es-ES')}</TableCell>
         <TableCell className="text-sm text-muted-foreground">
@@ -428,12 +428,6 @@ export default function CampanasValoracion() {
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><Mail className="h-4 w-4" />Enviadas</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-bold">{totalSent}</p></CardContent>
         </Card>
-        {activeTab === 'valuation' && (
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1"><TrendingUp className="h-4 w-4" />Valor Total</CardTitle></CardHeader>
-            <CardContent><p className="text-2xl font-bold">{formatCurrencyEUR(totalValuation)}</p></CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Table */}
@@ -529,7 +523,6 @@ export default function CampanasValoracion() {
                   <TableHead>Sector</TableHead>
                   <TableHead className="text-center">Empresas</TableHead>
                   <TableHead className="text-center">Enviadas</TableHead>
-                  {activeTab === 'valuation' && <TableHead className="text-right">Valor Total</TableHead>}
                   <TableHead className="text-center">Estado</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>1r Envío</TableHead>
@@ -568,7 +561,7 @@ export default function CampanasValoracion() {
                               <TableHead>Campaña</TableHead>
                               <TableHead className="text-center">Empresas</TableHead>
                               <TableHead className="text-center">Enviadas</TableHead>
-                              {activeTab === 'valuation' && <TableHead className="text-right">Valor Total</TableHead>}
+                              
                               <TableHead className="text-center">Estado</TableHead>
                               <TableHead>Fecha</TableHead>
                               <TableHead>1r Envío</TableHead>
