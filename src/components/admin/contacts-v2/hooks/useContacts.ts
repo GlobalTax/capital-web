@@ -391,7 +391,8 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>, p
   };
 }
 
-function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Contact {
+function transformAdvisor(lead: any, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin: 'advisor',
@@ -404,9 +405,9 @@ function transformAdvisor(lead: any, formDisplayMap: Record<string, string>): Co
     cif: lead.cif,
     industry: lead.firm_type,
     employee_range: lead.employee_range,
-    revenue: lead.revenue ? Number(lead.revenue) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : pvFallback?.revenue,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : pvFallback?.ebitda,
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     acquisition_channel_id: lead.acquisition_channel_id,
