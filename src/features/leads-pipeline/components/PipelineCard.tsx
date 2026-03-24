@@ -75,6 +75,7 @@ const formatCurrency = (value: number | null) => {
 const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   lead,
   assignedUserName,
+  leadFormName,
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
