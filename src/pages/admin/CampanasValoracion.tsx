@@ -40,9 +40,7 @@ export default function CampanasValoracion() {
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
   const [editingNameValue, setEditingNameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
-  const [viewMode, setViewMode] = useState<'flat' | 'grouped'>(() => {
-    return (localStorage.getItem('campanas-view-mode') as 'flat' | 'grouped') || 'grouped';
-  });
+  const [viewMode, setViewMode] = useState<'flat' | 'grouped'>('grouped');
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
   const [foldersInitialized, setFoldersInitialized] = useState(false);
 
