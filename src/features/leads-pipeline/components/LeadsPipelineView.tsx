@@ -400,22 +400,47 @@ export const LeadsPipelineView: React.FC = () => {
           />
         </div>
         
-        {/* Assignee */}
-        <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-          <SelectTrigger className="w-[160px] h-9">
-            <Users className="h-3.5 w-3.5 mr-1.5" />
-            <SelectValue placeholder="Asignado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="unassigned">Sin asignar</SelectItem>
-            {adminUsers.map(user => (
-              <SelectItem key={user.user_id} value={user.user_id}>
-                {user.full_name || user.email}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Assignee - Multi-select */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterAssignees.length > 0 && "border-primary text-primary")}>
+              <Users className="h-3.5 w-3.5" />
+              {filterAssignees.length > 0 ? `Asignado (${filterAssignees.length})` : 'Asignado'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                <Checkbox
+                  checked={filterAssignees.includes('unassigned')}
+                  onCheckedChange={() => setFilterAssignees(prev =>
+                    prev.includes('unassigned') ? prev.filter(id => id !== 'unassigned') : [...prev, 'unassigned']
+                  )}
+                />
+                <span className="text-sm italic text-muted-foreground">Sin asignar</span>
+              </label>
+              {adminUsers.map(user => (
+                <label key={user.user_id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox
+                    checked={filterAssignees.includes(user.user_id)}
+                    onCheckedChange={() => setFilterAssignees(prev =>
+                      prev.includes(user.user_id) ? prev.filter(id => id !== user.user_id) : [...prev, user.user_id]
+                    )}
+                  />
+                  <span className="text-sm">{user.full_name || user.email}</span>
+                </label>
+              ))}
+            </div>
+            {filterAssignees.length > 0 && (
+              <div className="border-t p-1">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterAssignees([])}>
+                  Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
         {/* Channel - Multi-select */}
         <Popover>
