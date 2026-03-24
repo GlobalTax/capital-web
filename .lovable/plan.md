@@ -1,35 +1,36 @@
 
 
-## Mostrar siempre Facturación y EBITDA en la tabla de contactos
+## Vistas personalizadas en el Pipeline
 
-### Diagnóstico
-
-La tabla de contactos ya tiene las columnas Facturación y EBITDA, pero muchos leads muestran `-` porque:
-
-1. **`contact_leads`** no tiene columnas `revenue`/`ebitda` — solo obtiene datos del join con `empresas` (si hay `empresa_id` vinculada)
-2. **`company_valuations`** sí tiene `revenue`/`ebitda`, pero los leads de tipo `contact` no acceden a estos datos
-3. **`professional_valuations`** tiene `revenue`, `ebitda` y `valuation_central`, vinculable via `linked_lead_id`, pero nunca se consulta como fallback
+### Concepto
+Permitir guardar combinaciones de filtros con un nombre, y cargarlas con un clic. Persistido en `localStorage` (sin necesidad de tabla en Supabase).
 
 ### Cambios
 
-**`src/components/admin/contacts-v2/hooks/useContacts.ts`** — Añadir fallback de datos financieros
+**1. Nuevo hook `src/features/leads-pipeline/hooks/usePipelineSavedViews.ts`**
 
-1. **Fetch adicional**: Cargar `professional_valuations` (solo campos financieros) en paralelo con las demás queries:
-   ```
-   supabase.from('professional_valuations')
-     .select('linked_lead_id, linked_lead_type, revenue, ebitda, valuation_central')
-     .not('linked_lead_id', 'is', null)
-   ```
+- Define tipo `PipelineSavedView`: `{ id, name, filters: { searchQuery, filterAssignee, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax } }`
+- CRUD en `localStorage` bajo clave `pipeline-saved-views`
+- Funciones: `savedViews`, `saveView(name, filters)`, `deleteView(id)`, `renameView(id, name)`
 
-2. **Crear mapa de lookup**: `proValMap = Map<lead_id, {revenue, ebitda, valuation}>`
+**2. Actualizar `LeadsPipelineView.tsx`**
 
-3. **Enriquecer transforms**: En `transformContact` y `transformValuation`, añadir un tercer nivel de fallback:
-   - `revenue = lead.revenue || empresas.facturacion || proValMap[lead.id]?.revenue`
-   - `ebitda = lead.ebitda || empresas.ebitda || proValMap[lead.id]?.ebitda`
-   - `final_valuation = lead.final_valuation || proValMap[lead.id]?.valuation_central`
+- Importar el hook
+- Añadir en la barra de filtros (junto al botón "Limpiar filtros") un componente inline:
+  - **Botón "Guardar vista"**: aparece solo cuando hay filtros activos. Abre un pequeño popover con input de nombre + botón guardar
+  - **Selector de vistas guardadas**: `DropdownMenu` con las vistas guardadas. Al seleccionar una, aplica todos los filtros. Cada item tiene botón de eliminar (icono X)
+- Al cargar una vista: setea todos los estados de filtro de golpe
+- Al guardar: captura el estado actual de todos los filtros
 
-4. **Pasar el mapa a los transforms**: Añadir `proValMap` como parámetro a las funciones `transformContact`, `transformValuation`, `transformAdvisor` y `transformLegacyLead`
+### UI
+
+```text
+[🔍 Buscar...] [Responsable ▾] [Canal ▾] [Formulario ▾] [Fecha...] [Fact...] [EBITDA...]
+[⭐ Mis vistas ▾] [💾 Guardar vista]  [Limpiar filtros]
+```
+
+El dropdown "Mis vistas" muestra la lista de vistas guardadas con opción de eliminar cada una.
 
 ### Resultado
-Cada contacto mostrará Facturación y EBITDA siempre que el dato exista en cualquier fuente: el propio lead, la empresa vinculada, o la valoración profesional asociada. Solo mostrará `-` cuando realmente no exista el dato en ningún sitio.
+El usuario puede guardar cualquier combinación de filtros como vista con nombre, cargarla con un clic, y eliminarla cuando ya no la necesite. Todo persiste en localStorage sin cambios en backend.
 
