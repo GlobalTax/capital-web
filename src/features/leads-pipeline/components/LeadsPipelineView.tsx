@@ -61,7 +61,10 @@ export const LeadsPipelineView: React.FC = () => {
 
   const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
   const { channels } = useAcquisitionChannels();
-  const { displayNameGroups, resolveDisplayNameToIds } = useLeadForms();
+  const { displayNameGroups, resolveDisplayNameToIds, displayNameMap } = useLeadForms();
+  
+  // Build a Map<formId, displayName> for pipeline cards
+  const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
   
   const isLoading = isLoadingLeads || isLoadingStatuses;
 
