@@ -106,17 +106,24 @@ export const useContacts = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('professional_valuations')
-          .select('linked_lead_id, linked_lead_type, revenue, ebitda, valuation_central')
+          .select('linked_lead_id, linked_lead_type, reported_ebitda, normalized_ebitda, valuation_central, financial_years')
           .not('linked_lead_id', 'is', null),
       ]);
 
       // Build professional valuations lookup map (lead_id -> financial data)
       const proValMap = new Map<string, { revenue?: number; ebitda?: number; valuation?: number }>();
-      for (const pv of (proValData || [])) {
+      for (const pv of (proValData || []) as any[]) {
         if (pv.linked_lead_id) {
+          // Extract revenue from financial_years (latest year)
+          let revenue: number | undefined;
+          if (Array.isArray(pv.financial_years) && pv.financial_years.length > 0) {
+            const sorted = [...pv.financial_years].sort((a: any, b: any) => (b.year || 0) - (a.year || 0));
+            revenue = sorted[0]?.revenue ? Number(sorted[0].revenue) : undefined;
+          }
+          const ebitda = pv.normalized_ebitda ? Number(pv.normalized_ebitda) : (pv.reported_ebitda ? Number(pv.reported_ebitda) : undefined);
           proValMap.set(pv.linked_lead_id, {
-            revenue: pv.revenue ? Number(pv.revenue) : undefined,
-            ebitda: pv.ebitda ? Number(pv.ebitda) : undefined,
+            revenue,
+            ebitda,
             valuation: pv.valuation_central ? Number(pv.valuation_central) : undefined,
           });
         }
