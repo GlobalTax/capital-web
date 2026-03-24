@@ -1,26 +1,30 @@
 
 
-## Hacer más visibles el formulario y el canal de adquisición en las tarjetas del Pipeline
+## Filtros multiselección para Canal y Formulario en el Pipeline
+
+### Problema actual
+Los filtros de Canal y Formulario usan `DropdownMenu` con selección única (`filterChannel: string | null`, `filterFormDisplay: string | null`). El usuario necesita poder seleccionar varios a la vez.
 
 ### Cambios
 
-**1. `PipelineCard.tsx`** — Mostrar canal + mejorar colores de ambos badges
+**`src/features/leads-pipeline/components/LeadsPipelineView.tsx`**
 
-- Añadir prop `channelName?: string`
-- Cambiar el badge del formulario de `variant="outline" text-muted-foreground` a un color más llamativo (azul: `bg-blue-100 text-blue-700 border-blue-200`)
-- Añadir badge del canal con color diferenciado (violeta: `bg-purple-100 text-purple-700 border-purple-200`) con icono `📡` o similar
-- Añadir `channelName` al memo comparison
+1. **Estado** — Cambiar los estados de filtro:
+   - `filterChannel: string | null` → `filterChannels: string[]` (array de IDs)
+   - `filterFormDisplay: string | null` → `filterFormDisplays: string[]` (array de display names)
 
-**2. `PipelineColumn.tsx`** — Recibir y pasar `channelsMap`
+2. **UI Canal (líneas 373-390)** — Reemplazar el `DropdownMenu` por un `Popover` con checkboxes:
+   - Cada canal tiene un `Checkbox` que togglea su presencia en el array
+   - El botón muestra "Canal" si vacío, o "Canal (N)" si hay selección
+   - Botón "Limpiar" dentro del popover
 
-- Añadir prop `channelsMap?: Map<string, string>`
-- Pasar `channelName={lead.acquisition_channel_id && channelsMap ? channelsMap.get(lead.acquisition_channel_id) : undefined}` a cada `PipelineCard`
+3. **UI Formulario (líneas 392-409)** — Mismo patrón con checkboxes para los `displayNameGroups`
 
-**3. `LeadsPipelineView.tsx`** — Crear el mapa de canales y pasarlo
+4. **Lógica de filtrado (líneas 160-166)** — Adaptar:
+   - `filterChannel` → `filterChannels.length > 0 ? columnLeads.filter(lead => filterChannels.includes(lead.acquisition_channel_id)) : columnLeads`
+   - `filterFormIds` → unión de IDs de todos los display names seleccionados
 
-- Crear `channelsMap` memoizado a partir de `channels` (ya cargados con `useAcquisitionChannels`): `new Map(channels.map(c => [c.id, c.name]))`
-- Pasarlo a cada `PipelineColumn`
+5. **`hasActiveFilters` y `clearFilters`** — Adaptar para arrays vacíos en vez de null
 
-### Resultado
-Cada tarjeta mostrará el formulario (badge azul) y el canal de adquisición (badge violeta), ambos claramente visibles de un vistazo.
+6. **`filterFormIds` memo** — Cambiar para resolver múltiples display names a sus IDs combinados
 
