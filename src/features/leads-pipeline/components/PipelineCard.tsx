@@ -188,9 +188,8 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             {lead.industry}
           </Badge>
           {valuationFormatted && (
-            <Badge variant="outline" className="text-xs font-medium">
-              <DollarSign className="h-3 w-3 mr-0.5" />
-              {valuationFormatted}
+            <Badge variant="outline" className="text-xs font-medium text-emerald-700 border-emerald-200 bg-emerald-50">
+              💰 {valuationFormatted}
             </Badge>
           )}
           {leadFormName && (
