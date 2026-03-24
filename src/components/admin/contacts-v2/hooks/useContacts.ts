@@ -314,7 +314,8 @@ export const useContacts = () => {
 };
 
 // Transform helpers
-function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Record<string, string>): Contact {
+function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Record<string, string>, proValMap?: Map<string, { revenue?: number; ebitda?: number; valuation?: number }>): Contact {
+  const pvFallback = proValMap?.get(lead.id);
   return {
     id: lead.id,
     origin,
@@ -330,9 +331,9 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
     empresa_id: lead.empresa_id,
     empresa_nombre: lead.empresas?.nombre,
     empresa_facturacion: lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined,
-    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : undefined),
-    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : undefined),
-    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.empresas?.facturacion ? Number(lead.empresas.facturacion) : pvFallback?.revenue),
+    ebitda: lead.ebitda ? Number(lead.ebitda) : (lead.empresas?.ebitda ? Number(lead.empresas.ebitda) : pvFallback?.ebitda),
+    final_valuation: lead.final_valuation ? Number(lead.final_valuation) : pvFallback?.valuation,
     cif: lead.cif,
     industry: lead.industry || lead.sectors_of_interest,
     employee_range: lead.employee_range || lead.company_size,
