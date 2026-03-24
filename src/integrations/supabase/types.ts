@@ -9337,6 +9337,7 @@ export type Database = {
           ebit: number | null
           ebitda: number | null
           ebt: number | null
+          employees: number | null
           empresa_id: string
           financial_assets: number | null
           financial_result: number | null
@@ -9392,6 +9393,7 @@ export type Database = {
           ebit?: number | null
           ebitda?: number | null
           ebt?: number | null
+          employees?: number | null
           empresa_id: string
           financial_assets?: number | null
           financial_result?: number | null
@@ -9447,6 +9449,7 @@ export type Database = {
           ebit?: number | null
           ebitda?: number | null
           ebt?: number | null
+          employees?: number | null
           empresa_id?: string
           financial_assets?: number | null
           financial_result?: number | null
