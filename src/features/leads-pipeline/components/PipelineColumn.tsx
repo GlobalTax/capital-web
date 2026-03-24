@@ -36,6 +36,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   column,
   leads,
   adminUsersMap,
+  leadFormsMap,
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
