@@ -142,7 +142,15 @@ export const LeadsPipelineView: React.FC = () => {
 
   const handleLoadView = useCallback((filters: PipelineViewFilters) => {
     setSearchQuery(filters.searchQuery);
-    setFilterAssignee(filters.filterAssignee);
+    // Backward compat: filterAssignee may be a string in old saved views
+    const assignee = filters.filterAssignee;
+    if (Array.isArray(assignee)) {
+      setFilterAssignees(assignee);
+    } else if (assignee && assignee !== 'all') {
+      setFilterAssignees([assignee]);
+    } else {
+      setFilterAssignees([]);
+    }
     setFilterChannels(filters.filterChannels);
     setFilterFormDisplays(filters.filterFormDisplays);
     setFilterDateFrom(filters.filterDateFrom ? new Date(filters.filterDateFrom) : undefined);
