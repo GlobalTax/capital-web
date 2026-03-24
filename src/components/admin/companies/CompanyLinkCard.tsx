@@ -46,6 +46,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
   const navigate = useNavigate();
   const { linkToContact, unlinkFromContact } = useEmpresas();
 
