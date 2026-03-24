@@ -12,8 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Phone, 
-  Mail, 
-  MailOpen, 
   Building2, 
   DollarSign,
   Clock,
@@ -234,27 +232,15 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
           </div>
         )}
 
-        {/* Email Status */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {lead.email_opened ? (
-            <span className="flex items-center text-green-600">
-              <MailOpen className="h-3 w-3 mr-1" />
-              Email abierto
-            </span>
-          ) : lead.email_sent ? (
-            <span className="flex items-center text-yellow-600">
-              <Mail className="h-3 w-3 mr-1" />
-              Email enviado
-            </span>
-          ) : null}
-          
-          {lead.call_attempts_count && lead.call_attempts_count > 0 && (
+        {/* Call attempts */}
+        {lead.call_attempts_count && lead.call_attempts_count > 0 && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="flex items-center">
               <Phone className="h-3 w-3 mr-1" />
               {lead.call_attempts_count} llamada{lead.call_attempts_count > 1 ? 's' : ''}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
@@ -410,8 +396,6 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.id === next.lead.id &&
     prev.lead.lead_status_crm === next.lead.lead_status_crm &&
     prev.lead.assigned_to === next.lead.assigned_to &&
-    prev.lead.email_opened === next.lead.email_opened &&
-    prev.lead.email_sent === next.lead.email_sent &&
     prev.lead.precall_email_sent === next.lead.precall_email_sent &&
     prev.lead.call_attempts_count === next.lead.call_attempts_count &&
     prev.lead.final_valuation === next.lead.final_valuation &&
