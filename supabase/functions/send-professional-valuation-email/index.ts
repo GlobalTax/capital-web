@@ -611,8 +611,25 @@ const handler = async (req: Request): Promise<Response> => {
     let bccRecipients: string[] = [];
     
     if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
-      ccRecipients = requestData.selectedRecipients;
-      log('info', 'USING_SELECTED_RECIPIENTS', { count: ccRecipients.length });
+      // Cross-reference with email_recipients_config to separate CC vs BCC
+      const { data: recipientFlags } = await supabase
+        .from('email_recipients_config')
+        .select('email, is_bcc')
+        .in('email', requestData.selectedRecipients)
+        .eq('is_active', true);
+      
+      const bccSet = new Set(
+        (recipientFlags || []).filter((r: any) => r.is_bcc).map((r: any) => r.email.toLowerCase())
+      );
+      
+      ccRecipients = requestData.selectedRecipients.filter(
+        (e: string) => !bccSet.has(e.toLowerCase())
+      );
+      bccRecipients = requestData.selectedRecipients.filter(
+        (e: string) => bccSet.has(e.toLowerCase())
+      );
+      
+      log('info', 'USING_SELECTED_RECIPIENTS', { ccCount: ccRecipients.length, bccCount: bccRecipients.length });
     } else {
       const recipients = await getInternalRecipients();
       ccRecipients = recipients.cc;
