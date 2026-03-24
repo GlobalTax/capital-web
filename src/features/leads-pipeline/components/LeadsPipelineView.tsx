@@ -601,9 +601,64 @@ export const LeadsPipelineView: React.FC = () => {
             Limpiar
           </Button>
         )}
-      </div>
 
-      {/* Kanban Board */}
+        {/* Save view */}
+        {hasActiveFilters && (
+          <Popover open={isSavePopoverOpen} onOpenChange={setIsSavePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                <Save className="h-3.5 w-3.5" />
+                Guardar vista
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-3" align="start">
+              <p className="text-xs font-medium mb-2">Nombre de la vista</p>
+              <div className="flex gap-2">
+                <Input
+                  value={saveViewName}
+                  onChange={e => setSaveViewName(e.target.value)}
+                  placeholder="Ej: Leads calificados Q1"
+                  className="h-8 text-xs"
+                  onKeyDown={e => e.key === 'Enter' && handleSaveView()}
+                />
+                <Button size="sm" className="h-8 px-3" onClick={handleSaveView} disabled={!saveViewName.trim()}>
+                  Guardar
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {/* Saved views selector */}
+        {savedViews.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50">
+                <Star className="h-3.5 w-3.5" />
+                Mis vistas ({savedViews.length})
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {savedViews.map(view => (
+                <DropdownMenuItem
+                  key={view.id}
+                  className="flex items-center justify-between group"
+                  onClick={() => handleLoadView(view.filters)}
+                >
+                  <span className="text-sm truncate">{view.name}</span>
+                  <button
+                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-opacity"
+                    onClick={e => { e.stopPropagation(); deleteView(view.id); }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                  </button>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
       <div className="flex-1 overflow-hidden">
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="flex gap-4 h-full overflow-x-auto pb-4">
