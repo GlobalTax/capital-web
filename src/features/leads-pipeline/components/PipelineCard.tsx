@@ -47,6 +47,7 @@ interface PipelineCardProps {
   lead: PipelineLead;
   assignedUserName?: string;
   leadFormName?: string;
+  channelName?: string;
   onSendPrecallEmail: () => void;
   onRegisterCall: (answered: boolean) => void;
   onViewDetails: () => void;
@@ -76,6 +77,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   lead,
   assignedUserName,
   leadFormName,
+  channelName,
   onSendPrecallEmail,
   onRegisterCall,
   onViewDetails,
@@ -192,8 +194,13 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             </Badge>
           )}
           {leadFormName && (
-            <Badge variant="outline" className="text-xs text-muted-foreground">
+            <Badge className="text-xs bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-100">
               📋 {leadFormName}
+            </Badge>
+          )}
+          {channelName && (
+            <Badge className="text-xs bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-100">
+              📡 {channelName}
             </Badge>
           )}
         </div>
@@ -415,6 +422,7 @@ export const PipelineCard = memo(PipelineCardComponent, (prev, next) => {
     prev.lead.location === next.lead.location &&
     prev.assignedUserName === next.assignedUserName &&
     prev.leadFormName === next.leadFormName &&
+    prev.channelName === next.channelName &&
     prev.isDragging === next.isDragging &&
     prev.isSelected === next.isSelected
   );
