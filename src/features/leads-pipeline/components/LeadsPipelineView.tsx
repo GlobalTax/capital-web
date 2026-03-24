@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
@@ -104,8 +105,8 @@ export const LeadsPipelineView: React.FC = () => {
   }, []);
 
   // New filters
-  const [filterChannel, setFilterChannel] = useState<string | null>(null);
-  const [filterFormDisplay, setFilterFormDisplay] = useState<string | null>(null);
+  const [filterChannels, setFilterChannels] = useState<string[]>([]);
+  const [filterFormDisplays, setFilterFormDisplays] = useState<string[]>([]);
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
   const [filterRevMin, setFilterRevMin] = useState<number>(0);
@@ -113,13 +114,13 @@ export const LeadsPipelineView: React.FC = () => {
   const [filterEbitdaMin, setFilterEbitdaMin] = useState<number>(0);
   const [filterEbitdaMax, setFilterEbitdaMax] = useState<number>(0);
 
-  // Resolved form IDs for the selected display name
+  // Resolved form IDs for the selected display names
   const filterFormIds = useMemo(() => {
-    if (!filterFormDisplay) return null;
-    return resolveDisplayNameToIds(filterFormDisplay);
-  }, [filterFormDisplay, resolveDisplayNameToIds]);
+    if (filterFormDisplays.length === 0) return null;
+    return filterFormDisplays.flatMap(dn => resolveDisplayNameToIds(dn));
+  }, [filterFormDisplays, resolveDisplayNameToIds]);
 
-  const hasActiveFilters = searchQuery || filterAssignee !== 'all' || filterChannel || filterFormDisplay || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
+  const hasActiveFilters = searchQuery || filterAssignee !== 'all' || filterChannels.length > 0 || filterFormDisplays.length > 0 || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
 
   // Memoized admin users map
   const adminUsersMap = useMemo(() => 
@@ -157,8 +158,8 @@ export const LeadsPipelineView: React.FC = () => {
         }
       }
 
-      if (filterChannel) {
-        columnLeads = columnLeads.filter(lead => lead.acquisition_channel_id === filterChannel);
+      if (filterChannels.length > 0) {
+        columnLeads = columnLeads.filter(lead => lead.acquisition_channel_id && filterChannels.includes(lead.acquisition_channel_id));
       }
 
       if (filterFormIds) {
@@ -192,7 +193,7 @@ export const LeadsPipelineView: React.FC = () => {
     });
     
     return result;
-  }, [leadsByStatus, searchQuery, filterAssignee, filterChannel, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
+  }, [leadsByStatus, searchQuery, filterAssignee, filterChannels, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
 
   // Handlers
   const handleDragEnd = useCallback((result: DropResult) => {
@@ -255,8 +256,8 @@ export const LeadsPipelineView: React.FC = () => {
   const clearFilters = useCallback(() => {
     setSearchQuery('');
     setFilterAssignee('all');
-    setFilterChannel(null);
-    setFilterFormDisplay(null);
+    setFilterChannels([]);
+    setFilterFormDisplays([]);
     setFilterDateFrom(undefined);
     setFilterDateTo(undefined);
     setFilterRevMin(0);
@@ -370,43 +371,71 @@ export const LeadsPipelineView: React.FC = () => {
           </SelectContent>
         </Select>
 
-        {/* Channel */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterChannel && "border-primary text-primary")}>
+        {/* Channel - Multi-select */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterChannels.length > 0 && "border-primary text-primary")}>
               <Filter className="h-3.5 w-3.5" />
-              {filterChannel ? channelNameMap.get(filterChannel) || 'Canal' : 'Canal'}
+              {filterChannels.length > 0 ? `Canal (${filterChannels.length})` : 'Canal'}
               <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setFilterChannel(null)}>Todos</DropdownMenuItem>
-            {channels.map(ch => (
-              <DropdownMenuItem key={ch.id} onClick={() => setFilterChannel(ch.id)}>
-                {ch.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              {channels.map(ch => (
+                <label key={ch.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox
+                    checked={filterChannels.includes(ch.id)}
+                    onCheckedChange={() => setFilterChannels(prev =>
+                      prev.includes(ch.id) ? prev.filter(id => id !== ch.id) : [...prev, ch.id]
+                    )}
+                  />
+                  <span className="text-sm">{ch.name}</span>
+                </label>
+              ))}
+            </div>
+            {filterChannels.length > 0 && (
+              <div className="border-t p-1">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterChannels([])}>
+                  Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
-        {/* Form */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterFormDisplay && "border-primary text-primary")}>
+        {/* Form - Multi-select */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterFormDisplays.length > 0 && "border-primary text-primary")}>
               <Filter className="h-3.5 w-3.5" />
-              {filterFormDisplay || 'Formulario'}
+              {filterFormDisplays.length > 0 ? `Formulario (${filterFormDisplays.length})` : 'Formulario'}
               <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => setFilterFormDisplay(null)}>Todos</DropdownMenuItem>
-            {displayNameGroups.map(g => (
-              <DropdownMenuItem key={g.displayName} onClick={() => setFilterFormDisplay(g.displayName)}>
-                {g.displayName}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              {displayNameGroups.map(g => (
+                <label key={g.displayName} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox
+                    checked={filterFormDisplays.includes(g.displayName)}
+                    onCheckedChange={() => setFilterFormDisplays(prev =>
+                      prev.includes(g.displayName) ? prev.filter(n => n !== g.displayName) : [...prev, g.displayName]
+                    )}
+                  />
+                  <span className="text-sm">{g.displayName}</span>
+                </label>
+              ))}
+            </div>
+            {filterFormDisplays.length > 0 && (
+              <div className="border-t p-1">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterFormDisplays([])}>
+                  Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
         {/* Date */}
         <Popover>
