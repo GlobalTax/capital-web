@@ -61,7 +61,7 @@ export const useContacts = () => {
         formDisplayMap[f.id] = f.display_name || f.name;
       }
 
-      // Parallel fetch all contact sources (including legacy tables)
+      // Parallel fetch all contact sources (including legacy tables) + professional valuations for financial fallback
       const [
         { data: contactLeads },
         { data: valuationLeads },
@@ -70,6 +70,7 @@ export const useContacts = () => {
         { data: advisorLeads },
         { data: sellLeads },
         { data: generalContactLeads },
+        { data: proValData },
       ] = await Promise.all([
         supabase
           .from('contact_leads')
@@ -103,7 +104,23 @@ export const useContacts = () => {
           .from('general_contact_leads')
           .select('*')
           .order('created_at', { ascending: false }),
+        supabase
+          .from('professional_valuations')
+          .select('linked_lead_id, linked_lead_type, revenue, ebitda, valuation_central')
+          .not('linked_lead_id', 'is', null),
       ]);
+
+      // Build professional valuations lookup map (lead_id -> financial data)
+      const proValMap = new Map<string, { revenue?: number; ebitda?: number; valuation?: number }>();
+      for (const pv of (proValData || [])) {
+        if (pv.linked_lead_id) {
+          proValMap.set(pv.linked_lead_id, {
+            revenue: pv.revenue ? Number(pv.revenue) : undefined,
+            ebitda: pv.ebitda ? Number(pv.ebitda) : undefined,
+            valuation: pv.valuation_central ? Number(pv.valuation_central) : undefined,
+          });
+        }
+      }
 
       // Collect emails already in contact_leads to avoid duplicating legacy records
       const contactLeadEmails = new Set(
