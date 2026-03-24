@@ -1,34 +1,22 @@
 
+## Eliminar "Email enviado" de las tarjetas del Pipeline
 
-## Ocultar Valoración en campañas de tipo Documento PDF
+### Cambio
 
-### Problema
-En las campañas de tipo "Documento PDF", aparecen columnas y filtros de "Valoración" que no tienen sentido porque no se envía ninguna valoración — solo un documento PDF.
+**`src/features/leads-pipeline/components/PipelineCard.tsx`** (líneas 237-257)
 
-### Cambios
+Eliminar el bloque "Email Status" completo (email abierto / email enviado), manteniendo solo el contador de llamadas:
 
-**1. `src/components/admin/campanas-valoracion/steps/FollowUpStep.tsx`**
+```tsx
+{/* Call attempts only */}
+{lead.call_attempts_count && lead.call_attempts_count > 0 && (
+  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+    <span className="flex items-center">
+      <Phone className="h-3 w-3 mr-1" />
+      {lead.call_attempts_count} llamada{lead.call_attempts_count > 1 ? 's' : ''}
+    </span>
+  </div>
+)}
+```
 
-El componente ya recibe `campaign` con `campaign_type`. Usar `const isDocument = campaign.campaign_type === 'document'` para:
-
-- **Filtro**: Ocultar `<FinancialFilter label="Valoración" ...>` cuando `isDocument`
-- **Columna header**: Ocultar `<TableHead>` de Valoración cuando `isDocument`
-- **Columna datos**: Ocultar `<TableCell>` de `valuation_central` cuando `isDocument`
-- **Lógica de filtrado**: No aplicar `matchesCustomRange(c.valuation_central, filterValuation)` cuando `isDocument`
-- **hasFinancialFilters**: Excluir valuation del cálculo cuando `isDocument`
-
-**2. `src/components/admin/campanas-valoracion/steps/CampaignAnalyticsStep.tsx`**
-
-Recibe `campaign` prop. Mismo patrón `isDocument`:
-
-- Ocultar `<TableHead>Valoración</TableHead>` y su `<TableCell>` correspondiente cuando `isDocument`
-
-**3. `src/components/admin/campanas-valoracion/steps/ProcessSendStep.tsx`**
-
-Aunque las campañas documento usan `DocumentSendStep` en vez de `ProcessSendStep`, este componente también debería protegerse por consistencia:
-
-- Ocultar columna Valoración, filtro y "PDF Valoración" cuando `isDocument`
-
-### Resultado
-En campañas de documento PDF, la tabla solo mostrará Facturación y EBITDA como datos financieros, sin ninguna referencia a Valoración.
-
+También limpiar imports no usados (`Mail`, `MailOpen`) si ya no se usan en otro lugar del componente.
