@@ -1,33 +1,26 @@
 
 
-## Mostrar el formulario de origen en las tarjetas del Pipeline
-
-### Problema
-El campo `lead_form` ya se carga en cada lead del pipeline, pero no se muestra en la tarjeta. El usuario quiere ver qué formulario rellenó cada lead.
+## Hacer más visibles el formulario y el canal de adquisición en las tarjetas del Pipeline
 
 ### Cambios
 
-**1. `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`** — Cargar los nombres de formularios
-- Añadir una query a `lead_forms` para obtener el mapa `id → display_name`
-- Exponer `leadFormsMap` desde el hook
+**1. `PipelineCard.tsx`** — Mostrar canal + mejorar colores de ambos badges
 
-**2. `src/features/leads-pipeline/components/PipelineCard.tsx`** — Mostrar badge con el formulario
-- Añadir prop `leadFormName?: string`
-- Mostrar un badge debajo de la industria cuando exista, por ejemplo:
-  ```
-  📋 Valoración Web
-  ```
-- Añadir `leadFormName` a la comparación del memo
+- Añadir prop `channelName?: string`
+- Cambiar el badge del formulario de `variant="outline" text-muted-foreground` a un color más llamativo (azul: `bg-blue-100 text-blue-700 border-blue-200`)
+- Añadir badge del canal con color diferenciado (violeta: `bg-purple-100 text-purple-700 border-purple-200`) con icono `📡` o similar
+- Añadir `channelName` al memo comparison
 
-**3. `src/features/leads-pipeline/components/PipelineColumn.tsx`** — Pasar el nombre del formulario a cada tarjeta
-- Recibir `leadFormsMap` como prop
-- Pasar `leadFormName={leadFormsMap.get(lead.lead_form)}` a cada `PipelineCard`
-- Añadir al memo comparison
+**2. `PipelineColumn.tsx`** — Recibir y pasar `channelsMap`
 
-**4. `src/features/leads-pipeline/components/LeadsPipelineView.tsx`** — Conectar el mapa de formularios
-- Obtener `leadFormsMap` del hook o usar `useLeadForms()` directamente
+- Añadir prop `channelsMap?: Map<string, string>`
+- Pasar `channelName={lead.acquisition_channel_id && channelsMap ? channelsMap.get(lead.acquisition_channel_id) : undefined}` a cada `PipelineCard`
+
+**3. `LeadsPipelineView.tsx`** — Crear el mapa de canales y pasarlo
+
+- Crear `channelsMap` memoizado a partir de `channels` (ya cargados con `useAcquisitionChannels`): `new Map(channels.map(c => [c.id, c.name]))`
 - Pasarlo a cada `PipelineColumn`
 
 ### Resultado
-Cada tarjeta del pipeline mostrará un badge con el nombre del formulario que rellenó el lead (ej: "Valoración Web", "Contacto", etc.), visible de un vistazo.
+Cada tarjeta mostrará el formulario (badge azul) y el canal de adquisición (badge violeta), ambos claramente visibles de un vistazo.
 
