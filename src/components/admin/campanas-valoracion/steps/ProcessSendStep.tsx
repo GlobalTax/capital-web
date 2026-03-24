@@ -1073,16 +1073,18 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
             <p className="text-2xl font-bold tabular-nums">{companies.length}</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 mb-1">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">Valoraciones</span>
-            </div>
-            <p className="text-2xl font-bold tabular-nums">{valuationReadyCount}</p>
-            <p className="text-xs text-muted-foreground">{valuationReadyCount} listas</p>
-          </CardContent>
-        </Card>
+        {!isDocument && (
+          <Card>
+            <CardContent className="pt-4 pb-3 px-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Valoraciones</span>
+              </div>
+              <p className="text-2xl font-bold tabular-nums">{valuationReadyCount}</p>
+              <p className="text-xs text-muted-foreground">{valuationReadyCount} listas</p>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardContent className="pt-4 pb-3 px-4">
             <div className="flex items-center gap-2 mb-1">
