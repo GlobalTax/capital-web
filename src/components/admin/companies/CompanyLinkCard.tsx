@@ -46,6 +46,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
   const navigate = useNavigate();
   const { linkToContact, unlinkFromContact } = useEmpresas();
 
@@ -75,15 +76,17 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
   }
 
   const handleLink = async (selectedEmpresa: Empresa) => {
+    setIsLinking(true);
     try {
       await linkToContact(selectedEmpresa.id, contactId, contactOrigin);
       setIsSearchOpen(false);
       onCompanyLinked();
       refetch();
-      // Open GoDeal profile after successful link
       window.open(`https://godeal.es/empresas/${selectedEmpresa.id}`, '_blank');
     } catch (error) {
       console.error('Error linking empresa:', error);
+    } finally {
+      setIsLinking(false);
     }
   };
 
@@ -174,6 +177,7 @@ export const CompanyLinkCard: React.FC<CompanyLinkCardProps> = ({
           onOpenChange={setIsSearchOpen}
           onSelect={handleLink}
           initialSearch={companyName}
+          isLinking={isLinking}
         />
 
         <CompanyFormDialog

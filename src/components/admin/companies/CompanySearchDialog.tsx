@@ -19,6 +19,7 @@ interface CompanySearchDialogProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (empresa: Empresa) => void;
   initialSearch?: string;
+  isLinking?: boolean;
 }
 
 export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
@@ -26,6 +27,7 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
   onOpenChange,
   onSelect,
   initialSearch,
+  isLinking = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialSearch || '');
   const [results, setResults] = useState<Empresa[]>([]);
@@ -161,9 +163,13 @@ export const CompanySearchDialog: React.FC<CompanySearchDialogProps> = ({
                         )}
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost">
-                      <Check className="h-4 w-4 mr-1" />
-                      Vincular
+                    <Button size="sm" variant="ghost" disabled={isLinking}>
+                      {isLinking ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      ) : (
+                        <Check className="h-4 w-4 mr-1" />
+                      )}
+                      {isLinking ? 'Vinculando...' : 'Vincular'}
                     </Button>
                   </div>
                 ))}
