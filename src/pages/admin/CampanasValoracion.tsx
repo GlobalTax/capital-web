@@ -220,7 +220,7 @@ export default function CampanasValoracion() {
 
   useEffect(() => {
     if (groupedCampaigns.length > 0 && !foldersInitialized) {
-      setOpenFolders(new Set(groupedCampaigns.map(([key]) => key)));
+      setOpenFolders(new Set());
       setFoldersInitialized(true);
     }
   }, [groupedCampaigns, foldersInitialized]);
