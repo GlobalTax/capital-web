@@ -46,6 +46,7 @@ interface AdminUserSimple {
 interface PipelineCardProps {
   lead: PipelineLead;
   assignedUserName?: string;
+  leadFormName?: string;
   onSendPrecallEmail: () => void;
   onRegisterCall: (answered: boolean) => void;
   onViewDetails: () => void;
