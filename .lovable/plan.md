@@ -1,51 +1,33 @@
 
 
-## Fix: destinatarios BCC aparecen en CC visible al cliente
+## Mostrar el formulario de origen en las tarjetas del Pipeline
 
-### Causa raíz
+### Problema
+El campo `lead_form` ya se carga en cada lead del pipeline, pero no se muestra en la tarjeta. El usuario quiere ver qué formulario rellenó cada lead.
 
-En `send-professional-valuation-email/index.ts` (línea 613-614), cuando el formulario envía `selectedRecipients`, **todos** se meten en CC sin consultar el campo `is_bcc` de la base de datos:
+### Cambios
 
-```typescript
-if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
-  ccRecipients = requestData.selectedRecipients; // ← TODOS van a CC
-}
-```
+**1. `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`** — Cargar los nombres de formularios
+- Añadir una query a `lead_forms` para obtener el mapa `id → display_name`
+- Exponer `leadFormsMap` desde el hook
 
-Resultado: los miembros del equipo marcados como "Copia Oculta" aparecen visibles en CC para el cliente.
+**2. `src/features/leads-pipeline/components/PipelineCard.tsx`** — Mostrar badge con el formulario
+- Añadir prop `leadFormName?: string`
+- Mostrar un badge debajo de la industria cuando exista, por ejemplo:
+  ```
+  📋 Valoración Web
+  ```
+- Añadir `leadFormName` a la comparación del memo
 
-### Solución
+**3. `src/features/leads-pipeline/components/PipelineColumn.tsx`** — Pasar el nombre del formulario a cada tarjeta
+- Recibir `leadFormsMap` como prop
+- Pasar `leadFormName={leadFormsMap.get(lead.lead_form)}` a cada `PipelineCard`
+- Añadir al memo comparison
 
-**Archivo: `supabase/functions/send-professional-valuation-email/index.ts`**
-
-Cuando hay `selectedRecipients`, cruzar con `email_recipients_config` para separar CC y BCC:
-
-```typescript
-if (requestData.selectedRecipients && requestData.selectedRecipients.length > 0) {
-  // Consultar is_bcc de cada destinatario seleccionado
-  const { data: recipientFlags } = await supabase
-    .from('email_recipients_config')
-    .select('email, is_bcc')
-    .in('email', requestData.selectedRecipients)
-    .eq('is_active', true);
-  
-  const bccSet = new Set(
-    (recipientFlags || []).filter(r => r.is_bcc).map(r => r.email.toLowerCase())
-  );
-  
-  ccRecipients = requestData.selectedRecipients.filter(
-    e => !bccSet.has(e.toLowerCase())
-  );
-  bccRecipients = requestData.selectedRecipients.filter(
-    e => bccSet.has(e.toLowerCase())
-  );
-}
-```
-
-Esto respeta la configuración de cada destinatario: los que están marcados como BCC van en BCC, el resto en CC.
+**4. `src/features/leads-pipeline/components/LeadsPipelineView.tsx`** — Conectar el mapa de formularios
+- Obtener `leadFormsMap` del hook o usar `useLeadForms()` directamente
+- Pasarlo a cada `PipelineColumn`
 
 ### Resultado
-- Los miembros del equipo marcados como "Copia Oculta" dejarán de ser visibles para el cliente
-- Los marcados como CC seguirán apareciendo en CC normalmente
-- No hay cambios en la UI del formulario
+Cada tarjeta del pipeline mostrará un badge con el nombre del formulario que rellenó el lead (ej: "Valoración Web", "Contacto", etc.), visible de un vistazo.
 
