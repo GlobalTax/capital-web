@@ -1,36 +1,35 @@
 
 
-## Vistas personalizadas en el Pipeline
+## Filtro de Responsable multiselección en el Pipeline
 
-### Concepto
-Permitir guardar combinaciones de filtros con un nombre, y cargarlas con un clic. Persistido en `localStorage` (sin necesidad de tabla en Supabase).
+### Problema
+El filtro "Asignado" (Responsable) usa un `Select` de selección única, mientras que Canal y Formulario ya permiten multiselección. El usuario quiere poder filtrar por varios responsables a la vez.
 
 ### Cambios
 
-**1. Nuevo hook `src/features/leads-pipeline/hooks/usePipelineSavedViews.ts`**
+**`src/features/leads-pipeline/components/LeadsPipelineView.tsx`**
 
-- Define tipo `PipelineSavedView`: `{ id, name, filters: { searchQuery, filterAssignee, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax } }`
-- CRUD en `localStorage` bajo clave `pipeline-saved-views`
-- Funciones: `savedViews`, `saveView(name, filters)`, `deleteView(id)`, `renameView(id, name)`
+1. **Estado**: Cambiar `filterAssignee: string` (`'all'`) → `filterAssignees: string[]` (array vacío = todos)
+   - El valor especial `'unassigned'` se mantiene como opción seleccionable dentro del array
 
-**2. Actualizar `LeadsPipelineView.tsx`**
+2. **UI**: Reemplazar el `<Select>` (líneas 396-410) por un `<Popover>` con checkboxes, idéntico al patrón de Canal/Formulario:
+   - Checkbox "Sin asignar" + checkbox por cada admin
+   - Botón muestra "Asignado (N)" cuando hay selección
+   - Botón "Limpiar" dentro del popover
 
-- Importar el hook
-- Añadir en la barra de filtros (junto al botón "Limpiar filtros") un componente inline:
-  - **Botón "Guardar vista"**: aparece solo cuando hay filtros activos. Abre un pequeño popover con input de nombre + botón guardar
-  - **Selector de vistas guardadas**: `DropdownMenu` con las vistas guardadas. Al seleccionar una, aplica todos los filtros. Cada item tiene botón de eliminar (icono X)
-- Al cargar una vista: setea todos los estados de filtro de golpe
-- Al guardar: captura el estado actual de todos los filtros
+3. **Lógica de filtrado** (líneas 191-196): Adaptar:
+   ```
+   if (filterAssignees.length > 0) {
+     columnLeads = columnLeads.filter(lead => {
+       if (filterAssignees.includes('unassigned')) return !lead.assigned_to || filterAssignees.includes(lead.assigned_to);
+       return lead.assigned_to && filterAssignees.includes(lead.assigned_to);
+     });
+   }
+   ```
 
-### UI
+4. **`hasActiveFilters` / `clearFilters`**: Cambiar `filterAssignee !== 'all'` → `filterAssignees.length > 0`
 
-```text
-[🔍 Buscar...] [Responsable ▾] [Canal ▾] [Formulario ▾] [Fecha...] [Fact...] [EBITDA...]
-[⭐ Mis vistas ▾] [💾 Guardar vista]  [Limpiar filtros]
-```
+5. **Vistas guardadas**: Actualizar `PipelineViewFilters` en `usePipelineSavedViews.ts` para que `filterAssignee` sea `string[]` en vez de `string`. Añadir retrocompatibilidad para vistas guardadas antiguas (convertir string a array).
 
-El dropdown "Mis vistas" muestra la lista de vistas guardadas con opción de eliminar cada una.
-
-### Resultado
-El usuario puede guardar cualquier combinación de filtros como vista con nombre, cargarla con un clic, y eliminarla cuando ya no la necesite. Todo persiste en localStorage sin cambios en backend.
+6. **`getCurrentFilters` / `handleLoadView`**: Adaptar para el nuevo formato array
 
