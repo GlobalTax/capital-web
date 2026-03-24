@@ -719,7 +719,7 @@ function SendList({
 
             <FinancialFilter label="Facturación" value={filterRevenue} onChange={setFilterRevenue} />
             <FinancialFilter label="EBITDA" value={filterEbitda} onChange={setFilterEbitda} />
-            <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />
+            {!isDocument && <FinancialFilter label="Valoración" value={filterValuation} onChange={setFilterValuation} />}
 
             {hasActiveFilters && (
               <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs px-2">
