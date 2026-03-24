@@ -12,13 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { usePipelineSavedViews, PipelineViewFilters } from '../hooks/usePipelineSavedViews';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,7 +65,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   // Existing filters
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterAssignee, setFilterAssignee] = useState<string>('all');
+  const [filterAssignees, setFilterAssignees] = useState<string[]>([]);
   const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
   
   // Bulk selection
@@ -122,7 +115,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   const getCurrentFilters = useCallback((): PipelineViewFilters => ({
     searchQuery,
-    filterAssignee,
+    filterAssignee: filterAssignees,
     filterChannels,
     filterFormDisplays,
     filterDateFrom: filterDateFrom ? filterDateFrom.toISOString() : null,
@@ -131,7 +124,7 @@ export const LeadsPipelineView: React.FC = () => {
     filterRevMax,
     filterEbitdaMin,
     filterEbitdaMax,
-  }), [searchQuery, filterAssignee, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax]);
+  }), [searchQuery, filterAssignees, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax]);
 
   const handleSaveView = useCallback(() => {
     if (!saveViewName.trim()) return;
@@ -142,7 +135,15 @@ export const LeadsPipelineView: React.FC = () => {
 
   const handleLoadView = useCallback((filters: PipelineViewFilters) => {
     setSearchQuery(filters.searchQuery);
-    setFilterAssignee(filters.filterAssignee);
+    // Backward compat: filterAssignee may be a string in old saved views
+    const assignee = filters.filterAssignee;
+    if (Array.isArray(assignee)) {
+      setFilterAssignees(assignee);
+    } else if (assignee && assignee !== 'all') {
+      setFilterAssignees([assignee]);
+    } else {
+      setFilterAssignees([]);
+    }
     setFilterChannels(filters.filterChannels);
     setFilterFormDisplays(filters.filterFormDisplays);
     setFilterDateFrom(filters.filterDateFrom ? new Date(filters.filterDateFrom) : undefined);
@@ -158,7 +159,7 @@ export const LeadsPipelineView: React.FC = () => {
     return filterFormDisplays.flatMap(dn => resolveDisplayNameToIds(dn));
   }, [filterFormDisplays, resolveDisplayNameToIds]);
 
-  const hasActiveFilters = searchQuery || filterAssignee !== 'all' || filterChannels.length > 0 || filterFormDisplays.length > 0 || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
+  const hasActiveFilters = searchQuery || filterAssignees.length > 0 || filterChannels.length > 0 || filterFormDisplays.length > 0 || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
 
   // Memoized admin users map
   const adminUsersMap = useMemo(() => 
@@ -188,12 +189,12 @@ export const LeadsPipelineView: React.FC = () => {
         );
       }
       
-      if (filterAssignee !== 'all') {
-        if (filterAssignee === 'unassigned') {
-          columnLeads = columnLeads.filter(lead => !lead.assigned_to);
-        } else {
-          columnLeads = columnLeads.filter(lead => lead.assigned_to === filterAssignee);
-        }
+      if (filterAssignees.length > 0) {
+        columnLeads = columnLeads.filter(lead => {
+          const isUnassigned = !lead.assigned_to;
+          if (isUnassigned) return filterAssignees.includes('unassigned');
+          return lead.assigned_to ? filterAssignees.includes(lead.assigned_to) : false;
+        });
       }
 
       if (filterChannels.length > 0) {
@@ -231,7 +232,7 @@ export const LeadsPipelineView: React.FC = () => {
     });
     
     return result;
-  }, [leadsByStatus, searchQuery, filterAssignee, filterChannels, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
+  }, [leadsByStatus, searchQuery, filterAssignees, filterChannels, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
 
   // Handlers
   const handleDragEnd = useCallback((result: DropResult) => {
@@ -293,7 +294,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   const clearFilters = useCallback(() => {
     setSearchQuery('');
-    setFilterAssignee('all');
+    setFilterAssignees([]);
     setFilterChannels([]);
     setFilterFormDisplays([]);
     setFilterDateFrom(undefined);
@@ -392,22 +393,47 @@ export const LeadsPipelineView: React.FC = () => {
           />
         </div>
         
-        {/* Assignee */}
-        <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-          <SelectTrigger className="w-[160px] h-9">
-            <Users className="h-3.5 w-3.5 mr-1.5" />
-            <SelectValue placeholder="Asignado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="unassigned">Sin asignar</SelectItem>
-            {adminUsers.map(user => (
-              <SelectItem key={user.user_id} value={user.user_id}>
-                {user.full_name || user.email}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Assignee - Multi-select */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterAssignees.length > 0 && "border-primary text-primary")}>
+              <Users className="h-3.5 w-3.5" />
+              {filterAssignees.length > 0 ? `Asignado (${filterAssignees.length})` : 'Asignado'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                <Checkbox
+                  checked={filterAssignees.includes('unassigned')}
+                  onCheckedChange={() => setFilterAssignees(prev =>
+                    prev.includes('unassigned') ? prev.filter(id => id !== 'unassigned') : [...prev, 'unassigned']
+                  )}
+                />
+                <span className="text-sm italic text-muted-foreground">Sin asignar</span>
+              </label>
+              {adminUsers.map(user => (
+                <label key={user.user_id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox
+                    checked={filterAssignees.includes(user.user_id)}
+                    onCheckedChange={() => setFilterAssignees(prev =>
+                      prev.includes(user.user_id) ? prev.filter(id => id !== user.user_id) : [...prev, user.user_id]
+                    )}
+                  />
+                  <span className="text-sm">{user.full_name || user.email}</span>
+                </label>
+              ))}
+            </div>
+            {filterAssignees.length > 0 && (
+              <div className="border-t p-1">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterAssignees([])}>
+                  Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
         {/* Channel - Multi-select */}
         <Popover>

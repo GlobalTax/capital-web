@@ -5,7 +5,7 @@ const STORAGE_KEY = 'pipeline-saved-views';
 
 export interface PipelineViewFilters {
   searchQuery: string;
-  filterAssignee: string;
+  filterAssignee: string[] | string; // string[] preferred; string for backward compat
   filterChannels: string[];
   filterFormDisplays: string[];
   filterDateFrom: string | null; // ISO string for serialization
