@@ -98,11 +98,11 @@ export const useContacts = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('sell_leads')
-          .select('*')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
         supabase
           .from('general_contact_leads')
-          .select('*')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
         supabase
           .from('professional_valuations')
@@ -441,6 +441,15 @@ function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_conta
     lead_received_at: lead.created_at,
     status: lead.status || 'new',
     lead_status_crm: lead.lead_status_crm || null,
+    acquisition_channel_id: lead.acquisition_channel_id,
+    acquisition_channel_name: lead.acquisition_channel?.name,
+    lead_form: lead.lead_form,
+    lead_form_name: lead.lead_form_ref?.name,
+    lead_form_display_name: lead.lead_form ? (formDisplayMap[lead.lead_form] || lead.lead_form_ref?.name) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : undefined,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
+    industry: lead.industry || lead.sectors_of_interest,
+    location: lead.location,
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     email_opened: lead.email_opened,
