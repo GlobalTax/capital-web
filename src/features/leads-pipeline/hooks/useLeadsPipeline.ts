@@ -70,10 +70,23 @@ export const useLeadsPipeline = () => {
       );
 
       // Normalize valuations
-      const valLeads: PipelineLead[] = valuations.map((v: any) => ({
+      const valLeadsRaw: PipelineLead[] = valuations.map((v: any) => ({
         ...v,
         origin: 'valuation' as const,
       }));
+
+      // Deduplicate valuations by email (keep the one with more advanced status)
+      const valLeads = Array.from(
+        valLeadsRaw.reduce((map, lead) => {
+          const key = lead.email?.toLowerCase();
+          if (!key) { map.set(lead.id, lead); return map; }
+          const existing = map.get(key);
+          if (!existing || (existing.lead_status_crm === 'nuevo' && lead.lead_status_crm !== 'nuevo')) {
+            map.set(key, lead);
+          }
+          return map;
+        }, new Map<string, PipelineLead>()).values()
+      );
 
       // Normalize contact_leads → PipelineLead shape
       const contactLeads: PipelineLead[] = contacts.map((c: any) => ({
