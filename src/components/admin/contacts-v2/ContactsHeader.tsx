@@ -5,6 +5,12 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { TabType, Contact } from './types';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useContactActions } from '@/features/contacts';
