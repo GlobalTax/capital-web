@@ -4,6 +4,7 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Trash2 } from 'lucide-react';
 import { Contact } from './types';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
