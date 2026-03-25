@@ -38,10 +38,6 @@ export const useCollaboratorApplications = () => {
           experience: applicationData.experience?.trim() || null,
           motivation: applicationData.motivation?.trim() || null,
           user_agent: trackingData.user_agent,
-          utm_source: trackingData.utm_source,
-          utm_medium: trackingData.utm_medium,
-          utm_campaign: trackingData.utm_campaign,
-          referrer: trackingData.referrer,
         });
 
       if (error) {
