@@ -58,6 +58,7 @@ import {
   LazyBuySideMandatesPage,
   LazyBuySideMandateDetailPage,
   LazyLeadsPipelinePage,
+  LazyBuyPipelinePage,
   LazyWorkflowTemplatesPage,
   LazyBookingsPage,
   LazyNotificationsPage,
@@ -153,6 +154,7 @@ const AdminRouter = () => {
           
           {/* Lead Management */}
           <Route path="/leads-pipeline" element={<LazyLeadsPipelinePage />} />
+          <Route path="/buy-pipeline" element={<LazyBuyPipelinePage />} />
           <Route path="/bookings" element={<LazyBookingsPage />} />
           <Route path="/proposals" element={<LazyProposalsManager />} />
           <Route path="/documentos-fase0" element={<Navigate to="/admin/ndas" replace />} />

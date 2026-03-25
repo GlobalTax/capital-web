@@ -101,10 +101,16 @@ export const sidebarSections: SidebarSection[] = [
         description: "Todos los leads del embudo"
       },
       { 
-        title: "Pipeline",
+        title: "Pipeline Ventas",
         url: "/admin/leads-pipeline", 
         icon: Kanban,
-        description: "Tablero Kanban de leads"
+        description: "Tablero Kanban de leads de venta"
+      },
+      { 
+        title: "Pipeline Compras",
+        url: "/admin/buy-pipeline", 
+        icon: ShoppingCart,
+        description: "Tablero Kanban de leads de compra"
       },
     ]
   },
@@ -345,10 +351,16 @@ export const sidebarSections: SidebarSection[] = [
         description: "Gestiona y depura listas de empresas"
       },
       { 
-        title: "Pipeline de Leads",
+        title: "Pipeline Ventas",
         url: "/admin/leads-pipeline", 
         icon: Kanban,
-        description: "Tablero Kanban de leads"
+        description: "Tablero Kanban de leads de venta"
+      },
+      { 
+        title: "Pipeline Compras",
+        url: "/admin/buy-pipeline", 
+        icon: ShoppingCart,
+        description: "Tablero Kanban de leads de compra"
       },
       { 
         title: "Reservas Llamadas",
