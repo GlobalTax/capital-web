@@ -1,32 +1,54 @@
 
 
-## Auto-clasificación de leads: Target Lead / Unqualified Lead
+## Renombrar Pipeline a "Pipeline Ventas" y crear "Pipeline Compras"
 
-### El problema del error anterior
-La tabla `company_valuations` tiene triggers de validación que comprueban el formato del email en CADA update. Algunos registros antiguos tienen emails inválidos (ej: `'yani'`), lo que bloquea cualquier UPDATE aunque solo cambies el estado CRM.
+### Resumen
+Renombrar el pipeline actual como "Pipeline Ventas" y crear un nuevo "Pipeline Compras" que muestre leads de las tablas `company_acquisition_inquiries` y `acquisition_leads` en formato Kanban, usando el mismo sistema de estados (`contact_statuses`).
 
-### Solución (2 pasos)
+### Cambios
 
-**Paso 1 - Migración SQL (esquema): Crear trigger para leads futuros**
+#### 1. Renombrar el pipeline actual
+- **`LeadsPipelineView.tsx`**: Cambiar título de "Pipeline de Leads" a "Pipeline Ventas"
+- **`sidebar-config.ts`**: Renombrar las dos entradas de "Pipeline" / "Pipeline de Leads" a "Pipeline Ventas"
 
-Crear la función `auto_classify_lead_by_revenue()` y el trigger `BEFORE INSERT` para que todo lead nuevo se auto-clasifique:
-- Revenue >= 1M → `contactando` (Target Lead)
-- Revenue < 1M → `calificado` (Unqualified Lead)  
-- Revenue NULL → se queda en `nuevo`
+#### 2. Crear hook `useBuyPipeline`
+- Nuevo archivo `src/features/leads-pipeline/hooks/useBuyPipeline.ts`
+- Fetch de `company_acquisition_inquiries` y `acquisition_leads` (donde `lead_status_crm IS NOT NULL` y `is_deleted = false`)
+- Normalizar a una interfaz `BuyPipelineLead` con: `id`, `origin` (acquisition/company_acquisition), `full_name`, `company`, `email`, `phone`, `investment_budget/range`, `sectors_of_interest`, `lead_status_crm`, `created_at`, `notes`, `acquisition_channel_id`, `lead_form`
+- Mutations: `updateStatus` y `updateNotes` (sin `assigned_to` ya que estas tablas no lo tienen)
+- Agrupar por `lead_status_crm`
 
-**Paso 2 - Actualización de datos: Reclasificar los 55 leads existentes**
+#### 3. Crear componente `BuyPipelineView`
+- Nuevo archivo `src/features/leads-pipeline/components/BuyPipelineView.tsx`
+- Reutilizar `PipelineColumn` existente con una tarjeta simplificada o crear `BuyPipelineCard` minimalista
+- Título: "Pipeline Compras"
+- Filtros básicos: búsqueda, canal, formulario
+- Drag-and-drop para cambiar estados (usa `contact_statuses` compartidos)
 
-Usar un UPDATE con condición `WHERE email ~* '^[A-Za-z0-9._%+-]+@...'` para evitar tocar registros con emails inválidos, O usar una sentencia SQL que desactive temporalmente los triggers de validación solo durante la operación.
+#### 4. Crear página `BuyPipelinePage`
+- Nuevo archivo `src/pages/admin/BuyPipelinePage.tsx`
+- Wrapper simple que renderiza `BuyPipelineView`
 
-La forma más limpia: ejecutar el UPDATE directamente vía la herramienta de inserción/actualización de datos (no migración), usando `SET lead_status_crm = CASE WHEN revenue >= 1000000 THEN 'contactando' ELSE 'calificado' END` solo sobre registros con `lead_status_crm = 'nuevo'` y `revenue IS NOT NULL`.
+#### 5. Registrar ruta y sidebar
+- **`LazyAdminComponents.tsx`**: Añadir `LazyBuyPipelinePage`
+- **`AdminRouter.tsx`**: Añadir ruta `/buy-pipeline`
+- **`sidebar-config.ts`**: Añadir entrada "Pipeline Compras" con icono `ShoppingCart` debajo de "Pipeline Ventas"
+- **`AdminSidebar.tsx`**: Añadir `'buy-pipeline': 'dashboard'` al mapa de categorías
 
-Para los registros con emails rotos, usaremos una sesión con `session_replication_role = 'replica'` que bypasea triggers.
+### Detalle técnico
+- Las tarjetas del pipeline de compras mostrarán: nombre, empresa, presupuesto de inversión, sectores de interés, tipo de adquisición y canal
+- Se reutiliza el sistema de columnas de `contact_statuses` (mismo que el pipeline de ventas)
+- Click en tarjeta navega a `LeadDetailPage` con prefijo `company_acquisition_` o `acquisition_`
+- No incluye `assigned_to` ni funcionalidad de llamadas (estas tablas no tienen esos campos)
 
-### Archivos afectados
-- 1 migración SQL nueva (solo CREATE FUNCTION + CREATE TRIGGER)
-- 1 operación de datos (UPDATE existentes)
+### Archivos nuevos (3)
+- `src/features/leads-pipeline/hooks/useBuyPipeline.ts`
+- `src/features/leads-pipeline/components/BuyPipelineView.tsx`
+- `src/pages/admin/BuyPipelinePage.tsx`
 
-### Resultado
-- Columna "Nuevo" pasará de 55 a ~9 leads (solo los sin facturación)
-- Todos los leads futuros se auto-clasifican al entrar
+### Archivos modificados (4)
+- `src/features/leads-pipeline/components/LeadsPipelineView.tsx` — título
+- `src/features/admin/config/sidebar-config.ts` — renombrar + nueva entrada
+- `src/features/admin/components/LazyAdminComponents.tsx` — lazy import
+- `src/features/admin/components/AdminRouter.tsx` — nueva ruta
 
