@@ -268,6 +268,19 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.phone || '-'}
         </div>
       </div>
+
+      {/* Delete button */}
+      {onDelete && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onDelete(contact.id)}
+            className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+            title="Eliminar lead"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
