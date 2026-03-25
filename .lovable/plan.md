@@ -1,28 +1,33 @@
 
 
-## Mostrar leads con etiqueta "compras" en la columna "Nuevo"
+## Separar leads "Compras" del Pipeline Ventas al Pipeline Compras
 
 ### Problema
-Los leads en `acquisition_leads` tienen `lead_status_crm = 'compras'` (8 registros). Este valor no es un estado válido del pipeline (no existe como columna), así que no aparecen en ninguna columna del Kanban.
-
-### Solución
-Modificar `useBuyPipeline.ts` para mapear `lead_status_crm = 'compras'` a `'nuevo'` durante la normalización de datos. Así estos leads aparecerán automáticamente en la columna "Nuevo" del Pipeline Compras.
+Actualmente hay 59 leads con `lead_status_crm = 'compras'` en las tablas de ventas (`company_valuations`: 50, `contact_leads`: 9) que aparecen en el Pipeline Ventas. El usuario quiere que estos leads solo aparezcan en el Pipeline Compras.
 
 ### Cambios
 
-**1. `src/features/leads-pipeline/hooks/useBuyPipeline.ts`**
-- Eliminar el filtro `.not('lead_status_crm', 'is', null)` de la query de `acquisition_leads` (o mantenerlo y añadir `'compras'` como valor aceptado)
-- En el mapeo de `acquisitionLeads`, normalizar: si `lead_status_crm` es `'compras'` o `null`, asignar `'nuevo'`
+#### 1. Excluir leads "compras" del Pipeline Ventas
+**`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`**
+- Añadir filtro `.neq('lead_status_crm', 'compras')` a las queries de `company_valuations` y `contact_leads`
 
-Lógica:
-```typescript
-lead_status_crm: (a.lead_status_crm === 'compras' || !a.lead_status_crm) 
-  ? 'nuevo' 
-  : a.lead_status_crm
-```
+#### 2. Incluir leads "compras" de ventas en Pipeline Compras
+**`src/features/leads-pipeline/hooks/useBuyPipeline.ts`**
+- Añadir dos queries adicionales para traer leads de `company_valuations` y `contact_leads` donde `lead_status_crm = 'compras'`
+- Normalizarlos a `BuyPipelineLead` con `origin: 'valuation_compras'` y `'contact_compras'` respectivamente
+- Mapear su `lead_status_crm` de `'compras'` → `'nuevo'`
+- Incluirlos en la deduplicación por email y en el resultado final
+- Actualizar `getTableName` para manejar los nuevos origins
 
-Esto hará que los 8 leads con etiqueta "compras" + cualquier lead sin estado aparezcan en la columna "Nuevo".
+#### 3. Actualizar tipos
+**`src/features/leads-pipeline/hooks/useBuyPipeline.ts`**
+- Extender el tipo `origin` de `BuyPipelineLead` para incluir `'valuation_compras' | 'contact_compras'`
 
-### Archivos afectados
-- `src/features/leads-pipeline/hooks/useBuyPipeline.ts` (1 archivo)
+### Resultado
+- Pipeline Ventas: solo leads de venta (sin etiqueta "compras")
+- Pipeline Compras: leads de las 4 tablas (acquisition_leads, company_acquisition_inquiries, + los "compras" de company_valuations y contact_leads)
+
+### Archivos afectados (2)
+- `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`
+- `src/features/leads-pipeline/hooks/useBuyPipeline.ts`
 
