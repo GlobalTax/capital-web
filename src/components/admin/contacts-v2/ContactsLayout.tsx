@@ -7,6 +7,7 @@ import { RefreshCw } from 'lucide-react';
 import { useContacts } from './hooks/useContacts';
 import { useFavoriteLeadIds } from '@/hooks/useCorporateFavorites';
 import { useContactSelection } from '@/features/contacts';
+import { useContactActions } from '@/features/contacts/hooks/useContactActions';
 import { Contact, TabType } from './types';
 import ContactsHeader from './ContactsHeader';
 import ContactsFilters from './ContactsFilters';
