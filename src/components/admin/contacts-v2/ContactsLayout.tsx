@@ -52,6 +52,12 @@ const ContactsLayout: React.FC = () => {
     navigate(`/admin/contacts/${contact.origin}_${contact.id}`);
   };
 
+  const handleDeleteSingle = async (id: string) => {
+    const confirmed = window.confirm('⚠️ ¿Eliminar DEFINITIVAMENTE este lead?\n\nEsta acción NO se puede deshacer.');
+    if (!confirmed) return;
+    await bulkHardDelete(displayedContacts as any, [id]);
+  };
+
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
