@@ -1,48 +1,32 @@
 
 
-## Fix: Mostrar valores financieros originales del usuario en emails de notificación
+## Edición inline de Facturación y EBITDA en la tabla de Leads
 
-### Problema
+### Objetivo
+Permitir editar Facturación y EBITDA directamente haciendo clic en la celda (incluyendo las que muestran `-`), igual que ya funciona el Estado, Canal o Fecha.
 
-Los emails de notificación de formularios muestran valores de Facturación y EBITDA incorrectos (ej: -500 € y -100 € en vez de lo que introdujo el usuario). El sistema actual pasa los valores por `formatCurrency()` que parsea y transforma los strings, potencialmente alterando los datos originales.
+### Cambios
 
-### Solución
+**1. Crear componente `EditableCurrencyCell.tsx`** (`src/components/admin/shared/`)
 
-**`supabase/functions/send-form-notifications/index.ts`**
+Un campo editable inline similar a `EditableDateCell`:
+- Modo display: muestra el valor formateado (`500k€`) o `—` si vacío
+- Al hacer clic: input numérico con formato español (puntos como miles)
+- Al hacer blur o Enter: guarda y vuelve a modo display
+- Props: `value`, `onSave(newValue: number | null)`, `placeholder`, `displayClassName`
 
-1. **Preservar valores originales para el email**: Antes de llamar a `upsertLeadFromForm` (que puede mutar/ignorar valores), guardar los valores raw del formulario. Luego, al generar el template del email, inyectar `_rawRevenue` y `_rawEbitda` con los valores originales.
+**2. `src/components/admin/contacts-v2/ContactRow.tsx`**
 
-2. **Modificar `getFinancialDataSection`**: Usar los valores raw (`data._rawRevenue`, `data._rawEbitda`) cuando existan, mostrándolos directamente con `formatCurrency()`. Esto asegura que el email muestra exactamente lo que el usuario introdujo.
+- Importar `EditableCurrencyCell`
+- Reemplazar las celdas estáticas de Revenue (línea 236-238) y EBITDA (línea 241-243) por `EditableCurrencyCell`
+- Añadir handlers `handleRevenueChange` y `handleEbitdaChange` que:
+  - Llamen a `onPatchContact` para actualización optimista local
+  - Persistan con `updateField(id, origin, 'revenue'/'ebitda', value)`
 
-3. **Proteger `formatCurrency` contra negativos**: Añadir `Math.abs()` al formatear, ya que los valores financieros de formulario nunca deberían ser negativos en el email de notificación. Si el valor original era negativo, el email lo mostrará como positivo pero con una nota "(valor introducido como negativo)".
+**3. `src/hooks/useInlineUpdate.ts`** (verificar)
 
-### Cambios concretos
+Confirmar que el hook `useContactInlineUpdate` soporta los campos `revenue` y `ebitda` para las tablas `contact_leads` y `company_valuations`. Si hay un whitelist de campos, añadirlos.
 
-```typescript
-// En handler(), antes de generar templates (línea ~1436):
-const rawRevenue = formData.revenue || formData.annualRevenue;
-const rawEbitda = formData.ebitda;
-
-const adminTemplate = getEmailTemplate(formType, { 
-  email, fullName, ...formData,
-  _rawRevenue: rawRevenue,
-  _rawEbitda: rawEbitda,
-  _crmLink: crmLink,
-});
-```
-
-```typescript
-// En getFinancialDataSection, usar el valor raw si existe:
-const revenueValue = data._rawRevenue || data.revenue || data.annualRevenue;
-const ebitdaValue = data._rawEbitda || data.ebitda;
-
-// Y en formatCurrency, proteger contra negativos:
-const formatCurrency = (amount) => {
-  // ... parsing existente ...
-  return new Intl.NumberFormat('es-ES', {...}).format(Math.abs(num));
-};
-```
-
-### Archivo afectado
-- `supabase/functions/send-form-notifications/index.ts`
+### Resultado
+Todas las celdas de Facturación y EBITDA serán clickables. Las vacías mostrarán `—` pero al hacer clic se podrá escribir el valor. Los datos se guardan en la tabla original del lead.
 
