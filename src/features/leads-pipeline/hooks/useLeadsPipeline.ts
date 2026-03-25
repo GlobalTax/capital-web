@@ -47,6 +47,7 @@ export const useLeadsPipeline = () => {
             precall_email_sent, call_attempts_count, empresa_id
           `)
           .eq('is_deleted', false)
+          .not('lead_status_crm', 'is', null)
           .order('created_at', { ascending: false })
           .range(from, to)
       );
@@ -331,7 +332,7 @@ export const useLeadsPipeline = () => {
   // Memoized grouping
   const leadsByStatus = useMemo(() => {
     return leads.reduce((acc, lead) => {
-      const status = lead.lead_status_crm || 'nuevo';
+      const status = lead.lead_status_crm as LeadStatus;
       if (!acc[status]) acc[status] = [];
       acc[status].push(lead);
       return acc;
