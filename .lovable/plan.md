@@ -1,54 +1,28 @@
 
 
-## Renombrar Pipeline a "Pipeline Ventas" y crear "Pipeline Compras"
+## Mostrar leads con etiqueta "compras" en la columna "Nuevo"
 
-### Resumen
-Renombrar el pipeline actual como "Pipeline Ventas" y crear un nuevo "Pipeline Compras" que muestre leads de las tablas `company_acquisition_inquiries` y `acquisition_leads` en formato Kanban, usando el mismo sistema de estados (`contact_statuses`).
+### Problema
+Los leads en `acquisition_leads` tienen `lead_status_crm = 'compras'` (8 registros). Este valor no es un estado válido del pipeline (no existe como columna), así que no aparecen en ninguna columna del Kanban.
+
+### Solución
+Modificar `useBuyPipeline.ts` para mapear `lead_status_crm = 'compras'` a `'nuevo'` durante la normalización de datos. Así estos leads aparecerán automáticamente en la columna "Nuevo" del Pipeline Compras.
 
 ### Cambios
 
-#### 1. Renombrar el pipeline actual
-- **`LeadsPipelineView.tsx`**: Cambiar título de "Pipeline de Leads" a "Pipeline Ventas"
-- **`sidebar-config.ts`**: Renombrar las dos entradas de "Pipeline" / "Pipeline de Leads" a "Pipeline Ventas"
+**1. `src/features/leads-pipeline/hooks/useBuyPipeline.ts`**
+- Eliminar el filtro `.not('lead_status_crm', 'is', null)` de la query de `acquisition_leads` (o mantenerlo y añadir `'compras'` como valor aceptado)
+- En el mapeo de `acquisitionLeads`, normalizar: si `lead_status_crm` es `'compras'` o `null`, asignar `'nuevo'`
 
-#### 2. Crear hook `useBuyPipeline`
-- Nuevo archivo `src/features/leads-pipeline/hooks/useBuyPipeline.ts`
-- Fetch de `company_acquisition_inquiries` y `acquisition_leads` (donde `lead_status_crm IS NOT NULL` y `is_deleted = false`)
-- Normalizar a una interfaz `BuyPipelineLead` con: `id`, `origin` (acquisition/company_acquisition), `full_name`, `company`, `email`, `phone`, `investment_budget/range`, `sectors_of_interest`, `lead_status_crm`, `created_at`, `notes`, `acquisition_channel_id`, `lead_form`
-- Mutations: `updateStatus` y `updateNotes` (sin `assigned_to` ya que estas tablas no lo tienen)
-- Agrupar por `lead_status_crm`
+Lógica:
+```typescript
+lead_status_crm: (a.lead_status_crm === 'compras' || !a.lead_status_crm) 
+  ? 'nuevo' 
+  : a.lead_status_crm
+```
 
-#### 3. Crear componente `BuyPipelineView`
-- Nuevo archivo `src/features/leads-pipeline/components/BuyPipelineView.tsx`
-- Reutilizar `PipelineColumn` existente con una tarjeta simplificada o crear `BuyPipelineCard` minimalista
-- Título: "Pipeline Compras"
-- Filtros básicos: búsqueda, canal, formulario
-- Drag-and-drop para cambiar estados (usa `contact_statuses` compartidos)
+Esto hará que los 8 leads con etiqueta "compras" + cualquier lead sin estado aparezcan en la columna "Nuevo".
 
-#### 4. Crear página `BuyPipelinePage`
-- Nuevo archivo `src/pages/admin/BuyPipelinePage.tsx`
-- Wrapper simple que renderiza `BuyPipelineView`
-
-#### 5. Registrar ruta y sidebar
-- **`LazyAdminComponents.tsx`**: Añadir `LazyBuyPipelinePage`
-- **`AdminRouter.tsx`**: Añadir ruta `/buy-pipeline`
-- **`sidebar-config.ts`**: Añadir entrada "Pipeline Compras" con icono `ShoppingCart` debajo de "Pipeline Ventas"
-- **`AdminSidebar.tsx`**: Añadir `'buy-pipeline': 'dashboard'` al mapa de categorías
-
-### Detalle técnico
-- Las tarjetas del pipeline de compras mostrarán: nombre, empresa, presupuesto de inversión, sectores de interés, tipo de adquisición y canal
-- Se reutiliza el sistema de columnas de `contact_statuses` (mismo que el pipeline de ventas)
-- Click en tarjeta navega a `LeadDetailPage` con prefijo `company_acquisition_` o `acquisition_`
-- No incluye `assigned_to` ni funcionalidad de llamadas (estas tablas no tienen esos campos)
-
-### Archivos nuevos (3)
-- `src/features/leads-pipeline/hooks/useBuyPipeline.ts`
-- `src/features/leads-pipeline/components/BuyPipelineView.tsx`
-- `src/pages/admin/BuyPipelinePage.tsx`
-
-### Archivos modificados (4)
-- `src/features/leads-pipeline/components/LeadsPipelineView.tsx` — título
-- `src/features/admin/config/sidebar-config.ts` — renombrar + nueva entrada
-- `src/features/admin/components/LazyAdminComponents.tsx` — lazy import
-- `src/features/admin/components/AdminRouter.tsx` — nueva ruta
+### Archivos afectados
+- `src/features/leads-pipeline/hooks/useBuyPipeline.ts` (1 archivo)
 
