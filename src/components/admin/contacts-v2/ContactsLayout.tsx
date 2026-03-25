@@ -7,20 +7,31 @@ import { RefreshCw } from 'lucide-react';
 import { useContacts } from './hooks/useContacts';
 import { useFavoriteLeadIds } from '@/hooks/useCorporateFavorites';
 import { useContactSelection } from '@/features/contacts';
-import { useContactActions } from '@/features/contacts/hooks/useContactActions';
-import { Contact, TabType } from './types';
+import { Contact, ContactOrigin, TabType } from './types';
 import ContactsHeader from './ContactsHeader';
 import ContactsFilters from './ContactsFilters';
 import VirtualContactsTable from './VirtualContactsTable';
 import ContactDetailSheet from '../contacts/ContactDetailSheet';
 import { ContactsPipelineView } from '../contacts/pipeline';
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+const ORIGIN_TABLE_MAP: Record<ContactOrigin, string> = {
+  contact: 'contact_leads',
+  valuation: 'company_valuations',
+  collaborator: 'collaborator_applications',
+  acquisition: 'acquisition_leads',
+  company_acquisition: 'company_acquisition_inquiries',
+  general: 'general_contact_leads',
+  advisor: 'advisor_valuations',
+};
 
 const ContactsLayout: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact, patchContacts } = useContacts();
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
-  const { bulkHardDelete } = useContactActions();
   
   const [activeTab, setActiveTab] = useState<TabType>('directory');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
