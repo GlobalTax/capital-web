@@ -48,6 +48,7 @@ export const useLeadsPipeline = () => {
           `)
           .eq('is_deleted', false)
           .not('lead_status_crm', 'is', null)
+          .neq('lead_status_crm', 'compras')
           .order('created_at', { ascending: false })
           .range(from, to)
       );
