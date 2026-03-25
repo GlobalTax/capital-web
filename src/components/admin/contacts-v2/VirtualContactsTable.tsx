@@ -15,6 +15,7 @@ interface VirtualContactsTableProps {
   onSelectAll: () => void;
   onViewDetails: (contact: Contact) => void;
   onPatchContact?: (id: string, updates: Partial<Contact>) => void;
+  onDelete?: (id: string) => void;
   isLoading?: boolean;
 }
 
