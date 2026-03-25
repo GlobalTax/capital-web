@@ -97,6 +97,7 @@ export const LazyBuySideMandateDetailPage = lazy(() => import('@/pages/admin/Buy
 
 // === LEADS PIPELINE ===
 export const LazyLeadsPipelinePage = lazy(() => import('@/pages/admin/LeadsPipelinePage'));
+export const LazyBuyPipelinePage = lazy(() => import('@/pages/admin/BuyPipelinePage'));
 
 // === BOOKINGS ===
 export const LazyBookingsPage = lazy(() => import('@/components/admin/bookings').then(m => ({ default: m.BookingsManager })));
