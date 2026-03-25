@@ -76,6 +76,13 @@ const ContactsLayout: React.FC = () => {
       return;
     }
 
+    // Nullify FK references in empresas before deleting valuations/advisor_valuations
+    if (table === 'company_valuations' || table === 'advisor_valuations') {
+      await (supabase.from('empresas') as any)
+        .update({ source_valuation_id: null })
+        .eq('source_valuation_id', id);
+    }
+
     const { error } = await (supabase.from(table as any) as any).delete().eq('id', id);
 
     if (error) {
