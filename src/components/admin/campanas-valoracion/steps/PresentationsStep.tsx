@@ -77,6 +77,25 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const assigned = presentations.filter(p => p.status === 'assigned').length;
   const unassigned = presentations.filter(p => p.status === 'unassigned').length;
 
+  // Companies that already have an assigned presentation
+  const companiesWithPresentation = new Set(
+    presentations.filter(p => p.status === 'assigned' && p.company_id).map(p => p.company_id!)
+  );
+  const companiesWithoutPresentation = companies.filter(c => !companiesWithPresentation.has(c.id));
+
+  const handleBulkAssign = async (mode: 'all' | 'remaining') => {
+    if (!selectedBulkPresentationId) return;
+    const targetCompanies = mode === 'all' ? companies : companiesWithoutPresentation;
+    if (targetCompanies.length === 0) {
+      toast({ title: 'No hay empresas a las que asignar' });
+      return;
+    }
+    await bulkAssignPresentation({
+      presentationId: selectedBulkPresentationId,
+      companyIds: targetCompanies.map(c => c.id),
+    });
+  };
+
   const getCompanyName = (companyId: string | null) => {
     if (!companyId) return null;
     const c = companies.find(co => co.id === companyId);
