@@ -11,7 +11,7 @@ import type { LeadStatus } from '../types';
 
 export interface BuyPipelineLead {
   id: string;
-  origin: 'acquisition' | 'company_acquisition';
+  origin: 'acquisition' | 'company_acquisition' | 'valuation_compras' | 'contact_compras';
   contact_name: string;
   company_name: string;
   email: string;
