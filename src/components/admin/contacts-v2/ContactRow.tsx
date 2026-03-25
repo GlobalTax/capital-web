@@ -22,6 +22,7 @@ interface ContactRowProps {
   onSelect: () => void;
   onViewDetails: () => void;
   onPatchContact?: (id: string, updates: Partial<Contact>) => void;
+  onDelete?: (id: string) => void;
   style: React.CSSProperties;
 }
 
