@@ -29,6 +29,7 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const {
     presentations, isLoading, uploadFiles, isUploading, uploadProgress,
     assignCompany, autoMatch, isMatching, matchProgress, deletePresentation,
+    bulkAssignPresentation, isBulkAssigning,
   } = useCampaignPresentations(campaignId);
   const { companies } = useCampaignCompanies(campaignId);
   const [manualAssignments, setManualAssignments] = useState<Record<string, string>>({});
