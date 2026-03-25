@@ -9,6 +9,7 @@ import { Contact } from './types';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
 import { EditableDateCell } from '../shared/EditableDateCell';
+import { EditableCurrencyCell } from '../shared/EditableCurrencyCell';
 import { EditableSelect, SelectOption } from '../shared/EditableSelect';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
@@ -151,6 +152,16 @@ const ContactRow: React.FC<ContactRowProps> = ({
     await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
   }, [contact.id, contact.origin, updateField, onPatchContact]);
 
+  const handleRevenueChange = useCallback(async (newValue: number | null) => {
+    onPatchContact?.(contact.id, { revenue: newValue ?? undefined });
+    await updateField(contact.id, contact.origin, 'revenue', newValue ?? 0);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
+
+  const handleEbitdaChange = useCallback(async (newValue: number | null) => {
+    onPatchContact?.(contact.id, { ebitda: newValue ?? undefined });
+    await updateField(contact.id, contact.origin, 'ebitda', newValue ?? 0);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
+
   return (
     <div
       style={style}
@@ -233,13 +244,23 @@ const ContactRow: React.FC<ContactRowProps> = ({
         </div>
 
         {/* 6. Revenue */}
-        <div className="text-right text-muted-foreground">
-          {formatCurrency(contact.revenue || contact.empresa_facturacion)}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableCurrencyCell
+            value={contact.revenue || contact.empresa_facturacion}
+            onSave={handleRevenueChange}
+            emptyText="—"
+            displayClassName="text-muted-foreground"
+          />
         </div>
 
         {/* 7. EBITDA */}
-        <div className="text-right text-muted-foreground">
-          {formatCurrency(contact.ebitda)}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableCurrencyCell
+            value={contact.ebitda}
+            onSave={handleEbitdaChange}
+            emptyText="—"
+            displayClassName="text-muted-foreground"
+          />
         </div>
 
         {/* 8. Valuation */}
