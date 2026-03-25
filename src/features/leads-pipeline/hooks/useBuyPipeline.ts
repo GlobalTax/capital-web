@@ -55,7 +55,6 @@ export const useBuyPipeline = () => {
           acquisition_type, created_at, acquisition_channel_id, lead_form
         `)
         .or('is_deleted.is.null,is_deleted.eq.false')
-        .not('lead_status_crm', 'is', null)
         .order('created_at', { ascending: false });
 
       if (err2) throw err2;
