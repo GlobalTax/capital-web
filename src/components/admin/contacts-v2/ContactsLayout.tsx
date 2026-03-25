@@ -20,6 +20,7 @@ const ContactsLayout: React.FC = () => {
   const navigate = useNavigate();
   const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact, patchContacts } = useContacts();
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
+  const { bulkHardDelete } = useContactActions();
   
   const [activeTab, setActiveTab] = useState<TabType>('directory');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
