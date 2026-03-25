@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -28,12 +29,14 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const {
     presentations, isLoading, uploadFiles, isUploading, uploadProgress,
     assignCompany, autoMatch, isMatching, matchProgress, deletePresentation,
+    bulkAssignPresentation, isBulkAssigning,
   } = useCampaignPresentations(campaignId);
   const { companies } = useCampaignCompanies(campaignId);
   const [manualAssignments, setManualAssignments] = useState<Record<string, string>>({});
   const [editingAssignment, setEditingAssignment] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [openPopover, setOpenPopover] = useState<Record<string, boolean>>({});
+  const [selectedBulkPresentationId, setSelectedBulkPresentationId] = useState<string>('');
   const filteredPresentations = useMemo(() => {
     if (!searchQuery.trim()) return presentations;
     const q = searchQuery.toLowerCase().trim();
@@ -74,6 +77,25 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
   const assigned = presentations.filter(p => p.status === 'assigned').length;
   const unassigned = presentations.filter(p => p.status === 'unassigned').length;
 
+  // Companies that already have an assigned presentation
+  const companiesWithPresentation = new Set(
+    presentations.filter(p => p.status === 'assigned' && p.company_id).map(p => p.company_id!)
+  );
+  const companiesWithoutPresentation = companies.filter(c => !companiesWithPresentation.has(c.id));
+
+  const handleBulkAssign = async (mode: 'all' | 'remaining') => {
+    if (!selectedBulkPresentationId) return;
+    const targetCompanies = mode === 'all' ? companies : companiesWithoutPresentation;
+    if (targetCompanies.length === 0) {
+      toast({ title: 'No hay empresas a las que asignar' });
+      return;
+    }
+    await bulkAssignPresentation({
+      presentationId: selectedBulkPresentationId,
+      companyIds: targetCompanies.map(c => c.id),
+    });
+  };
+
   const getCompanyName = (companyId: string | null) => {
     if (!companyId) return null;
     const c = companies.find(co => co.id === companyId);
@@ -92,6 +114,38 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
         <Badge variant="default" className="bg-green-600">{assigned} asignadas</Badge>
         <Badge variant="secondary" className="bg-yellow-500 text-white">{unassigned} sin asignar</Badge>
         <div className="flex-1" />
+        {presentations.length > 0 && (
+          <>
+            <Select value={selectedBulkPresentationId} onValueChange={setSelectedBulkPresentationId}>
+              <SelectTrigger className="w-[220px] h-8 text-xs">
+                <SelectValue placeholder="Seleccionar presentación..." />
+              </SelectTrigger>
+              <SelectContent>
+                {presentations.map(p => (
+                  <SelectItem key={p.id} value={p.id} className="text-xs">
+                    {p.file_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkAssign('all')}
+              disabled={!selectedBulkPresentationId || companies.length === 0 || isBulkAssigning}
+            >
+              {isBulkAssigning ? 'Aplicando...' : 'Aplicar a todas'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkAssign('remaining')}
+              disabled={!selectedBulkPresentationId || companiesWithoutPresentation.length === 0 || isBulkAssigning}
+            >
+              Aplicar a restantes ({companiesWithoutPresentation.length})
+            </Button>
+          </>
+        )}
         <Button variant="outline" onClick={handleAutoMatch} disabled={isMatching || unassigned === 0} size="sm">
           <Sparkles className="h-4 w-4 mr-2" />
           {isMatching ? 'Asignando...' : 'Asignar con IA'}
