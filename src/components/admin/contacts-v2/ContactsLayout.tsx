@@ -66,7 +66,25 @@ const ContactsLayout: React.FC = () => {
   const handleDeleteSingle = async (id: string) => {
     const confirmed = window.confirm('⚠️ ¿Eliminar DEFINITIVAMENTE este lead?\n\nEsta acción NO se puede deshacer.');
     if (!confirmed) return;
-    await bulkHardDelete(displayedContacts as any, [id]);
+
+    const contact = displayedContacts.find(c => c.id === id);
+    if (!contact) return;
+
+    const table = ORIGIN_TABLE_MAP[contact.origin];
+    if (!table) {
+      toast({ title: 'Error', description: 'Tipo de lead no soportado', variant: 'destructive' });
+      return;
+    }
+
+    const { error } = await supabase.from(table).delete().eq('id', id);
+
+    if (error) {
+      toast({ title: 'Error al eliminar', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: '✓ Lead eliminado permanentemente' });
+    refetch();
   };
 
   if (isLoading) {
