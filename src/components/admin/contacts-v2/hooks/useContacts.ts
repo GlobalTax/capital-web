@@ -98,11 +98,11 @@ export const useContacts = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('sell_leads')
-          .select('*')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
         supabase
           .from('general_contact_leads')
-          .select('*')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
         supabase
           .from('professional_valuations')
