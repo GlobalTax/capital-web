@@ -1,41 +1,15 @@
 
 
-## Fix: "Coral Food España SL" duplicado en el Pipeline
+## Cambios en traducciones del Hero de Colaboradores
 
-### Problema
-Hay **dos registros duplicados** de "Coral Food España SL" en la tabla `company_valuations`:
-- `8f9f216a` → estado `contactando` (ya movido)
-- `babb009a` → estado `nuevo` (el que parece "bugeado")
+### 1. Cambiar título principal (ES)
+- Línea 12: `'collab.hero.title': 'Únete al equipo de expertos en M&A'` → `'Conviértete en Colaborador'`
 
-Ambos tienen el mismo email (`yani`) y fueron creados con 44 segundos de diferencia. El pipeline los muestra como dos tarjetas separadas porque la deduplicación actual solo filtra `contact_leads` contra `company_valuations`, pero **no deduplica valuaciones entre sí**.
+### 2. Corregir stat1 en castellano (ES)
+- Línea 14: `'collab.hero.stat1': 'Col·laboradors Actius'` → `'Colaboradores Activos'`
 
-### Solución en 2 partes
+### 3. También actualizar el dashboard hardcoded en `EnhancedHeroSection.tsx`
+- Línea ~83: `"Colaboradores Activos"` — ya está bien en el componente, pero el stat del hero usa la traducción que está en catalán.
 
-**1. Corrección inmediata de datos**: Marcar el registro duplicado como eliminado vía migración SQL:
-```sql
-UPDATE company_valuations 
-SET is_deleted = true 
-WHERE id = 'babb009a-9299-4398-bd24-9746813bcda0';
-```
-
-**2. Prevención futura** (en `useLeadsPipeline.ts`): Añadir deduplicación dentro de las valuaciones por email, conservando el registro más reciente con estado más avanzado (no "nuevo"):
-
-```typescript
-// Después de crear valLeads, deduplicar por email
-const deduplicatedValLeads = Array.from(
-  valLeads.reduce((map, lead) => {
-    const key = lead.email?.toLowerCase();
-    if (!key) { map.set(lead.id, lead); return map; }
-    const existing = map.get(key);
-    if (!existing || (existing.lead_status_crm === 'nuevo' && lead.lead_status_crm !== 'nuevo')) {
-      map.set(key, lead);
-    }
-    return map;
-  }, new Map<string, PipelineLead>()).values()
-);
-```
-
-### Archivos afectados
-- Nueva migración SQL (1 UPDATE)
-- `src/features/leads-pipeline/hooks/useLeadsPipeline.ts` (deduplicación de valuaciones)
+**Archivo**: `src/shared/i18n/collaborators-translations.ts` — 2 líneas modificadas.
 
