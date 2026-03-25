@@ -4,6 +4,7 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Trash2 } from 'lucide-react';
 import { Contact } from './types';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
@@ -21,6 +22,7 @@ interface ContactRowProps {
   onSelect: () => void;
   onViewDetails: () => void;
   onPatchContact?: (id: string, updates: Partial<Contact>) => void;
+  onDelete?: (id: string) => void;
   style: React.CSSProperties;
 }
 
@@ -75,6 +77,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
   onSelect,
   onViewDetails,
   onPatchContact,
+  onDelete,
   style,
 }) => {
   const { update: updateField } = useContactInlineUpdate();
@@ -265,6 +268,19 @@ const ContactRow: React.FC<ContactRowProps> = ({
           {contact.phone || '-'}
         </div>
       </div>
+
+      {/* Delete button */}
+      {onDelete && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onDelete(contact.id)}
+            className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+            title="Eliminar lead"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

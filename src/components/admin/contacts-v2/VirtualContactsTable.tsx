@@ -15,6 +15,7 @@ interface VirtualContactsTableProps {
   onSelectAll: () => void;
   onViewDetails: (contact: Contact) => void;
   onPatchContact?: (id: string, updates: Partial<Contact>) => void;
+  onDelete?: (id: string) => void;
   isLoading?: boolean;
 }
 
@@ -29,6 +30,7 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
   onSelectAll,
   onViewDetails,
   onPatchContact,
+  onDelete,
   isLoading = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -147,10 +149,11 @@ const VirtualContactsTable: React.FC<VirtualContactsTableProps> = ({
         onSelect={() => onSelect(contact.id)}
         onViewDetails={() => onViewDetails(contact)}
         onPatchContact={onPatchContact}
+        onDelete={onDelete}
         style={style}
       />
     );
-  }, [contacts, selectedIds, focusedIndex, onSelect, onViewDetails, onPatchContact]);
+  }, [contacts, selectedIds, focusedIndex, onSelect, onViewDetails, onPatchContact, onDelete]);
 
   if (isLoading) {
     return (

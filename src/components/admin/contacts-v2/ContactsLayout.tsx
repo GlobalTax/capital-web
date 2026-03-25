@@ -7,6 +7,7 @@ import { RefreshCw } from 'lucide-react';
 import { useContacts } from './hooks/useContacts';
 import { useFavoriteLeadIds } from '@/hooks/useCorporateFavorites';
 import { useContactSelection } from '@/features/contacts';
+import { useContactActions } from '@/features/contacts/hooks/useContactActions';
 import { Contact, TabType } from './types';
 import ContactsHeader from './ContactsHeader';
 import ContactsFilters from './ContactsFilters';
@@ -19,6 +20,7 @@ const ContactsLayout: React.FC = () => {
   const navigate = useNavigate();
   const { contacts, allContacts, stats, isLoading, filters, applyFilters, refetch, patchContact, patchContacts } = useContacts();
   const { data: favoriteIds, isLoading: isFavoritesLoading } = useFavoriteLeadIds();
+  const { bulkHardDelete } = useContactActions();
   
   const [activeTab, setActiveTab] = useState<TabType>('directory');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -48,6 +50,12 @@ const ContactsLayout: React.FC = () => {
   const handleNavigateToFull = (contact: Contact) => {
     setSelectedContact(null);
     navigate(`/admin/contacts/${contact.origin}_${contact.id}`);
+  };
+
+  const handleDeleteSingle = async (id: string) => {
+    const confirmed = window.confirm('⚠️ ¿Eliminar DEFINITIVAMENTE este lead?\n\nEsta acción NO se puede deshacer.');
+    if (!confirmed) return;
+    await bulkHardDelete(displayedContacts as any, [id]);
   };
 
   if (isLoading) {
@@ -81,6 +89,7 @@ const ContactsLayout: React.FC = () => {
             onSelectAll={selectAll}
             onViewDetails={handleViewDetails}
             onPatchContact={patchContact}
+            onDelete={handleDeleteSingle}
             isLoading={isFavoritesLoading}
           />
         );
@@ -94,6 +103,7 @@ const ContactsLayout: React.FC = () => {
             onSelectAll={selectAll}
             onViewDetails={handleViewDetails}
             onPatchContact={patchContact}
+            onDelete={handleDeleteSingle}
             isLoading={false}
           />
         );
