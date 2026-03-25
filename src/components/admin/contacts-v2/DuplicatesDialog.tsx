@@ -148,7 +148,10 @@ const DuplicatesDialog: React.FC<DuplicatesDialogProps> = ({ allContacts, onDone
 
   const getKeepId = (c: DuplicateCluster) => keepIds[c.id] ?? c.keepId;
 
-  const totalToDelete = clusters.reduce((acc, c) => acc + c.contacts.length - 1, 0);
+  const totalToDelete = clusters.reduce((acc, c) => {
+    const keepId = getKeepId(c);
+    return acc + c.contacts.filter(ct => ct.id !== keepId && !ct.is_from_pro_valuation).length;
+  }, 0);
 
   const handleDelete = async () => {
     if (totalToDelete === 0) return;
