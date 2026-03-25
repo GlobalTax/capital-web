@@ -59,6 +59,34 @@ export const useBuyPipeline = () => {
 
       if (err2) throw err2;
 
+      // Fetch company_valuations with lead_status_crm = 'compras'
+      const { data: valCompras, error: err3 } = await supabase
+        .from('company_valuations')
+        .select(`
+          id, contact_name, company_name, email, phone,
+          lead_status_crm, sectors_of_interest, notes, created_at,
+          acquisition_channel_id, lead_form
+        `)
+        .eq('is_deleted', false)
+        .eq('lead_status_crm', 'compras')
+        .order('created_at', { ascending: false });
+
+      if (err3) throw err3;
+
+      // Fetch contact_leads with lead_status_crm = 'compras'
+      const { data: contactCompras, error: err4 } = await supabase
+        .from('contact_leads')
+        .select(`
+          id, full_name, company, email, phone,
+          lead_status_crm, notes, created_at,
+          acquisition_channel_id, lead_form
+        `)
+        .eq('is_deleted', false)
+        .eq('lead_status_crm', 'compras')
+        .order('created_at', { ascending: false });
+
+      if (err4) throw err4;
+
       const inquiryLeads: BuyPipelineLead[] = (inquiries || []).map((i: any) => ({
         id: i.id,
         origin: 'company_acquisition' as const,
@@ -93,13 +121,48 @@ export const useBuyPipeline = () => {
         lead_form: a.lead_form || null,
       }));
 
+      const valComprasLeads: BuyPipelineLead[] = (valCompras || []).map((v: any) => ({
+        id: v.id,
+        origin: 'valuation_compras' as const,
+        contact_name: v.contact_name || '',
+        company_name: v.company_name || '',
+        email: v.email || '',
+        phone: v.phone || null,
+        lead_status_crm: 'nuevo' as LeadStatus,
+        investment_budget: null,
+        sectors_of_interest: v.sectors_of_interest || null,
+        acquisition_type: null,
+        notes: v.notes || null,
+        created_at: v.created_at,
+        acquisition_channel_id: v.acquisition_channel_id || null,
+        lead_form: v.lead_form || null,
+      }));
+
+      const contactComprasLeads: BuyPipelineLead[] = (contactCompras || []).map((c: any) => ({
+        id: c.id,
+        origin: 'contact_compras' as const,
+        contact_name: c.full_name || '',
+        company_name: c.company || '',
+        email: c.email || '',
+        phone: c.phone || null,
+        lead_status_crm: 'nuevo' as LeadStatus,
+        investment_budget: null,
+        sectors_of_interest: null,
+        acquisition_type: null,
+        notes: c.notes || null,
+        created_at: c.created_at,
+        acquisition_channel_id: c.acquisition_channel_id || null,
+        lead_form: c.lead_form || null,
+      }));
+
       // Deduplicate by email (prefer company_acquisition_inquiries)
-      const seenEmails = new Set(inquiryLeads.map(l => l.email?.toLowerCase()).filter(Boolean));
+      const allLeads = [...inquiryLeads, ...valComprasLeads, ...contactComprasLeads];
+      const seenEmails = new Set(allLeads.map(l => l.email?.toLowerCase()).filter(Boolean));
       const uniqueAcq = acquisitionLeads.filter(
         a => !a.email || !seenEmails.has(a.email.toLowerCase())
       );
 
-      return [...inquiryLeads, ...uniqueAcq];
+      return [...allLeads, ...uniqueAcq];
     },
     staleTime: 1000 * 60 * 3,
     refetchOnWindowFocus: false,
