@@ -345,6 +345,7 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     email_opened: lead.email_opened,
+    is_from_pro_valuation: lead.referral === 'Valoración Pro' || proValMap?.has(lead.id) || false,
     priority: determinePriority(lead),
     is_hot_lead: determinePriority(lead) === 'hot',
   };
