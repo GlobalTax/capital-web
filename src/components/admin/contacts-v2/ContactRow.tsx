@@ -77,6 +77,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
   onSelect,
   onViewDetails,
   onPatchContact,
+  onDelete,
   style,
 }) => {
   const { update: updateField } = useContactInlineUpdate();
