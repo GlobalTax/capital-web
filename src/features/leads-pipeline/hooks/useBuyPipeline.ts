@@ -83,7 +83,7 @@ export const useBuyPipeline = () => {
         company_name: a.company || '',
         email: a.email || '',
         phone: a.phone || null,
-        lead_status_crm: a.lead_status_crm,
+        lead_status_crm: (a.lead_status_crm === 'compras' || !a.lead_status_crm) ? 'nuevo' : a.lead_status_crm,
         investment_budget: a.investment_range || null,
         sectors_of_interest: a.sectors_of_interest || null,
         acquisition_type: a.acquisition_type || null,
