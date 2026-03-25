@@ -1,47 +1,40 @@
 
 
-## Fix: Campos de estado/canal/formulario no se persisten en la UI para leads "legacy"
+## Fix: Leads fantasma en columna "Nuevo" del Pipeline
 
-### Causa raíz
+### Problema
+El pipeline trae TODOS los `company_valuations` (con `is_deleted = false`) sin filtrar por `lead_status_crm`. Los que tienen `lead_status_crm = NULL` se fuerzan a la columna "Nuevo" por el fallback `|| 'nuevo'` en la línea 334. Esto crea 56 leads "fantasma" que en Gestión de Leads no aparecen como "nuevo".
 
-El hook `useContacts.ts` tiene dos problemas para leads de `general_contact_leads` y `sell_leads`:
+Para `contact_leads` ya existe el filtro `.not('lead_status_crm', 'is', null)` (línea 64), pero para `company_valuations` no hay filtro equivalente.
 
-1. **Query sin joins**: La consulta a `general_contact_leads` es `select('*')` — no incluye joins para `acquisition_channel` ni `lead_form_ref`, a diferencia de las otras tablas.
+### Opciones
 
-2. **Transformación incompleta**: La función `transformLegacyLead` (línea 432-449) **no mapea** los campos `acquisition_channel_id`, `acquisition_channel_name`, `lead_form`, `lead_form_name`, ni `lead_form_display_name`. Solo mapea `id`, `name`, `email`, `phone`, `company`, `status`, `lead_status_crm`, y campos de email.
+**Opción A (recomendada): Excluir del pipeline los leads sin estado CRM**
+- Añadir `.not('lead_status_crm', 'is', null)` a la query de `company_valuations` (línea 39-52)
+- Los leads sin clasificar solo se verán en Gestión de Leads, no en el Pipeline
+- Consistente con cómo ya funciona `contact_leads`
 
-**Resultado**: Los cambios se guardan correctamente en la BD, pero cuando `fetchContacts()` se ejecuta (por un evento realtime de otra tabla como `contact_leads`), la transformación descarta esos campos y la UI muestra los valores vacíos/antiguos.
+**Opción B: Mantenerlos pero en una columna separada "Sin clasificar"**
+- No forzar a "nuevo", crear una columna especial para leads sin estado
+- Más complejo, requiere cambios en la UI
 
-### Solución
+### Cambio (Opción A)
 
-**`src/components/admin/contacts-v2/hooks/useContacts.ts`** — Dos cambios:
+**`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`**
 
-1. **Actualizar la query** de `general_contact_leads` (línea ~104) para incluir joins:
+1. Añadir filtro a la query de `company_valuations`:
 ```typescript
-supabase
-  .from('general_contact_leads')
-  .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
-  .order('created_at', { ascending: false }),
+.not('lead_status_crm', 'is', null)
 ```
 
-2. **Actualizar `transformLegacyLead`** (línea ~432) para incluir los campos faltantes:
+2. Eliminar el fallback `|| 'nuevo'` en la agrupación (línea 334), ya que todos los leads tendrán un estado real:
 ```typescript
-function transformLegacyLead(lead: any, sourceType, formDisplayMap): Contact {
-  return {
-    ...existing fields...,
-    acquisition_channel_id: lead.acquisition_channel_id,
-    acquisition_channel_name: lead.acquisition_channel?.name,
-    lead_form: lead.lead_form,
-    lead_form_name: lead.lead_form_ref?.name,
-    lead_form_display_name: formDisplayMap[lead.lead_form] || lead.lead_form_ref?.name,
-    revenue: lead.revenue ? Number(lead.revenue) : undefined,
-    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
-    location: lead.location,
-    industry: lead.industry,
-  };
-}
+const status = lead.lead_status_crm!; // Ya filtrado, siempre tiene valor
 ```
+
+### Resultado
+El pipeline solo mostrará leads que realmente fueron clasificados con un estado CRM. Los 56 leads sin estado dejarán de aparecer como "nuevos" fantasma.
 
 ### Archivo afectado
-- `src/components/admin/contacts-v2/hooks/useContacts.ts`
+- `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`
 
