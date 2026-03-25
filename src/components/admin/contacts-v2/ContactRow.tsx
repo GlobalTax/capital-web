@@ -244,13 +244,23 @@ const ContactRow: React.FC<ContactRowProps> = ({
         </div>
 
         {/* 6. Revenue */}
-        <div className="text-right text-muted-foreground">
-          {formatCurrency(contact.revenue || contact.empresa_facturacion)}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableCurrencyCell
+            value={contact.revenue || contact.empresa_facturacion}
+            onSave={handleRevenueChange}
+            emptyText="—"
+            displayClassName="text-muted-foreground"
+          />
         </div>
 
         {/* 7. EBITDA */}
-        <div className="text-right text-muted-foreground">
-          {formatCurrency(contact.ebitda)}
+        <div onClick={(e) => e.stopPropagation()}>
+          <EditableCurrencyCell
+            value={contact.ebitda}
+            onSave={handleEbitdaChange}
+            emptyText="—"
+            displayClassName="text-muted-foreground"
+          />
         </div>
 
         {/* 8. Valuation */}
