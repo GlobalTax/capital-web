@@ -55,7 +55,6 @@ export const useBuyPipeline = () => {
           acquisition_type, created_at, acquisition_channel_id, lead_form
         `)
         .or('is_deleted.is.null,is_deleted.eq.false')
-        .not('lead_status_crm', 'is', null)
         .order('created_at', { ascending: false });
 
       if (err2) throw err2;
@@ -67,7 +66,7 @@ export const useBuyPipeline = () => {
         company_name: i.company || '',
         email: i.email || '',
         phone: i.phone || null,
-        lead_status_crm: i.lead_status_crm,
+        lead_status_crm: (i.lead_status_crm === 'compras' || !i.lead_status_crm) ? 'nuevo' : i.lead_status_crm,
         investment_budget: i.investment_budget || null,
         sectors_of_interest: i.sectors_of_interest || null,
         acquisition_type: i.acquisition_type || null,
@@ -84,7 +83,7 @@ export const useBuyPipeline = () => {
         company_name: a.company || '',
         email: a.email || '',
         phone: a.phone || null,
-        lead_status_crm: a.lead_status_crm,
+        lead_status_crm: (a.lead_status_crm === 'compras' || !a.lead_status_crm) ? 'nuevo' : a.lead_status_crm,
         investment_budget: a.investment_range || null,
         sectors_of_interest: a.sectors_of_interest || null,
         acquisition_type: a.acquisition_type || null,
