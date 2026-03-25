@@ -97,7 +97,7 @@ export const sidebarSections: SidebarSection[] = [
         title: "Gestión de Leads", 
         url: "/admin/contacts", 
         icon: Target,
-        badge: "URGENTE",
+        
         description: "Todos los leads del embudo"
       },
       { 
