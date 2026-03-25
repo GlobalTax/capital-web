@@ -1,42 +1,57 @@
 
 
-## Fix: Pro Valuation leads missing from Gestión de Leads
+## Allow any authenticated user to assign leads in the pipeline
 
-### Root Cause
+### Problem
+The RLS policies on `company_valuations` and `contact_leads` restrict UPDATE operations to admin users only (`current_user_is_admin()`). Non-admin authenticated users cannot assign leads because the database rejects their update.
 
-The deduplication tool (`DuplicatesDialog.tsx`) groups contacts across ALL origin tables by email. When a "Valoración Pro" creates a `contact_lead` AND a `company_valuation` exists with the same email, the dedup tool clusters them together and soft-deletes one — typically the `contact_lead`, which is the Pro valuation's primary linked record.
+### Solution
 
-Result: **22 Pro valuation leads** (including Bove Instalaciones) have `is_deleted: true` and no longer appear in the leads list.
+#### 1. Database migration — Create a security definer function for lead assignment
 
-### Fix (2 parts)
-
-#### 1. Database migration — Restore erroneously deleted Pro valuation leads
+Create a `public.assign_lead` function with `SECURITY DEFINER` that any authenticated user can call. It will only update `assigned_to` (and `assigned_at` for valuations), nothing else.
 
 ```sql
-UPDATE contact_leads
-SET is_deleted = false, deleted_at = NULL
-WHERE is_deleted = true
-  AND referral = 'Valoración Pro'
-  AND id IN (
-    SELECT linked_lead_id FROM professional_valuations
-    WHERE linked_lead_id IS NOT NULL
-  );
+CREATE OR REPLACE FUNCTION public.assign_lead(
+  p_table TEXT,
+  p_lead_id UUID,
+  p_user_id UUID DEFAULT NULL
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  IF p_table = 'company_valuations' THEN
+    UPDATE company_valuations
+    SET assigned_to = p_user_id,
+        assigned_at = CASE WHEN p_user_id IS NOT NULL THEN now() ELSE NULL END
+    WHERE id = p_lead_id;
+  ELSIF p_table = 'contact_leads' THEN
+    UPDATE contact_leads
+    SET assigned_to = p_user_id
+    WHERE id = p_lead_id;
+  ELSE
+    RAISE EXCEPTION 'Invalid table';
+  END IF;
+END;
+$$;
 ```
 
-This restores all 22 soft-deleted contact_leads that are actively linked to professional valuations.
+#### 2. Code change — Use RPC instead of direct update
 
-#### 2. Code change — Protect Pro valuation leads from deduplication
+**File:** `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`
 
-In `src/components/admin/contacts-v2/DuplicatesDialog.tsx`, modify the `handleDelete` function to skip contacts that have a linked professional valuation (detected via `is_from_pro_valuation` or `referral === 'Valoración Pro'`).
+In the `assignLeadMutation`, replace the direct `.update()` call with `supabase.rpc('assign_lead', { p_table, p_lead_id, p_user_id })`.
 
-Additionally, update `transformContact` in `useContacts.ts` to correctly set `is_from_pro_valuation` based on `lead.referral === 'Valoración Pro'` or presence in the `proValMap`.
+This bypasses the admin-only RLS while still requiring authentication.
 
-**Files to modify:**
-- `src/components/admin/contacts-v2/DuplicatesDialog.tsx` — exclude Pro valuation contacts from deletion candidates in clusters
-- `src/components/admin/contacts-v2/hooks/useContacts.ts` — set `is_from_pro_valuation` in `transformContact`
-- Database migration to restore deleted records
-
-### Technical Detail
-
-The dedup dialog receives `allContacts` and builds Union-Find clusters by email/CIF/phone. It then soft-deletes all but the "best" record per cluster. The fix will filter out contacts with `is_from_pro_valuation === true` from the deletion candidates, ensuring Pro valuation records are always preserved as the kept record or excluded from dedup entirely.
+### Files to modify
+- Database migration (new function)
+- `src/features/leads-pipeline/hooks/useLeadsPipeline.ts` — switch to RPC call
 
