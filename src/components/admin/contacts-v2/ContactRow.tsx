@@ -9,6 +9,7 @@ import { Contact } from './types';
 import { cn } from '@/lib/utils';
 import { LeadFavoriteButton } from '../contacts/LeadFavoriteButton';
 import { EditableDateCell } from '../shared/EditableDateCell';
+import { EditableCurrencyCell } from '../shared/EditableCurrencyCell';
 import { EditableSelect, SelectOption } from '../shared/EditableSelect';
 import { useContactInlineUpdate } from '@/hooks/useInlineUpdate';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
