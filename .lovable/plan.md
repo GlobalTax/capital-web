@@ -1,33 +1,43 @@
 
 
-## Separar leads "Compras" del Pipeline Ventas al Pipeline Compras
+## Fix: Pipeline Compras no carga datos
 
-### Problema
-Actualmente hay 59 leads con `lead_status_crm = 'compras'` en las tablas de ventas (`company_valuations`: 50, `contact_leads`: 9) que aparecen en el Pipeline Ventas. El usuario quiere que estos leads solo aparezcan en el Pipeline Compras.
+### Problema raiz
+La query de `company_valuations` en `useBuyPipeline.ts` selecciona `sectors_of_interest`, pero esa columna **no existe** en la tabla `company_valuations`. Esto causa un error en la query de Supabase que impide cargar los 50 leads de compras de esa tabla. Lo mismo podría afectar la carga completa del pipeline.
 
-### Cambios
+### Solución
 
-#### 1. Excluir leads "compras" del Pipeline Ventas
-**`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`**
-- Añadir filtro `.neq('lead_status_crm', 'compras')` a las queries de `company_valuations` y `contact_leads`
-
-#### 2. Incluir leads "compras" de ventas en Pipeline Compras
 **`src/features/leads-pipeline/hooks/useBuyPipeline.ts`**
-- Añadir dos queries adicionales para traer leads de `company_valuations` y `contact_leads` donde `lead_status_crm = 'compras'`
-- Normalizarlos a `BuyPipelineLead` con `origin: 'valuation_compras'` y `'contact_compras'` respectivamente
-- Mapear su `lead_status_crm` de `'compras'` → `'nuevo'`
-- Incluirlos en la deduplicación por email y en el resultado final
-- Actualizar `getTableName` para manejar los nuevos origins
 
-#### 3. Actualizar tipos
-**`src/features/leads-pipeline/hooks/useBuyPipeline.ts`**
-- Extender el tipo `origin` de `BuyPipelineLead` para incluir `'valuation_compras' | 'contact_compras'`
+1. Eliminar `sectors_of_interest` del SELECT de `company_valuations` (línea 67). Esa columna no existe en esa tabla.
+2. Usar `ai_sector_name` como alternativa para mostrar el sector en la tarjeta (campo que sí existe).
 
-### Resultado
-- Pipeline Ventas: solo leads de venta (sin etiqueta "compras")
-- Pipeline Compras: leads de las 4 tablas (acquisition_leads, company_acquisition_inquiries, + los "compras" de company_valuations y contact_leads)
+Cambio concreto:
+```typescript
+// ANTES (línea 63-72)
+.select(`
+  id, contact_name, company_name, email, phone,
+  lead_status_crm, sectors_of_interest, notes, created_at,
+  acquisition_channel_id, lead_form
+`)
 
-### Archivos afectados (2)
-- `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`
+// DESPUÉS
+.select(`
+  id, contact_name, company_name, email, phone,
+  lead_status_crm, ai_sector_name, notes, created_at,
+  acquisition_channel_id, lead_form
+`)
+```
+
+Y en el mapeo (línea 133):
+```typescript
+// ANTES
+sectors_of_interest: v.sectors_of_interest || null,
+
+// DESPUÉS
+sectors_of_interest: v.ai_sector_name || null,
+```
+
+### Archivos afectados (1)
 - `src/features/leads-pipeline/hooks/useBuyPipeline.ts`
 
