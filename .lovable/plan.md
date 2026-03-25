@@ -1,18 +1,19 @@
 
 
-## Fix: Upsert conflict — missing unique constraint on `(campaign_id, company_id)`
+## Fix: Drop conflicting unique constraint on `(campaign_id, file_name)`
 
-### Root Cause
-The `campaign_presentations` table has a unique constraint on `(campaign_id, file_name)` but NOT on `(campaign_id, company_id)`. The bulk assign upsert uses `onConflict: 'campaign_id,company_id'`, which fails because no matching constraint exists.
+### Problem
+The existing unique constraint `campaign_presentations_campaign_file_unique` on `(campaign_id, file_name)` prevents assigning the same file to multiple companies — which is exactly what "Aplicar a todas" needs to do.
 
 ### Fix
 
-1. **Database migration** — Add a unique constraint:
+1. **Database migration** — Drop the old constraint that no longer makes sense:
 ```sql
 ALTER TABLE public.campaign_presentations 
-ADD CONSTRAINT campaign_presentations_campaign_company_unique 
-UNIQUE (campaign_id, company_id);
+DROP CONSTRAINT campaign_presentations_campaign_file_unique;
 ```
 
-2. **No code changes needed** — the existing `useCampaignPresentations.ts` upsert with `onConflict: 'campaign_id,company_id'` will work once the constraint exists.
+The `(campaign_id, company_id)` unique constraint we just added is the correct one — each company gets one presentation per campaign, but the same file can be shared across companies.
+
+2. **No code changes needed.**
 
