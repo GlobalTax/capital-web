@@ -58,6 +58,7 @@ import {
   LazyBuySideMandatesPage,
   LazyBuySideMandateDetailPage,
   LazyLeadsPipelinePage,
+  LazyBuyPipelinePage,
   LazyWorkflowTemplatesPage,
   LazyBookingsPage,
   LazyNotificationsPage,
