@@ -173,8 +173,14 @@ export const useBuyPipeline = () => {
     return lead?.origin || 'company_acquisition';
   };
 
-  const getTableName = (origin: 'acquisition' | 'company_acquisition') =>
-    origin === 'company_acquisition' ? 'company_acquisition_inquiries' : 'acquisition_leads';
+  const getTableName = (origin: BuyPipelineLead['origin']) => {
+    switch (origin) {
+      case 'company_acquisition': return 'company_acquisition_inquiries';
+      case 'acquisition': return 'acquisition_leads';
+      case 'valuation_compras': return 'company_valuations';
+      case 'contact_compras': return 'contact_leads';
+    }
+  };
 
   // Update status mutation (optimistic)
   const updateStatusMutation = useMutation({
