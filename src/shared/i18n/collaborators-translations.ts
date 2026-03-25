@@ -14,7 +14,7 @@ export const collaboratorsTranslations = {
     'collab.hero.stat1': 'Colaboradores Activos',
     'collab.hero.stat2': 'Valor Gestionado',
     'collab.hero.stat3': 'Satisfacción',
-    'collab.hero.cta_apply': 'Aplicar Ahora',
+    'collab.hero.cta_apply': 'Colabora Ahora',
     'collab.hero.cta_requirements': 'Requisitos',
     'collab.hero.dashboard_title': 'Red de Colaboradores - Panel de Control',
     'collab.hero.dashboard_new': '+12 Nuevos',
