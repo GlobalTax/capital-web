@@ -332,7 +332,7 @@ export const useLeadsPipeline = () => {
   // Memoized grouping
   const leadsByStatus = useMemo(() => {
     return leads.reduce((acc, lead) => {
-      const status = lead.lead_status_crm || 'nuevo';
+      const status = lead.lead_status_crm as LeadStatus;
       if (!acc[status]) acc[status] = [];
       acc[status].push(lead);
       return acc;
