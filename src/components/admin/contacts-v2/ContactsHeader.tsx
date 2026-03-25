@@ -54,6 +54,18 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
     }
   };
 
+  const handleBulkHardDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const confirmed = window.confirm(
+      `⚠️ ¿Eliminar DEFINITIVAMENTE ${selectedIds.length} lead(s)?\n\nEsta acción NO se puede deshacer.`
+    );
+    if (!confirmed) return;
+    const result = await bulkHardDelete(contacts as any, selectedIds);
+    if (result.success || result.successCount > 0) {
+      onClearSelection();
+    }
+  };
+
   const handleBulkSync = async () => {
     if (selectedIds.length === 0) return;
     await syncBulkContacts(selectedIds, contacts as any);
