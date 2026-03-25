@@ -5,6 +5,12 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { TabType, Contact } from './types';
 import { useBrevoSync } from '@/hooks/useBrevoSync';
 import { useContactActions } from '@/features/contacts';
@@ -43,6 +49,18 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   const handleBulkArchive = async () => {
     if (selectedIds.length === 0) return;
     const result = await bulkSoftDelete(contacts as any, selectedIds);
+    if (result.success || result.successCount > 0) {
+      onClearSelection();
+    }
+  };
+
+  const handleBulkHardDelete = async () => {
+    if (selectedIds.length === 0) return;
+    const confirmed = window.confirm(
+      `⚠️ ¿Eliminar DEFINITIVAMENTE ${selectedIds.length} lead(s)?\n\nEsta acción NO se puede deshacer.`
+    );
+    if (!confirmed) return;
+    const result = await bulkHardDelete(contacts as any, selectedIds);
     if (result.success || result.successCount > 0) {
       onClearSelection();
     }
@@ -96,6 +114,16 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
           >
             <Archive className="h-3 w-3 mr-1" />
             Archivar ({selectedIds.length})
+          </Button>
+
+          <Button
+            onClick={handleBulkHardDelete}
+            variant="destructive"
+            size="sm"
+            className="h-7 text-xs"
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Eliminar ({selectedIds.length})
           </Button>
 
           <BulkStatusSelect
