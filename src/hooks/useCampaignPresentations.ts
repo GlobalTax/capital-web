@@ -351,5 +351,7 @@ export function useCampaignPresentations(campaignId: string | undefined) {
     isMatching: autoMatchMutation.isPending,
     matchProgress,
     deletePresentation: deleteMutation.mutateAsync,
+    bulkAssignPresentation: bulkAssignMutation.mutateAsync,
+    isBulkAssigning: bulkAssignMutation.isPending,
   };
 }
