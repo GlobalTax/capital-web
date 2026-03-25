@@ -55,7 +55,6 @@ export const useCollaboratorApplications = () => {
       try {
         await supabase.functions.invoke('send-form-notifications', {
           body: {
-            submissionId: data.id,
             formType: 'collaborator',
             email: applicationData.email,
             fullName: applicationData.fullName,
@@ -76,7 +75,7 @@ export const useCollaboratorApplications = () => {
           body: {
             type: 'collaborator',
             data: {
-              ...data,
+              ...applicationData,
               ...trackingData,
               source: 'web-collaborators'
             }
@@ -97,7 +96,7 @@ export const useCollaboratorApplications = () => {
         description: "Hemos recibido tu solicitud para el programa de colaboradores. Te contactaremos pronto.",
       });
 
-      return data;
+      return { success: true };
     } catch (error) {
       console.error('Error enviando solicitud de colaborador:', error);
       toast({
