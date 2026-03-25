@@ -1,32 +1,47 @@
 
 
-## Edición inline de Facturación y EBITDA en la tabla de Leads
+## Fix: Campos de estado/canal/formulario no se persisten en la UI para leads "legacy"
 
-### Objetivo
-Permitir editar Facturación y EBITDA directamente haciendo clic en la celda (incluyendo las que muestran `-`), igual que ya funciona el Estado, Canal o Fecha.
+### Causa raíz
 
-### Cambios
+El hook `useContacts.ts` tiene dos problemas para leads de `general_contact_leads` y `sell_leads`:
 
-**1. Crear componente `EditableCurrencyCell.tsx`** (`src/components/admin/shared/`)
+1. **Query sin joins**: La consulta a `general_contact_leads` es `select('*')` — no incluye joins para `acquisition_channel` ni `lead_form_ref`, a diferencia de las otras tablas.
 
-Un campo editable inline similar a `EditableDateCell`:
-- Modo display: muestra el valor formateado (`500k€`) o `—` si vacío
-- Al hacer clic: input numérico con formato español (puntos como miles)
-- Al hacer blur o Enter: guarda y vuelve a modo display
-- Props: `value`, `onSave(newValue: number | null)`, `placeholder`, `displayClassName`
+2. **Transformación incompleta**: La función `transformLegacyLead` (línea 432-449) **no mapea** los campos `acquisition_channel_id`, `acquisition_channel_name`, `lead_form`, `lead_form_name`, ni `lead_form_display_name`. Solo mapea `id`, `name`, `email`, `phone`, `company`, `status`, `lead_status_crm`, y campos de email.
 
-**2. `src/components/admin/contacts-v2/ContactRow.tsx`**
+**Resultado**: Los cambios se guardan correctamente en la BD, pero cuando `fetchContacts()` se ejecuta (por un evento realtime de otra tabla como `contact_leads`), la transformación descarta esos campos y la UI muestra los valores vacíos/antiguos.
 
-- Importar `EditableCurrencyCell`
-- Reemplazar las celdas estáticas de Revenue (línea 236-238) y EBITDA (línea 241-243) por `EditableCurrencyCell`
-- Añadir handlers `handleRevenueChange` y `handleEbitdaChange` que:
-  - Llamen a `onPatchContact` para actualización optimista local
-  - Persistan con `updateField(id, origin, 'revenue'/'ebitda', value)`
+### Solución
 
-**3. `src/hooks/useInlineUpdate.ts`** (verificar)
+**`src/components/admin/contacts-v2/hooks/useContacts.ts`** — Dos cambios:
 
-Confirmar que el hook `useContactInlineUpdate` soporta los campos `revenue` y `ebitda` para las tablas `contact_leads` y `company_valuations`. Si hay un whitelist de campos, añadirlos.
+1. **Actualizar la query** de `general_contact_leads` (línea ~104) para incluir joins:
+```typescript
+supabase
+  .from('general_contact_leads')
+  .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+  .order('created_at', { ascending: false }),
+```
 
-### Resultado
-Todas las celdas de Facturación y EBITDA serán clickables. Las vacías mostrarán `—` pero al hacer clic se podrá escribir el valor. Los datos se guardan en la tabla original del lead.
+2. **Actualizar `transformLegacyLead`** (línea ~432) para incluir los campos faltantes:
+```typescript
+function transformLegacyLead(lead: any, sourceType, formDisplayMap): Contact {
+  return {
+    ...existing fields...,
+    acquisition_channel_id: lead.acquisition_channel_id,
+    acquisition_channel_name: lead.acquisition_channel?.name,
+    lead_form: lead.lead_form,
+    lead_form_name: lead.lead_form_ref?.name,
+    lead_form_display_name: formDisplayMap[lead.lead_form] || lead.lead_form_ref?.name,
+    revenue: lead.revenue ? Number(lead.revenue) : undefined,
+    ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
+    location: lead.location,
+    industry: lead.industry,
+  };
+}
+```
+
+### Archivo afectado
+- `src/components/admin/contacts-v2/hooks/useContacts.ts`
 
