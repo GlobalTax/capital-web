@@ -76,7 +76,7 @@ const ContactsLayout: React.FC = () => {
       return;
     }
 
-    const { error } = await supabase.from(table).delete().eq('id', id);
+    const { error } = await (supabase.from(table as any) as any).delete().eq('id', id);
 
     if (error) {
       toast({ title: 'Error al eliminar', description: error.message, variant: 'destructive' });
