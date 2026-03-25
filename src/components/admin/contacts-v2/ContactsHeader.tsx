@@ -116,6 +116,16 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
             Archivar ({selectedIds.length})
           </Button>
 
+          <Button
+            onClick={handleBulkHardDelete}
+            variant="destructive"
+            size="sm"
+            className="h-7 text-xs"
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Eliminar ({selectedIds.length})
+          </Button>
+
           <BulkStatusSelect
             selectedIds={selectedIds}
             contacts={contacts as any}
