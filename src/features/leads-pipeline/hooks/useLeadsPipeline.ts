@@ -135,16 +135,13 @@ export const useLeadsPipeline = () => {
     gcTime: 1000 * 60 * 10,
   });
 
-  // Fetch admin users for assignment
+  // Fetch admin users for assignment (uses SECURITY DEFINER to bypass RLS)
   const { data: adminUsers = [] } = useQuery({
     queryKey: ['admin-users-simple'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('user_id, full_name, email')
-        .eq('is_active', true);
+      const { data, error } = await supabase.rpc('get_active_admin_users');
       if (error) throw error;
-      return data;
+      return data as { user_id: string; full_name: string; email: string }[];
     },
   });
 
