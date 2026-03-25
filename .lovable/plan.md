@@ -1,40 +1,80 @@
 
 
-## Fix: Leads fantasma en columna "Nuevo" del Pipeline
+## Auto-clasificación de leads por facturación (Target Lead / Unqualified Lead)
 
-### Problema
-El pipeline trae TODOS los `company_valuations` (con `is_deleted = false`) sin filtrar por `lead_status_crm`. Los que tienen `lead_status_crm = NULL` se fuerzan a la columna "Nuevo" por el fallback `|| 'nuevo'` en la línea 334. Esto crea 56 leads "fantasma" que en Gestión de Leads no aparecen como "nuevo".
+### Diagnóstico
 
-Para `contact_leads` ya existe el filtro `.not('lead_status_crm', 'is', null)` (línea 64), pero para `company_valuations` no hay filtro equivalente.
+Los 55 leads en "Nuevo" son **reales** — tienen `lead_status_crm = 'nuevo'` en la tabla `company_valuations`. No son fantasma. Se crearon entre el 12 y el 20 de agosto 2025 con el valor por defecto `'nuevo'` y nunca fueron reclasificados.
 
-### Opciones
+Desglose de los 55:
+- **19** con facturación >= 1M€
+- **27** con facturación < 1M€  
+- **9** sin facturación (NULL)
 
-**Opción A (recomendada): Excluir del pipeline los leads sin estado CRM**
-- Añadir `.not('lead_status_crm', 'is', null)` a la query de `company_valuations` (línea 39-52)
-- Los leads sin clasificar solo se verán en Gestión de Leads, no en el Pipeline
-- Consistente con cómo ya funciona `contact_leads`
+### Mapeo de estados
 
-**Opción B: Mantenerlos pero en una columna separada "Sin clasificar"**
-- No forzar a "nuevo", crear una columna especial para leads sin estado
-- Más complejo, requiere cambios en la UI
+Según tu tabla `contact_statuses`:
+- `contactando` → label **"Target Lead"** (position 2)
+- `calificado` → label **"Unqualified Lead"** (position 3)
 
-### Cambio (Opción A)
+### Plan
 
-**`src/features/leads-pipeline/hooks/useLeadsPipeline.ts`**
+#### 1. Migración SQL: reclasificar los 55 leads existentes
 
-1. Añadir filtro a la query de `company_valuations`:
-```typescript
-.not('lead_status_crm', 'is', null)
+```sql
+-- Leads con revenue >= 1M → Target Lead (contactando)
+UPDATE company_valuations
+SET lead_status_crm = 'contactando', status_updated_at = NOW()
+WHERE is_deleted = false
+  AND lead_status_crm = 'nuevo'
+  AND revenue >= 1000000;
+
+-- Leads con revenue < 1M → Unqualified Lead (calificado)
+UPDATE company_valuations
+SET lead_status_crm = 'calificado', status_updated_at = NOW()
+WHERE is_deleted = false
+  AND lead_status_crm = 'nuevo'
+  AND revenue IS NOT NULL
+  AND revenue < 1000000;
+
+-- Los 9 con revenue NULL se quedan en 'nuevo'
 ```
 
-2. Eliminar el fallback `|| 'nuevo'` en la agrupación (línea 334), ya que todos los leads tendrán un estado real:
-```typescript
-const status = lead.lead_status_crm!; // Ya filtrado, siempre tiene valor
+#### 2. Trigger en DB: auto-clasificar leads nuevos al insertarse
+
+Crear un trigger `BEFORE INSERT` en `company_valuations` que auto-asigne el estado basado en revenue:
+
+```sql
+CREATE OR REPLACE FUNCTION auto_classify_lead_by_revenue()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Solo si el status es el default 'nuevo' y tiene revenue
+  IF NEW.lead_status_crm = 'nuevo' AND NEW.revenue IS NOT NULL THEN
+    IF NEW.revenue >= 1000000 THEN
+      NEW.lead_status_crm := 'contactando';  -- Target Lead
+    ELSE
+      NEW.lead_status_crm := 'calificado';   -- Unqualified Lead
+    END IF;
+    NEW.status_updated_at := NOW();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_auto_classify_lead
+  BEFORE INSERT ON company_valuations
+  FOR EACH ROW
+  EXECUTE FUNCTION auto_classify_lead_by_revenue();
 ```
 
-### Resultado
-El pipeline solo mostrará leads que realmente fueron clasificados con un estado CRM. Los 56 leads sin estado dejarán de aparecer como "nuevos" fantasma.
+Esto cubre **todas** las vías de inserción (calculadora web, duplicaciones, importaciones) sin tocar código de la app.
 
-### Archivo afectado
-- `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`
+### Resultado esperado
+
+- La columna "Nuevo" del pipeline pasará de 55 a **9** leads (solo los que no tienen facturación)
+- Los futuros leads se auto-clasificarán al entrar
+- No se modifica ningún archivo del frontend
+
+### Archivos afectados
+- **1 migración SQL** (nueva)
 
