@@ -24471,6 +24471,10 @@ export type Database = {
         Args: { request_id: string }
         Returns: boolean
       }
+      assign_lead: {
+        Args: { p_lead_id: string; p_table: string; p_user_id?: string }
+        Returns: undefined
+      }
       audit_extensions_location: {
         Args: never
         Returns: {

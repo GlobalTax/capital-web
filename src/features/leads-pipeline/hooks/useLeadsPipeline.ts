@@ -205,17 +205,13 @@ export const useLeadsPipeline = () => {
     },
     mutationFn: async ({ leadId, userId }: { leadId: string; userId: string | null }) => {
       const origin = getLeadOrigin(leadId);
-      const table = getTableName(origin);
+      const table = origin === 'valuation' ? 'company_valuations' : 'contact_leads';
 
-      const updateData: any = { assigned_to: userId };
-      if (origin === 'valuation') {
-        updateData.assigned_at = userId ? new Date().toISOString() : null;
-      }
-
-      const { error } = await supabase
-        .from(table as any)
-        .update(updateData)
-        .eq('id', leadId);
+      const { error } = await supabase.rpc('assign_lead', {
+        p_table: table,
+        p_lead_id: leadId,
+        p_user_id: userId,
+      });
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
