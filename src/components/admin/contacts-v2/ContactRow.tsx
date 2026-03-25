@@ -152,6 +152,16 @@ const ContactRow: React.FC<ContactRowProps> = ({
     await updateField(contact.id, contact.origin, 'lead_received_at', newDate);
   }, [contact.id, contact.origin, updateField, onPatchContact]);
 
+  const handleRevenueChange = useCallback(async (newValue: number | null) => {
+    onPatchContact?.(contact.id, { revenue: newValue ?? undefined });
+    await updateField(contact.id, contact.origin, 'revenue', newValue ?? 0);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
+
+  const handleEbitdaChange = useCallback(async (newValue: number | null) => {
+    onPatchContact?.(contact.id, { ebitda: newValue ?? undefined });
+    await updateField(contact.id, contact.origin, 'ebitda', newValue ?? 0);
+  }, [contact.id, contact.origin, updateField, onPatchContact]);
+
   return (
     <div
       style={style}
