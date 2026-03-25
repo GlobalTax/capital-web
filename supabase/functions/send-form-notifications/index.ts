@@ -43,14 +43,22 @@ const getPageOriginLabel = (pageOrigin: string | undefined): string => {
 
 const formatCurrency = (amount: number | string | undefined): string => {
   if (!amount) return 'No especificado';
-  const num = typeof amount === 'string' ? parseFloat(amount.replace(/[^\d.-]/g, '')) : amount;
+  let num: number;
+  if (typeof amount === 'string') {
+    // Normalize Spanish number format: "2.500.000" or "2.500.000,50"
+    // Remove dots (thousands separator), replace comma with dot (decimal)
+    const normalized = amount.replace(/\./g, '').replace(',', '.');
+    num = parseFloat(normalized.replace(/[^\d.-]/g, ''));
+  } else {
+    num = amount;
+  }
   if (isNaN(num)) return String(amount);
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(num);
+  }).format(Math.abs(num));
 };
 
 const formatRevenueRange = (range: string | undefined): string => {
