@@ -114,6 +114,38 @@ export function PresentationsStep({ campaignId }: PresentationsStepProps) {
         <Badge variant="default" className="bg-green-600">{assigned} asignadas</Badge>
         <Badge variant="secondary" className="bg-yellow-500 text-white">{unassigned} sin asignar</Badge>
         <div className="flex-1" />
+        {presentations.length > 0 && (
+          <>
+            <Select value={selectedBulkPresentationId} onValueChange={setSelectedBulkPresentationId}>
+              <SelectTrigger className="w-[220px] h-8 text-xs">
+                <SelectValue placeholder="Seleccionar presentación..." />
+              </SelectTrigger>
+              <SelectContent>
+                {presentations.map(p => (
+                  <SelectItem key={p.id} value={p.id} className="text-xs">
+                    {p.file_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkAssign('all')}
+              disabled={!selectedBulkPresentationId || companies.length === 0 || isBulkAssigning}
+            >
+              {isBulkAssigning ? 'Aplicando...' : 'Aplicar a todas'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleBulkAssign('remaining')}
+              disabled={!selectedBulkPresentationId || companiesWithoutPresentation.length === 0 || isBulkAssigning}
+            >
+              Aplicar a restantes ({companiesWithoutPresentation.length})
+            </Button>
+          </>
+        )}
         <Button variant="outline" onClick={handleAutoMatch} disabled={isMatching || unassigned === 0} size="sm">
           <Sparkles className="h-4 w-4 mr-2" />
           {isMatching ? 'Asignando...' : 'Asignar con IA'}
