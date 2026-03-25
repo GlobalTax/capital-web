@@ -64,7 +64,7 @@ export const useBuyPipeline = () => {
         .from('company_valuations')
         .select(`
           id, contact_name, company_name, email, phone,
-          lead_status_crm, sectors_of_interest, notes, created_at,
+          lead_status_crm, ai_sector_name, notes, created_at,
           acquisition_channel_id, lead_form
         `)
         .eq('is_deleted', false)
