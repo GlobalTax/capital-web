@@ -24708,6 +24708,14 @@ export type Database = {
       generate_secure_temp_password: { Args: never; Returns: string }
       generate_signed_valuation_token: { Args: never; Returns: string }
       generate_unique_proposal_url: { Args: never; Returns: string }
+      get_active_admin_users: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+          user_id: string
+        }[]
+      }
       get_admin_basic_info: {
         Args: never
         Returns: {
