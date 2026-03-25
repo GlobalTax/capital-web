@@ -1,29 +1,60 @@
 
 
-## Añadir botón de eliminar individual en cada fila de lead
+## Fix: Eliminación individual de leads no actualiza la UI
 
-### Cambio
+### Problema raíz
 
-**`src/components/admin/contacts-v2/ContactRow.tsx`**
+Hay un desajuste entre los sistemas de estado:
 
-Añadir una columna extra al final de cada fila con un botón de eliminar (icono `Trash2`):
+- **`useContacts`** (la página de leads) usa `useState` local para almacenar contactos.
+- **`bulkHardDelete`** hace la eliminación optimista en el cache de react-query (`['unified-contacts']`), que es un store completamente diferente.
 
-1. Añadir prop `onDelete?: (id: string) => void`
-2. Añadir una columna estrecha al final del grid (cambiar grid-cols para incluir `28px` al final)
-3. Renderizar un botón con icono `Trash2` que, al hacer clic, muestra un `window.confirm` y llama a `onDelete(contact.id)`
+Resultado: la eliminación en BD probablemente SÍ funciona (el toast "1 contacto eliminado" aparece), pero la UI no se actualiza porque el optimistic remove apunta al cache equivocado. El contacto sigue visible hasta que un evento realtime dispare `fetchContacts()`.
 
-**`src/components/admin/contacts-v2/VirtualContactsTable.tsx`**
-
-1. Añadir prop `onDelete?: (id: string) => void`
-2. Pasarlo a cada `ContactRow`
-3. Añadir header vacío para la columna extra
+### Solución
 
 **`src/components/admin/contacts-v2/ContactsLayout.tsx`**
 
-1. Importar `useContactActions` y usar `bulkHardDelete`
-2. Crear handler `handleDeleteSingle` que pide confirmación y ejecuta el hard delete para un solo lead
-3. Pasar `onDelete={handleDeleteSingle}` a `VirtualContactsTable`
+Cambiar `handleDeleteSingle` para NO usar `bulkHardDelete` (que manipula el cache incorrecto). En su lugar:
 
-### Resultado
-Cada fila tendrá un icono de papelera a la derecha. Al hacer clic, confirma y elimina el lead.
+1. Hacer el delete directamente contra Supabase usando el `tableMap` y el `origin` del contacto.
+2. Eliminar el contacto del estado local inmediatamente con el `patchContact` pattern (o filtrar del state).
+3. Mostrar toast de confirmación.
+
+```typescript
+const handleDeleteSingle = async (id: string) => {
+  const confirmed = window.confirm('⚠️ ¿Eliminar DEFINITIVAMENTE este lead?\n\nEsta acción NO se puede deshacer.');
+  if (!confirmed) return;
+
+  const contact = displayedContacts.find(c => c.id === id);
+  if (!contact) return;
+
+  // Map origin to table
+  const tableMap = {
+    contact: 'contact_leads',
+    valuation: 'company_valuations',
+    collaborator: 'collaborator_applications',
+    acquisition: 'acquisition_leads',
+    company_acquisition: 'company_acquisition_inquiries',
+    general: 'general_contact_leads',
+    advisor: 'advisor_valuations',
+  };
+
+  const table = tableMap[contact.origin];
+  const { error } = await supabase.from(table).delete().eq('id', id);
+
+  if (error) {
+    toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    return;
+  }
+
+  // Optimistic: remove from local state immediately
+  // (refetch will also fire via realtime for contact_leads/company_valuations)
+  refetch();
+  toast({ title: '1 contacto eliminado permanentemente' });
+};
+```
+
+### Archivos afectados
+- `src/components/admin/contacts-v2/ContactsLayout.tsx` — Reescribir `handleDeleteSingle` para usar delete directo + refetch local en vez de `bulkHardDelete`.
 
