@@ -47,6 +47,7 @@ export const useLeadsPipeline = () => {
             precall_email_sent, call_attempts_count, empresa_id
           `)
           .eq('is_deleted', false)
+          .not('lead_status_crm', 'is', null)
           .order('created_at', { ascending: false })
           .range(from, to)
       );
