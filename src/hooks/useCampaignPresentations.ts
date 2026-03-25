@@ -286,6 +286,38 @@ export function useCampaignPresentations(campaignId: string | undefined) {
     },
   });
 
+  const bulkAssignMutation = useMutation({
+    mutationFn: async ({ presentationId, companyIds }: { presentationId: string; companyIds: string[] }) => {
+      if (!campaignId) throw new Error('No campaign ID');
+      const source = presentations.find(p => p.id === presentationId);
+      if (!source) throw new Error('Presentación origen no encontrada');
+
+      const assignments = companyIds.map(companyId => ({
+        campaign_id: campaignId,
+        company_id: companyId,
+        file_name: source.file_name,
+        storage_path: source.storage_path,
+        status: 'assigned' as const,
+        assigned_manually: true,
+        match_confidence: 1.0,
+      }));
+
+      const { error } = await supabase
+        .from('campaign_presentations')
+        .upsert(assignments, { onConflict: 'campaign_id,company_id' });
+      if (error) throw error;
+
+      return { count: companyIds.length };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: `Presentación asignada a ${result.count} empresas` });
+    },
+    onError: (err: any) => {
+      toast({ title: 'Error al asignar en bloque', description: err.message, variant: 'destructive' });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (presentationId: string) => {
       const pres = presentations.find(p => p.id === presentationId);
