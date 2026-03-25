@@ -103,6 +103,7 @@ const ContactsLayout: React.FC = () => {
             onSelectAll={selectAll}
             onViewDetails={handleViewDetails}
             onPatchContact={patchContact}
+            onDelete={handleDeleteSingle}
             isLoading={false}
           />
         );
