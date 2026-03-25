@@ -69,12 +69,6 @@ export const EnhancedHeroSection = () => {
                   size="lg"
                   onClick={() => scrollToSection('application-form')}
                 />
-                <SimpleButton 
-                  text={t('collab.hero.cta_requirements')}
-                  variant="outline"
-                  size="lg"
-                  onClick={() => scrollToSection('benefits-section')}
-                />
               </div>
             </div>
 
