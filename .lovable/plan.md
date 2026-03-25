@@ -1,80 +1,32 @@
 
 
-## Auto-clasificación de leads por facturación (Target Lead / Unqualified Lead)
+## Auto-clasificación de leads: Target Lead / Unqualified Lead
 
-### Diagnóstico
+### El problema del error anterior
+La tabla `company_valuations` tiene triggers de validación que comprueban el formato del email en CADA update. Algunos registros antiguos tienen emails inválidos (ej: `'yani'`), lo que bloquea cualquier UPDATE aunque solo cambies el estado CRM.
 
-Los 55 leads en "Nuevo" son **reales** — tienen `lead_status_crm = 'nuevo'` en la tabla `company_valuations`. No son fantasma. Se crearon entre el 12 y el 20 de agosto 2025 con el valor por defecto `'nuevo'` y nunca fueron reclasificados.
+### Solución (2 pasos)
 
-Desglose de los 55:
-- **19** con facturación >= 1M€
-- **27** con facturación < 1M€  
-- **9** sin facturación (NULL)
+**Paso 1 - Migración SQL (esquema): Crear trigger para leads futuros**
 
-### Mapeo de estados
+Crear la función `auto_classify_lead_by_revenue()` y el trigger `BEFORE INSERT` para que todo lead nuevo se auto-clasifique:
+- Revenue >= 1M → `contactando` (Target Lead)
+- Revenue < 1M → `calificado` (Unqualified Lead)  
+- Revenue NULL → se queda en `nuevo`
 
-Según tu tabla `contact_statuses`:
-- `contactando` → label **"Target Lead"** (position 2)
-- `calificado` → label **"Unqualified Lead"** (position 3)
+**Paso 2 - Actualización de datos: Reclasificar los 55 leads existentes**
 
-### Plan
+Usar un UPDATE con condición `WHERE email ~* '^[A-Za-z0-9._%+-]+@...'` para evitar tocar registros con emails inválidos, O usar una sentencia SQL que desactive temporalmente los triggers de validación solo durante la operación.
 
-#### 1. Migración SQL: reclasificar los 55 leads existentes
+La forma más limpia: ejecutar el UPDATE directamente vía la herramienta de inserción/actualización de datos (no migración), usando `SET lead_status_crm = CASE WHEN revenue >= 1000000 THEN 'contactando' ELSE 'calificado' END` solo sobre registros con `lead_status_crm = 'nuevo'` y `revenue IS NOT NULL`.
 
-```sql
--- Leads con revenue >= 1M → Target Lead (contactando)
-UPDATE company_valuations
-SET lead_status_crm = 'contactando', status_updated_at = NOW()
-WHERE is_deleted = false
-  AND lead_status_crm = 'nuevo'
-  AND revenue >= 1000000;
-
--- Leads con revenue < 1M → Unqualified Lead (calificado)
-UPDATE company_valuations
-SET lead_status_crm = 'calificado', status_updated_at = NOW()
-WHERE is_deleted = false
-  AND lead_status_crm = 'nuevo'
-  AND revenue IS NOT NULL
-  AND revenue < 1000000;
-
--- Los 9 con revenue NULL se quedan en 'nuevo'
-```
-
-#### 2. Trigger en DB: auto-clasificar leads nuevos al insertarse
-
-Crear un trigger `BEFORE INSERT` en `company_valuations` que auto-asigne el estado basado en revenue:
-
-```sql
-CREATE OR REPLACE FUNCTION auto_classify_lead_by_revenue()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Solo si el status es el default 'nuevo' y tiene revenue
-  IF NEW.lead_status_crm = 'nuevo' AND NEW.revenue IS NOT NULL THEN
-    IF NEW.revenue >= 1000000 THEN
-      NEW.lead_status_crm := 'contactando';  -- Target Lead
-    ELSE
-      NEW.lead_status_crm := 'calificado';   -- Unqualified Lead
-    END IF;
-    NEW.status_updated_at := NOW();
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_auto_classify_lead
-  BEFORE INSERT ON company_valuations
-  FOR EACH ROW
-  EXECUTE FUNCTION auto_classify_lead_by_revenue();
-```
-
-Esto cubre **todas** las vías de inserción (calculadora web, duplicaciones, importaciones) sin tocar código de la app.
-
-### Resultado esperado
-
-- La columna "Nuevo" del pipeline pasará de 55 a **9** leads (solo los que no tienen facturación)
-- Los futuros leads se auto-clasificarán al entrar
-- No se modifica ningún archivo del frontend
+Para los registros con emails rotos, usaremos una sesión con `session_replication_role = 'replica'` que bypasea triggers.
 
 ### Archivos afectados
-- **1 migración SQL** (nueva)
+- 1 migración SQL nueva (solo CREATE FUNCTION + CREATE TRIGGER)
+- 1 operación de datos (UPDATE existentes)
+
+### Resultado
+- Columna "Nuevo" pasará de 55 a ~9 leads (solo los sin facturación)
+- Todos los leads futuros se auto-clasifican al entrar
 
