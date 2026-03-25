@@ -350,7 +350,7 @@ export const EnhancedCollaboratorForm = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div id="application-form" className="max-w-2xl mx-auto">
       {/* Progress Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
