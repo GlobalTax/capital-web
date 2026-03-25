@@ -1,0 +1,2 @@
+ALTER TABLE public.lead_tasks DROP CONSTRAINT IF EXISTS lead_tasks_lead_type_check;
+ALTER TABLE public.lead_tasks ADD CONSTRAINT lead_tasks_lead_type_check CHECK (lead_type = ANY (ARRAY['valuation','contact','collaborator']));
