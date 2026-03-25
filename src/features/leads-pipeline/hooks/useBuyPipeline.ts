@@ -130,7 +130,7 @@ export const useBuyPipeline = () => {
         phone: v.phone || null,
         lead_status_crm: 'nuevo' as LeadStatus,
         investment_budget: null,
-        sectors_of_interest: v.sectors_of_interest || null,
+        sectors_of_interest: v.ai_sector_name || null,
         acquisition_type: null,
         notes: v.notes || null,
         created_at: v.created_at,
