@@ -19,7 +19,7 @@ import {
   MoreHorizontal,
   MapPin,
   Users,
-  TrendingUp,
+  
   BarChart3,
   UserCheck,
   X as XIcon
