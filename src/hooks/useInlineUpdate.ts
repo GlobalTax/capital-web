@@ -358,6 +358,11 @@ export const useContactInlineUpdate = () => {
         'lead_received_at': 'lead_received_at',
         'lead_status_crm': 'lead_status_crm',
         'lead_form': 'lead_form',
+        'revenue': 'annual_revenue',
+      },
+      'sell_leads': {
+        'name': 'full_name',
+        'lead_status_crm': 'lead_status_crm',
       },
       'company_acquisition_inquiries': {
         'name': 'full_name',
