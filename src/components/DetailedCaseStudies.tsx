@@ -23,6 +23,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
   description,
   highlights,
   logoUrl,
+  counterpartLogoUrl,
   valueAmount,
   valueCurrency,
   isValueConfidential
