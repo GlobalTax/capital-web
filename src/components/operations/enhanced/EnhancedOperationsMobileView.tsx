@@ -7,7 +7,7 @@ import { formatCompactCurrency } from '@/shared/utils/format';
 
 interface Operation {
   id: string;
-  company_name?: string;
+  company_name: string;
   project_name?: string;
   sector: string;
   valuation_amount: number;
