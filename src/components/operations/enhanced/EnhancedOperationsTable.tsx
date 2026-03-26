@@ -137,7 +137,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                   {operation.logo_url && (
                     <img
                       src={operation.logo_url}
-                      alt={operation.company_name}
+                      alt={operation.project_name || operation.company_name || 'Operación'}
                       className="w-10 h-10 rounded-lg object-contain bg-muted p-1"
                     />
                   )}
