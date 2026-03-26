@@ -1,19 +1,66 @@
 
 
-## Plan: Estado por defecto "Nuevo"
+## Plan: Auto-scroll del pipeline al arrastrar tarjetas
 
-El problema es que las funciones de transformación en `useContacts.ts` pasan `lead_status_crm` tal cual viene de la BD, y cuando es `null`/`undefined`, la columna "Estado" aparece vacía.
+### Problema
+Al arrastrar una tarjeta desde una columna visible hacia una que está fuera de la pantalla, el contenedor no se desplaza automáticamente, obligando a hacer el movimiento en dos pasos.
 
-### Cambio
+### Solución
+Añadir un listener de `onDragUpdate`/mouse position durante el drag que detecte cuando el cursor está cerca de los bordes izquierdo/derecho del contenedor scrollable, y auto-scroll horizontalmente en esa dirección.
 
-**Archivo**: `src/components/admin/contacts-v2/hooks/useContacts.ts`
+### Implementación
 
-En las 4 funciones de transformación, cambiar la asignación de `lead_status_crm` para que use `'nuevo'` como fallback:
+**Archivo**: `src/features/leads-pipeline/components/LeadsPipelineView.tsx`
 
-- **`transformContact`** (línea 346): `lead.lead_status_crm` → `lead.lead_status_crm || 'nuevo'`
-- **`transformValuation`** (línea 394): `lead.lead_status_crm` → `lead.lead_status_crm || 'nuevo'`
-- **`transformAdvisor`**: añadir `lead_status_crm: lead.lead_status_crm || 'nuevo'` (actualmente no tiene este campo)
-- **`transformLegacyLead`** (línea 466): `lead.lead_status_crm || null` → `lead.lead_status_crm || 'nuevo'`
+1. Añadir un `useRef` al contenedor scrollable (`div.overflow-x-auto`)
+2. Implementar auto-scroll con `onDragStart`/`onDragEnd` de `DragDropContext`:
+   - Al iniciar drag, activar un `requestAnimationFrame` loop que lee la posición del mouse
+   - Si el cursor está a <100px del borde derecho del contenedor → scroll derecha
+   - Si está a <100px del borde izquierdo → scroll izquierda
+   - Velocidad proporcional a la cercanía al borde
+   - Al soltar, detener el loop
 
-Resultado: todos los leads sin estado asignado mostrarán "Nuevo" en vez de vacío.
+3. Aplicar el mismo patrón a `BuyPipelineView.tsx` para consistencia
+
+### Detalle técnico
+```typescript
+// Hook o lógica inline:
+const scrollContainerRef = useRef<HTMLDivElement>(null);
+const animationRef = useRef<number>();
+const mouseXRef = useRef(0);
+
+// Track mouse during drag
+useEffect(() => {
+  const handler = (e: MouseEvent) => { mouseXRef.current = e.clientX; };
+  window.addEventListener('mousemove', handler);
+  return () => window.removeEventListener('mousemove', handler);
+}, []);
+
+const startAutoScroll = () => {
+  const scroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const x = mouseXRef.current;
+    const edge = 120; // px from edge to trigger
+    const speed = 12;
+    
+    if (x < rect.left + edge) {
+      container.scrollLeft -= speed * (1 - (x - rect.left) / edge);
+    } else if (x > rect.right - edge) {
+      container.scrollLeft += speed * (1 - (rect.right - x) / edge);
+    }
+    animationRef.current = requestAnimationFrame(scroll);
+  };
+  scroll();
+};
+
+const stopAutoScroll = () => {
+  if (animationRef.current) cancelAnimationFrame(animationRef.current);
+};
+```
+
+### Archivos afectados
+- `src/features/leads-pipeline/components/LeadsPipelineView.tsx`
+- `src/features/leads-pipeline/components/BuyPipelineView.tsx`
 
