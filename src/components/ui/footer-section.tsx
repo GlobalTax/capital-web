@@ -230,7 +230,7 @@ export function Footerdemo() {
             {/* Social Media Icons */}
             <div className="flex items-center space-x-4">
               <a 
-                href="https://www.linkedin.com/company/capittal" 
+                href="https://www.linkedin.com/company/capittal-ma-consulting/posts/?feedView=all" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
