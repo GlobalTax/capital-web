@@ -20,7 +20,7 @@ const ServiceClosedOperations: React.FC<ServiceClosedOperationsProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('case_studies')
-        .select('id, title, sector, value_amount, value_currency, is_value_confidential, year, logo_url')
+        .select('id, title, sector, value_amount, value_currency, is_value_confidential, year, logo_url, counterpart_logo_url')
         .eq('is_active', true)
         .eq('is_featured', true)
         .order('year', { ascending: false })
