@@ -62,6 +62,7 @@ export const LeadsPipelineView: React.FC = () => {
   // Build a Map<formId, displayName> for pipeline cards
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
   
+  const { scrollContainerRef, startAutoScroll, stopAutoScroll } = usePipelineAutoScroll();
   const isLoading = isLoadingLeads || isLoadingStatuses;
 
   // Existing filters
