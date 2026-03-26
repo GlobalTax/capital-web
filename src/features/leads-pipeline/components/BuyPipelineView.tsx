@@ -58,13 +58,13 @@ const BuyPipelineCard: React.FC<{
             </Badge>
           )}
           {leadFormName && (
-            <Badge className="text-xs bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-100">
-              📋 {leadFormName}
+            <Badge className={`text-xs border ${getBadgeColor(leadFormName, 'form')}`}>
+              {leadFormName}
             </Badge>
           )}
           {channelName && (
-            <Badge className="text-xs bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-100">
-              📡 {channelName}
+            <Badge className={`text-xs border ${getBadgeColor(channelName, 'channel')}`}>
+              {channelName}
             </Badge>
           )}
         </div>
