@@ -58,15 +58,15 @@ export const WishlistModal: React.FC = () => {
                       />
                     ) : (
                       <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                        <span className="text-primary font-bold">
-                          {operation.company_name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                      <span className="text-primary font-bold">
+                          {(operation.project_name || operation.company_name).split(' ').map(w => w[0]).join('').slice(0, 2)}
                         </span>
                       </div>
                     )}
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold truncate">{operation.company_name}</h4>
+                      <h4 className="font-semibold truncate">{operation.project_name || operation.company_name}</h4>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                         <Badge variant="outline" className="text-xs">
                           {operation.sector}

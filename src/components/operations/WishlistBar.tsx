@@ -32,11 +32,11 @@ export const WishlistBar: React.FC = () => {
                   variant="secondary"
                   className="flex items-center gap-1 py-1.5 px-3 max-w-[150px] bg-white border border-red-200"
                 >
-                  <span className="truncate text-xs">{op.company_name}</span>
+                  <span className="truncate text-xs">{op.project_name || op.company_name}</span>
                   <button
                     onClick={() => removeFromWishlist(op.id)}
                     className="ml-1 hover:text-destructive transition-colors"
-                    aria-label={`Quitar ${op.company_name} de guardados`}
+                    aria-label={`Quitar ${op.project_name || op.company_name} de guardados`}
                   >
                     <X className="h-3 w-3" />
                   </button>

@@ -8,6 +8,7 @@ import { formatCompactCurrency } from '@/shared/utils/format';
 interface Operation {
   id: string;
   company_name: string;
+  project_name?: string;
   sector: string;
   valuation_amount: number;
   valuation_currency: string;
@@ -69,7 +70,7 @@ export const EnhancedOperationsMobileView: React.FC<EnhancedOperationsMobileView
                 {operation.logo_url && (
                   <img 
                     src={operation.logo_url} 
-                    alt={operation.company_name}
+                    alt={operation.project_name || operation.company_name}
                     className="w-14 h-14 rounded-lg object-contain bg-muted p-2"
                   />
                 )}
@@ -79,7 +80,7 @@ export const EnhancedOperationsMobileView: React.FC<EnhancedOperationsMobileView
               <div className="flex-1 min-w-0">
                 <div className="mb-2">
                   <h3 className="font-semibold text-base text-foreground mb-1">
-                    {operation.company_name}
+                    {operation.project_name || operation.company_name}
                   </h3>
                   <div className="flex items-center gap-1 flex-wrap">
                     <Badge variant="outline" className="text-xs">

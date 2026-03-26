@@ -4867,6 +4867,7 @@ export type Database = {
           is_featured: boolean | null
           is_new_override: string | null
           logo_url: string | null
+          project_name: string | null
           project_status: string | null
           revenue_amount: number | null
           sector: string
@@ -4911,6 +4912,7 @@ export type Database = {
           is_featured?: boolean | null
           is_new_override?: string | null
           logo_url?: string | null
+          project_name?: string | null
           project_status?: string | null
           revenue_amount?: number | null
           sector: string
@@ -4955,6 +4957,7 @@ export type Database = {
           is_featured?: boolean | null
           is_new_override?: string | null
           logo_url?: string | null
+          project_name?: string | null
           project_status?: string | null
           revenue_amount?: number | null
           sector?: string
