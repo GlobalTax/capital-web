@@ -5513,6 +5513,7 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           deletion_reason: string | null
+          ebitda: number | null
           email: string
           email_block_reason: string | null
           email_blocked: boolean | null
@@ -5553,6 +5554,7 @@ export type Database = {
           notes: string | null
           phone: string | null
           referral: string | null
+          revenue: number | null
           sectors_of_interest: string | null
           service_type: Database["public"]["Enums"]["service_type_enum"] | null
           status: string
@@ -5594,6 +5596,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
+          ebitda?: number | null
           email: string
           email_block_reason?: string | null
           email_blocked?: boolean | null
@@ -5634,6 +5637,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           referral?: string | null
+          revenue?: number | null
           sectors_of_interest?: string | null
           service_type?: Database["public"]["Enums"]["service_type_enum"] | null
           status?: string
@@ -5675,6 +5679,7 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           deletion_reason?: string | null
+          ebitda?: number | null
           email?: string
           email_block_reason?: string | null
           email_blocked?: boolean | null
@@ -5715,6 +5720,7 @@ export type Database = {
           notes?: string | null
           phone?: string | null
           referral?: string | null
+          revenue?: number | null
           sectors_of_interest?: string | null
           service_type?: Database["public"]["Enums"]["service_type_enum"] | null
           status?: string
@@ -20006,6 +20012,7 @@ export type Database = {
         Row: {
           company: string
           created_at: string
+          ebitda: number | null
           email: string
           email_sent: boolean | null
           email_sent_at: string | null
@@ -20018,6 +20025,7 @@ export type Database = {
           page_origin: string | null
           phone: string | null
           referrer: string | null
+          revenue: number | null
           revenue_range: string | null
           sector: string | null
           status: string
@@ -20032,6 +20040,7 @@ export type Database = {
         Insert: {
           company: string
           created_at?: string
+          ebitda?: number | null
           email: string
           email_sent?: boolean | null
           email_sent_at?: string | null
@@ -20044,6 +20053,7 @@ export type Database = {
           page_origin?: string | null
           phone?: string | null
           referrer?: string | null
+          revenue?: number | null
           revenue_range?: string | null
           sector?: string | null
           status?: string
@@ -20058,6 +20068,7 @@ export type Database = {
         Update: {
           company?: string
           created_at?: string
+          ebitda?: number | null
           email?: string
           email_sent?: boolean | null
           email_sent_at?: string | null
@@ -20070,6 +20081,7 @@ export type Database = {
           page_origin?: string | null
           phone?: string | null
           referrer?: string | null
+          revenue?: number | null
           revenue_range?: string | null
           sector?: string | null
           status?: string
