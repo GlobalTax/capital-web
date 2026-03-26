@@ -130,25 +130,31 @@ const CaseStudiesCompact = () => {
                     )}
                   </div>
                   
-                  {/* Logo - much larger and more prominent */}
-                  {case_.logo_url && (
-                    <div className="w-28 h-28 mb-6 bg-gray-50 rounded-lg p-3 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200 mx-auto">
-                      <img 
-                        src={case_.logo_url} 
-                        alt={`Logo de ${case_.title}`}
-                        className="w-full h-full object-contain"
-                        width={112}
-                        height={112}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = document.createElement('div');
-                          fallback.className = 'w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500 text-xs font-medium';
-                          fallback.textContent = 'Logo';
-                          e.currentTarget.parentElement?.appendChild(fallback);
-                        }}
-                      />
+                  {/* Logos - both parties side by side */}
+                  {(case_.logo_url || case_.counterpart_logo_url) && (
+                    <div className="flex items-center justify-center gap-4 mb-6">
+                      {case_.logo_url && (
+                        <div className="w-20 h-20 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100">
+                          <img 
+                            src={case_.logo_url} 
+                            alt={`Logo de ${case_.title}`}
+                            className="w-full h-full object-contain"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      )}
+                      {case_.counterpart_logo_url && (
+                        <div className="w-20 h-20 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100">
+                          <img 
+                            src={case_.counterpart_logo_url} 
+                            alt={`Contraparte de ${case_.title}`}
+                            className="w-full h-full object-contain"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                   

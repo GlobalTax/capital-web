@@ -45,19 +45,30 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
             <h3 className="text-2xl font-normal text-black mb-2">{title}</h3>
             <p className="text-gray-600 leading-relaxed">{description}</p>
           </div>
-          {logoUrl && (
-            <div className="ml-6 flex-shrink-0">
-              <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden">
-                <img 
-                  src={logoUrl} 
-                  alt={`Logo de ${title}`}
-                  className="max-w-full max-h-full object-contain"
-                  width={80}
-                  height={80}
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
+          {(logoUrl || counterpartLogoUrl) && (
+            <div className="ml-6 flex-shrink-0 flex items-center gap-3">
+              {logoUrl && (
+                <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden p-2">
+                  <img 
+                    src={logoUrl} 
+                    alt={`Logo de ${title}`}
+                    className="max-w-full max-h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
+              {counterpartLogoUrl && (
+                <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden p-2">
+                  <img 
+                    src={counterpartLogoUrl} 
+                    alt={`Contraparte de ${title}`}
+                    className="max-w-full max-h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

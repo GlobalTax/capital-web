@@ -19,6 +19,7 @@ export interface CaseStudy {
   updated_at: string;
   featured_image_url?: string;
   logo_url?: string;
+  counterpart_logo_url?: string;
 }
 
 export const useCaseStudies = () => {

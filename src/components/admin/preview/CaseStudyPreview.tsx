@@ -27,8 +27,24 @@ const CaseStudyPreview = ({ caseStudy }: CaseStudyPreviewProps) => {
       <h3 className="text-lg font-medium text-black mb-4">Vista Previa - Caso de Éxito</h3>
       <Card className="bg-white border-0.5 border-black rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out group max-w-md mx-auto">
         <CardContent className="p-6">
+          {/* Logos */}
+          {(caseStudy.logo_url || caseStudy.counterpart_logo_url) && (
+            <div className="flex items-center justify-center gap-3 mb-4">
+              {caseStudy.logo_url && (
+                <div className="w-16 h-16 bg-gray-50 rounded-lg p-1.5 overflow-hidden border border-gray-100">
+                  <img src={caseStudy.logo_url} alt="Parte asesorada" className="w-full h-full object-contain" />
+                </div>
+              )}
+              {caseStudy.counterpart_logo_url && (
+                <div className="w-16 h-16 bg-gray-50 rounded-lg p-1.5 overflow-hidden border border-gray-100">
+                  <img src={caseStudy.counterpart_logo_url} alt="Otra parte" className="w-full h-full object-contain" />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center justify-between mb-4">
-            <Badge className="bg-white border-0.5 border-black text-black rounded-lg">
+            <Badge className="bg-white text-black rounded-lg border-0">
               {caseStudy.sector}
             </Badge>
             {caseStudy.is_featured && (
