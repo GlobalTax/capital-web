@@ -70,6 +70,7 @@ export const useContacts = () => {
         { data: advisorLeads },
         { data: sellLeads },
         { data: generalContactLeads },
+        { data: companyAcquisitionLeads },
         { data: proValData },
       ] = await Promise.all([
         supabase
@@ -105,6 +106,10 @@ export const useContacts = () => {
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
         supabase
+          .from('company_acquisition_inquiries')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .order('created_at', { ascending: false }),
+        supabase
           .from('professional_valuations')
           .select('linked_lead_id, linked_lead_type, reported_ebitda, normalized_ebitda, valuation_central, financial_years')
           .not('linked_lead_id', 'is', null),
@@ -129,25 +134,18 @@ export const useContacts = () => {
         }
       }
 
-      // Collect emails already in contact_leads to avoid duplicating legacy records
-      const contactLeadEmails = new Set(
-        (contactLeads || []).map((l: any) => l.email?.toLowerCase())
-      );
-
-      // Transform to unified format
+      // Transform to unified format (no email deduplication — duplicates are handled by is_possible_duplicate feature)
       const unified: Contact[] = [
         ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap, proValMap)),
         ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap, proValMap)),
         ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap, proValMap)),
         ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap, proValMap)),
         ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap, proValMap)),
-        // Legacy tables - only include if not already in contact_leads
-        ...(sellLeads || [])
-          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
-          .map((l: any) => transformLegacyLead(l, 'sell_lead', formDisplayMap)),
-        ...(generalContactLeads || [])
-          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
-          .map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
+        // Legacy tables - always include all records
+        ...(sellLeads || []).map((l: any) => transformLegacyLead(l, 'sell_lead', formDisplayMap)),
+        ...(generalContactLeads || []).map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
+        // Company acquisition inquiries
+        ...(companyAcquisitionLeads || []).map((l: any) => transformLegacyLead(l, 'company_acquisition', formDisplayMap)),
       ];
 
       // Store all contacts (prospect filtering moved to filteredContacts memo)
@@ -166,18 +164,17 @@ export const useContacts = () => {
     fetchContacts();
 
     const channelName = `contacts-realtime-${instanceId.replace(/:/g, '-')}`;
+    const refetchAndInvalidate = () => {
+      fetchContacts();
+      queryClient.invalidateQueries({ queryKey: ['prospects'] });
+    };
     channelRef.current = supabase
       .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, () => {
-        fetchContacts();
-        // Cross-invalidation: also update prospects list
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, () => {
-        fetchContacts();
-        // Cross-invalidation: also update prospects list
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sell_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'general_contact_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_acquisition_inquiries' }, refetchAndInvalidate)
       .subscribe();
 
     return () => {
@@ -429,11 +426,16 @@ function determinePriority(lead: any): 'hot' | 'warm' | 'cold' {
   return 'cold';
 }
 
-// Transform legacy sell_leads and general_contact_leads
-function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact', formDisplayMap: Record<string, string>): Contact {
+// Transform legacy sell_leads, general_contact_leads, and company_acquisition_inquiries
+function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact' | 'company_acquisition', formDisplayMap: Record<string, string>): Contact {
+  const originMap: Record<string, ContactOrigin> = {
+    sell_lead: 'general',
+    general_contact: 'general',
+    company_acquisition: 'company_acquisition',
+  };
   return {
     id: lead.id,
-    origin: 'general' as ContactOrigin,
+    origin: originMap[sourceType] || 'general',
     name: lead.full_name || '',
     email: lead.email,
     phone: lead.phone,
