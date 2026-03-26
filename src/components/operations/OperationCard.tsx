@@ -190,7 +190,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             {operation.logo_url ? (
               <img 
                 src={operation.logo_url} 
-                alt={`${operation.company_name} logo`}
+                alt={`${displayName} logo`}
                 className="w-12 h-12 rounded-lg object-contain bg-gray-50 p-2"
                 loading="lazy"
                 onError={(e) => {
@@ -200,7 +200,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             ) : (
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                 <span className="text-primary font-bold text-lg">
-                  {operation.company_name.split(' ').map(word => word[0]).join('')}
+                  {displayName.split(' ').map(word => word[0]).join('')}
                 </span>
               </div>
             )}
@@ -208,9 +208,9 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             <div className="flex-1">
               <h3 className="font-semibold text-lg line-clamp-1">
                 {searchTerm ? (
-                  <span dangerouslySetInnerHTML={{ __html: highlightText(operation.company_name, searchTerm) }} />
+                  <span dangerouslySetInnerHTML={{ __html: highlightText(displayName, searchTerm) }} />
                 ) : (
-                  operation.company_name
+                  displayName
                 )}
               </h3>
               <div className="flex items-center gap-1 mt-1 flex-wrap">
