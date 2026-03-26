@@ -51,6 +51,7 @@ interface Operation {
   interested_parties_count?: number;
   project_status?: string;
   expected_market_text?: string;
+  project_name?: string;
   // Resolved i18n fields
   resolved_description?: string;
   resolved_short_description?: string;
