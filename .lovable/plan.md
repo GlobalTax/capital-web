@@ -1,25 +1,46 @@
 
+He revisado el código, la consulta a Supabase y el estado actual de `topbar_group_companies`.
 
-## Plan: Actualizar enlace de Global.nrro a https://nvrro.es/
+Problema real:
+- El cambio anterior se hizo sobre la fila equivocada.
+- Ahora mismo en base de datos existen estas filas:
+  - `Capittal` → `https://capittal.es`
+  - `Navarro Tax & Legal` → `https://nvrro.es/`
+  - `Global.nrro` → `https://global.nrro.es/`
+- En el dropdown, el enlace que sigues viendo con error es `Global.nrro`, y esa fila todavía apunta a `https://global.nrro.es/`.
 
-El enlace de "Global.nrro" / "Navarro Tax & Legal" aparece en 3 sitios del código y en la base de datos.
+Además, he detectado un warning aparte en `TopBar.tsx`:
+- `Invalid prop supplied to React.Fragment`
+- No parece ser la causa del enlace incorrecto, pero conviene corregirlo porque ensucia consola y puede romper atributos inyectados por Lovable.
 
-### Cambios
+Plan corregido:
 
-**1. Migración SQL** — Actualizar la URL en `topbar_group_companies`
-```sql
-UPDATE public.topbar_group_companies SET url = 'https://nvrro.es/' WHERE name = 'Navarro Tax & Legal';
-```
-Esto corrige el enlace del dropdown del TopBar (la imagen que has subido).
+1. Corregir el dato correcto en Supabase
+- Actualizar la fila `Global.nrro` para que su `url` sea `https://nvrro.es/`.
+- No tocar `Navarro Tax & Legal` si también debe seguir apuntando a esa misma URL.
 
-**2. `src/components/ui/footer-section.tsx`** — Cambiar `https://www.nrro.es/` → `https://nvrro.es/`
+2. Revisar si debe haber dos entradas o una sola
+- Si quieres mantener ambas opciones en el dropdown:
+  - `Global.nrro` → `https://nvrro.es/`
+  - `Navarro Tax & Legal` → `https://nvrro.es/`
+- Si en realidad son duplicadas y solo debe aparecer una:
+  - eliminar u ocultar una de las dos entradas (`is_active = false` en la que sobre).
 
-**3. `src/components/Team.tsx`** — Cambiar `https://www.nrro.es/` → `https://nvrro.es/`
+3. Corregir la advertencia de React en el TopBar
+- Ajustar el render de `TopBar.tsx` para no pasar props extra a `React.Fragment`.
+- Esto elimina el warning actual en consola y deja el componente limpio.
 
-### Archivos afectados
-| Archivo | Cambio |
-|---------|--------|
-| Nueva migración SQL | UPDATE url en `topbar_group_companies` |
-| `src/components/ui/footer-section.tsx` | URL del footer |
-| `src/components/Team.tsx` | URL en sección de equipo |
+4. Verificación
+- Confirmar que al abrir el dropdown en `/oportunidades`, el item `Global.nrro` navega a `https://nvrro.es/`.
+- Confirmar también que no quedan enlaces duros inconsistentes en frontend.
 
+Detalles técnicos:
+- No hace falta una migración de esquema.
+- Esto es un cambio de datos en una tabla existente.
+- El error anterior vino de actualizar `name = 'Navarro Tax & Legal'` en vez de `name = 'Global.nrro'`.
+- La tabla tiene RLS y solo admins pueden gestionarla desde cliente, así que la actualización debe hacerse por la vía correcta de datos/autorización, no como cambio de estructura.
+
+Archivos/zonas implicadas:
+- `src/hooks/useTopBarConfig.ts` — consume `topbar_group_companies`
+- `src/components/header/TopBar.tsx` — warning de `React.Fragment`
+- tabla `public.topbar_group_companies` — dato incorrecto en la fila `Global.nrro`
