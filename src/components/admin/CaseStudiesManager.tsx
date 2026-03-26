@@ -82,6 +82,7 @@ const CaseStudiesManager = () => {
     is_active: true,
     is_value_confidential: false,
     logo_url: undefined,
+    counterpart_logo_url: undefined,
     featured_image_url: undefined,
     display_locations: ['home', 'casos-exito'],
     display_order: 0
