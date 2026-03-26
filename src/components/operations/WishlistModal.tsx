@@ -58,8 +58,8 @@ export const WishlistModal: React.FC = () => {
                       />
                     ) : (
                       <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                        <span className="text-primary font-bold">
-                          {operation.company_name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                      <span className="text-primary font-bold">
+                          {(operation.project_name || operation.company_name).split(' ').map(w => w[0]).join('').slice(0, 2)}
                         </span>
                       </div>
                     )}
