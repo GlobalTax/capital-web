@@ -120,11 +120,12 @@ export const BuyPipelineView: React.FC = () => {
   const filteredTotal = Object.values(filteredLeadsByStatus).reduce((sum, arr) => sum + arr.length, 0);
 
   const handleDragEnd = useCallback((result: DropResult) => {
+    stopAutoScroll();
     if (!result.destination) return;
     const { draggableId, destination } = result;
     const newStatus = destination.droppableId as LeadStatus;
     updateStatus({ leadId: draggableId, status: newStatus });
-  }, [updateStatus]);
+  }, [updateStatus, stopAutoScroll]);
 
   const handleViewDetails = useCallback((lead: BuyPipelineLead) => {
     navigate(`/admin/contacts/${lead.id}`);
