@@ -71,7 +71,8 @@ serve(async (req) => {
       .from('company_operations')
       .select('*', { count: 'exact' })
       .eq('is_active', true)
-      .eq('is_deleted', false);
+      .eq('is_deleted', false)
+      .eq('is_marketplace_visible', true);
 
     // Apply filters with validation
     if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {

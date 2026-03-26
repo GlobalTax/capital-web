@@ -73,6 +73,7 @@ interface Operation {
   assigned_at?: string | null;
   project_status?: string;
   expected_market_text?: string;
+  is_marketplace_visible?: boolean;
 }
 
 const AdminOperations = () => {
@@ -1008,9 +1009,23 @@ const AdminOperations = () => {
       },
     },
     {
+      key: 'marketplace',
+      title: '🏪 MARKETPLACE',
+      width: 100,
+      render: (operation: Operation) => (
+        <div className="flex items-center justify-center">
+          <Switch
+            checked={operation.is_marketplace_visible ?? false}
+            onCheckedChange={(checked) => handleQuickUpdate(operation.id, 'is_marketplace_visible', checked)}
+            aria-label="Visible en marketplace"
+          />
+        </div>
+      ),
+    },
+    {
       key: 'actions',
       title: 'ACCIONES',
-      width: 120,  
+      width: 120,
       render: (operation: Operation) => (
         <div className="flex items-center gap-1">
           <Button
@@ -1776,6 +1791,17 @@ const AdminOperations = () => {
                       })}
                     />
                     <Label htmlFor="is_featured" className="text-xs text-gray-700 font-medium">Operación Destacada</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_marketplace_visible"
+                      checked={editingOperation.is_marketplace_visible ?? false}
+                      onCheckedChange={(checked) => setEditingOperation({
+                        ...editingOperation,
+                        is_marketplace_visible: checked
+                      })}
+                    />
+                    <Label htmlFor="is_marketplace_visible" className="text-xs text-gray-700 font-medium">🏪 Visible en Marketplace</Label>
                   </div>
                 </div>
               </div>
