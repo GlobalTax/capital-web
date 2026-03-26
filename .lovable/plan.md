@@ -1,54 +1,39 @@
 
 
-## Plan: Dos logos por caso de éxito + quitar borde del sector
+## Plan: Mostrar Facturación y EBITDA en todos los tipos de leads
 
-### Resumen
-Cada caso de éxito mostrara dos logos: el de la **Parte Asesorada** (logo actual `logo_url`) y el de la **Otra Parte** (nuevo campo `counterpart_logo_url`). Los labels "Parte Asesorada" / "Otra Parte" son solo internos (admin). En la web publica se muestran ambos logos lado a lado sin etiquetas. Ademas se elimina el recuadro/borde del badge de sector.
+### Problema detectado
 
-### 1. Migración de base de datos
-- Añadir columna `counterpart_logo_url TEXT` a la tabla `case_studies`
-- Regenerar tipos de Supabase
+Varios tipos de leads muestran "—" en Facturación y EBITDA porque:
 
-### 2. Admin: CaseStudiesManager.tsx
-- Renombrar el campo de logo actual a **"Logo Parte Asesorada"** (interno)
-- Añadir segundo `ImageUploadField` con label **"Logo Otra Parte"** (interno)
-- Actualizar interface, emptyCase y formData para incluir `counterpart_logo_url`
-- En la tabla de listado, mostrar ambos logos pequeños
+1. **`contact_leads`** no tiene columnas `revenue` ni `ebitda` → siempre muestra "—" salvo que tenga empresa vinculada con datos
+2. **`sell_leads`** no tiene columnas `revenue` ni `ebitda` → siempre muestra "—"
+3. **`general_contact_leads`** tiene `annual_revenue` y `ebitda`, pero el transform usa `lead.revenue` en vez de `lead.annual_revenue` → no detecta el dato
+4. **`sell_leads`** usa origin `'general'` que mapea a la tabla `general_contact_leads` para updates inline → las ediciones manuales de revenue/ebitda fallan silenciosamente
 
-### 3. Vista publica: CaseStudies.tsx (pagina /casos-exito)
-- Mostrar ambos logos lado a lado (sin etiquetas) en la zona superior de cada tarjeta
-- Quitar `border` del badge de sector (clase `border border-border` → sin borde)
+### Cambios
 
-### 4. Vista compacta: CaseStudiesCompact.tsx (landing/home)
-- Mostrar ambos logos centrados lado a lado
-- Quitar `border` del badge de sector
+#### 1. Migración de base de datos
+- Añadir columnas `revenue NUMERIC` y `ebitda NUMERIC` a `contact_leads`
+- Añadir columnas `revenue NUMERIC` y `ebitda NUMERIC` a `sell_leads`
 
-### 5. ServiceClosedOperations.tsx (paginas de servicio)
-- Mostrar ambos logos en la zona de logo
-- Sin cambios al badge (ya no tiene borde visual relevante, pero verificar)
+#### 2. Transform de `general_contact_leads` — `useContacts.ts`
+- En `transformLegacyLead`, mapear `lead.annual_revenue` a `revenue` cuando `lead.revenue` no existe
 
-### 6. CaseStudyPreview.tsx (preview admin)
-- Actualizar para mostrar ambos logos
+#### 3. Origin diferenciado para `sell_leads` — `useContacts.ts`
+- Cambiar el origin de `sell_leads` de `'general'` a `'sell'` (o mantener `'general'` pero añadir una propiedad `sourceTable` para el update inline)
+- Opción más simple: añadir `'sell_lead'` al `tableMap` en `useContactInlineUpdate` apuntando a `sell_leads`
 
-### Diseño visual de los dos logos
-```text
-┌─────────────────────────────────┐
-│  [Logo Asesorada]  [Logo Otra]  │  ← lado a lado, sin labels
-│                                 │
-│  Sector • 2026                  │  ← sin borde/recuadro
-│  Título de la operación         │
-│  ...                            │
-└─────────────────────────────────┘
-```
+#### 4. Capacidades de tabla — `useInlineUpdate.ts`
+- Añadir `sell_leads` a `tableCapabilities`
+- Verificar que el campo `revenue`/`ebitda` se mapee correctamente en `fieldMap` para las tablas que usan `annual_revenue`
 
-Ambos logos tendrán el mismo tamaño (~w-20 h-20), contenidos en un fondo gris claro redondeado, separados por un pequeño espacio. Si solo hay un logo, se centra solo.
+#### 5. Tipo Contact — `types.ts`
+- Añadir `'sell'` como origin válido si se crea uno nuevo (o reutilizar `'general'` con sourceTable)
 
 ### Archivos a modificar
-- **Migration SQL**: nueva columna `counterpart_logo_url`
-- `src/components/admin/CaseStudiesManager.tsx`
-- `src/components/admin/preview/CaseStudyPreview.tsx`
-- `src/components/CaseStudies.tsx`
-- `src/components/CaseStudiesCompact.tsx`
-- `src/components/shared/ServiceClosedOperations.tsx`
-- `src/hooks/useCaseStudies.tsx` (añadir campo al select si no usa `*`)
+- **Migration SQL**: añadir columnas a `contact_leads` y `sell_leads`
+- `src/components/admin/contacts-v2/hooks/useContacts.ts` — fix transform para `annual_revenue`, origin para sell_leads
+- `src/hooks/useInlineUpdate.ts` — añadir sell_leads al tableMap y capabilities
+- `src/components/admin/contacts-v2/types.ts` — verificar/actualizar ContactOrigin
 
