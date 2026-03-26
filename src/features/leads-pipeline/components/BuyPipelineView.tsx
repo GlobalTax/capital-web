@@ -97,6 +97,7 @@ export const BuyPipelineView: React.FC = () => {
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
   const channelsMap = useMemo(() => new Map((channels || []).map(c => [c.id, c.name])), [channels]);
 
+  const { scrollContainerRef, startAutoScroll, stopAutoScroll } = usePipelineAutoScroll();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter leads
