@@ -180,7 +180,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
           {/* Share Dropdown */}
           <ShareDropdown 
             operationId={operation.id} 
-            operationName={operation.company_name}
+            operationName={displayName}
           />
         </div>
 
