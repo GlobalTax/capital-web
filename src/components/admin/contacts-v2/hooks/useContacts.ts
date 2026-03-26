@@ -391,7 +391,7 @@ function transformValuation(lead: any, formDisplayMap: Record<string, string>, p
     email_sent: lead.email_sent,
     email_sent_at: lead.email_sent_at,
     email_opened: lead.email_opened,
-    lead_status_crm: lead.lead_status_crm,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
     assigned_to: lead.assigned_to,
     empresa_id: lead.empresa_id,
     empresa_nombre: lead.empresas?.nombre,
