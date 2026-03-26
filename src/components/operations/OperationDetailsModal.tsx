@@ -85,7 +85,7 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
             {operation.logo_url ? (
               <img 
                 src={operation.logo_url} 
-                alt={`Logo de ${operation.company_name}`}
+                alt={`Logo de ${displayName}`}
                 className="w-16 h-16 rounded-lg object-contain bg-muted p-2"
                 width={64}
                 height={64}
@@ -95,13 +95,13 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
             ) : (
               <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
                 <span className="text-primary font-bold text-2xl">
-                  {operation.company_name.split(' ').map(word => word[0]).join('').substring(0, 2)}
+                  {displayName.split(' ').map(word => word[0]).join('').substring(0, 2)}
                 </span>
               </div>
             )}
             
             <div className="flex-1">
-              <DialogTitle className="text-2xl mb-2">{operation.company_name}</DialogTitle>
+              <DialogTitle className="text-2xl mb-2">{displayName}</DialogTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 {operation.is_featured && (
                   <Badge variant="secondary">Destacado</Badge>
