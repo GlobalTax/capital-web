@@ -121,7 +121,7 @@ const CaseStudiesCompact = () => {
                 <CardContent className="p-8">
                   <div className="flex items-center justify-between mb-6">
                     {case_.sector && (
-                      <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-card text-primary border border-border">
+                      <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-card text-primary border-0">
                         {case_.sector}
                       </Badge>
                     )}
