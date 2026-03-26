@@ -61,28 +61,21 @@ export const useContacts = () => {
         formDisplayMap[f.id] = f.display_name || f.name;
       }
 
-      // Parallel fetch all contact sources (including legacy tables) + professional valuations for financial fallback
-      const [
-        { data: contactLeads },
-        { data: valuationLeads },
-        { data: collaboratorLeads },
-        { data: acquisitionLeads },
-        { data: advisorLeads },
-        { data: sellLeads },
-        { data: generalContactLeads },
-        { data: companyAcquisitionLeads },
-        { data: proValData },
-      ] = await Promise.all([
+      // Parallel fetch all contact sources with Promise.allSettled for resilience
+      // Uses .range(0, 4999) on large tables to bypass Supabase's default 1000-row limit
+      const settled = await Promise.allSettled([
         supabase
           .from('contact_leads')
           .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
         supabase
           .from('company_valuations')
           .select('*, empresas:empresa_id(nombre, facturacion, ebitda), acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
         supabase
           .from('collaborator_applications')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
@@ -92,28 +85,55 @@ export const useContacts = () => {
           .from('acquisition_leads')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .is('is_deleted', false)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
         supabase
           .from('advisor_valuations')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
+        // sell_leads: NO tiene acquisition_channel_id ni lead_form — select simple
         supabase
           .from('sell_leads')
-          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .select('*')
           .order('created_at', { ascending: false }),
+        // general_contact_leads: select simple para evitar joins inexistentes
         supabase
           .from('general_contact_leads')
-          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .select('*')
           .order('created_at', { ascending: false }),
+        // company_acquisition_inquiries: select simple
         supabase
           .from('company_acquisition_inquiries')
-          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .select('*')
           .order('created_at', { ascending: false }),
         supabase
           .from('professional_valuations')
           .select('linked_lead_id, linked_lead_type, reported_ebitda, normalized_ebitda, valuation_central, financial_years')
           .not('linked_lead_id', 'is', null),
       ]);
+
+      // Extract data safely — failed queries return empty arrays
+      const extractData = (r: PromiseSettledResult<any>) =>
+        r.status === 'fulfilled' ? (r.value?.data ?? []) : [];
+
+      const contactLeads = extractData(settled[0]);
+      const valuationLeads = extractData(settled[1]);
+      const collaboratorLeads = extractData(settled[2]);
+      const acquisitionLeads = extractData(settled[3]);
+      const advisorLeads = extractData(settled[4]);
+      const sellLeads = extractData(settled[5]);
+      const generalContactLeads = extractData(settled[6]);
+      const companyAcquisitionLeads = extractData(settled[7]);
+      const proValData = extractData(settled[8]);
+
+      // Log any failed queries for debugging
+      settled.forEach((r, i) => {
+        if (r.status === 'rejected') {
+          console.warn(`[useContacts] Query ${i} failed:`, r.reason);
+        } else if (r.value?.error) {
+          console.warn(`[useContacts] Query ${i} returned error:`, r.value.error.message);
+        }
+      });
 
       // Build professional valuations lookup map (lead_id -> financial data)
       const proValMap = new Map<string, { revenue?: number; ebitda?: number; valuation?: number }>();
