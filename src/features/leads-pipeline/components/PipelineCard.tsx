@@ -199,9 +199,9 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             {(lead.revenue || lead.ebitda) && (
               <span className="flex items-center gap-2 truncate">
                 <TrendingUp className="h-3 w-3 shrink-0" />
-                {lead.revenue ? `Fact: ${formatCompactNumber(lead.revenue)}` : ''}
+                {lead.revenue ? `Fact: ${formatCurrency(lead.revenue)}` : ''}
                 {lead.revenue && lead.ebitda ? '  ' : ''}
-                {lead.ebitda ? `EBITDA: ${formatCompactNumber(lead.ebitda)}` : ''}
+                {lead.ebitda ? `EBITDA: ${formatCurrency(lead.ebitda)}` : ''}
               </span>
             )}
             {lead.location ? (
