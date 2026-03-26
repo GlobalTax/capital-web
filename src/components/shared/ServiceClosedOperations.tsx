@@ -20,7 +20,7 @@ const ServiceClosedOperations: React.FC<ServiceClosedOperationsProps> = ({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('case_studies')
-        .select('id, title, sector, value_amount, value_currency, is_value_confidential, year, logo_url')
+        .select('id, title, sector, value_amount, value_currency, is_value_confidential, year, logo_url, counterpart_logo_url')
         .eq('is_active', true)
         .eq('is_featured', true)
         .order('year', { ascending: false })
@@ -103,19 +103,27 @@ const ServiceClosedOperations: React.FC<ServiceClosedOperationsProps> = ({
               key={cs.id}
               className="group bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/20"
             >
-              {/* Logo */}
-              <div className="h-14 mb-4 flex items-center">
+              {/* Logos */}
+              <div className="h-14 mb-4 flex items-center gap-3">
                 {cs.logo_url ? (
                   <img
                     src={cs.logo_url}
                     alt={cs.title}
-                    className="h-10 max-w-[140px] object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                    className="h-10 max-w-[120px] object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
                     loading="lazy"
                   />
                 ) : (
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Building2 className="h-5 w-5 text-primary" />
                   </div>
+                )}
+                {cs.counterpart_logo_url && (
+                  <img
+                    src={cs.counterpart_logo_url}
+                    alt={`Contraparte de ${cs.title}`}
+                    className="h-10 max-w-[120px] object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
+                    loading="lazy"
+                  />
                 )}
               </div>
 

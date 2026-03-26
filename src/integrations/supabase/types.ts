@@ -4097,6 +4097,7 @@ export type Database = {
       case_studies: {
         Row: {
           company_size: string | null
+          counterpart_logo_url: string | null
           created_at: string
           description: string
           display_locations: string[] | null
@@ -4117,6 +4118,7 @@ export type Database = {
         }
         Insert: {
           company_size?: string | null
+          counterpart_logo_url?: string | null
           created_at?: string
           description: string
           display_locations?: string[] | null
@@ -4137,6 +4139,7 @@ export type Database = {
         }
         Update: {
           company_size?: string | null
+          counterpart_logo_url?: string | null
           created_at?: string
           description?: string
           display_locations?: string[] | null

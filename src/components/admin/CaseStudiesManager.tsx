@@ -31,6 +31,7 @@ interface CaseStudy {
   is_active: boolean;
   is_value_confidential?: boolean;
   logo_url?: string;
+  counterpart_logo_url?: string;
   featured_image_url?: string;
   display_locations?: string[];
   display_order?: number;
@@ -81,6 +82,7 @@ const CaseStudiesManager = () => {
     is_active: true,
     is_value_confidential: false,
     logo_url: undefined,
+    counterpart_logo_url: undefined,
     featured_image_url: undefined,
     display_locations: ['home', 'casos-exito'],
     display_order: 0
@@ -485,13 +487,20 @@ const CaseStudiesManager = () => {
             </div>
 
             {/* Images */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <ImageUploadField
-                label="Logo de la Empresa"
+                label="Logo Parte Asesorada"
                 value={formData.logo_url}
                 onChange={(url) => setFormData({...formData, logo_url: url})}
                 folder="case-studies/logos"
-                placeholder="URL del logo o sube una imagen"
+                placeholder="Logo de la parte asesorada"
+              />
+              <ImageUploadField
+                label="Logo Otra Parte"
+                value={formData.counterpart_logo_url}
+                onChange={(url) => setFormData({...formData, counterpart_logo_url: url})}
+                folder="case-studies/logos"
+                placeholder="Logo de la otra parte"
               />
               <ImageUploadField
                 label="Imagen Destacada"
@@ -601,9 +610,14 @@ const CaseStudiesManager = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-3">
-                        {cs.logo_url && (
-                          <img src={cs.logo_url} alt={cs.title || 'Caso de éxito'} className="w-8 h-8 object-contain rounded" />
-                        )}
+                        <div className="flex items-center gap-1">
+                          {cs.logo_url && (
+                            <img src={cs.logo_url} alt="Parte asesorada" className="w-8 h-8 object-contain rounded" />
+                          )}
+                          {(cs as any).counterpart_logo_url && (
+                            <img src={(cs as any).counterpart_logo_url} alt="Otra parte" className="w-8 h-8 object-contain rounded" />
+                          )}
+                        </div>
                         <div>
                           <div className="font-medium text-foreground">{cs.title}</div>
                           {cs.company_size && (
