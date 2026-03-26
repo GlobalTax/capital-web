@@ -17,6 +17,7 @@ import { useBuyPipeline, type BuyPipelineLead } from '../hooks/useBuyPipeline';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
 import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
 import { useLeadForms } from '@/hooks/useLeadForms';
+import { usePipelineAutoScroll } from '../hooks/usePipelineAutoScroll';
 import type { LeadStatus } from '../types';
 
 // Simplified card for buy leads
