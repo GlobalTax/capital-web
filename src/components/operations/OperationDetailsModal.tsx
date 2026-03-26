@@ -120,7 +120,7 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
           <div className="py-4">
             <OperationContactForm
               operationId={operation.id}
-              companyName={operation.company_name}
+              companyName={displayName}
               onSuccess={handleFormSuccess}
             />
           </div>

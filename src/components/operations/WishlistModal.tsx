@@ -66,7 +66,7 @@ export const WishlistModal: React.FC = () => {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold truncate">{operation.company_name}</h4>
+                      <h4 className="font-semibold truncate">{operation.project_name || operation.company_name}</h4>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                         <Badge variant="outline" className="text-xs">
                           {operation.sector}
