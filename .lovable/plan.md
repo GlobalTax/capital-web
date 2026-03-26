@@ -1,66 +1,46 @@
 
 
-## Blindaje definitivo: eliminar `company_name` de la respuesta pública
+## Problema
 
-### Problema raíz
-La Edge Function `list-operations` usa `select('*')`, lo que devuelve **todos los campos** al frontend, incluido `company_name`. Aunque los componentes bien escritos usan `project_name || company_name`, hay varios que aun muestran `company_name` directamente. Además, cualquier usuario puede ver `company_name` en el JSON de la respuesta de red del navegador.
+La migración de backfill asignó nombres feos auto-generados (ej. "Proyecto 850056c9") a **todas** las operaciones sin `project_name`, incluso las que ya tenían nombres anonimizados correctos en `company_name` (ej. "Proyecto Integra").
 
-### Solución: defensa en profundidad (3 capas)
+Hay ~20+ registros afectados con nombres tipo "Proyecto [uuid]" que deberían tener el nombre de `company_name` cuando éste ya era un nombre de proyecto válido.
 
-#### Capa 1 — Edge Function: nunca enviar `company_name` al frontend
+## Plan
 
-En `list-operations/index.ts`, después de resolver los datos, **eliminar `company_name`** del objeto antes de devolverlo. Si `project_name` es nulo, sustituir por un genérico ("Operación confidencial").
+### 1. Migración correctiva — Restaurar project_name desde company_name
 
-```typescript
-const safeData = resolvedData.map(({ company_name, ...rest }) => ({
-  ...rest,
-  project_name: rest.project_name || 'Operación confidencial',
-}));
-```
+Ejecutar una migración SQL que:
 
-Esto garantiza que aunque se inspeccione la respuesta HTTP, `company_name` nunca aparece.
-
-#### Capa 2 — Componentes pendientes de corregir
-
-Archivos que aún usan `company_name` directamente (sin fallback a `project_name`):
-
-1. **`OperationCompareModal.tsx`** (líneas 166, 172, 177, 183) — Reemplazar `op.company_name` por `op.project_name || op.company_name`
-2. **`OperationsTableMobile.tsx`** (líneas 92, 98, 109) — Mismo cambio
-3. **`OperationsTable.tsx`** (líneas 100, 114) — Mismo cambio
-4. **`BulkInquiryForm.tsx`** (línea 77) — Usar `project_name` en el payload del formulario de contacto
-5. **`CurrentOpportunities.tsx`** — Añadir `project_name` a la interfaz local
-
-#### Capa 3 — Base de datos: trigger preventivo
-
-Crear un trigger en `company_operations` que asigne automáticamente un `project_name` genérico si se inserta o actualiza un registro sin uno:
-
-```sql
-CREATE OR REPLACE FUNCTION set_default_project_name()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.project_name IS NULL OR NEW.project_name = '' THEN
-    NEW.project_name := 'Proyecto ' || SUBSTRING(gen_random_uuid()::text, 1, 8);
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER ensure_project_name
-BEFORE INSERT OR UPDATE ON company_operations
-FOR EACH ROW EXECUTE FUNCTION set_default_project_name();
-```
-
-Además, rellenar los registros existentes que aún no tengan `project_name`:
+- Para registros cuyo `company_name` empiece por "Proyecto " → copiar `company_name` a `project_name`
+- Los demás registros con nombres reales (ej. "MENGIBAR ENERGY") se quedan con su nombre auto-generado (necesitan que el admin les ponga un nombre manualmente)
 
 ```sql
 UPDATE company_operations
-SET project_name = 'Proyecto ' || SUBSTRING(id::text, 1, 8)
-WHERE project_name IS NULL;
+SET project_name = company_name
+WHERE company_name LIKE 'Proyecto %'
+  AND project_name LIKE 'Proyecto ________';
+```
+
+### 2. Mejorar el trigger para futuros registros
+
+Modificar `set_default_project_name()` para que, si `company_name` ya empieza por "Proyecto ", lo use como `project_name` en lugar de generar uno aleatorio:
+
+```sql
+IF NEW.project_name IS NULL OR NEW.project_name = '' THEN
+  IF NEW.company_name IS NOT NULL AND NEW.company_name LIKE 'Proyecto %' THEN
+    NEW.project_name := NEW.company_name;
+  ELSE
+    NEW.project_name := 'Proyecto ' || SUBSTRING(gen_random_uuid()::text, 1, 8);
+  END IF;
+END IF;
 ```
 
 ### Resultado
+- "Proyecto Integra" y similares volverán a mostrar su nombre correcto
+- Las operaciones con nombres reales mantienen el nombre genérico (el admin debe asignarles uno)
+- Futuros registros con company_name ya anonimizado heredarán ese nombre automáticamente
 
-- **Red/API**: `company_name` nunca sale del servidor
-- **UI**: todos los componentes usan `project_name`
-- **BD**: es imposible que exista un registro sin `project_name`
+### Archivos afectados
+- 1 nueva migración SQL (trigger + update correctivo)
 
