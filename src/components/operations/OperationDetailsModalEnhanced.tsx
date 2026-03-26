@@ -51,11 +51,13 @@ const OperationDetailsModalEnhanced: React.FC<OperationDetailsModalEnhancedProps
 }) => {
   const navigate = useNavigate();
 
+  const displayName = operation.project_name || operation.company_name || 'Operación confidencial';
+
   const handleRequestInfo = () => {
     const params = new URLSearchParams({
       ref: 'marketplace',
       operation: operation.id,
-      company: operation.company_name,
+      company: displayName,
     });
     navigate(`/contacto?${params.toString()}`);
   };
