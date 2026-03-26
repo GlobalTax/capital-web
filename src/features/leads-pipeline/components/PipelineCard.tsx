@@ -224,7 +224,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
         )}
 
         {/* Call attempts */}
-        {lead.call_attempts_count && lead.call_attempts_count > 0 && (
+        {(lead.call_attempts_count ?? 0) > 0 && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="flex items-center">
               <Phone className="h-3 w-3 mr-1" />
