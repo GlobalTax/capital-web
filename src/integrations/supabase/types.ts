@@ -7798,6 +7798,103 @@ export type Database = {
         }
         Relationships: []
       }
+      datos_proyecto: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          ebitda_amount: number | null
+          ebitda_margin: number | null
+          estado: string | null
+          id: string
+          mandato_id: string
+          project_name: string | null
+          project_number: string | null
+          revenue_amount: number | null
+          sector: string | null
+          short_description: string | null
+          ubicacion: string | null
+          updated_at: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          ebitda_amount?: number | null
+          ebitda_margin?: number | null
+          estado?: string | null
+          id?: string
+          mandato_id: string
+          project_name?: string | null
+          project_number?: string | null
+          revenue_amount?: number | null
+          sector?: string | null
+          short_description?: string | null
+          ubicacion?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          ebitda_amount?: number | null
+          ebitda_margin?: number | null
+          estado?: string | null
+          id?: string
+          mandato_id?: string
+          project_name?: string | null
+          project_number?: string | null
+          revenue_amount?: number | null
+          sector?: string | null
+          short_description?: string | null
+          ubicacion?: string | null
+          updated_at?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "datos_proyecto_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: true
+            referencedRelation: "mandato_time_summary"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "datos_proyecto_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: true
+            referencedRelation: "mandatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "datos_proyecto_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: true
+            referencedRelation: "v_mandato_costs"
+            referencedColumns: ["mandato_id"]
+          },
+          {
+            foreignKeyName: "datos_proyecto_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: true
+            referencedRelation: "v_mandatos_stuck"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "datos_proyecto_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: true
+            referencedRelation: "v_mandatos_winloss"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "datos_proyecto_mandato_id_fkey"
+            columns: ["mandato_id"]
+            isOneToOne: true
+            referencedRelation: "vw_mandate_pipeline"
+            referencedColumns: ["mandato_id"]
+          },
+        ]
+      }
       deal_document_templates: {
         Row: {
           branding: Json | null

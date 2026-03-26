@@ -179,17 +179,8 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
           </DropdownMenu>
         </div>
 
-        {/* Company Profile */}
+        {/* Badges */}
         <div className="flex flex-wrap gap-1.5">
-          <Badge variant="secondary" className="text-xs">
-            <Building2 className="h-3 w-3 mr-1" />
-            {lead.industry}
-          </Badge>
-          {valuationFormatted && (
-            <Badge variant="outline" className="text-xs font-medium text-emerald-700 border-emerald-200 bg-emerald-50">
-              💰 {valuationFormatted}
-            </Badge>
-          )}
           {leadFormName && (
             <Badge className="text-xs bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-100">
               📋 {leadFormName}
@@ -202,27 +193,17 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
           )}
         </div>
 
-        {/* Financial & Location Details */}
-        {(lead.revenue || lead.ebitda || lead.employee_range || lead.location) && (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-            {lead.revenue ? (
-              <span className="flex items-center truncate">
-                <TrendingUp className="h-3 w-3 mr-1 shrink-0" />
-                {formatCurrency(lead.revenue)}
+        {/* Financial & Location */}
+        {(lead.revenue || lead.ebitda || lead.location) && (
+          <div className="space-y-0.5 text-xs text-muted-foreground">
+            {(lead.revenue || lead.ebitda) && (
+              <span className="flex items-center gap-2 truncate">
+                <TrendingUp className="h-3 w-3 shrink-0" />
+                {lead.revenue ? `Fact: ${formatCurrency(lead.revenue)}` : ''}
+                {lead.revenue && lead.ebitda ? '  ' : ''}
+                {lead.ebitda ? `EBITDA: ${formatCurrency(lead.ebitda)}` : ''}
               </span>
-            ) : null}
-            {lead.ebitda ? (
-              <span className="flex items-center truncate">
-                <BarChart3 className="h-3 w-3 mr-1 shrink-0" />
-                {formatCurrency(lead.ebitda)}
-              </span>
-            ) : null}
-            {lead.employee_range ? (
-              <span className="flex items-center truncate">
-                <Users className="h-3 w-3 mr-1 shrink-0" />
-                {lead.employee_range}
-              </span>
-            ) : null}
+            )}
             {lead.location ? (
               <span className="flex items-center truncate">
                 <MapPin className="h-3 w-3 mr-1 shrink-0" />
