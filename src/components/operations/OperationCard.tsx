@@ -67,6 +67,7 @@ interface OperationCardProps {
 
 const OperationCard: React.FC<OperationCardProps> = ({ operation, className = '', searchTerm }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const displayName = operation.project_name || operation.company_name;
   const { t } = useI18n();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCompare, removeFromCompare, isInCompare, canAddMore } = useCompare();
