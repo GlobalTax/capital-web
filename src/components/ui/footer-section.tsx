@@ -20,7 +20,7 @@ export function Footerdemo() {
               </Link>
               <p className="text-gray-400 text-xs mt-1">
                 División de M&A de{' '}
-                <a href="https://nrro.es" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
+                <a href="https://www.nrro.es/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white transition-colors">
                   Navarro Tax &amp; Legal
                 </a>
               </p>
