@@ -3,7 +3,7 @@
  * Now uses unified contact_statuses system (via wrapper for compatibility)
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
@@ -38,6 +38,7 @@ import { useContactStatuses } from '@/hooks/useContactStatuses';
 import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
 import { useLeadForms } from '@/hooks/useLeadForms';
 import { FINANCIAL_RANGES } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
+import { usePipelineAutoScroll } from '../hooks/usePipelineAutoScroll';
 import type { LeadStatus } from '../types';
 
 export const LeadsPipelineView: React.FC = () => {
@@ -61,6 +62,7 @@ export const LeadsPipelineView: React.FC = () => {
   // Build a Map<formId, displayName> for pipeline cards
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
   
+  const { scrollContainerRef, startAutoScroll, stopAutoScroll } = usePipelineAutoScroll();
   const isLoading = isLoadingLeads || isLoadingStatuses;
 
   // Existing filters
@@ -236,6 +238,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   // Handlers
   const handleDragEnd = useCallback((result: DropResult) => {
+    stopAutoScroll();
     const { destination, source, draggableId } = result;
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
@@ -244,7 +247,7 @@ export const LeadsPipelineView: React.FC = () => {
     updateStatus({ leadId: draggableId, status: newStatus });
     const statusLabel = visibleStatuses.find(s => s.status_key === newStatus)?.label || newStatus;
     toast.success(`Lead movido a "${statusLabel}"`);
-  }, [updateStatus, visibleStatuses]);
+  }, [updateStatus, visibleStatuses, stopAutoScroll]);
 
   const handleSendPrecallEmail = useCallback(async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
@@ -686,8 +689,8 @@ export const LeadsPipelineView: React.FC = () => {
         )}
       </div>
       <div className="flex-1 overflow-hidden">
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 h-full overflow-x-auto pb-4">
+        <DragDropContext onDragStart={startAutoScroll} onDragEnd={handleDragEnd}>
+          <div ref={scrollContainerRef} className="flex gap-4 h-full overflow-x-auto pb-4">
             {visibleStatuses.map((status) => (
               <PipelineColumn
                 key={status.id}

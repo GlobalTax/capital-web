@@ -2,7 +2,7 @@
  * Buy Pipeline View - Kanban for acquisition/buy-side leads
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { useBuyPipeline, type BuyPipelineLead } from '../hooks/useBuyPipeline';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
 import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
 import { useLeadForms } from '@/hooks/useLeadForms';
+import { usePipelineAutoScroll } from '../hooks/usePipelineAutoScroll';
 import type { LeadStatus } from '../types';
 
 // Simplified card for buy leads
@@ -96,6 +97,7 @@ export const BuyPipelineView: React.FC = () => {
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
   const channelsMap = useMemo(() => new Map((channels || []).map(c => [c.id, c.name])), [channels]);
 
+  const { scrollContainerRef, startAutoScroll, stopAutoScroll } = usePipelineAutoScroll();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter leads
@@ -118,11 +120,12 @@ export const BuyPipelineView: React.FC = () => {
   const filteredTotal = Object.values(filteredLeadsByStatus).reduce((sum, arr) => sum + arr.length, 0);
 
   const handleDragEnd = useCallback((result: DropResult) => {
+    stopAutoScroll();
     if (!result.destination) return;
     const { draggableId, destination } = result;
     const newStatus = destination.droppableId as LeadStatus;
     updateStatus({ leadId: draggableId, status: newStatus });
-  }, [updateStatus]);
+  }, [updateStatus, stopAutoScroll]);
 
   const handleViewDetails = useCallback((lead: BuyPipelineLead) => {
     navigate(`/admin/contacts/${lead.id}`);
@@ -169,8 +172,8 @@ export const BuyPipelineView: React.FC = () => {
       </div>
 
       {/* Kanban Board */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 h-full overflow-x-auto pb-4">
+      <DragDropContext onDragStart={startAutoScroll} onDragEnd={handleDragEnd}>
+        <div ref={scrollContainerRef} className="flex gap-4 h-full overflow-x-auto pb-4">
           {visibleStatuses.map((status) => {
             const columnLeads = filteredLeadsByStatus[status.status_key] || [];
             return (
