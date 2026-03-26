@@ -238,6 +238,7 @@ export const LeadsPipelineView: React.FC = () => {
 
   // Handlers
   const handleDragEnd = useCallback((result: DropResult) => {
+    stopAutoScroll();
     const { destination, source, draggableId } = result;
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
@@ -246,7 +247,7 @@ export const LeadsPipelineView: React.FC = () => {
     updateStatus({ leadId: draggableId, status: newStatus });
     const statusLabel = visibleStatuses.find(s => s.status_key === newStatus)?.label || newStatus;
     toast.success(`Lead movido a "${statusLabel}"`);
-  }, [updateStatus, visibleStatuses]);
+  }, [updateStatus, visibleStatuses, stopAutoScroll]);
 
   const handleSendPrecallEmail = useCallback(async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
