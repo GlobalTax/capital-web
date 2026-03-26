@@ -97,7 +97,7 @@ const OperationsTable: React.FC<OperationsTableProps> = ({ operations, isLoading
                         {operation.logo_url && (
                           <img 
                             src={operation.logo_url} 
-                            alt={`Logo de ${operation.company_name}`}
+                             alt={`Logo de ${operation.project_name || operation.company_name}`}
                             className="w-10 h-10 rounded-lg object-contain bg-muted p-1"
                             width={40}
                             height={40}
@@ -111,7 +111,7 @@ const OperationsTable: React.FC<OperationsTableProps> = ({ operations, isLoading
                       <TableCell>
                         <div className="space-y-1">
                           <div className="font-medium text-foreground">
-                            {operation.company_name}
+                            {operation.project_name || operation.company_name}
                           </div>
                           <div className="flex items-center gap-1 flex-wrap">
                             {operation.is_featured && (

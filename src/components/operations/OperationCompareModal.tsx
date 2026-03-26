@@ -163,24 +163,24 @@ export const OperationCompareModal: React.FC = () => {
                               {op.logo_url ? (
                                 <img
                                   src={op.logo_url}
-                                  alt={op.company_name}
-                                  className="w-8 h-8 rounded object-contain bg-white p-1"
-                                />
-                              ) : (
-                                <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
-                                  <span className="text-primary font-bold text-xs">
-                                    {op.company_name.charAt(0)}
-                                  </span>
-                                </div>
-                              )}
-                              <span className="font-semibold text-sm truncate">
-                                {op.company_name}
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => removeFromCompare(op.id)}
-                              className="p-1 hover:bg-destructive/10 rounded transition-colors shrink-0"
-                              aria-label={`Quitar ${op.company_name}`}
+                                   alt={op.project_name || op.company_name}
+                                   className="w-8 h-8 rounded object-contain bg-white p-1"
+                                 />
+                               ) : (
+                                 <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center">
+                                   <span className="text-primary font-bold text-xs">
+                                     {(op.project_name || op.company_name).charAt(0)}
+                                   </span>
+                                 </div>
+                               )}
+                               <span className="font-semibold text-sm truncate">
+                                 {op.project_name || op.company_name}
+                               </span>
+                             </div>
+                             <button
+                               onClick={() => removeFromCompare(op.id)}
+                               className="p-1 hover:bg-destructive/10 rounded transition-colors shrink-0"
+                               aria-label={`Quitar ${op.project_name || op.company_name}`}
                             >
                               <X className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                             </button>

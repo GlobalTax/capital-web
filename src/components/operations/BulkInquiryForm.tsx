@@ -74,7 +74,7 @@ export const BulkInquiryForm: React.FC = () => {
           ...formData,
           operations: wishlist.map(op => ({
             id: op.id,
-            company_name: op.company_name,
+            company_name: op.project_name || op.company_name,
             sector: op.sector,
             ebitda_amount: op.ebitda_amount,
             valuation_currency: op.valuation_currency,

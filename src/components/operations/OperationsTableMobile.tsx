@@ -89,13 +89,13 @@ export const OperationsTableMobile: React.FC<OperationsTableMobileProps> = ({
                 {operation.logo_url ? (
                   <img 
                     src={operation.logo_url} 
-                    alt={operation.company_name}
+                     alt={operation.project_name || operation.company_name}
                     className="w-12 h-12 rounded-lg object-contain bg-muted p-1"
                   />
                 ) : (
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                     <span className="text-primary font-semibold text-sm">
-                      {getCompanyInitials(operation.company_name)}
+                      {getCompanyInitials(operation.project_name || operation.company_name)}
                     </span>
                   </div>
                 )}
@@ -106,7 +106,7 @@ export const OperationsTableMobile: React.FC<OperationsTableMobileProps> = ({
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm text-foreground truncate">
-                      {operation.company_name}
+                      {operation.project_name || operation.company_name}
                     </h3>
                     <div className="flex items-center gap-1 mt-1 flex-wrap">
                       <Badge variant="outline" className="text-xs">
