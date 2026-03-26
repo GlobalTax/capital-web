@@ -164,18 +164,17 @@ export const useContacts = () => {
     fetchContacts();
 
     const channelName = `contacts-realtime-${instanceId.replace(/:/g, '-')}`;
+    const refetchAndInvalidate = () => {
+      fetchContacts();
+      queryClient.invalidateQueries({ queryKey: ['prospects'] });
+    };
     channelRef.current = supabase
       .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, () => {
-        fetchContacts();
-        // Cross-invalidation: also update prospects list
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, () => {
-        fetchContacts();
-        // Cross-invalidation: also update prospects list
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_valuations' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sell_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'general_contact_leads' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_acquisition_inquiries' }, refetchAndInvalidate)
       .subscribe();
 
     return () => {
