@@ -20,6 +20,16 @@ import { useLeadForms } from '@/hooks/useLeadForms';
 import { usePipelineAutoScroll } from '../hooks/usePipelineAutoScroll';
 import type { LeadStatus } from '../types';
 
+const getBadgeColor = (name: string, type: 'form' | 'channel'): string => {
+  const lower = name.toLowerCase();
+  if (lower.includes('valoración') || lower.includes('valuation')) return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100';
+  if (lower.includes('venta') || lower.includes('sell')) return 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100';
+  if (lower.includes('google')) return 'bg-red-100 text-red-700 border-red-200 hover:bg-red-100';
+  if (lower.includes('meta') || lower.includes('facebook') || lower.includes('instagram')) return 'bg-indigo-100 text-indigo-700 border-indigo-200 hover:bg-indigo-100';
+  if (type === 'form') return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100';
+  return 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100';
+};
+
 // Simplified card for buy leads
 const BuyPipelineCard: React.FC<{
   lead: BuyPipelineLead;
