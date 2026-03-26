@@ -1,42 +1,66 @@
 
 
-## Ocultar nombre de empresa en el marketplace — mostrar solo nombre de proyecto
+## Blindaje definitivo: eliminar `company_name` de la respuesta pública
 
-### Problema
-Algunas operaciones en `company_operations` tienen el nombre real de la empresa en `company_name` (ej: "MACONSA", "CLÍNICA PIZARRO MONTENEGRO") en lugar de un nombre de proyecto codificado (ej: "Proyecto Graft"). En el marketplace público esto expone información confidencial.
+### Problema raíz
+La Edge Function `list-operations` usa `select('*')`, lo que devuelve **todos los campos** al frontend, incluido `company_name`. Aunque los componentes bien escritos usan `project_name || company_name`, hay varios que aun muestran `company_name` directamente. Además, cualquier usuario puede ver `company_name` en el JSON de la respuesta de red del navegador.
 
-### Solución
+### Solución: defensa en profundidad (3 capas)
 
-#### 1. Migración BD — Añadir campo `project_name`
+#### Capa 1 — Edge Function: nunca enviar `company_name` al frontend
 
-Crear una columna `project_name` en `company_operations`. Para registros existentes que ya empiezan por "Proyecto", copiar automáticamente el valor.
+En `list-operations/index.ts`, después de resolver los datos, **eliminar `company_name`** del objeto antes de devolverlo. Si `project_name` es nulo, sustituir por un genérico ("Operación confidencial").
 
-```sql
-ALTER TABLE company_operations ADD COLUMN project_name TEXT;
-
-UPDATE company_operations 
-SET project_name = company_name 
-WHERE company_name ILIKE 'Proyecto %';
+```typescript
+const safeData = resolvedData.map(({ company_name, ...rest }) => ({
+  ...rest,
+  project_name: rest.project_name || 'Operación confidencial',
+}));
 ```
 
-#### 2. Cambios en el frontend — Usar `project_name` en todos los componentes públicos
+Esto garantiza que aunque se inspeccione la respuesta HTTP, `company_name` nunca aparece.
 
-Archivos a modificar:
-- **`src/components/operations/OperationCard.tsx`** — Mostrar `project_name || company_name` en título, iniciales y alt de logo
-- **`src/components/operations/OperationDetailsModal.tsx`** y **`OperationDetailsModalEnhanced.tsx`** — Mismo cambio en el modal de detalle
-- **`src/components/operations/CompareBar.tsx`** — Usar `project_name` en los badges
-- **`src/components/operations/WishlistBar.tsx`** — Usar `project_name` en los badges
-- **`src/components/operations/OperationsTableMobile.tsx`** — Usar `project_name` en la vista móvil
-- **`src/components/operations/OperationsList.tsx`** — Asegurar que el campo se propaga
-- **`src/components/operations/ShareDropdown.tsx`** — Usar nombre de proyecto al compartir
+#### Capa 2 — Componentes pendientes de corregir
 
-En cada componente, la lógica será: `operation.project_name || operation.company_name` para garantizar retrocompatibilidad.
+Archivos que aún usan `company_name` directamente (sin fallback a `project_name`):
 
-#### 3. Edge Function `list-operations`
+1. **`OperationCompareModal.tsx`** (líneas 166, 172, 177, 183) — Reemplazar `op.company_name` por `op.project_name || op.company_name`
+2. **`OperationsTableMobile.tsx`** (líneas 92, 98, 109) — Mismo cambio
+3. **`OperationsTable.tsx`** (líneas 100, 114) — Mismo cambio
+4. **`BulkInquiryForm.tsx`** (línea 77) — Usar `project_name` en el payload del formulario de contacto
+5. **`CurrentOpportunities.tsx`** — Añadir `project_name` a la interfaz local
 
-Añadir `project_name` al SELECT de la Edge Function para que el campo llegue al frontend.
+#### Capa 3 — Base de datos: trigger preventivo
 
-### Notas
-- Los registros sin `project_name` seguirán mostrando `company_name` como fallback hasta que se les asigne un nombre de proyecto desde el admin.
-- El panel de administración seguirá mostrando `company_name` internamente — solo el marketplace público usa `project_name`.
+Crear un trigger en `company_operations` que asigne automáticamente un `project_name` genérico si se inserta o actualiza un registro sin uno:
+
+```sql
+CREATE OR REPLACE FUNCTION set_default_project_name()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.project_name IS NULL OR NEW.project_name = '' THEN
+    NEW.project_name := 'Proyecto ' || SUBSTRING(gen_random_uuid()::text, 1, 8);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER ensure_project_name
+BEFORE INSERT OR UPDATE ON company_operations
+FOR EACH ROW EXECUTE FUNCTION set_default_project_name();
+```
+
+Además, rellenar los registros existentes que aún no tengan `project_name`:
+
+```sql
+UPDATE company_operations
+SET project_name = 'Proyecto ' || SUBSTRING(id::text, 1, 8)
+WHERE project_name IS NULL;
+```
+
+### Resultado
+
+- **Red/API**: `company_name` nunca sale del servidor
+- **UI**: todos los componentes usan `project_name`
+- **BD**: es imposible que exista un registro sin `project_name`
 
