@@ -19,7 +19,7 @@ import {
   MoreHorizontal,
   MapPin,
   Users,
-  TrendingUp,
+  
   BarChart3,
   UserCheck,
   X as XIcon
@@ -207,12 +207,14 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
         {(lead.revenue || lead.ebitda || lead.location) && (
           <div className="space-y-0.5 text-xs text-muted-foreground">
             {(lead.revenue || lead.ebitda) && (
-              <span className="flex items-center gap-2 truncate">
-                <TrendingUp className="h-3 w-3 shrink-0" />
-                {lead.revenue ? `Fact: ${formatCurrency(lead.revenue)}` : ''}
-                {lead.revenue && lead.ebitda ? '  ' : ''}
-                {lead.ebitda ? `EBITDA: ${formatCurrency(lead.ebitda)}` : ''}
-              </span>
+              <div className="flex items-center gap-3 text-sm font-medium text-foreground">
+                {lead.revenue ? (
+                  <span>Fact: <span className="text-blue-600">{formatCurrency(lead.revenue)}</span></span>
+                ) : null}
+                {lead.ebitda ? (
+                  <span>EBITDA: <span className="text-emerald-600">{formatCurrency(lead.ebitda)}</span></span>
+                ) : null}
+              </div>
             )}
             {lead.location ? (
               <span className="flex items-center truncate">
@@ -224,7 +226,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
         )}
 
         {/* Call attempts */}
-        {lead.call_attempts_count && lead.call_attempts_count > 0 && (
+        {(lead.call_attempts_count ?? 0) > 0 && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="flex items-center">
               <Phone className="h-3 w-3 mr-1" />
