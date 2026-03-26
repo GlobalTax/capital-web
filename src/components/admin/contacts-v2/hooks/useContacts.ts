@@ -70,6 +70,7 @@ export const useContacts = () => {
         { data: advisorLeads },
         { data: sellLeads },
         { data: generalContactLeads },
+        { data: companyAcquisitionLeads },
         { data: proValData },
       ] = await Promise.all([
         supabase
@@ -102,6 +103,10 @@ export const useContacts = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('general_contact_leads')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('company_acquisition_inquiries')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
         supabase
