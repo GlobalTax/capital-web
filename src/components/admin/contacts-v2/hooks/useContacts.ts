@@ -134,25 +134,18 @@ export const useContacts = () => {
         }
       }
 
-      // Collect emails already in contact_leads to avoid duplicating legacy records
-      const contactLeadEmails = new Set(
-        (contactLeads || []).map((l: any) => l.email?.toLowerCase())
-      );
-
-      // Transform to unified format
+      // Transform to unified format (no email deduplication — duplicates are handled by is_possible_duplicate feature)
       const unified: Contact[] = [
         ...(contactLeads || []).map(l => transformContact(l, 'contact', formDisplayMap, proValMap)),
         ...(valuationLeads || []).map(l => transformValuation(l, formDisplayMap, proValMap)),
         ...(collaboratorLeads || []).map(l => transformContact(l, 'collaborator', formDisplayMap, proValMap)),
         ...(acquisitionLeads || []).map(l => transformContact(l, 'acquisition', formDisplayMap, proValMap)),
         ...(advisorLeads || []).map(l => transformAdvisor(l, formDisplayMap, proValMap)),
-        // Legacy tables - only include if not already in contact_leads
-        ...(sellLeads || [])
-          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
-          .map((l: any) => transformLegacyLead(l, 'sell_lead', formDisplayMap)),
-        ...(generalContactLeads || [])
-          .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
-          .map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
+        // Legacy tables - always include all records
+        ...(sellLeads || []).map((l: any) => transformLegacyLead(l, 'sell_lead', formDisplayMap)),
+        ...(generalContactLeads || []).map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
+        // Company acquisition inquiries
+        ...(companyAcquisitionLeads || []).map((l: any) => transformLegacyLead(l, 'company_acquisition', formDisplayMap)),
       ];
 
       // Store all contacts (prospect filtering moved to filteredContacts memo)
