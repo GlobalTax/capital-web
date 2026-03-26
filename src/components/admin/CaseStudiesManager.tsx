@@ -31,6 +31,7 @@ interface CaseStudy {
   is_active: boolean;
   is_value_confidential?: boolean;
   logo_url?: string;
+  counterpart_logo_url?: string;
   featured_image_url?: string;
   display_locations?: string[];
   display_order?: number;
