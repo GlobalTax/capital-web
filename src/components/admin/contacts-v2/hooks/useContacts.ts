@@ -343,7 +343,7 @@ function transformContact(lead: any, origin: ContactOrigin, formDisplayMap: Reco
     created_at: lead.created_at,
     lead_received_at: lead.lead_received_at || lead.created_at,
     status: lead.status || 'new',
-    lead_status_crm: lead.lead_status_crm,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
     assigned_to: lead.assigned_to,
     empresa_id: lead.empresa_id,
     empresa_nombre: lead.empresas?.nombre,
