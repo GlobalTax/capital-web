@@ -2,7 +2,7 @@
  * Buy Pipeline View - Kanban for acquisition/buy-side leads
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
