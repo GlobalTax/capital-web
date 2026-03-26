@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Linkedin, Twitter } from 'lucide-react';
+import { Phone, Mail, MapPin, Linkedin, Instagram } from 'lucide-react';
 import { useI18n } from '@/shared/i18n/I18nProvider';
 import { getLocalizedUrl } from '@/shared/i18n/dictionaries';
 
