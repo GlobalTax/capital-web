@@ -137,7 +137,7 @@ export const PipelineColumnsEditor: React.FC = () => {
 
                             {/* Icon & Label */}
                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="text-lg shrink-0">{column.icon}</span>
+                              {column.icon && <span className="text-lg shrink-0">{column.icon}</span>}
                               <span className="font-medium truncate">{column.label}</span>
                             </div>
 
