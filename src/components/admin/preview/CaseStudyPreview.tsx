@@ -16,6 +16,8 @@ interface CaseStudyPreviewProps {
     year?: number;
     is_featured: boolean;
     is_value_confidential?: boolean;
+    logo_url?: string;
+    counterpart_logo_url?: string;
   };
 }
 
