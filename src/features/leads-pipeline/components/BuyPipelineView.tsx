@@ -172,8 +172,8 @@ export const BuyPipelineView: React.FC = () => {
       </div>
 
       {/* Kanban Board */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 h-full overflow-x-auto pb-4">
+      <DragDropContext onDragStart={startAutoScroll} onDragEnd={handleDragEnd}>
+        <div ref={scrollContainerRef} className="flex gap-4 h-full overflow-x-auto pb-4">
           {visibleStatuses.map((status) => {
             const columnLeads = filteredLeadsByStatus[status.status_key] || [];
             return (
