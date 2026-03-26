@@ -433,6 +433,7 @@ function transformAdvisor(lead: any, formDisplayMap: Record<string, string>, pro
     lead_form: lead.lead_form,
     lead_form_name: lead.lead_form_ref?.name,
     lead_form_display_name: lead.lead_form ? formDisplayMap[lead.lead_form] : undefined,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
     priority: lead.ebitda && Number(lead.ebitda) > 50000 ? 'hot' : 'warm',
     is_hot_lead: lead.ebitda && Number(lead.ebitda) > 50000,
   };
