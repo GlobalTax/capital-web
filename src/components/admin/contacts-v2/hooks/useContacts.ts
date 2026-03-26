@@ -427,11 +427,16 @@ function determinePriority(lead: any): 'hot' | 'warm' | 'cold' {
   return 'cold';
 }
 
-// Transform legacy sell_leads and general_contact_leads
-function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact', formDisplayMap: Record<string, string>): Contact {
+// Transform legacy sell_leads, general_contact_leads, and company_acquisition_inquiries
+function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact' | 'company_acquisition', formDisplayMap: Record<string, string>): Contact {
+  const originMap: Record<string, ContactOrigin> = {
+    sell_lead: 'general',
+    general_contact: 'general',
+    company_acquisition: 'company_acquisition',
+  };
   return {
     id: lead.id,
-    origin: 'general' as ContactOrigin,
+    origin: originMap[sourceType] || 'general',
     name: lead.full_name || '',
     email: lead.email,
     phone: lead.phone,
