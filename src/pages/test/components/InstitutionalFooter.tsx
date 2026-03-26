@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Linkedin, Twitter, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
+import { Linkedin, Instagram, Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 
 interface NewsItem {
   date: string;
