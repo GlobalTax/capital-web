@@ -1792,6 +1792,17 @@ const AdminOperations = () => {
                     />
                     <Label htmlFor="is_featured" className="text-xs text-gray-700 font-medium">Operación Destacada</Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is_marketplace_visible"
+                      checked={editingOperation.is_marketplace_visible ?? false}
+                      onCheckedChange={(checked) => setEditingOperation({
+                        ...editingOperation,
+                        is_marketplace_visible: checked
+                      })}
+                    />
+                    <Label htmlFor="is_marketplace_visible" className="text-xs text-gray-700 font-medium">🏪 Visible en Marketplace</Label>
+                  </div>
                 </div>
               </div>
 
