@@ -76,7 +76,7 @@ serve(async (req) => {
     // Apply filters with validation
     if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {
       const sanitizedSearch = searchTerm.trim().substring(0, 100);
-      query = query.or(`company_name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
+      query = query.or(`company_name.ilike.%${sanitizedSearch}%,project_name.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`);
       console.log('🔍 Search filter applied:', sanitizedSearch);
     }
 
