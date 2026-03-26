@@ -1,0 +1,1 @@
+UPDATE public.topbar_group_companies SET url = 'https://nvrro.es/' WHERE name = 'Global.nrro';
