@@ -12,7 +12,8 @@ import { OperationHistoryTimeline } from '@/features/operations-management/compo
 
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
+  project_name?: string;
   sector: string;
   subsector?: string;
   valuation_amount: number;
