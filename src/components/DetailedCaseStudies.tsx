@@ -10,6 +10,7 @@ interface CaseStudyDetailProps {
   description: string;
   highlights: string[];
   logoUrl?: string;
+  counterpartLogoUrl?: string;
   valueAmount?: number;
   valueCurrency?: string;
   isValueConfidential: boolean;
