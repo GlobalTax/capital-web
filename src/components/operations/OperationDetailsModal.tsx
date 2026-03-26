@@ -44,7 +44,7 @@ interface OperationDetailsModalProps {
 const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation, isOpen, onClose }) => {
   const [showContactForm, setShowContactForm] = useState(false);
   const { trackDetailView } = useOperationTracking();
-
+  const displayName = operation.project_name || operation.company_name;
   // Track when modal opens
   useEffect(() => {
     if (isOpen && operation?.id) {
