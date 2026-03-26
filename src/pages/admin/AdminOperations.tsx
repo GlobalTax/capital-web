@@ -1009,9 +1009,23 @@ const AdminOperations = () => {
       },
     },
     {
+      key: 'marketplace',
+      title: '🏪 MARKETPLACE',
+      width: 100,
+      render: (operation: Operation) => (
+        <div className="flex items-center justify-center">
+          <Switch
+            checked={operation.is_marketplace_visible ?? false}
+            onCheckedChange={(checked) => handleQuickUpdate(operation.id, 'is_marketplace_visible', checked)}
+            aria-label="Visible en marketplace"
+          />
+        </div>
+      ),
+    },
+    {
       key: 'actions',
       title: 'ACCIONES',
-      width: 120,  
+      width: 120,
       render: (operation: Operation) => (
         <div className="flex items-center gap-1">
           <Button
