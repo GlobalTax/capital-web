@@ -1,25 +1,40 @@
 
 
-## Plan: Simplificar tarjeta del Pipeline
+## Plan: Colores de badges por origen y eliminar emojis
 
-Cambios en `src/features/leads-pipeline/components/PipelineCard.tsx`:
+### 1. Colores de badges en `PipelineCard.tsx` (y `BuyPipelineCard`)
 
-### 1. Eliminar badges de la sección "Company Profile" (líneas 183-203)
-- Quitar el badge de **sector/industria** (`lead.industry`)
-- Quitar el badge de **valoración** (el verde con `💰`)
-- Mantener los badges de formulario (`leadFormName`) y canal (`channelName`)
+Reemplazar los colores genéricos de los badges `leadFormName` y `channelName` por colores dinámicos según el valor:
 
-### 2. Eliminar fila de empleados (líneas 220-225)
-- Quitar el bloque que muestra `lead.employee_range` con icono `Users`
+| Badge value (contiene) | Color |
+|---|---|
+| "valoración" / "valuation" | Azul (`bg-blue-100 text-blue-700`) |
+| "venta" / "sell" | Verde (`bg-green-100 text-green-700`) |
+| "google" | Rojo (`bg-red-100 text-red-700`) |
+| "meta" / "facebook" / "instagram" | Azul oscuro (`bg-indigo-100 text-indigo-700`) |
+| Otros formularios | Gris (`bg-gray-100 text-gray-700`) |
+| Otros canales | Púrpura (actual) |
 
-### 3. Cambiar formato financiero a una línea compacta
-- Reemplazar la grid actual de facturación/EBITDA por una sola línea:
-  `Fact: 500K  EBITDA: 70K`
-- Usar el formateador existente `formatCurrency` pero sin el símbolo `€` para mayor compacidad, o dejarlo con `€`
-- Solo mostrar esta línea si hay al menos uno de los dos valores
+- Eliminar los emojis 📋 y 📡 de los badges
+- Crear una función helper `getBadgeColor(name, type)` para mapear nombre → clases de color
+
+### 2. Eliminar emojis de columnas del pipeline
+
+En `PIPELINE_COLUMNS` (types/index.ts), quitar los emojis del campo `icon` (dejarlo vacío `''`).
+
+En `PipelineColumn.tsx` y `PipelineColumnsEditor.tsx`, no renderizar `<span>` del icono si está vacío.
+
+### 3. Eliminar emojis del dropdown de acciones
+
+En `PipelineCard.tsx` línea 169: quitar el `✓` emoji del texto "Email pre-llamada enviado".
 
 ### Archivos afectados
+
 | Archivo | Cambio |
-|---------|--------|
-| `PipelineCard.tsx` | Eliminar badges sector/valoración, eliminar empleados, reformatear financieros |
+|---|---|
+| `PipelineCard.tsx` | Colores dinámicos en badges, quitar emojis |
+| `BuyPipelineView.tsx` | Mismos cambios en BuyPipelineCard |
+| `types/index.ts` | Vaciar campo `icon` en PIPELINE_COLUMNS |
+| `PipelineColumn.tsx` | No renderizar icono vacío |
+| `PipelineColumnsEditor.tsx` | No renderizar icono vacío |
 
