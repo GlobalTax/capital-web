@@ -368,7 +368,7 @@ export const LeadsPipelineView: React.FC = () => {
           <h1 className="text-2xl font-normal">Pipeline Ventas</h1>
           <p className="text-sm text-muted-foreground">
             {filteredTotal === totalLeads 
-              ? `${totalLeads} leads (últimos 100)`
+              ? `${totalLeads} leads`
               : `${filteredTotal} de ${totalLeads} leads`
             }
           </p>
