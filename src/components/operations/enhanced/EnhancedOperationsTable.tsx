@@ -147,7 +147,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
             case 'company':
               return (
                 <div key={column.key} style={{ width }} className="px-4 min-w-0">
-                  <div className="font-medium truncate">{operation.company_name}</div>
+                  <div className="font-medium truncate">{operation.project_name || operation.company_name || 'Operación confidencial'}</div>
                   <div className="flex items-center gap-1 flex-wrap mt-1">
                     {operation.is_featured && (
                       <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs gap-1">
