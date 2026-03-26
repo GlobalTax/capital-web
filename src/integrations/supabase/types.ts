@@ -4865,6 +4865,7 @@ export type Database = {
           is_active: boolean | null
           is_deleted: boolean | null
           is_featured: boolean | null
+          is_marketplace_visible: boolean | null
           is_new_override: string | null
           logo_url: string | null
           project_name: string | null
@@ -4910,6 +4911,7 @@ export type Database = {
           is_active?: boolean | null
           is_deleted?: boolean | null
           is_featured?: boolean | null
+          is_marketplace_visible?: boolean | null
           is_new_override?: string | null
           logo_url?: string | null
           project_name?: string | null
@@ -4955,6 +4957,7 @@ export type Database = {
           is_active?: boolean | null
           is_deleted?: boolean | null
           is_featured?: boolean | null
+          is_marketplace_visible?: boolean | null
           is_new_override?: string | null
           logo_url?: string | null
           project_name?: string | null
