@@ -1,55 +1,40 @@
 
 
-## Problema raíz
+## Problema: Leads que no aparecen en Gestión de Leads
 
-Existe un trigger `trg_sync_mandato_to_operation` en la tabla `mandatos` que **automáticamente crea registros en `company_operations`** cada vez que se crea o actualiza un mandato desde el CRM (GoDeal). Estos registros se crean con `is_active = true`, lo que los hace **inmediatamente visibles en el marketplace público**.
+Tras investigar el flujo completo, he encontrado **dos problemas** en el hook principal `useContacts.ts` (contacts-v2):
 
-Esto significa que cada vez que alguien crea un servicio (valoración, mandato, due diligence) en el CRM, aparece automáticamente una oportunidad en el marketplace — exactamente lo contrario de lo que quieres.
-
-### Datos actuales
-- 100 registros activos con status "available" en `company_operations`
-- Muchos probablemente creados automáticamente por el trigger
-
-## Plan: Desacoplar CRM del Marketplace
-
-### Paso 1 — Añadir columna de control manual al marketplace
-
-Crear una columna `is_marketplace_visible` (default `false`) en `company_operations`. Solo las operaciones que TÚ marques manualmente como visibles aparecerán en el marketplace.
-
-```sql
-ALTER TABLE company_operations 
-  ADD COLUMN is_marketplace_visible BOOLEAN DEFAULT false;
-
--- Marcar como visibles las que ya estaban activas (para no perder las actuales)
-UPDATE company_operations 
-SET is_marketplace_visible = true 
-WHERE is_active = true AND is_deleted = false;
+### Problema 1: Deduplicación agresiva oculta sell_leads
+En `useContacts.ts` líneas 145-150, los `sell_leads` y `general_contact_leads` se **filtran** si su email ya existe en `contact_leads`:
+```typescript
+...(sellLeads || [])
+  .filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))
+  .map(...)
 ```
+Esto significa que si un lead con service_type "vender" falla al insertar en `sell_leads` y cae en el fallback a `contact_leads` (líneas 291-307 de `useContactForm.ts`), o si el mismo email ya existe por otra vía en `contact_leads`, el registro de `sell_leads` **desaparece** del panel. O al revés: si la inserción en `sell_leads` funciona pero el email ya está en `contact_leads`, el sell_lead se oculta.
 
-### Paso 2 — Modificar el trigger para NO publicar automáticamente
+### Problema 2: `company_acquisition_inquiries` no se consulta
+La tabla `company_acquisition_inquiries` está mapeada en `ORIGIN_TABLE_MAP` del layout pero **nunca se consulta** en el hook `useContacts.ts`. Cualquier lead de tipo "company_acquisition" no aparece.
 
-El trigger `sync_mandato_to_company_operation` seguirá sincronizando datos del CRM a `company_operations` (útil para tener el registro), pero los nuevos registros se crearán con `is_active = true` pero `is_marketplace_visible = false`. Así existen en el sistema pero **no aparecen en el marketplace** hasta que tú lo decidas.
+### Plan de corrección
 
-```sql
--- En el INSERT del trigger, añadir: is_marketplace_visible = false
-```
+**Archivo**: `src/components/admin/contacts-v2/hooks/useContacts.ts`
 
-### Paso 3 — Filtrar por `is_marketplace_visible` en la Edge Function
+**Paso 1 — Eliminar deduplicación por email en legacy tables**
+Quitar el filtro `.filter((l: any) => !contactLeadEmails.has(l.email?.toLowerCase()))` de las líneas 145-150. Los sell_leads y general_contact_leads deben aparecer siempre, incluso si el email existe en otra tabla. La detección de duplicados ya existe como feature aparte (`is_possible_duplicate`).
 
-Modificar `list-operations/index.ts` para añadir el filtro `.eq('is_marketplace_visible', true)` en la query. Solo se devolverán operaciones que tú hayas aprobado manualmente.
+**Paso 2 — Añadir fetch de `company_acquisition_inquiries`**
+Incluir la consulta a `company_acquisition_inquiries` en el `Promise.all` y transformar los resultados con `transformContact(l, 'company_acquisition', ...)` en el array unificado.
 
-### Paso 4 — Añadir toggle en el panel admin
-
-En la tabla de operaciones del admin (`/admin/operations`), añadir un toggle o botón "Publicar en Marketplace" que permita activar/desactivar `is_marketplace_visible` para cada operación. Así tienes control total.
-
-### Archivos afectados
-- 1 migración SQL (columna + trigger modificado + backfill)
-- `supabase/functions/list-operations/index.ts` (añadir filtro)
-- `src/pages/admin/AdminOperations.tsx` o componente de tabla (añadir toggle)
+**Paso 3 — Añadir suscripción realtime para las tablas faltantes**
+Añadir listeners de `sell_leads`, `general_contact_leads` y `company_acquisition_inquiries` al canal de realtime para que los nuevos leads aparezcan automáticamente.
 
 ### Resultado
-- El CRM sigue funcionando normalmente (crear mandatos, servicios, etc.)
-- Los registros se sincronizan a `company_operations` como referencia interna
-- **Nada aparece en el marketplace hasta que tú lo publiques manualmente**
-- Toggle visual en el admin para publicar/despublicar con un clic
+- Todos los leads de `sell_leads` (formulario "vender") aparecerán siempre
+- Todos los leads de `general_contact_leads` aparecerán siempre
+- Los leads de `company_acquisition_inquiries` aparecerán por primera vez
+- No se perderá ningún lead por deduplicación entre tablas
+
+### Restricción
+No se modifican los componentes protegidos por `lead-management-code-protection`. Solo se corrige el hook de fetch para incluir datos faltantes.
 
