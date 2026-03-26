@@ -487,13 +487,20 @@ const CaseStudiesManager = () => {
             </div>
 
             {/* Images */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <ImageUploadField
-                label="Logo de la Empresa"
+                label="Logo Parte Asesorada"
                 value={formData.logo_url}
                 onChange={(url) => setFormData({...formData, logo_url: url})}
                 folder="case-studies/logos"
-                placeholder="URL del logo o sube una imagen"
+                placeholder="Logo de la parte asesorada"
+              />
+              <ImageUploadField
+                label="Logo Otra Parte"
+                value={formData.counterpart_logo_url}
+                onChange={(url) => setFormData({...formData, counterpart_logo_url: url})}
+                folder="case-studies/logos"
+                placeholder="Logo de la otra parte"
               />
               <ImageUploadField
                 label="Imagen Destacada"
