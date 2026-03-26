@@ -3,7 +3,7 @@
  * Now uses unified contact_statuses system (via wrapper for compatibility)
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
