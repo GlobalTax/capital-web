@@ -128,18 +128,6 @@ const ContactsFilters: React.FC<ContactsFiltersProps> = ({
             <span className="text-muted-foreground">Valoraciones:</span>
             <span className="font-semibold text-emerald-600">{(stats.byOrigin.valuation || 0).toLocaleString()}</span>
           </div>
-          <span className="text-muted-foreground/40">|</span>
-          <div className="flex items-center gap-1.5">
-            <Users className="h-3 w-3 text-blue-500" />
-            <span className="text-muted-foreground">Únicos:</span>
-            <span className="font-semibold text-blue-600">{stats.uniqueContacts.toLocaleString()}</span>
-          </div>
-          <span className="text-muted-foreground/40">|</span>
-          <div className="flex items-center gap-1.5">
-            <Target className="h-3 w-3 text-amber-500" />
-            <span className="text-muted-foreground">Calificados:</span>
-            <span className="font-semibold text-amber-600">{stats.qualified.toLocaleString()}</span>
-          </div>
         </div>
       )}
 
