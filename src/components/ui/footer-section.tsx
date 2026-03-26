@@ -239,13 +239,13 @@ export function Footerdemo() {
                 <Linkedin className="h-5 w-5" />
               </a>
               <a 
-                href="https://twitter.com/capittal_es" 
+                href="https://www.instagram.com/capittal.es/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Twitter"
+                aria-label="Instagram"
               >
-                <Twitter className="h-5 w-5" />
+                <Instagram className="h-5 w-5" />
               </a>
             </div>
             
