@@ -249,6 +249,7 @@ serve(async (req) => {
     console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total`);
 
     // Resolve operation descriptions and sector by locale with fallback to ES
+    // SECURITY: Strip company_name from public response to prevent data leaks
     const resolvedData = (data || []).map(op => {
       // Find sector translation from sectors table
       const sectorMatch = sectorsData?.find(s => s.name_es === op.sector);
@@ -256,8 +257,13 @@ serve(async (req) => {
         ? sectorMatch.name_en
         : op.sector;
 
+      // Destructure to remove company_name from response
+      const { company_name, ...safeOp } = op;
+
       return {
-        ...op,
+        ...safeOp,
+        // Always provide project_name, never company_name
+        project_name: op.project_name || 'Operación confidencial',
         // Resolve sector by locale
         resolved_sector: resolvedSector,
         // Resolve description by locale
