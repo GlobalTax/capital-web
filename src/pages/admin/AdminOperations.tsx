@@ -49,7 +49,7 @@ import { GenerateDealhubModal } from '@/features/operations-management/component
 
 interface Operation {
   id: string;
-  company_name: string;
+  company_name?: string;
   sector: string;
   subsector?: string;
   description: string;
