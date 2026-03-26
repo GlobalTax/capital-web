@@ -73,6 +73,7 @@ interface Operation {
   assigned_at?: string | null;
   project_status?: string;
   expected_market_text?: string;
+  is_marketplace_visible?: boolean;
 }
 
 const AdminOperations = () => {
