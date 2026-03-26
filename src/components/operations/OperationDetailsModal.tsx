@@ -11,6 +11,7 @@ import { useOperationTracking } from '@/hooks/useOperationTracking';
 interface Operation {
   id: string;
   company_name: string;
+  project_name?: string;
   sector: string;
   valuation_amount: number;
   valuation_currency?: string;
