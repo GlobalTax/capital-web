@@ -20,6 +20,7 @@ const DEFAULT_STATS: ContactStats = {
     acquisition: 0,
     company_acquisition: 0,
     advisor: 0,
+    sell: 0,
   },
   totalValuation: 0,
 };
@@ -450,7 +451,7 @@ function determinePriority(lead: any): 'hot' | 'warm' | 'cold' {
 // Transform legacy sell_leads, general_contact_leads, and company_acquisition_inquiries
 function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact' | 'company_acquisition', formDisplayMap: Record<string, string>): Contact {
   const originMap: Record<string, ContactOrigin> = {
-    sell_lead: 'general',
+    sell_lead: 'sell',
     general_contact: 'general',
     company_acquisition: 'company_acquisition',
   };
@@ -470,7 +471,7 @@ function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_conta
     lead_form: lead.lead_form,
     lead_form_name: lead.lead_form_ref?.name,
     lead_form_display_name: lead.lead_form ? (formDisplayMap[lead.lead_form] || lead.lead_form_ref?.name) : undefined,
-    revenue: lead.revenue ? Number(lead.revenue) : undefined,
+    revenue: lead.revenue ? Number(lead.revenue) : (lead.annual_revenue ? Number(lead.annual_revenue) : undefined),
     ebitda: lead.ebitda ? Number(lead.ebitda) : undefined,
     industry: lead.industry || lead.sectors_of_interest,
     location: lead.location,

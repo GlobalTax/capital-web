@@ -1,7 +1,7 @@
 // ============= CONTACTS V2 TYPES =============
 // Simplified type definitions for the new contacts system
 
-export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
+export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'sell';
 
 export interface Contact {
   id: string;

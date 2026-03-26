@@ -1,0 +1,4 @@
+ALTER TABLE public.contact_leads ADD COLUMN IF NOT EXISTS revenue NUMERIC;
+ALTER TABLE public.contact_leads ADD COLUMN IF NOT EXISTS ebitda NUMERIC;
+ALTER TABLE public.sell_leads ADD COLUMN IF NOT EXISTS revenue NUMERIC;
+ALTER TABLE public.sell_leads ADD COLUMN IF NOT EXISTS ebitda NUMERIC;
