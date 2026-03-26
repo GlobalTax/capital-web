@@ -82,7 +82,7 @@ const InstitutionalFooter: React.FC = () => {
             {/* Social Links */}
             <div className="flex items-center gap-4">
               <a
-                href="https://linkedin.com/company/capittal"
+                href="https://www.linkedin.com/company/capittal-ma-consulting/posts/?feedView=all"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 transition-colors"
