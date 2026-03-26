@@ -1,40 +1,42 @@
 
 
-## Allow all authenticated users to see all team members for assignment
+## Ocultar nombre de empresa en el marketplace — mostrar solo nombre de proyecto
 
-### Problem
-The RLS policy on `admin_users` (`admin_users_select_own_or_super_admin`) restricts SELECT to only the user's own row unless they are a super admin. Non-super-admin users can only see themselves in the assignment dropdown, so they can only assign leads to themselves.
+### Problema
+Algunas operaciones en `company_operations` tienen el nombre real de la empresa en `company_name` (ej: "MACONSA", "CLÍNICA PIZARRO MONTENEGRO") en lugar de un nombre de proyecto codificado (ej: "Proyecto Graft"). En el marketplace público esto expone información confidencial.
 
-### Solution
+### Solución
 
-Create a `SECURITY DEFINER` function that returns all active admin users (id, name, email only — no sensitive data). Then update the frontend query to use this RPC instead of a direct table query.
+#### 1. Migración BD — Añadir campo `project_name`
 
-#### 1. Database migration — New function `get_active_admin_users`
+Crear una columna `project_name` en `company_operations`. Para registros existentes que ya empiezan por "Proyecto", copiar automáticamente el valor.
 
 ```sql
-CREATE OR REPLACE FUNCTION public.get_active_admin_users()
-RETURNS TABLE(user_id UUID, full_name TEXT, email TEXT)
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT au.user_id, au.full_name, au.email
-  FROM admin_users au
-  WHERE au.is_active = true
-  ORDER BY au.full_name;
-$$;
+ALTER TABLE company_operations ADD COLUMN project_name TEXT;
+
+UPDATE company_operations 
+SET project_name = company_name 
+WHERE company_name ILIKE 'Proyecto %';
 ```
 
-This bypasses RLS safely, exposing only non-sensitive fields (name/email) of active team members.
+#### 2. Cambios en el frontend — Usar `project_name` en todos los componentes públicos
 
-#### 2. Code change — Use RPC in pipeline hook
+Archivos a modificar:
+- **`src/components/operations/OperationCard.tsx`** — Mostrar `project_name || company_name` en título, iniciales y alt de logo
+- **`src/components/operations/OperationDetailsModal.tsx`** y **`OperationDetailsModalEnhanced.tsx`** — Mismo cambio en el modal de detalle
+- **`src/components/operations/CompareBar.tsx`** — Usar `project_name` en los badges
+- **`src/components/operations/WishlistBar.tsx`** — Usar `project_name` en los badges
+- **`src/components/operations/OperationsTableMobile.tsx`** — Usar `project_name` en la vista móvil
+- **`src/components/operations/OperationsList.tsx`** — Asegurar que el campo se propaga
+- **`src/components/operations/ShareDropdown.tsx`** — Usar nombre de proyecto al compartir
 
-**File:** `src/features/leads-pipeline/hooks/useLeadsPipeline.ts`
+En cada componente, la lógica será: `operation.project_name || operation.company_name` para garantizar retrocompatibilidad.
 
-Replace the direct `.from('admin_users').select(...)` query with `supabase.rpc('get_active_admin_users')`.
+#### 3. Edge Function `list-operations`
 
-### Files to modify
-- Database migration (new function)
-- `src/features/leads-pipeline/hooks/useLeadsPipeline.ts` — switch admin users query to RPC
+Añadir `project_name` al SELECT de la Edge Function para que el campo llegue al frontend.
+
+### Notas
+- Los registros sin `project_name` seguirán mostrando `company_name` como fallback hasta que se les asigne un nombre de proyecto desde el admin.
+- El panel de administración seguirá mostrando `company_name` internamente — solo el marketplace público usa `project_name`.
 
