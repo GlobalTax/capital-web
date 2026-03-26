@@ -464,7 +464,7 @@ function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_conta
     created_at: lead.created_at,
     lead_received_at: lead.created_at,
     status: lead.status || 'new',
-    lead_status_crm: lead.lead_status_crm || null,
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
     acquisition_channel_id: lead.acquisition_channel_id,
     acquisition_channel_name: lead.acquisition_channel?.name,
     lead_form: lead.lead_form,
