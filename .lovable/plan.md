@@ -1,16 +1,19 @@
 
 
-## Plan: Simplificar barra de stats del panel de leads
+## Plan: Estado por defecto "Nuevo"
 
-La barra superior muestra 4 métricas: **Total, Valoraciones, Únicos, Calificados**. "Únicos" y "Calificados" no aportan valor claro (Únicos es casi igual a Total, y Calificados siempre muestra 0).
+El problema es que las funciones de transformación en `useContacts.ts` pasan `lead_status_crm` tal cual viene de la BD, y cuando es `null`/`undefined`, la columna "Estado" aparece vacía.
 
 ### Cambio
 
-**Archivo**: `src/components/admin/contacts-v2/ContactsFilters.tsx` (líneas 131-142)
+**Archivo**: `src/components/admin/contacts-v2/hooks/useContacts.ts`
 
-Eliminar las dos métricas que no aportan valor:
-- **Únicos** — redundante con Total
-- **Calificados** — siempre muestra 0
+En las 4 funciones de transformación, cambiar la asignación de `lead_status_crm` para que use `'nuevo'` como fallback:
 
-La barra quedará solo con: **Total: 1397 | Valoraciones: 984**
+- **`transformContact`** (línea 346): `lead.lead_status_crm` → `lead.lead_status_crm || 'nuevo'`
+- **`transformValuation`** (línea 394): `lead.lead_status_crm` → `lead.lead_status_crm || 'nuevo'`
+- **`transformAdvisor`**: añadir `lead_status_crm: lead.lead_status_crm || 'nuevo'` (actualmente no tiene este campo)
+- **`transformLegacyLead`** (línea 466): `lead.lead_status_crm || null` → `lead.lead_status_crm || 'nuevo'`
+
+Resultado: todos los leads sin estado asignado mostrarán "Nuevo" en vez de vacío.
 
