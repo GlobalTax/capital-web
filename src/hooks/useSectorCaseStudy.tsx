@@ -118,7 +118,7 @@ export const useSectorCaseStudy = (
     }
 
     const caseStudy: CaseStudyData = {
-      companyName: operation.company_name,
+      companyName: operation.project_name || operation.company_name || 'Operación confidencial',
       sector: operation.subsector || operation.sector,
       description: operation.short_description || operation.description || '',
       metrics,
