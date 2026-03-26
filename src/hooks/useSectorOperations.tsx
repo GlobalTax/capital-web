@@ -30,7 +30,8 @@ const SECTOR_URL_FILTER: Record<string, string> = {
 
 export interface SectorOperation {
   id: string;
-  company_name: string;
+  company_name?: string;
+  project_name?: string;
   sector: string;
   subsector?: string;
   short_description?: string;

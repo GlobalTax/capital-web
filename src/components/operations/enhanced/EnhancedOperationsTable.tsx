@@ -297,7 +297,7 @@ export const EnhancedOperationsTable: React.FC<EnhancedOperationsTableProps> = (
                 <div key={column.key} style={{ width }} className="px-4 flex items-center justify-center gap-1">
                   <ShareDropdown 
                     operationId={operation.id}
-                    operationName={operation.company_name}
+                    operationName={operation.project_name || operation.company_name || 'Operación confidencial'}
                     triggerClassName="inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     iconClassName="h-4 w-4"
                   />
