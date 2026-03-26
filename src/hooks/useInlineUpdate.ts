@@ -255,6 +255,7 @@ export const useContactInlineUpdate = () => {
       'accountex': 'accountex_leads',
       'advisor': 'advisor_valuations',
       'general': 'general_contact_leads',
+      'sell': 'sell_leads',
       'company_acquisition': 'company_acquisition_inquiries',
       'buyer': 'buyer_contacts',
     };
