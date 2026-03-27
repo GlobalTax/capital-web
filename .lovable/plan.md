@@ -1,40 +1,51 @@
 
 
-## Plan: Colores de badges por origen y eliminar emojis
+## Plan: Notificaciones de asignación de lead (in-app + email)
 
-### 1. Colores de badges en `PipelineCard.tsx` (y `BuyPipelineCard`)
+### Resumen
+Cuando un asesor es asignado a un lead en el pipeline, recibirá:
+1. Una notificación in-app visible en la campana del admin (sistema existente `admin_notifications`)
+2. Un email automático con los datos del lead
 
-Reemplazar los colores genéricos de los badges `leadFormName` y `channelName` por colores dinámicos según el valor:
+### 1. Crear Edge Function `notify-lead-assignment`
 
-| Badge value (contiene) | Color |
-|---|---|
-| "valoración" / "valuation" | Azul (`bg-blue-100 text-blue-700`) |
-| "venta" / "sell" | Verde (`bg-green-100 text-green-700`) |
-| "google" | Rojo (`bg-red-100 text-red-700`) |
-| "meta" / "facebook" / "instagram" | Azul oscuro (`bg-indigo-100 text-indigo-700`) |
-| Otros formularios | Gris (`bg-gray-100 text-gray-700`) |
-| Otros canales | Púrpura (actual) |
+Nueva Edge Function `supabase/functions/notify-lead-assignment/index.ts` que:
+- Recibe: `{ lead_id, lead_name, company, phone, email, assigned_to_user_id, assigned_to_email, assigned_to_name, assigned_by_name }`
+- **In-app**: Inserta un registro en `admin_notifications` con `type: 'lead_assignment'`, `title: "Te han asignado un lead"`, `message` con nombre/empresa, y `metadata` con `{ lead_id, target_user_id }`
+- **Email**: Envía email al asesor asignado usando la infraestructura de email existente (Resend vía `send-form-notifications` pattern o directamente) con datos del lead (nombre, empresa, teléfono, email, link al CRM)
 
-- Eliminar los emojis 📋 y 📡 de los badges
-- Crear una función helper `getBadgeColor(name, type)` para mapear nombre → clases de color
+### 2. Migración DB: añadir `target_user_id` a `admin_notifications`
 
-### 2. Eliminar emojis de columnas del pipeline
+Añadir columna `target_user_id UUID` a la tabla `admin_notifications` para filtrar notificaciones por usuario destinatario. Actualizar la RLS policy para que cada admin solo vea sus propias notificaciones de asignación.
 
-En `PIPELINE_COLUMNS` (types/index.ts), quitar los emojis del campo `icon` (dejarlo vacío `''`).
+### 3. Modificar `assignLeadMutation` en `useLeadsPipeline.ts`
 
-En `PipelineColumn.tsx` y `PipelineColumnsEditor.tsx`, no renderizar `<span>` del icono si está vacío.
+En el `onSuccess` de la mutación de asignación, invocar la Edge Function:
+```typescript
+onSuccess: (_, variables) => {
+  if (variables.userId) {
+    const lead = leads.find(l => l.id === variables.leadId);
+    const assignee = adminUsers.find(u => u.user_id === variables.userId);
+    supabase.functions.invoke('notify-lead-assignment', {
+      body: { lead, assignee }
+    });
+  }
+}
+```
 
-### 3. Eliminar emojis del dropdown de acciones
+### 4. Actualizar `AdminNotificationCenter` y `useAdminNewsNotifications`
 
-En `PipelineCard.tsx` línea 169: quitar el `✓` emoji del texto "Email pre-llamada enviado".
+- Ampliar el hook para también consultar `admin_notifications` filtrado por `target_user_id = auth.uid()`
+- Añadir icono de tipo `lead_assignment` (UserPlus) en el centro de notificaciones
+- Al hacer click, navegar al lead en el pipeline
 
 ### Archivos afectados
 
 | Archivo | Cambio |
 |---|---|
-| `PipelineCard.tsx` | Colores dinámicos en badges, quitar emojis |
-| `BuyPipelineView.tsx` | Mismos cambios en BuyPipelineCard |
-| `types/index.ts` | Vaciar campo `icon` en PIPELINE_COLUMNS |
-| `PipelineColumn.tsx` | No renderizar icono vacío |
-| `PipelineColumnsEditor.tsx` | No renderizar icono vacío |
+| `supabase/functions/notify-lead-assignment/index.ts` | Nueva Edge Function |
+| Migración SQL | Añadir `target_user_id` a `admin_notifications` + RLS |
+| `useLeadsPipeline.ts` | Invocar notificación en `onSuccess` de assign |
+| `useAdminNewsNotifications.ts` | Incluir notificaciones de asignación |
+| `AdminNotificationCenter.tsx` | Renderizar tipo `lead_assignment` |
 
