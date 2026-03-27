@@ -1,46 +1,22 @@
 
 
-## Plan: Rediseñar tarjetas de casos de éxito con logos más grandes y prominentes
+## Plan: Reaplicar rediseño de tarjetas de casos de éxito
 
-### Problema
-Las tarjetas actuales muestran sector, año y logos en la misma fila superior, lo que resulta en logos pequeños y un diseño poco atractivo.
+### Diagnóstico
+El código actual de `CaseStudiesCompact.tsx` ya muestra la estructura correcta (logos centrados debajo del header), pero parece que los cambios no se aplicaron correctamente en la build anterior. Voy a reaplicar los cambios asegurándome de que la estructura quede correcta.
 
-### Nuevo diseño de tarjeta (CaseStudiesCompact.tsx)
-Reorganizar la estructura de cada tarjeta para:
+### Cambios en `src/components/CaseStudiesCompact.tsx` (líneas ~120-168)
 
-1. **Arriba**: Fila con sector + año a la izquierda y logos grandes a la derecha
-2. **Logos más grandes**: Cambiar de `w-20 h-20` a `w-16 h-16` pero en una fila separada centrada con más protagonismo — o mejor, subir a `w-24 h-24` (96px) centrados arriba
-3. **Debajo**: Título, badge confidencial/valoración, descripción, destacados
+Reestructurar cada tarjeta para que:
 
-Estructura propuesta de la tarjeta:
-```text
-┌─────────────────────────┐
-│  Sector • 2026   🏆     │  ← badge + año + featured
-│                         │
-│    [Logo1]   [Logo2]    │  ← logos grandes centrados (w-24 h-24)
-│                         │
-│  Título de la operación │
-│  🔒 Confidencial        │
-│  Descripción...         │
-│  • Destacado 1          │
-│  • Destacado 2          │
-└─────────────────────────┘
-```
+1. **Primera fila**: Sector badge + año (izquierda) + icono featured (derecha)
+2. **Segunda sección**: Logos centrados y grandes (`w-24 h-24`, 96px) con separación vertical clara (`my-6`)
+3. **Tercera sección**: Título centrado
+4. **Resto**: Badge confidencial, descripción, destacados
 
-### Cambios técnicos
+Verificaré que el JSX tiene la estructura correcta y no hay ningún wrapper `flex-row` que coloque los logos en la misma línea que el sector badge.
 
-**Archivo: `src/components/CaseStudiesCompact.tsx`**
-- Reorganizar el header: sector badge + año en una línea (como en la screenshot)
-- Logos centrados debajo del header con tamaño `w-24 h-24`
-- Título centrado debajo de los logos
-- Resto del contenido (valoración, descripción, highlights) debajo
-
-**Archivo: `src/components/DetailedCaseStudies.tsx`**
-- Aumentar logos de `w-20 h-20` a `w-24 h-24`
-
-**Archivo: `src/components/admin/preview/CaseStudyPreview.tsx`**
-- Aumentar logos de `w-16 h-16` a `w-20 h-20`
-
-### Resultado
-Logos más grandes y prominentes en la parte superior de cada tarjeta, con un diseño más limpio y profesional.
+### También verificar
+- **`src/components/DetailedCaseStudies.tsx`**: Misma estructura con logos grandes centrados
+- **`src/components/admin/preview/CaseStudyPreview.tsx`**: Logos `w-20 h-20` centrados arriba
 
