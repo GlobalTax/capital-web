@@ -15258,6 +15258,7 @@ export type Database = {
           url_publica: string | null
           valor: number | null
           valoracion_esperada: number | null
+          visible_en_rod: boolean
           weighted_value: number | null
           won_value: number | null
         }
@@ -15329,6 +15330,7 @@ export type Database = {
           url_publica?: string | null
           valor?: number | null
           valoracion_esperada?: number | null
+          visible_en_rod?: boolean
           weighted_value?: number | null
           won_value?: number | null
         }
@@ -15400,6 +15402,7 @@ export type Database = {
           url_publica?: string | null
           valor?: number | null
           valoracion_esperada?: number | null
+          visible_en_rod?: boolean
           weighted_value?: number | null
           won_value?: number | null
         }
