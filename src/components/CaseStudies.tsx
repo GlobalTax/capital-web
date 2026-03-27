@@ -31,6 +31,7 @@ const CaseStudies = () => {
         year: case_.year?.toString() || "N/A",
         description: case_.description,
         logo_url: case_.logo_url,
+        counterpart_logo_url: case_.counterpart_logo_url,
         featured_image_url: case_.featured_image_url,
         highlights: case_.highlights || []
       }));
