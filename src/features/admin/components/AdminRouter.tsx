@@ -13,6 +13,7 @@ import {
   LazyCaseStudiesManager,
   LazyTestimonialsManager,
   LazyCarouselTestimonialsManager,
+  LazyCollaboratorTestimonialsManager,
   LazyCarouselLogosManager,
   LazyVentaEmpresasContentManager,
   LazyTeamMembersManagerAdvanced,
