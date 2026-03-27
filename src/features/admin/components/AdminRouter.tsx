@@ -220,6 +220,7 @@ const AdminRouter = () => {
           <Route path="/team" element={<LazyTeamMembersManagerAdvanced />} />
           <Route path="/testimonials" element={<LazyTestimonialsManager />} />
           <Route path="/carousel-testimonials" element={<LazyCarouselTestimonialsManager />} />
+          <Route path="/collaborator-testimonials" element={<LazyCollaboratorTestimonialsManager />} />
           <Route path="/carousel-logos" element={<LazyCarouselLogosManager />} />
           <Route path="/venta-empresas-content" element={<LazyVentaEmpresasContentManager />} />
           

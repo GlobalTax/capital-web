@@ -243,6 +243,12 @@ export const sidebarSections: SidebarSection[] = [
         description: "Reseñas de clientes"
       },
       { 
+        title: "Test. Colaboradores", 
+        url: "/admin/collaborator-testimonials", 
+        icon: MessageSquare,
+        description: "Testimonios de la página de colaboradores"
+      },
+      { 
         title: "LP Venta Empresas", 
         url: "/admin/venta-empresas-content", 
         icon: Store,
