@@ -15,6 +15,7 @@ import { es } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 
 const AdminNotificationCenter = () => {
+  const navigate = useNavigate();
   const { 
     notifications, 
     unreadCount, 
