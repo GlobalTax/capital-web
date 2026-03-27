@@ -31,12 +31,12 @@ const CaseStudyPreview = ({ caseStudy }: CaseStudyPreviewProps) => {
           {(caseStudy.logo_url || caseStudy.counterpart_logo_url) && (
             <div className="flex items-center justify-center gap-3 mb-4">
               {caseStudy.logo_url && (
-                <div className="w-16 h-16 bg-gray-50 rounded-lg p-1.5 overflow-hidden border border-gray-100">
+                <div className="w-20 h-20 bg-gray-50 rounded-xl p-2 overflow-hidden border border-gray-100">
                   <img src={caseStudy.logo_url} alt="Parte asesorada" className="w-full h-full object-contain" />
                 </div>
               )}
               {caseStudy.counterpart_logo_url && (
-                <div className="w-16 h-16 bg-gray-50 rounded-lg p-1.5 overflow-hidden border border-gray-100">
+                <div className="w-20 h-20 bg-gray-50 rounded-xl p-2 overflow-hidden border border-gray-100">
                   <img src={caseStudy.counterpart_logo_url} alt="Otra parte" className="w-full h-full object-contain" />
                 </div>
               )}
