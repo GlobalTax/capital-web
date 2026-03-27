@@ -214,6 +214,9 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
                 {lead.ebitda ? (
                   <span>EBITDA: <span className="text-emerald-600">{formatCurrency(lead.ebitda)}</span></span>
                 ) : null}
+                {lead.ebitda && lead.revenue ? (
+                  <span>Margen: <span className="text-amber-600">{((lead.ebitda / lead.revenue) * 100).toFixed(1)}%</span></span>
+                ) : null}
               </div>
             )}
             {lead.location ? (
