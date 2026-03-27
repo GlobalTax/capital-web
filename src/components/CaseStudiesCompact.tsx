@@ -119,22 +119,27 @@ const CaseStudiesCompact = () => {
                 role="listitem"
               >
                 <CardContent className="p-8">
-                  <div className="flex items-center justify-between mb-6">
-                    {case_.sector && (
-                      <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-card text-primary border-0">
-                        {case_.sector}
-                      </Badge>
-                    )}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      {case_.sector && (
+                        <Badge variant="secondary" className="rounded-full px-3 py-1.5 bg-card text-primary border-0">
+                          {case_.sector}
+                        </Badge>
+                      )}
+                      {case_.year && (
+                        <span className="text-sm text-muted-foreground">• {case_.year}</span>
+                      )}
+                    </div>
                     {case_.is_featured && (
                       <Award className="w-5 h-5 text-yellow-500" />
                     )}
                   </div>
                   
-                  {/* Logos - both parties side by side */}
+                  {/* Logos - large and centered */}
                   {(case_.logo_url || case_.counterpart_logo_url) && (
-                    <div className="flex items-center justify-center gap-4 mb-6">
+                    <div className="flex items-center justify-center gap-5 my-6">
                       {case_.logo_url && (
-                        <div className="w-20 h-20 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100">
+                        <div className="w-24 h-24 bg-gray-50 rounded-xl p-2.5 overflow-hidden border border-gray-100">
                           <img 
                             src={case_.logo_url} 
                             alt={`Logo de ${case_.title}`}
@@ -145,7 +150,7 @@ const CaseStudiesCompact = () => {
                         </div>
                       )}
                       {case_.counterpart_logo_url && (
-                        <div className="w-20 h-20 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100">
+                        <div className="w-24 h-24 bg-gray-50 rounded-xl p-2.5 overflow-hidden border border-gray-100">
                           <img 
                             src={case_.counterpart_logo_url} 
                             alt={`Contraparte de ${case_.title}`}
