@@ -65,7 +65,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                 className="shrink-0"
               />
             )}
-            {column.icon && <span className="text-lg">{column.icon}</span>}
+            
             <h3 className="font-semibold text-sm">{column.label}</h3>
             <Badge variant="secondary" className="text-xs">
               {leads.length}
