@@ -193,15 +193,6 @@ const CaseStudiesCompact = () => {
                         </div>
                       ) : null}
                       
-                      {case_.year && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600 flex items-center">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            {t('cases.year')}
-                          </span>
-                          <span className="font-medium text-black">{case_.year}</span>
-                        </div>
-                      )}
 
                       {case_.company_size && (
                         <div className="flex items-center justify-between">

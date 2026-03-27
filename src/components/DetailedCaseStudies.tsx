@@ -49,7 +49,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
           {(logoUrl || counterpartLogoUrl) && (
             <div className="ml-6 flex-shrink-0 flex items-center gap-3">
               {logoUrl && (
-                <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden p-2">
+                <div className="w-24 h-24 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden p-2.5">
                   <img 
                     src={logoUrl} 
                     alt={`Logo de ${title}`}
@@ -60,7 +60,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
                 </div>
               )}
               {counterpartLogoUrl && (
-                <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center overflow-hidden p-2">
+                <div className="w-24 h-24 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden p-2.5">
                   <img 
                     src={counterpartLogoUrl} 
                     alt={`Contraparte de ${title}`}
