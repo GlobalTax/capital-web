@@ -55,11 +55,14 @@ export const useAdminNewsNotifications = () => {
   // Unread count
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
 
-  // Mark as read mutation
+  // Mark as read mutation - tries both tables
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
+      const notification = notifications?.find(n => n.id === id);
+      const table = notification?.source === 'general' ? 'admin_notifications' : 'admin_notifications_news';
+      
       const { error } = await supabase
-        .from('admin_notifications_news')
+        .from(table)
         .update({ 
           is_read: true, 
           read_at: new Date().toISOString() 
