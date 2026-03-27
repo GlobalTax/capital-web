@@ -87,7 +87,12 @@ const AdminNotificationCenter = () => {
               <DropdownMenuItem 
                 key={notification.id} 
                 className={`cursor-pointer p-3 ${!notification.is_read ? 'bg-blue-50/50' : ''}`}
-                onClick={() => !notification.is_read && markAsRead(notification.id)}
+                onClick={() => {
+                  if (!notification.is_read) markAsRead(notification.id);
+                  if (notification.type === 'lead_assignment' && notification.metadata?.lead_id) {
+                    navigate('/admin/leads-pipeline');
+                  }
+                }}
               >
                 <div className="flex gap-3 w-full">
                   <div className="mt-0.5">
