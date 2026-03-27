@@ -34,6 +34,8 @@ const AdminNotificationCenter = () => {
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       case 'process_complete':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'lead_assignment':
+        return <UserPlus className="h-4 w-4 text-purple-500" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
