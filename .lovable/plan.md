@@ -1,22 +1,22 @@
 
 
-## Plan: Reaplicar rediseño de tarjetas de casos de éxito
+## Plan: Añadir columna CNAE a las listas de contacto
 
-### Diagnóstico
-El código actual de `CaseStudiesCompact.tsx` ya muestra la estructura correcta (logos centrados debajo del header), pero parece que los cambios no se aplicaron correctamente en la build anterior. Voy a reaplicar los cambios asegurándome de que la estructura quede correcta.
+### Problema
+El campo CNAE se importa y almacena correctamente, pero no aparece como columna visible porque falta en la definición de columnas por defecto.
 
-### Cambios en `src/components/CaseStudiesCompact.tsx` (líneas ~120-168)
+### Cambio
 
-Reestructurar cada tarjeta para que:
+**Archivo: `src/hooks/useListColumnPreferences.ts`**
 
-1. **Primera fila**: Sector badge + año (izquierda) + icono featured (derecha)
-2. **Segunda sección**: Logos centrados y grandes (`w-24 h-24`, 96px) con separación vertical clara (`my-6`)
-3. **Tercera sección**: Título centrado
-4. **Resto**: Badge confidencial, descripción, destacados
+Añadir una entrada en `DEFAULT_COLUMNS` para CNAE, visible por defecto, después de CIF (posición 3). Ajustar las posiciones del resto de columnas.
 
-Verificaré que el JSX tiene la estructura correcta y no hay ningún wrapper `flex-row` que coloque los logos en la misma línea que el sector badge.
+```typescript
+{ key: 'cnae', label: 'CNAE', visible: true, position: 3, sortable: true },
+```
 
-### También verificar
-- **`src/components/DetailedCaseStudies.tsx`**: Misma estructura con logos grandes centrados
-- **`src/components/admin/preview/CaseStudyPreview.tsx`**: Logos `w-20 h-20` centrados arriba
+Las columnas existentes a partir de `descripcion_actividad` se desplazarán una posición.
+
+### Nota
+Los usuarios que ya tengan preferencias guardadas en localStorage recibirán la columna automáticamente gracias al merge existente (líneas 59-67), aunque aparecerá al final. Para verla en la posición correcta tendrán que pulsar "Restablecer" en el configurador de columnas.
 
