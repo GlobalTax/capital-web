@@ -21362,6 +21362,8 @@ export type Database = {
           mandato_id: string | null
           order_index: number | null
           prioridad: string | null
+          reminder_sent: boolean | null
+          reminder_time: string | null
           source_text: string | null
           tipo: string | null
           titulo: string
@@ -21385,6 +21387,8 @@ export type Database = {
           mandato_id?: string | null
           order_index?: number | null
           prioridad?: string | null
+          reminder_sent?: boolean | null
+          reminder_time?: string | null
           source_text?: string | null
           tipo?: string | null
           titulo: string
@@ -21408,6 +21412,8 @@ export type Database = {
           mandato_id?: string | null
           order_index?: number | null
           prioridad?: string | null
+          reminder_sent?: boolean | null
+          reminder_time?: string | null
           source_text?: string | null
           tipo?: string | null
           titulo?: string
