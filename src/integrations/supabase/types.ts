@@ -4472,6 +4472,54 @@ export type Database = {
           },
         ]
       }
+      collaborator_testimonials: {
+        Row: {
+          avatar_initials: string
+          company: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          joined_year: string
+          name: string
+          position: string
+          rating: number
+          sector: string
+          testimonial_text: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_initials?: string
+          company: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          joined_year?: string
+          name: string
+          position: string
+          rating?: number
+          sector?: string
+          testimonial_text: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_initials?: string
+          company?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          joined_year?: string
+          name?: string
+          position?: string
+          rating?: number
+          sector?: string
+          testimonial_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_acquisition_inquiries: {
         Row: {
           acquisition_channel_id: string | null
