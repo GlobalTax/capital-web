@@ -10,8 +10,14 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // ========== AUTH: Validate JWT + Admin role ==========
+    const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
+    const auth = await validateAdminRequest(req, corsHeaders);
+    if (auth.error) return auth.error;
+    console.log(`[sf-ai-matching] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
+
     const { operation_id, fund_id, deal_profile, buyer_profile } = await req.json();
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const supabase = auth.adminClient;
 
     let dealProfile = deal_profile;
     if (!dealProfile && operation_id) {

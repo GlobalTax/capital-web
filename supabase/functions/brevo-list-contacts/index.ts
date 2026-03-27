@@ -43,6 +43,12 @@ serve(async (req) => {
   }
 
   try {
+    // ========== AUTH: Validate JWT + Admin role ==========
+    const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
+    const auth = await validateAdminRequest(req, corsHeaders);
+    if (auth.error) return auth.error;
+    console.log(`[brevo-list-contacts] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
+
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
     if (!BREVO_API_KEY) {
       throw new Error('BREVO_API_KEY not configured');
