@@ -16,21 +16,40 @@ export interface AdminNewsNotification {
 export const useAdminNewsNotifications = () => {
   const queryClient = useQueryClient();
 
-  // Fetch notifications
+  // Fetch notifications from both tables
   const { data: notifications, isLoading, refetch } = useQuery({
     queryKey: ['admin-news-notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch news notifications
+      const { data: newsData, error: newsError } = await supabase
         .from('admin_notifications_news')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
-      return data as AdminNewsNotification[];
+      if (newsError) throw newsError;
+
+      // Fetch general admin notifications (lead assignments, etc.)
+      const { data: generalData, error: generalError } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (generalError) throw generalError;
+
+      // Merge and sort by created_at
+      const newsNotifs = (newsData || []).map(n => ({ ...n, source: 'news' as const }));
+      const generalNotifs = (generalData || []).map(n => ({ ...n, source: 'general' as const }));
+      
+      const merged = [...newsNotifs, ...generalNotifs]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 30);
+
+      return merged as AdminNewsNotification[];
     },
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 60000, // Refetch every minute
+    staleTime: 30000,
+    refetchInterval: 60000,
   });
 
   // Unread count
