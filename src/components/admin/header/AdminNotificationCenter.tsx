@@ -8,10 +8,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Bell, CheckCircle, AlertCircle, Newspaper, Bot, Loader2, CheckCheck } from 'lucide-react';
+import { Bell, CheckCircle, AlertCircle, Newspaper, Bot, Loader2, CheckCheck, UserPlus } from 'lucide-react';
 import { useAdminNewsNotifications, AdminNewsNotification } from '@/hooks/useAdminNewsNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useNavigate } from 'react-router-dom';
 
 const AdminNotificationCenter = () => {
   const { 
