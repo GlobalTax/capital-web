@@ -1,22 +1,14 @@
 
 
-## Plan: Añadir columna CNAE a las listas de contacto
-
-### Problema
-El campo CNAE se importa y almacena correctamente, pero no aparece como columna visible porque falta en la definición de columnas por defecto.
+## Plan: Eliminar emojis de las columnas del pipeline de leads
 
 ### Cambio
 
-**Archivo: `src/hooks/useListColumnPreferences.ts`**
+**Archivo: `src/features/leads-pipeline/components/PipelineColumn.tsx`** (línea 68)
+- Eliminar la línea `{column.icon && <span className="text-lg">{column.icon}</span>}` que renderiza el emoji en el header de cada columna.
 
-Añadir una entrada en `DEFAULT_COLUMNS` para CNAE, visible por defecto, después de CIF (posición 3). Ajustar las posiciones del resto de columnas.
+**Archivo: `src/features/leads-pipeline/components/PipelineColumnsEditor.tsx`** (línea 140)
+- Eliminar la línea `{column.icon && <span className="text-lg shrink-0">{column.icon}</span>}` del editor de columnas para consistencia.
 
-```typescript
-{ key: 'cnae', label: 'CNAE', visible: true, position: 3, sortable: true },
-```
-
-Las columnas existentes a partir de `descripcion_actividad` se desplazarán una posición.
-
-### Nota
-Los usuarios que ya tengan preferencias guardadas en localStorage recibirán la columna automáticamente gracias al merge existente (líneas 59-67), aunque aparecerá al final. Para verla en la posición correcta tendrán que pulsar "Restablecer" en el configurador de columnas.
+Esto elimina los emojis visualmente sin borrar los datos del campo `icon` en la base de datos, por si se quisieran restaurar en el futuro.
 
