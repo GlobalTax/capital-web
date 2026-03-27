@@ -85,17 +85,37 @@ const CaseStudies = () => {
                       {case_.sector} • {case_.year}
                     </div>
                     
-                    {/* Logo - much larger and more prominent */}
-                    {case_.logo_url && (
-                      <div className="w-28 h-28 bg-gray-50 rounded-lg p-3 overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                        <img 
-                          src={case_.logo_url} 
-                          alt={`${case_.title} logo`}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            e.currentTarget.parentElement.style.display = 'none';
-                          }}
-                        />
+                    {/* Logos - both parties side by side */}
+                    {(case_.logo_url || case_.counterpart_logo_url) && (
+                      <div className="flex items-center gap-2">
+                        {case_.logo_url && (
+                          <div className="w-20 h-20 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100">
+                            <img 
+                              src={case_.logo_url} 
+                              alt={`Logo de ${case_.title}`}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                              decoding="async"
+                              onError={(e) => {
+                                (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        {case_.counterpart_logo_url && (
+                          <div className="w-20 h-20 bg-gray-50 rounded-lg p-2 overflow-hidden border border-gray-100">
+                            <img 
+                              src={case_.counterpart_logo_url} 
+                              alt={`Contraparte de ${case_.title}`}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                              decoding="async"
+                              onError={(e) => {
+                                (e.currentTarget.parentElement as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
