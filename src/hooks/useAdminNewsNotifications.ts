@@ -3,13 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface AdminNewsNotification {
   id: string;
-  type: 'new_pending_news' | 'auto_published' | 'scrape_error' | 'process_complete';
+  type: 'new_pending_news' | 'auto_published' | 'scrape_error' | 'process_complete' | 'lead_assignment';
   title: string;
   message: string | null;
   metadata: Record<string, unknown>;
   is_read: boolean;
   read_at: string | null;
   created_at: string;
+  source?: 'news' | 'general';
 }
 
 export const useAdminNewsNotifications = () => {
