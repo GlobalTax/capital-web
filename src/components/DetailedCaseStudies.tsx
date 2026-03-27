@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Target, TrendingUp, Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCaseStudies } from '@/hooks/useCaseStudies';
 
 interface CaseStudyDetailProps {
   title: string;
