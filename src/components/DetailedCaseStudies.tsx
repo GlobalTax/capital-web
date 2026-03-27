@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Users, Target, TrendingUp, Calendar, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useCaseStudies } from '@/hooks/useCaseStudies';
 
 interface CaseStudyDetailProps {
   title: string;
@@ -115,50 +116,7 @@ const CaseStudyDetail: React.FC<CaseStudyDetailProps> = ({
 
 const DetailedCaseStudies = () => {
   const navigate = useNavigate();
-
-  const featuredCases = [
-    {
-      title: "Jamboree se integra en Ceranium",
-      sector: "Salud y Biotecnología", 
-      year: 2025,
-      description: "El Laboratorio dental Jamboree se integra en Ceranium, compañía participada por ABE Capital. Una operación que demuestra nuestra capacidad para identificar sinergias estratégicas en el sector sanitario y facilitar integraciones exitosas en tiempo récord.",
-      highlights: [
-        "Sector en consolidación",
-        "Venta en menos de 8 meses", 
-        "Laboratorio líder en Barcelona"
-      ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756723321543_ka4ryq.png",
-      isValueConfidential: true
-    },
-    {
-      title: "Mitie España Adquiere Grupo Visegurity",
-      sector: "Seguridad",
-      year: 2024,
-      description: "La multinacional británica MITIE adquiere Grupo Visegurity por 12M€. Capittal asesoró a la parte vendedora en esta operación internacional, demostrando nuestra capacidad para conectar empresas españolas con compradores globales.",
-      highlights: [
-        "Proceso de Venta",
-        "Comprador Internacional", 
-        "Asesoramiento 360º"
-      ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756722616293_r2k55.png",
-      valueAmount: 12,
-      valueCurrency: "€",
-      isValueConfidential: false
-    },
-    {
-      title: "Grupo Scutum adquiere Grupo SEA",
-      sector: "Seguridad",
-      year: 2024, 
-      description: "Grupo Scutum, multinacional líder en seguridad electrónica, adquiere Grupo SEA. En esta ocasión, Capittal asesoró a la parte compradora en el desarrollo de su estrategia de crecimiento mediante adquisiciones.",
-      highlights: [
-        "Asesoramiento al comprador",
-        "Desarrollo de proyecto Build-Up",
-        "Intermediación y Due Diligence"
-      ],
-      logoUrl: "https://fwhqtzkkvnjkazhaficj.supabase.co/storage/v1/object/public/case-studies-images/case-studies/logos/1756723130999_g0395m.png", 
-      isValueConfidential: true
-    }
-  ];
+  const { caseStudies, isLoading } = useCaseStudies();
 
   const handleContactClick = () => {
     navigate('/contacto');
@@ -199,15 +157,35 @@ const DetailedCaseStudies = () => {
       {/* Featured Case Studies */}
       <section className="pt-8 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          <div className="space-y-12">
-            {featuredCases.map((caseStudy, index) => (
-              <CaseStudyDetail
-                key={index}
-                {...caseStudy}
-              />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="space-y-12">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-100 h-64 rounded-lg animate-pulse"></div>
+              ))}
+            </div>
+          ) : caseStudies.length > 0 ? (
+            <div className="space-y-12">
+              {caseStudies.map((caseStudy) => (
+                <CaseStudyDetail
+                  key={caseStudy.id}
+                  title={caseStudy.title}
+                  sector={caseStudy.sector}
+                  year={caseStudy.year || 0}
+                  description={caseStudy.description}
+                  highlights={caseStudy.highlights || []}
+                  logoUrl={caseStudy.logo_url}
+                  counterpartLogoUrl={caseStudy.counterpart_logo_url}
+                  valueAmount={caseStudy.value_amount}
+                  valueCurrency={caseStudy.value_currency}
+                  isValueConfidential={caseStudy.is_value_confidential || false}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              No hay casos de éxito disponibles en este momento.
+            </div>
+          )}
         </div>
       </section>
 
