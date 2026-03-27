@@ -76,18 +76,22 @@ export const useAdminNewsNotifications = () => {
     },
   });
 
-  // Mark all as read
+  // Mark all as read in both tables
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from('admin_notifications_news')
-        .update({ 
-          is_read: true, 
-          read_at: new Date().toISOString() 
-        })
-        .eq('is_read', false);
+      const [r1, r2] = await Promise.all([
+        supabase
+          .from('admin_notifications_news')
+          .update({ is_read: true, read_at: new Date().toISOString() })
+          .eq('is_read', false),
+        supabase
+          .from('admin_notifications')
+          .update({ is_read: true, read_at: new Date().toISOString() })
+          .eq('is_read', false),
+      ]);
 
-      if (error) throw error;
+      if (r1.error) throw r1.error;
+      if (r2.error) throw r2.error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-news-notifications'] });
