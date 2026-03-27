@@ -1,22 +1,46 @@
 
 
-## Plan: Hacer "Test. Colaboradores" visible para todos los usuarios admin
+## Plan: Rediseñar tarjetas de casos de éxito con logos más grandes y prominentes
 
 ### Problema
-La ruta `collaborator-testimonials` no está en el `routePermissionMap` del sidebar, por lo que se oculta para todos los usuarios.
+Las tarjetas actuales muestran sector, año y logos en la misma fila superior, lo que resulta en logos pequeños y un diseño poco atractivo.
 
-### Cambio
+### Nuevo diseño de tarjeta (CaseStudiesCompact.tsx)
+Reorganizar la estructura de cada tarjeta para:
 
-**Archivo**: `src/components/admin/sidebar/AdminSidebar.tsx`
+1. **Arriba**: Fila con sector + año a la izquierda y logos grandes a la derecha
+2. **Logos más grandes**: Cambiar de `w-20 h-20` a `w-16 h-16` pero en una fila separada centrada con más protagonismo — o mejor, subir a `w-24 h-24` (96px) centrados arriba
+3. **Debajo**: Título, badge confidencial/valoración, descripción, destacados
 
-Añadir una línea en el `routePermissionMap` (línea ~167):
-
+Estructura propuesta de la tarjeta:
+```text
+┌─────────────────────────┐
+│  Sector • 2026   🏆     │  ← badge + año + featured
+│                         │
+│    [Logo1]   [Logo2]    │  ← logos grandes centrados (w-24 h-24)
+│                         │
+│  Título de la operación │
+│  🔒 Confidencial        │
+│  Descripción...         │
+│  • Destacado 1          │
+│  • Destacado 2          │
+└─────────────────────────┘
 ```
-'collaborator-testimonials': 'dashboard',
-```
 
-El permiso `'dashboard'` es accesible para **todos** los roles admin (viewer, editor, admin, super_admin), siguiendo el mismo patrón usado para Pipeline, Prospectos, etc.
+### Cambios técnicos
+
+**Archivo: `src/components/CaseStudiesCompact.tsx`**
+- Reorganizar el header: sector badge + año en una línea (como en la screenshot)
+- Logos centrados debajo del header con tamaño `w-24 h-24`
+- Título centrado debajo de los logos
+- Resto del contenido (valoración, descripción, highlights) debajo
+
+**Archivo: `src/components/DetailedCaseStudies.tsx`**
+- Aumentar logos de `w-20 h-20` a `w-24 h-24`
+
+**Archivo: `src/components/admin/preview/CaseStudyPreview.tsx`**
+- Aumentar logos de `w-16 h-16` a `w-20 h-20`
 
 ### Resultado
-"Test. Colaboradores" aparecerá en el sidebar para cualquier usuario con acceso al panel admin, independientemente de su rol.
+Logos más grandes y prominentes en la parte superior de cada tarjeta, con un diseño más limpio y profesional.
 
