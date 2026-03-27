@@ -613,6 +613,7 @@ export type Database = {
           metadata: Json | null
           read_at: string | null
           read_by: string | null
+          target_user_id: string | null
           title: string
           type: string
         }
@@ -624,6 +625,7 @@ export type Database = {
           metadata?: Json | null
           read_at?: string | null
           read_by?: string | null
+          target_user_id?: string | null
           title: string
           type: string
         }
@@ -635,6 +637,7 @@ export type Database = {
           metadata?: Json | null
           read_at?: string | null
           read_by?: string | null
+          target_user_id?: string | null
           title?: string
           type?: string
         }
