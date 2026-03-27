@@ -21304,6 +21304,7 @@ export type Database = {
           creado_por: string | null
           created_at: string | null
           descripcion: string | null
+          empresa_id: string | null
           es_visible_equipo: boolean | null
           estado: string | null
           fecha_vencimiento: string | null
@@ -21326,6 +21327,7 @@ export type Database = {
           creado_por?: string | null
           created_at?: string | null
           descripcion?: string | null
+          empresa_id?: string | null
           es_visible_equipo?: boolean | null
           estado?: string | null
           fecha_vencimiento?: string | null
@@ -21348,6 +21350,7 @@ export type Database = {
           creado_por?: string | null
           created_at?: string | null
           descripcion?: string | null
+          empresa_id?: string | null
           es_visible_equipo?: boolean | null
           estado?: string | null
           fecha_vencimiento?: string | null
@@ -21363,6 +21366,27 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tareas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tareas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresa_valuations"
+            referencedColumns: ["matched_empresa_id"]
+          },
+          {
+            foreignKeyName: "tareas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "v_empresas_con_actividad"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tareas_mandato_id_fkey"
             columns: ["mandato_id"]
