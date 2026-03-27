@@ -40,7 +40,7 @@ export function LeadStatusBadge({ status, showIcon = true }: LeadStatusBadgeProp
       variant="secondary" 
       className={`${colorClasses.bg} ${colorClasses.text} hover:${colorClasses.bg}`}
     >
-      {showIcon && <span className="mr-1">{config.icon}</span>}
+      
       {config.label}
     </Badge>
   );

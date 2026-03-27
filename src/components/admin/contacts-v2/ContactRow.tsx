@@ -97,7 +97,7 @@ const ContactRow: React.FC<ContactRowProps> = ({
     return activeStatuses.map(s => ({
       value: s.status_key,
       label: s.label,
-      icon: <span className="text-xs">{s.icon}</span>,
+      
       color: colorToCss[s.color] || '#6b7280',
     }));
   }, [activeStatuses]);
