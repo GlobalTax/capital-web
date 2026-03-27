@@ -33,6 +33,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // ========== AUTH: Validate JWT + Admin role ==========
+    const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
+    const auth = await validateAdminRequest(req, corsHeaders);
+    if (auth.error) return auth.error;
+    console.log(`[send-followup-email] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
+
     const payload: SendFollowupEmailRequest = await req.json();
     const { leadId, contactName, companyName, email, senderName = "Samuel Navarro", senderTitle = "M&A Advisor" } = payload;
 

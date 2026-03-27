@@ -178,6 +178,12 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // ========== AUTH: Validate JWT + Admin role ==========
+    const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
+    const auth = await validateAdminRequest(req, corsHeaders);
+    if (auth.error) return auth.error;
+    console.log(`[send-admin-notifications] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
+
     const { type, recipientEmail, recipientName, data }: AdminNotificationRequest = await req.json();
     
     console.log(`Sending ${type} notification to ${recipientEmail}`);

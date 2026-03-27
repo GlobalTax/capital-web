@@ -49,15 +49,19 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    // ========== AUTH: Validate JWT + Admin role ==========
+    const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
+    const auth = await validateAdminRequest(req, corsHeaders);
+    if (auth.error) return auth.error;
+    console.log(`[leads-company-enrich] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
+
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY');
 
     if (!firecrawlKey) {
       throw new Error('FIRECRAWL_API_KEY not configured');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = auth.adminClient;
 
     // Parse request body
     const { lead_ids, limit = 10, force = false } = await req.json();
