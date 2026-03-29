@@ -1,38 +1,40 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useAIAgents } from '@/hooks/useAIAgents';
-import { useAgentChat, ChatMessage } from '@/hooks/useAgentChat';
+import { useAgentChatContext, ChatMessage } from '@/contexts/AgentChatContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Bot, X, Send, Loader2, Wrench, Trash2, Minimize2, Maximize2 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Bot, X, Send, Loader2, Wrench, Trash2, Minimize2, Maximize2, History, Plus, CheckCircle2, XCircle, MessageSquare } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export const AgentChatWidget: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [input, setInput] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
   const { agents } = useAIAgents();
-  const { messages, isLoading, lastModel, lastProvider, sendMessage, clearChat } = useAgentChat();
+  const {
+    messages, isLoading, lastModel, lastProvider, isOpen, isExpanded,
+    selectedAgentId, conversationId, conversations,
+    sendMessage, confirmTool, rejectTool, clearChat,
+    setSelectedAgentId, setIsOpen, setIsExpanded,
+    loadConversations, resumeConversation, newConversation,
+  } = useAgentChatContext();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const activeAgents = agents.filter(a => a.is_active);
 
-  // Auto-select first agent
   useEffect(() => {
     if (!selectedAgentId && activeAgents.length > 0) {
       setSelectedAgentId(activeAgents[0].id);
     }
   }, [activeAgents, selectedAgentId]);
 
-  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Focus input when opened
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
@@ -51,6 +53,18 @@ export const AgentChatWidget: React.FC = () => {
     }
   };
 
+  const handleAgentChange = (id: string) => {
+    setSelectedAgentId(id);
+    clearChat();
+  };
+
+  const handleShowHistory = async () => {
+    if (selectedAgentId) {
+      await loadConversations(selectedAgentId);
+    }
+    setShowHistory(!showHistory);
+  };
+
   if (!isOpen) {
     return (
       <button
@@ -65,7 +79,7 @@ export const AgentChatWidget: React.FC = () => {
 
   const widgetClass = isExpanded
     ? 'fixed inset-4 z-50'
-    : 'fixed bottom-5 right-5 z-50 w-[400px] h-[550px]';
+    : 'fixed bottom-5 right-5 z-50 w-[420px] h-[580px]';
 
   return (
     <div className={`${widgetClass} bg-background border rounded-xl shadow-2xl flex flex-col overflow-hidden`}>
@@ -81,6 +95,12 @@ export const AgentChatWidget: React.FC = () => {
           )}
         </div>
         <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleShowHistory} title="Historial">
+            <History className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { newConversation(); }} title="Nueva conversación">
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={clearChat} title="Limpiar chat">
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
@@ -95,7 +115,7 @@ export const AgentChatWidget: React.FC = () => {
 
       {/* Agent selector */}
       <div className="px-3 py-2 border-b">
-        <Select value={selectedAgentId || ''} onValueChange={v => { setSelectedAgentId(v); clearChat(); }}>
+        <Select value={selectedAgentId || ''} onValueChange={handleAgentChange}>
           <SelectTrigger className="h-8 text-xs">
             <SelectValue placeholder="Selecciona un agente" />
           </SelectTrigger>
@@ -109,6 +129,38 @@ export const AgentChatWidget: React.FC = () => {
         </Select>
       </div>
 
+      {/* History sidebar */}
+      {showHistory && (
+        <div className="border-b bg-muted/20 max-h-48 overflow-y-auto">
+          <div className="px-3 py-2">
+            <p className="text-xs font-medium text-muted-foreground mb-2">Conversaciones recientes</p>
+            {conversations.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Sin conversaciones</p>
+            ) : (
+              <div className="space-y-1">
+                {conversations.map(conv => (
+                  <button
+                    key={conv.id}
+                    onClick={() => { resumeConversation(conv.id); setShowHistory(false); }}
+                    className={`w-full text-left px-2 py-1.5 rounded text-xs hover:bg-muted transition-colors flex items-center gap-2 ${
+                      conversationId === conv.id ? 'bg-muted' : ''
+                    }`}
+                  >
+                    <MessageSquare className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate">{conv.summary || `Conversación (${conv.message_count} msgs)`}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(conv.updated_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
         {messages.length === 0 && (
@@ -118,7 +170,13 @@ export const AgentChatWidget: React.FC = () => {
           </div>
         )}
         {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
+          <MessageBubble
+            key={i}
+            message={msg}
+            onConfirm={confirmTool}
+            onReject={rejectTool}
+            isLoading={isLoading}
+          />
         ))}
         {isLoading && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
@@ -155,8 +213,14 @@ export const AgentChatWidget: React.FC = () => {
   );
 };
 
-const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
+const MessageBubble: React.FC<{
+  message: ChatMessage;
+  onConfirm: (tool: string, args: any) => void;
+  onReject: () => void;
+  isLoading: boolean;
+}> = ({ message, onConfirm, onReject, isLoading }) => {
   const isUser = message.role === 'user';
+  const pending = message.pendingConfirmation;
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -172,6 +236,40 @@ const MessageBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
         ) : (
           <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
             <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
+        )}
+
+        {/* Pending confirmation block */}
+        {pending && (
+          <div className="mt-2 pt-2 border-t border-border/50">
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-2 space-y-2">
+              <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                ⚠️ Acción pendiente: <code className="font-mono">{pending.tool}</code>
+              </p>
+              <pre className="text-[10px] bg-background/50 rounded p-1.5 overflow-x-auto">
+                {JSON.stringify(pending.args, null, 2)}
+              </pre>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="h-7 text-xs gap-1"
+                  onClick={() => onConfirm(pending.tool, pending.args)}
+                  disabled={isLoading}
+                >
+                  <CheckCircle2 className="h-3 w-3" /> Confirmar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1"
+                  onClick={onReject}
+                  disabled={isLoading}
+                >
+                  <XCircle className="h-3 w-3" /> Cancelar
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
