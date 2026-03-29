@@ -158,12 +158,13 @@ export function useAIUsageByDay(days = 30) {
 
       if (error) throw error;
 
-      const dailyData = new Map<string, { lovable: number; openai: number; cost: number }>();
+      const dailyData = new Map<string, { lovable: number; openai: number; anthropic: number; cost: number }>();
 
       for (const log of data || []) {
         const day = log.created_at.split('T')[0];
-        const entry = dailyData.get(day) || { lovable: 0, openai: 0, cost: 0 };
+        const entry = dailyData.get(day) || { lovable: 0, openai: 0, anthropic: 0, cost: 0 };
         if (log.provider === 'lovable') entry.lovable += log.tokens_total || 0;
+        else if (log.provider === 'anthropic') entry.anthropic += log.tokens_total || 0;
         else entry.openai += log.tokens_total || 0;
         entry.cost += Number(log.estimated_cost_usd) || 0;
         dailyData.set(day, entry);
