@@ -1,164 +1,102 @@
 
 
-## Plan: Sistema de Agentes IA en Admin
+## Analisis profundo y mejoras del sistema de Agentes IA
 
-### Concepto
+### Problemas detectados
 
-Un sistema de agentes IA configurables desde el panel de administracion, con tres capas:
+#### 1. Sin streaming — UX pobre
+El chat espera la respuesta completa (incluyendo tool calls iterativos) antes de mostrar nada. En llamadas con tools, el usuario puede esperar 10-20 segundos sin feedback.
 
-1. **Panel de gestion de agentes** (nueva seccion en Admin)
-2. **Widget flotante de chat** (disponible en todo el Admin)
-3. **Ejecucion automatica backend** (cron jobs para agentes autonomos)
+#### 2. Historial de conversaciones no visible
+Las conversaciones se guardan en DB pero no hay UI para verlas, retomarlas ni gestionarlas. Cada vez que cierras el widget se pierde el contexto visual.
 
-### Arquitectura
+#### 3. Tool calling simulado, no nativo
+El tool calling usa un hack: inyecta resultados como mensajes `user` en lugar de usar el formato nativo de Claude (`tool_use`/`tool_result`). Esto confunde al modelo y reduce la calidad.
 
-```text
-┌──────────────────────────────────────┐
-│         ADMIN UI                     │
-│  ┌──────────┐  ┌──────────────────┐  │
-│  │ Agents   │  │ Floating Widget  │  │
-│  │ Manager  │  │ (chat con agente)│  │
-│  └──────────┘  └──────────────────┘  │
-└───────────┬──────────────┬───────────┘
-            │              │
-     ┌──────▼──────────────▼──────┐
-     │   Edge Function: ai-agent  │
-     │  (routing + tool calling)  │
-     └────────────┬───────────────┘
-                  │
-     ┌────────────▼───────────────┐
-     │   ai-helper.ts (Claude)    │
-     │   + Tool definitions       │
-     │   + DB access (Supabase)   │
-     └────────────────────────────┘
-```
+#### 4. Sin confirmacion para acciones destructivas
+`update_lead_status` se ejecuta directamente sin pedir confirmacion al usuario, a pesar de que la descripcion dice "requiere confirmacion".
 
-### Fase 1 — Infraestructura (esta implementacion)
+#### 5. Solo 6 tools — faltan operaciones clave
+No hay tools para: crear leads, enviar emails (Resend), consultar pipeline, obtener detalle de un lead/valoracion individual, o buscar en blog.
 
-#### 1. Tabla `ai_agents` (migracion)
+#### 6. Sin memoria a largo plazo
+Cada conversacion crece indefinidamente en JSONB. No hay resumen ni truncamiento, lo que causara errores de context window y costes elevados.
 
-```sql
-create table public.ai_agents (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  description text,
-  system_prompt text not null,
-  model text default 'claude-sonnet-4-20250514',
-  temperature numeric default 0.3,
-  tools text[] default '{}',  -- nombres de tools habilitadas
-  is_active boolean default true,
-  agent_type text check (agent_type in ('conversational', 'automated', 'hybrid')) default 'conversational',
-  schedule text,  -- cron expression para agentes automaticos (null = solo manual)
-  max_tokens integer default 4096,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  created_by uuid references auth.users(id)
-);
+#### 7. Widget no persiste entre navegaciones
+El estado del widget (mensajes, agente seleccionado) se pierde al navegar entre paginas del admin.
 
-alter table public.ai_agents enable row level security;
-create policy "Admins manage agents" on public.ai_agents
-  for all to authenticated
-  using (public.has_role(auth.uid(), 'admin'))
-  with check (public.has_role(auth.uid(), 'admin'));
-```
+#### 8. Sin metricas de agentes
+No hay dashboard de uso por agente: cuantas conversaciones, tokens consumidos, herramientas mas usadas.
 
-#### 2. Tabla `ai_agent_conversations` (historial)
+---
 
-```sql
-create table public.ai_agent_conversations (
-  id uuid primary key default gen_random_uuid(),
-  agent_id uuid references public.ai_agents(id) on delete cascade,
-  user_id uuid references auth.users(id),
-  messages jsonb not null default '[]',
-  summary text,
-  status text default 'active',
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
+### Plan de mejoras (priorizado)
 
-alter table public.ai_agent_conversations enable row level security;
-create policy "Users manage own conversations" on public.ai_agent_conversations
-  for all to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
-```
+#### Fase A — Mejoras criticas (esta implementacion)
 
-#### 3. Edge Function `ai-agent` (nueva)
+**1. Streaming SSE en el chat**
+- Modificar `ai-agent/index.ts` para devolver un stream SSE cuando no hay tool calls
+- Actualizar `useAgentChat.ts` con parsing SSE token-by-token
+- Mostrar respuesta progresiva en el widget
 
-Funcion central que:
-- Recibe `agent_id` + `message` + `conversation_id` opcional
-- Carga la config del agente desde DB
-- Ejecuta `callAI()` con el system prompt y tools del agente
-- Tools disponibles (tool calling de Claude):
-  - `query_leads`: consultar leads con filtros
-  - `query_valuations`: consultar valoraciones
-  - `query_contacts`: buscar contactos
-  - `send_email`: enviar email via Resend
-  - `generate_content`: generar contenido (blog, email)
-  - `update_lead_status`: cambiar estado de lead
-  - `get_dashboard_stats`: obtener metricas del dashboard
-- Guarda la conversacion en `ai_agent_conversations`
-- Streaming de respuesta via SSE
+**2. Tool calling nativo de Claude**
+- En `ai-helper.ts`, cuando el provider es Anthropic, usar el formato nativo `tool_use`/`tool_result` en lugar de inyectar como mensajes user
+- Esto mejora significativamente la calidad de las respuestas con tools
 
-#### 4. Panel Admin — Gestion de Agentes
+**3. Confirmacion para tools de escritura**
+- El agente debe devolver una accion pendiente cuando llame a `update_lead_status`
+- El widget muestra un boton "Confirmar / Cancelar" antes de ejecutar
+- Nueva tool `send_email` con el mismo patron de confirmacion
 
-**Ruta**: `/admin/ai-agents`
+**4. Persistencia del widget entre navegaciones**
+- Mover el estado del chat (mensajes, agente, conversationId) a un Context Provider en AdminLayout
+- El widget mantiene la conversacion al navegar
 
-**Componentes**:
-- `AIAgentsManager.tsx`: Lista de agentes con CRUD
-  - Crear/editar agente: nombre, prompt, modelo, tools habilitadas, tipo, schedule
-  - Toggle activo/inactivo
-  - Ver historial de conversaciones
-- `AgentEditor.tsx`: Formulario completo de configuracion
-  - Editor de system prompt con preview
-  - Selector de tools (checkboxes)
-  - Selector de modelo (Claude, Gemini, OpenAI)
-  - Config de temperatura y tokens
-  - Para agentes automaticos: selector de cron schedule
+**5. Gestion de historial de conversaciones**
+- Anadir panel lateral en el widget con lista de conversaciones previas
+- Boton "Nueva conversacion" y opcion de retomar una anterior
+- Endpoint para listar conversaciones del usuario
 
-**Agentes preconfigurados** (seed data):
-1. **Asistente de Ventas**: Analiza leads, sugiere acciones, prepara argumentarios
-2. **Analista de Datos**: Consulta metricas, genera insights, crea reportes
-3. **Content Manager**: Genera posts, emails, propuestas
-4. **Lead Qualifier**: Evalua y puntua leads automaticamente
+**6. Nuevas tools**
+- `get_lead_detail`: Obtener toda la info de un lead por ID
+- `search_pipeline`: Consultar leads por columna del pipeline
+- `send_email`: Enviar email via Resend (con confirmacion)
+- `create_lead_note`: Anadir nota a un lead
+- `query_blog_posts`: Buscar posts del blog
 
-#### 5. Widget flotante de chat
+**7. Truncamiento de contexto**
+- Cuando la conversacion supere 20 mensajes, resumir los primeros 15 con una llamada AI y mantener solo el resumen + ultimos 5 mensajes
+- Guardar el resumen en el campo `summary` de `ai_agent_conversations`
 
-- `AdminAIChatWidget.tsx`: Boton flotante (esquina inferior derecha)
-- Selector de agente activo
-- Chat con streaming (SSE)
-- Muestra tool calls ejecutados (transparencia)
-- Historial de conversaciones persistente
-- Visible en todas las paginas del admin
+#### Fase B — Mejoras de valor (siguiente iteracion)
 
-#### 6. Sidebar — Nueva seccion
+**8. Metricas por agente**
+- Dashboard en `/admin/ai-agents` con: conversaciones totales, tokens consumidos, tools mas usadas, coste estimado por agente
+- Datos desde `ai_usage_logs` filtrando por `function_name = 'ai-agent:NombreAgente'`
 
-Anadir en `sidebar-config.ts` seccion "IA & Agentes" con:
-- Agentes IA → `/admin/ai-agents`
-- AI Content Studio (existente)
-- AI Usage (existente)
+**9. Templates de prompts**
+- Biblioteca de system prompts predefinidos que el admin puede clonar y personalizar
+- Prompts optimizados para cada caso de uso (ventas, soporte, analisis)
 
-### Archivos nuevos
-- `supabase/functions/ai-agent/index.ts` — Edge Function principal
-- `supabase/functions/_shared/agent-tools.ts` — Definiciones de tools
-- `src/components/admin/agents/AIAgentsManager.tsx` — Panel de gestion
-- `src/components/admin/agents/AgentEditor.tsx` — Editor de agente
-- `src/components/admin/agents/AgentChatWidget.tsx` — Widget flotante
-- `src/components/admin/agents/AgentToolsSelector.tsx` — Selector de tools
-- `src/hooks/useAIAgents.ts` — Hook CRUD de agentes
-- `src/hooks/useAgentChat.ts` — Hook de chat con streaming
+**10. Agentes automaticos funcionales**
+- Implementar ejecucion via cron (pg_cron o scheduled Edge Function)
+- El agente automatico recibe un prompt trigger y ejecuta sus tools
+- Resultados enviados por email o guardados en una tabla de reportes
 
-### Archivos modificados
-- `src/features/admin/config/sidebar-config.ts` — Nueva seccion
-- `src/pages/admin/` — Nueva ruta para agentes
+### Archivos afectados (Fase A)
 
-### Fases futuras (no incluidas ahora)
-- Fase 2: Ejecucion automatica con pg_cron para agentes scheduled
-- Fase 3: MCP tools para conectar con servicios externos
-- Fase 4: Agentes con memoria a largo plazo (RAG)
+| Archivo | Cambio |
+|---|---|
+| `supabase/functions/ai-agent/index.ts` | Streaming SSE + confirmacion de tools |
+| `supabase/functions/_shared/agent-tools.ts` | 5 nuevas tools + flag `requiresConfirmation` |
+| `supabase/functions/_shared/ai-helper.ts` | Tool calling nativo Anthropic |
+| `src/hooks/useAgentChat.ts` | Parsing SSE + persistencia conversaciones |
+| `src/components/admin/agents/AgentChatWidget.tsx` | Streaming UI + historial + confirmacion |
+| `src/components/admin/agents/AgentToolsSelector.tsx` | Nuevas tools en el selector |
+| `src/contexts/AgentChatContext.tsx` | Nuevo context para persistencia entre paginas |
+| `src/features/admin/components/AdminLayout.tsx` | Wrap con AgentChatContext |
+| Migracion SQL | Indice en `ai_agent_conversations(user_id)` |
 
-### Nota de seguridad
-- Auth obligatoria (JWT + admin check) en la Edge Function
-- RLS en ambas tablas
-- Tools restringidas a operaciones de lectura inicialmente, con acciones de escritura requiriendo confirmacion
+### Resultado esperado
+Un sistema de agentes con respuestas en tiempo real (streaming), herramientas potentes con confirmacion de seguridad, historial persistente, y contexto que no se pierde al navegar.
 
