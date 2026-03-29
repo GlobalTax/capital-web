@@ -176,6 +176,7 @@ const AdminRouter = () => {
           <Route path="/content-calendar" element={<LazyContentCalendarPage />} />
           <Route path="/content-performance" element={<LazyContentPerformancePage />} />
           <Route path="/content-studio" element={<LazyContentStudioPage />} />
+          <Route path="/ai-agents" element={<LazyAIAgentsPage />} />
           <Route path="/lead-magnets" element={<LazyLeadMagnetsPage />} />
           <Route path="/blog-v2" element={<LazyModernBlogManager />} />
           <Route path="/blog/new" element={<LazyBlogEditorPage />} />
