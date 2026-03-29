@@ -10,6 +10,7 @@ import { CommandPalette } from '@/components/admin/CommandPalette';
 import { KeyboardShortcutsHelp } from '@/components/admin/KeyboardShortcutsHelp';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { AgentChatWidget } from '@/components/admin/agents/AgentChatWidget';
+import { AgentChatProvider } from '@/contexts/AgentChatContext';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -106,36 +107,32 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
 
   return (
     <AdminErrorBoundary>
-      {showEmergencyNav && (
-        <EmergencyNavigation 
-          onForceNavigate={handleForceNavigate} 
-          onDismiss={() => setShowEmergencyNav(false)}
-        />
-      )}
-      <SidebarProvider defaultOpen={true}>
-        <div className="h-screen h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))] overflow-hidden">
-          <AdminSidebar />
-          
-          <SidebarInset className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            {/* Unified Linear Header - 48px */}
-            <LinearAdminHeader onLogout={onLogout} />
+      <AgentChatProvider>
+        {showEmergencyNav && (
+          <EmergencyNavigation 
+            onForceNavigate={handleForceNavigate} 
+            onDismiss={() => setShowEmergencyNav(false)}
+          />
+        )}
+        <SidebarProvider defaultOpen={true}>
+          <div className="h-screen h-[100dvh] flex w-full bg-[hsl(var(--linear-bg))] overflow-hidden">
+            <AdminSidebar />
             
-            {/* Command Palette - Global Search (Cmd+K) */}
-            <CommandPalette />
-            
-            {/* Keyboard Shortcuts Help Dialog */}
-            <KeyboardShortcutsHelp />
+            <SidebarInset className="flex-1 flex flex-col min-w-0 overflow-hidden">
+              <LinearAdminHeader onLogout={onLogout} />
+              <CommandPalette />
+              <KeyboardShortcutsHelp />
 
-            {/* Main content area - SCROLLABLE container */}
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-              <div className="min-h-full w-full max-w-full p-2 sm:p-3 md:p-4">
-                {children}
+              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+                <div className="min-h-full w-full max-w-full p-2 sm:p-3 md:p-4">
+                  {children}
+                </div>
               </div>
-            </div>
-          </SidebarInset>
-        </div>
-        <AgentChatWidget />
-      </SidebarProvider>
+            </SidebarInset>
+          </div>
+          <AgentChatWidget />
+        </SidebarProvider>
+      </AgentChatProvider>
     </AdminErrorBoundary>
   );
 };

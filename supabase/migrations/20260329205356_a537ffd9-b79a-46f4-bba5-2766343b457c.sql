@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS idx_ai_agent_conversations_user_id ON public.ai_agent_conversations(user_id);
+CREATE INDEX IF NOT EXISTS idx_ai_agent_conversations_agent_user ON public.ai_agent_conversations(agent_id, user_id);

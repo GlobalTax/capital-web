@@ -1,51 +1,19 @@
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Database, Search, BarChart3, Mail, FileText, RefreshCw } from 'lucide-react';
+import { Database, Search, BarChart3, Mail, FileText, RefreshCw, Eye, Columns, StickyNote, BookOpen } from 'lucide-react';
 
 const TOOLS = [
-  {
-    name: 'query_leads',
-    label: 'Consultar Leads',
-    description: 'Buscar y filtrar leads del sistema',
-    icon: Search,
-    category: 'lectura',
-  },
-  {
-    name: 'query_valuations',
-    label: 'Consultar Valoraciones',
-    description: 'Acceder a datos de valoraciones de empresas',
-    icon: Database,
-    category: 'lectura',
-  },
-  {
-    name: 'query_contacts',
-    label: 'Consultar Contactos',
-    description: 'Buscar contactos en el CRM',
-    icon: Search,
-    category: 'lectura',
-  },
-  {
-    name: 'get_dashboard_stats',
-    label: 'Métricas Dashboard',
-    description: 'Obtener estadísticas y KPIs del sistema',
-    icon: BarChart3,
-    category: 'lectura',
-  },
-  {
-    name: 'generate_content',
-    label: 'Generar Contenido',
-    description: 'Crear emails, blogs, propuestas',
-    icon: FileText,
-    category: 'accion',
-  },
-  {
-    name: 'update_lead_status',
-    label: 'Actualizar Estado Lead',
-    description: 'Cambiar el estado de un lead (requiere confirmación)',
-    icon: RefreshCw,
-    category: 'escritura',
-  },
+  { name: 'query_leads', label: 'Consultar Leads', description: 'Buscar y filtrar leads del sistema', icon: Search, category: 'lectura' },
+  { name: 'query_valuations', label: 'Consultar Valoraciones', description: 'Acceder a datos de valoraciones de empresas', icon: Database, category: 'lectura' },
+  { name: 'query_contacts', label: 'Consultar Contactos', description: 'Buscar contactos en el CRM', icon: Search, category: 'lectura' },
+  { name: 'get_dashboard_stats', label: 'Métricas Dashboard', description: 'Obtener estadísticas y KPIs del sistema', icon: BarChart3, category: 'lectura' },
+  { name: 'get_lead_detail', label: 'Detalle de Lead', description: 'Obtener toda la info de un lead por ID', icon: Eye, category: 'lectura' },
+  { name: 'search_pipeline', label: 'Pipeline de Leads', description: 'Ver leads agrupados por estado (Kanban)', icon: Columns, category: 'lectura' },
+  { name: 'query_blog_posts', label: 'Consultar Blog', description: 'Buscar posts del blog por título, categoría o tags', icon: BookOpen, category: 'lectura' },
+  { name: 'generate_content', label: 'Generar Contenido', description: 'Crear emails, blogs, propuestas', icon: FileText, category: 'accion' },
+  { name: 'create_lead_note', label: 'Añadir Nota a Lead', description: 'Agregar notas internas a un lead', icon: StickyNote, category: 'accion' },
+  { name: 'update_lead_status', label: 'Actualizar Estado Lead', description: 'Cambiar el estado de un lead (requiere confirmación)', icon: RefreshCw, category: 'escritura' },
+  { name: 'send_email', label: 'Enviar Email', description: 'Enviar email via Resend (requiere confirmación)', icon: Mail, category: 'escritura' },
 ];
 
 interface AgentToolsSelectorProps {

@@ -1,6 +1,7 @@
 /**
  * Agent Tools — Definitions and execution for AI Agent tool calling
  * Tools allow agents to query data, update records, and perform actions
+ * v2: Added requiresConfirmation flag, 5 new tools, native Claude format support
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
@@ -9,6 +10,7 @@ export interface AgentToolDefinition {
   name: string;
   description: string;
   parameters: Record<string, unknown>;
+  requiresConfirmation?: boolean;
 }
 
 // ─── Tool Definitions (Claude-compatible) ─────────────────────────
@@ -79,7 +81,8 @@ export const AVAILABLE_TOOLS: Record<string, AgentToolDefinition> = {
   },
   update_lead_status: {
     name: 'update_lead_status',
-    description: 'Update the status of a lead. Requires confirmation from the user before executing.',
+    description: 'Update the status of a lead. This action requires user confirmation before executing.',
+    requiresConfirmation: true,
     parameters: {
       type: 'object',
       properties: {
@@ -87,6 +90,69 @@ export const AVAILABLE_TOOLS: Record<string, AgentToolDefinition> = {
         new_status: { type: 'string', description: 'New status value' },
       },
       required: ['lead_id', 'new_status'],
+    },
+  },
+  get_lead_detail: {
+    name: 'get_lead_detail',
+    description: 'Get full details of a specific lead by ID, including all fields, tags, and enrichment data.',
+    parameters: {
+      type: 'object',
+      properties: {
+        lead_id: { type: 'string', description: 'UUID of the lead' },
+      },
+      required: ['lead_id'],
+    },
+  },
+  search_pipeline: {
+    name: 'search_pipeline',
+    description: 'Query leads by pipeline stage/status, grouped by their current status for a Kanban-like view.',
+    parameters: {
+      type: 'object',
+      properties: {
+        statuses: { type: 'array', items: { type: 'string' }, description: 'List of statuses to include (e.g. ["new","contacted","qualified"])' },
+        limit_per_status: { type: 'number', description: 'Max leads per status group (default 5)' },
+      },
+      required: [],
+    },
+  },
+  send_email: {
+    name: 'send_email',
+    description: 'Send an email via Resend to a specified recipient. Requires user confirmation before sending.',
+    requiresConfirmation: true,
+    parameters: {
+      type: 'object',
+      properties: {
+        to: { type: 'string', description: 'Recipient email address' },
+        subject: { type: 'string', description: 'Email subject line' },
+        body: { type: 'string', description: 'Email body in HTML or plain text' },
+      },
+      required: ['to', 'subject', 'body'],
+    },
+  },
+  create_lead_note: {
+    name: 'create_lead_note',
+    description: 'Add a note or comment to a lead record for internal tracking.',
+    parameters: {
+      type: 'object',
+      properties: {
+        lead_id: { type: 'string', description: 'UUID of the lead' },
+        note: { type: 'string', description: 'Note content to add' },
+      },
+      required: ['lead_id', 'note'],
+    },
+  },
+  query_blog_posts: {
+    name: 'query_blog_posts',
+    description: 'Search and list blog posts. Can filter by category, tags, or search by title/content.',
+    parameters: {
+      type: 'object',
+      properties: {
+        search: { type: 'string', description: 'Search by title or content' },
+        category: { type: 'string', description: 'Filter by category' },
+        is_published: { type: 'boolean', description: 'Filter by publish status (default true)' },
+        limit: { type: 'number', description: 'Max results (default 10)' },
+      },
+      required: [],
     },
   },
 };
@@ -112,6 +178,16 @@ export async function executeTool(
         return JSON.stringify({ note: 'Content generation is handled by the agent itself based on the context provided.', context: args.context, type: args.type });
       case 'update_lead_status':
         return await executeUpdateLeadStatus(args, adminClient);
+      case 'get_lead_detail':
+        return await executeGetLeadDetail(args, adminClient);
+      case 'search_pipeline':
+        return await executeSearchPipeline(args, adminClient);
+      case 'send_email':
+        return await executeSendEmail(args);
+      case 'create_lead_note':
+        return await executeCreateLeadNote(args, adminClient);
+      case 'query_blog_posts':
+        return await executeQueryBlogPosts(args, adminClient);
       default:
         return JSON.stringify({ error: `Unknown tool: ${toolName}` });
     }
@@ -210,7 +286,113 @@ async function executeUpdateLeadStatus(args: Record<string, unknown>, client: Re
   return JSON.stringify({ success: true, updated_lead: data });
 }
 
-// ─── Helper: Get tool definitions for Claude format ─────────────
+async function executeGetLeadDetail(args: Record<string, unknown>, client: ReturnType<typeof createClient>): Promise<string> {
+  const { lead_id } = args as { lead_id: string };
+
+  const { data, error } = await client
+    .from('acquisition_leads')
+    .select('*')
+    .eq('id', lead_id)
+    .single();
+
+  if (error) return JSON.stringify({ error: error.message });
+  // Remove very large fields to save context
+  if (data) {
+    delete (data as any).apollo_org_data;
+    delete (data as any).apollo_people_data;
+    delete (data as any).apollo_candidates;
+    delete (data as any).company_enriched_data;
+  }
+  return JSON.stringify({ lead: data });
+}
+
+async function executeSearchPipeline(args: Record<string, unknown>, client: ReturnType<typeof createClient>): Promise<string> {
+  const statuses = (args.statuses as string[]) || ['new', 'contacted', 'qualified', 'converted'];
+  const limitPerStatus = (args.limit_per_status as number) || 5;
+
+  const results: Record<string, any[]> = {};
+  
+  await Promise.all(statuses.map(async (status) => {
+    const { data } = await client
+      .from('acquisition_leads')
+      .select('id, full_name, company, email, status, created_at')
+      .eq('status', status)
+      .eq('is_deleted', false)
+      .order('created_at', { ascending: false })
+      .limit(limitPerStatus);
+    results[status] = data || [];
+  }));
+
+  return JSON.stringify({ pipeline: results, statuses });
+}
+
+async function executeSendEmail(args: Record<string, unknown>): Promise<string> {
+  const { to, subject, body } = args as { to: string; subject: string; body: string };
+  const resendKey = Deno.env.get('RESEND_API_KEY');
+  if (!resendKey) return JSON.stringify({ error: 'RESEND_API_KEY not configured' });
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: 'Capittal <no-reply@capittal.es>',
+      to: [to],
+      subject,
+      html: body,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    return JSON.stringify({ error: `Email send failed: ${err}` });
+  }
+
+  const data = await response.json();
+  return JSON.stringify({ success: true, email_id: data.id });
+}
+
+async function executeCreateLeadNote(args: Record<string, unknown>, client: ReturnType<typeof createClient>): Promise<string> {
+  const { lead_id, note } = args as { lead_id: string; note: string };
+
+  // Append note to additional_details field
+  const { data: lead } = await client
+    .from('acquisition_leads')
+    .select('additional_details')
+    .eq('id', lead_id)
+    .single();
+
+  const existingNotes = lead?.additional_details || '';
+  const timestamp = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const updatedNotes = existingNotes
+    ? `${existingNotes}\n\n[${timestamp}] ${note}`
+    : `[${timestamp}] ${note}`;
+
+  const { error } = await client
+    .from('acquisition_leads')
+    .update({ additional_details: updatedNotes, updated_at: new Date().toISOString() })
+    .eq('id', lead_id);
+
+  if (error) return JSON.stringify({ error: error.message });
+  return JSON.stringify({ success: true, lead_id, note_added: note });
+}
+
+async function executeQueryBlogPosts(args: Record<string, unknown>, client: ReturnType<typeof createClient>): Promise<string> {
+  let query = client
+    .from('blog_posts')
+    .select('id, title, slug, category, tags, is_published, published_at, reading_time, excerpt')
+    .order('published_at', { ascending: false })
+    .limit((args.limit as number) || 10);
+
+  if (args.search) query = query.or(`title.ilike.%${args.search}%,excerpt.ilike.%${args.search}%`);
+  if (args.category) query = query.eq('category', args.category as string);
+  if (args.is_published !== undefined) query = query.eq('is_published', args.is_published as boolean);
+
+  const { data, error } = await query;
+  if (error) return JSON.stringify({ error: error.message });
+  return JSON.stringify({ posts: data, count: data?.length || 0 });
+}
+
+// ─── Helper: Get tool definitions for Claude native format ──────
 
 export function getToolDefinitionsForAgent(enabledTools: string[]) {
   return enabledTools
@@ -223,4 +405,10 @@ export function getToolDefinitionsForAgent(enabledTools: string[]) {
         parameters: AVAILABLE_TOOLS[name].parameters,
       },
     }));
+}
+
+// ─── Helper: Check if tool requires confirmation ─────────────────
+
+export function toolRequiresConfirmation(toolName: string): boolean {
+  return AVAILABLE_TOOLS[toolName]?.requiresConfirmation === true;
 }
