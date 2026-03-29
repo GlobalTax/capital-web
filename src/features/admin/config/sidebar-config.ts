@@ -39,7 +39,8 @@ import {
   PanelLeft,
   Landmark,
   RefreshCw,
-  Calendar
+  Calendar,
+  Bot
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
