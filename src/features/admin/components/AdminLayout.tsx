@@ -10,6 +10,7 @@ import { CommandPalette } from '@/components/admin/CommandPalette';
 import { KeyboardShortcutsHelp } from '@/components/admin/KeyboardShortcutsHelp';
 import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { AgentChatWidget } from '@/components/admin/agents/AgentChatWidget';
+import { AgentChatProvider } from '@/contexts/AgentChatContext';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
