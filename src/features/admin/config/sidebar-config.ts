@@ -128,6 +128,26 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "🤖 IA & AGENTES",
+    description: "Inteligencia artificial",
+    items: [
+      { 
+        title: "Agentes IA", 
+        url: "/admin/ai-agents", 
+        icon: Bot,
+        badge: "AI",
+        description: "Gestión de agentes inteligentes"
+      },
+      { 
+        title: "Content Studio", 
+        url: "/admin/content-studio", 
+        icon: Sparkles, 
+        badge: "AI",
+        description: "Creación de contenido con IA"
+      },
+    ]
+  },
+  {
     title: "✨ CREAR CONTENIDO",
     description: "Herramientas de creación",
     items: [
