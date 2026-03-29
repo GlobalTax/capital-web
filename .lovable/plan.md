@@ -1,80 +1,48 @@
 
 
-## Plan: Añadir control de acceso (JWT + admin) a 11 Edge Functions
+## Plan: Integrar Claude como IA principal con Lovable AI como fallback
 
-### Problema
-11 Edge Functions están expuestas sin verificación de identidad. Cualquier persona con la URL puede invocarlas, accediendo a operaciones admin (envío de emails, enriquecimiento de datos, sincronización con Brevo, actualizaciones masivas).
+### Situación actual
+- `ai-helper.ts` usa **Lovable AI (Gemini)** por defecto y **OpenAI** como fallback
+- No existe `ANTHROPIC_API_KEY` en los secrets del proyecto
+- Claude está referenciado en config frontend pero nunca se invoca realmente
 
-### Patrón a aplicar
-Seguir el patrón ya implementado en `corporate-buyers-import`: two-client pattern con JWT validation + admin role check.
+### Cambios
 
-```text
-1. Verificar header Authorization (Bearer token)
-2. Crear userClient con anon key + auth header
-3. getClaims(token) para validar JWT
-4. Usar adminClient (service_role) para verificar rol en admin_users
-5. Solo entonces ejecutar la lógica
-```
+#### 1. Añadir secret `ANTHROPIC_API_KEY`
+Solicitar al usuario su API key de Anthropic para almacenarla como secret de Supabase.
 
-### Cambios por función
+#### 2. Actualizar `supabase/functions/_shared/ai-helper.ts`
 
-| Función | Severidad | Cambio |
-|---|---|---|
-| **corporate-buyers-import** | Critical | Ya tiene auth. Revisar que el check de super_admin para modo `replace` sea correcto |
-| **sf-batch-enrich-funds** | High | Añadir auth JWT + admin check antes de línea 280 |
-| **send-followup-email** | High | Añadir auth JWT + admin check al inicio del handler |
-| **bulk-update-contacts** | High | Añadir auth JWT + admin check antes de línea 36 |
-| **sf-ai-matching** | High | Añadir auth JWT + admin check antes de línea 13 |
-| **sync-company-to-brevo** | High | Añadir auth JWT + admin check al inicio del handler |
-| **brevo-list-contacts** | High | Añadir auth JWT + admin check al inicio del handler |
-| **leads-company-enrich** | High | Añadir auth JWT + admin check antes de línea 52 |
-| **send-precall-email** | High | Añadir auth JWT + admin check al inicio del handler |
-| **update-valuation** | Medium | Ya intenta leer JWT pero no lo requiere; hacerlo obligatorio para campos sensibles |
-| **send-admin-notifications** | Medium | Añadir auth JWT + admin check al inicio del handler |
+**Nuevo orden de prioridad:**
+1. **Claude (Anthropic)** — modelo principal
+2. **Lovable AI (Gemini)** — fallback gratuito
+3. **OpenAI** — fallback secundario
 
-### Implementación (código reutilizable)
+**Cambios específicos:**
+- Añadir constante `ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages'`
+- Añadir `DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4-20250514'`
+- Crear función `callAnthropic()` que adapta el formato de mensajes al API de Anthropic (que usa `system` separado del array de `messages` y tiene formato de respuesta diferente)
+- Actualizar tipos: añadir `'anthropic'` al tipo `provider`
+- Actualizar `callAI()`: intentar Anthropic primero → si falla, Lovable AI → si falla, OpenAI
+- Actualizar cálculo de costes en `logUsage()` para Claude
+- Añadir opción `config.preferAnthropic` (true por defecto si hay key)
 
-Crear un helper compartido en `supabase/functions/_shared/auth-guard.ts`:
+**Detalle técnico — API de Anthropic:**
+La API de Anthropic difiere de OpenAI: el system prompt va como parámetro `system` (no en el array messages), y la respuesta usa `content[0].text` en vez de `choices[0].message.content`. La función `callAnthropic` se encargará de esta adaptación.
 
-```typescript
-export async function validateAdminRequest(req: Request, corsHeaders: Record<string, string>) {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return { error: new Response(JSON.stringify({ error: 'Unauthorized' }), 
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
-  }
+#### 3. Actualizar `src/config/aiModels.ts`
+- Actualizar modelo Claude al más reciente (claude-sonnet-4)
+- Marcarlo como modelo principal en `getOptimalModel()`
 
-  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, 
-    { global: { headers: { Authorization: authHeader } } });
-  
-  const token = authHeader.replace('Bearer ', '');
-  const { data, error } = await userClient.auth.getClaims(token);
-  if (error || !data?.claims) {
-    return { error: new Response(JSON.stringify({ error: 'Invalid token' }), 
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
-  }
-
-  const userId = data.claims.sub;
-  const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  const { data: admin } = await adminClient.from('admin_users')
-    .select('role').eq('user_id', userId).eq('is_active', true).maybeSingle();
-  
-  if (!admin) {
-    return { error: new Response(JSON.stringify({ error: 'Forbidden' }), 
-      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
-  }
-
-  return { userId, role: admin.role, adminClient };
-}
-```
-
-### Caso especial: `update-valuation`
-Esta función se usa tanto desde el formulario público (sin auth) como desde admin. Se añadirá auth obligatoria solo para campos sensibles (user_id, source_project), manteniendo el acceso público para campos del formulario de valoración.
+#### 4. Actualizar `src/types/aiContent.ts`
+- Ya incluye `'anthropic'` como provider — sin cambios necesarios
 
 ### Archivos afectados
-- `supabase/functions/_shared/auth-guard.ts` — Nuevo helper compartido
-- 10 archivos `index.ts` de las funciones listadas arriba
+- `supabase/functions/_shared/ai-helper.ts` — Añadir provider Anthropic + nuevo orden de fallback
+- `src/config/aiModels.ts` — Actualizar modelo Claude y prioridades
+- Secret: `ANTHROPIC_API_KEY` — Nuevo
 
 ### Resultado
-Todas las funciones admin requerirán un JWT válido de un usuario con rol activo en `admin_users`, eliminando los 11 hallazgos de seguridad.
+Claude será el modelo principal para todas las funciones de IA. Si Claude falla o no está disponible, se usará Lovable AI (Gemini) automáticamente, y OpenAI como último recurso.
 
