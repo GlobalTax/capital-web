@@ -3,14 +3,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
-import { Brain, Sparkles, Zap, Clock, DollarSign, AlertTriangle } from 'lucide-react';
+import { Brain, Sparkles, Zap, Clock, DollarSign, Bot } from 'lucide-react';
 import {
   useAIUsageSummary, useAIUsageByDay, useAIUsageByFunction, useAIUsageLogs,
 } from '@/hooks/useAIUsage';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+function getProviderInfo(provider: string) {
+  switch (provider) {
+    case 'anthropic':
+      return { icon: Bot, color: 'text-orange-500', label: 'Claude' };
+    case 'lovable':
+      return { icon: Sparkles, color: 'text-violet-500', label: 'Lovable AI' };
+    case 'openai':
+    default:
+      return { icon: Brain, color: 'text-emerald-500', label: 'OpenAI' };
+  }
+}
 
 export function AIUsageDashboard() {
   const { data: summary, isLoading: summaryLoading } = useAIUsageSummary();
@@ -78,18 +90,19 @@ export function AIUsageDashboard() {
             <CardDescription>Proveedores</CardDescription>
           </CardHeader>
           <CardContent className="space-y-1">
-            {summary?.map((s) => (
-              <div key={s.provider} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-1.5">
-                  {s.provider === 'lovable' 
-                    ? <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-                    : <Brain className="h-3.5 w-3.5 text-emerald-500" />
-                  }
-                  {s.provider}
-                </span>
-                <span className="font-medium">{s.total_calls}</span>
-              </div>
-            ))}
+            {summary?.map((s) => {
+              const info = getProviderInfo(s.provider);
+              const Icon = info.icon;
+              return (
+                <div key={s.provider} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-1.5">
+                    <Icon className={`h-3.5 w-3.5 ${info.color}`} />
+                    {info.label}
+                  </span>
+                  <span className="font-medium">{s.total_calls}</span>
+                </div>
+              );
+            })}
             {(!summary || summary.length === 0) && (
               <p className="text-xs text-muted-foreground">Sin datos aún</p>
             )}
@@ -124,10 +137,11 @@ export function AIUsageDashboard() {
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }}
                       formatter={(value: number, name: string) => [
                         value > 1000 ? `${(value/1000).toFixed(1)}K tokens` : `${value} tokens`,
-                        name === 'lovable' ? 'Lovable AI' : 'OpenAI'
+                        name === 'lovable' ? 'Lovable AI' : name === 'anthropic' ? 'Claude' : 'OpenAI'
                       ]}
                     />
                     <Legend />
+                    <Bar dataKey="anthropic" name="Claude" fill="#F97316" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="lovable" name="Lovable AI" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="openai" name="OpenAI" fill="#10B981" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -191,29 +205,33 @@ export function AIUsageDashboard() {
                 <p className="text-muted-foreground">Cargando...</p>
               ) : recentLogs && recentLogs.length > 0 ? (
                 <div className="space-y-1.5 max-h-96 overflow-y-auto">
-                  {recentLogs.slice(0, 50).map((log) => (
-                    <div key={log.id} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/50 text-sm">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {log.provider === 'lovable'
-                          ? <Sparkles className="h-3.5 w-3.5 text-violet-500 shrink-0" />
-                          : <Brain className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                        }
-                        <span className="font-mono text-xs truncate">{log.function_name}</span>
-                        {log.status !== 'success' && (
-                          <Badge variant="destructive" className="text-[10px] px-1 py-0">
-                            {log.status}
+                  {recentLogs.slice(0, 50).map((log) => {
+                    const info = getProviderInfo(log.provider);
+                    const Icon = info.icon;
+                    return (
+                      <div key={log.id} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/50 text-sm">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <Icon className={`h-3.5 w-3.5 ${info.color} shrink-0`} />
+                          <span className="font-mono text-xs truncate">{log.function_name}</span>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">
+                            {log.model}
                           </Badge>
-                        )}
+                          {log.status !== 'success' && (
+                            <Badge variant="destructive" className="text-[10px] px-1 py-0">
+                              {log.status}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-xs text-muted-foreground">{log.tokens_total} tok</span>
+                          <span className="text-xs text-muted-foreground">{log.duration_ms}ms</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: es })}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-xs text-muted-foreground">{log.tokens_total} tok</span>
-                        <span className="text-xs text-muted-foreground">{log.duration_ms}ms</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: es })}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-muted-foreground">No hay logs recientes</p>

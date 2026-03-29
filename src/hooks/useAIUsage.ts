@@ -174,6 +174,7 @@ export function useAIUsageByDay(days = 30) {
         date,
         lovable: d.lovable,
         openai: d.openai,
+        anthropic: d.anthropic,
         cost: Math.round(d.cost * 10000) / 10000,
       }));
     },
