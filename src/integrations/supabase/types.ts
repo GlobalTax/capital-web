@@ -1391,6 +1391,98 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_agent_conversations: {
+        Row: {
+          agent_id: string | null
+          created_at: string | null
+          id: string
+          messages: Json
+          status: string | null
+          summary: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string | null
+          id?: string
+          messages?: Json
+          status?: string | null
+          summary?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string | null
+          id?: string
+          messages?: Json
+          status?: string | null
+          summary?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_conversations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agents: {
+        Row: {
+          agent_type: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_tokens: number | null
+          model: string | null
+          name: string
+          schedule: string | null
+          system_prompt: string
+          temperature: number | null
+          tools: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          name: string
+          schedule?: string | null
+          system_prompt: string
+          temperature?: number | null
+          tools?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_tokens?: number | null
+          model?: string | null
+          name?: string
+          schedule?: string | null
+          system_prompt?: string
+          temperature?: number | null
+          tools?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ai_feedback: {
         Row: {
           action: string
