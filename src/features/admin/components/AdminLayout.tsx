@@ -134,6 +134,7 @@ const AdminLayout = ({ children, onLogout }: AdminLayoutProps) => {
             </div>
           </SidebarInset>
         </div>
+        <AgentChatWidget />
       </SidebarProvider>
     </AdminErrorBoundary>
   );
