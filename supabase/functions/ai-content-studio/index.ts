@@ -38,7 +38,6 @@ serve(async (req) => {
       ],
       {
         functionName: 'ai-content-studio',
-        preferOpenAI: true,
         temperature: options.temperature || modelConfig.temperature,
         maxTokens: options.maxTokens || modelConfig.maxTokens,
       }

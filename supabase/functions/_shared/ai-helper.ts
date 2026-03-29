@@ -355,20 +355,7 @@ export async function callAI(messages: AIMessage[], config?: AIConfig): Promise<
 
   let response: AIResponse;
 
-  // Strategy 1: preferOpenAI for precision JSON tasks (legacy support)
-  if (config?.preferOpenAI && openaiKey) {
-    try {
-      console.log('[AI Helper] Using OpenAI (precision mode)');
-      response = await callOpenAI(messages, config);
-      logUsage(response, config);
-      return response;
-    } catch (error) {
-      console.warn('[AI Helper] OpenAI failed, falling back:', error);
-      await logUsage({ content: '', tokensUsed: 0, provider: 'openai', model: config?.model || DEFAULT_OPENAI_MODEL, durationMs: 0 }, config, 'error', String(error));
-    }
-  }
-
-  // Default strategy: Claude → Lovable AI → OpenAI
+  // Default strategy: Claude → Lovable AI → OpenAI (preferOpenAI is now ignored, Claude always first)
   // Step 1: Try Anthropic Claude (primary)
   if (anthropicKey) {
     try {
