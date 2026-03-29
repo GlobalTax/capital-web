@@ -109,6 +109,7 @@ const LazyNewsArticlesManager = React.lazy(() => import('@/components/admin/news
 const LazyMNADirectoryPage = React.lazy(() => import('@/pages/admin/MNADirectoryPage'));
 const LazyMNABoutiqueDetailPage = React.lazy(() => import('@/pages/admin/MNABoutiqueDetailPage'));
 const LazyMNAApolloImportPage = React.lazy(() => import('@/pages/admin/MNAApolloImportPage'));
+const LazyAIAgentsPage = React.lazy(() => import('@/pages/admin/AIAgentsPage'));
 
 const LazyCampaignCostsPage = React.lazy(() => import('@/pages/admin/CampaignCostsPage'));
 const LazyEmpresasPage = React.lazy(() => import('@/pages/admin/EmpresasPage'));
