@@ -39,7 +39,8 @@ import {
   PanelLeft,
   Landmark,
   RefreshCw,
-  Calendar
+  Calendar,
+  Bot
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -123,6 +124,26 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/prospectos", 
         icon: Target,
         description: "Leads avanzados con perfil de empresa"
+      },
+    ]
+  },
+  {
+    title: "🤖 IA & AGENTES",
+    description: "Inteligencia artificial",
+    items: [
+      { 
+        title: "Agentes IA", 
+        url: "/admin/ai-agents", 
+        icon: Bot,
+        badge: "AI",
+        description: "Gestión de agentes inteligentes"
+      },
+      { 
+        title: "Content Studio", 
+        url: "/admin/content-studio", 
+        icon: Sparkles, 
+        badge: "AI",
+        description: "Creación de contenido con IA"
       },
     ]
   },
