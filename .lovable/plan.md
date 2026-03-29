@@ -1,21 +1,31 @@
 
 
-## Plan: Corregir ai-content-studio para que use Claude como modelo principal
+## Plan: Mejorar el dashboard de IA para mostrar modelo y soportar Claude
 
-### Diagnóstico
-El test end-to-end confirmó que `ai-content-studio` funciona correctamente (responde 200 con contenido generado), pero el modelo usado fue **gpt-4o-mini** en lugar de Claude.
+### Cambios
 
-**Causa**: En `supabase/functions/ai-content-studio/index.ts` línea 42, la configuración incluye `preferOpenAI: true`, lo que hace que `callAI()` priorice OpenAI antes de intentar Claude (ver `ai-helper.ts` líneas 358-369).
+#### 1. Hook `useAIUsage.ts` — Añadir Anthropic al gráfico diario
 
-### Cambio
+**`useAIUsageByDay`** (línea 161): Añadir campo `anthropic` al mapa de datos diarios, separando los tokens de cada provider (lovable, openai, anthropic).
 
-**Archivo: `supabase/functions/ai-content-studio/index.ts`** (línea 42)
-- Eliminar `preferOpenAI: true` de la configuración de `callAI()`
-- Esto hará que siga el flujo por defecto: **Claude → Lovable AI → OpenAI**
+#### 2. Componente `AIUsageDashboard.tsx` — 3 mejoras
 
-### Alcance adicional
-Buscar si hay otras Edge Functions que también usen `preferOpenAI: true` y corregirlas para que Claude sea el modelo principal en todas.
+**A. Icono y color para Anthropic** (varias líneas):
+- Añadir helper `getProviderIcon(provider)` que devuelva icono y color para cada provider: violet para Lovable, emerald para OpenAI, orange para Anthropic/Claude.
+- Usarlo en la tarjeta de Proveedores (línea 82), y en los logs recientes (línea 197).
 
-### Resultado esperado
-Al repetir el test, el campo `model` en la respuesta debería mostrar `claude-sonnet-4-20250514` en lugar de `gpt-4o-mini`.
+**B. Gráfico diario** (línea 131):
+- Añadir tercera barra `anthropic` con color naranja `#F97316`.
+- Actualizar el formatter del Tooltip para mostrar "Claude" como nombre.
+
+**C. Columna de modelo en logs recientes** (línea 195):
+- Añadir `log.model` visible como Badge junto al provider en cada fila de log.
+- Esto mostrará exactamente qué modelo se usó (claude-sonnet-4, gpt-4o-mini, gemini-2.0-flash, etc.).
+
+### Archivos afectados
+- `src/hooks/useAIUsage.ts` — Añadir `anthropic` al daily breakdown
+- `src/components/admin/AIUsageDashboard.tsx` — Iconos, gráfico y columna de modelo
+
+### Resultado
+El dashboard mostrará claramente qué modelo se usó en cada llamada, con Claude distinguido visualmente con color naranja, y el gráfico diario desglosando los tres providers.
 
