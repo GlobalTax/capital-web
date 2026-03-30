@@ -172,6 +172,16 @@ export default function SFFundDetailPage() {
                   </Badge>
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="files" 
+                  className="h-10 px-0 pb-3 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm gap-1.5"
+                >
+                  <Paperclip className="h-3.5 w-3.5" />
+                  Documentos
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0">
+                    {fundFiles.length}
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger 
                   value="history" 
                   className="h-10 px-0 pb-3 pt-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm gap-1.5"
                 >
