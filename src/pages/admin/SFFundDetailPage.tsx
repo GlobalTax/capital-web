@@ -16,6 +16,8 @@ import { SFFundDetailSidebar } from '@/components/admin/search-funds/SFFundDetai
 import { SFFundDetailHeader } from '@/components/admin/search-funds/SFFundDetailHeader';
 import { SFFundPeoplePanel } from '@/components/admin/search-funds/SFFundPeoplePanel';
 import { SFFundAcquisitionsPanel } from '@/components/admin/search-funds/SFFundAcquisitionsPanel';
+import { SFFundFilesPanel } from '@/components/admin/search-funds/SFFundFilesPanel';
+import { useSFFundFiles } from '@/hooks/useSFFundFiles';
 import { SFFund, SFFundFormData, SFPerson, SFAcquisition } from '@/types/searchFunds';
 import {
   AlertDialog,
