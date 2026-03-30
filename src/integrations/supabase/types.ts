@@ -14698,6 +14698,10 @@ export type Database = {
           rol: string
           tags: string[] | null
           tiene_conflicto: boolean | null
+          validated_at: string | null
+          validated_by: string | null
+          validated_by_name: string | null
+          validation_status: string
         }
         Insert: {
           archived_at?: string | null
@@ -14721,6 +14725,10 @@ export type Database = {
           rol: string
           tags?: string[] | null
           tiene_conflicto?: boolean | null
+          validated_at?: string | null
+          validated_by?: string | null
+          validated_by_name?: string | null
+          validation_status?: string
         }
         Update: {
           archived_at?: string | null
@@ -14744,6 +14752,10 @@ export type Database = {
           rol?: string
           tags?: string[] | null
           tiene_conflicto?: boolean | null
+          validated_at?: string | null
+          validated_by?: string | null
+          validated_by_name?: string | null
+          validation_status?: string
         }
         Relationships: [
           {
