@@ -48,6 +48,9 @@ export default function SFFundDetailPage() {
   const { data: acquisitions = [] } = useSFAcquisitions(isNew ? undefined : id);
   const deleteAcquisition = useDeleteSFAcquisition();
 
+  // Files data
+  const { data: fundFiles = [] } = useSFFundFiles(isNew ? undefined : id);
+
   // Modal states
   const [editingPerson, setEditingPerson] = useState<SFPerson | null | 'new'>(null);
   const [editingAcquisition, setEditingAcquisition] = useState<SFAcquisition | null | 'new'>(null);
