@@ -20723,6 +20723,53 @@ export type Database = {
           },
         ]
       }
+      sf_fund_files: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size_bytes: number | null
+          file_type: string
+          fund_id: string
+          id: string
+          notes: string | null
+          public_url: string
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size_bytes?: number | null
+          file_type: string
+          fund_id: string
+          id?: string
+          notes?: string | null
+          public_url: string
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number | null
+          file_type?: string
+          fund_id?: string
+          id?: string
+          notes?: string | null
+          public_url?: string
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sf_fund_files_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "sf_funds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sf_funds: {
         Row: {
           cities: string[] | null
