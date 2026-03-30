@@ -8747,6 +8747,7 @@ export type Database = {
           is_active: boolean | null
           mime_type: string | null
           name: string
+          sub_type: string
           template_url: string | null
           tipo_operacion: string | null
           updated_at: string | null
@@ -8763,6 +8764,7 @@ export type Database = {
           is_active?: boolean | null
           mime_type?: string | null
           name: string
+          sub_type?: string
           template_url?: string | null
           tipo_operacion?: string | null
           updated_at?: string | null
@@ -8779,6 +8781,7 @@ export type Database = {
           is_active?: boolean | null
           mime_type?: string | null
           name?: string
+          sub_type?: string
           template_url?: string | null
           tipo_operacion?: string | null
           updated_at?: string | null
