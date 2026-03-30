@@ -346,6 +346,15 @@ export default function SFFundDetailPage() {
                 </Card>
               </TabsContent>
 
+              {/* Files Tab */}
+              <TabsContent value="files" className="m-0 p-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <SFFundFilesPanel fundId={id!} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               {/* History Tab */}
               <TabsContent value="history" className="m-0 p-4">
                 <SFFundHistory fundId={id!} />
