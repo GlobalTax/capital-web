@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Loader2, Users, Briefcase, Target, History, FileText } from 'lucide-react';
+import { Loader2, Users, Briefcase, Target, History, FileText, Paperclip } from 'lucide-react';
 import { useSFFund, useCreateSFFund, useUpdateSFFund } from '@/hooks/useSFFunds';
 import { useSFPeople, useDeleteSFPerson } from '@/hooks/useSFPeople';
 import { useSFAcquisitions, useDeleteSFAcquisition } from '@/hooks/useSFAcquisitions';
