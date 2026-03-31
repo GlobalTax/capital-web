@@ -3241,8 +3241,8 @@ function CompanyDrawer({ company, onClose, onEdit }: {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-muted-foreground">CIF:</span> <span className="ml-1">{company.cif || '—'}</span></div>
                 <div><span className="text-muted-foreground">Año datos:</span> <span className="ml-1">{company.anios_datos || '—'}</span></div>
-                <div><span className="text-muted-foreground">Facturación:</span> <span className="ml-1">{company.facturacion ? `€${Number(company.facturacion).toLocaleString('es-ES')}` : '—'}</span></div>
-                <div><span className="text-muted-foreground">EBITDA:</span> <span className="ml-1">{company.ebitda ? `€${Number(company.ebitda).toLocaleString('es-ES')}` : '—'}</span></div>
+                <div><span className="text-muted-foreground">Facturación:</span> <span className="ml-1">{company.facturacion ? `€${Math.round(Number(company.facturacion) * 1000).toLocaleString('es-ES')}` : '—'}</span></div>
+                <div><span className="text-muted-foreground">EBITDA:</span> <span className="ml-1">{company.ebitda ? `€${Math.round(Number(company.ebitda) * 1000).toLocaleString('es-ES')}` : '—'}</span></div>
                 <div><span className="text-muted-foreground">Empleados:</span> <span className="ml-1">{company.num_trabajadores ?? '—'}</span></div>
                 <div><span className="text-muted-foreground">Director Ejecutivo:</span> <span className="ml-1">{company.director_ejecutivo || '—'}</span></div>
                 <div><span className="text-muted-foreground">Contacto:</span> <span className="ml-1">{company.contacto || '—'}</span></div>
