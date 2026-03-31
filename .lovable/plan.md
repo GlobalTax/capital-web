@@ -2,23 +2,18 @@
 
 ## Problem
 
-The `sell_leads` table is missing the `lead_status_crm` column. The recent migration added `acquisition_channel_id`, `lead_received_at`, and `lead_form`, but forgot `lead_status_crm`. Meanwhile, `useInlineUpdate.ts` already declares `hasLeadStatusCrm: true` for `sell_leads`, so the frontend tries to update a column that doesn't exist, causing a database error.
+The numeric filter ranges for `facturacion` and `ebitda` use real euro values (e.g., 5M = 5,000,000), but the raw database values are stored at 1/1000 scale. The display already multiplies by 1,000, but the filter comparison on line 635 does not — so selecting "> 5M€" EBITDA excludes companies that should match.
 
-## Plan
+## Fix
 
-### Step 1 — Database migration
-Add the missing column to `sell_leads`:
+**File: `src/pages/admin/ContactListDetailPage.tsx`**
 
-```sql
-ALTER TABLE public.sell_leads
-  ADD COLUMN IF NOT EXISTS lead_status_crm text;
+In the numeric range filter logic (~line 635), apply the `* 1000` multiplier for `facturacion` and `ebitda` before comparing against ranges:
+
+```typescript
+const raw = Number((c as any)[colKey]) || 0;
+const val = (colKey === 'facturacion' || colKey === 'ebitda') ? raw * 1000 : raw;
 ```
 
-### Step 2 — Update TypeScript types
-Add `lead_status_crm` to the `sell_leads` Row/Insert/Update types in `src/integrations/supabase/types.ts`.
-
-### Step 3 — Also check LeadStatusSelect
-The `LeadStatusSelect` component only handles 3 table names (`contact_leads`, `company_valuations`, `collaborator_applications`). It needs to also route `sell` lead types to `sell_leads`. This will be verified and fixed if needed.
-
-No other code changes are required since `useInlineUpdate.ts` already has the correct capabilities and field mapping for `sell_leads`.
+This is a single-line change in the filtering `useMemo` block. The sort logic (~line 675) should also apply the same multiplier for consistent ordering of these two columns.
 
