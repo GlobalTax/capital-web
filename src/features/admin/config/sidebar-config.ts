@@ -372,7 +372,7 @@ export const sidebarSections: SidebarSection[] = [
         description: "Campañas masivas de valoración por sector"
       },
       { 
-        title: "Listas de Contacto",
+        title: "Listas de Empresas",
         url: "/admin/listas-contacto", 
         icon: ClipboardList,
         description: "Gestiona y depura listas de empresas"
