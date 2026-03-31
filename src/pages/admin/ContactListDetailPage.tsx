@@ -675,6 +675,7 @@ export default function ContactListDetailPage() {
         }
         va = Number(va) || 0;
         vb = Number(vb) || 0;
+        if (sortField === 'facturacion' || sortField === 'ebitda') { va *= 1000; vb *= 1000; }
         return sortDir === 'asc' ? va - vb : vb - va;
       });
     }
