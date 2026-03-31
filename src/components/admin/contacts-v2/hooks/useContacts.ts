@@ -92,10 +92,10 @@ export const useContacts = () => {
           .from('advisor_valuations')
           .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
-        // sell_leads: NO tiene acquisition_channel_id ni lead_form — select simple
+        // sell_leads
         supabase
           .from('sell_leads')
-          .select('*')
+          .select('*, acquisition_channel:acquisition_channel_id(name), lead_form_ref:lead_form(name)')
           .order('created_at', { ascending: false }),
         // general_contact_leads: select simple para evitar joins inexistentes
         supabase
