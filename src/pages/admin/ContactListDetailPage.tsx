@@ -632,7 +632,8 @@ export default function ContactListDetailPage() {
       if (numRanges) {
         // Numeric range filter (predefined + custom)
         result = result.filter(c => {
-          const val = Number((c as any)[colKey]) || 0;
+          const raw = Number((c as any)[colKey]) || 0;
+          const val = (colKey === 'facturacion' || colKey === 'ebitda') ? raw * 1000 : raw;
           const hasData = (c as any)[colKey] != null && (c as any)[colKey] !== '';
           return selectedValues.some(rangeLabel => {
             // Custom range: "custom:min-max"
