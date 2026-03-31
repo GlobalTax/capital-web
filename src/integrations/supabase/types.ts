@@ -6469,6 +6469,53 @@ export type Database = {
           },
         ]
       }
+      corporate_buyer_files: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          file_name: string
+          file_size_bytes: number | null
+          file_type: string
+          id: string
+          notes: string | null
+          public_url: string
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          file_name: string
+          file_size_bytes?: number | null
+          file_type?: string
+          id?: string
+          notes?: string | null
+          public_url: string
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number | null
+          file_type?: string
+          id?: string
+          notes?: string | null
+          public_url?: string
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corporate_buyer_files_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "corporate_buyers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corporate_buyers: {
         Row: {
           buyer_type: string | null
