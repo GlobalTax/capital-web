@@ -7950,6 +7950,7 @@ export type Database = {
           estado: string | null
           id: string
           mandato_id: string
+          month: number | null
           project_name: string | null
           project_number: string | null
           revenue_amount: number | null
@@ -7967,6 +7968,7 @@ export type Database = {
           estado?: string | null
           id?: string
           mandato_id: string
+          month?: number | null
           project_name?: string | null
           project_number?: string | null
           revenue_amount?: number | null
@@ -7984,6 +7986,7 @@ export type Database = {
           estado?: string | null
           id?: string
           mandato_id?: string
+          month?: number | null
           project_name?: string | null
           project_number?: string | null
           revenue_amount?: number | null
@@ -9605,6 +9608,7 @@ export type Database = {
           inventories: number | null
           is_audited: boolean | null
           long_term_debt: number | null
+          month: number | null
           net_debt: number | null
           net_income: number | null
           notes: string | null
@@ -9661,6 +9665,7 @@ export type Database = {
           inventories?: number | null
           is_audited?: boolean | null
           long_term_debt?: number | null
+          month?: number | null
           net_debt?: number | null
           net_income?: number | null
           notes?: string | null
@@ -9717,6 +9722,7 @@ export type Database = {
           inventories?: number | null
           is_audited?: boolean | null
           long_term_debt?: number | null
+          month?: number | null
           net_debt?: number | null
           net_income?: number | null
           notes?: string | null
