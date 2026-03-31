@@ -209,11 +209,11 @@ const tableCapabilities: Record<string, {
   },
   'sell_leads': {
     hasUpdatedAt: true,
-    hasLeadReceivedAt: false,
+    hasLeadReceivedAt: true,
     hasLeadStatusCrm: true,
-    hasAcquisitionChannel: false,
+    hasAcquisitionChannel: true,
     hasLocation: false,
-    hasLeadForm: false,
+    hasLeadForm: true,
   },
   'company_acquisition_inquiries': {
     hasUpdatedAt: true,

@@ -20268,6 +20268,7 @@ export type Database = {
       }
       sell_leads: {
         Row: {
+          acquisition_channel_id: string | null
           company: string
           created_at: string
           ebitda: number | null
@@ -20279,6 +20280,8 @@ export type Database = {
           hubspot_sent_at: string | null
           id: string
           ip_address: unknown
+          lead_form: string | null
+          lead_received_at: string | null
           message: string | null
           page_origin: string | null
           phone: string | null
@@ -20296,6 +20299,7 @@ export type Database = {
           utm_term: string | null
         }
         Insert: {
+          acquisition_channel_id?: string | null
           company: string
           created_at?: string
           ebitda?: number | null
@@ -20307,6 +20311,8 @@ export type Database = {
           hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown
+          lead_form?: string | null
+          lead_received_at?: string | null
           message?: string | null
           page_origin?: string | null
           phone?: string | null
@@ -20324,6 +20330,7 @@ export type Database = {
           utm_term?: string | null
         }
         Update: {
+          acquisition_channel_id?: string | null
           company?: string
           created_at?: string
           ebitda?: number | null
@@ -20335,6 +20342,8 @@ export type Database = {
           hubspot_sent_at?: string | null
           id?: string
           ip_address?: unknown
+          lead_form?: string | null
+          lead_received_at?: string | null
           message?: string | null
           page_origin?: string | null
           phone?: string | null
@@ -20351,7 +20360,22 @@ export type Database = {
           utm_source?: string | null
           utm_term?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sell_leads_acquisition_channel_id_fkey"
+            columns: ["acquisition_channel_id"]
+            isOneToOne: false
+            referencedRelation: "acquisition_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sell_leads_lead_form_fkey"
+            columns: ["lead_form"]
+            isOneToOne: false
+            referencedRelation: "lead_forms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sf_acquisitions: {
         Row: {
