@@ -379,7 +379,7 @@ export default function ContactListsPage() {
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <ClipboardList className="h-6 w-6" />
-            Listas de Contacto
+            Listas de Empresas
           </h1>
           <p className="text-sm text-muted-foreground">
             Gestiona y depura listas de empresas para tus campañas outbound
