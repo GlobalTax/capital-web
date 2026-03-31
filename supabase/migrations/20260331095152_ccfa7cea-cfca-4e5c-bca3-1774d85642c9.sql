@@ -1,0 +1,1 @@
+ALTER TABLE public.sell_leads ADD COLUMN IF NOT EXISTS lead_status_crm text;
