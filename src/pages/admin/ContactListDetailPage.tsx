@@ -136,8 +136,19 @@ function parseSpanishNumber(val: any): number | null {
   if (lastComma > lastDot) {
     // Spanish: 1.234,56 → remove dots, replace comma with dot
     str = str.replace(/\./g, '').replace(',', '.');
+  } else if (lastDot > lastComma) {
+    // Check if the dot is a thousands separator (digits after last dot are exactly 3 and there are multiple dots or no commas)
+    const afterLastDot = str.substring(lastDot + 1);
+    const dotCount = (str.match(/\./g) || []).length;
+    if (afterLastDot.length === 3 && /^\d{3}$/.test(afterLastDot) && (dotCount > 1 || (dotCount === 1 && lastComma === -1 && /^\d{1,3}(\.\d{3})+$/.test(str)))) {
+      // All dots are thousands separators: 4.073.864.894 or 1.000
+      str = str.replace(/\./g, '');
+    } else {
+      // Anglo: 1,234.56 → remove commas
+      str = str.replace(/,/g, '');
+    }
   } else {
-    // Anglo: 1,234.56 → remove commas
+    // No separators or equal position — just remove commas
     str = str.replace(/,/g, '');
   }
 
