@@ -1473,9 +1473,9 @@ export default function ContactListDetailPage() {
         );
       }
       case 'facturacion':
-        return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Math.round(Number(company.facturacion)).toLocaleString('es-ES')}` : '—'}</span>;
+        return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Math.round(Number(company.facturacion) * 1000).toLocaleString('es-ES')}` : '—'}</span>;
       case 'ebitda':
-        return <span className="text-right text-sm tabular-nums">{company.ebitda ? `€${Math.round(Number(company.ebitda)).toLocaleString('es-ES')}` : '—'}</span>;
+        return <span className="text-right text-sm tabular-nums">{company.ebitda ? `€${Math.round(Number(company.ebitda) * 1000).toLocaleString('es-ES')}` : '—'}</span>;
       case 'num_trabajadores':
         return <span className="text-right text-sm tabular-nums">{company.num_trabajadores ?? '—'}</span>;
       case 'consolidador':
