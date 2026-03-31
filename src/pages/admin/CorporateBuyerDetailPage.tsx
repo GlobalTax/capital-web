@@ -706,6 +706,9 @@ const CorporateBuyerDetailPage = () => {
           {/* AI Panel */}
           <CorporateAIPanel buyer={buyer} />
 
+          {/* Files */}
+          {id && <CorporateBuyerFilesPanel buyerId={id} />}
+
           {/* Contacts */}
           <Card>
             <CardHeader>
