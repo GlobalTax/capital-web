@@ -166,6 +166,7 @@ export const AdminSidebar: React.FC = () => {
       'leads-pipeline': 'dashboard',
       'prospectos': 'dashboard',
       'collaborator-testimonials': 'dashboard',
+      'corporate-buyers': 'dashboard',
     };
 
     const permissionKey = routePermissionMap[route];
