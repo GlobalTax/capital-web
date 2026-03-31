@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface LeadStatusSelectProps {
   leadId: string;
-  leadType: 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
+  leadType: 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'sell';
   currentStatus: string;
   onStatusChange?: () => void;
 }
@@ -63,6 +63,11 @@ export function LeadStatusSelect({
       const tableName = 
         leadType === 'contact' ? 'contact_leads' :
         leadType === 'valuation' ? 'company_valuations' :
+        leadType === 'sell' ? 'sell_leads' :
+        leadType === 'general' ? 'general_contact_leads' :
+        leadType === 'acquisition' ? 'acquisition_leads' :
+        leadType === 'company_acquisition' ? 'company_acquisition_inquiries' :
+        leadType === 'advisor' ? 'advisor_valuations' :
         'collaborator_applications';
 
       const updateData: any = { lead_status_crm: newStatus };

@@ -20282,6 +20282,7 @@ export type Database = {
           ip_address: unknown
           lead_form: string | null
           lead_received_at: string | null
+          lead_status_crm: string | null
           message: string | null
           page_origin: string | null
           phone: string | null
@@ -20313,6 +20314,7 @@ export type Database = {
           ip_address?: unknown
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           message?: string | null
           page_origin?: string | null
           phone?: string | null
@@ -20344,6 +20346,7 @@ export type Database = {
           ip_address?: unknown
           lead_form?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           message?: string | null
           page_origin?: string | null
           phone?: string | null
