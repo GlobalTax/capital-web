@@ -61,6 +61,7 @@ import {
 } from '@/hooks/useContactLists';
 import * as XLSX from 'xlsx';
 import { useDropzone } from 'react-dropzone';
+import DeleteCompaniesDialog from '@/components/admin/contact-lists/DeleteCompaniesDialog';
 
 // ===== EXPANDABLE DESCRIPTION COMPONENT =====
 const ExpandableDescription = ({ text, maxLength = 80, highlighted = false }: { text: string; maxLength?: number; highlighted?: boolean }) => {
