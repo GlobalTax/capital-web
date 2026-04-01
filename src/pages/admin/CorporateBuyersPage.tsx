@@ -46,20 +46,14 @@ const CorporateBuyersPage = () => {
   const { data: favoriteIds = new Set(), isLoading: loadingFavorites } = useFavoriteBuyerIds();
   const toggleFavorite = useToggleCorporateFavorite();
 
-  // Filter buyers based on tab + client-side filters
+  // Filter buyers based on tab only - inline table filters handle the rest
   const displayedBuyers = useMemo(() => {
     let result = buyers;
     if (activeTab === 'favorites') {
       result = result.filter(b => favoriteIds.has(b.id));
     }
-    if (filters.hasEmail) {
-      result = result.filter(b => b.website);
-    }
-    if (filters.sector) {
-      result = result.filter(b => b.sector_focus?.includes(filters.sector!));
-    }
     return result;
-  }, [buyers, favoriteIds, activeTab, filters.hasEmail, filters.sector]);
+  }, [buyers, favoriteIds, activeTab]);
 
   // Extract unique sectors from buyers
   const sectors = useMemo(() => {
@@ -228,13 +222,7 @@ const CorporateBuyersPage = () => {
       {/* KPIs */}
       <CorporateKPIs buyers={buyers} favoritesCount={favoriteIds.size} />
 
-      {/* Filters */}
-      <CorporateFiltersBar
-        filters={filters}
-        onFiltersChange={setFilters}
-        countries={countries}
-        sectors={sectors}
-      />
+      {/* Filters are now inline in the table header */}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
