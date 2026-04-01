@@ -446,11 +446,29 @@ export default function EmpresasPage() {
             </CardContent>
           </Card>
 
+          {/* Selection toolbar */}
+          {selectedContactIds.size > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+              <span className="text-sm font-medium">
+                {selectedContactIds.size} contacto(s) seleccionado(s)
+              </span>
+              <Button size="sm" onClick={() => setIsAddToListOpen(true)}>
+                <ListPlus className="h-4 w-4 mr-2" />
+                Añadir a lista
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedContactIds(new Set())}>
+                Deseleccionar
+              </Button>
+            </div>
+          )}
+
           {/* Contacts table */}
           <ContactosDirectoryTable
             contactos={contactos}
             isLoading={isLoadingContactos}
             emptyMessage={searchQuery ? 'No se encontraron contactos con esa búsqueda' : 'No hay contactos en el directorio'}
+            selectedIds={selectedContactIds}
+            onSelectionChange={setSelectedContactIds}
           />
 
           {/* Pagination */}
