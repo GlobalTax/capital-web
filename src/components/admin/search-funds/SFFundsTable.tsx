@@ -79,6 +79,15 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, sh
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30 border-b border-border/50 hover:bg-muted/30">
+            {selectable && (
+              <TableHead className="w-10 h-10">
+                <Checkbox
+                  checked={funds.length > 0 && selectedIds?.size === funds.length}
+                  onCheckedChange={toggleAll}
+                  aria-label="Seleccionar todos"
+                />
+              </TableHead>
+            )}
             {showFavoriteColumn && (
               <TableHead className="w-10 h-10"></TableHead>
             )}
@@ -103,7 +112,7 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, sh
         <TableBody>
           {funds.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={showFavoriteColumn ? 7 : 6} className="text-center py-12 text-muted-foreground">
+              <TableCell colSpan={(selectable ? 1 : 0) + (showFavoriteColumn ? 7 : 6)} className="text-center py-12 text-muted-foreground">
                 No se encontraron Search Funds
               </TableCell>
             </TableRow>
