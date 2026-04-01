@@ -24,6 +24,9 @@ export interface DirectorioContacto {
 
 interface UseDirectorioContactosParams {
   search?: string;
+  cargo?: string;
+  source?: string;
+  hasEmail?: boolean;
   page: number;
   pageSize: number;
 }
