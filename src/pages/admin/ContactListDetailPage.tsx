@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useListColumnPreferences } from '@/hooks/useListColumnPreferences';
 import { ListColumnConfigurator } from '@/components/admin/contact-lists/ListColumnConfigurator';
