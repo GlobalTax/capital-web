@@ -2089,11 +2089,9 @@ export default function ContactListDetailPage() {
                 <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                   <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
                 </Button>
-                {!isMadreList && (
-                  <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
                     <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
-                  </Button>
-                )}
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
               </div>
             </div>
