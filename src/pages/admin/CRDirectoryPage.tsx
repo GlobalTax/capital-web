@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Users, Building2, Upload, Star, ListPlus, X, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useCRPeopleWithFunds } from '@/hooks/useCRPeople';
 import { useCRFunds } from '@/hooks/useCRFunds';
 import { useFavoriteFunds, useFavoritePeople } from '@/hooks/useCRFavorites';
