@@ -3100,6 +3100,15 @@ export default function ContactListDetailPage() {
         listId={listId!}
         listName={list?.name || ''}
       />
+
+      {/* Delete Companies Dialog */}
+      <DeleteCompaniesDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        count={deleteTargetIds.length}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
