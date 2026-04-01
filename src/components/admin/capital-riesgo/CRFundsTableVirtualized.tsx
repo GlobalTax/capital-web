@@ -90,6 +90,11 @@ const TableHeader = React.memo<{
         transform: `translateX(-${scrollLeft}px)` 
       }}
     >
+      {selectable && (
+        <div className="flex items-center justify-center h-8" style={{ flex: '0 0 36px', minWidth: 36 }}>
+          <Checkbox checked={allSelected} onCheckedChange={onToggleAll} aria-label="Seleccionar todos" />
+        </div>
+      )}
       {showFavorites && (
         <div 
           className="flex items-center h-8" 
