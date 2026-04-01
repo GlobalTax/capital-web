@@ -55,7 +55,7 @@ export default function EmpresasPage() {
   const [directoryTab, setDirectoryTab] = useState<'empresas' | 'contactos'>('empresas');
   
   // Empresas state
-  const [activeTab, setActiveTab] = useState('favorites');
+  const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sectorFilter, setSectorFilter] = useState<string>('all');
   const [targetFilter, setTargetFilter] = useState<string>('all');
