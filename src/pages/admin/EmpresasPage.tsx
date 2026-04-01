@@ -331,6 +331,23 @@ export default function EmpresasPage() {
             </CardContent>
           </Card>
 
+          {/* Selection toolbar for empresas */}
+          {selectedEmpresaIds.size > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+              <span className="text-sm font-medium">
+                {selectedEmpresaIds.size} empresa(s) seleccionada(s)
+              </span>
+              <Button size="sm" onClick={() => setIsAddEmpresasToListOpen(true)}>
+                <ListPlus className="h-4 w-4 mr-2" />
+                Añadir a lista
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedEmpresaIds(new Set())}>
+                <X className="h-4 w-4 mr-1" />
+                Deseleccionar
+              </Button>
+            </div>
+          )}
+
           {/* Sub-Tabs */}
           <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setCurrentPage(0); }} className="w-full">
             <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
@@ -370,6 +387,8 @@ export default function EmpresasPage() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 height={600}
+                selectedIds={selectedEmpresaIds}
+                onSelectionChange={setSelectedEmpresaIds}
               />
             </TabsContent>
 
@@ -384,6 +403,8 @@ export default function EmpresasPage() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 height={600}
+                selectedIds={selectedEmpresaIds}
+                onSelectionChange={setSelectedEmpresaIds}
               />
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 px-2">
@@ -416,6 +437,8 @@ export default function EmpresasPage() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 height={600}
+                selectedIds={selectedEmpresaIds}
+                onSelectionChange={setSelectedEmpresaIds}
               />
             </TabsContent>
 
@@ -428,6 +451,8 @@ export default function EmpresasPage() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 height={600}
+                selectedIds={selectedEmpresaIds}
+                onSelectionChange={setSelectedEmpresaIds}
               />
             </TabsContent>
           </Tabs>
