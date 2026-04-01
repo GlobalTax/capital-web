@@ -574,7 +574,10 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   onEdit,
   onDelete,
   height = 500,
+  selectedIds,
+  onSelectionChange,
 }) => {
+  const selectable = !!onSelectionChange;
   const navigate = useNavigate();
   const { visibleColumns, isLoading: isLoadingColumns } = useEmpresasTableColumns();
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
