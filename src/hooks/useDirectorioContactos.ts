@@ -35,10 +35,10 @@ export const useDirectorioContactos = (
   params: UseDirectorioContactosParams,
   enabled = true
 ) => {
-  const { search, page, pageSize } = params;
+  const { search, cargo, source, hasEmail, page, pageSize } = params;
 
   const contactosQuery = useQuery({
-    queryKey: ['directorio-contactos', search, page, pageSize],
+    queryKey: ['directorio-contactos', search, cargo, source, hasEmail, page, pageSize],
     queryFn: async () => {
       // Build query with empresa join
       let query = (supabase as any)
