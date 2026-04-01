@@ -36,6 +36,9 @@ export const CRDirectoryPage: React.FC = () => {
   // People filters state
   const [peopleSearch, setPeopleSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<CRPersonRole | 'all'>('all');
+  const [peopleFundFilter, setPeopleFundFilter] = useState<string>('all');
+  const [peopleCountryFilter, setPeopleCountryFilter] = useState<string>('all');
+  const [peopleHasEmail, setPeopleHasEmail] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
   const [showAddToList, setShowAddToList] = useState(false);
