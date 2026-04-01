@@ -129,7 +129,7 @@ export const CorporateBuyersTable = memo(({
 
   const Row = useMemo(() => 
     memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
-      const buyer = buyers[index];
+      const buyer = filteredBuyers[index];
       const isFavorite = favoriteIds.has(buyer.id);
       const isSelected = selectedIds.has(buyer.id);
 
