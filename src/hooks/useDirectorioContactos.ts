@@ -57,6 +57,21 @@ export const useDirectorioContactos = (
         );
       }
 
+      // Cargo filter
+      if (cargo) {
+        query = query.ilike('cargo', `%${cargo}%`);
+      }
+
+      // Source filter
+      if (source) {
+        query = query.eq('source', source);
+      }
+
+      // Has email filter
+      if (hasEmail) {
+        query = query.not('email', 'is', null);
+      }
+
       // Pagination
       const from = page * pageSize;
       const to = from + pageSize - 1;
