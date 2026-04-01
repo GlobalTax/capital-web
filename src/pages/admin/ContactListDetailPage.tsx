@@ -1454,7 +1454,7 @@ export default function ContactListDetailPage() {
       case 'linkedin':
         return <InlineTextCell companyId={company.id} field="linkedin" initialValue={company.linkedin} placeholder="Añadir LinkedIn..." onSaved={handleFieldSaved} linkType="url" />;
       case 'director_ejecutivo':
-        return <span className="text-sm text-muted-foreground">{company.director_ejecutivo || '—'}</span>;
+        return <InlineTextCell companyId={company.id} field="director_ejecutivo" initialValue={company.director_ejecutivo} placeholder="Añadir director..." onSaved={handleFieldSaved} />;
       case 'web':
         return company.web ? (
           <a href={company.web.startsWith('http') ? company.web : `https://${company.web}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="hover:text-primary flex items-center gap-1 transition-colors text-sm text-muted-foreground">
