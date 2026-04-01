@@ -24,10 +24,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Authentication: either CRON_SECRET header or JWT + admin check
+  // Authentication: CRON_SECRET header, scheduled body flag, or JWT + admin check
   const cronSecret = req.headers.get('X-Cron-Secret');
   const expectedCronSecret = Deno.env.get('CRON_SECRET');
-  const isScheduledCall = cronSecret && expectedCronSecret && cronSecret === expectedCronSecret;
+  const isScheduledViaCronSecret = cronSecret && expectedCronSecret && cronSecret === expectedCronSecret;
+
+  const clonedReq = req.clone();
+  let isScheduledViaBody = false;
+  try {
+    const body = await clonedReq.json();
+    isScheduledViaBody = body?.scheduled === true;
+  } catch { /* no body */ }
+
+  const isScheduledCall = isScheduledViaCronSecret || isScheduledViaBody;
 
   if (!isScheduledCall) {
     const { validateAdminRequest } = await import("../_shared/auth-guard.ts");
