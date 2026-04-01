@@ -42,6 +42,7 @@ export const CRDirectoryPage: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
   const [showAddToList, setShowAddToList] = useState(false);
+  const [showAddPeopleToList, setShowAddPeopleToList] = useState(false);
   // Sorting state for funds
   const [sortBy, setSortBy] = useState<'name' | 'people_count' | 'aum' | 'portfolio_count'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -264,7 +265,7 @@ export const CRDirectoryPage: React.FC = () => {
           </TabsList>
         </div>
 
-        {/* Selection toolbar */}
+        {/* Selection toolbar - funds */}
         {selectedFundIds.size > 0 && (
           <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
             <span className="text-sm font-medium">{selectedFundIds.size} fondo(s) seleccionado(s)</span>
@@ -273,6 +274,21 @@ export const CRDirectoryPage: React.FC = () => {
               Añadir a lista
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setSelectedFundIds(new Set())}>
+              <X className="h-4 w-4 mr-1" />
+              Deseleccionar
+            </Button>
+          </div>
+        )}
+
+        {/* Selection toolbar - people */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
+            <span className="text-sm font-medium">{selectedIds.size} persona(s) seleccionada(s)</span>
+            <Button size="sm" variant="outline" onClick={() => setShowAddPeopleToList(true)}>
+              <ListPlus className="h-4 w-4 mr-1" />
+              Añadir a lista
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
               <X className="h-4 w-4 mr-1" />
               Deseleccionar
             </Button>
@@ -409,7 +425,7 @@ export const CRDirectoryPage: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Add to list dialog */}
+      {/* Add funds to list dialog */}
       <AddItemsToListDialog
         open={showAddToList}
         onOpenChange={setShowAddToList}
@@ -428,6 +444,29 @@ export const CRDirectoryPage: React.FC = () => {
             }));
         })()}
         onSuccess={() => setSelectedFundIds(new Set())}
+      />
+
+      {/* Add people to list dialog */}
+      <AddItemsToListDialog
+        open={showAddPeopleToList}
+        onOpenChange={setShowAddPeopleToList}
+        itemLabel="persona"
+        items={(() => {
+          const allPeople = [...(people || []), ...(favoritePeople || [])];
+          const uniquePeople = allPeople.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
+          return uniquePeople
+            .filter(p => selectedIds.has(p.id))
+            .map(p => ({
+              empresa: p.fund?.name || '',
+              contacto: p.full_name || '',
+              email: p.email || '',
+              notas: [
+                p.role ? `Rol: ${CR_PERSON_ROLE_LABELS[p.role as keyof typeof CR_PERSON_ROLE_LABELS] || p.role}` : null,
+                p.location || p.fund?.country_base ? `Ubicación: ${p.location || p.fund?.country_base}` : null,
+              ].filter(Boolean).join(' | '),
+            }));
+        })()}
+        onSuccess={() => setSelectedIds(new Set())}
       />
     </div>
   );
