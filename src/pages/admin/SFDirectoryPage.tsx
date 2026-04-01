@@ -24,6 +24,8 @@ export const SFDirectoryPage: React.FC = () => {
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [entityTypeFilter, setEntityTypeFilter] = useState<SFEntityType | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
+  const [showAddToList, setShowAddToList] = useState(false);
 
   // People query
   const { data: people, isLoading: loadingPeople } = useSFPeopleWithFunds({
