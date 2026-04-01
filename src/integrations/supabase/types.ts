@@ -25564,6 +25564,24 @@ export type Database = {
           website_url: string
         }[]
       }
+      swap_fase_orden: {
+        Args: {
+          p_id_a: string
+          p_id_b: string
+          p_orden_a: number
+          p_orden_b: number
+        }
+        Returns: undefined
+      }
+      swap_template_orden: {
+        Args: {
+          p_id_a: string
+          p_id_b: string
+          p_orden_a: number
+          p_orden_b: number
+        }
+        Returns: undefined
+      }
       sync_campaign_totals: {
         Args: { p_campaign_id: string }
         Returns: undefined
