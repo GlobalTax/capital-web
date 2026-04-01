@@ -356,6 +356,7 @@ const ESTADO_CONFIG: Record<string, { label: string; className: string }> = {
 export default function ContactListDetailPage() {
   const { id: listId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { role } = useAdminAuth();
   const queryClient = useQueryClient();
 
   const { data: list, isLoading: isLoadingList } = useQuery({
