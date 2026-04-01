@@ -14,6 +14,9 @@ export interface DirectorioContacto {
   cargo: string | null;
   empresa_principal_id: string | null;
   empresa_nombre: string | null;
+  empresa_cif: string | null;
+  empresa_facturacion: number | null;
+  empresa_ebitda: number | null;
   linkedin: string | null;
   source: string | null;
   created_at: string | null;
