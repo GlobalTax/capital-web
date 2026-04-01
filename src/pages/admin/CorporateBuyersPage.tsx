@@ -46,14 +46,14 @@ const CorporateBuyersPage = () => {
   const { data: favoriteIds = new Set(), isLoading: loadingFavorites } = useFavoriteBuyerIds();
   const toggleFavorite = useToggleCorporateFavorite();
 
-  // Filter buyers based on tab + hasEmail
+  // Filter buyers based on tab + client-side filters
   const displayedBuyers = useMemo(() => {
     let result = buyers;
     if (activeTab === 'favorites') {
       result = result.filter(b => favoriteIds.has(b.id));
     }
     if (filters.hasEmail) {
-      result = result.filter(b => b.contact_email);
+      result = result.filter(b => b.website);
     }
     if (filters.sector) {
       result = result.filter(b => b.sector_focus?.includes(filters.sector!));
