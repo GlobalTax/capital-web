@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Users, Building2, Upload, Star } from 'lucide-react';
+import { Plus, Users, Building2, Upload, Star, ListPlus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCRPeopleWithFunds } from '@/hooks/useCRPeople';
@@ -16,6 +16,7 @@ import { CRPersonRole, CR_PERSON_ROLE_LABELS } from '@/types/capitalRiesgo';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { AddItemsToListDialog, ListItemRow } from '@/components/admin/shared/AddItemsToListDialog';
 
 export const CRDirectoryPage: React.FC = () => {
   const navigate = useNavigate();
