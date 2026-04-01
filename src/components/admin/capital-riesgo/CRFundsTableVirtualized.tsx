@@ -164,6 +164,8 @@ interface ItemData {
   onUpdateFundType: (fundId: string, newType: string) => Promise<void>;
   onUpdateStatus: (fundId: string, newStatus: string) => Promise<void>;
   onDelete: (fundId: string) => void;
+  selectedIds?: Set<string>;
+  onToggleSelection?: (id: string) => void;
 }
 
 // Virtualized row wrapper
