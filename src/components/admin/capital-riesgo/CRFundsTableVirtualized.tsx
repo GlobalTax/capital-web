@@ -264,6 +264,23 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
     deleteMutation.mutate(fundId);
   }, [deleteMutation]);
 
+  const toggleAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    if (selectedIds?.size === funds.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(funds.map(f => f.id)));
+    }
+  }, [funds, selectedIds, onSelectionChange]);
+
+  const toggleOne = useCallback((id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  }, [selectedIds, onSelectionChange]);
+
   // Memoized item data
   const itemData = useMemo<ItemData>(() => ({
     funds,
@@ -273,7 +290,9 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
     onUpdateFundType: handleUpdateFundType,
     onUpdateStatus: handleUpdateStatus,
     onDelete: handleDelete,
-  }), [funds, showFavorites, handleUpdateFundType, handleUpdateStatus, handleDelete]);
+    selectedIds,
+    onToggleSelection: selectable ? toggleOne : undefined,
+  }), [funds, showFavorites, handleUpdateFundType, handleUpdateStatus, handleDelete, selectedIds, selectable, toggleOne]);
 
   // Loading skeleton
   if (isLoading) {
