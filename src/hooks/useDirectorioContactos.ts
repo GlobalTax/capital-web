@@ -24,6 +24,9 @@ export interface DirectorioContacto {
 
 interface UseDirectorioContactosParams {
   search?: string;
+  cargo?: string;
+  source?: string;
+  hasEmail?: boolean;
   page: number;
   pageSize: number;
 }
@@ -32,10 +35,10 @@ export const useDirectorioContactos = (
   params: UseDirectorioContactosParams,
   enabled = true
 ) => {
-  const { search, page, pageSize } = params;
+  const { search, cargo, source, hasEmail, page, pageSize } = params;
 
   const contactosQuery = useQuery({
-    queryKey: ['directorio-contactos', search, page, pageSize],
+    queryKey: ['directorio-contactos', search, cargo, source, hasEmail, page, pageSize],
     queryFn: async () => {
       // Build query with empresa join
       let query = (supabase as any)
@@ -52,6 +55,21 @@ export const useDirectorioContactos = (
         query = query.or(
           `nombre.ilike.${s},apellidos.ilike.${s},email.ilike.${s},telefono.ilike.${s},cargo.ilike.${s}`
         );
+      }
+
+      // Cargo filter
+      if (cargo) {
+        query = query.ilike('cargo', `%${cargo}%`);
+      }
+
+      // Source filter
+      if (source) {
+        query = query.eq('source', source);
+      }
+
+      // Has email filter
+      if (hasEmail) {
+        query = query.not('email', 'is', null);
       }
 
       // Pagination
