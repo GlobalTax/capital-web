@@ -71,6 +71,9 @@ export default function EmpresasPage() {
 
   // Contactos state
   const [contactosPage, setContactosPage] = useState(0);
+  const [contactosCargoFilter, setContactosCargoFilter] = useState('');
+  const [contactosSourceFilter, setContactosSourceFilter] = useState<string>('all');
+  const [contactosHasEmail, setContactosHasEmail] = useState(false);
   const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set());
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
 
