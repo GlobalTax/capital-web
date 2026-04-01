@@ -2587,18 +2587,20 @@ export default function ContactListDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-destructive/50">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-3">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <h3 className="font-medium text-destructive">Zona peligrosa</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">Eliminar esta lista y todas las empresas asociadas. Esta acción no se puede deshacer.</p>
-              <Button variant="destructive" onClick={handleDeleteList}>
-                <Trash2 className="h-4 w-4 mr-2" /> Eliminar lista
-              </Button>
-            </CardContent>
-          </Card>
+          {role === 'super_admin' && (
+            <Card className="border-destructive/50">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  <h3 className="font-medium text-destructive">Zona peligrosa</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Eliminar esta lista y todas las empresas asociadas. Esta acción no se puede deshacer.</p>
+                <Button variant="destructive" onClick={handleDeleteList}>
+                  <Trash2 className="h-4 w-4 mr-2" /> Eliminar lista
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 
