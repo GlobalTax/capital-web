@@ -390,7 +390,7 @@ const renderCellContent = (
 
 // ========== ROW COMPONENT ==========
 const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData>) => {
-  const { empresas, onEdit, onDelete, onNavigate, visibleColumns, columnWidths } = data;
+  const { empresas, onEdit, onDelete, onNavigate, visibleColumns, columnWidths, selectedIds, onToggleSelection } = data;
   const empresa = empresas[index];
 
   return (
@@ -402,6 +402,15 @@ const EmpresaRow = memo(({ index, style, data }: ListChildComponentProps<RowData
       )}
       onClick={() => onNavigate(empresa.id)}
     >
+      {onToggleSelection && (
+        <div className="flex items-center justify-center flex-shrink-0" style={{ width: 40, minWidth: 40 }} onClick={(e) => e.stopPropagation()}>
+          <Checkbox
+            checked={selectedIds?.has(empresa.id) || false}
+            onCheckedChange={() => onToggleSelection(empresa.id)}
+            aria-label={`Seleccionar ${empresa.nombre}`}
+          />
+        </div>
+      )}
       {visibleColumns.map((column) => (
         <div
           key={column.column_key}
