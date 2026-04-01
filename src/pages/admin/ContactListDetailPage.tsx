@@ -61,6 +61,7 @@ import {
 } from '@/hooks/useContactLists';
 import * as XLSX from 'xlsx';
 import { useDropzone } from 'react-dropzone';
+import DeleteCompaniesDialog from '@/components/admin/contact-lists/DeleteCompaniesDialog';
 
 // ===== EXPANDABLE DESCRIPTION COMPONENT =====
 const ExpandableDescription = ({ text, maxLength = 80, highlighted = false }: { text: string; maxLength?: number; highlighted?: boolean }) => {
@@ -417,6 +418,11 @@ export default function ContactListDetailPage() {
   const [bulkMoveCopySectorFilter, setBulkMoveCopySectorFilter] = useState('');
   const [bulkMoveCopySectorSearch, setBulkMoveCopySectorSearch] = useState('');
   const [bulkMoveCopySectorPopoverOpen, setBulkMoveCopySectorPopoverOpen] = useState(false);
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTargetIds, setDeleteTargetIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -828,14 +834,21 @@ export default function ContactListDetailPage() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const handleDeleteSelected = async () => {
-    if (isMadreList) {
-      toast.warning('No se pueden eliminar empresas de una lista madre. Puedes copiarlas a un sublistado.');
-      return;
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+    setDeleteTargetIds(selectedIds);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteCompanies.mutateAsync(deleteTargetIds);
+      setSelectedIds(prev => prev.filter(id => !deleteTargetIds.includes(id)));
+    } finally {
+      setIsDeleting(false);
+      setDeleteTargetIds([]);
     }
-    if (!confirm(`¿Eliminar ${selectedIds.length} empresas de esta lista?`)) return;
-    await deleteCompanies.mutateAsync(selectedIds);
-    setSelectedIds([]);
   };
 
   const handleAddManual = async () => {
@@ -2076,11 +2089,9 @@ export default function ContactListDetailPage() {
                 <Button variant="outline" size="sm" onClick={() => { setBulkMoveCopyMode('move'); setBulkMoveCopyOpen(true); setBulkMoveCopyTargetId(''); setBulkIsCreatingNewList(false); setBulkNewListName(''); setBulkMoveCopySectorFilter(list?.lista_madre_id || ''); }}>
                   <MoveRight className="h-4 w-4 mr-1" /> Mover a lista
                 </Button>
-                {!isMadreList && (
-                  <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
+                <Button variant="destructive" size="sm" onClick={handleDeleteSelected}>
                     <Trash2 className="h-4 w-4 mr-1" /> Eliminar seleccionadas
-                  </Button>
-                )}
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>Cancelar</Button>
               </div>
             </div>
@@ -2352,14 +2363,12 @@ export default function ContactListDetailPage() {
                                         <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
                                       )}
                                     </DropdownMenuItem>
-                                    {!isMadreList && (
-                                      <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive"
-                                        onClick={() => deleteCompany.mutate(company.id)}
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                                      </DropdownMenuItem>
-                                    )}
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => { setDeleteTargetIds([company.id]); setDeleteDialogOpen(true); }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                                    </DropdownMenuItem>
                                   </>
                                 )}
                               </DropdownMenuContent>
@@ -3088,6 +3097,15 @@ export default function ContactListDetailPage() {
         companies={selectedIds.length > 0 ? companies.filter(c => selectedIds.includes(c.id)) : companies}
         listId={listId!}
         listName={list?.name || ''}
+      />
+
+      {/* Delete Companies Dialog */}
+      <DeleteCompaniesDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        count={deleteTargetIds.length}
+        onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
       />
     </div>
   );

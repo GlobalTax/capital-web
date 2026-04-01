@@ -190,7 +190,7 @@ export const useContactLists = () => {
       if (createErr || !newList) throw createErr || new Error('Error al duplicar');
 
       const companies = await fetchAllRows((from, to) =>
-        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).range(from, to)
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).is('deleted_at', null).range(from, to)
       );
       if (companies.length > 0) {
         const copies = (companies as any[]).map(({ id: _, list_id, created_at, ...rest }) => ({ ...rest, list_id: (newList as any).id }));
@@ -219,7 +219,7 @@ export const useContactListCompanies = (listId: string | undefined, madreListId?
     enabled: !!listId,
     queryFn: async () => {
       const data = await fetchAllRows<ContactListCompany>((from, to) =>
-        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).order('created_at', { ascending: false }).order('id').range(from, to)
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', listId!).is('deleted_at', null).order('created_at', { ascending: false }).order('id').range(from, to)
       );
       return data;
     },
@@ -318,19 +318,19 @@ export const useContactListCompanies = (listId: string | undefined, madreListId?
 
   const deleteCompany = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from(TB_COMPANIES).delete().eq('id', id);
+      const { error } = await supabase.from(TB_COMPANIES).update({ deleted_at: new Date().toISOString() } as any).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: invalidate,
+    onSuccess: () => { invalidate(); toast.success('Empresa eliminada del listado'); },
     onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
   const deleteCompanies = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { error } = await supabase.from(TB_COMPANIES).delete().in('id', ids);
+      const { error } = await supabase.from(TB_COMPANIES).update({ deleted_at: new Date().toISOString() } as any).in('id', ids);
       if (error) throw error;
     },
-    onSuccess: () => { invalidate(); toast.success('Empresas eliminadas'); },
+    onSuccess: () => { invalidate(); toast.success('Empresas eliminadas del listado'); },
     onError: (e: Error) => toast.error('Error', { description: e.message }),
   });
 
