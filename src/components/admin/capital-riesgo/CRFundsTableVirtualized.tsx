@@ -210,7 +210,10 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
   sortBy,
   sortOrder,
   onSort,
+  selectedIds,
+  onSelectionChange,
 }) => {
+  const selectable = !!onSelectionChange;
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(500);
