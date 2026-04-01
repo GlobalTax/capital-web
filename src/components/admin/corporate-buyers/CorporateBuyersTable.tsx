@@ -285,7 +285,7 @@ export const CorporateBuyersTable = memo(({
         </div>
       );
     }),
-    [buyers, favoriteIds, selectedIds, navigate, onToggleFavorite, onToggleReviewed, selectionMode, handleSelectOne]
+    [filteredBuyers, favoriteIds, selectedIds, navigate, onToggleFavorite, onToggleReviewed, selectionMode, handleSelectOne]
   );
 
   if (isLoading) {
