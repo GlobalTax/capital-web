@@ -32,14 +32,27 @@ const log = (level: 'info' | 'warn' | 'error', event: string, data: object = {})
   }
 };
 
-// Internal team recipients
-const INTERNAL_TEAM = [
-  "samuel@capittal.es",
-  "marcc@capittal.es",
-  "marc@capittal.es",
-  "oriol@capittal.es",
-  "lluis@capittal.es"
-];
+// Fetch active default-copy recipients from email_recipients_config
+const getRecipients = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from('email_recipients_config')
+    .select('email')
+    .eq('is_active', true)
+    .eq('is_default_copy', true);
+  
+  if (error) {
+    log('error', 'FETCH_RECIPIENTS_FAILED', { error: error.message });
+    throw new Error(`Failed to fetch recipients: ${error.message}`);
+  }
+  
+  const emails = (data || []).map((r: any) => r.email);
+  if (emails.length === 0) {
+    log('warn', 'NO_RECIPIENTS_FOUND');
+    throw new Error('No active default-copy recipients configured');
+  }
+  
+  return emails;
+};
 
 interface NewsArticle {
   id: string;
@@ -281,14 +294,17 @@ const handler = async (req: Request): Promise<Response> => {
       ? `📰 Resumen M&A - ${newsArticles.length} operaciones (${today.getDate()} ${today.toLocaleDateString('es-ES', { month: 'short' })})`
       : `📰 Resumen M&A - Sin novedades (${today.getDate()} ${today.toLocaleDateString('es-ES', { month: 'short' })})`;
 
+    const recipients = await getRecipients();
+
     log('info', 'SENDING_DIGEST', { 
-      recipients: INTERNAL_TEAM.length, 
+      recipients: recipients.length, 
+      recipientEmails: recipients,
       newsCount: newsArticles.length 
     });
 
     const emailResponse = await resend.emails.send({
       from: "Capittal Intelligence <samuel@capittal.es>",
-      to: INTERNAL_TEAM,
+      to: recipients,
       subject,
       html: htmlContent,
       text: textContent,
@@ -301,17 +317,17 @@ const handler = async (req: Request): Promise<Response> => {
     log('info', 'DIGEST_SENT', { 
       messageId: emailResponse.data?.id,
       newsCount: newsArticles.length,
-      recipients: INTERNAL_TEAM.length
+      recipients: recipients.length
     });
 
     // Create admin notification
     await supabase.from('admin_notifications_news').insert({
       type: 'daily_digest_sent',
       title: `Digest diario enviado: ${newsArticles.length} noticias`,
-      message: `Resumen M&A enviado a ${INTERNAL_TEAM.length} miembros del equipo`,
+      message: `Resumen M&A enviado a ${recipients.length} miembros del equipo`,
       metadata: {
         news_count: newsArticles.length,
-        recipients: INTERNAL_TEAM,
+        recipients,
         categories: stats,
         message_id: emailResponse.data?.id
       }
@@ -322,7 +338,7 @@ const handler = async (req: Request): Promise<Response> => {
         success: true,
         messageId: emailResponse.data?.id,
         newsCount: newsArticles.length,
-        recipients: INTERNAL_TEAM.length,
+        recipients: recipients.length,
         categories: stats
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
