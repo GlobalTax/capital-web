@@ -419,6 +419,11 @@ export default function ContactListDetailPage() {
   const [bulkMoveCopySectorSearch, setBulkMoveCopySectorSearch] = useState('');
   const [bulkMoveCopySectorPopoverOpen, setBulkMoveCopySectorPopoverOpen] = useState(false);
 
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTargetIds, setDeleteTargetIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
