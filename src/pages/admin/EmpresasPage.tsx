@@ -545,6 +545,24 @@ export default function EmpresasPage() {
         contacts={contactos.filter(c => selectedContactIds.has(c.id))}
         onSuccess={() => setSelectedContactIds(new Set())}
       />
+
+      {/* Add Empresas to List Dialog */}
+      <AddItemsToListDialog
+        open={isAddEmpresasToListOpen}
+        onOpenChange={setIsAddEmpresasToListOpen}
+        itemLabel="empresa"
+        items={[...displayEmpresas, ...favoriteEmpresas, ...(targetEmpresas || []), ...valuationEmpresas]
+          .filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i)
+          .filter(e => selectedEmpresaIds.has(e.id))
+          .map(e => ({
+            empresa: e.nombre || '',
+            cif: e.cif || '',
+            facturacion: e.facturacion || null,
+            ebitda: e.ebitda || null,
+            notas: [e.sector, e.ubicacion].filter(Boolean).join(' | '),
+          }))}
+        onSuccess={() => setSelectedEmpresaIds(new Set())}
+      />
     </div>
   );
 }
