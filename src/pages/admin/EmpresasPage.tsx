@@ -471,17 +471,66 @@ export default function EmpresasPage() {
 
         {/* ==================== CONTACTOS TAB ==================== */}
         <TabsContent value="contactos" className="mt-4 space-y-4">
-          {/* Search */}
+          {/* Filters */}
           <Card>
             <CardContent className="pt-4 pb-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nombre, email, teléfono o cargo..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
                 <Input
-                  placeholder="Buscar por nombre, email, teléfono o cargo..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-9"
+                  placeholder="Filtrar por cargo..."
+                  value={contactosCargoFilter}
+                  onChange={(e) => { setContactosCargoFilter(e.target.value); setContactosPage(0); }}
+                  className="w-full md:w-[180px]"
                 />
+                <Select value={contactosSourceFilter} onValueChange={(v) => { setContactosSourceFilter(v); setContactosPage(0); }}>
+                  <SelectTrigger className="w-full md:w-[160px]">
+                    <SelectValue placeholder="Origen" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background">
+                    <SelectItem value="all">Todos los orígenes</SelectItem>
+                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="lista">Lista</SelectItem>
+                    <SelectItem value="apollo">Apollo</SelectItem>
+                    <SelectItem value="valuation">Valoración</SelectItem>
+                    <SelectItem value="inbound">Inbound</SelectItem>
+                    <SelectItem value="campaign">Campaña</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2 mt-3 flex-wrap">
+                <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+                <Badge
+                  variant={contactosHasEmail ? 'default' : 'outline'}
+                  className="cursor-pointer text-xs"
+                  onClick={() => { setContactosHasEmail(!contactosHasEmail); setContactosPage(0); }}
+                >
+                  Con email
+                </Badge>
+                {hasContactosFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setContactosCargoFilter('');
+                      setContactosSourceFilter('all');
+                      setContactosHasEmail(false);
+                      setContactosPage(0);
+                    }}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Limpiar filtros
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
