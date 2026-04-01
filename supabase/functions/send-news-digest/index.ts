@@ -294,10 +294,7 @@ const handler = async (req: Request): Promise<Response> => {
       ? `📰 Resumen M&A - ${newsArticles.length} operaciones (${today.getDate()} ${today.toLocaleDateString('es-ES', { month: 'short' })})`
       : `📰 Resumen M&A - Sin novedades (${today.getDate()} ${today.toLocaleDateString('es-ES', { month: 'short' })})`;
 
-    log('info', 'SENDING_DIGEST', { 
-      recipients: INTERNAL_TEAM.length, 
-      newsCount: newsArticles.length 
-    });
+    const recipients = await getRecipients();
 
     const recipients = await getRecipients();
 
