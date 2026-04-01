@@ -170,8 +170,17 @@ const CorporateBuyersPage = () => {
                 onClick={() => setShowDeleteDialog(true)}
                 className="gap-1"
               >
-                <Trash2 className="h-4 w-4" />
+               <Trash2 className="h-4 w-4" />
                 Eliminar
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowAddToList(true)}
+                className="gap-1"
+              >
+                <ListPlus className="h-4 w-4" />
+                Añadir a lista
               </Button>
             </>
           )}

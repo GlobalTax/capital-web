@@ -138,7 +138,7 @@ export const CorporateFiltersBar = ({
           className="cursor-pointer text-xs"
           onClick={() => onFiltersChange({ ...filters, hasEmail: !filters.hasEmail || undefined })}
         >
-          Con email
+          Con website
         </Badge>
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters} className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground gap-1">
