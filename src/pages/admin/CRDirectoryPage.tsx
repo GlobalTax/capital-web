@@ -66,6 +66,34 @@ export const CRDirectoryPage: React.FC = () => {
     return unique.sort() as string[];
   }, [allFunds]);
 
+  // Extract unique fund names for people filter
+  const fundNames = useMemo(() => {
+    const names = people?.map(p => p.fund?.name).filter(Boolean) || [];
+    return [...new Set(names)].sort() as string[];
+  }, [people]);
+
+  // Extract unique locations for people filter
+  const peopleCountries = useMemo(() => {
+    const locs = people?.map(p => p.location || p.fund?.country_base).filter(Boolean) || [];
+    return [...new Set(locs)].sort() as string[];
+  }, [people]);
+
+  // Filter people client-side (beyond server search/role)
+  const filteredPeople = useMemo(() => {
+    if (!people) return [];
+    return people.filter(p => {
+      if (peopleFundFilter !== 'all' && p.fund?.name !== peopleFundFilter) return false;
+      if (peopleCountryFilter !== 'all') {
+        const loc = p.location || p.fund?.country_base || '';
+        if (loc !== peopleCountryFilter) return false;
+      }
+      if (peopleHasEmail && !p.email) return false;
+      return true;
+    });
+  }, [people, peopleFundFilter, peopleCountryFilter, peopleHasEmail]);
+
+  const hasPeopleFilters = peopleSearch || roleFilter !== 'all' || peopleFundFilter !== 'all' || peopleCountryFilter !== 'all' || peopleHasEmail;
+
   // Filter funds client-side
   const filteredFunds = useMemo(() => {
     if (!allFunds) return [];
