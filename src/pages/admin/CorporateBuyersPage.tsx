@@ -224,6 +224,7 @@ const CorporateBuyersPage = () => {
         filters={filters}
         onFiltersChange={setFilters}
         countries={countries}
+        sectors={sectors}
       />
 
       {/* Tabs */}
