@@ -2544,15 +2544,43 @@ export default function ContactListDetailPage() {
               </div>
               <div>
                 <Label>Lista madre</Label>
-                <Select value={configListaMadreId || '__none__'} onValueChange={(v) => setConfigListaMadreId(v === '__none__' ? '' : v)}>
-                  <SelectTrigger><SelectValue placeholder="Sin lista madre" /></SelectTrigger>
-                  <SelectContent className="bg-background">
-                    <SelectItem value="__none__">Ninguna</SelectItem>
-                    {allLists.map((l: any) => (
-                      <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                      {configListaMadreId
+                        ? allLists.find((l: any) => l.id === configListaMadreId)?.name || 'Lista seleccionada'
+                        : 'Ninguna'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar lista..." />
+                      <CommandList>
+                        <CommandEmpty>No se encontraron listas</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="__none__"
+                            onSelect={() => setConfigListaMadreId('')}
+                          >
+                            <Check className={`mr-2 h-4 w-4 ${!configListaMadreId ? 'opacity-100' : 'opacity-0'}`} />
+                            Ninguna
+                          </CommandItem>
+                          {allLists.map((l: any) => (
+                            <CommandItem
+                              key={l.id}
+                              value={l.name}
+                              onSelect={() => setConfigListaMadreId(l.id)}
+                            >
+                              <Check className={`mr-2 h-4 w-4 ${configListaMadreId === l.id ? 'opacity-100' : 'opacity-0'}`} />
+                              {l.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <Button onClick={handleSaveConfig}>Guardar cambios</Button>
             </CardContent>
