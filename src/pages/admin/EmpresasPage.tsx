@@ -65,6 +65,8 @@ export default function EmpresasPage() {
   const [editingEmpresa, setEditingEmpresa] = useState<Empresa | null>(null);
   const [isColumnsEditorOpen, setIsColumnsEditorOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectedEmpresaIds, setSelectedEmpresaIds] = useState<Set<string>>(new Set());
+  const [isAddEmpresasToListOpen, setIsAddEmpresasToListOpen] = useState(false);
 
   // Contactos state
   const [contactosPage, setContactosPage] = useState(0);
