@@ -491,18 +491,29 @@ const TableHeader = memo(({
   sortConfig, 
   onSort,
   columnWidths,
-  totalWidth
+  totalWidth,
+  selectable,
+  allSelected,
+  onToggleAll,
 }: { 
   visibleColumns: EmpresaTableColumn[];
   sortConfig: SortConfig;
   onSort: (key: string) => void;
   columnWidths: Record<string, number>;
   totalWidth: number;
+  selectable?: boolean;
+  allSelected?: boolean;
+  onToggleAll?: () => void;
 }) => (
   <div 
     className="flex items-center bg-muted/50 border-b border-border py-2"
-    style={{ width: totalWidth, minWidth: totalWidth }}
+    style={{ width: totalWidth + (selectable ? 40 : 0), minWidth: totalWidth + (selectable ? 40 : 0) }}
   >
+    {selectable && (
+      <div className="flex items-center justify-center flex-shrink-0" style={{ width: 40, minWidth: 40 }}>
+        <Checkbox checked={allSelected} onCheckedChange={onToggleAll} aria-label="Seleccionar todos" />
+      </div>
+    )}
     {visibleColumns.map((column) => (
       <SortableHeader 
         key={column.column_key} 
