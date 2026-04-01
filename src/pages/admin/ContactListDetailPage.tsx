@@ -2365,14 +2365,12 @@ export default function ContactListDetailPage() {
                                         <><Sparkles className="h-4 w-4 mr-2" /> Generar descripción IA</>
                                       )}
                                     </DropdownMenuItem>
-                                    {!isMadreList && (
-                                      <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive"
-                                        onClick={() => deleteCompany.mutate(company.id)}
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-2" /> Eliminar
-                                      </DropdownMenuItem>
-                                    )}
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => { setDeleteTargetIds([company.id]); setDeleteDialogOpen(true); }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" /> Eliminar
+                                    </DropdownMenuItem>
                                   </>
                                 )}
                               </DropdownMenuContent>
