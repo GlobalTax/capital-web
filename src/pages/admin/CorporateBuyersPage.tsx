@@ -4,7 +4,7 @@
 
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Download, Upload, RefreshCw, X, Target, Mail, Trash2 } from 'lucide-react';
+import { Plus, Download, Upload, RefreshCw, X, Target, Mail, Trash2, ListPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ import {
 import { useCorporateBuyers, useCorporateBuyerCountries, useBulkDeleteCorporateBuyers, useToggleBuyerReviewed } from '@/hooks/useCorporateBuyers';
 import { useFavoriteBuyerIds, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
 import { CorporateBuyersFilters } from '@/types/corporateBuyers';
+import { AddItemsToListDialog } from '@/components/admin/shared/AddItemsToListDialog';
 
 const CorporateBuyersPage = () => {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const CorporateBuyersPage = () => {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddToList, setShowAddToList] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const bulkDelete = useBulkDeleteCorporateBuyers();
   const { mutate: toggleReviewed } = useToggleBuyerReviewed();
@@ -44,13 +46,26 @@ const CorporateBuyersPage = () => {
   const { data: favoriteIds = new Set(), isLoading: loadingFavorites } = useFavoriteBuyerIds();
   const toggleFavorite = useToggleCorporateFavorite();
 
-  // Filter buyers based on tab
+  // Filter buyers based on tab + client-side filters
   const displayedBuyers = useMemo(() => {
+    let result = buyers;
     if (activeTab === 'favorites') {
-      return buyers.filter(b => favoriteIds.has(b.id));
+      result = result.filter(b => favoriteIds.has(b.id));
     }
-    return buyers;
-  }, [buyers, favoriteIds, activeTab]);
+    if (filters.hasEmail) {
+      result = result.filter(b => b.website);
+    }
+    if (filters.sector) {
+      result = result.filter(b => b.sector_focus?.includes(filters.sector!));
+    }
+    return result;
+  }, [buyers, favoriteIds, activeTab, filters.hasEmail, filters.sector]);
+
+  // Extract unique sectors from buyers
+  const sectors = useMemo(() => {
+    const allSectors = buyers.flatMap(b => b.sector_focus || []);
+    return [...new Set(allSectors)].sort();
+  }, [buyers]);
 
   // Calculate selection stats
   const selectionStats = useMemo(() => {
@@ -155,8 +170,17 @@ const CorporateBuyersPage = () => {
                 onClick={() => setShowDeleteDialog(true)}
                 className="gap-1"
               >
-                <Trash2 className="h-4 w-4" />
+               <Trash2 className="h-4 w-4" />
                 Eliminar
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowAddToList(true)}
+                className="gap-1"
+              >
+                <ListPlus className="h-4 w-4" />
+                Añadir a lista
               </Button>
             </>
           )}
@@ -209,6 +233,7 @@ const CorporateBuyersPage = () => {
         filters={filters}
         onFiltersChange={setFilters}
         countries={countries}
+        sectors={sectors}
       />
 
       {/* Tabs */}
@@ -294,6 +319,23 @@ const CorporateBuyersPage = () => {
       <CorporateBuyersImportModal
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
+      />
+
+      {/* Add to List Dialog */}
+      <AddItemsToListDialog
+        open={showAddToList}
+        onOpenChange={setShowAddToList}
+        itemLabel="comprador"
+        items={selectedBuyers.map(b => ({
+          empresa: b.name || '',
+          notas: [
+            b.buyer_type ? `Tipo: ${b.buyer_type}` : null,
+            b.sector_focus?.length ? `Sectores: ${b.sector_focus.join(', ')}` : null,
+            b.country_base ? `País: ${b.country_base}` : null,
+            b.ebitda_min || b.ebitda_max ? `EBITDA: ${b.ebitda_min || '?'} - ${b.ebitda_max || '?'}` : null,
+          ].filter(Boolean).join(' | '),
+        }))}
+        onSuccess={() => setSelectedIds(new Set())}
       />
     </div>
   );

@@ -151,5 +151,6 @@ export interface CorporateBuyersFilters {
   buyer_type?: CorporateBuyerType;
   country?: string;
   sector?: string;
+  hasEmail?: boolean;
   onlyFavorites?: boolean;
 }
