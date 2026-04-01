@@ -8000,8 +8000,13 @@ export type Database = {
           month: number | null
           project_name: string | null
           project_number: string | null
+          rango_ebitda_max: number | null
+          rango_ebitda_min: number | null
+          rango_facturacion_max: number | null
+          rango_facturacion_min: number | null
           revenue_amount: number | null
           sector: string | null
+          sectores_target: string[] | null
           short_description: string | null
           ubicacion: string | null
           updated_at: string | null
@@ -8018,8 +8023,13 @@ export type Database = {
           month?: number | null
           project_name?: string | null
           project_number?: string | null
+          rango_ebitda_max?: number | null
+          rango_ebitda_min?: number | null
+          rango_facturacion_max?: number | null
+          rango_facturacion_min?: number | null
           revenue_amount?: number | null
           sector?: string | null
+          sectores_target?: string[] | null
           short_description?: string | null
           ubicacion?: string | null
           updated_at?: string | null
@@ -8036,8 +8046,13 @@ export type Database = {
           month?: number | null
           project_name?: string | null
           project_number?: string | null
+          rango_ebitda_max?: number | null
+          rango_ebitda_min?: number | null
+          rango_facturacion_max?: number | null
+          rango_facturacion_min?: number | null
           revenue_amount?: number | null
           sector?: string | null
+          sectores_target?: string[] | null
           short_description?: string | null
           ubicacion?: string | null
           updated_at?: string | null
