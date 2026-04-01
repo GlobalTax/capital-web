@@ -320,6 +320,23 @@ const CorporateBuyersPage = () => {
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
       />
+
+      {/* Add to List Dialog */}
+      <AddItemsToListDialog
+        open={showAddToList}
+        onOpenChange={setShowAddToList}
+        itemLabel="comprador"
+        items={selectedBuyers.map(b => ({
+          empresa: b.name || '',
+          notas: [
+            b.buyer_type ? `Tipo: ${b.buyer_type}` : null,
+            b.sector_focus?.length ? `Sectores: ${b.sector_focus.join(', ')}` : null,
+            b.country_base ? `País: ${b.country_base}` : null,
+            b.ebitda_min || b.ebitda_max ? `EBITDA: ${b.ebitda_min || '?'} - ${b.ebitda_max || '?'}` : null,
+          ].filter(Boolean).join(' | '),
+        }))}
+        onSuccess={() => setSelectedIds(new Set())}
+      />
     </div>
   );
 };
