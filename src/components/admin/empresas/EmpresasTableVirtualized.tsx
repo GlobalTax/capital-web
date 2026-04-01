@@ -64,6 +64,8 @@ interface RowData {
   showFavorites: boolean;
   visibleColumns: EmpresaTableColumn[];
   columnWidths: Record<string, number>;
+  selectedIds?: Set<string>;
+  onToggleSelection?: (id: string) => void;
 }
 
 const ROW_HEIGHT = 52;
