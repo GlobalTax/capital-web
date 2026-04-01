@@ -5,6 +5,7 @@ import { FixedSizeList as List } from 'react-window';
 import { Building2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { CRFund, CRFundType, CRFundStatus, CR_FUND_TYPE_LABELS, CR_FUND_STATUS_LABELS } from '@/types/capitalRiesgo';
 import { useDeleteCRFund, useUpdateCRFund } from '@/hooks/useCRFunds';
