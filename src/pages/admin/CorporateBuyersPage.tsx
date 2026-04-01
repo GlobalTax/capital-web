@@ -222,13 +222,7 @@ const CorporateBuyersPage = () => {
       {/* KPIs */}
       <CorporateKPIs buyers={buyers} favoritesCount={favoriteIds.size} />
 
-      {/* Filters */}
-      <CorporateFiltersBar
-        filters={filters}
-        onFiltersChange={setFilters}
-        countries={countries}
-        sectors={sectors}
-      />
+      {/* Filters are now inline in the table header */}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
