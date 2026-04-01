@@ -296,8 +296,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     const recipients = await getRecipients();
 
-    const recipients = await getRecipients();
-
     log('info', 'SENDING_DIGEST', { 
       recipients: recipients.length, 
       recipientEmails: recipients,
