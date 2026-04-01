@@ -29,6 +29,8 @@ interface CRFundsTableVirtualizedProps {
   sortBy?: 'name' | 'people_count' | 'aum' | 'portfolio_count';
   sortOrder?: 'asc' | 'desc';
   onSort?: (field: 'name' | 'people_count' | 'aum' | 'portfolio_count') => void;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 // Fund type options - static
