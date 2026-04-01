@@ -249,12 +249,29 @@ export const SFDirectoryPage: React.FC = () => {
           )}
         </div>
 
+        {/* Selection toolbar */}
+        {selectedFundIds.size > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
+            <span className="text-sm font-medium">{selectedFundIds.size} fund(s) seleccionado(s)</span>
+            <Button size="sm" variant="outline" onClick={() => setShowAddToList(true)}>
+              <ListPlus className="h-4 w-4 mr-1" />
+              Añadir a lista
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedFundIds(new Set())}>
+              <X className="h-4 w-4 mr-1" />
+              Deseleccionar
+            </Button>
+          </div>
+        )}
+
         {/* Favorite Funds Tab */}
         <TabsContent value="fav-funds" className="mt-0">
           <SFFundsTable 
             funds={filteredFavFunds}
             isLoading={loadingFavFunds}
             showFavoriteColumn
+            selectedIds={selectedFundIds}
+            onSelectionChange={setSelectedFundIds}
           />
         </TabsContent>
 
@@ -276,6 +293,8 @@ export const SFDirectoryPage: React.FC = () => {
             funds={(funds || []).filter(f => !f.entity_type || SF_ENTITY_CATEGORIES.search_funds.includes(f.entity_type))}
             isLoading={loadingFunds}
             showFavoriteColumn
+            selectedIds={selectedFundIds}
+            onSelectionChange={setSelectedFundIds}
           />
         </TabsContent>
 
@@ -285,6 +304,8 @@ export const SFDirectoryPage: React.FC = () => {
             funds={(funds || []).filter(f => f.entity_type && SF_ENTITY_CATEGORIES.corporate.includes(f.entity_type))}
             isLoading={loadingFunds}
             showFavoriteColumn
+            selectedIds={selectedFundIds}
+            onSelectionChange={setSelectedFundIds}
           />
         </TabsContent>
 
@@ -300,6 +321,14 @@ export const SFDirectoryPage: React.FC = () => {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Add to list dialog */}
+      <AddFundsToListDialog
+        open={showAddToList}
+        onOpenChange={setShowAddToList}
+        funds={(funds || []).concat(filteredFavFunds || []).filter(f => selectedFundIds.has(f.id))}
+        onSuccess={() => setSelectedFundIds(new Set())}
+      />
     </div>
   );
 };
