@@ -183,6 +183,7 @@ export default function EmpresasPage() {
   };
 
   const hasActiveFilters = searchQuery || sectorFilter !== 'all' || targetFilter !== 'all' || sourceFilter !== 'all' || quickFilters.length > 0;
+  const hasContactosFilters = searchQuery || contactosCargoFilter || contactosSourceFilter !== 'all' || contactosHasEmail;
 
   // Reset page when filters change
   const handleSearchChange = (value: string) => {
