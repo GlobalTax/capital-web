@@ -176,19 +176,28 @@ const VirtualizedRow = React.memo<{
 }>(({ index, style, data }) => {
   const fund = data.funds[index];
   const isLast = index === data.funds.length - 1;
+  const isSelected = data.selectedIds?.has(fund.id) || false;
   
   return (
-    <CRFundTableRow
-      style={style}
-      fund={fund}
-      showFavorites={data.showFavorites}
-      fundTypeOptions={data.fundTypeOptions}
-      statusOptions={data.statusOptions}
-      onUpdateFundType={data.onUpdateFundType}
-      onUpdateStatus={data.onUpdateStatus}
-      onDelete={data.onDelete}
-      isLast={isLast}
-    />
+    <div style={style} className="flex items-center">
+      {data.onToggleSelection && (
+        <div className="flex items-center justify-center h-full" style={{ flex: '0 0 36px', minWidth: 36 }} onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={isSelected} onCheckedChange={() => data.onToggleSelection!(fund.id)} aria-label={`Seleccionar ${fund.name}`} />
+        </div>
+      )}
+      <div className="flex-1 min-w-0" style={{ height: '100%' }}>
+        <CRFundTableRow
+          fund={fund}
+          showFavorites={data.showFavorites}
+          fundTypeOptions={data.fundTypeOptions}
+          statusOptions={data.statusOptions}
+          onUpdateFundType={data.onUpdateFundType}
+          onUpdateStatus={data.onUpdateStatus}
+          onDelete={data.onDelete}
+          isLast={isLast}
+        />
+      </div>
+    </div>
   );
 });
 
