@@ -46,13 +46,26 @@ const CorporateBuyersPage = () => {
   const { data: favoriteIds = new Set(), isLoading: loadingFavorites } = useFavoriteBuyerIds();
   const toggleFavorite = useToggleCorporateFavorite();
 
-  // Filter buyers based on tab
+  // Filter buyers based on tab + hasEmail
   const displayedBuyers = useMemo(() => {
+    let result = buyers;
     if (activeTab === 'favorites') {
-      return buyers.filter(b => favoriteIds.has(b.id));
+      result = result.filter(b => favoriteIds.has(b.id));
     }
-    return buyers;
-  }, [buyers, favoriteIds, activeTab]);
+    if (filters.hasEmail) {
+      result = result.filter(b => b.contact_email);
+    }
+    if (filters.sector) {
+      result = result.filter(b => b.sector_focus?.includes(filters.sector!));
+    }
+    return result;
+  }, [buyers, favoriteIds, activeTab, filters.hasEmail, filters.sector]);
+
+  // Extract unique sectors from buyers
+  const sectors = useMemo(() => {
+    const allSectors = buyers.flatMap(b => b.sector_focus || []);
+    return [...new Set(allSectors)].sort();
+  }, [buyers]);
 
   // Calculate selection stats
   const selectionStats = useMemo(() => {
