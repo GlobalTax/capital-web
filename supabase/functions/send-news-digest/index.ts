@@ -299,9 +299,17 @@ const handler = async (req: Request): Promise<Response> => {
       newsCount: newsArticles.length 
     });
 
+    const recipients = await getRecipients();
+
+    log('info', 'SENDING_DIGEST', { 
+      recipients: recipients.length, 
+      recipientEmails: recipients,
+      newsCount: newsArticles.length 
+    });
+
     const emailResponse = await resend.emails.send({
       from: "Capittal Intelligence <samuel@capittal.es>",
-      to: INTERNAL_TEAM,
+      to: recipients,
       subject,
       html: htmlContent,
       text: textContent,
@@ -314,7 +322,7 @@ const handler = async (req: Request): Promise<Response> => {
     log('info', 'DIGEST_SENT', { 
       messageId: emailResponse.data?.id,
       newsCount: newsArticles.length,
-      recipients: INTERNAL_TEAM.length
+      recipients: recipients.length
     });
 
     // Create admin notification
