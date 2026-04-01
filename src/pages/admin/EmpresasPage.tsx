@@ -34,6 +34,7 @@ import { EmpresasTableVirtualized } from '@/components/admin/empresas/EmpresasTa
 import { EmpresasStatsCards } from '@/components/admin/empresas/EmpresasStatsCards';
 import { EmpresasColumnsEditor } from '@/components/admin/empresas/EmpresasColumnsEditor';
 import { ContactosDirectoryTable } from '@/components/admin/empresas/ContactosDirectoryTable';
+import { AddContactsToListDialog } from '@/components/admin/empresas/AddContactsToListDialog';
 import { useEmpresasStats } from '@/hooks/useEmpresasStats';
 import { useDirectorioContactos } from '@/hooks/useDirectorioContactos';
 
