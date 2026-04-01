@@ -2,16 +2,33 @@
 // CORPORATE BUYERS TABLE
 // =============================================
 
-import { memo, useMemo, useCallback } from 'react';
+import { memo, useMemo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FixedSizeList as List } from 'react-window';
-import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe, CheckCircle2 } from 'lucide-react';
+import { Star, ExternalLink, Building2, TrendingUp, BarChart3, Target, Globe, CheckCircle2, Search, X, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CorporateBuyer, BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/types/corporateBuyers';
+import { CorporateBuyer, CorporateBuyerType, BUYER_TYPE_LABELS, BUYER_TYPE_COLORS } from '@/types/corporateBuyers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface TableFilters {
+  search: string;
+  type: string;
+  country: string;
+  sector: string;
+}
+
+const EMPTY_FILTERS: TableFilters = { search: '', type: 'all', country: 'all', sector: 'all' };
 
 interface CorporateBuyersTableProps {
   buyers: CorporateBuyer[];
@@ -19,7 +36,6 @@ interface CorporateBuyersTableProps {
   onToggleFavorite: (id: string, isFavorite: boolean) => void;
   onToggleReviewed: (id: string, isReviewed: boolean) => void;
   isLoading?: boolean;
-  // Selection props
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
   selectionMode?: boolean;
