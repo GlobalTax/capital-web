@@ -36,6 +36,7 @@ import { EmpresasStatsCards } from '@/components/admin/empresas/EmpresasStatsCar
 import { EmpresasColumnsEditor } from '@/components/admin/empresas/EmpresasColumnsEditor';
 import { ContactosDirectoryTable } from '@/components/admin/empresas/ContactosDirectoryTable';
 import { AddContactsToListDialog } from '@/components/admin/empresas/AddContactsToListDialog';
+import { AddItemsToListDialog } from '@/components/admin/shared/AddItemsToListDialog';
 import { useEmpresasStats } from '@/hooks/useEmpresasStats';
 import { useDirectorioContactos } from '@/hooks/useDirectorioContactos';
 
