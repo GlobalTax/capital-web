@@ -35,6 +35,7 @@ const CorporateBuyersPage = () => {
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddToList, setShowAddToList] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const bulkDelete = useBulkDeleteCorporateBuyers();
   const { mutate: toggleReviewed } = useToggleBuyerReviewed();
