@@ -3,9 +3,10 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Users, Building2, Upload, Star, ListPlus, X } from 'lucide-react';
+import { Plus, Users, Building2, Upload, Star, ListPlus, X, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useCRPeopleWithFunds } from '@/hooks/useCRPeople';
 import { useCRFunds } from '@/hooks/useCRFunds';
 import { useFavoriteFunds, useFavoritePeople } from '@/hooks/useCRFavorites';
@@ -35,6 +36,9 @@ export const CRDirectoryPage: React.FC = () => {
   // People filters state
   const [peopleSearch, setPeopleSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<CRPersonRole | 'all'>('all');
+  const [peopleFundFilter, setPeopleFundFilter] = useState<string>('all');
+  const [peopleCountryFilter, setPeopleCountryFilter] = useState<string>('all');
+  const [peopleHasEmail, setPeopleHasEmail] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
   const [showAddToList, setShowAddToList] = useState(false);
@@ -61,6 +65,34 @@ export const CRDirectoryPage: React.FC = () => {
     const unique = [...new Set(fromFunds)];
     return unique.sort() as string[];
   }, [allFunds]);
+
+  // Extract unique fund names for people filter
+  const fundNames = useMemo(() => {
+    const names = people?.map(p => p.fund?.name).filter(Boolean) || [];
+    return [...new Set(names)].sort() as string[];
+  }, [people]);
+
+  // Extract unique locations for people filter
+  const peopleCountries = useMemo(() => {
+    const locs = people?.map(p => p.location || p.fund?.country_base).filter(Boolean) || [];
+    return [...new Set(locs)].sort() as string[];
+  }, [people]);
+
+  // Filter people client-side (beyond server search/role)
+  const filteredPeople = useMemo(() => {
+    if (!people) return [];
+    return people.filter(p => {
+      if (peopleFundFilter !== 'all' && p.fund?.name !== peopleFundFilter) return false;
+      if (peopleCountryFilter !== 'all') {
+        const loc = p.location || p.fund?.country_base || '';
+        if (loc !== peopleCountryFilter) return false;
+      }
+      if (peopleHasEmail && !p.email) return false;
+      return true;
+    });
+  }, [people, peopleFundFilter, peopleCountryFilter, peopleHasEmail]);
+
+  const hasPeopleFilters = peopleSearch || roleFilter !== 'all' || peopleFundFilter !== 'all' || peopleCountryFilter !== 'all' || peopleHasEmail;
 
   // Filter funds client-side
   const filteredFunds = useMemo(() => {
@@ -268,32 +300,83 @@ export const CRDirectoryPage: React.FC = () => {
           />
         </TabsContent>
 
-        {/* People Tab - simple filter bar */}
+        {/* People Tab - filter bar */}
         <TabsContent value="people" className="mt-0 space-y-3">
-          <div className="flex items-center gap-3 py-2">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre, email..."
-                value={peopleSearch}
-                onChange={(e) => setPeopleSearch(e.target.value)}
-                className="pl-10 h-9"
-              />
+          <div className="flex flex-col gap-3 py-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, email..."
+                  value={peopleSearch}
+                  onChange={(e) => setPeopleSearch(e.target.value)}
+                  className="pl-10 h-9"
+                />
+              </div>
+              <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as CRPersonRole | 'all')}>
+                <SelectTrigger className="w-[160px] h-9">
+                  <SelectValue placeholder="Rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los roles</SelectItem>
+                  {Object.entries(CR_PERSON_ROLE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={peopleFundFilter} onValueChange={setPeopleFundFilter}>
+                <SelectTrigger className="w-[180px] h-9">
+                  <SelectValue placeholder="Fondo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los fondos</SelectItem>
+                  {fundNames.map(name => (
+                    <SelectItem key={name} value={name}>{name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={peopleCountryFilter} onValueChange={setPeopleCountryFilter}>
+                <SelectTrigger className="w-[150px] h-9">
+                  <SelectValue placeholder="Ubicación" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las ubicaciones</SelectItem>
+                  {peopleCountries.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as CRPersonRole | 'all')}>
-              <SelectTrigger className="w-[160px] h-9">
-                <SelectValue placeholder="Rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los roles</SelectItem>
-                {Object.entries(CR_PERSON_ROLE_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <Badge
+                variant={peopleHasEmail ? 'default' : 'outline'}
+                className="cursor-pointer text-xs"
+                onClick={() => setPeopleHasEmail(!peopleHasEmail)}
+              >
+                Con email
+              </Badge>
+              {hasPeopleFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    setPeopleSearch('');
+                    setRoleFilter('all');
+                    setPeopleFundFilter('all');
+                    setPeopleCountryFilter('all');
+                    setPeopleHasEmail(false);
+                  }}
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Limpiar filtros
+                </Button>
+              )}
+            </div>
           </div>
           <CRPeopleTable 
-            people={people || []}
+            people={filteredPeople}
             isLoading={loadingPeople}
             selectedIds={selectedIds}
             onToggleSelection={handleToggleSelection}
