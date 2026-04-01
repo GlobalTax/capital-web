@@ -47,6 +47,8 @@ interface EmpresasTableVirtualizedProps {
   onEdit: (empresa: Empresa) => void;
   onDelete: (empresa: Empresa) => void;
   height?: number;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 export type SortConfig = {
