@@ -329,10 +329,10 @@ const handler = async (req: Request): Promise<Response> => {
     await supabase.from('admin_notifications_news').insert({
       type: 'daily_digest_sent',
       title: `Digest diario enviado: ${newsArticles.length} noticias`,
-      message: `Resumen M&A enviado a ${INTERNAL_TEAM.length} miembros del equipo`,
+      message: `Resumen M&A enviado a ${recipients.length} miembros del equipo`,
       metadata: {
         news_count: newsArticles.length,
-        recipients: INTERNAL_TEAM,
+        recipients,
         categories: stats,
         message_id: emailResponse.data?.id
       }
@@ -343,7 +343,7 @@ const handler = async (req: Request): Promise<Response> => {
         success: true,
         messageId: emailResponse.data?.id,
         newsCount: newsArticles.length,
-        recipients: INTERNAL_TEAM.length,
+        recipients: recipients.length,
         categories: stats
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
