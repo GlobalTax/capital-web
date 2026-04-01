@@ -190,7 +190,7 @@ export const useContactLists = () => {
       if (createErr || !newList) throw createErr || new Error('Error al duplicar');
 
       const companies = await fetchAllRows((from, to) =>
-        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).range(from, to)
+        supabase.from(TB_COMPANIES).select('*').eq('list_id', id).is('deleted_at', null).range(from, to)
       );
       if (companies.length > 0) {
         const copies = (companies as any[]).map(({ id: _, list_id, created_at, ...rest }) => ({ ...rest, list_id: (newList as any).id }));
