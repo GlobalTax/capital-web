@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  ListPlus,
 } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
 import { useFavoriteEmpresas } from '@/hooks/useEmpresaFavorites';
