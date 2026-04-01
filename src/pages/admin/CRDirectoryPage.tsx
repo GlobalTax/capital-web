@@ -265,7 +265,7 @@ export const CRDirectoryPage: React.FC = () => {
           </TabsList>
         </div>
 
-        {/* Selection toolbar */}
+        {/* Selection toolbar - funds */}
         {selectedFundIds.size > 0 && (
           <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
             <span className="text-sm font-medium">{selectedFundIds.size} fondo(s) seleccionado(s)</span>
@@ -274,6 +274,21 @@ export const CRDirectoryPage: React.FC = () => {
               Añadir a lista
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setSelectedFundIds(new Set())}>
+              <X className="h-4 w-4 mr-1" />
+              Deseleccionar
+            </Button>
+          </div>
+        )}
+
+        {/* Selection toolbar - people */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
+            <span className="text-sm font-medium">{selectedIds.size} persona(s) seleccionada(s)</span>
+            <Button size="sm" variant="outline" onClick={() => setShowAddPeopleToList(true)}>
+              <ListPlus className="h-4 w-4 mr-1" />
+              Añadir a lista
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
               <X className="h-4 w-4 mr-1" />
               Deseleccionar
             </Button>
