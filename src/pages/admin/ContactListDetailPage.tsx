@@ -834,14 +834,21 @@ export default function ContactListDetailPage() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const handleDeleteSelected = async () => {
-    if (isMadreList) {
-      toast.warning('No se pueden eliminar empresas de una lista madre. Puedes copiarlas a un sublistado.');
-      return;
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+    setDeleteTargetIds(selectedIds);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteCompanies.mutateAsync(deleteTargetIds);
+      setSelectedIds(prev => prev.filter(id => !deleteTargetIds.includes(id)));
+    } finally {
+      setIsDeleting(false);
+      setDeleteTargetIds([]);
     }
-    if (!confirm(`¿Eliminar ${selectedIds.length} empresas de esta lista?`)) return;
-    await deleteCompanies.mutateAsync(selectedIds);
-    setSelectedIds([]);
   };
 
   const handleAddManual = async () => {
