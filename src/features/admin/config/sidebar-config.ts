@@ -408,7 +408,7 @@ export const sidebarSections: SidebarSection[] = [
         description: "Contactos campaña compras"
       },
       { 
-        title: "Empresas",
+        title: "Directorio",
         url: "/admin/empresas", 
         icon: Building2,
         description: "Base de datos de empresas"
