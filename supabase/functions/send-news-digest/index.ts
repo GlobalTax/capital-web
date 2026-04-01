@@ -32,14 +32,27 @@ const log = (level: 'info' | 'warn' | 'error', event: string, data: object = {})
   }
 };
 
-// Internal team recipients
-const INTERNAL_TEAM = [
-  "samuel@capittal.es",
-  "marcc@capittal.es",
-  "marc@capittal.es",
-  "oriol@capittal.es",
-  "lluis@capittal.es"
-];
+// Fetch active default-copy recipients from email_recipients_config
+const getRecipients = async (): Promise<string[]> => {
+  const { data, error } = await supabase
+    .from('email_recipients_config')
+    .select('email')
+    .eq('is_active', true)
+    .eq('is_default_copy', true);
+  
+  if (error) {
+    log('error', 'FETCH_RECIPIENTS_FAILED', { error: error.message });
+    throw new Error(`Failed to fetch recipients: ${error.message}`);
+  }
+  
+  const emails = (data || []).map((r: any) => r.email);
+  if (emails.length === 0) {
+    log('warn', 'NO_RECIPIENTS_FOUND');
+    throw new Error('No active default-copy recipients configured');
+  }
+  
+  return emails;
+};
 
 interface NewsArticle {
   id: string;
