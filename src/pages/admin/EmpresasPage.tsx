@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  ListPlus,
 } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
 import { useFavoriteEmpresas } from '@/hooks/useEmpresaFavorites';
@@ -34,6 +35,7 @@ import { EmpresasTableVirtualized } from '@/components/admin/empresas/EmpresasTa
 import { EmpresasStatsCards } from '@/components/admin/empresas/EmpresasStatsCards';
 import { EmpresasColumnsEditor } from '@/components/admin/empresas/EmpresasColumnsEditor';
 import { ContactosDirectoryTable } from '@/components/admin/empresas/ContactosDirectoryTable';
+import { AddContactsToListDialog } from '@/components/admin/empresas/AddContactsToListDialog';
 import { useEmpresasStats } from '@/hooks/useEmpresasStats';
 import { useDirectorioContactos } from '@/hooks/useDirectorioContactos';
 
@@ -66,6 +68,8 @@ export default function EmpresasPage() {
 
   // Contactos state
   const [contactosPage, setContactosPage] = useState(0);
+  const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set());
+  const [isAddToListOpen, setIsAddToListOpen] = useState(false);
 
   // Lightweight stats (separate count queries)
   const { stats, isLoading: isLoadingStats } = useEmpresasStats();
@@ -443,11 +447,29 @@ export default function EmpresasPage() {
             </CardContent>
           </Card>
 
+          {/* Selection toolbar */}
+          {selectedContactIds.size > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+              <span className="text-sm font-medium">
+                {selectedContactIds.size} contacto(s) seleccionado(s)
+              </span>
+              <Button size="sm" onClick={() => setIsAddToListOpen(true)}>
+                <ListPlus className="h-4 w-4 mr-2" />
+                Añadir a lista
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedContactIds(new Set())}>
+                Deseleccionar
+              </Button>
+            </div>
+          )}
+
           {/* Contacts table */}
           <ContactosDirectoryTable
             contactos={contactos}
             isLoading={isLoadingContactos}
             emptyMessage={searchQuery ? 'No se encontraron contactos con esa búsqueda' : 'No hay contactos en el directorio'}
+            selectedIds={selectedContactIds}
+            onSelectionChange={setSelectedContactIds}
           />
 
           {/* Pagination */}
@@ -486,6 +508,14 @@ export default function EmpresasPage() {
       <EmpresasColumnsEditor
         open={isColumnsEditorOpen}
         onOpenChange={setIsColumnsEditorOpen}
+      />
+
+      {/* Add to List Dialog */}
+      <AddContactsToListDialog
+        open={isAddToListOpen}
+        onOpenChange={setIsAddToListOpen}
+        contacts={contactos.filter(c => selectedContactIds.has(c.id))}
+        onSuccess={() => setSelectedContactIds(new Set())}
       />
     </div>
   );

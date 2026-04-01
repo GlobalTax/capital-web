@@ -10,22 +10,42 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, Mail, Phone, Linkedin, ExternalLink } from 'lucide-react';
+import { Building2, Mail, Phone, Linkedin } from 'lucide-react';
 import type { DirectorioContacto } from '@/hooks/useDirectorioContactos';
 
 interface ContactosDirectoryTableProps {
   contactos: DirectorioContacto[];
   isLoading: boolean;
   emptyMessage?: string;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
 }
 
 export const ContactosDirectoryTable: React.FC<ContactosDirectoryTableProps> = ({
   contactos,
   isLoading,
   emptyMessage = 'No se encontraron contactos',
+  selectedIds,
+  onSelectionChange,
 }) => {
   const navigate = useNavigate();
+
+  const toggleAll = () => {
+    if (selectedIds.size === contactos.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(contactos.map(c => c.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  };
 
   if (isLoading) {
     return (
@@ -48,11 +68,20 @@ export const ContactosDirectoryTable: React.FC<ContactosDirectoryTableProps> = (
   const fullName = (c: DirectorioContacto) =>
     [c.nombre, c.apellidos].filter(Boolean).join(' ');
 
+  const allSelected = selectedIds.size === contactos.length && contactos.length > 0;
+
   return (
     <div className="rounded-md border overflow-auto max-h-[600px]">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[40px]">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={toggleAll}
+                aria-label="Seleccionar todos"
+              />
+            </TableHead>
             <TableHead className="min-w-[180px]">Nombre</TableHead>
             <TableHead className="min-w-[180px]">Email</TableHead>
             <TableHead className="min-w-[120px]">Teléfono</TableHead>
@@ -65,6 +94,13 @@ export const ContactosDirectoryTable: React.FC<ContactosDirectoryTableProps> = (
         <TableBody>
           {contactos.map((c) => (
             <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50">
+              <TableCell>
+                <Checkbox
+                  checked={selectedIds.has(c.id)}
+                  onCheckedChange={() => toggleOne(c.id)}
+                  aria-label={`Seleccionar ${fullName(c)}`}
+                />
+              </TableCell>
               <TableCell className="font-medium">{fullName(c)}</TableCell>
               <TableCell>
                 {c.email ? (

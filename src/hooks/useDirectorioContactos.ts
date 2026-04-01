@@ -14,6 +14,9 @@ export interface DirectorioContacto {
   cargo: string | null;
   empresa_principal_id: string | null;
   empresa_nombre: string | null;
+  empresa_cif: string | null;
+  empresa_facturacion: number | null;
+  empresa_ebitda: number | null;
   linkedin: string | null;
   source: string | null;
   created_at: string | null;
@@ -40,7 +43,7 @@ export const useDirectorioContactos = (
         .select(`
           id, nombre, apellidos, email, telefono, cargo,
           empresa_principal_id, linkedin, source, created_at,
-          empresas!contactos_empresa_principal_id_fkey ( nombre )
+          empresas!contactos_empresa_principal_id_fkey ( nombre, cif, facturacion, ebitda )
         `, { count: 'exact' });
 
       // Search filter
@@ -72,6 +75,9 @@ export const useDirectorioContactos = (
         cargo: c.cargo,
         empresa_principal_id: c.empresa_principal_id,
         empresa_nombre: c.empresas?.nombre || null,
+        empresa_cif: c.empresas?.cif || null,
+        empresa_facturacion: c.empresas?.facturacion || null,
+        empresa_ebitda: c.empresas?.ebitda || null,
         linkedin: c.linkedin,
         source: c.source,
         created_at: c.created_at,
