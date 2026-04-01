@@ -7,6 +7,7 @@ import React, { memo, useCallback, useMemo, useState, useRef, useEffect } from '
 import { FixedSizeList as List, ListChildComponentProps } from 'react-window';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
   Building2,
