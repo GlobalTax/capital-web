@@ -116,7 +116,14 @@ export default function EmpresasPage() {
     totalCount: contactosTotalCount,
     isLoading: isLoadingContactos,
   } = useDirectorioContactos(
-    { search: searchQuery, page: contactosPage, pageSize: PAGE_SIZE },
+    {
+      search: directoryTab === 'contactos' ? searchQuery : undefined,
+      cargo: contactosCargoFilter || undefined,
+      source: contactosSourceFilter !== 'all' ? contactosSourceFilter : undefined,
+      hasEmail: contactosHasEmail || undefined,
+      page: contactosPage,
+      pageSize: PAGE_SIZE,
+    },
     directoryTab === 'contactos'
   );
 
