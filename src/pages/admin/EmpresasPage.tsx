@@ -509,6 +509,14 @@ export default function EmpresasPage() {
         open={isColumnsEditorOpen}
         onOpenChange={setIsColumnsEditorOpen}
       />
+
+      {/* Add to List Dialog */}
+      <AddContactsToListDialog
+        open={isAddToListOpen}
+        onOpenChange={setIsAddToListOpen}
+        contacts={contactos.filter(c => selectedContactIds.has(c.id))}
+        onSuccess={() => setSelectedContactIds(new Set())}
+      />
     </div>
   );
 }
