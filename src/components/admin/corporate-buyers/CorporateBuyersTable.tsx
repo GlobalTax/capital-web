@@ -68,16 +68,49 @@ export const CorporateBuyersTable = memo(({
   selectionMode = false,
 }: CorporateBuyersTableProps) => {
   const navigate = useNavigate();
+  const [tableFilters, setTableFilters] = useState<TableFilters>(EMPTY_FILTERS);
 
-  // Selection handlers
+  // Extract unique values for filter dropdowns
+  const uniqueTypes = useMemo(() => {
+    const types = new Set(buyers.map(b => b.buyer_type).filter(Boolean) as CorporateBuyerType[]);
+    return Array.from(types).sort();
+  }, [buyers]);
+
+  const uniqueCountries = useMemo(() => {
+    const c = new Set(buyers.map(b => b.country_base).filter(Boolean) as string[]);
+    return Array.from(c).sort();
+  }, [buyers]);
+
+  const uniqueSectors = useMemo(() => {
+    const s = new Set(buyers.flatMap(b => b.sector_focus || []));
+    return Array.from(s).sort();
+  }, [buyers]);
+
+  // Apply inline filters
+  const filteredBuyers = useMemo(() => {
+    return buyers.filter(b => {
+      if (tableFilters.search) {
+        const q = tableFilters.search.toLowerCase();
+        if (!b.name?.toLowerCase().includes(q)) return false;
+      }
+      if (tableFilters.type !== 'all' && b.buyer_type !== tableFilters.type) return false;
+      if (tableFilters.country !== 'all' && b.country_base !== tableFilters.country) return false;
+      if (tableFilters.sector !== 'all' && !b.sector_focus?.includes(tableFilters.sector)) return false;
+      return true;
+    });
+  }, [buyers, tableFilters]);
+
+  const hasActiveFilters = tableFilters.search || tableFilters.type !== 'all' || tableFilters.country !== 'all' || tableFilters.sector !== 'all';
+
+  // Selection handlers - use filteredBuyers
   const handleSelectAll = useCallback(() => {
     if (!onSelectionChange) return;
-    if (selectedIds.size === buyers.length) {
+    if (selectedIds.size === filteredBuyers.length) {
       onSelectionChange(new Set());
     } else {
-      onSelectionChange(new Set(buyers.map(b => b.id)));
+      onSelectionChange(new Set(filteredBuyers.map(b => b.id)));
     }
-  }, [buyers, selectedIds.size, onSelectionChange]);
+  }, [filteredBuyers, selectedIds.size, onSelectionChange]);
 
   const handleSelectOne = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,8 +124,8 @@ export const CorporateBuyersTable = memo(({
     onSelectionChange(newSet);
   }, [selectedIds, onSelectionChange]);
 
-  const isAllSelected = buyers.length > 0 && selectedIds.size === buyers.length;
-  const isIndeterminate = selectedIds.size > 0 && selectedIds.size < buyers.length;
+  const isAllSelected = filteredBuyers.length > 0 && selectedIds.size === filteredBuyers.length;
+  const isIndeterminate = selectedIds.size > 0 && selectedIds.size < filteredBuyers.length;
 
   const Row = useMemo(() => 
     memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
