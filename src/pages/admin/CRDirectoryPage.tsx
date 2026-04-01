@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Users, Building2, Upload, Star, ListPlus, X } from 'lucide-react';
+import { Plus, Users, Building2, Upload, Star, ListPlus, X, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCRPeopleWithFunds } from '@/hooks/useCRPeople';
