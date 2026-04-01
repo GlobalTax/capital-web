@@ -21,6 +21,7 @@ import {
 import { useCorporateBuyers, useCorporateBuyerCountries, useBulkDeleteCorporateBuyers, useToggleBuyerReviewed } from '@/hooks/useCorporateBuyers';
 import { useFavoriteBuyerIds, useToggleCorporateFavorite } from '@/hooks/useCorporateFavorites';
 import { CorporateBuyersFilters } from '@/types/corporateBuyers';
+import { AddItemsToListDialog } from '@/components/admin/shared/AddItemsToListDialog';
 
 const CorporateBuyersPage = () => {
   const navigate = useNavigate();
