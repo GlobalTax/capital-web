@@ -15,6 +15,7 @@ import { SFPeopleTable } from '@/components/admin/search-funds/SFPeopleTable';
 import { SFFundsTable } from '@/components/admin/search-funds/SFFundsTable';
 import { SFEnrichmentDashboard } from '@/components/admin/search-funds/SFEnrichmentDashboard';
 import { SFPersonRole, SFEntityType, ENTITY_TYPE_LABELS, SF_ENTITY_CATEGORIES } from '@/types/searchFunds';
+import { AddFundsToListDialog } from '@/components/admin/search-funds/AddFundsToListDialog';
 
 export const SFDirectoryPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('fav-funds');
