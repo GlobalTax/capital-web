@@ -51,8 +51,8 @@ export const AddFundsToListDialog: React.FC<AddFundsToListDialogProps> = ({
         list_id: listId,
         empresa: f.name || '',
         contacto: '',
-        email: f.contact_email || '',
-        telefono: f.contact_phone || '',
+        email: '',
+        telefono: '',
         notas: [
           f.description,
           f.sector_focus?.length ? `Sectores: ${f.sector_focus.join(', ')}` : null,

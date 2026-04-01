@@ -44,9 +44,26 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
-export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, showFavoriteColumn = false }) => {
+export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, showFavoriteColumn = false, selectedIds, onSelectionChange }) => {
   const deleteMutation = useDeleteSFFund();
+  const selectable = !!onSelectionChange;
 
+  const toggleAll = () => {
+    if (!onSelectionChange) return;
+    if (selectedIds?.size === funds.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(funds.map(f => f.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  };
   if (isLoading) {
     return (
       <div className="space-y-1">
