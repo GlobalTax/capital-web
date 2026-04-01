@@ -659,6 +659,23 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
     });
   }, [empresas, sortConfig]);
 
+  const toggleAll = useCallback(() => {
+    if (!onSelectionChange) return;
+    if (selectedIds?.size === sortedEmpresas.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(sortedEmpresas.map(e => e.id)));
+    }
+  }, [sortedEmpresas, selectedIds, onSelectionChange]);
+
+  const toggleOne = useCallback((id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  }, [selectedIds, onSelectionChange]);
+
   const itemData = useMemo<RowData>(() => ({
     empresas: sortedEmpresas,
     onEdit,
@@ -667,7 +684,9 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
     showFavorites,
     visibleColumns,
     columnWidths,
-  }), [sortedEmpresas, onEdit, onDelete, handleNavigate, showFavorites, visibleColumns, columnWidths]);
+    selectedIds,
+    onToggleSelection: selectable ? toggleOne : undefined,
+  }), [sortedEmpresas, onEdit, onDelete, handleNavigate, showFavorites, visibleColumns, columnWidths, selectedIds, selectable, toggleOne]);
 
   const isLoading = isLoadingData || isLoadingColumns;
 
@@ -686,6 +705,7 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
   }
 
   const listHeight = Math.min(height, empresas.length * ROW_HEIGHT);
+  const effectiveWidth = totalWidth + (selectable ? 40 : 0);
 
   return (
     <div className="border border-border rounded-lg overflow-visible">
@@ -695,7 +715,7 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
         className="overflow-x-auto overflow-y-visible"
       >
         {/* Inner container with fixed width */}
-        <div style={{ minWidth: totalWidth }}>
+        <div style={{ minWidth: effectiveWidth }}>
           {/* Header */}
           <TableHeader 
             visibleColumns={visibleColumns} 
@@ -703,6 +723,9 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
             onSort={handleSort}
             columnWidths={columnWidths}
             totalWidth={totalWidth}
+            selectable={selectable}
+            allSelected={sortedEmpresas.length > 0 && selectedIds?.size === sortedEmpresas.length}
+            onToggleAll={toggleAll}
           />
           
           {/* Virtualized List */}
