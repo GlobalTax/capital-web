@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SFFund, SFStatus, SFEntityType, ENTITY_TYPE_SHORT_LABELS, ENTITY_TYPE_COLORS } from '@/types/searchFunds';
 import { useDeleteSFFund } from '@/hooks/useSFFunds';
@@ -14,6 +15,8 @@ interface SFFundsTableProps {
   funds: SFFund[];
   isLoading: boolean;
   showFavoriteColumn?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 const statusColors: Record<SFStatus, string> = {
@@ -41,9 +44,26 @@ const formatCurrency = (value: number | null) => {
   }).format(value);
 };
 
-export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, showFavoriteColumn = false }) => {
+export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, showFavoriteColumn = false, selectedIds, onSelectionChange }) => {
   const deleteMutation = useDeleteSFFund();
+  const selectable = !!onSelectionChange;
 
+  const toggleAll = () => {
+    if (!onSelectionChange) return;
+    if (selectedIds?.size === funds.length) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(funds.map(f => f.id)));
+    }
+  };
+
+  const toggleOne = (id: string) => {
+    if (!onSelectionChange || !selectedIds) return;
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onSelectionChange(next);
+  };
   if (isLoading) {
     return (
       <div className="space-y-1">
@@ -59,6 +79,15 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, sh
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30 border-b border-border/50 hover:bg-muted/30">
+            {selectable && (
+              <TableHead className="w-10 h-10">
+                <Checkbox
+                  checked={funds.length > 0 && selectedIds?.size === funds.length}
+                  onCheckedChange={toggleAll}
+                  aria-label="Seleccionar todos"
+                />
+              </TableHead>
+            )}
             {showFavoriteColumn && (
               <TableHead className="w-10 h-10"></TableHead>
             )}
@@ -83,13 +112,22 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, sh
         <TableBody>
           {funds.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={showFavoriteColumn ? 7 : 6} className="text-center py-12 text-muted-foreground">
+              <TableCell colSpan={(selectable ? 1 : 0) + (showFavoriteColumn ? 7 : 6)} className="text-center py-12 text-muted-foreground">
                 No se encontraron Search Funds
               </TableCell>
             </TableRow>
           ) : (
             funds.map((fund) => (
               <TableRow key={fund.id} className="h-11 hover:bg-muted/50 border-b border-border/30">
+                {selectable && (
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds?.has(fund.id) || false}
+                      onCheckedChange={() => toggleOne(fund.id)}
+                      aria-label={`Seleccionar ${fund.name}`}
+                    />
+                  </TableCell>
+                )}
                 {showFavoriteColumn && (
                   <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
                     <SFFavoriteButton entityType="fund" entityId={fund.id} />
