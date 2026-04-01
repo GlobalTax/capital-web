@@ -331,6 +331,9 @@ export const CRFundsTableVirtualized: React.FC<CRFundsTableVirtualizedProps> = (
           sortOrder={sortOrder}
           onSort={onSort}
           scrollLeft={scrollLeft}
+          selectable={selectable}
+          allSelected={funds.length > 0 && selectedIds?.size === funds.length}
+          onToggleAll={toggleAll}
         />
         
         {/* Virtualized List with horizontal scroll */}
