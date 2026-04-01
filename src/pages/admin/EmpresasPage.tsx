@@ -67,6 +67,8 @@ export default function EmpresasPage() {
 
   // Contactos state
   const [contactosPage, setContactosPage] = useState(0);
+  const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set());
+  const [isAddToListOpen, setIsAddToListOpen] = useState(false);
 
   // Lightweight stats (separate count queries)
   const { stats, isLoading: isLoadingStats } = useEmpresasStats();
