@@ -42,6 +42,7 @@ export const CRDirectoryPage: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedFundIds, setSelectedFundIds] = useState<Set<string>>(new Set());
   const [showAddToList, setShowAddToList] = useState(false);
+  const [showAddPeopleToList, setShowAddPeopleToList] = useState(false);
   // Sorting state for funds
   const [sortBy, setSortBy] = useState<'name' | 'people_count' | 'aum' | 'portfolio_count'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
