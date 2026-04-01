@@ -119,6 +119,15 @@ export const SFFundsTable: React.FC<SFFundsTableProps> = ({ funds, isLoading, sh
           ) : (
             funds.map((fund) => (
               <TableRow key={fund.id} className="h-11 hover:bg-muted/50 border-b border-border/30">
+                {selectable && (
+                  <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds?.has(fund.id) || false}
+                      onCheckedChange={() => toggleOne(fund.id)}
+                      aria-label={`Seleccionar ${fund.name}`}
+                    />
+                  </TableCell>
+                )}
                 {showFavoriteColumn && (
                   <TableCell className="py-2" onClick={(e) => e.stopPropagation()}>
                     <SFFavoriteButton entityType="fund" entityId={fund.id} />
