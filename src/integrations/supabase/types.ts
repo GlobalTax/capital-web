@@ -17310,6 +17310,7 @@ export type Database = {
           consolidador_nombre: string | null
           contacto: string | null
           created_at: string | null
+          deleted_at: string | null
           descripcion_actividad: string | null
           director_ejecutivo: string | null
           ebitda: number | null
@@ -17335,6 +17336,7 @@ export type Database = {
           consolidador_nombre?: string | null
           contacto?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           descripcion_actividad?: string | null
           director_ejecutivo?: string | null
           ebitda?: number | null
@@ -17360,6 +17362,7 @@ export type Database = {
           consolidador_nombre?: string | null
           contacto?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           descripcion_actividad?: string | null
           director_ejecutivo?: string | null
           ebitda?: number | null
