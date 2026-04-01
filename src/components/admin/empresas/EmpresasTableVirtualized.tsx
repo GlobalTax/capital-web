@@ -732,7 +732,7 @@ export const EmpresasTableVirtualized: React.FC<EmpresasTableVirtualizedProps> =
           <List
             ref={listRef}
             height={listHeight}
-            width={totalWidth}
+            width={effectiveWidth}
             itemCount={sortedEmpresas.length}
             itemSize={ROW_HEIGHT}
             itemData={itemData}
