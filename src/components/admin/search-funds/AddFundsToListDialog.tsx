@@ -1,0 +1,151 @@
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { Search, ListPlus, Loader2, Check } from 'lucide-react';
+import { SFFund } from '@/types/searchFunds';
+
+interface AddFundsToListDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  funds: SFFund[];
+  onSuccess?: () => void;
+}
+
+export const AddFundsToListDialog: React.FC<AddFundsToListDialogProps> = ({
+  open, onOpenChange, funds, onSuccess,
+}) => {
+  const [search, setSearch] = useState('');
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: lists = [], isLoading: listsLoading } = useQuery({
+    queryKey: ['outbound-lists-picker'],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('outbound_lists')
+        .select('id, name, sector, contact_count, lista_madre_id')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data as { id: string; name: string; sector: string | null; contact_count: number; lista_madre_id: string | null }[];
+    },
+    enabled: open,
+  });
+
+  const filteredLists = lists.filter(l =>
+    !search || l.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const addMutation = useMutation({
+    mutationFn: async (listId: string) => {
+      const rows = funds.map(f => ({
+        list_id: listId,
+        empresa: f.name || '',
+        contacto: '',
+        email: f.contact_email || '',
+        telefono: f.contact_phone || '',
+        notas: [
+          f.description,
+          f.sector_focus?.length ? `Sectores: ${f.sector_focus.join(', ')}` : null,
+          f.country_base ? `País: ${f.country_base}` : null,
+          f.ebitda_min || f.ebitda_max ? `EBITDA: ${f.ebitda_min || '?'} - ${f.ebitda_max || '?'}` : null,
+        ].filter(Boolean).join(' | '),
+      }));
+
+      const { error } = await (supabase as any)
+        .from('outbound_list_companies')
+        .insert(rows);
+      if (error) throw error;
+
+      const list = lists.find(l => l.id === listId);
+      if (list) {
+        await (supabase as any)
+          .from('outbound_lists')
+          .update({ contact_count: (list.contact_count || 0) + funds.length })
+          .eq('id', listId);
+      }
+    },
+    onSuccess: () => {
+      toast({ title: 'Funds añadidos', description: `${funds.length} fund(s) añadidos a la lista.` });
+      queryClient.invalidateQueries({ queryKey: ['outbound-lists'] });
+      onOpenChange(false);
+      setSelectedListId(null);
+      setSearch('');
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      toast({ title: 'Error', description: error.message || 'No se pudieron añadir.', variant: 'destructive' });
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ListPlus className="h-5 w-5" />
+            Añadir a lista
+          </DialogTitle>
+          <DialogDescription>
+            {funds.length} fund(s) seleccionado(s). Elige la lista destino.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Buscar lista..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+
+        <ScrollArea className="max-h-[300px]">
+          {listsLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          ) : filteredLists.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-8">No se encontraron listas</p>
+          ) : (
+            <div className="space-y-1">
+              {filteredLists.map(list => (
+                <button
+                  key={list.id}
+                  onClick={() => setSelectedListId(list.id)}
+                  className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors flex items-center justify-between gap-2 ${
+                    selectedListId === list.id ? 'bg-primary/10 border border-primary/30' : 'hover:bg-muted/50 border border-transparent'
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{list.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {list.sector && <Badge variant="outline" className="text-xs">{list.sector}</Badge>}
+                      <span className="text-xs text-muted-foreground">{list.contact_count || 0} contactos</span>
+                      {list.lista_madre_id && <Badge variant="secondary" className="text-xs">Sublista</Badge>}
+                    </div>
+                  </div>
+                  {selectedListId === list.id && <Check className="h-4 w-4 text-primary shrink-0" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button onClick={() => selectedListId && addMutation.mutate(selectedListId)} disabled={!selectedListId || addMutation.isPending}>
+            {addMutation.isPending ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Añadiendo...</>
+            ) : (
+              <><ListPlus className="h-4 w-4 mr-2" />Añadir {funds.length} fund(s)</>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

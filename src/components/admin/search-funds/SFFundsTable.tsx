@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { SFFund, SFStatus, SFEntityType, ENTITY_TYPE_SHORT_LABELS, ENTITY_TYPE_COLORS } from '@/types/searchFunds';
 import { useDeleteSFFund } from '@/hooks/useSFFunds';
@@ -14,6 +15,8 @@ interface SFFundsTableProps {
   funds: SFFund[];
   isLoading: boolean;
   showFavoriteColumn?: boolean;
+  selectedIds?: Set<string>;
+  onSelectionChange?: (ids: Set<string>) => void;
 }
 
 const statusColors: Record<SFStatus, string> = {
