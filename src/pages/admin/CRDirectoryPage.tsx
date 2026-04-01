@@ -425,7 +425,7 @@ export const CRDirectoryPage: React.FC = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Add to list dialog */}
+      {/* Add funds to list dialog */}
       <AddItemsToListDialog
         open={showAddToList}
         onOpenChange={setShowAddToList}
@@ -444,6 +444,29 @@ export const CRDirectoryPage: React.FC = () => {
             }));
         })()}
         onSuccess={() => setSelectedFundIds(new Set())}
+      />
+
+      {/* Add people to list dialog */}
+      <AddItemsToListDialog
+        open={showAddPeopleToList}
+        onOpenChange={setShowAddPeopleToList}
+        itemLabel="persona"
+        items={(() => {
+          const allPeople = [...(people || []), ...(favoritePeople || [])];
+          const uniquePeople = allPeople.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
+          return uniquePeople
+            .filter(p => selectedIds.has(p.id))
+            .map(p => ({
+              empresa: p.fund?.name || '',
+              contacto: p.full_name || '',
+              email: p.email || '',
+              notas: [
+                p.role ? `Rol: ${CR_PERSON_ROLE_LABELS[p.role as keyof typeof CR_PERSON_ROLE_LABELS] || p.role}` : null,
+                p.location || p.fund?.country_base ? `Ubicación: ${p.location || p.fund?.country_base}` : null,
+              ].filter(Boolean).join(' | '),
+            }));
+        })()}
+        onSuccess={() => setSelectedIds(new Set())}
       />
     </div>
   );
