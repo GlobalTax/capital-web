@@ -232,6 +232,21 @@ export const CRDirectoryPage: React.FC = () => {
           </TabsList>
         </div>
 
+        {/* Selection toolbar */}
+        {selectedFundIds.size > 0 && (
+          <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/20 rounded-lg">
+            <span className="text-sm font-medium">{selectedFundIds.size} fondo(s) seleccionado(s)</span>
+            <Button size="sm" variant="outline" onClick={() => setShowAddToList(true)}>
+              <ListPlus className="h-4 w-4 mr-1" />
+              Añadir a lista
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSelectedFundIds(new Set())}>
+              <X className="h-4 w-4 mr-1" />
+              Deseleccionar
+            </Button>
+          </div>
+        )}
+
         {/* Funds Tab - with new filters bar */}
         <TabsContent value="funds" className="mt-0 space-y-3">
           <CRFundFiltersBar
@@ -248,6 +263,8 @@ export const CRDirectoryPage: React.FC = () => {
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
+            selectedIds={selectedFundIds}
+            onSelectionChange={setSelectedFundIds}
           />
         </TabsContent>
 
@@ -291,6 +308,8 @@ export const CRDirectoryPage: React.FC = () => {
             funds={favoriteFunds || []}
             isLoading={loadingFavFunds}
             showFavorites
+            selectedIds={selectedFundIds}
+            onSelectionChange={setSelectedFundIds}
           />
         </TabsContent>
 
@@ -306,6 +325,27 @@ export const CRDirectoryPage: React.FC = () => {
           />
         </TabsContent>
       </Tabs>
+
+      {/* Add to list dialog */}
+      <AddItemsToListDialog
+        open={showAddToList}
+        onOpenChange={setShowAddToList}
+        itemLabel="fondo"
+        items={(() => {
+          const allFundsList = [...(allFunds || []), ...(favoriteFunds || [])];
+          const uniqueFunds = allFundsList.filter((f, i, arr) => arr.findIndex(x => x.id === f.id) === i);
+          return uniqueFunds
+            .filter(f => selectedFundIds.has(f.id))
+            .map(f => ({
+              empresa: f.name || '',
+              notas: [
+                f.sector_focus?.length ? `Sectores: ${f.sector_focus.join(', ')}` : null,
+                f.country_base ? `País: ${f.country_base}` : null,
+              ].filter(Boolean).join(' | '),
+            }));
+        })()}
+        onSuccess={() => setSelectedFundIds(new Set())}
+      />
     </div>
   );
 };
