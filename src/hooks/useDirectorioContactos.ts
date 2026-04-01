@@ -43,7 +43,7 @@ export const useDirectorioContactos = (
         .select(`
           id, nombre, apellidos, email, telefono, cargo,
           empresa_principal_id, linkedin, source, created_at,
-          empresas!contactos_empresa_principal_id_fkey ( nombre )
+          empresas!contactos_empresa_principal_id_fkey ( nombre, cif, facturacion, ebitda )
         `, { count: 'exact' });
 
       // Search filter
