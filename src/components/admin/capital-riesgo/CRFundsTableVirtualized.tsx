@@ -78,7 +78,10 @@ const TableHeader = React.memo<{
   sortOrder?: 'asc' | 'desc';
   onSort?: (field: any) => void;
   scrollLeft: number;
-}>(({ showFavorites, sortBy, sortOrder, onSort, scrollLeft }) => (
+  selectable?: boolean;
+  allSelected?: boolean;
+  onToggleAll?: () => void;
+}>(({ showFavorites, sortBy, sortOrder, onSort, scrollLeft, selectable, allSelected, onToggleAll }) => (
   <div className="overflow-hidden border-b border-border/50">
     <div 
       className="flex bg-muted/30"
