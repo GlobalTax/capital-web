@@ -198,14 +198,14 @@ serve(async (req) => {
         const attachments: { filename: string; content: string }[] = [];
 
         // 1. Valuation PDF from valuation_campaign_companies.pdf_url (public URL in 'valuations' bucket)
-        if (company?.pdf_url) {
+        if (shouldIncludeValuationPdf && company?.pdf_url) {
           const att = await downloadPdfFromUrl(company.pdf_url, `Valoracion_${company.client_company || "empresa"}.pdf`);
           if (att) attachments.push(att);
         }
 
         // 2. Study/Presentation PDF from campaign_presentations.storage_path (private bucket)
         const pres = presentationMap.get(email.company_id);
-        if (pres?.storage_path) {
+        if (shouldIncludeStudyPdf && pres?.storage_path) {
           const att = await downloadPdfFromStorage(serviceClient, pres.storage_path, pres.file_name || "Estudio.pdf");
           if (att) attachments.push(att);
         }
