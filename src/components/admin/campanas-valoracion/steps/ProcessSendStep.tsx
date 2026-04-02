@@ -550,7 +550,7 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
   const pauseRef = useRef(false);
 
   // Send schedule config
-  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false });
+  const [sendConfig, setSendConfig] = useState<SendScheduleSettings>({ intervalMs: 30000, maxPerHour: null, scheduledAt: null, serverSide: false, includeValuationPdf: true, includeStudyPdf: true });
   const [scheduledCountdown, setScheduledCountdown] = useState<string | null>(null);
   const scheduledTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -697,7 +697,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       }
 
       const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
-        body: { email_ids: [emailRecord.id] },
+        body: {
+          email_ids: [emailRecord.id],
+          include_valuation_pdf: sendConfig.includeValuationPdf,
+          include_study_pdf: sendConfig.includeStudyPdf,
+        },
       });
       if (error) throw error;
       if (responseData?.failed > 0) throw new Error(responseData.results?.[0]?.error || 'Error al enviar');
@@ -906,7 +910,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         setSendingProgress(p => ({ ...p, phase: 'Enviando email' }));
 
         const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
-          body: { email_ids: [emailRecord.id] },
+          body: {
+            email_ids: [emailRecord.id],
+            include_valuation_pdf: sendConfig.includeValuationPdf,
+            include_study_pdf: sendConfig.includeStudyPdf,
+          },
         });
 
         if (error) throw error;

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Settings2, ChevronDown, CalendarIcon, AlertTriangle, Clock, Gauge, Timer } from 'lucide-react';
+import { Settings2, ChevronDown, CalendarIcon, AlertTriangle, Clock, Gauge, Timer, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -19,6 +19,8 @@ export interface SendScheduleSettings {
   maxPerHour: number | null;
   scheduledAt: Date | null;
   serverSide: boolean;
+  includeValuationPdf: boolean;
+  includeStudyPdf: boolean;
 }
 
 const INTERVAL_OPTIONS = [
@@ -64,7 +66,7 @@ export function SendScheduleConfig({ value, onChange, disabled }: Props) {
             <span className="flex items-center gap-2">
               <Settings2 className="h-4 w-4 text-muted-foreground" />
               Configuración de envío
-              {(value.intervalMs !== 30000 || value.maxPerHour !== null || value.scheduledAt !== null) && (
+              {(value.intervalMs !== 30000 || value.maxPerHour !== null || value.scheduledAt !== null || !value.includeValuationPdf || !value.includeStudyPdf) && (
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Personalizado</Badge>
               )}
             </span>
@@ -307,6 +309,44 @@ export function SendScheduleConfig({ value, onChange, disabled }: Props) {
                     </div>
                   )}
                 </>
+              )}
+            </div>
+
+            {/* 5. PDF Attachments */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1.5 text-sm">
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                Adjuntos PDF
+              </Label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox
+                    checked={value.includeValuationPdf}
+                    onCheckedChange={(checked) => onChange({ ...value, includeValuationPdf: !!checked })}
+                    disabled={disabled}
+                  />
+                  Incluir PDF de Valoración
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox
+                    checked={value.includeStudyPdf}
+                    onCheckedChange={(checked) => onChange({ ...value, includeStudyPdf: !!checked })}
+                    disabled={disabled}
+                  />
+                  Incluir PDF de Estudio
+                </label>
+              </div>
+              {(!value.includeValuationPdf || !value.includeStudyPdf) && (
+                <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                    {!value.includeValuationPdf && !value.includeStudyPdf
+                      ? 'Se enviará el email sin ningún PDF adjunto.'
+                      : !value.includeValuationPdf
+                      ? 'Se enviará el email solo con el PDF de Estudio (sin Valoración).'
+                      : 'Se enviará el email solo con el PDF de Valoración (sin Estudio).'}
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>

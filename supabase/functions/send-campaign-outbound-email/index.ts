@@ -49,7 +49,9 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { email_ids, followup_ids, is_followup, followup_send_ids, is_followup_send } = body;
+    const { email_ids, followup_ids, is_followup, followup_send_ids, is_followup_send, include_valuation_pdf, include_study_pdf } = body;
+    const shouldIncludeValuationPdf = include_valuation_pdf !== false; // default true
+    const shouldIncludeStudyPdf = include_study_pdf !== false; // default true
 
     const isFollowupSendMode = is_followup_send && Array.isArray(followup_send_ids) && followup_send_ids.length > 0;
     const isFollowupMode = is_followup && Array.isArray(followup_ids) && followup_ids.length > 0;
@@ -196,20 +198,20 @@ serve(async (req) => {
         const attachments: { filename: string; content: string }[] = [];
 
         // 1. Valuation PDF from valuation_campaign_companies.pdf_url (public URL in 'valuations' bucket)
-        if (company?.pdf_url) {
+        if (shouldIncludeValuationPdf && company?.pdf_url) {
           const att = await downloadPdfFromUrl(company.pdf_url, `Valoracion_${company.client_company || "empresa"}.pdf`);
           if (att) attachments.push(att);
         }
 
         // 2. Study/Presentation PDF from campaign_presentations.storage_path (private bucket)
         const pres = presentationMap.get(email.company_id);
-        if (pres?.storage_path) {
+        if (shouldIncludeStudyPdf && pres?.storage_path) {
           const att = await downloadPdfFromStorage(serviceClient, pres.storage_path, pres.file_name || "Estudio.pdf");
           if (att) attachments.push(att);
         }
 
         // 3. Fallback: shared campaign document (Document mode, company_id is null)
-        if (!pres) {
+        if (shouldIncludeStudyPdf && !pres) {
           const shared = (sharedDocs || []).filter((d: any) => d.campaign_id === email.campaign_id);
           for (const doc of shared) {
             if (doc.storage_path) {
