@@ -190,7 +190,7 @@ function downloadTemplate() {
   const headers = [
     'Nombre empresa', 'CIF', 'CNAE', 'Descripción Actividad', 'Año datos', 'Facturación', 'EBITDA',
     'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto', 'Posición Contacto',
-    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma', 'Tipo',
+    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma', 'Tipo', 'Nombre Accionista',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   // Set column widths
