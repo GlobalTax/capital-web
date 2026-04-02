@@ -906,7 +906,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
         setSendingProgress(p => ({ ...p, phase: 'Enviando email' }));
 
         const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
-          body: { email_ids: [emailRecord.id] },
+          body: {
+            email_ids: [emailRecord.id],
+            include_valuation_pdf: sendConfig.includeValuationPdf,
+            include_study_pdf: sendConfig.includeStudyPdf,
+          },
         });
 
         if (error) throw error;
