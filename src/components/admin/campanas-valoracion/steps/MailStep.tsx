@@ -539,7 +539,13 @@ function MailListSection({
                 <TableRow
                   key={c.id}
                   className={cn("cursor-pointer hover:bg-muted/50", email?.is_manually_edited && "bg-amber-50/50")}
-                  onClick={() => email && onEditEmail(email, c)}
+                  onClick={() => {
+                    if (email) {
+                      onEditEmail(email, c);
+                    } else {
+                      toast.info('Este email aún no ha sido generado. Genera los emails desde la pestaña "Template".');
+                    }
+                  }}
                 >
                   <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
                   <TableCell className="font-medium text-sm max-w-[200px] truncate">
