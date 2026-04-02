@@ -697,7 +697,11 @@ export function ProcessSendStep({ campaignId, campaign }: Props) {
       }
 
       const { data: responseData, error } = await supabase.functions.invoke('send-campaign-outbound-email', {
-        body: { email_ids: [emailRecord.id] },
+        body: {
+          email_ids: [emailRecord.id],
+          include_valuation_pdf: sendConfig.includeValuationPdf,
+          include_study_pdf: sendConfig.includeStudyPdf,
+        },
       });
       if (error) throw error;
       if (responseData?.failed > 0) throw new Error(responseData.results?.[0]?.error || 'Error al enviar');
