@@ -536,9 +536,16 @@ function MailListSection({
               const hasStudy = !!pres;
 
               return (
-                <TableRow key={c.id}>
+                <TableRow
+                  key={c.id}
+                  className={cn("cursor-pointer hover:bg-muted/50", email?.is_manually_edited && "bg-amber-50/50")}
+                  onClick={() => email && onEditEmail(email, c)}
+                >
                   <TableCell className="text-xs text-muted-foreground">{i + 1}</TableCell>
-                  <TableCell className="font-medium text-sm max-w-[200px] truncate">{c.client_company}</TableCell>
+                  <TableCell className="font-medium text-sm max-w-[200px] truncate">
+                    {c.client_company}
+                    {email?.is_manually_edited && <span className="ml-1.5 text-amber-500" title="Editado manualmente">✏️</span>}
+                  </TableCell>
                   <TableCell className="text-sm">{c.client_name || '—'}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{c.client_email || '—'}</TableCell>
                   <TableCell className="text-center">
@@ -564,40 +571,53 @@ function MailListSection({
                       <Badge variant="secondary" className="text-xs">Sin email</Badge>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7">
-                          <MoreVertical className="h-3.5 w-3.5" />
+                  <TableCell onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-0.5">
+                      {email && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          title="Editar email"
+                          onClick={() => onEditEmail(email, c)}
+                        >
+                          <Edit3 className="h-3.5 w-3.5" />
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {email && (
-                          <>
-                            <DropdownMenuItem onClick={() => onEditEmail(email, c)}>
-                              <Edit3 className="h-3.5 w-3.5 mr-2" />Editar email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => onSendEmail(email.id)}
-                              disabled={email.status === 'sent'}
-                            >
-                              <Send className="h-3.5 w-3.5 mr-2" />Enviar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                          </>
-                        )}
-                        <DropdownMenuItem onClick={() => setManualSendTargets([{
-                          companyId: c.id, companyName: c.client_company, campaignId: campaign.id,
-                        }])}>
-                          <MailCheck className="h-3.5 w-3.5 mr-2" />Registrar envío manual
-                        </DropdownMenuItem>
-                        {!email && (
-                          <DropdownMenuItem disabled>
-                            <Mail className="h-3.5 w-3.5 mr-2" />Sin email generado
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7">
+                            <MoreVertical className="h-3.5 w-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {email && (
+                            <>
+                              <DropdownMenuItem onClick={() => onEditEmail(email, c)}>
+                                <Edit3 className="h-3.5 w-3.5 mr-2" />Editar email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => onSendEmail(email.id)}
+                                disabled={email.status === 'sent'}
+                              >
+                                <Send className="h-3.5 w-3.5 mr-2" />Enviar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          <DropdownMenuItem onClick={() => setManualSendTargets([{
+                            companyId: c.id, companyName: c.client_company, campaignId: campaign.id,
+                          }])}>
+                            <MailCheck className="h-3.5 w-3.5 mr-2" />Registrar envío manual
                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          {!email && (
+                            <DropdownMenuItem disabled>
+                              <Mail className="h-3.5 w-3.5 mr-2" />Sin email generado
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
