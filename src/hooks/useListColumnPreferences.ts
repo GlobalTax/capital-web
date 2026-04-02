@@ -27,8 +27,9 @@ const DEFAULT_COLUMNS: ListColumnDef[] = [
   { key: 'ebitda', label: 'EBITDA', visible: true, position: 12, sortable: true, align: 'right' },
   { key: 'num_trabajadores', label: 'Empleados', visible: true, position: 13, sortable: true, align: 'right' },
   { key: 'consolidador', label: 'Consolidador', visible: true, position: 14, minWidth: '180px' },
-  { key: 'notas', label: 'Notas', visible: true, position: 15, minWidth: '160px' },
-  { key: 'lista_madre', label: 'Lista Madre', visible: true, position: 16, minWidth: '160px' },
+  { key: 'tipo_accionista', label: 'Tipo', visible: true, position: 15, minWidth: '160px' },
+  { key: 'notas', label: 'Notas', visible: true, position: 16, minWidth: '160px' },
+  { key: 'lista_madre', label: 'Lista Madre', visible: true, position: 17, minWidth: '160px' },
 ];
 
 const STORAGE_KEY = 'list-column-prefs-v2';

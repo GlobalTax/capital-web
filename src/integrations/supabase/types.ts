@@ -17340,6 +17340,7 @@ export type Database = {
           posicion_contacto: string | null
           provincia: string | null
           telefono: string | null
+          tipo_accionista: string | null
           web: string | null
         }
         Insert: {
@@ -17366,6 +17367,7 @@ export type Database = {
           posicion_contacto?: string | null
           provincia?: string | null
           telefono?: string | null
+          tipo_accionista?: string | null
           web?: string | null
         }
         Update: {
@@ -17392,6 +17394,7 @@ export type Database = {
           posicion_contacto?: string | null
           provincia?: string | null
           telefono?: string | null
+          tipo_accionista?: string | null
           web?: string | null
         }
         Relationships: [

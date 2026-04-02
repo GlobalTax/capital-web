@@ -8,6 +8,7 @@ import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '
 import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
 import { ImportResultModal } from '@/components/admin/contact-lists/ImportResultModal';
 import { supabase } from '@/integrations/supabase/client';
+import { EditableSelect } from '@/components/admin/shared/EditableSelect';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,7 +113,25 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   posicion_contacto: ['posicion_contacto', 'posicion', 'cargo', 'puesto', 'position', 'rol', 'job_title'],
   cnae: ['cnae', 'codigo_cnae', 'cnae_code', 'actividad_cnae'],
   descripcion_actividad: ['descripcion_actividad', 'actividad', 'descripcion', 'activity', 'objeto_social', 'actividad_empresa'],
+  tipo_accionista: ['tipo_accionista', 'tipo', 'type', 'tipo_propietario'],
 };
+
+const TIPO_ACCIONISTA_OPTIONS = [
+  { value: 'Una o más personas físicas o familias', label: 'Personas físicas/familias' },
+  { value: 'Empresa', label: 'Empresa' },
+  { value: 'Empresa financiera', label: 'Empresa financiera' },
+  { value: 'Fondos mutuos & de pensiones/Nominee/Trust/Trustee', label: 'Fondos/Nominee/Trust' },
+  { value: 'Auto participación', label: 'Auto participación' },
+  { value: 'Banco', label: 'Banco' },
+  { value: 'Autoridades públicas, Estado, Gobierno', label: 'Autoridades públicas' },
+  { value: 'Firmas Private Equity', label: 'Private Equity' },
+  { value: 'Venture capital', label: 'Venture capital' },
+  { value: 'Seguro', label: 'Seguro' },
+  { value: 'Fundaciones/Institutos de investigación', label: 'Fundaciones/Institutos' },
+  { value: 'Accionistas privados no identificados, agregados', label: 'Accionistas privados n/i' },
+  { value: 'Empleados/Administradores/Directores', label: 'Empleados/Directores' },
+  { value: 'Otros accionistas no identificados, agregados', label: 'Otros n/i agregados' },
+];
 
 function parseSpanishNumber(val: any): number | null {
   if (val == null || val === '') return null;
@@ -170,7 +189,7 @@ function downloadTemplate() {
   const headers = [
     'Nombre empresa', 'CIF', 'CNAE', 'Descripción Actividad', 'Año datos', 'Facturación', 'EBITDA',
     'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto', 'Posición Contacto',
-    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma',
+    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma', 'Tipo',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   // Set column widths
@@ -1536,6 +1555,23 @@ export default function ContactListDetailPage() {
             )}
           </div>
         );
+      case 'tipo_accionista':
+        return (
+          <EditableSelect
+            value={(company as any).tipo_accionista}
+            options={TIPO_ACCIONISTA_OPTIONS}
+            onSave={async (newValue) => {
+              const { error } = await supabase
+                .from('outbound_list_companies' as any)
+                .update({ tipo_accionista: newValue } as any)
+                .eq('id', company.id);
+              if (error) throw error;
+              queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+            }}
+            allowClear
+            placeholder="Seleccionar tipo..."
+          />
+        );
       case 'notas':
         return <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />;
       default:
@@ -2300,7 +2336,7 @@ export default function ContactListDetailPage() {
                                </TableRow>
                              );
                            }
-                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador']);
+                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador', 'tipo_accionista']);
                            return (
                              <React.Fragment key={company.id}>
                                {separatorRow}
