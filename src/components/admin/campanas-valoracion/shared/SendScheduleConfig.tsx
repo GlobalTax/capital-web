@@ -66,7 +66,7 @@ export function SendScheduleConfig({ value, onChange, disabled }: Props) {
             <span className="flex items-center gap-2">
               <Settings2 className="h-4 w-4 text-muted-foreground" />
               Configuración de envío
-              {(value.intervalMs !== 30000 || value.maxPerHour !== null || value.scheduledAt !== null) && (
+              {(value.intervalMs !== 30000 || value.maxPerHour !== null || value.scheduledAt !== null || !value.includeValuationPdf || !value.includeStudyPdf) && (
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Personalizado</Badge>
               )}
             </span>
