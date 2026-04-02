@@ -116,6 +116,23 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   tipo_accionista: ['tipo_accionista', 'tipo', 'type', 'tipo_propietario'],
 };
 
+const TIPO_ACCIONISTA_OPTIONS = [
+  { value: 'Una o más personas físicas o familias', label: 'Personas físicas/familias' },
+  { value: 'Empresa', label: 'Empresa' },
+  { value: 'Empresa financiera', label: 'Empresa financiera' },
+  { value: 'Fondos mutuos & de pensiones/Nominee/Trust/Trustee', label: 'Fondos/Nominee/Trust' },
+  { value: 'Auto participación', label: 'Auto participación' },
+  { value: 'Banco', label: 'Banco' },
+  { value: 'Autoridades públicas, Estado, Gobierno', label: 'Autoridades públicas' },
+  { value: 'Firmas Private Equity', label: 'Private Equity' },
+  { value: 'Venture capital', label: 'Venture capital' },
+  { value: 'Seguro', label: 'Seguro' },
+  { value: 'Fundaciones/Institutos de investigación', label: 'Fundaciones/Institutos' },
+  { value: 'Accionistas privados no identificados, agregados', label: 'Accionistas privados n/i' },
+  { value: 'Empleados/Administradores/Directores', label: 'Empleados/Directores' },
+  { value: 'Otros accionistas no identificados, agregados', label: 'Otros n/i agregados' },
+];
+
 function parseSpanishNumber(val: any): number | null {
   if (val == null || val === '') return null;
   if (typeof val === 'number') return val;
