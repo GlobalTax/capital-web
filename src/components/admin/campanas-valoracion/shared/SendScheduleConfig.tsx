@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Settings2, ChevronDown, CalendarIcon, AlertTriangle, Clock, Gauge, Timer } from 'lucide-react';
+import { Settings2, ChevronDown, CalendarIcon, AlertTriangle, Clock, Gauge, Timer, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
