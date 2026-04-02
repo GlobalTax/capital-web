@@ -7992,6 +7992,7 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          description_en: string | null
           ebitda_amount: number | null
           ebitda_margin: number | null
           estado: string | null
@@ -8008,6 +8009,7 @@ export type Database = {
           sector: string | null
           sectores_target: string[] | null
           short_description: string | null
+          short_description_en: string | null
           ubicacion: string | null
           updated_at: string | null
           year: number | null
@@ -8015,6 +8017,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           ebitda_amount?: number | null
           ebitda_margin?: number | null
           estado?: string | null
@@ -8031,6 +8034,7 @@ export type Database = {
           sector?: string | null
           sectores_target?: string[] | null
           short_description?: string | null
+          short_description_en?: string | null
           ubicacion?: string | null
           updated_at?: string | null
           year?: number | null
@@ -8038,6 +8042,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
           ebitda_amount?: number | null
           ebitda_margin?: number | null
           estado?: string | null
@@ -8054,6 +8059,7 @@ export type Database = {
           sector?: string | null
           sectores_target?: string[] | null
           short_description?: string | null
+          short_description_en?: string | null
           ubicacion?: string | null
           updated_at?: string | null
           year?: number | null
