@@ -8,6 +8,7 @@ import { useExcelImportValidation, type ValidationResult, type ErrorRow } from '
 import { ImportPreviewModal } from '@/components/admin/contact-lists/ImportPreviewModal';
 import { ImportResultModal } from '@/components/admin/contact-lists/ImportResultModal';
 import { supabase } from '@/integrations/supabase/client';
+import { EditableSelect } from '@/components/admin/shared/EditableSelect';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
