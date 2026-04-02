@@ -498,8 +498,23 @@ function MailListSection({
         </Button>
       )}
 
-      {/* Table */}
-      <div className="border rounded-lg overflow-auto max-h-[55vh]">
+      {/* Search + Table */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="p-2 border-b bg-muted/30">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar empresa, contacto o email..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-muted-foreground mt-1.5">{filteredCompanies.length} de {companies.length} empresas</p>
+          )}
+        </div>
+        <div className="overflow-auto max-h-[50vh]">
         <Table>
           <TableHeader>
             <TableRow>
