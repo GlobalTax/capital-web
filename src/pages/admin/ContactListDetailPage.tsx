@@ -114,6 +114,7 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   cnae: ['cnae', 'codigo_cnae', 'cnae_code', 'actividad_cnae'],
   descripcion_actividad: ['descripcion_actividad', 'actividad', 'descripcion', 'activity', 'objeto_social', 'actividad_empresa'],
   tipo_accionista: ['tipo_accionista', 'tipo', 'type', 'tipo_propietario'],
+  nombre_accionista: ['nombre_accionista', 'accionista', 'shareholder', 'shareholder_name', 'nombre_propietario'],
 };
 
 const TIPO_ACCIONISTA_OPTIONS = [
