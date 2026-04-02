@@ -1573,6 +1573,16 @@ export default function ContactListDetailPage() {
             placeholder="Seleccionar tipo..."
           />
         );
+      case 'nombre_accionista':
+        return (
+          <InlineTextCell
+            companyId={company.id}
+            field="nombre_accionista"
+            initialValue={(company as any).nombre_accionista}
+            placeholder="Nombre accionista..."
+            onSaved={handleFieldSaved}
+          />
+        );
       case 'notas':
         return <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />;
       default:
