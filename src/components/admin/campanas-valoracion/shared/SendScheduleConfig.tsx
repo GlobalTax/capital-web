@@ -19,6 +19,8 @@ export interface SendScheduleSettings {
   maxPerHour: number | null;
   scheduledAt: Date | null;
   serverSide: boolean;
+  includeValuationPdf: boolean;
+  includeStudyPdf: boolean;
 }
 
 const INTERVAL_OPTIONS = [
