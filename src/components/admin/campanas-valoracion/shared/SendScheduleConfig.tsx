@@ -310,6 +310,7 @@ export function SendScheduleConfig({ value, onChange, disabled }: Props) {
                   )}
                 </>
               )}
+            </div>
 
             {/* 5. PDF Attachments */}
             <div className="space-y-2">
