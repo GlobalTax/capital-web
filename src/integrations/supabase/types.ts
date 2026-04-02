@@ -17341,6 +17341,7 @@ export type Database = {
           id: string
           linkedin: string | null
           list_id: string | null
+          nombre_accionista: string | null
           notas: string | null
           num_trabajadores: number | null
           posicion_contacto: string | null
@@ -17368,6 +17369,7 @@ export type Database = {
           id?: string
           linkedin?: string | null
           list_id?: string | null
+          nombre_accionista?: string | null
           notas?: string | null
           num_trabajadores?: number | null
           posicion_contacto?: string | null
@@ -17395,6 +17397,7 @@ export type Database = {
           id?: string
           linkedin?: string | null
           list_id?: string | null
+          nombre_accionista?: string | null
           notas?: string | null
           num_trabajadores?: number | null
           posicion_contacto?: string | null

@@ -114,6 +114,7 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   cnae: ['cnae', 'codigo_cnae', 'cnae_code', 'actividad_cnae'],
   descripcion_actividad: ['descripcion_actividad', 'actividad', 'descripcion', 'activity', 'objeto_social', 'actividad_empresa'],
   tipo_accionista: ['tipo_accionista', 'tipo', 'type', 'tipo_propietario'],
+  nombre_accionista: ['nombre_accionista', 'accionista', 'shareholder', 'shareholder_name', 'nombre_propietario'],
 };
 
 const TIPO_ACCIONISTA_OPTIONS = [
@@ -189,7 +190,7 @@ function downloadTemplate() {
   const headers = [
     'Nombre empresa', 'CIF', 'CNAE', 'Descripción Actividad', 'Año datos', 'Facturación', 'EBITDA',
     'Nº Trabajadores', 'Director Ejecutivo', 'Nombre Contacto', 'Posición Contacto',
-    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma', 'Tipo',
+    'Email', 'LinkedIn', 'Teléfono', 'Web', 'Provincia', 'Comunidad Autónoma', 'Tipo', 'Nombre Accionista',
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   // Set column widths
@@ -1572,6 +1573,16 @@ export default function ContactListDetailPage() {
             placeholder="Seleccionar tipo..."
           />
         );
+      case 'nombre_accionista':
+        return (
+          <InlineTextCell
+            companyId={company.id}
+            field="nombre_accionista"
+            initialValue={(company as any).nombre_accionista}
+            placeholder="Nombre accionista..."
+            onSaved={handleFieldSaved}
+          />
+        );
       case 'notas':
         return <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />;
       default:
@@ -2336,7 +2347,7 @@ export default function ContactListDetailPage() {
                                </TableRow>
                              );
                            }
-                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador', 'tipo_accionista']);
+                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador', 'tipo_accionista', 'nombre_accionista']);
                            return (
                              <React.Fragment key={company.id}>
                                {separatorRow}
