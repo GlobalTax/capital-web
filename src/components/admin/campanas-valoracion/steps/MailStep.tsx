@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Send, Loader2, Eye, Mail, MoreVertical, FileText, CheckCircle2, Clock, AlertCircle,
-  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users, MailCheck,
+  Edit3, RotateCcw, Building2, Save, Upload, Pen, Users, MailCheck, Search,
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
@@ -445,8 +445,19 @@ function MailListSection({
 }) {
   const [showSendAllConfirm, setShowSendAllConfirm] = useState(false);
   const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const emailMap = new Map(emails.map(e => [e.company_id, e]));
   const presMap = new Map(presentations.map((p: any) => [p.company_id, p]));
+
+  const filteredCompanies = useMemo(() => {
+    if (!searchQuery.trim()) return companies;
+    const q = searchQuery.toLowerCase();
+    return companies.filter(c =>
+      c.client_company?.toLowerCase().includes(q) ||
+      c.client_name?.toLowerCase().includes(q) ||
+      c.client_email?.toLowerCase().includes(q)
+    );
+  }, [companies, searchQuery]);
 
   const totalEmails = emails.length;
   const sentCount = emails.filter(e => e.status === 'sent').length;
@@ -487,8 +498,23 @@ function MailListSection({
         </Button>
       )}
 
-      {/* Table */}
-      <div className="border rounded-lg overflow-auto max-h-[55vh]">
+      {/* Search + Table */}
+      <div className="border rounded-lg overflow-hidden">
+        <div className="p-2 border-b bg-muted/30">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar empresa, contacto o email..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-sm"
+            />
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-muted-foreground mt-1.5">{filteredCompanies.length} de {companies.length} empresas</p>
+          )}
+        </div>
+        <div className="overflow-auto max-h-[50vh]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -503,7 +529,7 @@ function MailListSection({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {companies.map((c, i) => {
+            {filteredCompanies.map((c, i) => {
               const email = emailMap.get(c.id);
               const pres = presMap.get(c.id);
               const hasValuation = ['calculated', 'sent'].includes(c.status);
@@ -578,6 +604,7 @@ function MailListSection({
             })}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Send all confirm */}
