@@ -1537,6 +1537,23 @@ export default function ContactListDetailPage() {
             )}
           </div>
         );
+      case 'tipo_accionista':
+        return (
+          <EditableSelect
+            value={(company as any).tipo_accionista}
+            options={TIPO_ACCIONISTA_OPTIONS}
+            onSave={async (newValue) => {
+              const { error } = await supabase
+                .from('outbound_list_companies' as any)
+                .update({ tipo_accionista: newValue } as any)
+                .eq('id', company.id);
+              if (error) throw error;
+              queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+            }}
+            allowClear
+            placeholder="Seleccionar tipo..."
+          />
+        );
       case 'notas':
         return <InlineNoteCell companyId={company.id} initialValue={company.notas} onSaved={handleNoteSaved} />;
       default:
