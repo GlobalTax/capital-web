@@ -604,6 +604,7 @@ function MailListSection({
             })}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Send all confirm */}
