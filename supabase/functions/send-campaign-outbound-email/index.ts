@@ -49,7 +49,9 @@ serve(async (req) => {
     }
 
     const body = await req.json();
-    const { email_ids, followup_ids, is_followup, followup_send_ids, is_followup_send } = body;
+    const { email_ids, followup_ids, is_followup, followup_send_ids, is_followup_send, include_valuation_pdf, include_study_pdf } = body;
+    const shouldIncludeValuationPdf = include_valuation_pdf !== false; // default true
+    const shouldIncludeStudyPdf = include_study_pdf !== false; // default true
 
     const isFollowupSendMode = is_followup_send && Array.isArray(followup_send_ids) && followup_send_ids.length > 0;
     const isFollowupMode = is_followup && Array.isArray(followup_ids) && followup_ids.length > 0;
