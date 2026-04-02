@@ -211,7 +211,7 @@ serve(async (req) => {
         }
 
         // 3. Fallback: shared campaign document (Document mode, company_id is null)
-        if (!pres) {
+        if (shouldIncludeStudyPdf && !pres) {
           const shared = (sharedDocs || []).filter((d: any) => d.campaign_id === email.campaign_id);
           for (const doc of shared) {
             if (doc.storage_path) {
