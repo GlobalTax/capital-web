@@ -2347,7 +2347,7 @@ export default function ContactListDetailPage() {
                                </TableRow>
                              );
                            }
-                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador', 'tipo_accionista']);
+                           const needsStopPropagation = new Set(['contacto', 'email', 'linkedin', 'notas', 'consolidador', 'tipo_accionista', 'nombre_accionista']);
                            return (
                              <React.Fragment key={company.id}>
                                {separatorRow}
