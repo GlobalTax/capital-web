@@ -529,7 +529,7 @@ function MailListSection({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {companies.map((c, i) => {
+            {filteredCompanies.map((c, i) => {
               const email = emailMap.get(c.id);
               const pres = presMap.get(c.id);
               const hasValuation = ['calculated', 'sent'].includes(c.status);
