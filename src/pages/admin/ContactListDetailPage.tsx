@@ -112,6 +112,7 @@ const COLUMN_SYNONYMS: Record<string, string[]> = {
   posicion_contacto: ['posicion_contacto', 'posicion', 'cargo', 'puesto', 'position', 'rol', 'job_title'],
   cnae: ['cnae', 'codigo_cnae', 'cnae_code', 'actividad_cnae'],
   descripcion_actividad: ['descripcion_actividad', 'actividad', 'descripcion', 'activity', 'objeto_social', 'actividad_empresa'],
+  tipo_accionista: ['tipo_accionista', 'tipo', 'type', 'tipo_propietario'],
 };
 
 function parseSpanishNumber(val: any): number | null {
