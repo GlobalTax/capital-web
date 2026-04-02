@@ -449,6 +449,16 @@ function MailListSection({
   const emailMap = new Map(emails.map(e => [e.company_id, e]));
   const presMap = new Map(presentations.map((p: any) => [p.company_id, p]));
 
+  const filteredCompanies = useMemo(() => {
+    if (!searchQuery.trim()) return companies;
+    const q = searchQuery.toLowerCase();
+    return companies.filter(c =>
+      c.client_company?.toLowerCase().includes(q) ||
+      c.client_name?.toLowerCase().includes(q) ||
+      c.client_email?.toLowerCase().includes(q)
+    );
+  }, [companies, searchQuery]);
+
   const totalEmails = emails.length;
   const sentCount = emails.filter(e => e.status === 'sent').length;
   const pendingCount = emails.filter(e => e.status === 'pending').length;
