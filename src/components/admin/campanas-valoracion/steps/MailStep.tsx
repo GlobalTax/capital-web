@@ -445,6 +445,7 @@ function MailListSection({
 }) {
   const [showSendAllConfirm, setShowSendAllConfirm] = useState(false);
   const [manualSendTargets, setManualSendTargets] = useState<{ companyId: string; companyName: string; campaignId: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const emailMap = new Map(emails.map(e => [e.company_id, e]));
   const presMap = new Map(presentations.map((p: any) => [p.company_id, p]));
 
