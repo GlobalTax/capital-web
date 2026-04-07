@@ -747,7 +747,7 @@ export const LeadsPipelineView: React.FC = () => {
       <div className="flex-1 overflow-hidden">
         <DragDropContext onDragStart={startAutoScroll} onDragEnd={handleDragEnd}>
           <div ref={scrollContainerRef} className="flex gap-4 h-full overflow-x-auto pb-4">
-            {visibleStatuses.map((status) => (
+            {displayedStatuses.map((status) => (
               <PipelineColumn
                 key={status.id}
                 column={{
