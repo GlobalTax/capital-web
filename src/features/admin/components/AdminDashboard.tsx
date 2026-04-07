@@ -8,6 +8,7 @@ import { RecentBlogPosts } from './dashboard/RecentBlogPosts';
 import { RecentAcquisitions } from './dashboard/RecentAcquisitions';
 import { RecentCollaborations } from './dashboard/RecentCollaborations';
 import { ActivityTimeline } from './dashboard/ActivityTimeline';
+import { RODOpportunities } from './dashboard/RODOpportunities';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { HighlightsSidebar } from './dashboard/DashboardHighlights';
