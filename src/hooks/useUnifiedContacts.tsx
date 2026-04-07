@@ -615,6 +615,24 @@ export const useUnifiedContacts = () => {
           // 🔥 NEW: Business registration date
           lead_received_at: (lead as any).lead_received_at || lead.created_at,
         })),
+
+        // Buyer alert preferences
+        ...(buyerAlertLeads || []).map(lead => ({
+          id: lead.id,
+          origin: 'buyer_alert' as const,
+          name: lead.full_name || '',
+          email: lead.email,
+          phone: lead.phone || undefined,
+          company: lead.company || undefined,
+          created_at: lead.created_at || new Date().toISOString(),
+          status: lead.is_active ? 'active' : 'inactive',
+          sectors_of_interest: lead.preferred_sectors?.join(', ') || undefined,
+          preferred_location: lead.preferred_locations?.join(', ') || undefined,
+          priority: 'warm' as const,
+          is_hot_lead: false,
+          source: 'buyer_alert',
+          lead_received_at: lead.created_at || new Date().toISOString(),
+        })),
       ];
 
       // Get all unique assigned_to IDs
