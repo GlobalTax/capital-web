@@ -175,7 +175,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   useEffect(() => {
     fetchOperations();
     setIsLoadingAll(false);
-  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedDealType, sortBy, offset, viewMode, dateFilter, lang, fetchKey]);
+  }, [debouncedSearchTerm, selectedSector, selectedDealType, sortBy, offset, viewMode, dateFilter, lang, fetchKey]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
