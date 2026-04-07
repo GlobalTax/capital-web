@@ -1747,6 +1747,20 @@ export default function ContactListDetailPage() {
             </div>
             <ScrollArea className="h-[220px]">
               <div className="p-1">
+                {/* Presence filters */}
+                {(PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && (
+                  <>
+                    <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-muted-foreground">
+                      <Checkbox checked={activeFilters.includes('__has')} onCheckedChange={() => toggleColumnFilter(colKey, '__has')} />
+                      <span>Con dato</span>
+                    </label>
+                    <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-muted-foreground">
+                      <Checkbox checked={activeFilters.includes('__empty')} onCheckedChange={() => toggleColumnFilter(colKey, '__empty')} />
+                      <span>Sin dato</span>
+                    </label>
+                    {values.length > 0 && <div className="border-t my-1" />}
+                  </>
+                )}
                 {filtered.map((val) => (
                   <label key={val} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
                     <Checkbox
@@ -1756,7 +1770,7 @@ export default function ContactListDetailPage() {
                     <span className="truncate">{val}</span>
                   </label>
                 ))}
-                {filtered.length === 0 && (
+                {filtered.length === 0 && !(PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && (
                   <p className="text-xs text-muted-foreground text-center py-3">Sin resultados</p>
                 )}
               </div>
