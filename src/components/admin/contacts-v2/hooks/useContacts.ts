@@ -215,6 +215,8 @@ export const useContacts = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sell_leads' }, refetchAndInvalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'general_contact_leads' }, refetchAndInvalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'company_acquisition_inquiries' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'buyer_preferences' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'buyer_contacts' }, refetchAndInvalidate)
       .subscribe();
 
     return () => {
