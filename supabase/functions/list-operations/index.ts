@@ -127,20 +127,30 @@ serve(async (req) => {
     }
 
     // ── Fetch filter options ──
-    // Sectors from sectors table
-    let sectors: { key: string; label: string }[] = [];
+    // Get unique sectors from visible datos_proyecto only
+    const { data: availableSectorsData } = await supabase
+      .from('datos_proyecto')
+      .select('sector, mandatos!inner(visible_en_rod)')
+      .eq('mandatos.visible_en_rod', true)
+      .not('sector', 'is', null);
+
+    const uniqueSectorNames = [...new Set((availableSectorsData || []).map(d => d.sector).filter(Boolean))].sort();
+
+    // Enrich with translations from sectors table
     const { data: sectorsData } = await supabase
       .from('sectors')
       .select('name_es, name_en, slug')
       .eq('is_active', true)
       .order('display_order');
 
-    if (sectorsData) {
-      sectors = sectorsData.map(s => ({
-        key: s.slug,
-        label: (locale === 'en' && s.name_en) ? s.name_en : s.name_es
-      }));
-    }
+    // Only include sectors that exist in visible operations
+    let sectors: { key: string; label: string }[] = uniqueSectorNames.map(sectorName => {
+      const match = sectorsData?.find(s => s.name_es === sectorName);
+      return {
+        key: match?.slug || sectorName,
+        label: (locale === 'en' && match?.name_en) ? match.name_en : sectorName
+      };
+    });
 
     // Unique locations from datos_proyecto
     let locations: string[] = [];
