@@ -109,6 +109,23 @@ export const LeadsPipelineView: React.FC = () => {
   const [filterRevMax, setFilterRevMax] = useState<number>(0);
   const [filterEbitdaMin, setFilterEbitdaMin] = useState<number>(0);
   const [filterEbitdaMax, setFilterEbitdaMax] = useState<number>(0);
+  
+  // Column visibility
+  const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
+  
+  const toggleColumnVisibility = useCallback((statusKey: string) => {
+    setHiddenColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(statusKey)) next.delete(statusKey);
+      else next.add(statusKey);
+      return next;
+    });
+  }, []);
+
+  const displayedStatuses = useMemo(() => 
+    visibleStatuses.filter(s => !hiddenColumns.has(s.status_key)),
+    [visibleStatuses, hiddenColumns]
+  );
 
   // Saved views
   const { savedViews, saveView, deleteView } = usePipelineSavedViews();
