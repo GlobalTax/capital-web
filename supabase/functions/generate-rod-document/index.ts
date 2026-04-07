@@ -91,8 +91,9 @@ serve(async (req) => {
 
     console.log(`✅ Fetched ${operations?.length || 0} active operations`);
 
-    // ===== 2. Obtener RODs activas (multi-idioma) con fallback mejorado =====
+    // ===== 2. Obtener RODs activas (multi-idioma + formato) con fallback mejorado =====
     const requestedLang = requestData.language || 'es';
+    const requestedFormat = requestData.document_format || 'pdf';
     
     const { data: activeRODs, error: rodError } = await supabase
       .from('rod_documents')
@@ -105,23 +106,44 @@ serve(async (req) => {
       throw new Error('No hay documento ROD activo disponible. Por favor contacte al administrador.');
     }
 
-    // Determinar qué ROD servir según idioma solicitado (fallback mejorado)
-    let selectedROD = activeRODs.find(r => r.language === requestedLang);
+    // Determinar qué ROD servir según formato + idioma solicitado (fallback mejorado)
+    // 1. Buscar coincidencia exacta: mismo formato + mismo idioma
+    let selectedROD = activeRODs.find(r => r.file_type === requestedFormat && r.language === requestedLang);
     let languageFallbackUsed = false;
+    let formatFallbackUsed = false;
     
     if (!selectedROD) {
-      // FALLBACK: Buscar primero ES, luego cualquiera
-      selectedROD = activeRODs.find(r => r.language === 'es') || activeRODs[0];
-      languageFallbackUsed = true;
-      console.log(`⚠️ FALLBACK: Language ${requestedLang} not available, serving ${selectedROD.language}`);
+      // 2. Mismo formato, otro idioma (preferir ES)
+      selectedROD = activeRODs.find(r => r.file_type === requestedFormat && r.language === 'es') 
+        || activeRODs.find(r => r.file_type === requestedFormat);
+      
+      if (selectedROD) {
+        languageFallbackUsed = true;
+        console.log(`⚠️ FALLBACK: Format ${requestedFormat} + Language ${requestedLang} not available, serving ${selectedROD.file_type}/${selectedROD.language}`);
+      } else {
+        // 3. Mismo idioma, otro formato
+        selectedROD = activeRODs.find(r => r.language === requestedLang);
+        if (selectedROD) {
+          formatFallbackUsed = true;
+          console.log(`⚠️ FALLBACK: Format ${requestedFormat} not available, serving ${selectedROD.file_type}/${selectedROD.language}`);
+        } else {
+          // 4. Cualquier documento disponible
+          selectedROD = activeRODs[0];
+          languageFallbackUsed = true;
+          formatFallbackUsed = true;
+          console.log(`⚠️ FALLBACK: Using first available ROD: ${selectedROD.file_type}/${selectedROD.language}`);
+        }
+      }
     }
     
     const availableLanguages = [...new Set(activeRODs.map(r => r.language))];
 
     console.log('📊 ROD Selection:', {
-      requested: requestedLang,
-      served: selectedROD.language,
-      fallback_used: languageFallbackUsed,
+      requestedFormat,
+      requestedLang,
+      servedFormat: selectedROD.file_type,
+      servedLang: selectedROD.language,
+      fallback_used: languageFallbackUsed || formatFallbackUsed,
       available: availableLanguages
     });
 
