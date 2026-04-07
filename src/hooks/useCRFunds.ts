@@ -115,9 +115,10 @@ export function useCreateCRFund() {
       queryClient.invalidateQueries({ queryKey: ['cr-funds'] });
       toast.success('Fondo creado correctamente');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error creating CR fund:', error);
-      toast.error('Error al crear el fondo');
+      const message = error?.message || error?.details || 'Error desconocido';
+      toast.error(`Error al crear el fondo: ${message}`);
     },
   });
 }
