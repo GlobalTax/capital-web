@@ -31,6 +31,7 @@ interface Opportunity {
   short_description_en: string | null;
   description: string | null;
   description_en: string | null;
+  is_favorite: boolean;
 }
 
 const ESTADO_LABELS: Record<string, string> = {
