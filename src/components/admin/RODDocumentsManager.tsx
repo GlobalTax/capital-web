@@ -317,7 +317,7 @@ export const RODDocumentsManager = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {doc.language === 'es' ? '🇪🇸' : '🇬🇧'} {doc.file_type.toUpperCase()}
+                          {doc.language === 'es' ? 'ES' : 'EN'} {doc.file_type.toUpperCase()}
                         </Badge>
                         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => window.open(doc.file_url, '_blank')}>
                           <Download className="h-3.5 w-3.5" />
