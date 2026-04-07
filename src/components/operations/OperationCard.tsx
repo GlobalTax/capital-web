@@ -34,6 +34,10 @@ interface Operation {
   revenue_amount?: number;
   ebitda_amount?: number;
   ebitda_margin?: number;
+  rango_facturacion_min?: number | null;
+  rango_facturacion_max?: number | null;
+  rango_ebitda_min?: number | null;
+  rango_ebitda_max?: number | null;
   year?: number;
   description: string;
   short_description?: string;

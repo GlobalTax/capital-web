@@ -39,6 +39,10 @@ export interface SectorOperation {
   revenue_amount?: number;
   ebitda_amount?: number;
   ebitda_margin?: number;
+  rango_facturacion_min?: number | null;
+  rango_facturacion_max?: number | null;
+  rango_ebitda_min?: number | null;
+  rango_ebitda_max?: number | null;
   valuation_currency?: string;
   highlights?: string[];
   is_featured?: boolean;
