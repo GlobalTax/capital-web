@@ -380,7 +380,15 @@ const OperationsList: React.FC<OperationsListProps> = ({
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                 <span className="text-sm text-muted-foreground">{t('operations.filters.activeFilters')}</span>
                 {searchTerm && <Badge variant="secondary">{searchTerm}</Badge>}
-                {selectedSector && <Badge variant="secondary">{selectedSector}</Badge>}
+                {selectedSectors.map(sectorKey => {
+                  const sectorObj = sectors.find(s => s.key === sectorKey);
+                  return (
+                    <Badge key={sectorKey} variant="secondary" className="gap-1 cursor-pointer" onClick={() => handleRemoveSector(sectorKey)}>
+                      {sectorObj?.label || sectorKey}
+                      <X className="h-3 w-3" />
+                    </Badge>
+                  );
+                })}
                 
                 {selectedDealType && (
                   <Badge variant="secondary">
