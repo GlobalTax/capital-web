@@ -44,6 +44,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   onPatchContacts,
   allContacts = [],
 }) => {
+  const navigate = useNavigate();
   const { syncBulkContacts, isSyncing } = useBrevoSync();
   const { bulkSoftDelete, bulkHardDelete } = useContactActions();
 
