@@ -26,6 +26,7 @@ const TABLE_MAP: Record<ContactOrigin, string> = {
   advisor: 'advisor_valuations',
   company_acquisition: 'company_acquisition_inquiries',
   buyer_alert: 'buyer_preferences',
+  rod_download: 'buyer_contacts',
 };
 
 // Tables that support AI classification columns

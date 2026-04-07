@@ -2762,6 +2762,7 @@ export type Database = {
           last_activity_at: string | null
           last_name: string | null
           lead_received_at: string | null
+          lead_status_crm: string | null
           origin: string
           phone: string | null
           position: string | null
@@ -2793,6 +2794,7 @@ export type Database = {
           last_activity_at?: string | null
           last_name?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           origin?: string
           phone?: string | null
           position?: string | null
@@ -2824,6 +2826,7 @@ export type Database = {
           last_activity_at?: string | null
           last_name?: string | null
           lead_received_at?: string | null
+          lead_status_crm?: string | null
           origin?: string
           phone?: string | null
           position?: string | null

@@ -1,0 +1,1 @@
+ALTER TABLE public.buyer_contacts ADD COLUMN IF NOT EXISTS lead_status_crm text;

@@ -69,6 +69,7 @@ export function LeadStatusSelect({
         leadType === 'company_acquisition' ? 'company_acquisition_inquiries' :
         leadType === 'advisor' ? 'advisor_valuations' :
         leadType === 'buyer_alert' ? 'buyer_preferences' :
+        leadType === 'rod_download' ? 'buyer_contacts' :
         'collaborator_applications';
 
       const updateData: any = { lead_status_crm: newStatus };
