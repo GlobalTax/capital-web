@@ -113,6 +113,17 @@ export const useContacts = () => {
           .from('professional_valuations')
           .select('linked_lead_id, linked_lead_type, reported_ebitda, normalized_ebitda, valuation_central, financial_years')
           .not('linked_lead_id', 'is', null),
+        // buyer_preferences (alert subscriptions)
+        supabase
+          .from('buyer_preferences')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        // buyer_contacts (ROD downloads)
+        supabase
+          .from('buyer_contacts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
       ]);
 
       // Extract data safely — failed queries return empty arrays
