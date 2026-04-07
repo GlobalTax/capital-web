@@ -58,6 +58,8 @@ export default function RODSendsTab() {
   const [bodyText, setBodyText] = useState('');
   const [language, setLanguage] = useState('es');
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [senderName, setSenderName] = useState<string | null>(null);
+  const [senderEmail, setSenderEmail] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { signature } = useEmailSignature();
