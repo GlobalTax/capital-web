@@ -213,6 +213,7 @@ const AdminRouter = () => {
           
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
+          <Route path="/oportunidades" element={<LazyOportunidadesPage />} />
           <Route path="/mandatos/workload" element={<LazyMandatoWorkloadPage />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
           <Route path="/advisor-multiples" element={<LazyAdvisorMultiplesManager />} />
