@@ -260,6 +260,17 @@ export default function RODSendsTab() {
                 />
               </TabsContent>
 
+              <TabsContent value="sender">
+                <SenderSection
+                  senderEmail={senderEmail}
+                  onSenderChange={(email, name) => {
+                    setSenderEmail(email);
+                    setSenderName(name);
+                    triggerAutoSave();
+                  }}
+                />
+              </TabsContent>
+
               <TabsContent value="signature">
                 <SignatureSection />
               </TabsContent>
