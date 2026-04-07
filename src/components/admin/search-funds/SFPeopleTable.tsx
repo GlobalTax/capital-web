@@ -225,6 +225,15 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
               <FileText className="h-4 w-4 mr-2" />
               Exportar CSV
             </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-white hover:bg-slate-800"
+              onClick={() => setIsAddToListOpen(true)}
+            >
+              <ListPlus className="h-4 w-4 mr-2" />
+              Añadir a lista
+            </Button>
           </div>
         </div>
       )}
