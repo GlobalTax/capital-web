@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle, LayoutGrid, List } from 'lucide-react';
+import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle, LayoutGrid, List, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -70,7 +70,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [dealTypes, setDealTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState('');
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   
   const [selectedDealType, setSelectedDealType] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
@@ -138,8 +138,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
         body: {
           locale: lang,
           searchTerm: debouncedSearchTerm || undefined,
-          sector: selectedSector || undefined,
-          
+          sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
           dealType: selectedDealType || undefined,
           sortBy,
           limit: fetchLimit,
@@ -175,15 +174,24 @@ const OperationsList: React.FC<OperationsListProps> = ({
   useEffect(() => {
     fetchOperations();
     setIsLoadingAll(false);
-  }, [debouncedSearchTerm, selectedSector, selectedDealType, sortBy, offset, viewMode, dateFilter, lang, fetchKey]);
+  }, [debouncedSearchTerm, selectedSectors, selectedDealType, sortBy, offset, viewMode, dateFilter, lang, fetchKey]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setOffset(0);
   };
 
-  const handleSectorChange = (value: string) => {
-    setSelectedSector(value === 'all' ? '' : value);
+  const handleSectorToggle = (sectorKey: string) => {
+    setSelectedSectors(prev => 
+      prev.includes(sectorKey) 
+        ? prev.filter(s => s !== sectorKey)
+        : [...prev, sectorKey]
+    );
+    setOffset(0);
+  };
+
+  const handleRemoveSector = (sectorKey: string) => {
+    setSelectedSectors(prev => prev.filter(s => s !== sectorKey));
     setOffset(0);
   };
 
@@ -200,7 +208,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
 
   const clearAllFilters = () => {
     setSearchTerm('');
-    setSelectedSector('');
+    setSelectedSectors([]);
     setSelectedDealType('');
     setDateFilter('');
     setOffset(0);
@@ -217,7 +225,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const hasActiveFilters = searchTerm || selectedSector || selectedDealType || dateFilter;
+  const hasActiveFilters = searchTerm || selectedSectors.length > 0 || selectedDealType || dateFilter;
 
   return (
     <div className="space-y-6">
@@ -266,9 +274,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
                         <button
                           key={sector.key}
                           onClick={() => {
-                            setSelectedSector(sector.key);
+                            handleSectorToggle(sector.key);
                             setSearchTerm('');
-                            setOffset(0);
                           }}
                           className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center space-x-2"
                         >
@@ -280,19 +287,37 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 )}
               </div>
               
-              <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.allSectors')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('operations.filters.allSectors')}</SelectItem>
-                  {sectors.map((sector) => (
-                    <SelectItem key={sector.key} value={sector.key}>
-                      {sector.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex flex-wrap items-center gap-2 min-h-[40px] p-2 border rounded-md bg-background">
+                {selectedSectors.length === 0 && (
+                  <span className="text-sm text-muted-foreground">{t('operations.filters.allSectors')}</span>
+                )}
+                {selectedSectors.map(sectorKey => {
+                  const sectorObj = sectors.find(s => s.key === sectorKey);
+                  return (
+                    <Badge key={sectorKey} variant="secondary" className="gap-1 cursor-pointer" onClick={() => handleRemoveSector(sectorKey)}>
+                      {sectorObj?.label || sectorKey}
+                      <X className="h-3 w-3" />
+                    </Badge>
+                  );
+                })}
+                <div className="ml-auto">
+                  <Select value="__add__" onValueChange={(value) => { if (value !== '__add__') handleSectorToggle(value); }}>
+                    <SelectTrigger className="h-7 w-7 p-0 border-0 shadow-none [&>svg]:hidden">
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sectors.filter(s => !selectedSectors.includes(s.key)).map((sector) => (
+                        <SelectItem key={sector.key} value={sector.key}>
+                          {sector.label}
+                        </SelectItem>
+                      ))}
+                      {sectors.filter(s => !selectedSectors.includes(s.key)).length === 0 && (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">Todos seleccionados</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
             {/* Row 2: Deal Type, Date, Sort, Clear */}
@@ -355,7 +380,15 @@ const OperationsList: React.FC<OperationsListProps> = ({
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
                 <span className="text-sm text-muted-foreground">{t('operations.filters.activeFilters')}</span>
                 {searchTerm && <Badge variant="secondary">{searchTerm}</Badge>}
-                {selectedSector && <Badge variant="secondary">{selectedSector}</Badge>}
+                {selectedSectors.map(sectorKey => {
+                  const sectorObj = sectors.find(s => s.key === sectorKey);
+                  return (
+                    <Badge key={sectorKey} variant="secondary" className="gap-1 cursor-pointer" onClick={() => handleRemoveSector(sectorKey)}>
+                      {sectorObj?.label || sectorKey}
+                      <X className="h-3 w-3" />
+                    </Badge>
+                  );
+                })}
                 
                 {selectedDealType && (
                   <Badge variant="secondary">
