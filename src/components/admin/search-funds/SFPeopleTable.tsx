@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Linkedin, ExternalLink, Mail, FileText, Pencil } from 'lucide-react';
+import { Linkedin, ExternalLink, Mail, FileText, Pencil, ListPlus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { SFPersonWithFund, SFPerson, PERSON_ROLE_LABELS } from '@/types/searchFu
 import { SFPersonEditModal } from './SFPersonEditModal';
 import { SFBulkEmailDialog } from './SFBulkEmailDialog';
 import { SFFavoriteButton } from './SFFavoriteButton';
+import { AddItemsToListDialog, ListItemRow } from '@/components/admin/shared/AddItemsToListDialog';
 
 interface SFPeopleTableProps {
   people: SFPersonWithFund[];
