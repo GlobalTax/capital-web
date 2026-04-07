@@ -220,11 +220,6 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                     {t('operations.badges.featured')}
                   </Badge>
                 )}
-                {isRecentOperation(operation.created_at, operation.updated_at, operation.is_new_override) && (
-                  <Badge className="text-xs bg-green-500 hover:bg-green-600">
-                    {t('operations.badges.new')}
-                  </Badge>
-                )}
                 {/* Phase Badge */}
                 {phaseBadge && (
                   <Badge variant="outline" className={`gap-1 text-xs ${phaseBadge.className}`}>
