@@ -14,6 +14,7 @@ export interface PipelineViewFilters {
   filterRevMax: number;
   filterEbitdaMin: number;
   filterEbitdaMax: number;
+  hiddenColumns?: string[]; // status_keys to hide
 }
 
 export interface PipelineSavedView {
