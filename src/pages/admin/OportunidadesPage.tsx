@@ -381,6 +381,16 @@ export default function OportunidadesPage() {
             <LazyRODListsTab />
           </Suspense>
         </TabsContent>
+
+        <TabsContent value="sends">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          }>
+            <LazyRODSendsTab />
+          </Suspense>
+        </TabsContent>
       </Tabs>
     </div>
   );
