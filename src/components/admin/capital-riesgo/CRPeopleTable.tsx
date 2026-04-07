@@ -244,6 +244,15 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
               size="sm" 
               variant="ghost" 
               className="text-white hover:bg-slate-800"
+              onClick={() => setIsAddToRODOpen(true)}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Añadir a ROD
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-white hover:bg-slate-800"
               onClick={() => setIsAddToListOpen(true)}
             >
               <ListPlus className="h-4 w-4 mr-2" />
