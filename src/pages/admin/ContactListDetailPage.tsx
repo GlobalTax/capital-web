@@ -966,28 +966,38 @@ export default function ContactListDetailPage() {
     const file = acceptedFiles[0];
     if (!file) return;
     setIsReadingFile(true);
-    toast.info(`Procesando "${file.name}"...`, { duration: 3000 });
+    toast.info(`Procesando "${file.name}"...`, { duration: 5000 });
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const wb = XLSX.read(data, { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      setIsReadingFile(false);
-      if (json.length === 0) {
-        toast.error('El archivo está vacío');
-        return;
-      }
-      const headers = Object.keys(json[0] as any);
-      const mapping: Record<string, string> = {};
-      headers.forEach(h => {
-        const norm = normalizeColumnName(h);
-        const field = mapColumn(norm);
-        if (field) mapping[h] = field;
-      });
-      setImportMapping(mapping);
-      setImportData(json);
-      toast.success(`${json.length} filas encontradas · ${Object.keys(mapping).length} columnas mapeadas`);
+      // Defer heavy parsing so the UI can render the loading spinner first
+      setTimeout(() => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const wb = XLSX.read(data, { type: 'array' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+          if (json.length === 0) {
+            setIsReadingFile(false);
+            toast.error('El archivo está vacío');
+            return;
+          }
+          const headers = Object.keys(json[0] as any);
+          const mapping: Record<string, string> = {};
+          headers.forEach(h => {
+            const norm = normalizeColumnName(h);
+            const field = mapColumn(norm);
+            if (field) mapping[h] = field;
+          });
+          setImportMapping(mapping);
+          setImportData(json);
+          setIsReadingFile(false);
+          toast.success(`${json.length} filas encontradas · ${Object.keys(mapping).length} columnas mapeadas`);
+        } catch (err) {
+          setIsReadingFile(false);
+          toast.error('Error al procesar el archivo Excel');
+          console.error('Excel parse error:', err);
+        }
+      }, 50);
     };
     reader.onerror = () => {
       setIsReadingFile(false);
