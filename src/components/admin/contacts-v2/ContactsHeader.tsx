@@ -5,7 +5,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send, Plus, Calculator, FileText, ChevronDown } from 'lucide-react';
+import { Star, Users, BarChart3, Archive, Trash2, Send, Plus, Calculator, FileText, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,10 +88,6 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
             <TabsTrigger value="directory" className="text-[11px] px-2.5 h-5 gap-1">
               <Users className="h-3 w-3" />
               Todos
-            </TabsTrigger>
-            <TabsTrigger value="pipeline" className="text-[11px] px-2.5 h-5 gap-1">
-              <Kanban className="h-3 w-3" />
-              Pipeline
             </TabsTrigger>
             <TabsTrigger value="stats" className="text-[11px] px-2.5 h-5 gap-1">
               <BarChart3 className="h-3 w-3" />

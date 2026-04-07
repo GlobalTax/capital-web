@@ -12,7 +12,7 @@ import ContactsHeader from './ContactsHeader';
 import ContactsFilters from './ContactsFilters';
 import VirtualContactsTable from './VirtualContactsTable';
 import ContactDetailSheet from '../contacts/ContactDetailSheet';
-import { ContactsPipelineView } from '../contacts/pipeline';
+
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -145,14 +145,6 @@ const ContactsLayout: React.FC = () => {
           />
         );
       
-      case 'pipeline':
-        return (
-          <ContactsPipelineView
-            contacts={displayedContacts as any}
-            onViewDetails={handleViewDetails as any}
-            isLoading={false}
-          />
-        );
       
       case 'stats':
         return (
