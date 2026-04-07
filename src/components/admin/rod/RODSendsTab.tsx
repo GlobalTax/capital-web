@@ -62,7 +62,12 @@ export default function RODSendsTab() {
   const [senderEmail, setSenderEmail] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const senderNameRef = useRef<string | null>(null);
+  const senderEmailRef = useRef<string | null>(null);
   const { signature } = useEmailSignature();
+
+  useEffect(() => { senderNameRef.current = senderName; }, [senderName]);
+  useEffect(() => { senderEmailRef.current = senderEmail; }, [senderEmail]);
 
   // Fetch existing sends
   const { data: sends = [], isLoading: sendsLoading } = useQuery({
