@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Search, ListPlus, Loader2, Check } from 'lucide-react';
+import { Search, ListPlus, Loader2, Check, AlertTriangle } from 'lucide-react';
 
 export interface ListItemRow {
   empresa: string;
@@ -20,6 +20,11 @@ export interface ListItemRow {
   cif?: string;
   facturacion?: number | null;
   ebitda?: number | null;
+}
+
+interface DuplicateInfo {
+  duplicates: ListItemRow[];
+  newItems: ListItemRow[];
 }
 
 interface AddItemsToListDialogProps {
@@ -35,6 +40,8 @@ export const AddItemsToListDialog: React.FC<AddItemsToListDialogProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const [duplicateInfo, setDuplicateInfo] = useState<DuplicateInfo | null>(null);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -52,13 +59,66 @@ export const AddItemsToListDialog: React.FC<AddItemsToListDialogProps> = ({
     enabled: open,
   });
 
+  // Check duplicates when a list is selected
+  useEffect(() => {
+    if (!selectedListId || items.length === 0) {
+      setDuplicateInfo(null);
+      return;
+    }
+
+    const checkDuplicates = async () => {
+      setCheckingDuplicates(true);
+      try {
+        // Fetch existing entries in the selected list
+        const { data: existing, error } = await (supabase as any)
+          .from('outbound_list_companies')
+          .select('empresa, email, contacto')
+          .eq('list_id', selectedListId)
+          .eq('is_deleted', false);
+
+        if (error) throw error;
+
+        const existingSet = new Set(
+          (existing || []).map((e: any) => {
+            // Match by email (primary) or empresa+contacto combo
+            if (e.email && e.email.trim()) return `email:${e.email.trim().toLowerCase()}`;
+            return `name:${(e.empresa || '').trim().toLowerCase()}|${(e.contacto || '').trim().toLowerCase()}`;
+          })
+        );
+
+        const duplicates: ListItemRow[] = [];
+        const newItems: ListItemRow[] = [];
+
+        for (const item of items) {
+          const emailKey = item.email?.trim() ? `email:${item.email.trim().toLowerCase()}` : null;
+          const nameKey = `name:${(item.empresa || '').trim().toLowerCase()}|${(item.contacto || '').trim().toLowerCase()}`;
+          
+          if ((emailKey && existingSet.has(emailKey)) || existingSet.has(nameKey)) {
+            duplicates.push(item);
+          } else {
+            newItems.push(item);
+          }
+        }
+
+        setDuplicateInfo({ duplicates, newItems });
+      } catch (err) {
+        console.error('Error checking duplicates:', err);
+        setDuplicateInfo(null);
+      } finally {
+        setCheckingDuplicates(false);
+      }
+    };
+
+    checkDuplicates();
+  }, [selectedListId, items]);
+
   const filteredLists = lists.filter(l =>
     !search || l.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const addMutation = useMutation({
-    mutationFn: async (listId: string) => {
-      const rows = items.map(item => ({
+    mutationFn: async ({ listId, itemsToAdd }: { listId: string; itemsToAdd: ListItemRow[] }) => {
+      const rows = itemsToAdd.map(item => ({
         list_id: listId,
         empresa: item.empresa || '',
         contacto: item.contacto || '',
@@ -84,16 +144,24 @@ export const AddItemsToListDialog: React.FC<AddItemsToListDialogProps> = ({
       if (list) {
         await (supabase as any)
           .from('outbound_lists')
-          .update({ contact_count: (list.contact_count || 0) + items.length })
+          .update({ contact_count: (list.contact_count || 0) + itemsToAdd.length })
           .eq('id', listId);
       }
+
+      return itemsToAdd.length;
     },
-    onSuccess: () => {
-      toast({ title: 'Añadidos correctamente', description: `${items.length} ${itemLabel}(s) añadidos a la lista.` });
+    onSuccess: (count) => {
+      const dupCount = duplicateInfo?.duplicates.length || 0;
+      const desc = dupCount > 0
+        ? `${count} ${itemLabel}(s) añadidos. ${dupCount} duplicado(s) omitidos.`
+        : `${count} ${itemLabel}(s) añadidos a la lista.`;
+      toast({ title: 'Añadidos correctamente', description: desc });
       queryClient.invalidateQueries({ queryKey: ['outbound-lists'] });
+      queryClient.invalidateQueries({ queryKey: ['outbound-list-companies'] });
       onOpenChange(false);
       setSelectedListId(null);
       setSearch('');
+      setDuplicateInfo(null);
       onSuccess?.();
     },
     onError: (error: any) => {
@@ -101,8 +169,21 @@ export const AddItemsToListDialog: React.FC<AddItemsToListDialogProps> = ({
     },
   });
 
+  const handleAdd = (includeAll: boolean) => {
+    if (!selectedListId) return;
+    const itemsToAdd = includeAll ? items : (duplicateInfo?.newItems || items);
+    if (itemsToAdd.length === 0) {
+      toast({ title: 'Sin registros nuevos', description: 'Todos los registros ya existen en la lista.', variant: 'destructive' });
+      return;
+    }
+    addMutation.mutate({ listId: selectedListId, itemsToAdd });
+  };
+
+  const hasDuplicates = duplicateInfo && duplicateInfo.duplicates.length > 0;
+  const allDuplicates = duplicateInfo && duplicateInfo.newItems.length === 0 && duplicateInfo.duplicates.length > 0;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) { setDuplicateInfo(null); setSelectedListId(null); } }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -149,15 +230,72 @@ export const AddItemsToListDialog: React.FC<AddItemsToListDialogProps> = ({
           )}
         </ScrollArea>
 
-        <DialogFooter>
+        {/* Duplicate warning */}
+        {selectedListId && checkingDuplicates && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground px-1">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            Comprobando duplicados...
+          </div>
+        )}
+
+        {selectedListId && !checkingDuplicates && hasDuplicates && (
+          <div className="rounded-md border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-medium text-amber-800 dark:text-amber-300">
+                  {duplicateInfo!.duplicates.length} duplicado{duplicateInfo!.duplicates.length > 1 ? 's' : ''} detectado{duplicateInfo!.duplicates.length > 1 ? 's' : ''}
+                </p>
+                <p className="text-amber-700 dark:text-amber-400 mt-0.5 text-xs">
+                  {duplicateInfo!.duplicates.slice(0, 3).map(d => d.contacto || d.empresa).join(', ')}
+                  {duplicateInfo!.duplicates.length > 3 && ` y ${duplicateInfo!.duplicates.length - 3} más`}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter className={hasDuplicates ? 'flex-col sm:flex-col gap-2' : ''}>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={() => selectedListId && addMutation.mutate(selectedListId)} disabled={!selectedListId || addMutation.isPending}>
-            {addMutation.isPending ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Añadiendo...</>
-            ) : (
-              <><ListPlus className="h-4 w-4 mr-2" />Añadir {items.length}</>
-            )}
-          </Button>
+          
+          {hasDuplicates ? (
+            <>
+              {!allDuplicates && (
+                <Button 
+                  onClick={() => handleAdd(false)} 
+                  disabled={addMutation.isPending}
+                >
+                  {addMutation.isPending ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Añadiendo...</>
+                  ) : (
+                    <><ListPlus className="h-4 w-4 mr-2" />Añadir solo nuevos ({duplicateInfo!.newItems.length})</>
+                  )}
+                </Button>
+              )}
+              <Button 
+                variant="secondary"
+                onClick={() => handleAdd(true)} 
+                disabled={addMutation.isPending}
+              >
+                {addMutation.isPending ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Añadiendo...</>
+                ) : (
+                  <><ListPlus className="h-4 w-4 mr-2" />Añadir todos ({items.length}) igualmente</>
+                )}
+              </Button>
+            </>
+          ) : (
+            <Button 
+              onClick={() => handleAdd(false)} 
+              disabled={!selectedListId || addMutation.isPending || checkingDuplicates}
+            >
+              {addMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Añadiendo...</>
+              ) : (
+                <><ListPlus className="h-4 w-4 mr-2" />Añadir {items.length}</>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
