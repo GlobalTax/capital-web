@@ -394,6 +394,26 @@ export const LeadsPipelineView: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {/* Quick add */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" className="h-9 gap-1.5">
+                <Plus className="h-4 w-4" />
+                Añadir
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate('/admin/calculadora-manual')}>
+                <Calculator className="h-4 w-4 mr-2" />
+                Entrada manual de lead
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/admin/valoraciones-pro/nueva')}>
+                <FileText className="h-4 w-4 mr-2" />
+                Valoración profesional
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {/* Column visibility toggle */}
           <Popover>
             <PopoverTrigger asChild>
