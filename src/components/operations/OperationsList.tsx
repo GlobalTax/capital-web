@@ -225,7 +225,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const hasActiveFilters = searchTerm || selectedSector || selectedDealType || dateFilter;
+  const hasActiveFilters = searchTerm || selectedSectors.length > 0 || selectedDealType || dateFilter;
 
   return (
     <div className="space-y-6">
