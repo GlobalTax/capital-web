@@ -2402,7 +2402,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Operations/Oportunidades Page
     'operations.title': 'M&A Operations',
     'operations.filters.all': 'All',
-    'operations.filters.search': 'Search companies...',
+    'operations.filters.search': 'Search opportunities or sectors...',
     'operations.filters.sector': 'Sector',
     'operations.filters.allSectors': 'All sectors',
     'operations.filters.location': 'Location',
