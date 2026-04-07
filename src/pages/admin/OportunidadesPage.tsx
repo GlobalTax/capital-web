@@ -97,7 +97,7 @@ export default function OportunidadesPage() {
       const ids = mandatos.map(m => m.id);
       const { data: datos, error: dErr } = await supabase
         .from('datos_proyecto')
-        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en')
+        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en, description, description_en')
         .in('mandato_id', ids);
 
       if (dErr) throw dErr;
