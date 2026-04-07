@@ -38,6 +38,7 @@ import { EmpresasColumnsEditor } from '@/components/admin/empresas/EmpresasColum
 import { ContactosDirectoryTable } from '@/components/admin/empresas/ContactosDirectoryTable';
 import { AddContactsToListDialog } from '@/components/admin/empresas/AddContactsToListDialog';
 import { AddItemsToListDialog } from '@/components/admin/shared/AddItemsToListDialog';
+import { AddToRODDialog, RODContact } from '@/components/admin/shared/AddToRODDialog';
 import { useEmpresasStats } from '@/hooks/useEmpresasStats';
 import { useDirectorioContactos } from '@/hooks/useDirectorioContactos';
 
