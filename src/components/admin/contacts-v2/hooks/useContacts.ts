@@ -182,6 +182,10 @@ export const useContacts = () => {
         ...(generalContactLeads || []).map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
         // Company acquisition inquiries
         ...(companyAcquisitionLeads || []).map((l: any) => transformLegacyLead(l, 'company_acquisition', formDisplayMap)),
+        // Buyer alert preferences
+        ...(buyerAlertLeads || []).map((l: any) => transformBuyerAlert(l)),
+        // ROD download contacts
+        ...(rodDownloadLeads || []).map((l: any) => transformRodDownload(l)),
       ];
 
       // Store all contacts (prospect filtering moved to filteredContacts memo)
