@@ -21,6 +21,8 @@ const DEFAULT_STATS: ContactStats = {
     company_acquisition: 0,
     advisor: 0,
     sell: 0,
+    buyer_alert: 0,
+    rod_download: 0,
   },
   totalValuation: 0,
 };
