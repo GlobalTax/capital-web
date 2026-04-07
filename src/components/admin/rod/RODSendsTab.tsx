@@ -38,6 +38,8 @@ interface RODSend {
   attachment_ids: string[] | null;
   cc_recipient_ids: string[] | null;
   signature_html: string | null;
+  sender_name: string | null;
+  sender_email: string | null;
   error_message: string | null;
   created_at: string;
 }
