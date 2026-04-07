@@ -17,6 +17,7 @@ const originToTable: Record<ContactOrigin, string> = {
   'company_acquisition': 'company_acquisition_inquiries',
   'general': 'contact_leads',
   'advisor': 'advisor_valuations',
+  'buyer_alert': 'buyer_preferences',
 };
 
 export const useBrevoSync = () => {

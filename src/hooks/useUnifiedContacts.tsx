@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { formatCurrency } from '@/shared/utils/format';
 
-export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
+export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'buyer_alert';
 
 export interface UnifiedContact {
   id: string;
@@ -176,6 +176,7 @@ export const useUnifiedContacts = () => {
       acquisition: 0,
       company_acquisition: 0,
       advisor: 0,
+      buyer_alert: 0,
     },
     growth: 0,
     potentialValue: 0,
@@ -262,6 +263,14 @@ export const useUnifiedContacts = () => {
         .order('created_at', { ascending: false });
 
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
+
+      // Fetch buyer_preferences (alert subscriptions)
+      const { data: buyerAlertLeads, error: buyerAlertError } = await supabase
+        .from('buyer_preferences')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (buyerAlertError) console.error('Error fetching buyer preferences:', buyerAlertError);
 
       // 🔥 NEW: Fetch professional_valuations linked to contact_leads
       const { data: proValuations, error: proValuationsError } = await supabase
@@ -605,6 +614,24 @@ export const useUnifiedContacts = () => {
           lead_form_name: (lead.lead_form_ref as any)?.name || null,
           // 🔥 NEW: Business registration date
           lead_received_at: (lead as any).lead_received_at || lead.created_at,
+        })),
+
+        // Buyer alert preferences
+        ...(buyerAlertLeads || []).map(lead => ({
+          id: lead.id,
+          origin: 'buyer_alert' as const,
+          name: lead.full_name || '',
+          email: lead.email,
+          phone: lead.phone || undefined,
+          company: lead.company || undefined,
+          created_at: lead.created_at || new Date().toISOString(),
+          status: lead.is_active ? 'active' : 'inactive',
+          sectors_of_interest: lead.preferred_sectors?.join(', ') || undefined,
+          preferred_location: lead.preferred_locations?.join(', ') || undefined,
+          priority: 'warm' as const,
+          is_hot_lead: false,
+          source: 'buyer_alert',
+          lead_received_at: lead.created_at || new Date().toISOString(),
         })),
       ];
 
