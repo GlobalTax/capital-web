@@ -192,10 +192,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const handleLocationChange = (value: string) => {
-    setSelectedLocation(value === 'all' ? '' : value);
-    setOffset(0);
-  };
 
   const handleDealTypeChange = (value: string) => {
     setSelectedDealType(value === 'all' ? '' : value);
