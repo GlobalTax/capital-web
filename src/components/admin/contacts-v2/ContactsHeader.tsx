@@ -2,9 +2,10 @@
 // Header with tabs and bulk actions
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send } from 'lucide-react';
+import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send, Plus, Calculator, FileText, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +44,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   onPatchContacts,
   allContacts = [],
 }) => {
+  const navigate = useNavigate();
   const { syncBulkContacts, isSyncing } = useBrevoSync();
   const { bulkSoftDelete, bulkHardDelete } = useContactActions();
 
@@ -101,6 +103,26 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
         <StatusesEditor />
         <LeadFormsEditor />
         <DuplicatesDialog allContacts={allContacts} onDone={onClearSelection} />
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" className="h-7 text-[11px] gap-1">
+              <Plus className="h-3 w-3" />
+              Añadir
+              <ChevronDown className="h-2.5 w-2.5 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => navigate('/admin/calculadora-manual')}>
+              <Calculator className="h-4 w-4 mr-2" />
+              Entrada manual de lead
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/admin/valoraciones-pro/nueva')}>
+              <FileText className="h-4 w-4 mr-2" />
+              Valoración profesional
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Bulk Actions */}
