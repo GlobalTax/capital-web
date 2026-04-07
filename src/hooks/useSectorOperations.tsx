@@ -39,6 +39,10 @@ export interface SectorOperation {
   revenue_amount?: number;
   ebitda_amount?: number;
   ebitda_margin?: number;
+  rango_facturacion_min?: number | null;
+  rango_facturacion_max?: number | null;
+  rango_ebitda_min?: number | null;
+  rango_ebitda_max?: number | null;
   valuation_currency?: string;
   highlights?: string[];
   is_featured?: boolean;
@@ -84,6 +88,10 @@ export const useSectorOperations = (
           revenue_amount,
           ebitda_amount,
           ebitda_margin,
+          rango_facturacion_min,
+          rango_facturacion_max,
+          rango_ebitda_min,
+          rango_ebitda_max,
           ubicacion,
           year,
           estado,
@@ -119,6 +127,10 @@ export const useSectorOperations = (
           revenue_amount: row.revenue_amount ? Number(row.revenue_amount) : undefined,
           ebitda_amount: row.ebitda_amount ? Number(row.ebitda_amount) : undefined,
           ebitda_margin: row.ebitda_margin ? Number(row.ebitda_margin) : undefined,
+          rango_facturacion_min: row.rango_facturacion_min ? Number(row.rango_facturacion_min) : null,
+          rango_facturacion_max: row.rango_facturacion_max ? Number(row.rango_facturacion_max) : null,
+          rango_ebitda_min: row.rango_ebitda_min ? Number(row.rango_ebitda_min) : null,
+          rango_ebitda_max: row.rango_ebitda_max ? Number(row.rango_ebitda_max) : null,
           valuation_currency: 'EUR',
           is_featured: mandato?.is_favorite || false,
           project_status: row.estado,
