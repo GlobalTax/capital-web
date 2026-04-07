@@ -28,6 +28,8 @@ interface Opportunity {
   sectores_target: string[] | null;
   short_description: string | null;
   short_description_en: string | null;
+  description: string | null;
+  description_en: string | null;
 }
 
 const STAGE_LABELS: Record<string, string> = {
