@@ -4,10 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, Loader2, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { Briefcase, Loader2, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Opportunity {
   id: string;
@@ -62,19 +62,118 @@ const formatRange = (min: number | null, max: number | null) => {
 
 const formatMargin = (v: number | null) => (v != null ? `${v.toFixed(1)}%` : '—');
 
-const ExpandableDescription: React.FC<{ text: string | null }> = ({ text }) => {
-  const [expanded, setExpanded] = useState(false);
-  if (!text) return <span className="text-muted-foreground">—</span>;
-  const isLong = text.length > 80;
+/** Row for Sell-Side with expandable descriptions */
+const SellRow: React.FC<{ o: Opportunity }> = ({ o }) => {
+  const [open, setOpen] = useState(false);
+  const hasDesc = !!(o.short_description || o.description);
+  const sellColCount = 8;
+
   return (
-    <div className="max-w-[300px]">
-      <p className={`text-xs ${!expanded && isLong ? 'line-clamp-2' : ''}`}>{text}</p>
-      {isLong && (
-        <button onClick={() => setExpanded(!expanded)} className="text-[10px] text-primary hover:underline mt-0.5 flex items-center gap-0.5">
-          {expanded ? <><ChevronUp className="h-3 w-3" /> Menos</> : <><ChevronDown className="h-3 w-3" /> Más</>}
-        </button>
+    <>
+      <TableRow
+        className={hasDesc ? 'cursor-pointer hover:bg-muted/50' : ''}
+        onClick={() => hasDesc && setOpen(!open)}
+      >
+        <TableCell className="text-xs w-6 px-2">
+          {hasDesc && (open ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />)}
+        </TableCell>
+        <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
+        <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
+        <TableCell className="text-xs">{o.sector || '—'}</TableCell>
+        <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
+        <TableCell className="text-xs text-right">{formatCurrency(o.revenue_amount)}</TableCell>
+        <TableCell className="text-xs text-right">{formatCurrency(o.ebitda_amount)}</TableCell>
+        <TableCell className="text-xs text-right">{formatMargin(o.ebitda_margin)}</TableCell>
+        <TableCell className="text-xs">
+          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
+            {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
+          </span>
+        </TableCell>
+      </TableRow>
+      {open && (
+        <TableRow className="bg-muted/20">
+          <TableCell colSpan={sellColCount + 1} className="py-3 px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {o.short_description && (
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Descripción breve</p>
+                  <p className="text-xs leading-relaxed">{o.short_description}</p>
+                </div>
+              )}
+              {o.description && (
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Descripción extensa</p>
+                  <p className="text-xs leading-relaxed whitespace-pre-line">{o.description}</p>
+                </div>
+              )}
+            </div>
+          </TableCell>
+        </TableRow>
       )}
-    </div>
+    </>
+  );
+};
+
+/** Row for Buy-Side with expandable descriptions */
+const BuyRow: React.FC<{ o: Opportunity }> = ({ o }) => {
+  const [open, setOpen] = useState(false);
+  const hasDesc = !!(o.short_description || o.description);
+  const buyColCount = 8;
+
+  return (
+    <>
+      <TableRow
+        className={hasDesc ? 'cursor-pointer hover:bg-muted/50' : ''}
+        onClick={() => hasDesc && setOpen(!open)}
+      >
+        <TableCell className="text-xs w-6 px-2">
+          {hasDesc && (open ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />)}
+        </TableCell>
+        <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
+        <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
+        <TableCell className="text-xs">{o.sector || '—'}</TableCell>
+        <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
+        <TableCell className="text-xs">{formatRange(o.rango_facturacion_min, o.rango_facturacion_max)}</TableCell>
+        <TableCell className="text-xs">{formatRange(o.rango_ebitda_min, o.rango_ebitda_max)}</TableCell>
+        <TableCell className="text-xs max-w-[180px]">
+          {o.sectores_target?.length ? (
+            <div className="flex flex-wrap gap-1">
+              {o.sectores_target.slice(0, 3).map((s, i) => (
+                <span key={i} className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{s}</span>
+              ))}
+              {o.sectores_target.length > 3 && (
+                <span className="text-[10px] text-muted-foreground">+{o.sectores_target.length - 3}</span>
+              )}
+            </div>
+          ) : '—'}
+        </TableCell>
+        <TableCell className="text-xs">
+          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
+            {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
+          </span>
+        </TableCell>
+      </TableRow>
+      {open && (
+        <TableRow className="bg-muted/20">
+          <TableCell colSpan={buyColCount + 1} className="py-3 px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {o.short_description && (
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Descripción breve</p>
+                  <p className="text-xs leading-relaxed">{o.short_description}</p>
+                </div>
+              )}
+              {o.description && (
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Descripción extensa</p>
+                  <p className="text-xs leading-relaxed whitespace-pre-line">{o.description}</p>
+                </div>
+              )}
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   );
 };
 
@@ -156,19 +255,16 @@ export default function OportunidadesPage() {
 
       <Tabs defaultValue="sell" className="w-full">
         <TabsList>
-          <TabsTrigger value="sell" className="text-sm">
-            Sell-Side ({sellSide.length})
-          </TabsTrigger>
-          <TabsTrigger value="buy" className="text-sm">
-            Buy-Side ({buySide.length})
-          </TabsTrigger>
+          <TabsTrigger value="sell" className="text-sm">Sell-Side ({sellSide.length})</TabsTrigger>
+          <TabsTrigger value="buy" className="text-sm">Buy-Side ({buySide.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell" className="mt-4">
           <Card>
             <CardHeader className="pb-2 p-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">Sell-Side</Badge>
+                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Sell-Side</Badge>
+                <span className="text-xs text-muted-foreground font-normal">Haz clic en una fila para ver descripciones</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -179,6 +275,7 @@ export default function OportunidadesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-6"></TableHead>
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -187,33 +284,10 @@ export default function OportunidadesPage() {
                         <TableHead className="text-xs text-right">EBITDA</TableHead>
                         <TableHead className="text-xs text-right">Margen</TableHead>
                         <TableHead className="text-xs">Fase</TableHead>
-                        <TableHead className="text-xs">Desc. Breve</TableHead>
-                        <TableHead className="text-xs">Desc. Extensa</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {sellSide.map(o => (
-                        <TableRow key={o.id}>
-                          <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
-                          <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
-                          <TableCell className="text-xs">{o.sector || '—'}</TableCell>
-                          <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
-                          <TableCell className="text-xs text-right">{formatCurrency(o.revenue_amount)}</TableCell>
-                          <TableCell className="text-xs text-right">{formatCurrency(o.ebitda_amount)}</TableCell>
-                          <TableCell className="text-xs text-right">{formatMargin(o.ebitda_margin)}</TableCell>
-                          <TableCell className="text-xs">
-                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
-                              {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <ExpandableDescription text={o.short_description} />
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <ExpandableDescription text={o.description} />
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {sellSide.map(o => <SellRow key={o.id} o={o} />)}
                     </TableBody>
                   </Table>
                 </div>
@@ -226,7 +300,8 @@ export default function OportunidadesPage() {
           <Card>
             <CardHeader className="pb-2 p-4">
               <CardTitle className="text-base flex items-center gap-2">
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Buy-Side</Badge>
+                <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">Buy-Side</Badge>
+                <span className="text-xs text-muted-foreground font-normal">Haz clic en una fila para ver descripciones</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -237,6 +312,7 @@ export default function OportunidadesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-6"></TableHead>
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -245,44 +321,10 @@ export default function OportunidadesPage() {
                         <TableHead className="text-xs">Rango EBITDA</TableHead>
                         <TableHead className="text-xs">Sectores Target</TableHead>
                         <TableHead className="text-xs">Fase</TableHead>
-                        <TableHead className="text-xs">Desc. Breve</TableHead>
-                        <TableHead className="text-xs">Desc. Extensa</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {buySide.map(o => (
-                        <TableRow key={o.id}>
-                          <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
-                          <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
-                          <TableCell className="text-xs">{o.sector || '—'}</TableCell>
-                          <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
-                          <TableCell className="text-xs">{formatRange(o.rango_facturacion_min, o.rango_facturacion_max)}</TableCell>
-                          <TableCell className="text-xs">{formatRange(o.rango_ebitda_min, o.rango_ebitda_max)}</TableCell>
-                          <TableCell className="text-xs max-w-[150px]">
-                            {o.sectores_target?.length ? (
-                              <div className="flex flex-wrap gap-1">
-                                {o.sectores_target.slice(0, 3).map((s, i) => (
-                                  <span key={i} className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{s}</span>
-                                ))}
-                                {o.sectores_target.length > 3 && (
-                                  <span className="text-[10px] text-muted-foreground">+{o.sectores_target.length - 3}</span>
-                                )}
-                              </div>
-                            ) : '—'}
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
-                              {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <ExpandableDescription text={o.short_description} />
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <ExpandableDescription text={o.description} />
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {buySide.map(o => <BuyRow key={o.id} o={o} />)}
                     </TableBody>
                   </Table>
                 </div>
