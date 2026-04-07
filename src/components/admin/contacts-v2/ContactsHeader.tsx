@@ -2,9 +2,10 @@
 // Header with tabs and bulk actions
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send } from 'lucide-react';
+import { Star, Users, Kanban, BarChart3, Archive, Trash2, Send, Plus, Calculator, FileText, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
