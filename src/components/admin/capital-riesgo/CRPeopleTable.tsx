@@ -54,6 +54,7 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
   const [editingPerson, setEditingPerson] = useState<CRPerson | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
+  const [isAddToRODOpen, setIsAddToRODOpen] = useState(false);
 
   const selectedPeople = useMemo(() => 
     people.filter(p => selectedIds.has(p.id)), 
