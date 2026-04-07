@@ -254,6 +254,10 @@ export default function OportunidadesPage() {
           <TabsTrigger value="buy" className="text-xs">
             Buy-Side ({buySide.length})
           </TabsTrigger>
+          <TabsTrigger value="documents" className="text-xs">
+            <FileText className="h-3.5 w-3.5 mr-1" />
+            Documentos ROD
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell">
