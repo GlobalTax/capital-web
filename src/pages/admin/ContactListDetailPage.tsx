@@ -1611,6 +1611,8 @@ export default function ContactListDetailPage() {
     provincia: 'Provincia', comunidad_autonoma: 'C.A.', cnae: 'CNAE',
     descripcion_actividad: 'Actividad', posicion_contacto: 'Posición', director_ejecutivo: 'Director',
     facturacion: 'Facturación', ebitda: 'EBITDA', num_trabajadores: 'Empleados',
+    email: 'Email', linkedin: 'LinkedIn', web: 'Web', cif: 'CIF', contacto: 'Contacto',
+    telefono: 'Teléfono', nombre_accionista: 'Accionista', notas: 'Notas',
   };
 
   // Dynamic column header renderer
