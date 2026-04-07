@@ -172,6 +172,7 @@ export const LeadsPipelineView: React.FC = () => {
     setFilterRevMax(filters.filterRevMax);
     setFilterEbitdaMin(filters.filterEbitdaMin);
     setFilterEbitdaMax(filters.filterEbitdaMax);
+    setHiddenColumns(new Set(filters.hiddenColumns || []));
   }, []);
 
   const filterFormIds = useMemo(() => {
