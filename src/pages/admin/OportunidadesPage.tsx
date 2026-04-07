@@ -28,6 +28,8 @@ interface Opportunity {
   sectores_target: string[] | null;
   short_description: string | null;
   short_description_en: string | null;
+  description: string | null;
+  description_en: string | null;
 }
 
 const STAGE_LABELS: Record<string, string> = {
@@ -95,7 +97,7 @@ export default function OportunidadesPage() {
       const ids = mandatos.map(m => m.id);
       const { data: datos, error: dErr } = await supabase
         .from('datos_proyecto')
-        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en')
+        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en, description, description_en')
         .in('mandato_id', ids);
 
       if (dErr) throw dErr;
@@ -185,7 +187,8 @@ export default function OportunidadesPage() {
                         <TableHead className="text-xs text-right">EBITDA</TableHead>
                         <TableHead className="text-xs text-right">Margen</TableHead>
                         <TableHead className="text-xs">Fase</TableHead>
-                        <TableHead className="text-xs">Descripción</TableHead>
+                        <TableHead className="text-xs">Desc. Breve</TableHead>
+                        <TableHead className="text-xs">Desc. Extensa</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -205,6 +208,9 @@ export default function OportunidadesPage() {
                           </TableCell>
                           <TableCell className="text-xs">
                             <ExpandableDescription text={o.short_description} />
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <ExpandableDescription text={o.description} />
                           </TableCell>
                         </TableRow>
                       ))}
@@ -239,7 +245,8 @@ export default function OportunidadesPage() {
                         <TableHead className="text-xs">Rango EBITDA</TableHead>
                         <TableHead className="text-xs">Sectores Target</TableHead>
                         <TableHead className="text-xs">Fase</TableHead>
-                        <TableHead className="text-xs">Descripción</TableHead>
+                        <TableHead className="text-xs">Desc. Breve</TableHead>
+                        <TableHead className="text-xs">Desc. Extensa</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -270,6 +277,9 @@ export default function OportunidadesPage() {
                           </TableCell>
                           <TableCell className="text-xs">
                             <ExpandableDescription text={o.short_description} />
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <ExpandableDescription text={o.description} />
                           </TableCell>
                         </TableRow>
                       ))}
