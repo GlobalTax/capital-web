@@ -137,7 +137,7 @@ export default function OportunidadesPage() {
     queryFn: async () => {
       const { data: mandatos, error: mErr } = await supabase
         .from('mandatos')
-        .select('id, codigo, tipo')
+        .select('id, codigo, tipo, is_favorite')
         .eq('visible_en_rod', true)
         .order('tipo');
 
@@ -155,10 +155,31 @@ export default function OportunidadesPage() {
       const datosMap = new Map((datos || []).map(d => [d.mandato_id, d]));
       return mandatos.map(m => {
         const d = datosMap.get(m.id) || {};
-        return { ...m, ...d } as Opportunity;
+        return { ...m, is_favorite: m.is_favorite ?? false, ...d } as Opportunity;
       });
     },
   });
+
+  const toggleFavorite = useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+      const { error } = await supabase
+        .from('mandatos')
+        .update({ is_favorite: value })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { value }) => {
+      queryClient.invalidateQueries({ queryKey: ['rod-opportunities-full'] });
+      toast.success(value ? 'Marcado como destacado' : 'Destacado eliminado');
+    },
+    onError: () => {
+      toast.error('Error al actualizar destacado');
+    },
+  });
+
+  const handleToggleFav = (id: string, value: boolean) => {
+    toggleFavorite.mutate({ id, value });
+  };
 
   // Realtime subscriptions
   useEffect(() => {
