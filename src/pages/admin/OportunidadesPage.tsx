@@ -8,7 +8,7 @@ import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star } from 'luc
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 
 interface Opportunity {
   id: string;
