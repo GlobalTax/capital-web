@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Linkedin, ExternalLink, Mail, Pencil, ListPlus } from 'lucide-react';
+import { Linkedin, ExternalLink, Mail, Pencil, ListPlus, BookOpen } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import { CRPersonWithFund, CRPersonRole, CRPerson, CR_PERSON_ROLE_LABELS } from 
 import { CRPersonEditModal } from './CRPersonEditModal';
 import { CRFavoriteButton } from './CRFavoriteButton';
 import { AddItemsToListDialog, ListItemRow } from '@/components/admin/shared/AddItemsToListDialog';
+import { AddToRODDialog, RODContact } from '@/components/admin/shared/AddToRODDialog';
 
 interface CRPeopleTableProps {
   people: CRPersonWithFund[];
@@ -53,6 +54,7 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
   const [editingPerson, setEditingPerson] = useState<CRPerson | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
+  const [isAddToRODOpen, setIsAddToRODOpen] = useState(false);
 
   const selectedPeople = useMemo(() => 
     people.filter(p => selectedIds.has(p.id)), 
@@ -242,6 +244,15 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
               size="sm" 
               variant="ghost" 
               className="text-white hover:bg-slate-800"
+              onClick={() => setIsAddToRODOpen(true)}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Añadir a ROD
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-white hover:bg-slate-800"
               onClick={() => setIsAddToListOpen(true)}
             >
               <ListPlus className="h-4 w-4 mr-2" />
@@ -272,6 +283,21 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
             getLocationDisplay(p) !== '—' ? `Ubicación: ${getLocationDisplay(p)}` : null,
           ].filter(Boolean).join(' | '),
         } as ListItemRow))}
+      />
+
+      {/* Add to ROD Dialog */}
+      <AddToRODDialog
+        open={isAddToRODOpen}
+        onOpenChange={setIsAddToRODOpen}
+        contacts={selectedPeople.map(p => ({
+          full_name: p.full_name || '',
+          email: p.email || '',
+          company: p.fund?.name || '',
+          notes: [
+            p.role ? `Rol: ${CR_PERSON_ROLE_LABELS[p.role as keyof typeof CR_PERSON_ROLE_LABELS] || p.role}` : null,
+            getLocationDisplay(p) !== '—' ? `Ubicación: ${getLocationDisplay(p)}` : null,
+          ].filter(Boolean).join(' | '),
+        } as RODContact))}
       />
     </>
   );

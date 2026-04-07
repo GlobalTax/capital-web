@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Linkedin, ExternalLink, Mail, FileText, Pencil, ListPlus } from 'lucide-react';
+import { Linkedin, ExternalLink, Mail, FileText, Pencil, ListPlus, BookOpen } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { SFPersonEditModal } from './SFPersonEditModal';
 import { SFBulkEmailDialog } from './SFBulkEmailDialog';
 import { SFFavoriteButton } from './SFFavoriteButton';
 import { AddItemsToListDialog, ListItemRow } from '@/components/admin/shared/AddItemsToListDialog';
+import { AddToRODDialog, RODContact } from '@/components/admin/shared/AddToRODDialog';
 
 interface SFPeopleTableProps {
   people: SFPersonWithFund[];
@@ -40,6 +41,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
+  const [isAddToRODOpen, setIsAddToRODOpen] = useState(false);
 
   const allSelected = people.length > 0 && selectedIds.size === people.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < people.length;
@@ -229,6 +231,15 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
               size="sm" 
               variant="ghost" 
               className="text-white hover:bg-slate-800"
+              onClick={() => setIsAddToRODOpen(true)}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Añadir a ROD
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-white hover:bg-slate-800"
               onClick={() => setIsAddToListOpen(true)}
             >
               <ListPlus className="h-4 w-4 mr-2" />
@@ -266,6 +277,21 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
             p.location || p.fund?.country_base ? `Ubicación: ${p.location || p.fund?.country_base}` : null,
           ].filter(Boolean).join(' | '),
         } as ListItemRow))}
+      />
+
+      {/* Add to ROD Dialog */}
+      <AddToRODDialog
+        open={isAddToRODOpen}
+        onOpenChange={setIsAddToRODOpen}
+        contacts={selectedPeople.map(p => ({
+          full_name: p.full_name || '',
+          email: p.email || '',
+          company: p.fund?.name || '',
+          notes: [
+            p.role ? `Rol: ${PERSON_ROLE_LABELS[p.role] || p.role}` : null,
+            p.location || p.fund?.country_base ? `Ubicación: ${p.location || p.fund?.country_base}` : null,
+          ].filter(Boolean).join(' | '),
+        } as RODContact))}
       />
     </>
   );
