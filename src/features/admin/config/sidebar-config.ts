@@ -228,10 +228,10 @@ export const sidebarSections: SidebarSection[] = [
         visible: false
       },
       { 
-        title: "Operaciones", 
-        url: "/admin/operations", 
-        icon: Building2,
-        description: "Transacciones y deals"
+        title: "Rel. Oportunidades", 
+        url: "/admin/oportunidades", 
+        icon: Briefcase,
+        description: "Mandatos visibles en ROD"
       },
       { 
         title: "Múltiplos", 

@@ -121,6 +121,7 @@ const LazyApolloVisitorsPage = React.lazy(() => import('@/pages/admin/ApolloVisi
 const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPage'));
 const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
 const LazySectorIntelligencePage = React.lazy(() => import('@/pages/admin/SectorIntelligencePage'));
+const LazyOportunidadesPage = React.lazy(() => import('@/pages/admin/OportunidadesPage'));
 
 // Presentation Engine
 const LazyPresentationsListPage = React.lazy(() => import('@/features/presentations/pages/PresentationsListPage'));
@@ -212,6 +213,7 @@ const AdminRouter = () => {
           
           <Route path="/operations" element={<LazyAdminOperations />} />
           <Route path="/operations/:id" element={<LazyOperationDetails />} />
+          <Route path="/oportunidades" element={<LazyOportunidadesPage />} />
           <Route path="/mandatos/workload" element={<LazyMandatoWorkloadPage />} />
           <Route path="/multiples" element={<LazyMultiplesManager />} />
           <Route path="/advisor-multiples" element={<LazyAdvisorMultiplesManager />} />
