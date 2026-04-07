@@ -176,6 +176,7 @@ export const useUnifiedContacts = () => {
       acquisition: 0,
       company_acquisition: 0,
       advisor: 0,
+      buyer_alert: 0,
     },
     growth: 0,
     potentialValue: 0,
