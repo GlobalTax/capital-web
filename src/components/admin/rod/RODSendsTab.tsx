@@ -355,7 +355,9 @@ function SenderSection({ senderEmail, onSenderChange }: {
         </Select>
         {senderEmail && (
           <p className="text-xs text-muted-foreground">
-            Los emails se enviarán como: <span className="font-medium text-foreground">{senderEmail}</span>
+            Los emails se enviarán como: <span className="font-medium text-foreground">
+              {advisors?.find(a => a.email === senderEmail)?.name || senderEmail} &lt;{senderEmail}&gt;
+            </span>
           </p>
         )}
       </CardContent>
