@@ -68,7 +68,9 @@ Deno.serve(async (req) => {
               }
               const base64 = btoa(binary);
               const ext = doc.file_type === "excel" ? "xlsx" : "pdf";
-              attachments.push({ filename: `${doc.title}.${ext}`, content: base64 });
+              // Strip emoji flags and other non-ASCII chars from filename
+              const cleanTitle = doc.title.replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').replace(/\s+/g, ' ').trim();
+              attachments.push({ filename: `${cleanTitle}.${ext}`, content: base64 });
             }
           } catch (e) {
             console.error(`Failed to download attachment ${doc.title}:`, e);
