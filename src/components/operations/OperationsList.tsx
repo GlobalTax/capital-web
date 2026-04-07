@@ -208,7 +208,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
 
   const clearAllFilters = () => {
     setSearchTerm('');
-    setSelectedSector('');
+    setSelectedSectors([]);
     setSelectedDealType('');
     setDateFilter('');
     setOffset(0);
