@@ -145,7 +145,7 @@ export default function RODSendsTab() {
       setSaveStatus('idle');
       toast.error('Error guardando: ' + e.message);
     }
-  }, [subject, bodyText, language, attachmentIds, currentSendId, signature, queryClient]);
+  }, [subject, bodyText, language, attachmentIds, senderName, senderEmail, currentSendId, signature, queryClient]);
 
   // Debounced auto-save
   const triggerAutoSave = useCallback(() => {
