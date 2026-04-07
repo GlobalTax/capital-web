@@ -1,9 +1,9 @@
 // ============= CR PEOPLE TABLE =============
 // Tabla de personas de Capital Riesgo estilo Apollo
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Linkedin, ExternalLink, Mail, Pencil } from 'lucide-react';
+import { Linkedin, ExternalLink, Mail, Pencil, ListPlus } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CRPersonWithFund, CRPersonRole, CRPerson, CR_PERSON_ROLE_LABELS } from '@/types/capitalRiesgo';
 import { CRPersonEditModal } from './CRPersonEditModal';
 import { CRFavoriteButton } from './CRFavoriteButton';
+import { AddItemsToListDialog, ListItemRow } from '@/components/admin/shared/AddItemsToListDialog';
 
 interface CRPeopleTableProps {
   people: CRPersonWithFund[];
