@@ -1,19 +1,25 @@
-import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Send, Save, Loader2, Mail, Eye, Clock, CheckCircle2, XCircle, AlertCircle, TestTube } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Plus, Send, Save, Loader2, Mail, Edit3, Pen, Users, MailCheck, Eye, Clock,
+  CheckCircle2, XCircle, AlertCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { RODMailTemplate } from './RODMailTemplate';
+import { RODMailList } from './RODMailList';
+import { RODSendTracking } from './RODSendTracking';
+import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml } from '@/hooks/useEmailSignature';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 
 interface RODSend {
   id: string;
@@ -28,34 +34,32 @@ interface RODSend {
   sent_count: number | null;
   failed_count: number | null;
   attachment_ids: string[] | null;
+  cc_recipient_ids: string[] | null;
+  signature_html: string | null;
   error_message: string | null;
   created_at: string;
 }
 
-interface RODDocument {
-  id: string;
-  title: string;
-  file_type: string;
-  language: string;
-  is_active: boolean;
-}
-
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
   draft: { label: 'Borrador', icon: <Save className="h-3 w-3" />, className: 'bg-muted text-muted-foreground' },
-  scheduled: { label: 'Programado', icon: <Clock className="h-3 w-3" />, className: 'bg-blue-100 text-blue-800' },
   sending: { label: 'Enviando…', icon: <Loader2 className="h-3 w-3 animate-spin" />, className: 'bg-amber-100 text-amber-800' },
   sent: { label: 'Enviado', icon: <CheckCircle2 className="h-3 w-3" />, className: 'bg-green-100 text-green-800' },
   failed: { label: 'Error', icon: <XCircle className="h-3 w-3" />, className: 'bg-red-100 text-red-800' },
-  cancelled: { label: 'Cancelado', icon: <AlertCircle className="h-3 w-3" />, className: 'bg-muted text-muted-foreground' },
 };
 
-export const RODSendsTab: React.FC = () => {
+export default function RODSendsTab() {
   const queryClient = useQueryClient();
-  const [composerOpen, setComposerOpen] = useState(false);
-  const [editingSend, setEditingSend] = useState<RODSend | null>(null);
+  const [currentSendId, setCurrentSendId] = useState<string | null>(null);
+  const [subject, setSubject] = useState('');
+  const [bodyText, setBodyText] = useState('');
+  const [language, setLanguage] = useState('es');
+  const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { signature } = useEmailSignature();
 
-  // Fetch sends history
-  const { data: sends = [], isLoading } = useQuery({
+  // Fetch existing sends
+  const { data: sends = [], isLoading: sendsLoading } = useQuery({
     queryKey: ['rod-sends'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -67,475 +71,422 @@ export const RODSendsTab: React.FC = () => {
     },
   });
 
-  const openComposer = (send?: RODSend) => {
-    setEditingSend(send || null);
-    setComposerOpen(true);
+  // Load a send into the editor
+  const loadSend = (send: RODSend) => {
+    setCurrentSendId(send.id);
+    setSubject(send.subject || '');
+    setBodyText(send.body_text || '');
+    setLanguage(send.target_language || 'es');
+    setAttachmentIds(send.attachment_ids || []);
   };
 
-  return (
-    <Card>
-      <CardContent className="p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-medium">Envíos ROD</h3>
-            <p className="text-xs text-muted-foreground">Envío masivo de la Relación de Oportunidades</p>
-          </div>
-          <Button size="sm" onClick={() => openComposer()}>
-            <Plus className="h-4 w-4 mr-1" /> Nuevo envío
-          </Button>
-        </div>
+  const createNew = () => {
+    setCurrentSendId(null);
+    setSubject('');
+    setBodyText('');
+    setLanguage('es');
+    setAttachmentIds([]);
+  };
 
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : sends.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No hay envíos todavía</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">Asunto</TableHead>
-                  <TableHead className="text-xs">Idioma</TableHead>
-                  <TableHead className="text-xs">Estado</TableHead>
-                  <TableHead className="text-xs text-right">Enviados</TableHead>
-                  <TableHead className="text-xs">Fecha</TableHead>
-                  <TableHead className="text-xs" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sends.map(s => {
-                  const cfg = STATUS_CONFIG[s.status] || STATUS_CONFIG.draft;
-                  return (
-                    <TableRow key={s.id}>
-                      <TableCell className="text-xs font-medium max-w-[200px] truncate">{s.subject || '(sin asunto)'}</TableCell>
-                      <TableCell className="text-xs">{s.target_language === 'es' ? '🇪🇸' : s.target_language === 'en' ? '🇬🇧' : '🌐'}</TableCell>
-                      <TableCell>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${cfg.className}`}>
-                          {cfg.icon} {cfg.label}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-xs text-right">
-                        {s.sent_count ?? 0}/{s.total_recipients ?? 0}
-                        {(s.failed_count ?? 0) > 0 && <span className="text-red-500 ml-1">({s.failed_count} err)</span>}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {s.sent_at ? format(new Date(s.sent_at), 'dd/MM/yy HH:mm') : s.created_at ? format(new Date(s.created_at), 'dd/MM/yy HH:mm') : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {s.status === 'draft' && (
-                          <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => openComposer(s)}>
-                            Editar
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-
-        <RODSendComposer
-          open={composerOpen}
-          onOpenChange={setComposerOpen}
-          existingSend={editingSend}
-          onSaved={() => {
-            queryClient.invalidateQueries({ queryKey: ['rod-sends'] });
-            setComposerOpen(false);
-          }}
-        />
-      </CardContent>
-    </Card>
-  );
-};
-
-// ---------- Composer Dialog ----------
-
-interface ComposerProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  existingSend: RODSend | null;
-  onSaved: () => void;
-}
-
-const RODSendComposer: React.FC<ComposerProps> = ({ open, onOpenChange, existingSend, onSaved }) => {
-  const [language, setLanguage] = useState(existingSend?.target_language || 'es');
-  const [subject, setSubject] = useState(existingSend?.subject || '');
-  const [bodyText, setBodyText] = useState(existingSend?.body_text || '');
-  const [selectedAttachments, setSelectedAttachments] = useState<string[]>(existingSend?.attachment_ids || []);
-  const [scheduledAt, setScheduledAt] = useState(existingSend?.scheduled_at || '');
-  const [saving, setSaving] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [testEmail, setTestEmail] = useState('');
-  const [testSending, setTestSending] = useState(false);
-
-  // Reset form when opening
-  React.useEffect(() => {
-    if (open) {
-      setLanguage(existingSend?.target_language || 'es');
-      setSubject(existingSend?.subject || '');
-      setBodyText(existingSend?.body_text || '');
-      setSelectedAttachments(existingSend?.attachment_ids || []);
-      setScheduledAt(existingSend?.scheduled_at || '');
-      setTestEmail('');
+  // Auto-load first draft if exists
+  useEffect(() => {
+    if (sends.length > 0 && !currentSendId) {
+      const draft = sends.find(s => s.status === 'draft');
+      if (draft) loadSend(draft);
     }
-  }, [open, existingSend]);
+  }, [sends]);
 
-  // Fetch list member count for selected language
-  const { data: recipientCount = 0 } = useQuery({
-    queryKey: ['rod-list-count', language],
-    queryFn: async () => {
-      const langs = language === 'both' ? ['es', 'en'] : [language];
-      let total = 0;
-      for (const lang of langs) {
-        const { count, error } = await supabase
-          .from('rod_list_members' as any)
-          .select('id', { count: 'exact', head: true })
-          .eq('language', lang)
-          .not('email', 'is', null);
-        if (!error) total += (count || 0);
-      }
-      return total;
-    },
-    enabled: open,
-  });
+  // Auto-save with debounce
+  const saveDraft = useCallback(async () => {
+    if (!subject.trim() && !bodyText.trim()) return;
+    setSaveStatus('saving');
 
-  // Fetch active ROD documents
-  const { data: documents = [] } = useQuery({
-    queryKey: ['rod-documents-active'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('rod_documents')
-        .select('id, title, file_type, language, is_active')
-        .eq('is_active', true)
-        .eq('is_deleted', false)
-        .order('language');
-      if (error) throw error;
-      return (data || []) as RODDocument[];
-    },
-    enabled: open,
-  });
+    const signatureHtml = signature?.html_preview || generateSignatureHtml({
+      ...DEFAULT_SIGNATURE,
+      full_name: signature?.full_name || '',
+    });
 
-  // Filter docs by language
-  const filteredDocs = useMemo(() => {
-    if (language === 'both') return documents;
-    return documents.filter(d => d.language === language);
-  }, [documents, language]);
-
-  const insertVariable = (variable: string) => {
-    setBodyText(prev => prev + `{{${variable}}}`);
-  };
-
-  const previewBody = bodyText
-    .replace(/\{\{nombre\}\}/g, 'Juan Ejemplo')
-    .replace(/\{\{empresa\}\}/g, 'Empresa Demo S.L.');
-
-  const saveDraft = async () => {
-    setSaving(true);
     try {
       const payload = {
         subject,
         body_html: bodyText.replace(/\n/g, '<br/>'),
         body_text: bodyText,
         target_language: language,
-        attachment_ids: selectedAttachments,
-        scheduled_at: scheduledAt || null,
+        attachment_ids: attachmentIds,
+        signature_html: signatureHtml,
         status: 'draft' as const,
       };
 
-      if (existingSend) {
-        const { error } = await supabase
-          .from('rod_sends')
-          .update(payload)
-          .eq('id', existingSend.id);
+      if (currentSendId) {
+        const { error } = await supabase.from('rod_sends').update(payload).eq('id', currentSendId);
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('rod_sends')
-          .insert(payload);
+        const { data, error } = await supabase.from('rod_sends').insert(payload).select('id').single();
         if (error) throw error;
+        setCurrentSendId(data.id);
       }
 
-      toast.success('Borrador guardado');
-      onSaved();
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+      queryClient.invalidateQueries({ queryKey: ['rod-sends'] });
     } catch (e: any) {
+      setSaveStatus('idle');
       toast.error('Error guardando: ' + e.message);
+    }
+  }, [subject, bodyText, language, attachmentIds, currentSendId, signature, queryClient]);
+
+  // Debounced auto-save
+  const triggerAutoSave = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(saveDraft, 1500);
+  }, [saveDraft]);
+
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
+
+  const handleSubjectChange = (v: string) => { setSubject(v); triggerAutoSave(); };
+  const handleBodyChange = (v: string) => { setBodyText(v); triggerAutoSave(); };
+  const handleLanguageChange = (v: string) => { setLanguage(v); triggerAutoSave(); };
+  const handleAttachmentsChange = (v: string[]) => { setAttachmentIds(v); triggerAutoSave(); };
+
+  const currentSend = sends.find(s => s.id === currentSendId);
+  const isEditable = !currentSend || currentSend.status === 'draft';
+
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-4">
+        {/* Header with send selector */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium">Envíos ROD</h3>
+            <p className="text-xs text-muted-foreground">
+              Gestión completa de envíos de la Relación de Oportunidades
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {sends.filter(s => s.status !== 'draft').length > 0 && (
+              <select
+                className="h-8 text-xs border rounded-md px-2 bg-background"
+                value={currentSendId || ''}
+                onChange={e => {
+                  const send = sends.find(s => s.id === e.target.value);
+                  if (send) loadSend(send);
+                }}
+              >
+                {sends.map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.subject || '(sin asunto)'} — {STATUS_CONFIG[s.status]?.label || s.status}
+                    {s.sent_at ? ` (${format(new Date(s.sent_at), 'dd/MM/yy')})` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
+            <Button size="sm" variant="outline" onClick={createNew}>
+              <Plus className="h-4 w-4 mr-1" /> Nuevo
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Main tabs: Mail / Envío y seguimiento */}
+        <Tabs defaultValue="mail" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="mail" className="text-xs">
+              <Mail className="h-3.5 w-3.5 mr-1.5" />Mail
+            </TabsTrigger>
+            <TabsTrigger value="tracking" className="text-xs">
+              <Send className="h-3.5 w-3.5 mr-1.5" />Envío y seguimiento
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ── Mail sub-tab ── */}
+          <TabsContent value="mail">
+            <Tabs defaultValue="template" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="template" className="text-xs">
+                  <Edit3 className="h-3.5 w-3.5 mr-1.5" />Template
+                </TabsTrigger>
+                <TabsTrigger value="signature" className="text-xs">
+                  <Pen className="h-3.5 w-3.5 mr-1.5" />Firma
+                </TabsTrigger>
+                <TabsTrigger value="list" className="text-xs">
+                  <Mail className="h-3.5 w-3.5 mr-1.5" />Lista de emails
+                </TabsTrigger>
+                <TabsTrigger value="cc" className="text-xs">
+                  <Users className="h-3.5 w-3.5 mr-1.5" />Copias (CC)
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="template">
+                <RODMailTemplate
+                  sendId={currentSendId}
+                  subject={subject}
+                  bodyText={bodyText}
+                  language={language}
+                  attachmentIds={attachmentIds}
+                  onSubjectChange={handleSubjectChange}
+                  onBodyChange={handleBodyChange}
+                  onLanguageChange={handleLanguageChange}
+                  onAttachmentsChange={handleAttachmentsChange}
+                  onSaveDraft={saveDraft}
+                  saveStatus={saveStatus}
+                />
+              </TabsContent>
+
+              <TabsContent value="signature">
+                <SignatureSection />
+              </TabsContent>
+
+              <TabsContent value="list">
+                <RODMailList
+                  sendId={currentSendId}
+                  language={language}
+                  subjectTemplate={subject}
+                  bodyTemplate={bodyText}
+                />
+              </TabsContent>
+
+              <TabsContent value="cc">
+                <CcRecipientsSection
+                  sendId={currentSendId}
+                  ccIds={currentSend?.cc_recipient_ids || []}
+                />
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+          {/* ── Envío y seguimiento sub-tab ── */}
+          <TabsContent value="tracking">
+            <RODSendTracking
+              sendId={currentSendId}
+              language={language}
+              onSendComplete={() => {
+                queryClient.invalidateQueries({ queryKey: ['rod-sends'] });
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Signature Section (reuses existing hook) ────────────────────────────
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Upload, RotateCcw } from 'lucide-react';
+import type { EmailSignatureData } from '@/hooks/useEmailSignature';
+
+type SignatureFormData = Omit<EmailSignatureData, 'id' | 'user_id' | 'html_preview'>;
+
+function SignatureSection() {
+  const { user } = useAdminAuth();
+  const { signature, isLoading, saveSignature, isSaving, uploadLogo, isUploadingLogo } = useEmailSignature();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getDefaults = (): SignatureFormData => ({
+    ...DEFAULT_SIGNATURE,
+    full_name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || '',
+  });
+
+  const [form, setForm] = useState<SignatureFormData>(getDefaults());
+
+  useEffect(() => {
+    if (signature) {
+      setForm({
+        full_name: signature.full_name || '',
+        job_title: signature.job_title || '',
+        phone: signature.phone || '',
+        website_url: signature.website_url || '',
+        linkedin_url: signature.linkedin_url || '',
+        logo_url: signature.logo_url || null,
+        confidentiality_note: signature.confidentiality_note || '',
+        privacy_note: signature.privacy_note || '',
+        extra_note: signature.extra_note || '',
+      });
+    } else if (!isLoading) {
+      setForm(getDefaults());
+    }
+  }, [signature, isLoading]);
+
+  const update = (field: keyof SignatureFormData, value: string | null) => {
+    setForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('Máximo 2MB'); return; }
+    const url = await uploadLogo(file);
+    if (url) update('logo_url', url);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const previewHtml = generateSignatureHtml(form);
+
+  if (isLoading) return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <h4 className="text-sm font-medium">Datos personales</h4>
+            <div><Label className="text-xs">Nombre completo</Label><Input value={form.full_name} onChange={e => update('full_name', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">Cargo</Label><Input value={form.job_title} onChange={e => update('job_title', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">Teléfono</Label><Input value={form.phone} onChange={e => update('phone', e.target.value)} className="h-8 text-sm" /></div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <h4 className="text-sm font-medium">Empresa</h4>
+            <div><Label className="text-xs">URL Web</Label><Input value={form.website_url} onChange={e => update('website_url', e.target.value)} className="h-8 text-sm" /></div>
+            <div><Label className="text-xs">URL LinkedIn</Label><Input value={form.linkedin_url} onChange={e => update('linkedin_url', e.target.value)} className="h-8 text-sm" /></div>
+            <div>
+              <Label className="text-xs">Logo</Label>
+              <div className="flex items-center gap-2 mt-1">
+                {form.logo_url && <img src={form.logo_url} alt="Logo" className="h-10 border rounded" />}
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => fileInputRef.current?.click()} disabled={isUploadingLogo}>
+                  {isUploadingLogo ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />}
+                  {form.logo_url ? 'Cambiar' : 'Subir'}
+                </Button>
+                {form.logo_url && <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive" onClick={() => update('logo_url', null)}>Quitar</Button>}
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleLogoUpload} />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <h4 className="text-sm font-medium">Textos legales</h4>
+            <div><Label className="text-xs">Nota de confidencialidad</Label><Textarea value={form.confidentiality_note} onChange={e => update('confidentiality_note', e.target.value)} rows={3} className="text-xs" /></div>
+            <div><Label className="text-xs">Política de privacidad</Label><Textarea value={form.privacy_note} onChange={e => update('privacy_note', e.target.value)} rows={3} className="text-xs" /></div>
+            <div><Label className="text-xs">Nota ambiental</Label><Input value={form.extra_note} onChange={e => update('extra_note', e.target.value)} className="h-8 text-sm" /></div>
+          </CardContent>
+        </Card>
+        <div className="flex gap-2">
+          <Button onClick={async () => { await saveSignature(form); }} disabled={isSaving} size="sm">
+            {isSaving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+            Guardar firma
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setForm(getDefaults())}>
+            <RotateCcw className="h-3.5 w-3.5 mr-1.5" />Restaurar
+          </Button>
+        </div>
+      </div>
+      <div className="lg:sticky lg:top-4">
+        <Card>
+          <CardContent className="p-4">
+            <h4 className="text-sm font-medium mb-3">Vista previa de la firma</h4>
+            <div className="border rounded-md p-4 bg-white">
+              <div className="text-sm text-muted-foreground italic mb-3">[...cuerpo del email...]</div>
+              <hr className="my-3 border-t border-gray-200" />
+              <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─── CC Recipients Section ──────────────────────────────────────────────
+function CcRecipientsSection({ sendId, ccIds }: { sendId: string | null; ccIds: string[] }) {
+  const { data: allRecipients, isLoading } = useActiveEmailRecipients();
+  const [selectedIds, setSelectedIds] = useState<string[]>(ccIds || []);
+  const [initialized, setInitialized] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (initialized || !allRecipients) return;
+    if (!ccIds || ccIds.length === 0) {
+      setSelectedIds(allRecipients.filter(r => r.is_default_copy).map(r => r.id));
+    } else {
+      setSelectedIds(ccIds);
+    }
+    setInitialized(true);
+  }, [allRecipients, ccIds, initialized]);
+
+  const saveToDb = async (ids: string[]) => {
+    if (!sendId) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('rod_sends')
+        .update({ cc_recipient_ids: ids })
+        .eq('id', sendId);
+      if (error) throw error;
+      toast.success(`CC actualizado: ${ids.length} destinatario(s)`);
+    } catch {
+      toast.error('Error al guardar CC');
     } finally {
       setSaving(false);
     }
   };
 
-  const sendTestEmail = async () => {
-    if (!testEmail.trim()) {
-      toast.error('Introduce un email de prueba');
-      return;
-    }
-    if (!subject.trim()) {
-      toast.error('El asunto es obligatorio');
-      return;
-    }
-
-    setTestSending(true);
-    try {
-      // Save/update the draft first
-      let sendId = existingSend?.id;
-      const payload = {
-        subject,
-        body_html: bodyText.replace(/\n/g, '<br/>'),
-        body_text: bodyText,
-        target_language: language,
-        attachment_ids: selectedAttachments,
-        status: 'draft' as const,
-      };
-
-      if (sendId) {
-        await supabase.from('rod_sends').update(payload).eq('id', sendId);
-      } else {
-        const { data, error } = await supabase
-          .from('rod_sends')
-          .insert(payload)
-          .select('id')
-          .single();
-        if (error) throw error;
-        sendId = data.id;
-      }
-
-      // Invoke test send
-      const { error } = await supabase.functions.invoke('send-rod-email', {
-        body: {
-          send_id: sendId,
-          test_mode: true,
-          test_email: testEmail.trim(),
-        },
-      });
-      if (error) throw error;
-      toast.success(`Email de prueba enviado a ${testEmail}`);
-    } catch (e: any) {
-      toast.error('Error enviando prueba: ' + e.message);
-    } finally {
-      setTestSending(false);
-    }
+  const handleToggle = (id: string) => {
+    setSelectedIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      saveToDb(next);
+      return next;
+    });
   };
 
-  const sendNow = async () => {
-    if (!subject.trim()) {
-      toast.error('El asunto es obligatorio');
-      return;
-    }
-    if (recipientCount === 0) {
-      toast.error('No hay destinatarios en el listado seleccionado');
-      return;
-    }
-    if (!confirm(`¿Enviar ahora a ${recipientCount} destinatarios?`)) return;
-
-    setSending(true);
-    try {
-      // Save first
-      let sendId = existingSend?.id;
-      const payload = {
-        subject,
-        body_html: bodyText.replace(/\n/g, '<br/>'),
-        body_text: bodyText,
-        target_language: language,
-        attachment_ids: selectedAttachments,
-        total_recipients: recipientCount,
-        status: 'sending' as const,
-      };
-
-      if (sendId) {
-        await supabase.from('rod_sends').update(payload).eq('id', sendId);
-      } else {
-        const { data, error } = await supabase
-          .from('rod_sends')
-          .insert(payload)
-          .select('id')
-          .single();
-        if (error) throw error;
-        sendId = data.id;
-      }
-
-      const { error } = await supabase.functions.invoke('send-rod-email', {
-        body: { send_id: sendId },
-      });
-      if (error) throw error;
-      toast.success('Envío iniciado');
-      onSaved();
-    } catch (e: any) {
-      toast.error('Error enviando: ' + e.message);
-    } finally {
-      setSending(false);
-    }
-  };
+  if (isLoading) return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            {existingSend ? 'Editar envío ROD' : 'Nuevo envío ROD'}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-5">
-          {/* Language + recipients */}
-          <div className="flex items-center gap-4">
-            <div>
-              <Label className="text-xs">Lista destino</Label>
-              <Select value={language} onValueChange={setLanguage}>
-                <SelectTrigger className="w-[180px] h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="es">🇪🇸 Castellano</SelectItem>
-                  <SelectItem value="en">🇬🇧 Inglés</SelectItem>
-                  <SelectItem value="both">🌐 Ambas listas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-5">
-              <Mail className="h-4 w-4" />
-              <span className="font-medium">{recipientCount}</span> destinatarios
-            </div>
-          </div>
-
-          {/* Variables */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Variables:</span>
-            <Button variant="outline" size="sm" className="h-6 text-xs px-2" onClick={() => insertVariable('nombre')}>
-              {'{{nombre}}'}
-            </Button>
-            <Button variant="outline" size="sm" className="h-6 text-xs px-2" onClick={() => insertVariable('empresa')}>
-              {'{{empresa}}'}
-            </Button>
-          </div>
-
-          {/* Subject + body + preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs">Asunto</Label>
-                <Input
-                  value={subject}
-                  onChange={e => setSubject(e.target.value)}
-                  placeholder="Relación de Oportunidades Q2 2026 Capittal"
-                  className="h-9"
-                />
-              </div>
-              <div>
-                <Label className="text-xs">Cuerpo del email</Label>
-                <Textarea
-                  value={bodyText}
-                  onChange={e => setBodyText(e.target.value)}
-                  placeholder="Buenos días,&#10;&#10;Le adjuntamos la última Relación de Oportunidades..."
-                  className="min-h-[200px] text-sm"
-                />
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs flex items-center gap-1">
-                <Eye className="h-3 w-3" /> Vista previa
-              </Label>
-              <div className="border rounded-md p-4 bg-muted/30 min-h-[280px]">
-                <p className="text-xs text-muted-foreground mb-1">Asunto:</p>
-                <p className="text-sm font-medium mb-3">{subject || '(sin asunto)'}</p>
-                <div className="text-sm whitespace-pre-line">{previewBody || '(sin contenido)'}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Attachments */}
-          <div>
-            <Label className="text-xs">Documentos adjuntos (ROD)</Label>
-            {filteredDocs.length === 0 ? (
-              <p className="text-xs text-muted-foreground mt-1">No hay documentos activos para este idioma</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                {filteredDocs.map(doc => (
-                  <label
-                    key={doc.id}
-                    className={`flex items-center gap-3 border rounded-md p-3 cursor-pointer transition-colors ${
-                      selectedAttachments.includes(doc.id) ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'
-                    }`}
-                  >
-                    <Checkbox
-                      checked={selectedAttachments.includes(doc.id)}
-                      onCheckedChange={(checked) => {
-                        setSelectedAttachments(prev =>
-                          checked ? [...prev, doc.id] : prev.filter(id => id !== doc.id)
-                        );
-                      }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium truncate">{doc.title}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase">{doc.language} {doc.file_type}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Schedule */}
-          <div>
-            <Label className="text-xs flex items-center gap-1">
-              <Clock className="h-3 w-3" /> Programar envío (opcional)
-            </Label>
-            <Input
-              type="datetime-local"
-              value={scheduledAt ? scheduledAt.slice(0, 16) : ''}
-              onChange={e => setScheduledAt(e.target.value ? new Date(e.target.value).toISOString() : '')}
-              className="w-[280px] h-9 mt-1"
-            />
-          </div>
-
-          {/* Test send */}
-          <div className="border rounded-md p-3 bg-muted/20 space-y-2">
-            <Label className="text-xs flex items-center gap-1 font-medium">
-              <TestTube className="h-3 w-3" /> Envío de prueba
-            </Label>
-            <p className="text-[11px] text-muted-foreground">
-              Envía una copia de prueba a un email para verificar cómo se ve antes de enviar a toda la lista. Puedes reenviar cuantas veces quieras.
-            </p>
-            <div className="flex items-center gap-2">
-              <Input
-                type="email"
-                placeholder="tu@email.com"
-                value={testEmail}
-                onChange={e => setTestEmail(e.target.value)}
-                className="h-8 text-sm max-w-[280px]"
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 text-xs"
-                onClick={sendTestEmail}
-                disabled={testSending || !testEmail.trim()}
-              >
-                {testSending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Send className="h-3 w-3 mr-1" />}
-                Enviar prueba
-              </Button>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2 border-t">
-            <Button variant="outline" onClick={saveDraft} disabled={saving}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
-              Guardar borrador
-            </Button>
-            <Button onClick={sendNow} disabled={sending || recipientCount === 0}>
-              {sending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Send className="h-4 w-4 mr-1" />}
-              Enviar ahora ({recipientCount})
-            </Button>
-          </div>
+    <Card>
+      <CardContent className="p-4 space-y-4">
+        <div>
+          <h4 className="text-sm font-medium flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Destinatarios en copia (CC)
+          </h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Selecciona quién recibirá copia de cada email ROD enviado.
+          </p>
         </div>
-      </DialogContent>
-    </Dialog>
+        <div className="space-y-2">
+          {(allRecipients || []).map(recipient => (
+            <label
+              key={recipient.id}
+              className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+            >
+              <Checkbox
+                checked={selectedIds.includes(recipient.id)}
+                onCheckedChange={() => handleToggle(recipient.id)}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{recipient.name}</span>
+                  <Badge variant="outline" className="text-[10px]">{recipient.role}</Badge>
+                  {recipient.is_default_copy && (
+                    <Badge variant="secondary" className="text-[10px]">CC por defecto</Badge>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">{recipient.email}</span>
+              </div>
+            </label>
+          ))}
+          {(!allRecipients || allRecipients.length === 0) && (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              No hay destinatarios configurados. Añádelos en Configuración → Email.
+            </p>
+          )}
+        </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {selectedIds.length === 0
+              ? 'Sin CC — los emails se enviarán solo al destinatario principal'
+              : `${selectedIds.length} persona(s) recibirán copia de cada email`}
+          </p>
+          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+        </div>
+      </CardContent>
+    </Card>
   );
-};
-
-export default RODSendsTab;
+}
