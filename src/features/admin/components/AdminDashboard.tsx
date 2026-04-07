@@ -161,8 +161,7 @@ export const AdminDashboard = () => {
           <RecentCollaborations />
         </div>
 
-        {/* Relación de Oportunidades ROD */}
-        <RODOpportunities />
+        {/* Timeline de actividad - ancho completo */}
 
         {/* Timeline de actividad - ancho completo */}
         <div className="mt-4 md:mt-6">
