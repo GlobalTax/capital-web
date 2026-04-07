@@ -161,6 +161,16 @@ export default function RODSendsTab() {
   const handleBodyChange = (v: string) => { setBodyText(v); triggerAutoSave(); };
   const handleLanguageChange = (v: string) => { setLanguage(v); triggerAutoSave(); };
   const handleAttachmentsChange = (v: string[]) => { setAttachmentIds(v); triggerAutoSave(); };
+  const handleSenderChange = (email: string) => {
+    if (email === 'default') {
+      setSenderName(null);
+      setSenderEmail(null);
+    } else {
+      // We'll resolve the name from the advisors list in the component
+      setSenderEmail(email);
+    }
+    triggerAutoSave();
+  };
 
   const currentSend = sends.find(s => s.id === currentSendId);
   const isEditable = !currentSend || currentSend.status === 'draft';
