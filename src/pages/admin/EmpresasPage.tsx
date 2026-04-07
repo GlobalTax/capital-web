@@ -27,6 +27,7 @@ import {
   ChevronRight,
   Users,
   ListPlus,
+  BookOpen,
 } from 'lucide-react';
 import { useEmpresas, Empresa } from '@/hooks/useEmpresas';
 import { useFavoriteEmpresas } from '@/hooks/useEmpresaFavorites';
@@ -37,6 +38,7 @@ import { EmpresasColumnsEditor } from '@/components/admin/empresas/EmpresasColum
 import { ContactosDirectoryTable } from '@/components/admin/empresas/ContactosDirectoryTable';
 import { AddContactsToListDialog } from '@/components/admin/empresas/AddContactsToListDialog';
 import { AddItemsToListDialog } from '@/components/admin/shared/AddItemsToListDialog';
+import { AddToRODDialog, RODContact } from '@/components/admin/shared/AddToRODDialog';
 import { useEmpresasStats } from '@/hooks/useEmpresasStats';
 import { useDirectorioContactos } from '@/hooks/useDirectorioContactos';
 
@@ -76,6 +78,7 @@ export default function EmpresasPage() {
   const [contactosHasEmail, setContactosHasEmail] = useState(false);
   const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set());
   const [isAddToListOpen, setIsAddToListOpen] = useState(false);
+  const [isAddToRODOpen, setIsAddToRODOpen] = useState(false);
 
   // Lightweight stats (separate count queries)
   const { stats, isLoading: isLoadingStats } = useEmpresasStats();
@@ -545,6 +548,10 @@ export default function EmpresasPage() {
                 <ListPlus className="h-4 w-4 mr-2" />
                 Añadir a lista
               </Button>
+              <Button size="sm" variant="outline" onClick={() => setIsAddToRODOpen(true)}>
+                <BookOpen className="h-4 w-4 mr-2" />
+                Añadir a ROD
+              </Button>
               <Button size="sm" variant="ghost" onClick={() => setSelectedContactIds(new Set())}>
                 Deseleccionar
               </Button>
@@ -622,6 +629,21 @@ export default function EmpresasPage() {
             notas: [e.sector, e.ubicacion].filter(Boolean).join(' | '),
           }))}
         onSuccess={() => setSelectedEmpresaIds(new Set())}
+      />
+
+      {/* Add to ROD Dialog */}
+      <AddToRODDialog
+        open={isAddToRODOpen}
+        onOpenChange={setIsAddToRODOpen}
+        contacts={contactos
+          .filter(c => selectedContactIds.has(c.id))
+          .map(c => ({
+            full_name: [c.nombre, c.apellidos].filter(Boolean).join(' '),
+            email: c.email || '',
+            company: c.empresa_nombre || undefined,
+            phone: c.telefono || undefined,
+            notes: c.cargo ? `Cargo: ${c.cargo}` : undefined,
+          }))}
       />
     </div>
   );
