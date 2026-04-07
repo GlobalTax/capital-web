@@ -107,10 +107,7 @@ const routeMap: Record<string, HreflangRoute> = {
   '/sectores/alimentacion': { es: '/sectores/alimentacion', ca: '/sectors/alimentacio', en: '/sectors/alimentacion' },
   '/sectors/alimentacio': { es: '/sectores/alimentacion', ca: '/sectors/alimentacio', en: '/sectors/alimentacion' },
 
-  // === LANDING PAGES ===
-  '/lp/calculadora': { es: '/lp/calculadora', ca: '/lp/calculadora', en: '/lp/calculadora' },
-  '/lp/calculadora-fiscal': { es: '/lp/calculadora-fiscal', ca: '/lp/calculadora-fiscal', en: '/lp/calculadora-fiscal' },
-  '/lp/calculadora-asesores': { es: '/lp/calculadora-asesores', ca: '/lp/calculadora-asesores', en: '/lp/calculadora-asesores' },
+  // LP pages manage their own hreflang inline, so they're not in routeMap
 };
 
 interface UseHreflangOptions {
