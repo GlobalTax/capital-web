@@ -62,11 +62,22 @@ const formatRange = (min: number | null, max: number | null) => {
 
 const formatMargin = (v: number | null) => (v != null ? `${v.toFixed(1)}%` : '—');
 
+/** Star toggle button */
+const FavoriteToggle: React.FC<{ id: string; isFavorite: boolean; onToggle: (id: string, value: boolean) => void }> = ({ id, isFavorite, onToggle }) => (
+  <button
+    onClick={(e) => { e.stopPropagation(); onToggle(id, !isFavorite); }}
+    className="p-0.5 rounded hover:bg-muted transition-colors"
+    title={isFavorite ? 'Quitar de destacados' : 'Marcar como destacado'}
+  >
+    <Star className={`h-4 w-4 ${isFavorite ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'}`} />
+  </button>
+);
+
 /** Row for Sell-Side with expandable descriptions */
-const SellRow: React.FC<{ o: Opportunity }> = ({ o }) => {
+const SellRow: React.FC<{ o: Opportunity; onToggleFav: (id: string, value: boolean) => void }> = ({ o, onToggleFav }) => {
   const [open, setOpen] = useState(false);
   const hasDesc = !!(o.short_description || o.description);
-  const sellColCount = 8;
+  const sellColCount = 9;
 
   return (
     <>
@@ -76,6 +87,9 @@ const SellRow: React.FC<{ o: Opportunity }> = ({ o }) => {
       >
         <TableCell className="text-xs w-6 px-2">
           {hasDesc && (open ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />)}
+        </TableCell>
+        <TableCell className="text-xs w-8 px-2">
+          <FavoriteToggle id={o.id} isFavorite={o.is_favorite} onToggle={onToggleFav} />
         </TableCell>
         <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
         <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
