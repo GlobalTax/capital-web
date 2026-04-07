@@ -2290,7 +2290,9 @@ export default function ContactListDetailPage() {
                 {Object.entries(columnFilters).map(([colKey, values]) =>
                   values.map(val => {
                     let displayVal = val;
-                    if (val.startsWith('custom:')) {
+                    if (val === '__has') displayVal = 'Con dato';
+                    else if (val === '__empty') displayVal = 'Sin dato';
+                    else if (val.startsWith('custom:')) {
                       const parts = val.slice(7).split('-');
                       const fmtNum = (n: string) => {
                         if (!n) return '';
