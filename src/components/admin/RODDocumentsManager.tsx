@@ -32,10 +32,10 @@ interface RODDocument {
 type SlotKey = 'pdf-es' | 'pdf-en' | 'excel-es' | 'excel-en';
 
 const SLOT_CONFIG: Record<SlotKey, { label: string; flag: string; fileType: 'pdf' | 'excel'; language: 'es' | 'en'; accept: string; icon: typeof FileText }> = {
-  'pdf-es': { label: 'PDF Español', flag: '🇪🇸', fileType: 'pdf', language: 'es', accept: '.pdf', icon: FileText },
-  'pdf-en': { label: 'PDF English', flag: '🇬🇧', fileType: 'pdf', language: 'en', accept: '.pdf', icon: FileText },
-  'excel-es': { label: 'Excel Español', flag: '🇪🇸', fileType: 'excel', language: 'es', accept: '.xlsx,.xls', icon: FileSpreadsheet },
-  'excel-en': { label: 'Excel English', flag: '🇬🇧', fileType: 'excel', language: 'en', accept: '.xlsx,.xls', icon: FileSpreadsheet },
+  'pdf-es': { label: 'PDF Español', flag: 'ES', fileType: 'pdf', language: 'es', accept: '.pdf', icon: FileText },
+  'pdf-en': { label: 'PDF English', flag: 'EN', fileType: 'pdf', language: 'en', accept: '.pdf', icon: FileText },
+  'excel-es': { label: 'Excel Español', flag: 'ES', fileType: 'excel', language: 'es', accept: '.xlsx,.xls', icon: FileSpreadsheet },
+  'excel-en': { label: 'Excel English', flag: 'EN', fileType: 'excel', language: 'en', accept: '.xlsx,.xls', icon: FileSpreadsheet },
 };
 
 const formatBytes = (bytes: number) => {
