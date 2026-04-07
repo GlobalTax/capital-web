@@ -835,7 +835,7 @@ export default function ContactListDetailPage() {
   const [importStep, setImportStep] = useState<'upload' | 'mapping' | 'preview' | 'importing' | 'result'>('upload');
   const [isReadingFile, setIsReadingFile] = useState(false);
   const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
-  const { validate, isValidating, validationResult, reset: resetValidation } = useExcelImportValidation();
+  const { validate, isValidating, validationResult, validationProgress, reset: resetValidation } = useExcelImportValidation();
   const [importResultData, setImportResultData] = useState<{
     imported: number; linked: number; linkedRelated: number; skippedDuplicates: number; skippedErrors: number; errors: ErrorRow[];
   } | null>(null);
