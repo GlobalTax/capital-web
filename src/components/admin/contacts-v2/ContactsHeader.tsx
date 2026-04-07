@@ -89,10 +89,6 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
               <Users className="h-3 w-3" />
               Todos
             </TabsTrigger>
-            <TabsTrigger value="pipeline" className="text-[11px] px-2.5 h-5 gap-1">
-              <Kanban className="h-3 w-3" />
-              Pipeline
-            </TabsTrigger>
             <TabsTrigger value="stats" className="text-[11px] px-2.5 h-5 gap-1">
               <BarChart3 className="h-3 w-3" />
               Stats
