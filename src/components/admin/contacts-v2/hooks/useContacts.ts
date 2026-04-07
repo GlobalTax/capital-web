@@ -21,6 +21,8 @@ const DEFAULT_STATS: ContactStats = {
     company_acquisition: 0,
     advisor: 0,
     sell: 0,
+    buyer_alert: 0,
+    rod_download: 0,
   },
   totalValuation: 0,
 };
@@ -111,6 +113,17 @@ export const useContacts = () => {
           .from('professional_valuations')
           .select('linked_lead_id, linked_lead_type, reported_ebitda, normalized_ebitda, valuation_central, financial_years')
           .not('linked_lead_id', 'is', null),
+        // buyer_preferences (alert subscriptions)
+        supabase
+          .from('buyer_preferences')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        // buyer_contacts (ROD downloads)
+        supabase
+          .from('buyer_contacts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(0, 4999),
       ]);
 
       // Extract data safely — failed queries return empty arrays
@@ -126,6 +139,8 @@ export const useContacts = () => {
       const generalContactLeads = extractData(settled[6]);
       const companyAcquisitionLeads = extractData(settled[7]);
       const proValData = extractData(settled[8]);
+      const buyerAlertLeads = extractData(settled[9]);
+      const rodDownloadLeads = extractData(settled[10]);
 
       // Log any failed queries for debugging
       settled.forEach((r, i) => {
@@ -167,6 +182,10 @@ export const useContacts = () => {
         ...(generalContactLeads || []).map((l: any) => transformLegacyLead(l, 'general_contact', formDisplayMap)),
         // Company acquisition inquiries
         ...(companyAcquisitionLeads || []).map((l: any) => transformLegacyLead(l, 'company_acquisition', formDisplayMap)),
+        // Buyer alert preferences
+        ...(buyerAlertLeads || []).map((l: any) => transformBuyerAlert(l)),
+        // ROD download contacts
+        ...(rodDownloadLeads || []).map((l: any) => transformRodDownload(l)),
       ];
 
       // Store all contacts (prospect filtering moved to filteredContacts memo)
@@ -196,6 +215,8 @@ export const useContacts = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sell_leads' }, refetchAndInvalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'general_contact_leads' }, refetchAndInvalidate)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'company_acquisition_inquiries' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'buyer_preferences' }, refetchAndInvalidate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'buyer_contacts' }, refetchAndInvalidate)
       .subscribe();
 
     return () => {
@@ -446,6 +467,44 @@ function determinePriority(lead: any): 'hot' | 'warm' | 'cold' {
   if (lead.status === 'qualified' || lead.status === 'opportunity') return 'hot';
   if (lead.email_sent) return 'warm';
   return 'cold';
+}
+
+function transformBuyerAlert(lead: any): Contact {
+  return {
+    id: lead.id,
+    origin: 'buyer_alert',
+    name: lead.full_name || '',
+    email: lead.email,
+    phone: lead.phone || undefined,
+    company: lead.company || undefined,
+    created_at: lead.created_at || new Date().toISOString(),
+    lead_received_at: lead.created_at || new Date().toISOString(),
+    status: lead.is_active ? 'active' : 'inactive',
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
+    industry: lead.preferred_sectors?.join(', ') || undefined,
+    location: lead.preferred_locations?.join(', ') || undefined,
+    priority: 'warm',
+    is_hot_lead: false,
+  };
+}
+
+function transformRodDownload(lead: any): Contact {
+  return {
+    id: lead.id,
+    origin: 'rod_download',
+    name: lead.full_name || `${lead.first_name} ${lead.last_name || ''}`.trim(),
+    email: lead.email,
+    phone: lead.phone || undefined,
+    company: lead.company || undefined,
+    created_at: lead.created_at || new Date().toISOString(),
+    lead_received_at: lead.lead_received_at || lead.created_at || new Date().toISOString(),
+    status: lead.status || 'new',
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
+    industry: lead.sectors_of_interest || undefined,
+    location: lead.preferred_location || undefined,
+    priority: 'warm',
+    is_hot_lead: false,
+  };
 }
 
 // Transform legacy sell_leads, general_contact_leads, and company_acquisition_inquiries
