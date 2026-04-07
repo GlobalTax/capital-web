@@ -64,6 +64,7 @@ const getOriginConfig = (origin: ContactOrigin) => {
     company_acquisition: { label: 'Compra', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', icon: <Building2 className="h-3 w-3" /> },
     advisor: { label: 'Asesor', color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', icon: <Briefcase className="h-3 w-3" /> },
     buyer_alert: { label: 'Alerta Comprador', color: 'bg-teal-500/10 text-teal-600 border-teal-500/20', icon: <Building2 className="h-3 w-3" /> },
+    rod_download: { label: 'Descarga ROD', color: 'bg-rose-500/10 text-rose-600 border-rose-500/20', icon: <FileText className="h-3 w-3" /> },
   };
   return configs[origin] || configs.general;
 };
