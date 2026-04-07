@@ -278,6 +278,21 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
           ].filter(Boolean).join(' | '),
         } as ListItemRow))}
       />
+
+      {/* Add to ROD Dialog */}
+      <AddToRODDialog
+        open={isAddToRODOpen}
+        onOpenChange={setIsAddToRODOpen}
+        contacts={selectedPeople.map(p => ({
+          full_name: p.full_name || '',
+          email: p.email || '',
+          company: p.fund?.name || '',
+          notes: [
+            p.role ? `Rol: ${PERSON_ROLE_LABELS[p.role] || p.role}` : null,
+            p.location || p.fund?.country_base ? `Ubicación: ${p.location || p.fund?.country_base}` : null,
+          ].filter(Boolean).join(' | '),
+        } as RODContact))}
+      />
     </>
   );
 };
