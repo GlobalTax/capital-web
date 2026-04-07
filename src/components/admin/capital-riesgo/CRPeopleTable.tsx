@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Linkedin, ExternalLink, Mail, Pencil, ListPlus } from 'lucide-react';
+import { Linkedin, ExternalLink, Mail, Pencil, ListPlus, BookOpen } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
