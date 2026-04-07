@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 const LazyRODDocumentsManager = lazy(() => import('@/components/admin/RODDocumentsManager').then(m => ({ default: m.RODDocumentsManager })));
+const LazyRODListsTab = lazy(() => import('@/components/admin/rod/RODListsTab').then(m => ({ default: m.RODListsTab })));
 
 
 interface Opportunity {
