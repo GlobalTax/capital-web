@@ -1,19 +1,18 @@
 
 
-## Plan: Fix npm ci Build Error (package-lock.json out of sync)
+## Plan: Show "Rango Facturación" and "Rango EBITDA" labels for buy-side cards
 
 ### Problem
+Buy-side (acquisition) operation cards show ranges correctly but the labels still say "Facturación" and "EBITDA" instead of "Rango Facturación" and "Rango EBITDA".
 
-The build fails at "Install dependencies" because `package-lock.json` is out of sync with `package.json`. Specifically, `flatted@3.3.1` in the lock file doesn't match the required `flatted@3.4.2`.
+### Change
 
-### Solution
+**File: `src/components/operations/OperationCard.tsx`**
 
-Regenerate `package-lock.json` by running `npm install`. This will update the lock file to match current `package.json` dependencies.
+Update the two label spans (lines 285 and 297) to show different text when the operation is buy-side with range data:
 
-### Steps
+- Line 285: Change from `t('operations.card.revenue')` to conditionally show `"Rango Facturación"` when `hasRevenueRange`, otherwise keep the existing translation.
+- Line 297: Change from `t('operations.card.ebitda')` to conditionally show `"Rango EBITDA"` when `hasEbitdaRange`, otherwise keep the existing translation.
 
-1. **Delete `package-lock.json`** and regenerate it with `npm install`
-2. **Verify** the build succeeds
-
-This is a one-step fix — no code changes needed, just a lock file refresh.
+This is a two-line change in a single file.
 
