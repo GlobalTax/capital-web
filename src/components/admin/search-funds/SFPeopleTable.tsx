@@ -251,6 +251,22 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
         onOpenChange={setIsEmailDialogOpen}
         recipients={selectedPeople}
       />
+
+      {/* Add to List Dialog */}
+      <AddItemsToListDialog
+        open={isAddToListOpen}
+        onOpenChange={setIsAddToListOpen}
+        itemLabel="persona"
+        items={selectedPeople.map(p => ({
+          empresa: p.fund?.name || '',
+          contacto: p.full_name || '',
+          email: p.email || '',
+          notas: [
+            p.role ? `Rol: ${PERSON_ROLE_LABELS[p.role] || p.role}` : null,
+            p.location || p.fund?.country_base ? `Ubicación: ${p.location || p.fund?.country_base}` : null,
+          ].filter(Boolean).join(' | '),
+        } as ListItemRow))}
+      />
     </>
   );
 };
