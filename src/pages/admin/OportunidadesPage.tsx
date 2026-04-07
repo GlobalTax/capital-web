@@ -2,12 +2,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, Loader2, Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { toast } from 'sonner';
+
 
 interface Opportunity {
   id: string;
@@ -30,6 +31,7 @@ interface Opportunity {
   short_description_en: string | null;
   description: string | null;
   description_en: string | null;
+  is_favorite: boolean;
 }
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -60,11 +62,22 @@ const formatRange = (min: number | null, max: number | null) => {
 
 const formatMargin = (v: number | null) => (v != null ? `${v.toFixed(1)}%` : '—');
 
+/** Star toggle button */
+const FavoriteToggle: React.FC<{ id: string; isFavorite: boolean; onToggle: (id: string, value: boolean) => void }> = ({ id, isFavorite, onToggle }) => (
+  <button
+    onClick={(e) => { e.stopPropagation(); onToggle(id, !isFavorite); }}
+    className="p-0.5 rounded hover:bg-muted transition-colors"
+    title={isFavorite ? 'Quitar de destacados' : 'Marcar como destacado'}
+  >
+    <Star className={`h-4 w-4 ${isFavorite ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'}`} />
+  </button>
+);
+
 /** Row for Sell-Side with expandable descriptions */
-const SellRow: React.FC<{ o: Opportunity }> = ({ o }) => {
+const SellRow: React.FC<{ o: Opportunity; onToggleFav: (id: string, value: boolean) => void }> = ({ o, onToggleFav }) => {
   const [open, setOpen] = useState(false);
   const hasDesc = !!(o.short_description || o.description);
-  const sellColCount = 8;
+  const sellColCount = 9;
 
   return (
     <>
@@ -74,6 +87,9 @@ const SellRow: React.FC<{ o: Opportunity }> = ({ o }) => {
       >
         <TableCell className="text-xs w-6 px-2">
           {hasDesc && (open ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />)}
+        </TableCell>
+        <TableCell className="text-xs w-8 px-2">
+          <FavoriteToggle id={o.id} isFavorite={o.is_favorite} onToggle={onToggleFav} />
         </TableCell>
         <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
         <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
@@ -121,7 +137,7 @@ export default function OportunidadesPage() {
     queryFn: async () => {
       const { data: mandatos, error: mErr } = await supabase
         .from('mandatos')
-        .select('id, codigo, tipo')
+        .select('id, codigo, tipo, is_favorite')
         .eq('visible_en_rod', true)
         .order('tipo');
 
@@ -139,10 +155,31 @@ export default function OportunidadesPage() {
       const datosMap = new Map((datos || []).map(d => [d.mandato_id, d]));
       return mandatos.map(m => {
         const d = datosMap.get(m.id) || {};
-        return { ...m, ...d } as Opportunity;
+        return { ...m, is_favorite: m.is_favorite ?? false, ...d } as Opportunity;
       });
     },
   });
+
+  const toggleFavorite = useMutation({
+    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+      const { error } = await supabase
+        .from('mandatos')
+        .update({ is_favorite: value })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { value }) => {
+      queryClient.invalidateQueries({ queryKey: ['rod-opportunities-full'] });
+      toast.success(value ? 'Marcado como destacado' : 'Destacado eliminado');
+    },
+    onError: () => {
+      toast.error('Error al actualizar destacado');
+    },
+  });
+
+  const handleToggleFav = (id: string, value: boolean) => {
+    toggleFavorite.mutate({ id, value });
+  };
 
   // Realtime subscriptions
   useEffect(() => {
@@ -226,8 +263,9 @@ export default function OportunidadesPage() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow>
+                       <TableRow>
                         <TableHead className="text-xs w-6 px-2" />
+                        <TableHead className="text-xs w-8 px-2"><Star className="h-3.5 w-3.5 text-muted-foreground" /></TableHead>
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -239,7 +277,7 @@ export default function OportunidadesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {sellSide.map(o => <SellRow key={o.id} o={o} />)}
+                      {sellSide.map(o => <SellRow key={o.id} o={o} onToggleFav={handleToggleFav} />)}
                     </TableBody>
                   </Table>
                 </div>
@@ -258,6 +296,7 @@ export default function OportunidadesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="text-xs w-8 px-2"><Star className="h-3.5 w-3.5 text-muted-foreground" /></TableHead>
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -271,6 +310,9 @@ export default function OportunidadesPage() {
                     <TableBody>
                       {buySide.map(o => (
                         <TableRow key={o.id}>
+                          <TableCell className="text-xs w-8 px-2">
+                            <FavoriteToggle id={o.id} isFavorite={o.is_favorite} onToggle={handleToggleFav} />
+                          </TableCell>
                           <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
                           <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
                           <TableCell className="text-xs">{o.sector || '—'}</TableCell>
