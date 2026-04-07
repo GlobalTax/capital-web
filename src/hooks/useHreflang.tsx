@@ -125,35 +125,28 @@ export const useHreflang = (options: UseHreflangOptions = {}) => {
     const currentPath = location.pathname;
     const routes = routeMap[currentPath];
     
-    // Si la ruta no está en el mapa, usar la ruta actual como fallback
-    const fallbackRoutes = {
-      es: currentPath,
-      ca: currentPath,
-      en: currentPath
-    };
-    
-    const hreflangRoutes = routes || fallbackRoutes;
-    
     // Limpiar hreflang links existentes
     const existingLinks = document.querySelectorAll('link[rel="alternate"][hreflang]');
     existingLinks.forEach(link => link.remove());
     
-    // Añadir nuevos hreflang links
-    const languages: Array<'es' | 'ca' | 'en'> = ['es', 'ca', 'en'];
-    languages.forEach(lang => {
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'alternate');
-      link.setAttribute('hreflang', lang);
-      link.setAttribute('href', `${baseUrl}${hreflangRoutes[lang]}`);
-      document.head.appendChild(link);
-    });
-    
-    // Añadir x-default (español como predeterminado)
-    const xDefaultLink = document.createElement('link');
-    xDefaultLink.setAttribute('rel', 'alternate');
-    xDefaultLink.setAttribute('hreflang', 'x-default');
-    xDefaultLink.setAttribute('href', `${baseUrl}${hreflangRoutes.es}`);
-    document.head.appendChild(xDefaultLink);
+    // Si la ruta no está en el mapa, NO emitir hreflang (página sin traducción real)
+    if (routes) {
+      const languages: Array<'es' | 'ca' | 'en'> = ['es', 'ca', 'en'];
+      languages.forEach(lang => {
+        const link = document.createElement('link');
+        link.setAttribute('rel', 'alternate');
+        link.setAttribute('hreflang', lang);
+        link.setAttribute('href', `${baseUrl}${routes[lang]}`);
+        document.head.appendChild(link);
+      });
+      
+      // Añadir x-default (español como predeterminado)
+      const xDefaultLink = document.createElement('link');
+      xDefaultLink.setAttribute('rel', 'alternate');
+      xDefaultLink.setAttribute('hreflang', 'x-default');
+      xDefaultLink.setAttribute('href', `${baseUrl}${routes.es}`);
+      document.head.appendChild(xDefaultLink);
+    }
     
     // Actualizar canonical URL
     const canonicalUrl = options.forceCanonical || `${baseUrl}${currentPath}`;
