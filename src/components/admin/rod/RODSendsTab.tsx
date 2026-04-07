@@ -129,10 +129,12 @@ export default function RODSendsTab() {
         target_language: language,
         attachment_ids: attachmentIds,
         signature_html: signatureHtml,
-        sender_name: senderName,
-        sender_email: senderEmail,
+        sender_name: senderNameRef.current,
+        sender_email: senderEmailRef.current,
         status: 'draft' as const,
       };
+
+      console.log('[ROD Save] sender_name:', payload.sender_name, 'sender_email:', payload.sender_email);
 
       if (currentSendId) {
         const { error } = await supabase.from('rod_sends').update(payload).eq('id', currentSendId);
