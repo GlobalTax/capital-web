@@ -93,7 +93,7 @@ serve(async (req) => {
 
     if (dealType && typeof dealType === 'string') {
       // Map frontend values to mandatos.tipo
-      const tipoMap: Record<string, string> = { 'sale': 'sell-side', 'acquisition': 'buy-side', 'sell-side': 'sell-side', 'buy-side': 'buy-side' };
+      const tipoMap: Record<string, string> = { 'sale': 'venta', 'acquisition': 'compra', 'venta': 'venta', 'compra': 'compra', 'sell-side': 'venta', 'buy-side': 'compra' };
       const mappedTipo = tipoMap[dealType] || dealType;
       query = query.eq('mandatos.tipo', mappedTipo);
     }
