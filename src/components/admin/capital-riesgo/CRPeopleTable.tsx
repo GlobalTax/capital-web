@@ -14,6 +14,7 @@ import { CRPersonWithFund, CRPersonRole, CRPerson, CR_PERSON_ROLE_LABELS } from 
 import { CRPersonEditModal } from './CRPersonEditModal';
 import { CRFavoriteButton } from './CRFavoriteButton';
 import { AddItemsToListDialog, ListItemRow } from '@/components/admin/shared/AddItemsToListDialog';
+import { AddToRODDialog, RODContact } from '@/components/admin/shared/AddToRODDialog';
 
 interface CRPeopleTableProps {
   people: CRPersonWithFund[];
