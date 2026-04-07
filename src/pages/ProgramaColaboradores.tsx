@@ -28,25 +28,7 @@ const ProgramaColaboradores = () => {
     }
   }, [location.pathname, setLang]);
 
-  useEffect(() => {
-    const hreflangUrls = {
-      'es': 'https://capittal.es/programa-colaboradores',
-      'ca': 'https://capittal.es/programa-col·laboradors',
-      'en': 'https://capittal.es/collaborators-program',
-      'x-default': 'https://capittal.es/programa-colaboradores'
-    };
-    
-    Object.entries(hreflangUrls).forEach(([hreflang, url]) => {
-      let link = document.querySelector(`link[hreflang="${hreflang}"]`);
-      if (!link) {
-        link = document.createElement('link');
-        link.setAttribute('rel', 'alternate');
-        link.setAttribute('hreflang', hreflang);
-        document.head.appendChild(link);
-      }
-      link.setAttribute('href', url);
-    });
-  }, []);
+  // Hreflang managed by useHreflang hook (via routeMap)
   
   return (
     <>

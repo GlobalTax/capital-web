@@ -54,23 +54,7 @@ const VentaEmpresas = () => {
     }
   }, [location.pathname, setLang]);
   
-  useEffect(() => {
-    const hreflangUrls = {
-      'es': 'https://capittal.es/venta-empresas',
-      'ca': 'https://capittal.es/venda-empreses',
-      'en': 'https://capittal.es/sell-companies',
-      'x-default': 'https://capittal.es/venta-empresas'
-    };
-    
-    document.querySelectorAll('link[rel="alternate"]').forEach(link => link.remove());
-    Object.entries(hreflangUrls).forEach(([lang, url]) => {
-      const link = document.createElement('link');
-      link.rel = 'alternate';
-      link.hreflang = lang;
-      link.href = url;
-      document.head.appendChild(link);
-    });
-  }, []);
+  // Hreflang managed by useHreflang hook (via routeMap)
   
   return (
     <>

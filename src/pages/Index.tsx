@@ -32,24 +32,7 @@ const Index = () => {
     }
   }, [location.pathname, setLang]);
   
-  // Add hreflang links
-  useEffect(() => {
-    const hreflangUrls = {
-      'es': 'https://capittal.es/',
-      'ca': 'https://capittal.es/ca',
-      'en': 'https://capittal.es/en',
-      'x-default': 'https://capittal.es/'
-    };
-    
-    document.querySelectorAll('link[rel="alternate"]').forEach(link => link.remove());
-    Object.entries(hreflangUrls).forEach(([lang, url]) => {
-      const link = document.createElement('link');
-      link.rel = 'alternate';
-      link.hreflang = lang;
-      link.href = url;
-      document.head.appendChild(link);
-    });
-  }, []);
+  // Hreflang managed by useHreflang hook (via routeMap)
   
   return (
     <UnifiedLayout variant="home">

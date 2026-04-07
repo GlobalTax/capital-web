@@ -54,23 +54,7 @@ const CompraEmpresas = () => {
     }
   }, [location.pathname, setLang]);
 
-  useEffect(() => {
-    const hreflangUrls = {
-      'es': 'https://capittal.es/compra-empresas',
-      'ca': 'https://capittal.es/compra-empreses',
-      'en': 'https://capittal.es/buy-companies',
-      'x-default': 'https://capittal.es/compra-empresas'
-    };
-    
-    document.querySelectorAll('link[rel="alternate"]').forEach(link => link.remove());
-    Object.entries(hreflangUrls).forEach(([lang, url]) => {
-      const link = document.createElement('link');
-      link.rel = 'alternate';
-      link.hreflang = lang;
-      link.href = url;
-      document.head.appendChild(link);
-    });
-  }, []);
+  // Hreflang managed by useHreflang hook (via routeMap)
 
   return (
     <UnifiedLayout variant="home">

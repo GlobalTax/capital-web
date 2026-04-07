@@ -39,17 +39,13 @@ const LandingCalculatorInner = () => {
     return undefined;
   }, [sourceParam]);
 
-  // Hreflang management for multilanguage support
+  // Hreflang management - only es + x-default (single-language LP)
   useEffect(() => {
     const existingHreflang = document.querySelectorAll('link[rel="alternate"][hreflang]');
     existingHreflang.forEach(link => link.remove());
 
     const hreflangUrls = {
       'es': 'https://capittal.es/lp/calculadora',
-      'ca': 'https://capittal.es/lp/calculadora',
-      'val': 'https://capittal.es/lp/calculadora',
-      'gl': 'https://capittal.es/lp/calculadora',
-      'en': 'https://capittal.es/lp/calculadora?lang=en',
       'x-default': 'https://capittal.es/lp/calculadora'
     };
 

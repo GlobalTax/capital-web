@@ -29,9 +29,10 @@ const routeMap: Record<string, HreflangRoute> = {
   '/contacte': { es: '/contacto', ca: '/contacte', en: '/contact' },
   '/contact': { es: '/contacto', ca: '/contacte', en: '/contact' },
   
-  '/programa-colaboradores': { es: '/programa-colaboradores', ca: '/programa-col-laboradors', en: '/collaborators-program' },
-  '/programa-col-laboradors': { es: '/programa-colaboradores', ca: '/programa-col-laboradors', en: '/collaborators-program' },
-  '/collaborators-program': { es: '/programa-colaboradores', ca: '/programa-col-laboradors', en: '/collaborators-program' },
+  '/programa-colaboradores': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
+  '/programa-col·laboradors': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
+  '/programa-col%C2%B7laboradors': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
+  '/collaborators-program': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
   
   '/casos-exito': { es: '/casos-exito', ca: '/casos-exit', en: '/success-stories' },
   '/casos-exit': { es: '/casos-exito', ca: '/casos-exit', en: '/success-stories' },
@@ -106,10 +107,7 @@ const routeMap: Record<string, HreflangRoute> = {
   '/sectores/alimentacion': { es: '/sectores/alimentacion', ca: '/sectors/alimentacio', en: '/sectors/alimentacion' },
   '/sectors/alimentacio': { es: '/sectores/alimentacion', ca: '/sectors/alimentacio', en: '/sectors/alimentacion' },
 
-  // === LANDING PAGES ===
-  '/lp/calculadora': { es: '/lp/calculadora', ca: '/lp/calculadora', en: '/lp/calculadora' },
-  '/lp/calculadora-fiscal': { es: '/lp/calculadora-fiscal', ca: '/lp/calculadora-fiscal', en: '/lp/calculadora-fiscal' },
-  '/lp/calculadora-asesores': { es: '/lp/calculadora-asesores', ca: '/lp/calculadora-asesores', en: '/lp/calculadora-asesores' },
+  // LP pages manage their own hreflang inline, so they're not in routeMap
 };
 
 interface UseHreflangOptions {
@@ -125,35 +123,28 @@ export const useHreflang = (options: UseHreflangOptions = {}) => {
     const currentPath = location.pathname;
     const routes = routeMap[currentPath];
     
-    // Si la ruta no está en el mapa, usar la ruta actual como fallback
-    const fallbackRoutes = {
-      es: currentPath,
-      ca: currentPath,
-      en: currentPath
-    };
-    
-    const hreflangRoutes = routes || fallbackRoutes;
-    
     // Limpiar hreflang links existentes
     const existingLinks = document.querySelectorAll('link[rel="alternate"][hreflang]');
     existingLinks.forEach(link => link.remove());
     
-    // Añadir nuevos hreflang links
-    const languages: Array<'es' | 'ca' | 'en'> = ['es', 'ca', 'en'];
-    languages.forEach(lang => {
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'alternate');
-      link.setAttribute('hreflang', lang);
-      link.setAttribute('href', `${baseUrl}${hreflangRoutes[lang]}`);
-      document.head.appendChild(link);
-    });
-    
-    // Añadir x-default (español como predeterminado)
-    const xDefaultLink = document.createElement('link');
-    xDefaultLink.setAttribute('rel', 'alternate');
-    xDefaultLink.setAttribute('hreflang', 'x-default');
-    xDefaultLink.setAttribute('href', `${baseUrl}${hreflangRoutes.es}`);
-    document.head.appendChild(xDefaultLink);
+    // Si la ruta no está en el mapa, NO emitir hreflang (página sin traducción real)
+    if (routes) {
+      const languages: Array<'es' | 'ca' | 'en'> = ['es', 'ca', 'en'];
+      languages.forEach(lang => {
+        const link = document.createElement('link');
+        link.setAttribute('rel', 'alternate');
+        link.setAttribute('hreflang', lang);
+        link.setAttribute('href', `${baseUrl}${routes[lang]}`);
+        document.head.appendChild(link);
+      });
+      
+      // Añadir x-default (español como predeterminado)
+      const xDefaultLink = document.createElement('link');
+      xDefaultLink.setAttribute('rel', 'alternate');
+      xDefaultLink.setAttribute('hreflang', 'x-default');
+      xDefaultLink.setAttribute('href', `${baseUrl}${routes.es}`);
+      document.head.appendChild(xDefaultLink);
+    }
     
     // Actualizar canonical URL
     const canonicalUrl = options.forceCanonical || `${baseUrl}${currentPath}`;
