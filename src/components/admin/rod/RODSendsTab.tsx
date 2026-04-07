@@ -84,6 +84,8 @@ export default function RODSendsTab() {
     setBodyText(send.body_text || '');
     setLanguage(send.target_language || 'es');
     setAttachmentIds(send.attachment_ids || []);
+    setSenderName(send.sender_name || null);
+    setSenderEmail(send.sender_email || null);
   };
 
   const createNew = () => {
