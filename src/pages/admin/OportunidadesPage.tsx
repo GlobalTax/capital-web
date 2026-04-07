@@ -187,7 +187,8 @@ export default function OportunidadesPage() {
                         <TableHead className="text-xs text-right">EBITDA</TableHead>
                         <TableHead className="text-xs text-right">Margen</TableHead>
                         <TableHead className="text-xs">Fase</TableHead>
-                        <TableHead className="text-xs">Descripción</TableHead>
+                        <TableHead className="text-xs">Desc. Breve</TableHead>
+                        <TableHead className="text-xs">Desc. Extensa</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -207,6 +208,9 @@ export default function OportunidadesPage() {
                           </TableCell>
                           <TableCell className="text-xs">
                             <ExpandableDescription text={o.short_description} />
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <ExpandableDescription text={o.description} />
                           </TableCell>
                         </TableRow>
                       ))}
