@@ -71,7 +71,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('');
+  
   const [selectedDealType, setSelectedDealType] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [offset, setOffset] = useState(0);
