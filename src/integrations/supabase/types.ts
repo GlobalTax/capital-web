@@ -19853,6 +19853,68 @@ export type Database = {
         }
         Relationships: []
       }
+      rod_scheduled_batches: {
+        Row: {
+          batch_size: number
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          delay_seconds: number
+          email_ids: string[] | null
+          error_message: string | null
+          failed_count: number | null
+          id: string
+          scheduled_at: string
+          send_id: string
+          sent_count: number | null
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          batch_size?: number
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          delay_seconds?: number
+          email_ids?: string[] | null
+          error_message?: string | null
+          failed_count?: number | null
+          id?: string
+          scheduled_at: string
+          send_id: string
+          sent_count?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          batch_size?: number
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          delay_seconds?: number
+          email_ids?: string[] | null
+          error_message?: string | null
+          failed_count?: number | null
+          id?: string
+          scheduled_at?: string
+          send_id?: string
+          sent_count?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rod_scheduled_batches_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "rod_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rod_send_emails: {
         Row: {
           body_html: string | null
