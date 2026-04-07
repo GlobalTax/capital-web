@@ -361,7 +361,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 <span className="text-sm text-muted-foreground">{t('operations.filters.activeFilters')}</span>
                 {searchTerm && <Badge variant="secondary">{searchTerm}</Badge>}
                 {selectedSector && <Badge variant="secondary">{selectedSector}</Badge>}
-                {selectedLocation && <Badge variant="secondary">{selectedLocation}</Badge>}
+                
                 {selectedDealType && (
                   <Badge variant="secondary">
                     {selectedDealType === 'venta' ? 'Venta' : selectedDealType === 'compra' ? 'Adquisición' : selectedDealType}
