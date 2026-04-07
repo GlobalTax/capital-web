@@ -1040,7 +1040,7 @@ export default function ContactListDetailPage() {
   };
 
   // Step 3: Confirm import (nuevas + vinculadas + enOtraLista, excludes conflictoSublistado)
-  const handleConfirmImport = async () => {
+  const handleConfirmImport = async (updateDuplicates = false) => {
     if (!listId || !validationResult) return;
     setImportStep('importing');
     const rowsToInsert = [
@@ -1050,29 +1050,78 @@ export default function ContactListDetailPage() {
       // conflictoSublistado is intentionally EXCLUDED
     ] as any[];
 
-    setImportProgress(rowsToInsert.length > 0 ? { done: 0, total: rowsToInsert.length } : null);
+    const totalOperations = rowsToInsert.length + (updateDuplicates ? validationResult.duplicadas.length : 0);
+    setImportProgress(totalOperations > 0 ? { done: 0, total: totalOperations } : null);
 
     let importedCount = 0;
+    let updatedCount = 0;
     let failedCount = 0;
 
     try {
+      // 1. Insert new rows
       if (rowsToInsert.length > 0) {
         const result = await addCompanies.mutateAsync({
           rows: rowsToInsert as any,
-          onProgress: (done, total) => setImportProgress({ done, total }),
+          onProgress: (done, total) => setImportProgress({ done, total: totalOperations }),
         });
         importedCount = result.inserted;
         failedCount = result.failed;
+      }
 
-        if (importedCount > 0) {
-          await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
-          queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
-          // Si estamos en sublista, invalidar cache de la madre
-          if (list?.lista_madre_id) {
-            queryClient.invalidateQueries({ queryKey: ['sublist-company-map', list.lista_madre_id] });
-            queryClient.invalidateQueries({ queryKey: ['contact-list-companies', list.lista_madre_id] });
+      // 2. Update duplicates if user opted in
+      if (updateDuplicates && validationResult.duplicadas.length > 0) {
+        const UPDATABLE_FIELDS = ['tipo_accionista', 'nombre_accionista', 'notas', 'contacto', 'email', 'linkedin', 'director_ejecutivo', 'telefono', 'web', 'posicion_contacto', 'consolidador', 'cnae', 'descripcion_actividad', 'facturacion', 'ebitda', 'num_trabajadores', 'provincia', 'comunidad_autonoma'];
+        
+        for (let i = 0; i < validationResult.duplicadas.length; i++) {
+          const row = validationResult.duplicadas[i];
+          const cif = row.cif;
+          if (!cif) continue;
+
+          // Build update payload with only non-null fields from Excel
+          const updates: Record<string, any> = {};
+          for (const field of UPDATABLE_FIELDS) {
+            const val = row.data[field];
+            if (val != null && val !== '' && val !== undefined) {
+              updates[field] = val;
+            }
           }
+
+          if (Object.keys(updates).length === 0) continue;
+
+          try {
+            const { error } = await supabase
+              .from('outbound_list_companies' as any)
+              .update(updates)
+              .eq('list_id', listId)
+              .eq('cif', cif);
+            
+            if (error) {
+              console.error(`[Import] Failed to update CIF ${cif}:`, error);
+              failedCount++;
+            } else {
+              updatedCount++;
+            }
+          } catch (err) {
+            console.error(`[Import] Error updating CIF ${cif}:`, err);
+            failedCount++;
+          }
+
+          setImportProgress({ done: rowsToInsert.length + i + 1, total: totalOperations });
         }
+      }
+
+      if (importedCount > 0 || updatedCount > 0) {
+        await supabase.from('outbound_lists' as any).update({ origen: 'excel', updated_at: new Date().toISOString() }).eq('id', listId);
+        queryClient.invalidateQueries({ queryKey: ['contact-list-detail', listId] });
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
+        if (list?.lista_madre_id) {
+          queryClient.invalidateQueries({ queryKey: ['sublist-company-map', list.lista_madre_id] });
+          queryClient.invalidateQueries({ queryKey: ['contact-list-companies', list.lista_madre_id] });
+        }
+      }
+
+      if (updatedCount > 0) {
+        toast.success(`${updatedCount} empresas actualizadas con los nuevos datos`);
       }
     } catch (err: any) {
       console.error('[Import] Unexpected error:', err);
@@ -1083,7 +1132,7 @@ export default function ContactListDetailPage() {
         imported: importedCount || validationResult.nuevas.length,
         linked: validationResult.vinculadas.length,
         linkedRelated: validationResult.enOtraLista.length,
-        skippedDuplicates: validationResult.duplicadas.length,
+        skippedDuplicates: updateDuplicates ? 0 : validationResult.duplicadas.length,
         skippedErrors: validationResult.errores.length + validationResult.conflictoSublistado.length + failedCount,
         errors: validationResult.errores,
       });
