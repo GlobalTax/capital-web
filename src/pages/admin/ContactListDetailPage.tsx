@@ -2905,12 +2905,29 @@ export default function ContactListDetailPage() {
               {importData.length > 5 && <p className="text-xs text-muted-foreground">...y {importData.length - 5} filas más</p>}
             </div>
           )}
+          {/* Validation progress */}
+          {isValidating && validationProgress && (
+            <div className="space-y-2 px-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{validationProgress.step}</span>
+                <span>{validationProgress.percent}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-primary h-2 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${validationProgress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={handleCloseImport}>Cancelar</Button>
+            <Button variant="outline" onClick={handleCloseImport} disabled={isValidating}>Cancelar</Button>
             {importData.length > 0 && (
               <Button onClick={handleStartValidation} disabled={isValidating}>
                 {isValidating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                {isValidating ? 'Validando empresas...' : `Validar ${importData.length} empresas`}
+                {isValidating
+                  ? (validationProgress?.step || 'Validando empresas...')
+                  : `Validar ${importData.length.toLocaleString()} empresas`}
               </Button>
             )}
           </DialogFooter>
