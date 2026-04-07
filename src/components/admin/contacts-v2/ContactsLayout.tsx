@@ -12,7 +12,7 @@ import ContactsHeader from './ContactsHeader';
 import ContactsFilters from './ContactsFilters';
 import VirtualContactsTable from './VirtualContactsTable';
 import ContactDetailSheet from '../contacts/ContactDetailSheet';
-import { ContactsPipelineView } from '../contacts/pipeline';
+
 import { ContactsStatsPanel } from '@/features/contacts/components/stats/ContactsStatsPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
