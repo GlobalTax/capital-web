@@ -324,7 +324,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   <SelectItem value="all">{t('operations.filters.allTypes')}</SelectItem>
                   {dealTypes.map((type) => (
                     <SelectItem key={type} value={type}>
-                      {type === 'sell-side' ? 'Venta (Sell-Side)' : type === 'buy-side' ? 'Adquisición (Buy-Side)' : type}
+                      {type === 'venta' ? 'Venta (Sell-Side)' : type === 'compra' ? 'Adquisición (Buy-Side)' : type}
                     </SelectItem>
                   ))}
                 </SelectContent>
