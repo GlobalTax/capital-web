@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface LeadStatusSelectProps {
   leadId: string;
-  leadType: 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'sell';
+  leadType: 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'sell' | 'buyer_alert';
   currentStatus: string;
   onStatusChange?: () => void;
 }
