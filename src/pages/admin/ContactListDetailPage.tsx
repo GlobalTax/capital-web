@@ -572,6 +572,8 @@ export default function ContactListDetailPage() {
   // Text columns that support multi-select filtering
   const TEXT_FILTER_COLUMNS = ['provincia', 'comunidad_autonoma', 'cnae', 'posicion_contacto', 'director_ejecutivo'] as const;
   const KEYWORD_FILTER_COLUMNS = ['descripcion_actividad'] as const;
+  // Columns that support "has value / no value" presence filtering
+  const PRESENCE_FILTER_COLUMNS = ['email', 'linkedin', 'web', 'cif', 'contacto', 'director_ejecutivo', 'telefono', 'provincia', 'comunidad_autonoma', 'cnae', 'posicion_contacto', 'facturacion', 'ebitda', 'num_trabajadores', 'nombre_accionista', 'notas'] as const;
 
   // Numeric range definitions
   const NUMERIC_RANGES: Record<string, { label: string; min: number | null; max: number | null }[]> = {
@@ -695,10 +697,24 @@ export default function ContactListDetailPage() {
           return selectedValues.some(keyword => val.includes(keyword.toLowerCase()));
         });
       } else {
-        // Text exact filter
+        // Check for presence filters (__has / __empty) mixed with text exact filters
+        const presenceFilters = selectedValues.filter(v => v === '__has' || v === '__empty');
+        const textFilters = selectedValues.filter(v => v !== '__has' && v !== '__empty');
+        
         result = result.filter(c => {
           const val = (c as any)[colKey];
-          return val && selectedValues.includes(val);
+          const hasValue = val != null && val !== '' && String(val).trim() !== '' && String(val).trim() !== '—';
+          
+          // If both presence and text filters, match either
+          if (presenceFilters.length > 0 && textFilters.length > 0) {
+            const presenceMatch = presenceFilters.some(pf => pf === '__has' ? hasValue : !hasValue);
+            const textMatch = hasValue && textFilters.includes(val);
+            return presenceMatch || textMatch;
+          }
+          if (presenceFilters.length > 0) {
+            return presenceFilters.some(pf => pf === '__has' ? hasValue : !hasValue);
+          }
+          return val && textFilters.includes(val);
         });
       }
     }
@@ -1595,6 +1611,8 @@ export default function ContactListDetailPage() {
     provincia: 'Provincia', comunidad_autonoma: 'C.A.', cnae: 'CNAE',
     descripcion_actividad: 'Actividad', posicion_contacto: 'Posición', director_ejecutivo: 'Director',
     facturacion: 'Facturación', ebitda: 'EBITDA', num_trabajadores: 'Empleados',
+    email: 'Email', linkedin: 'LinkedIn', web: 'Web', cif: 'CIF', contacto: 'Contacto',
+    telefono: 'Teléfono', nombre_accionista: 'Accionista', notas: 'Notas',
   };
 
   // Dynamic column header renderer
@@ -1729,6 +1747,20 @@ export default function ContactListDetailPage() {
             </div>
             <ScrollArea className="h-[220px]">
               <div className="p-1">
+                {/* Presence filters */}
+                {(PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && (
+                  <>
+                    <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-muted-foreground">
+                      <Checkbox checked={activeFilters.includes('__has')} onCheckedChange={() => toggleColumnFilter(colKey, '__has')} />
+                      <span>Con dato</span>
+                    </label>
+                    <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-muted-foreground">
+                      <Checkbox checked={activeFilters.includes('__empty')} onCheckedChange={() => toggleColumnFilter(colKey, '__empty')} />
+                      <span>Sin dato</span>
+                    </label>
+                    {values.length > 0 && <div className="border-t my-1" />}
+                  </>
+                )}
                 {filtered.map((val) => (
                   <label key={val} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
                     <Checkbox
@@ -1738,7 +1770,7 @@ export default function ContactListDetailPage() {
                     <span className="truncate">{val}</span>
                   </label>
                 ))}
-                {filtered.length === 0 && (
+                {filtered.length === 0 && !(PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && (
                   <p className="text-xs text-muted-foreground text-center py-3">Sin resultados</p>
                 )}
               </div>
@@ -1845,6 +1877,60 @@ export default function ContactListDetailPage() {
       );
     }
 
+    // Presence-only filter (for columns like email, linkedin, web that have no other filter type)
+    const isPresenceFilterCol = (PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && !isTextFilterCol && !isNumericFilterCol && !isKeywordFilterCol;
+    if (isPresenceFilterCol) {
+      const hasCount = companies.filter(c => { const v = (c as any)[colKey]; return v != null && v !== '' && String(v).trim() !== '' && String(v).trim() !== '—'; }).length;
+      const emptyCount = companies.length - hasCount;
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn("flex items-center gap-1 hover:text-foreground", isRight && "ml-auto")}>
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+              {sortKey && <SortIcon field={sortKey} />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-0" align="start">
+            {sortKey && (
+              <div className="p-2 border-b flex gap-1">
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('asc'); }}>
+                  <ArrowUp className="h-3 w-3 mr-1" /> Asc
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('desc'); }}>
+                  <ArrowDown className="h-3 w-3 mr-1" /> Desc
+                </Button>
+              </div>
+            )}
+            <div className="p-1">
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                <Checkbox checked={activeFilters.includes('__has')} onCheckedChange={() => toggleColumnFilter(colKey, '__has')} />
+                <span>Con dato</span>
+                <span className="ml-auto text-xs text-muted-foreground">{hasCount}</span>
+              </label>
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                <Checkbox checked={activeFilters.includes('__empty')} onCheckedChange={() => toggleColumnFilter(colKey, '__empty')} />
+                <span>Sin dato</span>
+                <span className="ml-auto text-xs text-muted-foreground">{emptyCount}</span>
+              </label>
+            </div>
+            {activeFilters.length > 0 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
     if (sortKey) {
       return (
         <button className={cn("flex items-center hover:text-foreground", isRight && "ml-auto")} onClick={() => toggleSort(sortKey)}>
@@ -1853,7 +1939,7 @@ export default function ContactListDetailPage() {
       );
     }
     return label;
-  }, [allColumns, toggleSort, uniqueColumnValues, columnFilters, headerSearches, toggleColumnFilter, clearColumnFilter]);
+  }, [allColumns, toggleSort, uniqueColumnValues, columnFilters, headerSearches, toggleColumnFilter, clearColumnFilter, companies]);
 
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
@@ -2204,7 +2290,9 @@ export default function ContactListDetailPage() {
                 {Object.entries(columnFilters).map(([colKey, values]) =>
                   values.map(val => {
                     let displayVal = val;
-                    if (val.startsWith('custom:')) {
+                    if (val === '__has') displayVal = 'Con dato';
+                    else if (val === '__empty') displayVal = 'Sin dato';
+                    else if (val.startsWith('custom:')) {
                       const parts = val.slice(7).split('-');
                       const fmtNum = (n: string) => {
                         if (!n) return '';
