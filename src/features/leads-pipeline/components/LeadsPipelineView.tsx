@@ -392,6 +392,45 @@ export const LeadsPipelineView: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {/* Column visibility toggle */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", hiddenColumns.size > 0 && "border-primary text-primary")}>
+                <Columns3 className="h-4 w-4" />
+                Columnas
+                {hiddenColumns.size > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{visibleStatuses.length - hiddenColumns.size}/{visibleStatuses.length}</Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 p-0" align="end">
+              <div className="p-2 border-b">
+                <p className="text-xs font-medium text-muted-foreground">Mostrar/ocultar columnas</p>
+              </div>
+              <div className="max-h-72 overflow-y-auto p-1">
+                {visibleStatuses.map(status => (
+                  <label key={status.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                    <Checkbox
+                      checked={!hiddenColumns.has(status.status_key)}
+                      onCheckedChange={() => toggleColumnVisibility(status.status_key)}
+                    />
+                    <span className="mr-1.5">{status.icon}</span>
+                    <span className="text-sm flex-1">{status.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {(leadsByStatus[status.status_key as LeadStatus] || []).length}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {hiddenColumns.size > 0 && (
+                <div className="border-t p-1">
+                  <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setHiddenColumns(new Set())}>
+                    Mostrar todas
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
           <PipelineColumnsEditor />
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
