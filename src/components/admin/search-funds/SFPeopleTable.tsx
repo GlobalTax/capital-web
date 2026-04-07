@@ -12,6 +12,7 @@ import { SFPersonEditModal } from './SFPersonEditModal';
 import { SFBulkEmailDialog } from './SFBulkEmailDialog';
 import { SFFavoriteButton } from './SFFavoriteButton';
 import { AddItemsToListDialog, ListItemRow } from '@/components/admin/shared/AddItemsToListDialog';
+import { AddToRODDialog, RODContact } from '@/components/admin/shared/AddToRODDialog';
 
 interface SFPeopleTableProps {
   people: SFPersonWithFund[];
