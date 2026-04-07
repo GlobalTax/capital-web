@@ -181,8 +181,17 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const handleSectorChange = (value: string) => {
-    setSelectedSector(value === 'all' ? '' : value);
+  const handleSectorToggle = (sectorKey: string) => {
+    setSelectedSectors(prev => 
+      prev.includes(sectorKey) 
+        ? prev.filter(s => s !== sectorKey)
+        : [...prev, sectorKey]
+    );
+    setOffset(0);
+  };
+
+  const handleRemoveSector = (sectorKey: string) => {
+    setSelectedSectors(prev => prev.filter(s => s !== sectorKey));
     setOffset(0);
   };
 
