@@ -246,12 +246,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Múltiplos para calculadora de asesores"
       },
       { 
-        title: "Documentos ROD",
-        url: "/admin/rod-documents", 
-        icon: FileText,
-        description: "Gestión de ROD"
-      },
-      { 
         title: "Equipo", 
         url: "/admin/team", 
         icon: Users,

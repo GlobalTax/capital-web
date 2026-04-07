@@ -1,13 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star } from 'lucide-react';
+import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star, FileText } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+
+const LazyRODDocumentsManager = lazy(() => import('@/components/admin/RODDocumentsManager').then(m => ({ default: m.RODDocumentsManager })));
 
 
 interface Opportunity {
@@ -252,6 +254,10 @@ export default function OportunidadesPage() {
           <TabsTrigger value="buy" className="text-xs">
             Buy-Side ({buySide.length})
           </TabsTrigger>
+          <TabsTrigger value="documents" className="text-xs">
+            <FileText className="h-3.5 w-3.5 mr-1" />
+            Documentos ROD
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell">
@@ -344,6 +350,16 @@ export default function OportunidadesPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="documents">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          }>
+            <LazyRODDocumentsManager />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>
