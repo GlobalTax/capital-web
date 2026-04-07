@@ -19853,6 +19853,68 @@ export type Database = {
         }
         Relationships: []
       }
+      rod_send_emails: {
+        Row: {
+          body_html: string | null
+          body_text: string | null
+          company: string | null
+          created_at: string | null
+          email: string
+          error_message: string | null
+          full_name: string | null
+          id: string
+          is_manually_edited: boolean | null
+          member_id: string | null
+          send_id: string
+          sent_at: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          body_html?: string | null
+          body_text?: string | null
+          company?: string | null
+          created_at?: string | null
+          email: string
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          is_manually_edited?: boolean | null
+          member_id?: string | null
+          send_id: string
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          is_manually_edited?: boolean | null
+          member_id?: string | null
+          send_id?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rod_send_emails_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "rod_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rod_send_recipients: {
         Row: {
           company: string | null
@@ -19903,6 +19965,7 @@ export type Database = {
           attachment_urls: Json | null
           body_html: string
           body_text: string
+          cc_recipient_ids: string[] | null
           created_at: string
           created_by: string | null
           error_message: string | null
@@ -19911,6 +19974,7 @@ export type Database = {
           scheduled_at: string | null
           sent_at: string | null
           sent_count: number | null
+          signature_html: string | null
           status: string
           subject: string
           target_language: string
@@ -19922,6 +19986,7 @@ export type Database = {
           attachment_urls?: Json | null
           body_html?: string
           body_text?: string
+          cc_recipient_ids?: string[] | null
           created_at?: string
           created_by?: string | null
           error_message?: string | null
@@ -19930,6 +19995,7 @@ export type Database = {
           scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number | null
+          signature_html?: string | null
           status?: string
           subject?: string
           target_language?: string
@@ -19941,6 +20007,7 @@ export type Database = {
           attachment_urls?: Json | null
           body_html?: string
           body_text?: string
+          cc_recipient_ids?: string[] | null
           created_at?: string
           created_by?: string | null
           error_message?: string | null
@@ -19949,6 +20016,7 @@ export type Database = {
           scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number | null
+          signature_html?: string | null
           status?: string
           subject?: string
           target_language?: string
