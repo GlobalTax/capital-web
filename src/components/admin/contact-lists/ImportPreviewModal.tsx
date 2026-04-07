@@ -3,22 +3,31 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, CheckCircle2, Link2, AlertTriangle, XCircle, GitBranch, ShieldAlert } from 'lucide-react';
+import { ChevronDown, CheckCircle2, Link2, AlertTriangle, XCircle, GitBranch, ShieldAlert, RefreshCw, Loader2 } from 'lucide-react';
 import type { ValidationResult } from '@/hooks/useExcelImportValidation';
 
 interface ImportPreviewModalProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (updateDuplicates?: boolean) => void;
   result: ValidationResult;
   isImporting: boolean;
   importProgress?: { done: number; total: number } | null;
 }
 
 export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporting, importProgress }: ImportPreviewModalProps) {
+  const [updateDuplicates, setUpdateDuplicates] = useState(false);
   const importable = result.nuevas.length + result.vinculadas.length + result.enOtraLista.length;
-  const canImport = importable > 0;
+  const canImport = importable > 0 || (updateDuplicates && result.duplicadas.length > 0);
+
+  // Check if duplicates have updatable fields
+  const duplicatesWithData = result.duplicadas.filter(r => {
+    const d = r.data;
+    return d.tipo_accionista || d.nombre_accionista || d.notas || d.contacto || d.email || d.linkedin || d.director_ejecutivo || d.consolidador;
+  });
+  const hasUpdatableData = duplicatesWithData.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -53,12 +62,36 @@ export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporti
             rows={result.conflictoSublistado.map(r => ({ name: r.empresa || r.cif || '—', cif: r.cif, motivo: `Ya en: ${r.sublistaConflicto}` }))}
             variant="destructive"
           />
-          <SummarySection
-            icon={<AlertTriangle className="h-4 w-4 text-amber-500" />}
-            label="Duplicadas en esta lista (se omitirán)"
-            count={result.duplicadas.length}
-            rows={result.duplicadas.map(r => ({ name: r.empresa || r.cif || '—', cif: r.cif }))}
-          />
+          
+          {/* Duplicadas — with update option */}
+          <div>
+            <SummarySection
+              icon={updateDuplicates && hasUpdatableData
+                ? <RefreshCw className="h-4 w-4 text-blue-500" />
+                : <AlertTriangle className="h-4 w-4 text-amber-500" />
+              }
+              label={updateDuplicates && hasUpdatableData
+                ? `Duplicadas en esta lista (se actualizarán datos)`
+                : `Duplicadas en esta lista (se omitirán)`
+              }
+              count={result.duplicadas.length}
+              rows={result.duplicadas.map(r => ({ name: r.empresa || r.cif || '—', cif: r.cif }))}
+            />
+            {result.duplicadas.length > 0 && hasUpdatableData && (
+              <div className="ml-6 mt-1 flex items-center gap-2">
+                <Checkbox
+                  id="update-duplicates"
+                  checked={updateDuplicates}
+                  onCheckedChange={(v) => setUpdateDuplicates(!!v)}
+                  disabled={isImporting}
+                />
+                <label htmlFor="update-duplicates" className="text-xs text-muted-foreground cursor-pointer select-none">
+                  Actualizar datos de las {result.duplicadas.length} empresas existentes (tipo, accionista, notas, etc.)
+                </label>
+              </div>
+            )}
+          </div>
+
           <SummarySection
             icon={<XCircle className="h-4 w-4 text-destructive" />}
             label="Filas con error (se omitirán)"
@@ -69,12 +102,14 @@ export function ImportPreviewModal({ open, onClose, onConfirm, result, isImporti
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isImporting}>Cancelar</Button>
-          <Button onClick={onConfirm} disabled={!canImport || isImporting}>
+          <Button onClick={() => onConfirm(updateDuplicates)} disabled={!canImport || isImporting}>
             {isImporting && importProgress
-              ? `Importando ${importProgress.done}/${importProgress.total}...`
+              ? `Procesando ${importProgress.done}/${importProgress.total}...`
               : isImporting
-                ? 'Importando...'
-                : `Importar ${importable} empresas`}
+                ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Procesando...</>
+                : updateDuplicates && result.duplicadas.length > 0
+                  ? `Importar ${importable} + Actualizar ${result.duplicadas.length}`
+                  : `Importar ${importable} empresas`}
           </Button>
         </DialogFooter>
       </DialogContent>
