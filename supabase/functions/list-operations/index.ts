@@ -28,9 +28,11 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const body = await req.json();
     const { 
       searchTerm, 
       sector,
+      sectors: sectorsFilter,
       location,
       dealType,
       sortBy = 'created_at', 
@@ -38,7 +40,7 @@ serve(async (req) => {
       offset = 0,
       createdAfter,
       locale = 'es'
-    } = await req.json();
+    } = body;
 
     console.log('📋 list-operations (ROD) request:', { 
       searchTerm, sector, location, dealType, sortBy, limit, offset, createdAfter, locale,
