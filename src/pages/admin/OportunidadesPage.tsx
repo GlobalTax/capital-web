@@ -264,6 +264,10 @@ export default function OportunidadesPage() {
             <Users className="h-3.5 w-3.5 mr-1" />
             Listados ROD
           </TabsTrigger>
+          <TabsTrigger value="sends" className="text-xs">
+            <Send className="h-3.5 w-3.5 mr-1" />
+            Envíos ROD
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell">
