@@ -263,8 +263,9 @@ export default function OportunidadesPage() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow>
+                       <TableRow>
                         <TableHead className="text-xs w-6 px-2" />
+                        <TableHead className="text-xs w-8 px-2"><Star className="h-3.5 w-3.5 text-muted-foreground" /></TableHead>
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -276,7 +277,7 @@ export default function OportunidadesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {sellSide.map(o => <SellRow key={o.id} o={o} />)}
+                      {sellSide.map(o => <SellRow key={o.id} o={o} onToggleFav={handleToggleFav} />)}
                     </TableBody>
                   </Table>
                 </div>
