@@ -192,7 +192,7 @@ serve(async (req) => {
         resolved_description: (locale === 'en' && row.description_en) ? row.description_en : row.description,
         resolved_short_description: (locale === 'en' && row.short_description_en) ? row.short_description_en : row.short_description,
         geographic_location: row.ubicacion,
-        deal_type: mandato?.tipo === 'sell-side' ? 'sale' : mandato?.tipo === 'buy-side' ? 'acquisition' : mandato?.tipo,
+        deal_type: mandato?.tipo === 'venta' ? 'sale' : mandato?.tipo === 'compra' ? 'acquisition' : mandato?.tipo,
         is_featured: mandato?.is_favorite || false,
         is_active: true,
         project_status: row.estado,
