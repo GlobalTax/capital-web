@@ -26,6 +26,8 @@ const ORIGIN_TABLE_MAP: Record<ContactOrigin, string> = {
   general: 'general_contact_leads',
   advisor: 'advisor_valuations',
   sell: 'sell_leads',
+  buyer_alert: 'buyer_preferences',
+  rod_download: 'buyer_contacts',
 };
 
 const ContactsLayout: React.FC = () => {

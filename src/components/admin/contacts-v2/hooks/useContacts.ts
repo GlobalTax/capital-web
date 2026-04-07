@@ -467,6 +467,44 @@ function determinePriority(lead: any): 'hot' | 'warm' | 'cold' {
   return 'cold';
 }
 
+function transformBuyerAlert(lead: any): Contact {
+  return {
+    id: lead.id,
+    origin: 'buyer_alert',
+    name: lead.full_name || '',
+    email: lead.email,
+    phone: lead.phone || undefined,
+    company: lead.company || undefined,
+    created_at: lead.created_at || new Date().toISOString(),
+    lead_received_at: lead.created_at || new Date().toISOString(),
+    status: lead.is_active ? 'active' : 'inactive',
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
+    industry: lead.preferred_sectors?.join(', ') || undefined,
+    location: lead.preferred_locations?.join(', ') || undefined,
+    priority: 'warm',
+    is_hot_lead: false,
+  };
+}
+
+function transformRodDownload(lead: any): Contact {
+  return {
+    id: lead.id,
+    origin: 'rod_download',
+    name: lead.full_name || `${lead.first_name} ${lead.last_name || ''}`.trim(),
+    email: lead.email,
+    phone: lead.phone || undefined,
+    company: lead.company || undefined,
+    created_at: lead.created_at || new Date().toISOString(),
+    lead_received_at: lead.lead_received_at || lead.created_at || new Date().toISOString(),
+    status: lead.status || 'new',
+    lead_status_crm: lead.lead_status_crm || 'nuevo',
+    industry: lead.sectors_of_interest || undefined,
+    location: lead.preferred_location || undefined,
+    priority: 'warm',
+    is_hot_lead: false,
+  };
+}
+
 // Transform legacy sell_leads, general_contact_leads, and company_acquisition_inquiries
 function transformLegacyLead(lead: any, sourceType: 'sell_lead' | 'general_contact' | 'company_acquisition', formDisplayMap: Record<string, string>): Contact {
   const originMap: Record<string, ContactOrigin> = {
