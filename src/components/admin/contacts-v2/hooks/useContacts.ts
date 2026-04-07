@@ -139,6 +139,8 @@ export const useContacts = () => {
       const generalContactLeads = extractData(settled[6]);
       const companyAcquisitionLeads = extractData(settled[7]);
       const proValData = extractData(settled[8]);
+      const buyerAlertLeads = extractData(settled[9]);
+      const rodDownloadLeads = extractData(settled[10]);
 
       // Log any failed queries for debugging
       settled.forEach((r, i) => {
