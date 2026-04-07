@@ -94,6 +94,8 @@ export default function RODSendsTab() {
     setBodyText('');
     setLanguage('es');
     setAttachmentIds([]);
+    setSenderName(null);
+    setSenderEmail(null);
   };
 
   // Auto-load first draft if exists
