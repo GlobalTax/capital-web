@@ -1,35 +1,14 @@
-import { useState, useMemo } from 'react';
-import { FileText, Upload, Trash2, Eye, Download, CheckCircle, XCircle, BarChart3, GitCompare, ChevronDown, ChevronUp, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { FileText, Upload, Trash2, Download, CheckCircle, AlertCircle, FileSpreadsheet, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RODFilters, RODFiltersState } from './rod/RODFilters';
-import { RODVersionStats } from './rod/RODVersionStats';
-import { RODTimeline } from './rod/RODTimeline';
-import { RODComparison } from './rod/RODComparison';
-import { RODImpactAnalysis } from './rod/RODImpactAnalysis';
-import { RODExportButton } from './rod/RODExportButton';
-
-// Helper function to format bytes
-const formatBytes = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-};
+import { useDropzone } from 'react-dropzone';
 
 interface RODDocument {
   id: string;
@@ -50,38 +29,151 @@ interface RODDocument {
   language: 'es' | 'en';
 }
 
+type SlotKey = 'pdf-es' | 'pdf-en' | 'excel-es' | 'excel-en';
+
+const SLOT_CONFIG: Record<SlotKey, { label: string; flag: string; fileType: 'pdf' | 'excel'; language: 'es' | 'en'; accept: string; icon: typeof FileText }> = {
+  'pdf-es': { label: 'PDF Español', flag: '🇪🇸', fileType: 'pdf', language: 'es', accept: '.pdf', icon: FileText },
+  'pdf-en': { label: 'PDF English', flag: '🇬🇧', fileType: 'pdf', language: 'en', accept: '.pdf', icon: FileText },
+  'excel-es': { label: 'Excel Español', flag: '🇪🇸', fileType: 'excel', language: 'es', accept: '.xlsx,.xls', icon: FileSpreadsheet },
+  'excel-en': { label: 'Excel English', flag: '🇬🇧', fileType: 'excel', language: 'en', accept: '.xlsx,.xls', icon: FileSpreadsheet },
+};
+
+const formatBytes = (bytes: number) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+};
+
+const SlotCard = ({ 
+  slotKey, 
+  activeDoc, 
+  onUpload, 
+  onReplace, 
+  onRemove, 
+  isUploading 
+}: { 
+  slotKey: SlotKey; 
+  activeDoc: RODDocument | null; 
+  onUpload: (file: File, slotKey: SlotKey) => void;
+  onReplace: (file: File, slotKey: SlotKey) => void;
+  onRemove: (docId: string) => void;
+  isUploading: string | null;
+}) => {
+  const config = SLOT_CONFIG[slotKey];
+  const Icon = config.icon;
+  const uploading = isUploading === slotKey;
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      if (activeDoc) {
+        onReplace(acceptedFiles[0], slotKey);
+      } else {
+        onUpload(acceptedFiles[0], slotKey);
+      }
+    }
+  }, [activeDoc, onUpload, onReplace, slotKey]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: config.fileType === 'pdf' 
+      ? { 'application/pdf': ['.pdf'] } 
+      : { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'], 'application/vnd.ms-excel': ['.xls'] },
+    maxFiles: 1,
+    disabled: uploading,
+  });
+
+  if (uploading) {
+    return (
+      <Card className="border-2 border-primary/30 bg-primary/5">
+        <CardContent className="pt-6 flex flex-col items-center justify-center min-h-[180px] gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm font-medium text-primary">Subiendo {config.label}...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (activeDoc) {
+    return (
+      <Card className="border-2 border-green-400 bg-green-50/50 dark:bg-green-950/10">
+        <CardContent className="pt-6 min-h-[180px] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">{config.flag}</span>
+              <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-xs">
+                <CheckCircle className="h-3 w-3 mr-1" /> ACTIVO
+              </Badge>
+              <Badge variant="secondary" className="text-xs">{config.fileType.toUpperCase()}</Badge>
+            </div>
+            <p className="font-semibold text-sm truncate" title={activeDoc.title}>{activeDoc.title}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              v{activeDoc.version} • {activeDoc.file_size_bytes ? formatBytes(activeDoc.file_size_bytes) : '—'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {format(new Date(activeDoc.created_at), "d MMM yyyy", { locale: es })} • {activeDoc.total_downloads} descargas
+            </p>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={() => window.open(activeDoc.file_url, '_blank')}>
+              <Download className="h-3 w-3 mr-1" /> Ver
+            </Button>
+            <div {...getRootProps()} className="flex-1">
+              <input {...getInputProps()} />
+              <Button size="sm" variant="outline" className="w-full text-xs">
+                <RefreshCw className="h-3 w-3 mr-1" /> Reemplazar
+              </Button>
+            </div>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-xs text-destructive hover:text-destructive"
+              onClick={() => {
+                if (confirm(`¿Desactivar ${config.label}? Los usuarios ya no podrán descargarlo.`)) {
+                  onRemove(activeDoc.id);
+                }
+              }}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card 
+      className={`border-2 border-dashed transition-colors cursor-pointer ${
+        isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50'
+      }`}
+    >
+      <CardContent className="pt-6 min-h-[180px] flex flex-col items-center justify-center gap-3" {...getRootProps()}>
+        <input {...getInputProps()} />
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{config.flag}</span>
+          <Icon className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-medium">{config.label}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {isDragActive ? 'Suelta aquí...' : 'Arrastra un archivo o haz clic'}
+          </p>
+        </div>
+        <AlertCircle className="h-4 w-4 text-amber-500" />
+        <p className="text-xs text-amber-600 font-medium">Sin documento activo</p>
+      </CardContent>
+    </Card>
+  );
+};
+
 export const RODDocumentsManager = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isUploading, setIsUploading] = useState(false);
-  const [activatingId, setActivatingId] = useState<string | null>(null);
-  const [uploadData, setUploadData] = useState({
-    title: '',
-    version: '',
-    file_type: 'pdf' as 'pdf' | 'excel',
-    language: 'es' as 'es' | 'en',
-    description: ''
-  });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  
-  // Filters and comparison state
-  const [filters, setFilters] = useState<RODFiltersState>({
-    status: 'all',
-    dateFrom: '',
-    dateTo: '',
-    fileType: 'all',
-    minDownloads: '',
-    maxDownloads: '',
-    sortBy: 'created_at',
-    sortOrder: 'desc',
-    searchQuery: ''
-  });
-  const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
-  const [expandedStats, setExpandedStats] = useState<string[]>([]);
+  const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
 
-  // Fetch ROD documents - force fresh data
-  const { data: documents, isLoading, refetch } = useQuery({
+  const { data: documents, isLoading } = useQuery({
     queryKey: ['rod-documents'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -89,727 +181,170 @@ export const RODDocumentsManager = () => {
         .select('*')
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
-      
       if (error) throw error;
       return data as RODDocument[];
     },
-    refetchOnMount: true,
-    staleTime: 0
+    staleTime: 0,
   });
 
-  // Upload document mutation
-  const uploadMutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedFile) throw new Error('No file selected');
+  const getActiveDoc = (fileType: 'pdf' | 'excel', language: 'es' | 'en') => {
+    return documents?.find(d => d.is_active && d.file_type === fileType && d.language === language) || null;
+  };
 
-      const fileExt = selectedFile.name.split('.').pop();
+  const uploadAndActivate = async (file: File, slotKey: SlotKey) => {
+    const config = SLOT_CONFIG[slotKey];
+    setUploadingSlot(slotKey);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
       const fileName = `rod_${Date.now()}.${fileExt}`;
       const filePath = `rod/${fileName}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('documents')
-        .upload(filePath, selectedFile, {
-          contentType: selectedFile.type,
-          upsert: false
-        });
-
+        .upload(filePath, file, { contentType: file.type, upsert: false });
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('documents')
-        .getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('documents').getPublicUrl(filePath);
 
-      // Create document record
+      // Deactivate previous docs of same type+language
+      await supabase
+        .from('rod_documents')
+        .update({ is_active: false, deactivated_at: new Date().toISOString() })
+        .eq('language', config.language)
+        .eq('file_type', config.fileType)
+        .eq('is_deleted', false);
+
+      // Generate auto version
+      const now = new Date();
+      const version = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
       const { error: dbError } = await supabase
         .from('rod_documents')
         .insert({
-          title: uploadData.title,
-          version: uploadData.version,
+          title: `ROD ${config.fileType.toUpperCase()} ${config.flag} ${version}`,
+          version,
           file_url: publicUrl,
-          file_type: uploadData.file_type,
-          file_size_bytes: selectedFile.size,
-          description: uploadData.description,
-          language: uploadData.language,
-          is_latest: true
+          file_type: config.fileType,
+          file_size_bytes: file.size,
+          language: config.language,
+          is_active: true,
+          is_latest: true,
+          activated_at: new Date().toISOString(),
         });
-
       if (dbError) throw dbError;
-    },
-    onSuccess: () => {
-      toast({
-        title: "✅ Documento ROD subido",
-        description: "El documento se ha cargado correctamente"
-      });
-      queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
-      setSelectedFile(null);
-      setUploadData({ title: '', version: '', file_type: 'pdf', language: 'es', description: '' });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "❌ Error al subir documento",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
 
-  // Activate document mutation - por idioma (consulta directa a DB para evitar stale data)
-  const activateMutation = useMutation({
-    mutationFn: async (docId: string) => {
-      setActivatingId(docId);
-      
-      // 1. Consultar documento DIRECTAMENTE desde DB para garantizar datos frescos
-      const { data: doc, error: fetchError } = await supabase
-        .from('rod_documents')
-        .select('id, language, file_type')
-        .eq('id', docId)
-        .single();
-      
-      if (fetchError || !doc) {
-        console.error('❌ Error fetching document:', fetchError);
-        throw new Error('Documento no encontrado');
-      }
-      
-      console.log(`🔄 Activando ROD: id=${docId}, idioma=${doc.language}, tipo=${doc.file_type}`);
-      
-      // 2. Desactivar SOLO documentos del MISMO idioma y tipo (no afecta otros idiomas)
-      const { error: deactivateError, count } = await supabase
+      toast({ title: '✅ ROD actualizada', description: `${config.label} subido y activado correctamente` });
+      queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
+    } catch (error: any) {
+      toast({ title: '❌ Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setUploadingSlot(null);
+    }
+  };
+
+  const deactivateDoc = async (docId: string) => {
+    try {
+      const { error } = await supabase
         .from('rod_documents')
         .update({ is_active: false, deactivated_at: new Date().toISOString() })
-        .eq('language', doc.language)
-        .eq('file_type', doc.file_type)
-        .eq('is_deleted', false)
-        .neq('id', docId);
-      
-      if (deactivateError) {
-        console.error('❌ Error deactivating:', deactivateError);
-        throw deactivateError;
-      }
-      
-      console.log(`✅ Desactivados ${count || 0} documentos ${doc.language.toUpperCase()} anteriores`);
-      
-      // 3. Activar el documento seleccionado
-      const { error } = await supabase
-        .from('rod_documents')
-        .update({ is_active: true, activated_at: new Date().toISOString() })
         .eq('id', docId);
-      
-      if (error) {
-        console.error('❌ Error activating:', error);
-        throw error;
-      }
-      
-      return { language: doc.language, file_type: doc.file_type };
-    },
-    onSuccess: async (data) => {
-      const langLabel = data.language === 'es' ? '🇪🇸 Español' : '🇬🇧 English';
-      toast({
-        title: "✅ ROD activada",
-        description: `Versión ${langLabel} ahora activa. Otros idiomas no afectados.`
-      });
-      // Force immediate refetch to ensure UI is in sync
-      await queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
-      await refetch();
-      setActivatingId(null);
-    },
-    onError: (error: Error) => {
-      setActivatingId(null);
-      toast({
-        title: "❌ Error al activar",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Deactivate document mutation
-  const deactivateMutation = useMutation({
-    mutationFn: async (docId: string) => {
-      const { error } = await supabase
-        .from('rod_documents')
-        .update({ is_active: false })
-        .eq('id', docId);
-      
       if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: "⚠️ ROD desactivada",
-        description: "Este documento ya no se enviará a nuevos leads"
-      });
+      toast({ title: '⚠️ ROD desactivada' });
       queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
+    } catch (error: any) {
+      toast({ title: '❌ Error', description: error.message, variant: 'destructive' });
     }
-  });
-
-  // Delete document mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (docId: string) => {
-      const { error } = await supabase
-        .from('rod_documents')
-        .update({ is_deleted: true, deleted_at: new Date().toISOString() })
-        .eq('id', docId);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: "🗑️ ROD eliminada",
-        description: "El documento se ha eliminado correctamente"
-      });
-      queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
-    }
-  });
-
-  const handleUpload = async () => {
-    if (!selectedFile || !uploadData.title || !uploadData.version) {
-      toast({
-        title: "⚠️ Campos requeridos",
-        description: "Por favor completa todos los campos obligatorios",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    await uploadMutation.mutateAsync();
-    setIsUploading(false);
   };
 
-  const activeDocsES = documents?.filter(d => d.is_active && d.language === 'es') || [];
-  const activeDocsEN = documents?.filter(d => d.is_active && d.language === 'en') || [];
-  const totalDownloads = documents?.reduce((sum, d) => sum + d.total_downloads, 0) || 0;
-
-  // Filter documents
-  const filteredDocuments = useMemo(() => {
-    if (!documents) return [];
-    
-    return documents.filter(doc => {
-      // Status filter
-      if (filters.status === 'active' && !doc.is_active) return false;
-      if (filters.status === 'inactive' && doc.is_active) return false;
-      if (filters.status === 'archived' && !doc.is_deleted) return false;
-      
-      // File type filter
-      if (filters.fileType !== 'all' && doc.file_type !== filters.fileType) return false;
-      
-      // Date range filter
-      if (filters.dateFrom) {
-        const docDate = new Date(doc.created_at);
-        const fromDate = new Date(filters.dateFrom);
-        if (docDate < fromDate) return false;
-      }
-      if (filters.dateTo) {
-        const docDate = new Date(doc.created_at);
-        const toDate = new Date(filters.dateTo);
-        toDate.setHours(23, 59, 59);
-        if (docDate > toDate) return false;
-      }
-      
-      // Downloads range filter
-      if (filters.minDownloads && doc.total_downloads < parseInt(filters.minDownloads)) return false;
-      if (filters.maxDownloads && doc.total_downloads > parseInt(filters.maxDownloads)) return false;
-      
-      // Search query
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        const matchesTitle = doc.title.toLowerCase().includes(query);
-        const matchesVersion = doc.version.toLowerCase().includes(query);
-        const matchesDescription = doc.description?.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesVersion && !matchesDescription) return false;
-      }
-      
-      return true;
-    }).sort((a, b) => {
-      const sortBy = filters.sortBy;
-      const order = filters.sortOrder === 'asc' ? 1 : -1;
-      
-      if (sortBy === 'total_downloads') {
-        return (a.total_downloads - b.total_downloads) * order;
-      } else if (sortBy === 'activated_at') {
-        const aDate = a.activated_at ? new Date(a.activated_at).getTime() : 0;
-        const bDate = b.activated_at ? new Date(b.activated_at).getTime() : 0;
-        return (aDate - bDate) * order;
-      } else {
-        // Default: created_at
-        const aDate = new Date(a.created_at).getTime();
-        const bDate = new Date(b.created_at).getTime();
-        return (aDate - bDate) * order;
-      }
-    });
-  }, [documents, filters]);
-
-  const toggleComparisonSelection = (docId: string) => {
-    setSelectedForComparison(prev => 
-      prev.includes(docId) 
-        ? prev.filter(id => id !== docId)
-        : [...prev, docId]
-    );
-  };
-
-  const toggleStatsExpanded = (docId: string) => {
-    setExpandedStats(prev =>
-      prev.includes(docId)
-        ? prev.filter(id => id !== docId)
-        : [...prev, docId]
-    );
-  };
+  const inactiveDocs = documents?.filter(d => !d.is_active) || [];
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header with stats and export */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Documentos ROD</h1>
-          <p className="text-muted-foreground">
-            Relación de Open Deals - Control de versiones y distribución
-          </p>
-        </div>
-        <div className="flex gap-4 items-center">
-          <RODExportButton documents={filteredDocuments} />
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{documents?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">Versiones</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{totalDownloads}</div>
-              <p className="text-xs text-muted-foreground">Descargas totales</p>
-            </CardContent>
-          </Card>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Documentos ROD</h1>
+        <p className="text-muted-foreground">
+          Sube la Relación de Oportunidades actualizada. Arrastra el archivo en su casilla correspondiente.
+        </p>
       </div>
 
-      {/* Active Versions Status Panel - Prominent display */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-2 border-primary/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            Estado de Versiones Activas por Idioma
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Spanish Status */}
-            <div className="space-y-2">
-              <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
-                <span className="text-2xl">🇪🇸</span> Español
-              </h4>
-              {activeDocsES.length > 0 ? (
-                <div className="bg-white dark:bg-background p-4 rounded-lg border-2 border-green-400 shadow-sm">
-                  <p className="font-semibold text-green-700 dark:text-green-400 text-lg">{activeDocsES[0].title}</p>
-                  <p className="text-sm text-muted-foreground">Versión {activeDocsES[0].version}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {activeDocsES[0].total_downloads} descargas • {activeDocsES[0].file_type.toUpperCase()}
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-amber-100 dark:bg-amber-950/30 p-4 rounded-lg border-2 border-amber-400 shadow-sm">
-                  <p className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    Sin versión activa
-                  </p>
-                  <p className="text-sm text-amber-600 dark:text-amber-500 mt-1">
-                    Los usuarios no podrán descargar en español
-                  </p>
-                </div>
-              )}
-            </div>
-            
-            {/* English Status */}
-            <div className="space-y-2">
-              <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
-                <span className="text-2xl">🇬🇧</span> English
-              </h4>
-              {activeDocsEN.length > 0 ? (
-                <div className="bg-white dark:bg-background p-4 rounded-lg border-2 border-green-400 shadow-sm">
-                  <p className="font-semibold text-green-700 dark:text-green-400 text-lg">{activeDocsEN[0].title}</p>
-                  <p className="text-sm text-muted-foreground">Version {activeDocsEN[0].version}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {activeDocsEN[0].total_downloads} downloads • {activeDocsEN[0].file_type.toUpperCase()}
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-amber-100 dark:bg-amber-950/30 p-4 rounded-lg border-2 border-amber-400 shadow-sm">
-                  <p className="font-medium text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" />
-                    No active version
-                  </p>
-                  <p className="text-sm text-amber-600 dark:text-amber-500 mt-1">
-                    Users won't be able to download in English
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Upload form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Subir Nueva Versión ROD
-          </CardTitle>
-          <CardDescription>
-            Sube un documento PDF o Excel que se enviará a los inversores
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Título *</Label>
-              <Input
-                id="title"
-                placeholder="ej: ROD Capittal Q1 2025"
-                value={uploadData.title}
-                onChange={(e) => setUploadData({ ...uploadData, title: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="version">Versión *</Label>
-              <Input
-                id="version"
-                placeholder="ej: 2025-Q1"
-                value={uploadData.version}
-                onChange={(e) => setUploadData({ ...uploadData, version: e.target.value })}
-              />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <>
+          {/* 4 Slots Grid */}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">Documentos Activos en el Marketplace</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(Object.keys(SLOT_CONFIG) as SlotKey[]).map(slotKey => {
+                const config = SLOT_CONFIG[slotKey];
+                return (
+                  <SlotCard
+                    key={slotKey}
+                    slotKey={slotKey}
+                    activeDoc={getActiveDoc(config.fileType, config.language)}
+                    onUpload={uploadAndActivate}
+                    onReplace={uploadAndActivate}
+                    onRemove={deactivateDoc}
+                    isUploading={uploadingSlot}
+                  />
+                );
+              })}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
-            <Textarea
-              id="description"
-              placeholder="Breve descripción de esta versión..."
-              value={uploadData.description}
-              onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="file_type">Tipo de Documento *</Label>
-              <Select
-                value={uploadData.file_type}
-                onValueChange={(value: 'pdf' | 'excel') => setUploadData({ ...uploadData, file_type: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pdf">PDF</SelectItem>
-                  <SelectItem value="excel">Excel</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="language">Idioma del Documento *</Label>
-              <Select
-                value={uploadData.language}
-                onValueChange={(value: 'es' | 'en') => setUploadData({ ...uploadData, language: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="es">🇪🇸 Español</SelectItem>
-                  <SelectItem value="en">🇬🇧 English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="file">Archivo *</Label>
-              <Input
-                id="file"
-                type="file"
-                accept={uploadData.file_type === 'pdf' ? '.pdf' : '.xlsx,.xls'}
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-              />
-            </div>
-          </div>
-
-          <Button 
-            onClick={handleUpload} 
-            disabled={isUploading}
-            className="w-full"
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            {isUploading ? 'Subiendo...' : 'Subir Documento ROD'}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Main content with tabs */}
-      <Tabs defaultValue="lista" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
-          <TabsTrigger value="lista">
-            📋 Lista
-          </TabsTrigger>
-          <TabsTrigger value="timeline">
-            📅 Timeline
-          </TabsTrigger>
-          <TabsTrigger value="comparar">
-            📊 Comparar
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Lista Tab */}
-        <TabsContent value="lista" className="space-y-4">
-          {/* Filters */}
-          <RODFilters 
-            filters={filters}
-            onFiltersChange={setFilters}
-            totalResults={documents?.length || 0}
-            filteredResults={filteredDocuments.length}
-          />
-
-          {/* Comparison actions */}
-          {selectedForComparison.length > 0 && (
-            <Card className="border-blue-500 bg-blue-50">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">
-                    {selectedForComparison.length} versiones seleccionadas para comparar
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedForComparison([])}
-                    >
-                      Limpiar selección
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => setShowComparison(true)}
-                      disabled={selectedForComparison.length < 2}
-                    >
-                      <GitCompare className="h-4 w-4 mr-2" />
-                      Comparar versiones
-                    </Button>
-                  </div>
+          {/* Previous Versions */}
+          {inactiveDocs.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Versiones Anteriores</CardTitle>
+                <CardDescription>{inactiveDocs.length} documentos archivados</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="divide-y">
+                  {inactiveDocs.map(doc => (
+                    <div key={doc.id} className="flex items-center justify-between py-2.5">
+                      <div className="flex items-center gap-3">
+                        {doc.file_type === 'pdf' ? <FileText className="h-4 w-4 text-muted-foreground" /> : <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />}
+                        <div>
+                          <p className="text-sm font-medium">{doc.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            v{doc.version} • {format(new Date(doc.created_at), "d MMM yyyy", { locale: es })} • {doc.total_downloads} descargas
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {doc.language === 'es' ? '🇪🇸' : '🇬🇧'} {doc.file_type.toUpperCase()}
+                        </Badge>
+                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => window.open(doc.file_url, '_blank')}>
+                          <Download className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                          onClick={() => {
+                            if (confirm('¿Eliminar esta versión?')) {
+                              supabase.from('rod_documents').update({ is_deleted: true, deleted_at: new Date().toISOString() }).eq('id', doc.id).then(() => {
+                                queryClient.invalidateQueries({ queryKey: ['rod-documents'] });
+                              });
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           )}
-
-          {/* Documents list */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Versiones de ROD</CardTitle>
-              <CardDescription>
-                <div className="flex flex-wrap gap-3">
-                  {activeDocsES.length > 0 ? (
-                    <span className="text-green-600 font-medium">
-                      🇪🇸 ES activo: {activeDocsES[0].version}
-                    </span>
-                  ) : (
-                    <span className="text-amber-600 font-medium">
-                      🇪🇸 ES: sin versión activa
-                    </span>
-                  )}
-                  {activeDocsEN.length > 0 ? (
-                    <span className="text-green-600 font-medium">
-                      🇬🇧 EN activo: {activeDocsEN[0].version}
-                    </span>
-                  ) : (
-                    <span className="text-amber-600 font-medium">
-                      🇬🇧 EN: sin versión activa
-                    </span>
-                  )}
-                </div>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <p className="text-muted-foreground">Cargando documentos...</p>
-              ) : filteredDocuments.length > 0 ? (
-                <div className="space-y-4">
-                  {filteredDocuments.map((doc) => (
-                    <Collapsible 
-                      key={doc.id}
-                      open={expandedStats.includes(doc.id)}
-                      onOpenChange={() => toggleStatsExpanded(doc.id)}
-                    >
-                      <div
-                        className={`rounded-lg border ${
-                          doc.is_active ? 'border-green-500 bg-green-50' : 'border-border'
-                        }`}
-                      >
-                        {/* Document header */}
-                        <div className="flex items-center justify-between p-4">
-                          <div className="flex items-center gap-4 flex-1">
-                            <Checkbox
-                              checked={selectedForComparison.includes(doc.id)}
-                              onCheckedChange={() => toggleComparisonSelection(doc.id)}
-                            />
-                            <FileText className="h-8 w-8 text-muted-foreground" />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-semibold">{doc.title}</h4>
-                                {doc.is_active ? (
-                                  <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                    {doc.language === 'es' ? '🇪🇸' : '🇬🇧'} ACTIVO
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className={doc.language === 'es' ? 'bg-amber-50 border-amber-300' : 'bg-blue-50 border-blue-300'}>
-                                    {doc.language === 'es' ? '🇪🇸 ES' : '🇬🇧 EN'}
-                                  </Badge>
-                                )}
-                                {doc.is_latest && <Badge variant="outline">ÚLTIMA</Badge>}
-                                <Badge variant="secondary">{doc.file_type.toUpperCase()}</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Versión {doc.version} • {format(new Date(doc.created_at), "d 'de' MMMM yyyy", { locale: es })}
-                              </p>
-                              {doc.description && (
-                                <p className="text-sm text-muted-foreground mt-1">{doc.description}</p>
-                              )}
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {doc.file_size_bytes && formatBytes(doc.file_size_bytes)} • {doc.total_downloads} descargas
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <BarChart3 className="h-4 w-4 mr-1" />
-                                Stats
-                                {expandedStats.includes(doc.id) ? (
-                                  <ChevronUp className="h-4 w-4 ml-1" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4 ml-1" />
-                                )}
-                              </Button>
-                            </CollapsibleTrigger>
-
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(doc.file_url, '_blank')}
-                            >
-                              <Eye className="h-4 w-4 mr-1" />
-                              Ver
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(doc.file_url, '_blank')}
-                            >
-                              <Download className="h-4 w-4 mr-1" />
-                              Descargar
-                            </Button>
-                            
-                            {doc.is_active ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deactivateMutation.mutate(doc.id)}
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Desactivar
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => activateMutation.mutate(doc.id)}
-                                disabled={activatingId === doc.id}
-                              >
-                                {activatingId === doc.id ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                                    Activando...
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Activar {doc.language.toUpperCase()}
-                                  </>
-                                )}
-                              </Button>
-                            )}
-
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                if (confirm('¿Seguro que deseas eliminar esta versión?')) {
-                                  deleteMutation.mutate(doc.id);
-                                }
-                              }}
-                              disabled={doc.is_active}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Collapsible stats */}
-                        <CollapsibleContent>
-                          <div className="px-4 pb-4 space-y-4">
-                            <RODVersionStats documentId={doc.id} />
-                            <RODImpactAnalysis documentId={doc.id} />
-                          </div>
-                        </CollapsibleContent>
-                      </div>
-                    </Collapsible>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-8">
-                  {documents && documents.length > 0 
-                    ? 'No se encontraron documentos con los filtros aplicados'
-                    : 'No hay documentos ROD. Sube el primero usando el formulario de arriba.'
-                  }
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Timeline Tab */}
-        <TabsContent value="timeline">
-          <RODTimeline />
-        </TabsContent>
-
-        {/* Comparar Tab */}
-        <TabsContent value="comparar">
-          <Card>
-            <CardHeader>
-              <CardTitle>Comparativa de Versiones</CardTitle>
-              <CardDescription>
-                Selecciona versiones desde la pestaña "Lista" para compararlas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {selectedForComparison.length >= 2 ? (
-                <Button onClick={() => setShowComparison(true)}>
-                  <GitCompare className="h-4 w-4 mr-2" />
-                  Ver comparativa de {selectedForComparison.length} versiones
-                </Button>
-              ) : (
-                <p className="text-muted-foreground text-center py-8">
-                  Selecciona al menos 2 versiones en la pestaña "Lista" para poder compararlas
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Comparison Dialog */}
-      <RODComparison 
-        open={showComparison}
-        onOpenChange={setShowComparison}
-        documentIds={selectedForComparison}
-      />
+        </>
+      )}
     </div>
   );
 };
