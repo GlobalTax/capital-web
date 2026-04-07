@@ -296,6 +296,7 @@ export default function OportunidadesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="text-xs w-8 px-2"><Star className="h-3.5 w-3.5 text-muted-foreground" /></TableHead>
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -309,7 +310,9 @@ export default function OportunidadesPage() {
                     <TableBody>
                       {buySide.map(o => (
                         <TableRow key={o.id}>
-                          <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
+                          <TableCell className="text-xs w-8 px-2">
+                            <FavoriteToggle id={o.id} isFavorite={o.is_favorite} onToggle={handleToggleFav} />
+                          </TableCell>
                           <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
                           <TableCell className="text-xs">{o.sector || '—'}</TableCell>
                           <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
