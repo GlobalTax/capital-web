@@ -29,9 +29,10 @@ const routeMap: Record<string, HreflangRoute> = {
   '/contacte': { es: '/contacto', ca: '/contacte', en: '/contact' },
   '/contact': { es: '/contacto', ca: '/contacte', en: '/contact' },
   
-  '/programa-colaboradores': { es: '/programa-colaboradores', ca: '/programa-col-laboradors', en: '/collaborators-program' },
-  '/programa-col-laboradors': { es: '/programa-colaboradores', ca: '/programa-col-laboradors', en: '/collaborators-program' },
-  '/collaborators-program': { es: '/programa-colaboradores', ca: '/programa-col-laboradors', en: '/collaborators-program' },
+  '/programa-colaboradores': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
+  '/programa-col·laboradors': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
+  '/programa-col%C2%B7laboradors': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
+  '/collaborators-program': { es: '/programa-colaboradores', ca: '/programa-col%C2%B7laboradors', en: '/collaborators-program' },
   
   '/casos-exito': { es: '/casos-exito', ca: '/casos-exit', en: '/success-stories' },
   '/casos-exit': { es: '/casos-exito', ca: '/casos-exit', en: '/success-stories' },

@@ -12,15 +12,13 @@ import { getServiceSchema, getWebPageSchema } from '@/utils/seo/schemas';
 const LandingCalculadoraAsesoresInner = () => {
   const { t } = useI18n();
 
+  // Hreflang - single language LP, only es + x-default
   useEffect(() => {
     const existingHreflang = document.querySelectorAll('link[rel="alternate"][hreflang]');
     existingHreflang.forEach(link => link.remove());
 
     const hreflangUrls = {
       'es': 'https://capittal.es/lp/calculadora-asesores',
-      'ca': 'https://capittal.es/lp/calculadora-asesores',
-      'val': 'https://capittal.es/lp/calculadora-asesores',
-      'gl': 'https://capittal.es/lp/calculadora-asesores',
       'x-default': 'https://capittal.es/lp/calculadora-asesores'
     };
 
