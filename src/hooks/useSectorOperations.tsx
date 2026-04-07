@@ -123,7 +123,7 @@ export const useSectorOperations = (
           is_featured: mandato?.is_favorite || false,
           project_status: row.estado,
           geographic_location: row.ubicacion,
-          deal_type: mandato?.tipo === 'sell-side' ? 'sale' : mandato?.tipo === 'buy-side' ? 'acquisition' : mandato?.tipo,
+          deal_type: mandato?.tipo === 'venta' ? 'sale' : mandato?.tipo === 'compra' ? 'acquisition' : mandato?.tipo,
           created_at: row.created_at,
           updated_at: row.updated_at,
         } as SectorOperation;

@@ -155,7 +155,7 @@ serve(async (req) => {
     }
 
     // Deal types from mandatos
-    const dealTypes = ['sell-side', 'buy-side'];
+    const dealTypes = ['venta', 'compra'];
 
     console.log(`✅ Retrieved ${data?.length || 0} operations out of ${count || 0} total (ROD source)`);
 
