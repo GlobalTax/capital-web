@@ -89,7 +89,11 @@ serve(async (req) => {
       query = query.or(`project_name.ilike.%${s}%,description.ilike.%${s}%,short_description.ilike.%${s}%,sector.ilike.%${s}%`);
     }
 
-    if (sector && typeof sector === 'string') {
+    // Support both single sector (legacy) and multi-sector array
+    if (sectorsFilter && Array.isArray(sectorsFilter) && sectorsFilter.length > 0) {
+      const orConditions = sectorsFilter.map((s: string) => `sector.ilike.%${s}%`).join(',');
+      query = query.or(orConditions);
+    } else if (sector && typeof sector === 'string') {
       query = query.ilike('sector', `%${sector}%`);
     }
 
