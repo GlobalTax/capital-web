@@ -425,12 +425,52 @@ export const LeadsPipelineView: React.FC = () => {
                 ))}
               </div>
               {hiddenColumns.size > 0 && (
-                <div className="border-t p-1">
+                <div className="border-t p-1 space-y-1">
                   <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setHiddenColumns(new Set())}>
                     Mostrar todas
                   </Button>
                 </div>
               )}
+              <div className="border-t p-2">
+                <div className="flex gap-1">
+                  <Input
+                    placeholder="Nombre de la vista..."
+                    value={saveViewName}
+                    onChange={e => setSaveViewName(e.target.value)}
+                    className="h-7 text-xs"
+                    onKeyDown={e => e.key === 'Enter' && handleSaveView()}
+                  />
+                  <Button size="sm" className="h-7 text-xs px-2 shrink-0" onClick={handleSaveView} disabled={!saveViewName.trim()}>
+                    <Save className="h-3 w-3 mr-1" />
+                    Guardar
+                  </Button>
+                </div>
+                {savedViews.length > 0 && (
+                  <div className="mt-2 space-y-0.5">
+                    <p className="text-xs text-muted-foreground mb-1">Vistas guardadas:</p>
+                    {savedViews.map(view => (
+                      <div key={view.id} className="flex items-center justify-between group">
+                        <button
+                          className="text-xs text-left hover:text-primary truncate flex-1 py-0.5"
+                          onClick={() => { handleLoadView(view.filters); toast.success(`Vista "${view.name}" cargada`); }}
+                        >
+                          <Star className="h-3 w-3 inline mr-1 text-muted-foreground" />
+                          {view.name}
+                          {view.filters.hiddenColumns && view.filters.hiddenColumns.length > 0 && (
+                            <span className="text-muted-foreground ml-1">({view.filters.hiddenColumns.length} ocultas)</span>
+                          )}
+                        </button>
+                        <button
+                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-opacity"
+                          onClick={() => deleteView(view.id)}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </PopoverContent>
           </Popover>
           <PipelineColumnsEditor />
