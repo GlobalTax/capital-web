@@ -66,7 +66,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const queryClient = useQueryClient();
   const [operations, setOperations] = useState<Operation[]>([]);
   const [sectors, setSectors] = useState<SectorOption[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
+  
   const [dealTypes, setDealTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
