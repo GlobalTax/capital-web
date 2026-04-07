@@ -274,8 +274,6 @@ export default function RODSendsTab() {
 }
 
 // ─── Signature Section (reuses existing hook) ────────────────────────────
-import { useRef } from 'react';
-import { Card as C2 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';

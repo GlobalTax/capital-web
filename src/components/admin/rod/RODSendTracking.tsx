@@ -52,7 +52,7 @@ export function RODSendTracking({ sendId, language, onSendComplete }: Props) {
         .eq('send_id', sendId)
         .order('status', { ascending: true });
       if (error) throw error;
-      return (data || []) as RODSendEmail[];
+      return (data || []) as unknown as RODSendEmail[];
     },
     enabled: !!sendId,
     refetchInterval: sendingAll ? 3000 : false,

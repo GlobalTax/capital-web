@@ -53,7 +53,7 @@ export function RODMailList({ sendId, language, subjectTemplate, bodyTemplate }:
         .eq('send_id', sendId)
         .order('full_name');
       if (error) throw error;
-      return (data || []) as RODSendEmail[];
+      return (data || []) as unknown as RODSendEmail[];
     },
     enabled: !!sendId,
   });
