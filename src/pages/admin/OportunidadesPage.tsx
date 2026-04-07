@@ -313,6 +313,7 @@ export default function OportunidadesPage() {
                           <TableCell className="text-xs w-8 px-2">
                             <FavoriteToggle id={o.id} isFavorite={o.is_favorite} onToggle={handleToggleFav} />
                           </TableCell>
+                          <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
                           <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
                           <TableCell className="text-xs">{o.sector || '—'}</TableCell>
                           <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
