@@ -138,8 +138,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
         body: {
           locale: lang,
           searchTerm: debouncedSearchTerm || undefined,
-          sector: selectedSector || undefined,
-          
+          sectors: selectedSectors.length > 0 ? selectedSectors : undefined,
           dealType: selectedDealType || undefined,
           sortBy,
           limit: fetchLimit,
