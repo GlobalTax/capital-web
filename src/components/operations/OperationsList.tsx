@@ -70,7 +70,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const [dealTypes, setDealTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState('');
+  const [selectedSectors, setSelectedSectors] = useState<string[]>([]);
   
   const [selectedDealType, setSelectedDealType] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
