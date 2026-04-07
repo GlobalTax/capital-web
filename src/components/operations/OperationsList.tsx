@@ -159,7 +159,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
       setOperations(data.data || []);
       setTotalCount(data.count || 0);
       setSectors(data.sectors || []);
-      setLocations(data.locations || []);
+      
       setDealTypes(data.dealTypes || []);
 
     } catch (error) {
