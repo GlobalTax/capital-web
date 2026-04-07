@@ -42,7 +42,7 @@ export const RODListsTab: React.FC = () => {
         .from('rod_list_config' as any)
         .select('*');
       if (error) throw error;
-      return (data || []) as RODListConfig[];
+      return (data || []) as unknown as RODListConfig[];
     },
   });
 
