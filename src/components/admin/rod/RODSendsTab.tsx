@@ -124,6 +124,8 @@ export default function RODSendsTab() {
         target_language: language,
         attachment_ids: attachmentIds,
         signature_html: signatureHtml,
+        sender_name: senderName,
+        sender_email: senderEmail,
         status: 'draft' as const,
       };
 
