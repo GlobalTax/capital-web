@@ -56,9 +56,14 @@ Deno.serve(async (req) => {
             const response = await fetch(doc.file_url);
             if (response.ok) {
               const buffer = await response.arrayBuffer();
-              const base64 = btoa(
-                String.fromCharCode(...new Uint8Array(buffer))
-              );
+              const bytes = new Uint8Array(buffer);
+              let binary = '';
+              const chunkSize = 32768;
+              for (let i = 0; i < bytes.length; i += chunkSize) {
+                const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+                binary += String.fromCharCode(...chunk);
+              }
+              const base64 = btoa(binary);
               const ext = doc.file_type === "excel" ? "xlsx" : "pdf";
               attachments.push({
                 filename: `${doc.title}.${ext}`,

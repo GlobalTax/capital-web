@@ -222,7 +222,7 @@ export const RODDocumentsManager = () => {
       const { error: dbError } = await supabase
         .from('rod_documents')
         .insert({
-          title: `ROD ${config.fileType.toUpperCase()} ${config.flag} ${version}`,
+          title: `ROD ${config.fileType.toUpperCase()} ${config.language.toUpperCase()} ${version}`,
           version,
           file_url: publicUrl,
           file_type: config.fileType,
