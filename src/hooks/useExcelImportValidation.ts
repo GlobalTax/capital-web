@@ -29,6 +29,11 @@ export interface ValidationResult {
   errores: ErrorRow[];
 }
 
+export interface ValidationProgress {
+  step: string;
+  percent: number;
+}
+
 const CIF_REGEX = /^[A-Za-z0-9]{9}$/;
 
 function normalizeCif(cif: string | null | undefined): string | null {
@@ -58,6 +63,7 @@ async function fetchAllPaginated<T = any>(
 export function useExcelImportValidation() {
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [validationProgress, setValidationProgress] = useState<ValidationProgress | null>(null);
 
   const validate = useCallback(async (
     rows: Record<string, any>[],
@@ -65,6 +71,7 @@ export function useExcelImportValidation() {
     listaMadreId?: string | null
   ): Promise<ValidationResult> => {
     setIsValidating(true);
+    setValidationProgress({ step: 'Cargando CIFs de la lista...', percent: 10 });
     try {
       // Fetch ALL existing CIFs in this list (paginated)
       const listCifs = await fetchAllPaginated<{ cif: string }>((from, to) =>
@@ -80,6 +87,8 @@ export function useExcelImportValidation() {
         listCifs.map((r: any) => normalizeCif(r.cif)).filter(Boolean) as string[]
       );
 
+      setValidationProgress({ step: 'Consultando directorio de empresas...', percent: 30 });
+
       // Fetch ALL existing CIFs in empresas directory (paginated)
       const empresaCifs = await fetchAllPaginated<{ cif: string }>((from, to) =>
         supabase
@@ -93,9 +102,9 @@ export function useExcelImportValidation() {
         empresaCifs.map((r: any) => normalizeCif(r.cif)).filter(Boolean) as string[]
       );
 
+      setValidationProgress({ step: 'Verificando listas relacionadas...', percent: 50 });
+
       // Fetch CIFs from related lists (parent + siblings)
-      // relatedCifMap: cif → { name, isConflict }
-      // isConflict=true means sibling sublist (should block), false means parent (informational)
       const relatedCifMap = new Map<string, { name: string; isConflict: boolean }>();
       if (listaMadreId) {
         const parentCompanies = await fetchAllPaginated((from, to) =>
@@ -119,6 +128,8 @@ export function useExcelImportValidation() {
           if (c) relatedCifMap.set(c, { name: parentName, isConflict: false });
         });
 
+        setValidationProgress({ step: 'Verificando sublistas hermanas...', percent: 60 });
+
         // Get sibling lists — these are CONFLICTS
         const { data: siblingLists } = await supabase
           .from('outbound_lists' as any)
@@ -138,12 +149,10 @@ export function useExcelImportValidation() {
 
           sibCifs.forEach((r: any) => {
             const c = normalizeCif(r.cif);
-            // Sibling conflicts override parent entries
             if (c) relatedCifMap.set(c, { name: sibling.name, isConflict: true });
           });
         }
       } else {
-        // This list might be a parent — check its sublists (informational only)
         const { data: childLists } = await supabase
           .from('outbound_lists' as any)
           .select('id, name')
@@ -165,6 +174,8 @@ export function useExcelImportValidation() {
           });
         }
       }
+
+      setValidationProgress({ step: `Clasificando ${rows.length.toLocaleString()} filas...`, percent: 80 });
 
       const nuevas: ValidatedRow[] = [];
       const vinculadas: ValidatedRow[] = [];
@@ -210,7 +221,6 @@ export function useExcelImportValidation() {
         const relatedEntry = relatedCifMap.get(cif);
 
         if (relatedEntry?.isConflict) {
-          // CIF exists in a sibling sublist → BLOCK
           conflictoSublistado.push({ ...row, sublistaConflicto: relatedEntry.name });
           return;
         }
@@ -232,17 +242,21 @@ export function useExcelImportValidation() {
         nuevas.push(row);
       });
 
+      setValidationProgress({ step: 'Completado', percent: 100 });
+
       const result: ValidationResult = { nuevas, vinculadas, duplicadas, enOtraLista, conflictoSublistado, errores };
       setValidationResult(result);
       return result;
     } finally {
       setIsValidating(false);
+      setValidationProgress(null);
     }
   }, []);
 
   const reset = useCallback(() => {
     setValidationResult(null);
+    setValidationProgress(null);
   }, []);
 
-  return { validate, isValidating, validationResult, reset };
+  return { validate, isValidating, validationResult, validationProgress, reset };
 }
