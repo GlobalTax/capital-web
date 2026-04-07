@@ -62,7 +62,12 @@ export default function RODSendsTab() {
   const [senderEmail, setSenderEmail] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const senderNameRef = useRef<string | null>(null);
+  const senderEmailRef = useRef<string | null>(null);
   const { signature } = useEmailSignature();
+
+  useEffect(() => { senderNameRef.current = senderName; }, [senderName]);
+  useEffect(() => { senderEmailRef.current = senderEmail; }, [senderEmail]);
 
   // Fetch existing sends
   const { data: sends = [], isLoading: sendsLoading } = useQuery({
@@ -124,10 +129,12 @@ export default function RODSendsTab() {
         target_language: language,
         attachment_ids: attachmentIds,
         signature_html: signatureHtml,
-        sender_name: senderName,
-        sender_email: senderEmail,
+        sender_name: senderNameRef.current,
+        sender_email: senderEmailRef.current,
         status: 'draft' as const,
       };
+
+      console.log('[ROD Save] sender_name:', payload.sender_name, 'sender_email:', payload.sender_email);
 
       if (currentSendId) {
         const { error } = await supabase.from('rod_sends').update(payload).eq('id', currentSendId);
