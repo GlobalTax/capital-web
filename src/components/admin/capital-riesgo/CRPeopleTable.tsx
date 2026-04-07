@@ -284,6 +284,21 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
           ].filter(Boolean).join(' | '),
         } as ListItemRow))}
       />
+
+      {/* Add to ROD Dialog */}
+      <AddToRODDialog
+        open={isAddToRODOpen}
+        onOpenChange={setIsAddToRODOpen}
+        contacts={selectedPeople.map(p => ({
+          full_name: p.full_name || '',
+          email: p.email || '',
+          company: p.fund?.name || '',
+          notes: [
+            p.role ? `Rol: ${CR_PERSON_ROLE_LABELS[p.role as keyof typeof CR_PERSON_ROLE_LABELS] || p.role}` : null,
+            getLocationDisplay(p) !== '—' ? `Ubicación: ${getLocationDisplay(p)}` : null,
+          ].filter(Boolean).join(' | '),
+        } as RODContact))}
+      />
     </>
   );
 };
