@@ -1,40 +1,64 @@
 
-## Plan: Envíos ROD — Sistema de distribución masiva
 
-### 1. Base de datos
-- **`rod_sends`**: Tabla principal de envíos (asunto, cuerpo HTML, idioma target `es`/`en`, estado `draft`/`scheduled`/`sending`/`sent`/`failed`, fecha programada, documentos adjuntos seleccionados, estadísticas de envío)
-- **`rod_send_recipients`**: Registro por destinatario (email, estado delivery, errores, timestamps)
-- RLS policies para acceso solo admin autenticado
+## Plan: Rediseñar "Envíos ROD" con estructura idéntica al sistema Outbound
 
-### 2. Nueva pestaña "Envíos ROD" en OportunidadesPage
-- Pestaña adicional junto a Documentos ROD y Listados ROD
-- Vista principal: historial de envíos con estados y métricas
-- Botón "Nuevo envío" que abre el composer
+### Contexto
+El panel actual de Envíos ROD es un diálogo simple. El usuario quiere replicar la experiencia completa del `MailStep.tsx` de outbound (Template + Firma + Lista de emails + Copias CC) y añadir una sección separada de Envío y seguimiento.
 
-### 3. Composer de email (basado en MailStep de outbound)
-- **Selector de idioma/lista**: Castellano, Inglés, o Ambas
-- **Editor de asunto + cuerpo**: Textarea con variables (nombre, empresa) y auto-guardado
-- **Selector de adjuntos**: Checkboxes con los documentos activos de RODDocumentsManager (PDF ES, PDF EN, Excel ES, Excel EN) filtrados por idioma
-- **Vista previa**: Preview en tiempo real del email resultante
-- **Firma**: Integración con el sistema de firmas existente
-- **Acciones**: "Enviar ahora" / "Programar envío" (date-time picker)
+### Estructura final
 
-### 4. Edge Function `send-rod-email`
-- Recibe el `rod_send_id`, descarga adjuntos del bucket, envía en lotes
-- Actualiza `rod_send_recipients` con estados de delivery
-- Respeta rate-limits con procesamiento secuencial por lotes
+```text
+Envíos ROD
+├── Mail (sub-pestaña)
+│   ├── Template       → Editor con variables {{nombre}}, {{empresa}}, vista previa en tiempo real
+│   ├── Firma          → Reutiliza SignatureEditorSection (ya existe en MailStep)
+│   ├── Lista de emails → Tabla de destinatarios ROD con email personalizado editable por fila
+│   └── Copias (CC)    → Selector de CC reutilizando useActiveEmailRecipients
+│
+└── Envío y seguimiento (sub-pestaña)
+    ├── Envío de prueba → Enviar a 1 email de test (reenviar ilimitadamente)
+    ├── Envío masivo    → Enviar a toda la lista seleccionada
+    ├── Envío individual → Enviar a contactos específicos desde la tabla
+    └── Historial       → Tabla con estado de cada envío/destinatario
+```
 
-### 5. Cron automático (opcional)
-- Configuración en la UI: frecuencia (semanal, quincenal, mensual), día/hora
-- pg_cron job que ejecuta envíos programados
-- Solo envía si hay un draft preparado y marcado como "auto"
+### Cambios por archivo
 
-### 6. Historial y métricas
-- Tabla de envíos pasados con contadores (enviados, fallidos, pendientes)
-- Detalle expandible por envío con lista de destinatarios
+**1. `src/components/admin/rod/RODSendsTab.tsx`** — Reescritura completa
+- Reemplazar el diálogo actual por una vista inline con 2 sub-pestañas principales: "Mail" y "Envío y seguimiento"
+- Sub-pestaña "Mail": replicar la estructura de `MailStep.tsx` con 4 tabs internas (Template, Firma, Lista de emails, Copias CC)
+  - **Template**: Editor de asunto + cuerpo con variables clickables (`{{nombre}}`, `{{empresa}}`), vista previa en tiempo real con datos del primer contacto de la lista, auto-guardado con debounce
+  - **Firma**: Reutilizar `useEmailSignature` y el patrón de `SignatureEditorSection`
+  - **Lista de emails**: Tabla con todos los miembros de `rod_list_members` del idioma seleccionado, mostrando email generado por contacto, con posibilidad de editar individualmente (clic en fila abre diálogo de edición)
+  - **Copias CC**: Reutilizar `useActiveEmailRecipients`
+- Sub-pestaña "Envío y seguimiento":
+  - Panel de envío de prueba (input email + botón enviar, reenviar ilimitadamente)
+  - Botón de envío masivo con confirmación
+  - Tabla de destinatarios con estado individual (pendiente/enviado/error), búsqueda, envío individual por fila
+  - Historial de envíos anteriores
 
-### Orden de implementación
-1. Migración DB (rod_sends + rod_send_recipients)
-2. Componente RODSendsTab + Composer
-3. Edge Function de envío
-4. Sistema de programación/cron
+**2. `src/components/admin/rod/RODMailTemplate.tsx`** — Nuevo componente
+- Editor de template ROD: variables, asunto, cuerpo, vista previa lado a lado (idéntico visualmente a la captura)
+
+**3. `src/components/admin/rod/RODMailList.tsx`** — Nuevo componente  
+- Tabla de destinatarios con emails personalizados, buscador, contadores, edición individual
+
+**4. `src/components/admin/rod/RODSendTracking.tsx`** — Nuevo componente
+- Envío de prueba, envío masivo, envío individual, historial con estados
+
+**5. DB: tabla `rod_send_emails`** — Nueva migración
+- Almacenar emails personalizados por destinatario (rod_list_member_id, send_id, subject, body, status, sent_at)
+- Permitir edición individual antes del envío
+
+**6. `supabase/functions/send-rod-email/index.ts`** — Actualizar
+- Soporte para firma HTML en el email
+- Soporte para CC recipients
+- Soporte para envío individual (por recipient_id)
+
+### Detalles técnicos
+- Se reutiliza `useEmailSignature` y `generateSignatureHtml` existentes
+- Se reutiliza `useActiveEmailRecipients` para CC
+- Las variables ROD son: `{{nombre}}`, `{{empresa}}`, `{{firmante_nombre}}`, `{{firmante_cargo}}`, `{{firmante_telefono}}`
+- La vista previa resuelve variables en tiempo real con datos del primer contacto
+- El template se guarda en `rod_sends` (subject, body_html, body_text) con auto-save
+
