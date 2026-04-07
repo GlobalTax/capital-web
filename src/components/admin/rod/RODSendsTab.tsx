@@ -230,6 +230,9 @@ export default function RODSendsTab() {
                 <TabsTrigger value="template" className="text-xs">
                   <Edit3 className="h-3.5 w-3.5 mr-1.5" />Template
                 </TabsTrigger>
+                <TabsTrigger value="sender" className="text-xs">
+                  <Send className="h-3.5 w-3.5 mr-1.5" />Emisor
+                </TabsTrigger>
                 <TabsTrigger value="signature" className="text-xs">
                   <Pen className="h-3.5 w-3.5 mr-1.5" />Firma
                 </TabsTrigger>
