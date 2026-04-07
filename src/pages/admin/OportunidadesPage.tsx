@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Briefcase, Loader2, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,7 +13,7 @@ interface Opportunity {
   id: string;
   codigo: string;
   tipo: string;
-  pipeline_stage: string;
+  estado: string | null;
   project_number: string | null;
   project_name: string | null;
   sector: string | null;
@@ -32,18 +32,16 @@ interface Opportunity {
   description_en: string | null;
 }
 
-const STAGE_LABELS: Record<string, string> = {
-  '1. Preparación': 'Fase de Preparación',
-  '2. Go To Market': 'Proceso de Venta Activo',
-  '3. Negociación y Cierre': 'Negociación y Cierre',
-  '1. Definición': 'Búsqueda de Oportunidades',
+const ESTADO_LABELS: Record<string, string> = {
+  'en_preparacion': 'En Preparación',
+  'go_to_market': 'Go to Market',
+  'negociacion_y_cierre': 'Negociación y Cierre',
 };
 
-const STAGE_COLORS: Record<string, string> = {
-  '1. Preparación': 'bg-blue-100 text-blue-800',
-  '2. Go To Market': 'bg-green-100 text-green-800',
-  '3. Negociación y Cierre': 'bg-amber-100 text-amber-800',
-  '1. Definición': 'bg-slate-100 text-slate-800',
+const ESTADO_COLORS: Record<string, string> = {
+  'en_preparacion': 'bg-blue-100 text-blue-800',
+  'go_to_market': 'bg-green-100 text-green-800',
+  'negociacion_y_cierre': 'bg-amber-100 text-amber-800',
 };
 
 const formatCurrency = (value: number | null) => {
@@ -85,8 +83,8 @@ const SellRow: React.FC<{ o: Opportunity }> = ({ o }) => {
         <TableCell className="text-xs text-right">{formatCurrency(o.ebitda_amount)}</TableCell>
         <TableCell className="text-xs text-right">{formatMargin(o.ebitda_margin)}</TableCell>
         <TableCell className="text-xs">
-          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
-            {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
+          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${ESTADO_COLORS[o.estado || ''] || 'bg-muted text-muted-foreground'}`}>
+            {ESTADO_LABELS[o.estado || ''] || o.estado || '—'}
           </span>
         </TableCell>
       </TableRow>
@@ -114,81 +112,18 @@ const SellRow: React.FC<{ o: Opportunity }> = ({ o }) => {
   );
 };
 
-/** Row for Buy-Side with expandable descriptions */
-const BuyRow: React.FC<{ o: Opportunity }> = ({ o }) => {
-  const [open, setOpen] = useState(false);
-  const hasDesc = !!(o.short_description || o.description);
-  const buyColCount = 8;
-
-  return (
-    <>
-      <TableRow
-        className={hasDesc ? 'cursor-pointer hover:bg-muted/50' : ''}
-        onClick={() => hasDesc && setOpen(!open)}
-      >
-        <TableCell className="text-xs w-6 px-2">
-          {hasDesc && (open ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />)}
-        </TableCell>
-        <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
-        <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
-        <TableCell className="text-xs">{o.sector || '—'}</TableCell>
-        <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
-        <TableCell className="text-xs">{formatRange(o.rango_facturacion_min, o.rango_facturacion_max)}</TableCell>
-        <TableCell className="text-xs">{formatRange(o.rango_ebitda_min, o.rango_ebitda_max)}</TableCell>
-        <TableCell className="text-xs max-w-[180px]">
-          {o.sectores_target?.length ? (
-            <div className="flex flex-wrap gap-1">
-              {o.sectores_target.slice(0, 3).map((s, i) => (
-                <span key={i} className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{s}</span>
-              ))}
-              {o.sectores_target.length > 3 && (
-                <span className="text-[10px] text-muted-foreground">+{o.sectores_target.length - 3}</span>
-              )}
-            </div>
-          ) : '—'}
-        </TableCell>
-        <TableCell className="text-xs">
-          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
-            {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
-          </span>
-        </TableCell>
-      </TableRow>
-      {open && (
-        <TableRow className="bg-muted/20">
-          <TableCell colSpan={buyColCount + 1} className="py-3 px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {o.short_description && (
-                <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Descripción breve</p>
-                  <p className="text-xs leading-relaxed">{o.short_description}</p>
-                </div>
-              )}
-              {o.description && (
-                <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Descripción extensa</p>
-                  <p className="text-xs leading-relaxed whitespace-pre-line">{o.description}</p>
-                </div>
-              )}
-            </div>
-          </TableCell>
-        </TableRow>
-      )}
-    </>
-  );
-};
-
 export default function OportunidadesPage() {
   const [search, setSearch] = useState('');
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ['rod-opportunities-full'],
     queryFn: async () => {
       const { data: mandatos, error: mErr } = await supabase
         .from('mandatos')
-        .select('id, codigo, tipo, pipeline_stage')
+        .select('id, codigo, tipo')
         .eq('visible_en_rod', true)
-        .order('tipo')
-        .order('pipeline_stage');
+        .order('tipo');
 
       if (mErr) throw mErr;
       if (!mandatos?.length) return [];
@@ -196,16 +131,35 @@ export default function OportunidadesPage() {
       const ids = mandatos.map(m => m.id);
       const { data: datos, error: dErr } = await supabase
         .from('datos_proyecto')
-        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en, description, description_en')
+        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en, description, description_en, estado')
         .in('mandato_id', ids);
 
       if (dErr) throw dErr;
 
       const datosMap = new Map((datos || []).map(d => [d.mandato_id, d]));
-      return mandatos.map(m => ({ ...m, ...(datosMap.get(m.id) || {}) })) as Opportunity[];
+      return mandatos.map(m => {
+        const d = datosMap.get(m.id) || {};
+        return { ...m, ...d } as Opportunity;
+      });
     },
-    refetchInterval: 30_000,
   });
+
+  // Realtime subscriptions
+  useEffect(() => {
+    const channel = supabase
+      .channel('rod-oportunidades-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'datos_proyecto' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['rod-opportunities-full'] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mandatos' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['rod-opportunities-full'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -239,43 +193,41 @@ export default function OportunidadesPage() {
             Relación de Oportunidades
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Mandatos visibles en ROD · {filtered.length} operaciones activas
+            Mandatos visibles en el ROD ({(sellSide.length + buySide.length)} activos) — actualización en tiempo real
           </p>
         </div>
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nombre, sector, ubicación..."
+            placeholder="Buscar proyecto, sector..."
+            className="pl-9 h-9 text-sm"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 text-sm"
           />
         </div>
       </div>
 
       <Tabs defaultValue="sell" className="w-full">
         <TabsList>
-          <TabsTrigger value="sell" className="text-sm">Sell-Side ({sellSide.length})</TabsTrigger>
-          <TabsTrigger value="buy" className="text-sm">Buy-Side ({buySide.length})</TabsTrigger>
+          <TabsTrigger value="sell" className="text-xs">
+            Sell-Side ({sellSide.length})
+          </TabsTrigger>
+          <TabsTrigger value="buy" className="text-xs">
+            Buy-Side ({buySide.length})
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="sell" className="mt-4">
+        <TabsContent value="sell">
           <Card>
-            <CardHeader className="pb-2 p-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Sell-Side</Badge>
-                <span className="text-xs text-muted-foreground font-normal">Haz clic en una fila para ver descripciones</span>
-              </CardTitle>
-            </CardHeader>
             <CardContent className="p-0">
               {sellSide.length === 0 ? (
-                <p className="text-sm text-muted-foreground px-4 pb-4">No hay operaciones sell-side visibles.</p>
+                <p className="text-sm text-muted-foreground p-4">No hay operaciones sell-side visibles.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-6"></TableHead>
+                        <TableHead className="text-xs w-6 px-2" />
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -296,23 +248,16 @@ export default function OportunidadesPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="buy" className="mt-4">
+        <TabsContent value="buy">
           <Card>
-            <CardHeader className="pb-2 p-4">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">Buy-Side</Badge>
-                <span className="text-xs text-muted-foreground font-normal">Haz clic en una fila para ver descripciones</span>
-              </CardTitle>
-            </CardHeader>
             <CardContent className="p-0">
               {buySide.length === 0 ? (
-                <p className="text-sm text-muted-foreground px-4 pb-4">No hay operaciones buy-side visibles.</p>
+                <p className="text-sm text-muted-foreground p-4">No hay operaciones buy-side visibles.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-6"></TableHead>
                         <TableHead className="text-xs w-[80px]">Nº Proy.</TableHead>
                         <TableHead className="text-xs">Nombre</TableHead>
                         <TableHead className="text-xs">Sector</TableHead>
@@ -324,7 +269,33 @@ export default function OportunidadesPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {buySide.map(o => <BuyRow key={o.id} o={o} />)}
+                      {buySide.map(o => (
+                        <TableRow key={o.id}>
+                          <TableCell className="text-xs font-medium">{o.project_number || o.codigo}</TableCell>
+                          <TableCell className="text-xs font-medium">{o.project_name || '—'}</TableCell>
+                          <TableCell className="text-xs">{o.sector || '—'}</TableCell>
+                          <TableCell className="text-xs">{o.ubicacion || '—'}</TableCell>
+                          <TableCell className="text-xs">{formatRange(o.rango_facturacion_min, o.rango_facturacion_max)}</TableCell>
+                          <TableCell className="text-xs">{formatRange(o.rango_ebitda_min, o.rango_ebitda_max)}</TableCell>
+                          <TableCell className="text-xs max-w-[150px]">
+                            {o.sectores_target?.length ? (
+                              <div className="flex flex-wrap gap-1">
+                                {o.sectores_target.slice(0, 3).map((s, i) => (
+                                  <span key={i} className="bg-muted px-1.5 py-0.5 rounded text-[10px]">{s}</span>
+                                ))}
+                                {o.sectores_target.length > 3 && (
+                                  <span className="text-[10px] text-muted-foreground">+{o.sectores_target.length - 3}</span>
+                                )}
+                              </div>
+                            ) : '—'}
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${ESTADO_COLORS[o.estado || ''] || 'bg-muted text-muted-foreground'}`}>
+                              {ESTADO_LABELS[o.estado || ''] || o.estado || '—'}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </div>
