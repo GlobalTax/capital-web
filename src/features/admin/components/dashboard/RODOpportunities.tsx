@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Briefcase, ShoppingCart, Loader2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,7 +10,7 @@ interface Opportunity {
   id: string;
   codigo: string;
   tipo: string;
-  pipeline_stage: string;
+  estado: string | null;
   project_number: string | null;
   project_name: string | null;
   sector: string | null;
@@ -27,18 +27,16 @@ interface Opportunity {
   short_description_en: string | null;
 }
 
-const STAGE_LABELS: Record<string, string> = {
-  '1. Preparación': 'Fase de Preparación',
-  '2. Go To Market': 'Proceso de Venta Activo',
-  '3. Negociación y Cierre': 'Negociación y Cierre',
-  '1. Definición': 'Búsqueda de Oportunidades',
+const ESTADO_LABELS: Record<string, string> = {
+  'en_preparacion': 'En Preparación',
+  'go_to_market': 'Go to Market',
+  'negociacion_y_cierre': 'Negociación y Cierre',
 };
 
-const STAGE_COLORS: Record<string, string> = {
-  '1. Preparación': 'bg-blue-100 text-blue-800',
-  '2. Go To Market': 'bg-green-100 text-green-800',
-  '3. Negociación y Cierre': 'bg-amber-100 text-amber-800',
-  '1. Definición': 'bg-slate-100 text-slate-800',
+const ESTADO_COLORS: Record<string, string> = {
+  'en_preparacion': 'bg-blue-100 text-blue-800',
+  'go_to_market': 'bg-green-100 text-green-800',
+  'negociacion_y_cierre': 'bg-amber-100 text-amber-800',
 };
 
 const formatCurrency = (value: number | null) => {
@@ -58,15 +56,16 @@ const formatRange = (min: number | null, max: number | null) => {
 const formatMargin = (v: number | null) => (v != null ? `${v.toFixed(1)}%` : '—');
 
 export const RODOpportunities: React.FC = () => {
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ['rod-opportunities'],
     queryFn: async () => {
       const { data: mandatos, error: mErr } = await supabase
         .from('mandatos')
-        .select('id, codigo, tipo, pipeline_stage')
+        .select('id, codigo, tipo')
         .eq('visible_en_rod', true)
-        .order('tipo')
-        .order('pipeline_stage');
+        .order('tipo');
 
       if (mErr) throw mErr;
       if (!mandatos?.length) return [];
@@ -74,7 +73,7 @@ export const RODOpportunities: React.FC = () => {
       const ids = mandatos.map(m => m.id);
       const { data: datos, error: dErr } = await supabase
         .from('datos_proyecto')
-        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en')
+        .select('mandato_id, project_number, project_name, sector, ubicacion, revenue_amount, ebitda_amount, ebitda_margin, rango_facturacion_min, rango_facturacion_max, rango_ebitda_min, rango_ebitda_max, sectores_target, short_description, short_description_en, estado')
         .in('mandato_id', ids);
 
       if (dErr) throw dErr;
@@ -82,8 +81,24 @@ export const RODOpportunities: React.FC = () => {
       const datosMap = new Map((datos || []).map(d => [d.mandato_id, d]));
       return mandatos.map(m => ({ ...m, ...(datosMap.get(m.id) || {}) })) as Opportunity[];
     },
-    refetchInterval: 30_000,
   });
+
+  // Realtime subscriptions
+  useEffect(() => {
+    const channel = supabase
+      .channel('rod-dashboard-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'datos_proyecto' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['rod-opportunities'] });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mandatos' }, () => {
+        queryClient.invalidateQueries({ queryKey: ['rod-opportunities'] });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const sellSide = data?.filter(o => o.tipo === 'venta') || [];
   const buySide = data?.filter(o => o.tipo === 'compra') || [];
@@ -106,7 +121,7 @@ export const RODOpportunities: React.FC = () => {
           Relación de Oportunidades
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Mandatos visibles en el ROD ({(sellSide.length + buySide.length)} activos)
+          Mandatos visibles en el ROD ({(sellSide.length + buySide.length)} activos) — tiempo real
         </p>
       </div>
 
@@ -148,8 +163,8 @@ export const RODOpportunities: React.FC = () => {
                       <TableCell className="text-xs text-right">{formatCurrency(o.ebitda_amount)}</TableCell>
                       <TableCell className="text-xs text-right">{formatMargin(o.ebitda_margin)}</TableCell>
                       <TableCell className="text-xs">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
-                          {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${ESTADO_COLORS[o.estado || ''] || 'bg-muted text-muted-foreground'}`}>
+                          {ESTADO_LABELS[o.estado || ''] || o.estado || '—'}
                         </span>
                       </TableCell>
                       <TableCell className="text-xs max-w-[200px] truncate" title={o.short_description || ''}>
@@ -213,8 +228,8 @@ export const RODOpportunities: React.FC = () => {
                         ) : '—'}
                       </TableCell>
                       <TableCell className="text-xs">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${STAGE_COLORS[o.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>
-                          {STAGE_LABELS[o.pipeline_stage] || o.pipeline_stage}
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${ESTADO_COLORS[o.estado || ''] || 'bg-muted text-muted-foreground'}`}>
+                          {ESTADO_LABELS[o.estado || ''] || o.estado || '—'}
                         </span>
                       </TableCell>
                       <TableCell className="text-xs max-w-[200px] truncate" title={o.short_description || ''}>
