@@ -264,6 +264,14 @@ export const useUnifiedContacts = () => {
 
       if (advisorError) console.error('Error fetching advisor valuations:', advisorError);
 
+      // Fetch buyer_preferences (alert subscriptions)
+      const { data: buyerAlertLeads, error: buyerAlertError } = await supabase
+        .from('buyer_preferences')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (buyerAlertError) console.error('Error fetching buyer preferences:', buyerAlertError);
+
       // 🔥 NEW: Fetch professional_valuations linked to contact_leads
       const { data: proValuations, error: proValuationsError } = await supabase
         .from('professional_valuations')
