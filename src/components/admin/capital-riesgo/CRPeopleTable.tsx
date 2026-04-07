@@ -238,6 +238,15 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
               <Mail className="h-4 w-4 mr-2" />
               Enviar Email
             </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-white hover:bg-slate-800"
+              onClick={() => setIsAddToListOpen(true)}
+            >
+              <ListPlus className="h-4 w-4 mr-2" />
+              Añadir a lista
+            </Button>
           </div>
         </div>
       )}
@@ -247,6 +256,22 @@ export const CRPeopleTable: React.FC<CRPeopleTableProps> = ({
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
         person={editingPerson}
+      />
+
+      {/* Add to List Dialog */}
+      <AddItemsToListDialog
+        open={isAddToListOpen}
+        onOpenChange={setIsAddToListOpen}
+        itemLabel="persona"
+        items={selectedPeople.map(p => ({
+          empresa: p.fund?.name || '',
+          contacto: p.full_name || '',
+          email: p.email || '',
+          notas: [
+            p.role ? `Rol: ${CR_PERSON_ROLE_LABELS[p.role as keyof typeof CR_PERSON_ROLE_LABELS] || p.role}` : null,
+            getLocationDisplay(p) !== '—' ? `Ubicación: ${getLocationDisplay(p)}` : null,
+          ].filter(Boolean).join(' | '),
+        } as ListItemRow))}
       />
     </>
   );
