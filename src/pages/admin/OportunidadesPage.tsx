@@ -4,13 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star, FileText, Users } from 'lucide-react';
+import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star, FileText, Users, Send } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 const LazyRODDocumentsManager = lazy(() => import('@/components/admin/RODDocumentsManager').then(m => ({ default: m.RODDocumentsManager })));
 const LazyRODListsTab = lazy(() => import('@/components/admin/rod/RODListsTab').then(m => ({ default: m.RODListsTab })));
+const LazyRODSendsTab = lazy(() => import('@/components/admin/rod/RODSendsTab').then(m => ({ default: m.RODSendsTab })));
 
 
 interface Opportunity {
@@ -263,6 +264,10 @@ export default function OportunidadesPage() {
             <Users className="h-3.5 w-3.5 mr-1" />
             Listados ROD
           </TabsTrigger>
+          <TabsTrigger value="sends" className="text-xs">
+            <Send className="h-3.5 w-3.5 mr-1" />
+            Envíos ROD
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell">
@@ -374,6 +379,16 @@ export default function OportunidadesPage() {
             </div>
           }>
             <LazyRODListsTab />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="sends">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          }>
+            <LazyRODSendsTab />
           </Suspense>
         </TabsContent>
       </Tabs>
