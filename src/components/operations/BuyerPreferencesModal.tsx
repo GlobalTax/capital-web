@@ -23,13 +23,17 @@ const BuyerPreferencesModal: React.FC<BuyerPreferencesModalProps> = ({
   locations = []
 }) => {
   const { preferences, savePreferences, isSaving } = useBuyerPreferences();
-  const { register, handleSubmit, setValue, watch } = useForm();
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm();
 
   const selectedSectors = watch('preferred_sectors') || [];
   const selectedLocations = watch('preferred_locations') || [];
 
   useEffect(() => {
     if (preferences) {
+      setValue('full_name', preferences.full_name || '');
+      setValue('email', preferences.email || '');
+      setValue('phone', preferences.phone || '');
+      setValue('company', preferences.company || '');
       setValue('preferred_sectors', preferences.preferred_sectors || []);
       setValue('preferred_locations', preferences.preferred_locations || []);
       setValue('min_valuation', preferences.min_valuation);
@@ -57,7 +61,13 @@ const BuyerPreferencesModal: React.FC<BuyerPreferencesModalProps> = ({
   };
 
   const onSubmit = (data: any) => {
+    if (!data.email || !data.full_name) return;
+    
     savePreferences({
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone || undefined,
+      company: data.company || undefined,
       preferred_sectors: data.preferred_sectors,
       preferred_locations: data.preferred_locations,
       min_valuation: data.min_valuation ? parseFloat(data.min_valuation) : undefined,
@@ -82,6 +92,49 @@ const BuyerPreferencesModal: React.FC<BuyerPreferencesModalProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Datos de contacto</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="full_name">Nombre completo *</Label>
+                <Input
+                  id="full_name"
+                  {...register('full_name', { required: true })}
+                  placeholder="Tu nombre y apellidos"
+                  className={errors.full_name ? 'border-destructive' : ''}
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register('email', { required: true })}
+                  placeholder="tu@email.com"
+                  className={errors.email ? 'border-destructive' : ''}
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Teléfono</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  {...register('phone')}
+                  placeholder="+34 600 000 000"
+                />
+              </div>
+              <div>
+                <Label htmlFor="company">Empresa</Label>
+                <Input
+                  id="company"
+                  {...register('company')}
+                  placeholder="Nombre de tu empresa"
+                />
+              </div>
+            </div>
+          </div>
+
           {sectors.length > 0 && (
             <div>
               <Label>Sectores de Interés</Label>
