@@ -353,16 +353,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 </Select>
               </div>
 
-              <Select value={sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.sortBy') || 'Ordenar por'} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created_at">{t('operations.filters.mostRecent') || 'Más recientes'}</SelectItem>
-                  <SelectItem value="revenue_amount">{t('operations.filters.valuation') || 'Facturación'}</SelectItem>
-                  <SelectItem value="project_name">{t('operations.filters.name') || 'Nombre'}</SelectItem>
-                </SelectContent>
-              </Select>
               
               <Button
                 variant="outline"
