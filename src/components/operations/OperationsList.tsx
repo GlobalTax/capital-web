@@ -66,12 +66,12 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const queryClient = useQueryClient();
   const [operations, setOperations] = useState<Operation[]>([]);
   const [sectors, setSectors] = useState<SectorOption[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
+  
   const [dealTypes, setDealTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSector, setSelectedSector] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('');
+  
   const [selectedDealType, setSelectedDealType] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [offset, setOffset] = useState(0);
@@ -139,7 +139,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
           locale: lang,
           searchTerm: debouncedSearchTerm || undefined,
           sector: selectedSector || undefined,
-          location: selectedLocation || undefined,
+          
           dealType: selectedDealType || undefined,
           sortBy,
           limit: fetchLimit,
@@ -159,7 +159,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
       setOperations(data.data || []);
       setTotalCount(data.count || 0);
       setSectors(data.sectors || []);
-      setLocations(data.locations || []);
+      
       setDealTypes(data.dealTypes || []);
 
     } catch (error) {
@@ -175,7 +175,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
   useEffect(() => {
     fetchOperations();
     setIsLoadingAll(false);
-  }, [debouncedSearchTerm, selectedSector, selectedLocation, selectedDealType, sortBy, offset, viewMode, dateFilter, lang, fetchKey]);
+  }, [debouncedSearchTerm, selectedSector, selectedDealType, sortBy, offset, viewMode, dateFilter, lang, fetchKey]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -192,10 +192,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const handleLocationChange = (value: string) => {
-    setSelectedLocation(value === 'all' ? '' : value);
-    setOffset(0);
-  };
 
   const handleDealTypeChange = (value: string) => {
     setSelectedDealType(value === 'all' ? '' : value);
@@ -205,7 +201,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
   const clearAllFilters = () => {
     setSearchTerm('');
     setSelectedSector('');
-    setSelectedLocation('');
     setSelectedDealType('');
     setDateFilter('');
     setOffset(0);
@@ -222,7 +217,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
     setOffset(0);
   };
 
-  const hasActiveFilters = searchTerm || selectedSector || selectedLocation || selectedDealType || dateFilter;
+  const hasActiveFilters = searchTerm || selectedSector || selectedDealType || dateFilter;
 
   return (
     <div className="space-y-6">
@@ -236,8 +231,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Row 1: Search, Sector, Location */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Row 1: Search, Sector */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -294,20 +289,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   {sectors.map((sector) => (
                     <SelectItem key={sector.key} value={sector.key}>
                       {sector.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedLocation || 'all'} onValueChange={handleLocationChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.allLocations')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('operations.filters.allLocations')}</SelectItem>
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -375,7 +356,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 <span className="text-sm text-muted-foreground">{t('operations.filters.activeFilters')}</span>
                 {searchTerm && <Badge variant="secondary">{searchTerm}</Badge>}
                 {selectedSector && <Badge variant="secondary">{selectedSector}</Badge>}
-                {selectedLocation && <Badge variant="secondary">{selectedLocation}</Badge>}
+                
                 {selectedDealType && (
                   <Badge variant="secondary">
                     {selectedDealType === 'venta' ? 'Venta' : selectedDealType === 'compra' ? 'Adquisición' : selectedDealType}
