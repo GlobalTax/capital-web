@@ -286,9 +286,11 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
                 <span className="font-bold text-green-600">
                   {hasRevenueRange
                     ? formatRange(operation.rango_facturacion_min, operation.rango_facturacion_max, operation.valuation_currency || 'EUR')
-                    : operation.revenue_amount 
-                      ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
-                      : t('operations.card.inquire')
+                    : isBuySide
+                      ? t('operations.card.inquire')
+                      : operation.revenue_amount 
+                        ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
+                        : t('operations.card.inquire')
                   }
                 </span>
               </div>
