@@ -236,8 +236,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Row 1: Search, Sector, Location */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Row 1: Search, Sector */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -294,20 +294,6 @@ const OperationsList: React.FC<OperationsListProps> = ({
                   {sectors.map((sector) => (
                     <SelectItem key={sector.key} value={sector.key}>
                       {sector.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedLocation || 'all'} onValueChange={handleLocationChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.allLocations')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('operations.filters.allLocations')}</SelectItem>
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
-                      {location}
                     </SelectItem>
                   ))}
                 </SelectContent>
