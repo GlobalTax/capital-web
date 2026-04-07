@@ -697,10 +697,24 @@ export default function ContactListDetailPage() {
           return selectedValues.some(keyword => val.includes(keyword.toLowerCase()));
         });
       } else {
-        // Text exact filter
+        // Check for presence filters (__has / __empty) mixed with text exact filters
+        const presenceFilters = selectedValues.filter(v => v === '__has' || v === '__empty');
+        const textFilters = selectedValues.filter(v => v !== '__has' && v !== '__empty');
+        
         result = result.filter(c => {
           const val = (c as any)[colKey];
-          return val && selectedValues.includes(val);
+          const hasValue = val != null && val !== '' && String(val).trim() !== '' && String(val).trim() !== '—';
+          
+          // If both presence and text filters, match either
+          if (presenceFilters.length > 0 && textFilters.length > 0) {
+            const presenceMatch = presenceFilters.some(pf => pf === '__has' ? hasValue : !hasValue);
+            const textMatch = hasValue && textFilters.includes(val);
+            return presenceMatch || textMatch;
+          }
+          if (presenceFilters.length > 0) {
+            return presenceFilters.some(pf => pf === '__has' ? hasValue : !hasValue);
+          }
+          return val && textFilters.includes(val);
         });
       }
     }
