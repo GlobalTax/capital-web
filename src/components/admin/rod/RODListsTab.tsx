@@ -56,7 +56,7 @@ export const RODListsTab: React.FC = () => {
         .eq('is_active', true)
         .order('name');
       if (error) throw error;
-      return (data || []) as OutboundList[];
+      return (data || []) as unknown as OutboundList[];
     },
   });
 
