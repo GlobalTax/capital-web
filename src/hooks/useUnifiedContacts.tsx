@@ -273,6 +273,15 @@ export const useUnifiedContacts = () => {
 
       if (buyerAlertError) console.error('Error fetching buyer preferences:', buyerAlertError);
 
+      // Fetch buyer_contacts (ROD downloads)
+      const { data: rodDownloadLeads, error: rodDownloadError } = await supabase
+        .from('buyer_contacts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5000);
+
+      if (rodDownloadError) console.error('Error fetching buyer contacts (ROD):', rodDownloadError);
+
       // 🔥 NEW: Fetch professional_valuations linked to contact_leads
       const { data: proValuations, error: proValuationsError } = await supabase
         .from('professional_valuations')
