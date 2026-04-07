@@ -41,7 +41,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch attachments
+    // Determine sender (From) email
+    const FROM_EMAIL = send.sender_email
+      ? `${send.sender_name || 'Capittal'} <${send.sender_email}>`
+      : DEFAULT_FROM_EMAIL;
+
     const attachments: { filename: string; content: string }[] = [];
     if (send.attachment_ids?.length) {
       const { data: docs } = await supabase
