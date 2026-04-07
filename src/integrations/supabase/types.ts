@@ -3099,48 +3099,57 @@ export type Database = {
       buyer_preferences: {
         Row: {
           alert_frequency: string | null
+          company: string | null
           company_size_preferences: string[] | null
           created_at: string | null
           deal_type_preferences: string[] | null
           email: string
+          full_name: string | null
           id: string
           is_active: boolean | null
           max_valuation: number | null
           min_valuation: number | null
+          phone: string | null
           preferred_locations: string[] | null
           preferred_sectors: string[] | null
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           alert_frequency?: string | null
+          company?: string | null
           company_size_preferences?: string[] | null
           created_at?: string | null
           deal_type_preferences?: string[] | null
           email: string
+          full_name?: string | null
           id?: string
           is_active?: boolean | null
           max_valuation?: number | null
           min_valuation?: number | null
+          phone?: string | null
           preferred_locations?: string[] | null
           preferred_sectors?: string[] | null
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           alert_frequency?: string | null
+          company?: string | null
           company_size_preferences?: string[] | null
           created_at?: string | null
           deal_type_preferences?: string[] | null
           email?: string
+          full_name?: string | null
           id?: string
           is_active?: boolean | null
           max_valuation?: number | null
           min_valuation?: number | null
+          phone?: string | null
           preferred_locations?: string[] | null
           preferred_sectors?: string[] | null
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
