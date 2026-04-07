@@ -282,7 +282,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
             <div className="space-y-2">
               {/* Revenue / Revenue Range */}
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('operations.card.revenue')}:</span>
+                <span className="text-muted-foreground">{hasRevenueRange ? 'Rango Facturación' : t('operations.card.revenue')}:</span>
                 <span className="font-bold text-green-600">
                   {hasRevenueRange
                     ? formatRange(operation.rango_facturacion_min, operation.rango_facturacion_max, operation.valuation_currency || 'EUR')
@@ -294,7 +294,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
               </div>
               {/* EBITDA / EBITDA Range */}
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('operations.card.ebitda')}:</span>
+                <span className="text-muted-foreground">{hasEbitdaRange ? 'Rango EBITDA' : t('operations.card.ebitda')}:</span>
                 <span className="font-medium text-blue-600">
                   {hasEbitdaRange
                     ? formatRange(operation.rango_ebitda_min, operation.rango_ebitda_max, operation.valuation_currency || 'EUR')
