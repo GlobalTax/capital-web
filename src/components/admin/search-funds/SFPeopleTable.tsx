@@ -39,6 +39,7 @@ export const SFPeopleTable: React.FC<SFPeopleTableProps> = ({
   const [editingPerson, setEditingPerson] = useState<SFPerson | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [isAddToListOpen, setIsAddToListOpen] = useState(false);
 
   const allSelected = people.length > 0 && selectedIds.size === people.length;
   const someSelected = selectedIds.size > 0 && selectedIds.size < people.length;
