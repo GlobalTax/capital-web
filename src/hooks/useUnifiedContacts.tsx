@@ -643,6 +643,26 @@ export const useUnifiedContacts = () => {
           source: 'buyer_alert',
           lead_received_at: lead.created_at || new Date().toISOString(),
         })),
+
+        // ROD download contacts (buyer_contacts)
+        ...(rodDownloadLeads || []).map(lead => ({
+          id: lead.id,
+          origin: 'rod_download' as const,
+          name: lead.full_name || `${lead.first_name} ${lead.last_name || ''}`.trim(),
+          email: lead.email,
+          phone: lead.phone || undefined,
+          company: lead.company || undefined,
+          created_at: lead.created_at || new Date().toISOString(),
+          status: lead.lead_status_crm || lead.status || 'new',
+          sectors_of_interest: lead.sectors_of_interest || undefined,
+          preferred_location: lead.preferred_location || undefined,
+          investment_budget: lead.investment_range || undefined,
+          priority: 'warm' as const,
+          is_hot_lead: false,
+          source: 'rod_download',
+          lead_received_at: lead.lead_received_at || lead.created_at || new Date().toISOString(),
+          lead_status_crm: lead.lead_status_crm,
+        })),
       ];
 
       // Get all unique assigned_to IDs
