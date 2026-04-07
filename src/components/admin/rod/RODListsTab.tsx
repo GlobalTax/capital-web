@@ -25,8 +25,8 @@ interface RODMember {
 }
 
 const LANG_TABS = [
-  { code: 'es', label: 'Castellano', flag: '🇪🇸' },
-  { code: 'en', label: 'Inglés', flag: '🇬🇧' },
+  { code: 'es', label: 'Castellano', flag: 'ES' },
+  { code: 'en', label: 'Inglés', flag: 'EN' },
 ];
 
 const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
