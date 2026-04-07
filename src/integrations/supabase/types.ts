@@ -19814,6 +19814,45 @@ export type Database = {
           },
         ]
       }
+      rod_list_members: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          language: string
+          notes: string | null
+          phone: string | null
+          sector: string | null
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          language: string
+          notes?: string | null
+          phone?: string | null
+          sector?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          language?: string
+          notes?: string | null
+          phone?: string | null
+          sector?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rod_template_documents: {
         Row: {
           created_at: string
