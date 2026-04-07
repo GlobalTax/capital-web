@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Loader2, Mail, Pen, RefreshCw, AlertCircle } from 'lucide-react';
+import { Search, Loader2, Mail, Pen, RefreshCw, AlertCircle, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
