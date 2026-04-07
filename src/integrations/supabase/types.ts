@@ -19972,6 +19972,8 @@ export type Database = {
           failed_count: number | null
           id: string
           scheduled_at: string | null
+          sender_email: string | null
+          sender_name: string | null
           sent_at: string | null
           sent_count: number | null
           signature_html: string | null
@@ -19993,6 +19995,8 @@ export type Database = {
           failed_count?: number | null
           id?: string
           scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
           sent_at?: string | null
           sent_count?: number | null
           signature_html?: string | null
@@ -20014,6 +20018,8 @@ export type Database = {
           failed_count?: number | null
           id?: string
           scheduled_at?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
           sent_at?: string | null
           sent_count?: number | null
           signature_html?: string | null

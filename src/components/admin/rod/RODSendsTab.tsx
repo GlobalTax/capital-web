@@ -1,13 +1,14 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Plus, Send, Save, Loader2, Mail, Edit3, Pen, Users, MailCheck, Eye, Clock,
   CheckCircle2, XCircle, AlertCircle,
@@ -20,6 +21,7 @@ import { RODSendTracking } from './RODSendTracking';
 import { useEmailSignature, DEFAULT_SIGNATURE, generateSignatureHtml } from '@/hooks/useEmailSignature';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
+import { useTeamAdvisors } from '@/hooks/useTeamAdvisors';
 
 interface RODSend {
   id: string;
@@ -36,6 +38,8 @@ interface RODSend {
   attachment_ids: string[] | null;
   cc_recipient_ids: string[] | null;
   signature_html: string | null;
+  sender_name: string | null;
+  sender_email: string | null;
   error_message: string | null;
   created_at: string;
 }
@@ -54,6 +58,8 @@ export default function RODSendsTab() {
   const [bodyText, setBodyText] = useState('');
   const [language, setLanguage] = useState('es');
   const [attachmentIds, setAttachmentIds] = useState<string[]>([]);
+  const [senderName, setSenderName] = useState<string | null>(null);
+  const [senderEmail, setSenderEmail] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { signature } = useEmailSignature();
@@ -78,6 +84,8 @@ export default function RODSendsTab() {
     setBodyText(send.body_text || '');
     setLanguage(send.target_language || 'es');
     setAttachmentIds(send.attachment_ids || []);
+    setSenderName(send.sender_name || null);
+    setSenderEmail(send.sender_email || null);
   };
 
   const createNew = () => {
@@ -86,6 +94,8 @@ export default function RODSendsTab() {
     setBodyText('');
     setLanguage('es');
     setAttachmentIds([]);
+    setSenderName(null);
+    setSenderEmail(null);
   };
 
   // Auto-load first draft if exists
@@ -114,6 +124,8 @@ export default function RODSendsTab() {
         target_language: language,
         attachment_ids: attachmentIds,
         signature_html: signatureHtml,
+        sender_name: senderName,
+        sender_email: senderEmail,
         status: 'draft' as const,
       };
 
@@ -133,7 +145,7 @@ export default function RODSendsTab() {
       setSaveStatus('idle');
       toast.error('Error guardando: ' + e.message);
     }
-  }, [subject, bodyText, language, attachmentIds, currentSendId, signature, queryClient]);
+  }, [subject, bodyText, language, attachmentIds, senderName, senderEmail, currentSendId, signature, queryClient]);
 
   // Debounced auto-save
   const triggerAutoSave = useCallback(() => {
@@ -149,6 +161,16 @@ export default function RODSendsTab() {
   const handleBodyChange = (v: string) => { setBodyText(v); triggerAutoSave(); };
   const handleLanguageChange = (v: string) => { setLanguage(v); triggerAutoSave(); };
   const handleAttachmentsChange = (v: string[]) => { setAttachmentIds(v); triggerAutoSave(); };
+  const handleSenderChange = (email: string) => {
+    if (email === 'default') {
+      setSenderName(null);
+      setSenderEmail(null);
+    } else {
+      // We'll resolve the name from the advisors list in the component
+      setSenderEmail(email);
+    }
+    triggerAutoSave();
+  };
 
   const currentSend = sends.find(s => s.id === currentSendId);
   const isEditable = !currentSend || currentSend.status === 'draft';
@@ -208,6 +230,9 @@ export default function RODSendsTab() {
                 <TabsTrigger value="template" className="text-xs">
                   <Edit3 className="h-3.5 w-3.5 mr-1.5" />Template
                 </TabsTrigger>
+                <TabsTrigger value="sender" className="text-xs">
+                  <Send className="h-3.5 w-3.5 mr-1.5" />Emisor
+                </TabsTrigger>
                 <TabsTrigger value="signature" className="text-xs">
                   <Pen className="h-3.5 w-3.5 mr-1.5" />Firma
                 </TabsTrigger>
@@ -232,6 +257,17 @@ export default function RODSendsTab() {
                   onAttachmentsChange={handleAttachmentsChange}
                   onSaveDraft={saveDraft}
                   saveStatus={saveStatus}
+                />
+              </TabsContent>
+
+              <TabsContent value="sender">
+                <SenderSection
+                  senderEmail={senderEmail}
+                  onSenderChange={(email, name) => {
+                    setSenderEmail(email);
+                    setSenderName(name);
+                    triggerAutoSave();
+                  }}
                 />
               </TabsContent>
 
@@ -268,6 +304,60 @@ export default function RODSendsTab() {
             />
           </TabsContent>
         </Tabs>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Sender Section ─────────────────────────────────────────────────────
+function SenderSection({ senderEmail, onSenderChange }: {
+  senderEmail: string | null;
+  onSenderChange: (email: string | null, name: string | null) => void;
+}) {
+  const { data: advisors, isLoading } = useTeamAdvisors();
+
+  const handleChange = (value: string) => {
+    if (value === 'default') {
+      onSenderChange(null, null);
+    } else {
+      const advisor = advisors?.find(a => a.email === value);
+      if (advisor) {
+        onSenderChange(advisor.email, advisor.name);
+      }
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Mail className="h-4 w-4" />Emisor del email
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">
+          Selecciona quién aparecerá como remitente (From) y Reply-To de los emails de este envío ROD.
+        </p>
+        <Select value={senderEmail || 'default'} onValueChange={handleChange} disabled={isLoading}>
+          <SelectTrigger className="w-full md:w-[350px]">
+            <SelectValue placeholder="Seleccionar emisor..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">
+              Por defecto — Samuel Navarro (samuel@capittal.es)
+            </SelectItem>
+            {advisors?.filter(a => a.email.endsWith('@capittal.es')).map(advisor => (
+              <SelectItem key={advisor.id} value={advisor.email}>
+                {advisor.name} ({advisor.email})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {senderEmail && (
+          <p className="text-xs text-muted-foreground">
+            Los emails se enviarán como: <span className="font-medium text-foreground">{senderEmail}</span>
+          </p>
+        )}
       </CardContent>
     </Card>
   );
