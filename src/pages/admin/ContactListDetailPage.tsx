@@ -1035,8 +1035,14 @@ export default function ContactListDetailPage() {
   const handleStartValidation = async () => {
     if (!listId || importData.length === 0) return;
     const rows = getMappedRows();
-    setImportStep('preview');
-    await validate(rows, listId, list?.lista_madre_id || null);
+
+    try {
+      await validate(rows, listId, list?.lista_madre_id || null);
+      setImportStep('preview');
+    } catch (err) {
+      console.error('[Import validation] Error validating Excel:', err);
+      toast.error('No se ha podido validar el Excel. Revisa el archivo o inténtalo de nuevo.');
+    }
   };
 
   // Step 3: Confirm import (nuevas + vinculadas + enOtraLista, excludes conflictoSublistado)
