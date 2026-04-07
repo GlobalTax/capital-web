@@ -19853,6 +19853,110 @@ export type Database = {
         }
         Relationships: []
       }
+      rod_send_recipients: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string
+          error_message: string | null
+          full_name: string | null
+          id: string
+          send_id: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email: string
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          send_id: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          full_name?: string | null
+          id?: string
+          send_id?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rod_send_recipients_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "rod_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rod_sends: {
+        Row: {
+          attachment_ids: string[] | null
+          attachment_urls: Json | null
+          body_html: string
+          body_text: string
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          failed_count: number | null
+          id: string
+          scheduled_at: string | null
+          sent_at: string | null
+          sent_count: number | null
+          status: string
+          subject: string
+          target_language: string
+          total_recipients: number | null
+          updated_at: string
+        }
+        Insert: {
+          attachment_ids?: string[] | null
+          attachment_urls?: Json | null
+          body_html?: string
+          body_text?: string
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          failed_count?: number | null
+          id?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject?: string
+          target_language?: string
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Update: {
+          attachment_ids?: string[] | null
+          attachment_urls?: Json | null
+          body_html?: string
+          body_text?: string
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          failed_count?: number | null
+          id?: string
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          subject?: string
+          target_language?: string
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rod_template_documents: {
         Row: {
           created_at: string
