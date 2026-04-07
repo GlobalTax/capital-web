@@ -572,6 +572,8 @@ export default function ContactListDetailPage() {
   // Text columns that support multi-select filtering
   const TEXT_FILTER_COLUMNS = ['provincia', 'comunidad_autonoma', 'cnae', 'posicion_contacto', 'director_ejecutivo'] as const;
   const KEYWORD_FILTER_COLUMNS = ['descripcion_actividad'] as const;
+  // Columns that support "has value / no value" presence filtering
+  const PRESENCE_FILTER_COLUMNS = ['email', 'linkedin', 'web', 'cif', 'contacto', 'director_ejecutivo', 'telefono', 'provincia', 'comunidad_autonoma', 'cnae', 'posicion_contacto', 'facturacion', 'ebitda', 'num_trabajadores', 'nombre_accionista', 'notas'] as const;
 
   // Numeric range definitions
   const NUMERIC_RANGES: Record<string, { label: string; min: number | null; max: number | null }[]> = {
