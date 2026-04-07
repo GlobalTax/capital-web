@@ -280,21 +280,27 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
           {/* Financial Details */}
           <div className="space-y-3 pt-4 border-t">
             <div className="space-y-2">
+              {/* Revenue / Revenue Range */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t('operations.card.revenue')}:</span>
                 <span className="font-bold text-green-600">
-                  {operation.revenue_amount 
-                    ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
-                    : t('operations.card.inquire')
+                  {hasRevenueRange
+                    ? formatRange(operation.rango_facturacion_min, operation.rango_facturacion_max, operation.valuation_currency || 'EUR')
+                    : operation.revenue_amount 
+                      ? formatCurrency(normalizeValuationAmount(operation.revenue_amount), operation.valuation_currency || 'EUR')
+                      : t('operations.card.inquire')
                   }
                 </span>
               </div>
+              {/* EBITDA / EBITDA Range */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t('operations.card.ebitda')}:</span>
                 <span className="font-medium text-blue-600">
-                  {operation.ebitda_amount 
-                    ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
-                    : t('operations.card.inquire')
+                  {hasEbitdaRange
+                    ? formatRange(operation.rango_ebitda_min, operation.rango_ebitda_max, operation.valuation_currency || 'EUR')
+                    : operation.ebitda_amount 
+                      ? formatCurrency(normalizeValuationAmount(operation.ebitda_amount), operation.valuation_currency || 'EUR')
+                      : t('operations.card.inquire')
                   }
                 </span>
               </div>
