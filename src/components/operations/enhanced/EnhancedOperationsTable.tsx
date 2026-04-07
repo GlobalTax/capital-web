@@ -38,7 +38,7 @@ interface Operation {
   company_size_employees?: string;
   highlights?: string[];
   deal_type?: string;
-  display_locations: string[];
+  display_locations?: string[];
   created_at?: string;
 }
 
