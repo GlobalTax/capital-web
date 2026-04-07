@@ -287,19 +287,37 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 )}
               </div>
               
-              <Select value={selectedSector || 'all'} onValueChange={handleSectorChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('operations.filters.allSectors')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('operations.filters.allSectors')}</SelectItem>
-                  {sectors.map((sector) => (
-                    <SelectItem key={sector.key} value={sector.key}>
-                      {sector.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex flex-wrap items-center gap-2 min-h-[40px] p-2 border rounded-md bg-background">
+                {selectedSectors.length === 0 && (
+                  <span className="text-sm text-muted-foreground">{t('operations.filters.allSectors')}</span>
+                )}
+                {selectedSectors.map(sectorKey => {
+                  const sectorObj = sectors.find(s => s.key === sectorKey);
+                  return (
+                    <Badge key={sectorKey} variant="secondary" className="gap-1 cursor-pointer" onClick={() => handleRemoveSector(sectorKey)}>
+                      {sectorObj?.label || sectorKey}
+                      <X className="h-3 w-3" />
+                    </Badge>
+                  );
+                })}
+                <div className="ml-auto">
+                  <Select value="__add__" onValueChange={(value) => { if (value !== '__add__') handleSectorToggle(value); }}>
+                    <SelectTrigger className="h-7 w-7 p-0 border-0 shadow-none [&>svg]:hidden">
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sectors.filter(s => !selectedSectors.includes(s.key)).map((sector) => (
+                        <SelectItem key={sector.key} value={sector.key}>
+                          {sector.label}
+                        </SelectItem>
+                      ))}
+                      {sectors.filter(s => !selectedSectors.includes(s.key)).length === 0 && (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground">Todos seleccionados</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
             {/* Row 2: Deal Type, Date, Sort, Clear */}
