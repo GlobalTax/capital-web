@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle, LayoutGrid, List } from 'lucide-react';
+import { Search, Filter, X, Sparkles, Eye, ArrowLeft, Loader2, AlertTriangle, LayoutGrid, List, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useDebounce } from '@/hooks/useDebounce';
