@@ -419,7 +419,7 @@ export const dictionaries: Record<LangCode, Record<string, string>> = {
     // Operations/Oportunidades Page
     'operations.title': 'Operaciones de compraventa',
     'operations.filters.all': 'Todas',
-    'operations.filters.search': 'Buscar empresas...',
+    'operations.filters.search': 'Buscar oportunidades o sectores...',
     'operations.filters.title': 'Filtros y Búsqueda',
     'operations.filters.sector': 'Sector',
     'operations.filters.allSectors': 'Todos los sectores',
