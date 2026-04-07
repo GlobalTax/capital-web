@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, normalizeValuationAmount } from '@/shared/utils/format';
 import { isRecentOperation } from '@/shared/utils/date';
-import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase, ChevronLeft } from 'lucide-react';
+import { Building2, TrendingUp, Users, Calendar, ArrowRight, Briefcase, ChevronLeft, MapPin } from 'lucide-react';
 import OperationContactForm from './OperationContactForm';
 import { useOperationTracking } from '@/hooks/useOperationTracking';
 
@@ -12,12 +12,14 @@ interface Operation {
   id: string;
   company_name?: string;
   project_name?: string;
+  project_number?: string;
   sector: string;
-  valuation_amount: number;
+  valuation_amount?: number;
   valuation_currency?: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  year: number;
+  ebitda_margin?: number;
+  year?: number;
   description: string;
   short_description?: string;
   is_featured: boolean;
@@ -27,7 +29,10 @@ interface Operation {
   company_size_employees?: string;
   highlights?: string[];
   deal_type?: string;
+  geographic_location?: string;
   created_at?: string;
+  project_status?: string;
+  project_status_label?: string;
   // Resolved i18n fields
   resolved_description?: string;
   resolved_short_description?: string;
@@ -44,8 +49,8 @@ interface OperationDetailsModalProps {
 const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation, isOpen, onClose }) => {
   const [showContactForm, setShowContactForm] = useState(false);
   const { trackDetailView } = useOperationTracking();
-  const displayName = operation.project_name || operation.company_name;
-  // Track when modal opens
+  const displayName = operation.project_name || operation.company_name || 'Operación confidencial';
+
   useEffect(() => {
     if (isOpen && operation?.id) {
       trackDetailView(operation.id);
@@ -65,40 +70,34 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
     setShowContactForm(false);
   };
 
+  // Phase mapping
+  const phaseMap: Record<string, string> = {
+    'en_preparacion': 'En Preparación',
+    'go_to_market': 'Go to Market',
+    'negociacion_y_cierre': 'Negociación y Cierre'
+  };
+
+  const ebitdaMargin = operation.ebitda_margin 
+    || (operation.revenue_amount && operation.ebitda_amount 
+      ? (operation.ebitda_amount / operation.revenue_amount * 100) 
+      : null);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          {/* Logo/Company Initial */}
           <div className="flex items-center space-x-4 mb-4">
             {showContactForm && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToDetails}
-                className="mr-2"
-              >
+              <Button variant="ghost" size="sm" onClick={handleBackToDetails} className="mr-2">
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Volver
               </Button>
             )}
-            {operation.logo_url ? (
-              <img 
-                src={operation.logo_url} 
-                alt={`Logo de ${displayName}`}
-                className="w-16 h-16 rounded-lg object-contain bg-muted p-2"
-                width={64}
-                height={64}
-                loading="lazy"
-                decoding="async"
-              />
-            ) : (
-              <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                <span className="text-primary font-bold text-2xl">
-                  {displayName.split(' ').map(word => word[0]).join('').substring(0, 2)}
-                </span>
-              </div>
-            )}
+            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+              <span className="text-primary font-bold text-2xl">
+                {displayName.split(' ').map(word => word[0]).join('').substring(0, 2)}
+              </span>
+            </div>
             
             <div className="flex-1">
               <DialogTitle className="text-2xl mb-2">{displayName}</DialogTitle>
@@ -110,13 +109,17 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                   <Badge className="bg-green-500 hover:bg-green-600">Nuevo</Badge>
                 )}
                 <Badge variant="outline">{operation.resolved_sector || operation.sector}</Badge>
+                {operation.project_status && (
+                  <Badge variant="outline" className="text-xs">
+                    {operation.project_status_label || phaseMap[operation.project_status] || operation.project_status}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </DialogHeader>
 
         {showContactForm ? (
-          /* Contact Form View */
           <div className="py-4">
             <OperationContactForm
               operationId={operation.id}
@@ -125,7 +128,6 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
             />
           </div>
         ) : (
-          /* Operation Details View */
           <>
             {/* Financial Information Card */}
             <div className="bg-muted rounded-lg p-6 border border-border">
@@ -133,7 +135,7 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                 <TrendingUp className="mr-2 h-5 w-5 text-primary" />
                 Información Financiera
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Facturación</p>
                   <p className="text-xl font-bold text-green-600">
@@ -152,6 +154,14 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                     }
                   </p>
                 </div>
+                {ebitdaMargin != null && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Margen EBITDA</p>
+                    <p className="text-xl font-bold text-purple-600">
+                      {ebitdaMargin.toFixed(1)}%
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -164,13 +174,24 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                   <p className="text-sm font-medium">{operation.resolved_sector || operation.sector}</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-2">
-                <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Año</p>
-                  <p className="text-sm font-medium">{operation.year}</p>
+              {operation.geographic_location && (
+                <div className="flex items-start space-x-2">
+                  <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Ubicación</p>
+                    <p className="text-sm font-medium">{operation.geographic_location}</p>
+                  </div>
                 </div>
-              </div>
+              )}
+              {operation.year && (
+                <div className="flex items-start space-x-2">
+                  <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Año Información</p>
+                    <p className="text-sm font-medium">{operation.year}</p>
+                  </div>
+                </div>
+              )}
               {operation.deal_type && (
                 <div className="flex items-start space-x-2">
                   <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -182,26 +203,17 @@ const OperationDetailsModal: React.FC<OperationDetailsModalProps> = ({ operation
                   </div>
                 </div>
               )}
-              {(operation.company_size_employees || operation.company_size) && (
-                <div className="flex items-start space-x-2">
-                  <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Empleados</p>
-                    <p className="text-sm font-medium">{operation.company_size_employees || operation.company_size}</p>
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* Full Description - use translated description */}
+            {/* Full Description */}
             <div className="py-4 border-t">
-              <h3 className="text-lg font-semibold mb-3">Sobre la Empresa</h3>
+              <h3 className="text-lg font-semibold mb-3">Sobre la Oportunidad</h3>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                 {operation.resolved_description || operation.description}
               </p>
             </div>
 
-            {/* Highlights - use translated highlights with fallback */}
+            {/* Highlights */}
             {((operation.resolved_highlights || operation.highlights) && 
              (operation.resolved_highlights || operation.highlights)!.length > 0) && (
               <div className="py-4 border-t">

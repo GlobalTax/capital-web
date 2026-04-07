@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-// Mapeo de sectores de páginas a valores en BD
+// Mapeo de sectores de páginas a valores en BD (datos_proyecto.sector)
 const SECTOR_MAPPING: Record<string, string[]> = {
   'energia': ['Energía y Renovables', 'Energías Renovables'],
   'tecnologia': ['Tecnología', 'SaaS', 'SaaS Vertical', 'Consultoría TIC', 'Consultoría SAP', 'Telecomunicaciones', 'Tecnología, SaaS, Consultoría TIC'],
@@ -38,6 +38,7 @@ export interface SectorOperation {
   description: string;
   revenue_amount?: number;
   ebitda_amount?: number;
+  ebitda_margin?: number;
   valuation_currency?: string;
   highlights?: string[];
   is_featured?: boolean;
@@ -70,33 +71,34 @@ export const useSectorOperations = (
   const { data, isLoading, error } = useQuery({
     queryKey: ['sectorOperations', sectorKey, limit],
     queryFn: async () => {
+      // Query datos_proyecto joined with mandatos (visible_en_rod = true)
       const { data, error } = await supabase
-        .from('company_operations')
+        .from('datos_proyecto')
         .select(`
           id,
-          company_name,
+          mandato_id,
+          project_name,
           sector,
-          subsector,
           short_description,
           description,
           revenue_amount,
           ebitda_amount,
-          valuation_currency,
-          highlights,
-          is_featured,
-          project_status,
-          expected_market_text,
+          ebitda_margin,
+          ubicacion,
+          year,
+          estado,
           created_at,
           updated_at,
-          is_new_override,
-          deal_type,
-          geographic_location,
-          company_size_employees
+          mandatos!inner (
+            id,
+            tipo,
+            visible_en_rod,
+            is_favorite,
+            nombre_proyecto
+          )
         `)
-        .eq('is_active', true)
-        .or('is_deleted.is.null,is_deleted.eq.false')
+        .eq('mandatos.visible_en_rod', true)
         .in('sector', sectorVariants)
-        .order('is_featured', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(limit);
 
@@ -105,9 +107,29 @@ export const useSectorOperations = (
         throw error;
       }
 
-      return data || [];
+      // Map to SectorOperation shape
+      return (data || []).map(row => {
+        const mandato = row.mandatos as any;
+        return {
+          id: mandato?.id || row.mandato_id,
+          project_name: row.project_name || mandato?.nombre_proyecto,
+          sector: row.sector || '',
+          short_description: row.short_description,
+          description: row.description || '',
+          revenue_amount: row.revenue_amount ? Number(row.revenue_amount) : undefined,
+          ebitda_amount: row.ebitda_amount ? Number(row.ebitda_amount) : undefined,
+          ebitda_margin: row.ebitda_margin ? Number(row.ebitda_margin) : undefined,
+          valuation_currency: 'EUR',
+          is_featured: mandato?.is_favorite || false,
+          project_status: row.estado,
+          geographic_location: row.ubicacion,
+          deal_type: mandato?.tipo === 'venta' ? 'sale' : mandato?.tipo === 'compra' ? 'acquisition' : mandato?.tipo,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+        } as SectorOperation;
+      });
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
   });
 
   return {

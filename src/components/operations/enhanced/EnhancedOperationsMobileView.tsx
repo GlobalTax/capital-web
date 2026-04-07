@@ -10,11 +10,11 @@ interface Operation {
   company_name?: string;
   project_name?: string;
   sector: string;
-  valuation_amount: number;
-  valuation_currency: string;
+  valuation_amount?: number;
+  valuation_currency?: string;
   revenue_amount?: number;
   ebitda_amount?: number;
-  year: number;
+  year?: number;
   description: string;
   short_description?: string;
   is_featured: boolean;
@@ -24,7 +24,7 @@ interface Operation {
   company_size_employees?: string;
   highlights?: string[];
   deal_type?: string;
-  display_locations: string[];
+  display_locations?: string[];
   created_at?: string;
 }
 
