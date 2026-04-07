@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { formatCurrency } from '@/shared/utils/format';
 
-export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor';
+export type ContactOrigin = 'contact' | 'valuation' | 'collaborator' | 'general' | 'acquisition' | 'company_acquisition' | 'advisor' | 'buyer_alert';
 
 export interface UnifiedContact {
   id: string;
