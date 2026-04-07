@@ -116,11 +116,30 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
     }
   };
 
-  // Calculate EBITDA margin dynamically if not provided
-  const ebitdaMargin = operation.ebitda_margin 
+  // Check if this is a buy-side (acquisition) operation
+  const isBuySide = operation.deal_type === 'acquisition';
+
+  // For buy-side: use ranges; for sell-side: use single values
+  const hasRevenueRange = isBuySide && (operation.rango_facturacion_min || operation.rango_facturacion_max);
+  const hasEbitdaRange = isBuySide && (operation.rango_ebitda_min || operation.rango_ebitda_max);
+
+  // Calculate EBITDA margin dynamically if not provided (only for sell-side)
+  const ebitdaMargin = !isBuySide ? (
+    operation.ebitda_margin 
     || (operation.revenue_amount && operation.ebitda_amount 
       ? (operation.ebitda_amount / operation.revenue_amount * 100) 
-      : null);
+      : null)
+  ) : null;
+
+  // Format range helper
+  const formatRange = (min?: number | null, max?: number | null, currency = 'EUR') => {
+    if (min && max) {
+      return `${formatCurrency(normalizeValuationAmount(min), currency)} - ${formatCurrency(normalizeValuationAmount(max), currency)}`;
+    }
+    if (min) return `> ${formatCurrency(normalizeValuationAmount(min), currency)}`;
+    if (max) return `< ${formatCurrency(normalizeValuationAmount(max), currency)}`;
+    return null;
+  };
 
   return (
     <>
