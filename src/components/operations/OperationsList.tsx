@@ -274,9 +274,8 @@ const OperationsList: React.FC<OperationsListProps> = ({
                         <button
                           key={sector.key}
                           onClick={() => {
-                            setSelectedSector(sector.key);
+                            handleSectorToggle(sector.key);
                             setSearchTerm('');
-                            setOffset(0);
                           }}
                           className="w-full text-left px-4 py-2 hover:bg-accent transition-colors flex items-center space-x-2"
                         >
