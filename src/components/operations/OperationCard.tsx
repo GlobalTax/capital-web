@@ -294,7 +294,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation, className = ''
               </div>
               {/* EBITDA / EBITDA Range */}
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{hasEbitdaRange ? 'Rango EBITDA' : t('operations.card.ebitda')}:</span>
+                <span className="text-muted-foreground">{isBuySide ? 'Rango EBITDA' : t('operations.card.ebitda')}:</span>
                 <span className="font-medium text-blue-600">
                   {hasEbitdaRange
                     ? formatRange(operation.rango_ebitda_min, operation.rango_ebitda_max, operation.valuation_currency || 'EUR')
