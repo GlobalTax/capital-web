@@ -69,11 +69,15 @@ export const AddContactsToListDialog: React.FC<AddContactsToListDialogProps> = (
         ebitda: c.empresa_ebitda || null,
       }));
 
-      const { error } = await (supabase as any)
-        .from('outbound_list_companies')
-        .insert(rows);
-
-      if (error) throw error;
+      // Insert in batches of 50 to avoid statement timeout
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+        const batch = rows.slice(i, i + BATCH_SIZE);
+        const { error } = await (supabase as any)
+          .from('outbound_list_companies')
+          .insert(batch);
+        if (error) throw error;
+      }
 
       // Update contact_count
       const list = lists.find(l => l.id === listId);
