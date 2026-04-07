@@ -378,7 +378,7 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 {selectedLocation && <Badge variant="secondary">{selectedLocation}</Badge>}
                 {selectedDealType && (
                   <Badge variant="secondary">
-                    {selectedDealType === 'sell-side' ? 'Venta' : selectedDealType === 'buy-side' ? 'Adquisición' : selectedDealType}
+                    {selectedDealType === 'venta' ? 'Venta' : selectedDealType === 'compra' ? 'Adquisición' : selectedDealType}
                   </Badge>
                 )}
                 {dateFilter && (
