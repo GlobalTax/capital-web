@@ -143,7 +143,8 @@ export const LeadsPipelineView: React.FC = () => {
     filterRevMax,
     filterEbitdaMin,
     filterEbitdaMax,
-  }), [searchQuery, filterAssignees, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax]);
+    hiddenColumns: Array.from(hiddenColumns),
+  }), [searchQuery, filterAssignees, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, hiddenColumns]);
 
   const handleSaveView = useCallback(() => {
     if (!saveViewName.trim()) return;
