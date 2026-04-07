@@ -1863,6 +1863,60 @@ export default function ContactListDetailPage() {
       );
     }
 
+    // Presence-only filter (for columns like email, linkedin, web that have no other filter type)
+    const isPresenceFilterCol = (PRESENCE_FILTER_COLUMNS as readonly string[]).includes(colKey) && !isTextFilterCol && !isNumericFilterCol && !isKeywordFilterCol;
+    if (isPresenceFilterCol) {
+      const hasCount = companies.filter(c => { const v = (c as any)[colKey]; return v != null && v !== '' && String(v).trim() !== '' && String(v).trim() !== '—'; }).length;
+      const emptyCount = companies.length - hasCount;
+      return (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn("flex items-center gap-1 hover:text-foreground", isRight && "ml-auto")}>
+              {label}
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="h-5 min-w-[20px] px-1 text-[10px]">
+                  {activeFilters.length}
+                </Badge>
+              )}
+              <Filter className="h-3 w-3 text-muted-foreground" />
+              {sortKey && <SortIcon field={sortKey} />}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-0" align="start">
+            {sortKey && (
+              <div className="p-2 border-b flex gap-1">
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('asc'); }}>
+                  <ArrowUp className="h-3 w-3 mr-1" /> Asc
+                </Button>
+                <Button variant="ghost" size="sm" className="flex-1 h-7 text-xs" onClick={() => { setSortField(sortKey); setSortDir('desc'); }}>
+                  <ArrowDown className="h-3 w-3 mr-1" /> Desc
+                </Button>
+              </div>
+            )}
+            <div className="p-1">
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                <Checkbox checked={activeFilters.includes('__has')} onCheckedChange={() => toggleColumnFilter(colKey, '__has')} />
+                <span>Con dato</span>
+                <span className="ml-auto text-xs text-muted-foreground">{hasCount}</span>
+              </label>
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer text-sm">
+                <Checkbox checked={activeFilters.includes('__empty')} onCheckedChange={() => toggleColumnFilter(colKey, '__empty')} />
+                <span>Sin dato</span>
+                <span className="ml-auto text-xs text-muted-foreground">{emptyCount}</span>
+              </label>
+            </div>
+            {activeFilters.length > 0 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => clearColumnFilter(colKey)}>
+                  <X className="h-3 w-3 mr-1" /> Limpiar
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+      );
+    }
+
     if (sortKey) {
       return (
         <button className={cn("flex items-center hover:text-foreground", isRight && "ml-auto")} onClick={() => toggleSort(sortKey)}>
@@ -1871,7 +1925,7 @@ export default function ContactListDetailPage() {
       );
     }
     return label;
-  }, [allColumns, toggleSort, uniqueColumnValues, columnFilters, headerSearches, toggleColumnFilter, clearColumnFilter]);
+  }, [allColumns, toggleSort, uniqueColumnValues, columnFilters, headerSearches, toggleColumnFilter, clearColumnFilter, companies]);
 
   // ===== AI GENERATE DESCRIPTION =====
   const handleAiGenerate = async (company: ContactListCompany) => {
