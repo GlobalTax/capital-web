@@ -548,6 +548,10 @@ export default function EmpresasPage() {
                 <ListPlus className="h-4 w-4 mr-2" />
                 Añadir a lista
               </Button>
+              <Button size="sm" variant="outline" onClick={() => setIsAddToRODOpen(true)}>
+                <BookOpen className="h-4 w-4 mr-2" />
+                Añadir a ROD
+              </Button>
               <Button size="sm" variant="ghost" onClick={() => setSelectedContactIds(new Set())}>
                 Deseleccionar
               </Button>
