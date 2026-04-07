@@ -630,6 +630,21 @@ export default function EmpresasPage() {
           }))}
         onSuccess={() => setSelectedEmpresaIds(new Set())}
       />
+
+      {/* Add to ROD Dialog */}
+      <AddToRODDialog
+        open={isAddToRODOpen}
+        onOpenChange={setIsAddToRODOpen}
+        contacts={contactos
+          .filter(c => selectedContactIds.has(c.id))
+          .map(c => ({
+            full_name: [c.nombre, c.apellidos].filter(Boolean).join(' '),
+            email: c.email || '',
+            company: c.empresa_nombre || undefined,
+            phone: c.telefono || undefined,
+            notes: c.cargo ? `Cargo: ${c.cargo}` : undefined,
+          }))}
+      />
     </div>
   );
 }
