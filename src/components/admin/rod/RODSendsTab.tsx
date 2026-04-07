@@ -309,6 +309,60 @@ export default function RODSendsTab() {
   );
 }
 
+// ─── Sender Section ─────────────────────────────────────────────────────
+function SenderSection({ senderEmail, onSenderChange }: {
+  senderEmail: string | null;
+  onSenderChange: (email: string | null, name: string | null) => void;
+}) {
+  const { data: advisors, isLoading } = useTeamAdvisors();
+
+  const handleChange = (value: string) => {
+    if (value === 'default') {
+      onSenderChange(null, null);
+    } else {
+      const advisor = advisors?.find(a => a.email === value);
+      if (advisor) {
+        onSenderChange(advisor.email, advisor.name);
+      }
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Mail className="h-4 w-4" />Emisor del email
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">
+          Selecciona quién aparecerá como remitente (From) y Reply-To de los emails de este envío ROD.
+        </p>
+        <Select value={senderEmail || 'default'} onValueChange={handleChange} disabled={isLoading}>
+          <SelectTrigger className="w-full md:w-[350px]">
+            <SelectValue placeholder="Seleccionar emisor..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="default">
+              Por defecto — Samuel Navarro (samuel@capittal.es)
+            </SelectItem>
+            {advisors?.filter(a => a.email.endsWith('@capittal.es')).map(advisor => (
+              <SelectItem key={advisor.id} value={advisor.email}>
+                {advisor.name} ({advisor.email})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {senderEmail && (
+          <p className="text-xs text-muted-foreground">
+            Los emails se enviarán como: <span className="font-medium text-foreground">{senderEmail}</span>
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Signature Section (reuses existing hook) ────────────────────────────
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
