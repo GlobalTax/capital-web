@@ -148,7 +148,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "✨ CREAR CONTENIDO",
+    title: "CREAR CONTENIDO",
     description: "Herramientas de creación",
     items: [
       { 
