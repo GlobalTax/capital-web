@@ -1,30 +1,105 @@
 
 
-## Plan: Sincronización bidireccional Madre ↔ Sublistas
+## Plan: Consolidar y simplificar el sidebar del admin
 
-### Problema
-1. **No existe sincronización madre → sublistas**: Cuando actualizas datos en una lista madre, los sublistas NO se actualizan.
-2. **El trigger actual (sublista → madre) usa columnas incorrectas**: Referencia `company_name`, `contact_name`, `contact_email`, etc., pero las columnas reales son `empresa`, `contacto`, `email`, `telefono`, `linkedin`, `web`. Esto significa que la sincronización sublista → madre tampoco funciona actualmente.
+### Problema actual
+- **16 secciones** con ~75 items totales
+- Items duplicados en varias secciones (Pipeline Ventas, Content Studio, Calendario, Recursos)
+- Secciones con solo 1-2 items (Noticias M&A, Corporativos)
+- Separación confusa entre "LEADS" y "ANALIZAR LEADS"
 
-### Cambio
-Una única migración SQL que:
-
-1. **Corrige el trigger existente** `sync_sublist_company_to_madre` para usar los nombres de columna correctos (`empresa`, `contacto`, `email`, `telefono`, `linkedin`, `web`, `provincia`, `cnae`, `descripcion_actividad`, `director_ejecutivo`, `facturacion`, `ebitda`, `num_trabajadores`, `consolidador_nombre`, `tipo_accionista`, `nombre_accionista`, `notas`).
-
-2. **Crea un nuevo trigger** `sync_madre_company_to_sublists` que se dispara en UPDATE sobre `outbound_list_companies`. Cuando la empresa actualizada pertenece a una lista madre (es decir, existen listas con `lista_madre_id` apuntando a esa lista), propaga los cambios a todas las sublistas, haciendo matching por CIF o nombre de empresa. Usa COALESCE para no sobreescribir datos que ya existan en la sublista con valores vacíos.
-
-3. **Prevención de bucles infinitos**: El trigger madre→sublistas y el trigger sublista→madre podrían dispararse mutuamente. Se añade una guarda: el trigger madre→sublistas solo actúa si la lista es madre (tiene sublistas vinculadas) y el trigger sublista→madre solo actúa si la lista tiene `lista_madre_id`. Además se usa `pg_trigger_depth() < 2` para cortar recursión.
-
-### Lógica del nuevo trigger (madre → sublistas)
+### Propuesta: 8 secciones consolidadas
 
 ```text
-ON UPDATE outbound_list_companies
-  → ¿La lista del registro es una lista madre? (¿existen listas con lista_madre_id = list_id?)
-  → Si sí: para cada sublista vinculada
-    → Buscar empresa por CIF o nombre
-    → UPDATE con COALESCE (no sobreescribir con vacíos)
+DASHBOARD (3)
+├── Vista General
+├── Calendario Editorial
+└── Search Analytics
+
+CRM & LEADS (8)
+├── Leads (Todos)
+├── Pipeline Ventas
+├── Pipeline Compras
+├── Contactos Compra
+├── Reservas Llamadas
+├── Entrada Manual Leads
+├── Listas de Empresas
+└── Gestión NDAs
+
+DIRECTORIOS (6)
+├── Directorio Empresas
+├── Directorio Corporativos
+├── Capital Riesgo (CR)
+├── Search Funds (SF)
+├── Boutiques M&A
+└── Rel. Oportunidades
+
+CONTENIDO & BLOG (6)
+├── Content Studio (AI)
+├── Blog & Contenido
+├── Casos de Éxito
+├── Noticias M&A
+├── Landing Pages
+└── Recursos & Lead Magnets
+
+MÚLTIPLOS & DATOS (5)
+├── Múltiplos
+├── Múltiplos Asesores
+├── Intel PE Sectorial
+├── Sectores
+├── Sector Dossiers (AI)
+
+MARKETING & OUTBOUND (5)
+├── Campañas Outbound
+├── Costes Campañas
+├── Newsletter Semanal
+├── Importar Brevo
+├── Valoraciones Pro
+
+GESTIONAR WEB (8)
+├── Equipo
+├── Testimonios
+├── Test. Colaboradores
+├── LP Venta Empresas
+├── Logos Carousel
+├── Banners
+├── Hero Slides
+├── Áreas de Práctica
+├── La Firma
+├── Biblioteca de Fotos
+
+CONFIGURACIÓN (7)
+├── Notificaciones
+├── Usuarios Admin
+├── Workflow Fase 0
+├── Destinatarios Email
+├── Firma de Email
+├── Ajustes
+└── Navegación Sidebar
 ```
 
-### Archivos afectados
-- **1 migración SQL** (sin cambios en código frontend)
+### Cambios clave
+- **LEADS + ANALIZAR LEADS** → fusionados en **CRM & LEADS**
+- **CAPITAL RIESGO + SEARCH FUNDS + CORPORATIVOS + BOUTIQUES** → subpáginas dentro de **DIRECTORIOS** (cada uno lleva a su directorio, los sub-items como Apollo Import, Backers, etc. se acceden desde dentro de cada directorio)
+- **CREAR CONTENIDO + NOTICIAS + RECURSOS** → fusionados en **CONTENIDO & BLOG**
+- **GESTIONAR DATOS** → dividido: datos de valoración van a MÚLTIPLOS, elementos visuales de la web van a **GESTIONAR WEB**
+- **WEB INTELLIGENCE** (Apollo Visitors, Dealsuite) → movido a MARKETING & OUTBOUND
+- **IA & AGENTES** → eliminado como sección; Agentes IA y Content Studio van a CONTENIDO
+- **EMPLEO** → eliminado del sidebar principal (se accede desde Configuración o se añade como sub-item)
+- Items duplicados eliminados
 
+### Items eliminados/reubicados
+- Valoraciones & Recovery → accesible desde Dashboard (enlace secundario)
+- Calculadora Asesores → accesible desde Múltiplos Asesores
+- Test Exit-Ready → dentro de Recursos
+- Radar SF, Backers, Matching Inbox, Inteligencia SF → accesibles desde la página de SF Directory
+- Apollo Imports (3 duplicados) → accesibles desde cada directorio respectivo
+
+### Archivos a modificar
+1. **`src/features/admin/config/sidebar-config.ts`** — reescribir la estructura de secciones
+2. **`src/components/admin/sidebar/AdminSidebar.tsx`** — verificar que los permisos siguen mapeados correctamente
+
+### Notas
+- Ninguna ruta cambia, solo la organización del sidebar
+- Los items con `visible: false` se eliminan definitivamente
+- Se mantienen los badges AI y URGENTE donde apliquen
