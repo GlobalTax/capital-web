@@ -73,9 +73,17 @@ export const useBuyerPreferences = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['buyer-preferences'] });
       toast.success('Preferencias guardadas correctamente');
+      
+      // Fire-and-forget: send notification emails
+      supabase.functions.invoke('send-buyer-alert-notification', {
+        body: { preferences: data }
+      }).then(res => {
+        if (res.error) console.error('Error sending buyer alert notification:', res.error);
+        else console.log('Buyer alert notification sent successfully');
+      }).catch(err => console.error('Error invoking buyer alert notification:', err));
     },
     onError: (error: any) => {
       console.error('Error saving preferences:', error);
