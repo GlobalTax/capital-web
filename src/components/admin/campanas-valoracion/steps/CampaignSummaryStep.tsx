@@ -597,13 +597,34 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
                     <SeguimientoBadge company={c} campaignId={campaignId} />
                   </TableCell>
                   <TableCell className="text-center">
-                    {followupLabels.get(c.id) ? (
-                      <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
-                        {followupLabels.get(c.id)}
-                      </Badge>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
+                    {(() => {
+                      const fuLabel = followupLabels.get(c.id);
+                      const days = daysSinceContactMap.get(c.id);
+                      const threshold = campaign.followup_reminder_days;
+                      const estado = c.seguimiento_estado || 'sin_respuesta';
+                      const isPending = threshold && days !== undefined && days >= threshold && estado === 'sin_respuesta';
+                      const isNear = threshold && days !== undefined && days >= threshold * 0.7 && !isPending && estado === 'sin_respuesta';
+
+                      return (
+                        <div className="flex flex-col items-center gap-0.5">
+                          {fuLabel ? (
+                            <Badge variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                              {fuLabel}
+                            </Badge>
+                          ) : null}
+                          {days !== undefined && threshold ? (
+                            <span className={cn(
+                              "text-[10px] font-medium",
+                              isPending ? "text-red-600" : isNear ? "text-amber-600" : "text-muted-foreground"
+                            )}>
+                              {days}d {isPending ? '🔴' : isNear ? '🟡' : ''}
+                            </span>
+                          ) : !fuLabel ? (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          ) : null}
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-center">
                     <NotasPopover company={c} campaignId={campaignId} />
