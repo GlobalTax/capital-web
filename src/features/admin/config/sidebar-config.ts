@@ -415,12 +415,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Base de datos de empresas"
       },
       { 
-        title: "Leads Inversores (ROD)",
-        url: "/admin/investor-leads", 
-        icon: TrendingUp,
-        description: "Gestión de leads ROD"
-      },
-      { 
         title: "Gestión NDAs",
         url: "/admin/ndas", 
         icon: Shield,

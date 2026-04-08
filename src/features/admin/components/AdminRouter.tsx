@@ -169,7 +169,7 @@ const AdminRouter = () => {
           <Route path="/empresas" element={<LazyEmpresasPage />} />
           <Route path="/empresas/:id" element={<LazyEmpresaDetailPage />} />
           <Route path="/prospectos" element={<LazyProspectsPage />} />
-          <Route path="/investor-leads" element={<LazyInvestorLeadsManager />} />
+          <Route path="/investor-leads" element={<Navigate to="/admin/oportunidades" replace />} />
           <Route path="/calculadora-manual" element={<LazyManualLeadEntryPage />} />
           
           

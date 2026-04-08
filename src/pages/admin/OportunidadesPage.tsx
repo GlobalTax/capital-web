@@ -396,6 +396,16 @@ export default function OportunidadesPage() {
             <LazyRODSendsTab />
           </Suspense>
         </TabsContent>
+
+        <TabsContent value="investor-leads">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          }>
+            <LazyInvestorLeadsManager />
+          </Suspense>
+        </TabsContent>
       </Tabs>
     </div>
   );
