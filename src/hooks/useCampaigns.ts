@@ -42,6 +42,7 @@ export interface ValuationCampaign {
   source_list_id: string | null;
   sender_name: string | null;
   sender_email: string | null;
+  followup_reminder_days: number | null;
 }
 
 export type CampaignInsert = Omit<ValuationCampaign, 'id' | 'created_at' | 'updated_at' | 'total_companies' | 'total_created' | 'total_sent' | 'total_errors' | 'total_valuation'>;
