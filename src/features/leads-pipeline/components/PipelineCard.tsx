@@ -172,9 +172,30 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onSendPrecallEmail} disabled={lead.precall_email_sent || false}>
-                  {lead.precall_email_sent ? 'Email pre-llamada enviado' : 'Enviar email pre-llamada'}
-                </DropdownMenuItem>
+                {lead.precall_email_sent ? (
+                  <DropdownMenuItem disabled>Email pre-llamada enviado</DropdownMenuItem>
+                ) : (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Mail className="h-3.5 w-3.5 mr-2" />
+                      Enviar email
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem onClick={() => onSendPrecallEmail('valoracion-cast')}>
+                        Valoración - Castellano
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onSendPrecallEmail('venta-cast')}>
+                        Venta - Castellano
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onSendPrecallEmail('valoracion-cat')}>
+                        Valoració - Català
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onSendPrecallEmail('venta-cat')}>
+                        Venda - Català
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
