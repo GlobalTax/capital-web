@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Trash2, Upload, Loader2, Users, X, Filter, SlidersHorizontal } from 'lucide-react';
+import { Plus, Search, Trash2, Upload, Loader2, Users, X, Filter, SlidersHorizontal, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Pencil, Check } from 'lucide-react';
