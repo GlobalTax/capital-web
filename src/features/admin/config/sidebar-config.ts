@@ -183,6 +183,7 @@ export const sidebarSections: SidebarSection[] = [
     description: "Campañas y comunicación",
     items: [
       { title: "Newsletter Semanal", url: "/admin/newsletter", icon: Mail, description: "Envío de newsletters a suscriptores" },
+      { title: "Costes Campañas", url: "/admin/campaign-costs", icon: DollarSign, description: "Costes de campañas publicitarias" },
       { title: "Importar Brevo", url: "/admin/brevo-import", icon: Users, description: "Importar contactos desde Brevo" },
       { title: "Apollo Visitors", url: "/admin/apollo-visitors", icon: Eye, description: "Importar visitantes desde Apollo" },
       { title: "Dealsuite Sync", url: "/admin/dealsuite", icon: RefreshCw, description: "Sincronizar deals desde Dealsuite" },
