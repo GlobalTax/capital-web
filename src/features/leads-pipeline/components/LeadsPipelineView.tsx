@@ -280,7 +280,7 @@ export const LeadsPipelineView: React.FC = () => {
   // Default sender fallback
   const DEFAULT_SENDER = { full_name: 'Lluis Montanya', email: 'lluis@capittal.es', phone: '+34 658 799 614' };
 
-  const handleSendPrecallEmail = useCallback(async (leadId: string) => {
+  const handleSendPrecallEmail = useCallback(async (leadId: string, variant?: import('../utils/buildPrecallEmailPreview').EmailVariant) => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
     if (lead.precall_email_sent) {
@@ -315,6 +315,7 @@ export const LeadsPipelineView: React.FC = () => {
       ccNames,
       to: lead.email || '',
       ccEmails,
+      variant: variant || 'valoracion-cast',
     });
 
     setEmailPreview(preview);
