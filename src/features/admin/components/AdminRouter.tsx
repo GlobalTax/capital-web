@@ -168,6 +168,7 @@ const AdminRouter = () => {
           <Route path="/buyer-contacts" element={<LazyBuyerContactsManager />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
           <Route path="/empresas" element={<LazyEmpresasPage />} />
+          <Route path="/contactos/:id" element={<LazyContactoProfilePage />} />
           <Route path="/empresas/:id" element={<LazyEmpresaDetailPage />} />
           <Route path="/prospectos" element={<LazyProspectsPage />} />
           <Route path="/investor-leads" element={<Navigate to="/admin/oportunidades" replace />} />
