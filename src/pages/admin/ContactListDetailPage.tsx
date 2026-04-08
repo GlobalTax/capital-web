@@ -3507,8 +3507,8 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
 }
 
 // ===== COMPANY DRAWER =====
-function CompanyDrawer({ company, onClose, onEdit }: {
-  company: ContactListCompany | null; onClose: () => void; onEdit: () => void;
+function CompanyDrawer({ company, onClose, onEdit, dataScale = 1000 }: {
+  company: ContactListCompany | null; onClose: () => void; onEdit: () => void; dataScale?: number;
 }) {
   const { data: history = [], isLoading } = useCompanyListHistory(company?.empresa);
 
