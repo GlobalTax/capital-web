@@ -23,7 +23,7 @@ const corsHeaders = {
 const DEFAULT_SENDER = {
   full_name: "Lluis Montanya",
   email: "lluis@capittal.es",
-  phone: "+34 695 717 490",
+  phone: "+34 658 799 614",
 };
 
 interface SendPrecallEmailRequest {
