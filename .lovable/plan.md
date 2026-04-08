@@ -1,61 +1,54 @@
 
 
-## Plan: 4 variantes de email en el desplegable del pipeline
+## Plan: Equiparar el Pipeline de Compras con el de Ventas
 
-### Resumen
-Reemplazar el botón único "Enviar email pre-llamada" por un submenú con 4 opciones:
-1. **Enviar Mail - Valoración - Cast** (el template actual)
-2. **Enviar Mail - Venta - Cast** (nuevo, con el texto que has proporcionado)
-3. **Enviar Mail - Valoración - Cat** (traducción al catalán del template actual)
-4. **Enviar Mail - Venta - Cat** (traducción al catalán del template de Venta)
+### Situacion actual
+El pipeline de compras (`BuyPipelineView`) es una versión simplificada con:
+- Tarjeta básica inline (sin menú de acciones, sin asignación, sin checkbox)
+- Solo filtro de búsqueda
+- Sin sistema de emails pre-llamada
+- Sin selección masiva ni barra de acciones bulk
+- Sin filtros avanzados (asignado, canal, formulario, fecha, facturación, EBITDA)
+- Sin visibilidad de columnas ni vistas guardadas
+- Sin editor de columnas
+
+El pipeline de ventas (`LeadsPipelineView`) tiene todo lo anterior.
+
+### Que se va a hacer
+
+Traer todas las funcionalidades del pipeline de ventas al de compras, **sin cambiar las fases/columnas** (que siguen usando `contact_statuses`).
 
 ### Cambios
 
-**1. `buildPrecallEmailPreview.ts` — Añadir parámetro `variant` y 4 plantillas**
+**1. `useBuyPipeline.ts` — Ampliar el hook**
 
-Añadir un tipo `EmailVariant = 'valoracion-cast' | 'venta-cast' | 'valoracion-cat' | 'venta-cat'` al builder. Según el variant, se genera el cuerpo del email correspondiente:
+- Añadir campos al tipo `BuyPipelineLead`: `assigned_to`, `assigned_at`, `precall_email_sent`, `precall_email_sent_at`, `call_attempts_count`, `last_call_attempt_at`, `revenue`, `ebitda`, `final_valuation`, `location`, `employee_range`, `empresa_id`
+- Añadir queries para `adminUsers` (reutilizando la RPC `get_active_admin_users`)
+- Añadir mutaciones: `assignLead`, `registerCall`, `updateStatusAsync`
+- Mapear los campos desde las 4 tablas de origen
 
-- **Valoración Cast**: el texto actual (formulario de valoración automática)
-- **Venta Cast**: el texto que has proporcionado (servicios de asesoramiento en compraventa)
-- **Valoración Cat**: traducción al catalán del template de valoración
-- **Venta Cat**: traducción al catalán del template de venta
+**2. `BuyPipelineView.tsx` — Reescribir con todas las features**
 
-El asunto también varía: "Consulta M&A | Empresa <> Capittal" para castellano, "Consulta M&A | Empresa <> Capittal" para catalán (mismo formato, el cuerpo cambia).
+Replicar la estructura completa de `LeadsPipelineView`:
+- Reemplazar `BuyPipelineCard` inline por el componente `PipelineCard` compartido (mapeando `BuyPipelineLead` a `PipelineLead` para compatibilidad)
+- Añadir sistema de email pre-llamada con 4 variantes + `PrecallEmailPreviewDialog`
+- Añadir selección masiva con checkboxes + barra flotante de acciones bulk
+- Añadir todos los filtros: asignado (multi), canal (multi), formulario (multi), fecha (con presets), facturación, EBITDA
+- Añadir toggle de visibilidad de columnas con guardado de vistas
+- Añadir `PipelineColumnsEditor`
+- Añadir asignación de leads desde las tarjetas
+- Mantener título "Pipeline Compras"
 
-**2. `PipelineCard.tsx` — Submenú con 4 opciones**
+**3. Mapeo de tipos**
 
-Cambiar `onSendPrecallEmail: () => void` a `onSendPrecallEmail: (variant: EmailVariant) => void`.
-
-El `DropdownMenuItem` actual se reemplaza por un `DropdownMenuSub` con 4 items:
-```
-▸ Enviar email
-    Valoración - Castellano
-    Venta - Castellano
-    Valoración - Català
-    Venta - Català
-```
-Todos deshabilitados si `precall_email_sent` es true.
-
-**3. `LeadsPipelineView.tsx` — Pasar variant al builder**
-
-`handleSendPrecallEmail` recibe el `variant` y lo pasa a `buildPrecallEmailPreview`, que genera el preview con la plantilla correspondiente.
-
-**4. Edge Function `send-precall-email` — Aceptar `htmlBody` editado**
-
-La Edge Function ya recibe el `htmlBody` editado desde el dialog de preview, así que no necesita cambios — el contenido enviado es el que el usuario ve y confirma en el preview.
-
-### Textos
-
-**Venta - Castellano** (Bloque 1 confirmado):
-- Intro: "Soy [Nombre], miembro del equipo de Capittal. [CC mention]"
-- Cuerpo: "Hemos recibido recientemente una solicitud a través de nuestro formulario interesándose por nuestros servicios de asesoramiento en compraventa de empresas. Tras analizar vuestra actividad y la información disponible, nos ha parecido especialmente interesante el trabajo que realizáis."
-- "Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa..."
-- Cierre: "Quedo a tu disposición para cualquier duda o comentario."
-
-**Traducciones al catalán**: Generadas a partir de los textos castellanos manteniendo el mismo tono formal y profesional.
+Crear una función helper `toBuyPipelineLead()` que mapee `BuyPipelineLead` a `PipelineLead` para poder reutilizar `PipelineCard` y `PipelineColumn` sin duplicar componentes.
 
 ### Archivos afectados
-- `src/features/leads-pipeline/utils/buildPrecallEmailPreview.ts` — 4 plantillas
-- `src/features/leads-pipeline/components/PipelineCard.tsx` — submenú dropdown
-- `src/features/leads-pipeline/components/LeadsPipelineView.tsx` — pasar variant
+- `src/features/leads-pipeline/hooks/useBuyPipeline.ts` — ampliar tipo y mutaciones
+- `src/features/leads-pipeline/components/BuyPipelineView.tsx` — reescribir con todas las features
+
+### Lo que NO cambia
+- Las fases/columnas del pipeline (siguen usando `contact_statuses`)
+- Los componentes compartidos (`PipelineCard`, `PipelineColumn`, `PrecallEmailPreviewDialog`) — se reutilizan tal cual
+- El hook `useContactStatuses` — sin cambios
 
