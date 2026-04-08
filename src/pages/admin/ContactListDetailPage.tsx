@@ -1234,6 +1234,7 @@ export default function ContactListDetailPage() {
     if (!moveCopyCompany || !listId) return;
     // Guard: en lista madre, forzar modo copy silenciosamente (nunca eliminar del origen)
     let effectiveMode = moveCopyMode;
+    const sourceSublistId = moveCopyFromSublistId || (moveCopyMode === 'move' && list?.lista_madre_id ? listId : null);
     if (isMadreList && moveCopyMode === 'move' && !(moveCopyCompany as any).sublist_id) {
       effectiveMode = 'copy';
     }
@@ -1262,20 +1263,49 @@ export default function ContactListDetailPage() {
         } as any);
         if (insertErr) throw insertErr;
         toast.success(isMadreList ? 'Empresa añadida a la lista' : 'Empresa copiada a la otra lista');
-      } else if (moveCopyFromSublistId) {
-        // Move from sublist: update the record in the source sublist
-        const { error: moveSubErr, count } = await supabase.from('outbound_list_companies' as any)
-          .update({ list_id: targetId } as any)
-          .eq('list_id', moveCopyFromSublistId)
-          .eq('cif', moveCopyCompany.cif);
-        if (moveSubErr) throw moveSubErr;
-        if (count === 0) {
-          // Fallback: try by id
-          const { error: moveSubErr2 } = await supabase.from('outbound_list_companies' as any)
-            .update({ list_id: targetId } as any)
-            .eq('id', moveCopyCompany.id);
-          if (moveSubErr2) throw moveSubErr2;
+      } else if (sourceSublistId) {
+        // Move from sublist: resolve the actual row in the source sublist, then reassign it
+        let sourceRowId: string | null = sourceSublistId === listId ? moveCopyCompany.id : null;
+
+        if (!sourceRowId && moveCopyCompany.cif) {
+          const { data: sourceByCif, error: sourceByCifErr } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('id')
+            .eq('list_id', sourceSublistId)
+            .eq('cif', moveCopyCompany.cif)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (sourceByCifErr) throw sourceByCifErr;
+          sourceRowId = (sourceByCif as any)?.id ?? null;
         }
+
+        if (!sourceRowId) {
+          const { data: sourceByName, error: sourceByNameErr } = await supabase
+            .from('outbound_list_companies' as any)
+            .select('id')
+            .eq('list_id', sourceSublistId)
+            .eq('empresa', moveCopyCompany.empresa)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (sourceByNameErr) throw sourceByNameErr;
+          sourceRowId = (sourceByName as any)?.id ?? null;
+        }
+
+        if (!sourceRowId) {
+          throw new Error('No se encontró la empresa en la sublista origen');
+        }
+
+        const { error: moveSubErr } = await supabase.from('outbound_list_companies' as any)
+          .update({ list_id: targetId, notas: null } as any)
+          .eq('id', sourceRowId);
+
+        if (moveSubErr) throw moveSubErr;
         toast.success('Empresa reasignada a otra sublista');
       } else {
         // Move: update list_id, clear notas
@@ -1301,8 +1331,8 @@ export default function ContactListDetailPage() {
 
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', listId] });
       queryClient.invalidateQueries({ queryKey: ['contact-list-companies', targetId] });
-      if (moveCopyFromSublistId) {
-        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', moveCopyFromSublistId] });
+      if (sourceSublistId && sourceSublistId !== listId) {
+        queryClient.invalidateQueries({ queryKey: ['contact-list-companies', sourceSublistId] });
       }
       queryClient.invalidateQueries({ queryKey: ['contact-list-detail'] });
       queryClient.invalidateQueries({ queryKey: ['contact-lists'] });
@@ -1318,7 +1348,9 @@ export default function ContactListDetailPage() {
       setNewListName('');
       setMoveCopyFromSublistId(null);
     } catch (err) {
-      toast.error('Error al procesar la operación');
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('[executeMoveCopy] Error:', err);
+      toast.error('Error al procesar la operación', { description: message });
     } finally {
       setIsMoveCopyLoading(false);
     }
@@ -1328,6 +1360,7 @@ export default function ContactListDetailPage() {
 
   const handleMoveCopy = async () => {
     if (!moveCopyCompany || !listId) return;
+    const sourceSublistId = moveCopyFromSublistId || (moveCopyMode === 'move' && list?.lista_madre_id ? listId : null);
     // Determine target list id
     let targetId = moveCopyTargetId;
     if (isCreatingNewList) {
@@ -1369,23 +1402,28 @@ export default function ContactListDetailPage() {
             .neq('id', targetId);
 
           if (sisterSublists && sisterSublists.length > 0) {
-            const sisterIds = (sisterSublists as any[]).map((s: any) => s.id);
+            const sisterIds = (sisterSublists as any[])
+              .map((s: any) => s.id)
+              .filter((id: string) => id !== sourceSublistId);
             const sisterNameMap = Object.fromEntries((sisterSublists as any[]).map((s: any) => [s.id, s.name]));
 
-            const { data: existingInSisters } = await supabase
-              .from('outbound_list_companies' as any)
-              .select('list_id')
-              .in('list_id', sisterIds)
-              .eq('cif', moveCopyCompany.cif)
-              .limit(1);
+            if (sisterIds.length > 0) {
+              const { data: existingInSisters } = await supabase
+                .from('outbound_list_companies' as any)
+                .select('list_id')
+                .in('list_id', sisterIds)
+                .eq('cif', moveCopyCompany.cif)
+                .is('deleted_at', null)
+                .limit(1);
 
-            if (existingInSisters && existingInSisters.length > 0) {
-              const conflictListId = (existingInSisters as any[])[0].list_id;
-              const conflictName = sisterNameMap[conflictListId] || 'otra sublista';
-              setPendingMoveCopyTargetId(targetId);
-              setSublistConflict({ sublistName: conflictName });
-              setIsMoveCopyLoading(false);
-              return;
+              if (existingInSisters && existingInSisters.length > 0) {
+                const conflictListId = (existingInSisters as any[])[0].list_id;
+                const conflictName = sisterNameMap[conflictListId] || 'otra sublista';
+                setPendingMoveCopyTargetId(targetId);
+                setSublistConflict({ sublistName: conflictName });
+                setIsMoveCopyLoading(false);
+                return;
+              }
             }
           }
         }
