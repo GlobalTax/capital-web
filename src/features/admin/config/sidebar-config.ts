@@ -164,6 +164,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CREAR CONTENIDO",
+    icon: PenTool,
     description: "Herramientas de creación",
     items: [
       { 
