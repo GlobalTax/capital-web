@@ -277,6 +277,9 @@ export const LeadsPipelineView: React.FC = () => {
     toast.success(`Lead movido a "${statusLabel}"`);
   }, [updateStatus, visibleStatuses, stopAutoScroll]);
 
+  // Default sender fallback
+  const DEFAULT_SENDER = { full_name: 'Samuel Navarro', email: 'samuel@capittal.es', phone: '+34 695 717 490' };
+
   const handleSendPrecallEmail = useCallback(async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
     if (!lead) return;
@@ -285,7 +288,46 @@ export const LeadsPipelineView: React.FC = () => {
       return;
     }
 
-    setIsSendingEmail(leadId);
+    // Resolve sender from adminUsers
+    let sender = { ...DEFAULT_SENDER };
+    if (lead.assigned_to) {
+      const adminUser = adminUsers.find(u => u.user_id === lead.assigned_to);
+      if (adminUser) {
+        sender = {
+          full_name: adminUser.full_name || DEFAULT_SENDER.full_name,
+          email: adminUser.email || DEFAULT_SENDER.email,
+          phone: (adminUser as any).phone || DEFAULT_SENDER.phone,
+        };
+      }
+    }
+
+    // Build CC lists from active recipients
+    const ccRecipients = (activeRecipients || []).filter(r => r.is_default_copy && !r.is_bcc && r.email !== sender.email);
+    const ccEmails = ccRecipients.map(r => r.email);
+    const ccNames = ccRecipients.map(r => r.name?.split(' ')[0] || r.name).filter(Boolean);
+
+    const preview = buildPrecallEmailPreview({
+      contactName: lead.contact_name || '',
+      companyName: lead.company_name || '',
+      senderName: sender.full_name,
+      senderEmail: sender.email,
+      senderPhone: sender.phone,
+      ccNames,
+      to: lead.email || '',
+      ccEmails,
+    });
+
+    setEmailPreview(preview);
+    setEmailPreviewLeadId(leadId);
+    setEmailPreviewOpen(true);
+  }, [leads, adminUsers, activeRecipients]);
+
+  const handleConfirmSendEmail = useCallback(async () => {
+    if (!emailPreviewLeadId) return;
+    const lead = leads.find(l => l.id === emailPreviewLeadId);
+    if (!lead) return;
+
+    setIsSendingEmail(emailPreviewLeadId);
     try {
       const { error } = await supabase.functions.invoke('send-precall-email', {
         body: {
@@ -298,13 +340,16 @@ export const LeadsPipelineView: React.FC = () => {
       });
       if (error) throw error;
       toast.success('Email pre-llamada enviado correctamente');
+      setEmailPreviewOpen(false);
+      setEmailPreview(null);
+      setEmailPreviewLeadId(null);
       refetch();
     } catch (error: any) {
       toast.error('Error al enviar el email', { description: error.message });
     } finally {
       setIsSendingEmail(null);
     }
-  }, [leads, refetch]);
+  }, [emailPreviewLeadId, leads, refetch]);
 
   const handleRegisterCall = useCallback((leadId: string, answered: boolean) => {
     registerCall({ leadId, answered });
