@@ -143,7 +143,6 @@ export const sidebarSections: SidebarSection[] = [
     items: [
       { title: "Newsletter Semanal", url: "/admin/newsletter", icon: Mail, description: "Envío de newsletters a suscriptores" },
       { title: "Importar Brevo", url: "/admin/brevo-import", icon: Users, description: "Importar contactos desde Brevo" },
-      { title: "Valoraciones Pro", url: "/admin/valoraciones-pro", icon: Calculator, description: "Sistema de valoración profesional" },
       { title: "Apollo Visitors", url: "/admin/apollo-visitors", icon: Eye, description: "Importar visitantes desde Apollo" },
       { title: "Dealsuite Sync", url: "/admin/dealsuite", icon: RefreshCw, description: "Sincronizar deals desde Dealsuite" },
     ]
