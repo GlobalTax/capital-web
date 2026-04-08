@@ -30,7 +30,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
-import type { EmailVariant } from '../utils/buildPrecallEmailPreview';
+import type { EmailVariant, EmailVariantOption } from '../utils/buildPrecallEmailPreview';
+import { SELL_PIPELINE_VARIANTS } from '../utils/buildPrecallEmailPreview';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { PipelineLead } from '../types';
