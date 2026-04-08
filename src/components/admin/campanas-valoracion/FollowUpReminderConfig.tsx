@@ -31,6 +31,8 @@ export function FollowUpReminderConfig({ campaignId, currentDays }: FollowUpRemi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['outbound-summary-raw'] });
       queryClient.invalidateQueries({ queryKey: ['followup-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['followup-detailed-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['valuation-campaigns'] });
       setOpen(false);
       toast({ title: 'Recordatorio actualizado' });
     },
