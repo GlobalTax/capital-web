@@ -13,6 +13,7 @@ const LazyRODDocumentsManager = lazy(() => import('@/components/admin/RODDocumen
 const LazyRODListsTab = lazy(() => import('@/components/admin/rod/RODListsTab').then(m => ({ default: m.RODListsTab })));
 const LazyRODSendsTab = lazy(() => import('@/components/admin/rod/RODSendsTab'));
 const LazyInvestorLeadsManager = lazy(() => import('@/components/admin/InvestorLeadsManager').then(m => ({ default: m.InvestorLeadsManager })));
+const LazyAlertSubscribersManager = lazy(() => import('@/components/admin/AlertSubscribersManager').then(m => ({ default: m.AlertSubscribersManager })));
 
 
 interface Opportunity {
