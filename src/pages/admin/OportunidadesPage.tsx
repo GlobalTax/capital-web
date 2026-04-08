@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star, FileText, Users, Send, TrendingUp } from 'lucide-react';
+import { Briefcase, Loader2, Search, ChevronDown, ChevronRight, Star, FileText, Users, Send, TrendingUp, Bell } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ const LazyRODDocumentsManager = lazy(() => import('@/components/admin/RODDocumen
 const LazyRODListsTab = lazy(() => import('@/components/admin/rod/RODListsTab').then(m => ({ default: m.RODListsTab })));
 const LazyRODSendsTab = lazy(() => import('@/components/admin/rod/RODSendsTab'));
 const LazyInvestorLeadsManager = lazy(() => import('@/components/admin/InvestorLeadsManager').then(m => ({ default: m.InvestorLeadsManager })));
+const LazyAlertSubscribersManager = lazy(() => import('@/components/admin/AlertSubscribersManager').then(m => ({ default: m.AlertSubscribersManager })));
 
 
 interface Opportunity {
@@ -273,6 +274,10 @@ export default function OportunidadesPage() {
             <TrendingUp className="h-3.5 w-3.5 mr-1" />
             Leads Inversores
           </TabsTrigger>
+          <TabsTrigger value="alert-subscribers" className="text-xs">
+            <Bell className="h-3.5 w-3.5 mr-1" />
+            Alertas Comprador
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell">
@@ -404,6 +409,16 @@ export default function OportunidadesPage() {
             </div>
           }>
             <LazyInvestorLeadsManager />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="alert-subscribers">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          }>
+            <LazyAlertSubscribersManager />
           </Suspense>
         </TabsContent>
       </Tabs>
