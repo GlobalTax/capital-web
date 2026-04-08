@@ -141,7 +141,7 @@ export const sidebarSections: SidebarSection[] = [
     description: "Campañas y comunicación",
     items: [
       { title: "Campañas Outbound", url: "/admin/campanas-valoracion", icon: Megaphone, description: "Campañas masivas de valoración por sector" },
-      { title: "Costes Campañas", url: "/admin/campaign-costs", icon: TrendingUp, description: "Análisis CAC Meta Ads y Google Ads" },
+      
       { title: "Newsletter Semanal", url: "/admin/newsletter", icon: Mail, description: "Envío de newsletters a suscriptores" },
       { title: "Importar Brevo", url: "/admin/brevo-import", icon: Users, description: "Importar contactos desde Brevo" },
       { title: "Valoraciones Pro", url: "/admin/valoraciones-pro", icon: Calculator, description: "Sistema de valoración profesional" },
