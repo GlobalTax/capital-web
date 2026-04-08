@@ -77,7 +77,7 @@ export function OutboundSummaryDashboard() {
     queryFn: async () => {
       const { data: campaigns } = await (supabase as any)
         .from('valuation_campaigns')
-        .select('id, name, sector, campaign_type, total_companies')
+        .select('id, name, sector, campaign_type, total_companies, followup_reminder_days')
         .order('created_at', { ascending: false });
 
       if (!campaigns?.length) return { campaigns: [], emails: [], companies: [] };
