@@ -455,6 +455,9 @@ export default function ContactListDetailPage() {
   const [deleteTargetIds, setDeleteTargetIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Data scale factor: 1000 for legacy lists, 1 for lists with real euro values
+  const dataScale = (list as any)?.data_scale ?? 1000;
+
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
