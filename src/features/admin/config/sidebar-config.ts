@@ -326,7 +326,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🌐 WEB INTELLIGENCE",
+    title: "WEB INTELLIGENCE",
     description: "Empresas visitantes de la web",
     items: [
       { 
