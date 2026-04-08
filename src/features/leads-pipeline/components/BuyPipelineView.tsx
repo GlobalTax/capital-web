@@ -1,153 +1,361 @@
 /**
- * Buy Pipeline View - Kanban for acquisition/buy-side leads
+ * Buy Pipeline View - Full-featured Kanban (parity with Sales Pipeline)
  */
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AnimatePresence, motion } from 'framer-motion';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { RefreshCw, Search, Clock, Building2, DollarSign, MapPin, Tags, Plus, Calculator, FileText, ChevronDown } from 'lucide-react';
+import { usePipelineSavedViews, PipelineViewFilters } from '../hooks/usePipelineSavedViews';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CurrencyInput } from '@/components/ui/currency-input';
+import { RefreshCw, Search, Users, Filter, CalendarIcon, TrendingUp, BarChart3, X, ChevronDown, ArrowRight, Star, Save, Trash2, Columns3, Plus, FileText, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
+import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { useBuyPipeline, type BuyPipelineLead } from '../hooks/useBuyPipeline';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { PipelineColumn } from './PipelineColumn';
+import { PipelineColumnsEditor } from './PipelineColumnsEditor';
+import { useBuyPipeline, toBuyPipelineLead } from '../hooks/useBuyPipeline';
 import { useContactStatuses } from '@/hooks/useContactStatuses';
 import { useAcquisitionChannels } from '@/hooks/useAcquisitionChannels';
 import { useLeadForms } from '@/hooks/useLeadForms';
+import { FINANCIAL_RANGES } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import { usePipelineAutoScroll } from '../hooks/usePipelineAutoScroll';
 import type { LeadStatus } from '../types';
-
-const getBadgeColor = (name: string, type: 'form' | 'channel'): string => {
-  const lower = name.toLowerCase();
-  if (lower.includes('valoración') || lower.includes('valuation')) return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100';
-  if (lower.includes('venta') || lower.includes('sell')) return 'bg-green-100 text-green-700 border-green-200 hover:bg-green-100';
-  if (lower.includes('google')) return 'bg-red-100 text-red-700 border-red-200 hover:bg-red-100';
-  if (lower.includes('meta') || lower.includes('facebook') || lower.includes('instagram')) return 'bg-indigo-100 text-indigo-700 border-indigo-200 hover:bg-indigo-100';
-  if (type === 'form') return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-100';
-  return 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100';
-};
-
-// Simplified card for buy leads
-const BuyPipelineCard: React.FC<{
-  lead: BuyPipelineLead;
-  channelName?: string;
-  leadFormName?: string;
-  onViewDetails: () => void;
-  isDragging?: boolean;
-}> = ({ lead, channelName, leadFormName, onViewDetails, isDragging }) => {
-  const daysAgo = useMemo(() =>
-    formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: es }),
-    [lead.created_at]
-  );
-
-  return (
-    <Card
-      className={`cursor-pointer transition-shadow hover:shadow-md ${isDragging ? 'shadow-lg ring-2 ring-primary/20' : ''}`}
-      onClick={onViewDetails}
-    >
-      <CardContent className="p-3 space-y-2">
-        {/* Header */}
-        <div className="min-w-0">
-          <h4 className="font-medium text-sm truncate">{lead.company_name || lead.contact_name}</h4>
-          <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
-        </div>
-
-        {/* Badges */}
-        <div className="flex flex-wrap gap-1.5">
-          {lead.investment_budget && (
-            <Badge variant="outline" className="text-xs font-medium text-emerald-700 border-emerald-200 bg-emerald-50">
-              💰 {lead.investment_budget}
-            </Badge>
-          )}
-          {lead.acquisition_type && (
-            <Badge variant="secondary" className="text-xs">
-              {lead.acquisition_type}
-            </Badge>
-          )}
-          {leadFormName && (
-            <Badge className={`text-xs border ${getBadgeColor(leadFormName, 'form')}`}>
-              {leadFormName}
-            </Badge>
-          )}
-          {channelName && (
-            <Badge className={`text-xs border ${getBadgeColor(channelName, 'channel')}`}>
-              {channelName}
-            </Badge>
-          )}
-        </div>
-
-        {/* Details */}
-        {lead.sectors_of_interest && (
-          <div className="text-xs text-muted-foreground flex items-center gap-1">
-            <Tags className="h-3 w-3 shrink-0" />
-            <span className="truncate">{lead.sectors_of_interest}</span>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="flex items-center text-xs text-muted-foreground pt-1 border-t">
-          <Clock className="h-3 w-3 mr-1" />
-          {daysAgo}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+import { PrecallEmailPreviewDialog } from './PrecallEmailPreviewDialog';
+import { buildPrecallEmailPreview, type PrecallEmailPreview } from '../utils/buildPrecallEmailPreview';
+import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 
 export const BuyPipelineView: React.FC = () => {
   const navigate = useNavigate();
-  const { leads, leadsByStatus, isLoading, refetch, updateStatus } = useBuyPipeline();
+  const {
+    leads,
+    leadsByStatus,
+    adminUsers,
+    isLoading: isLoadingLeads,
+    refetch,
+    updateStatus,
+    updateStatusAsync,
+    assignLead,
+    registerCall,
+  } = useBuyPipeline();
+
   const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
   const { channels } = useAcquisitionChannels();
-  const { displayNameMap } = useLeadForms();
-
+  const { displayNameGroups, resolveDisplayNameToIds, displayNameMap } = useLeadForms();
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
-  const channelsMap = useMemo(() => new Map((channels || []).map(c => [c.id, c.name])), [channels]);
-
   const { scrollContainerRef, startAutoScroll, stopAutoScroll } = usePipelineAutoScroll();
+  const { data: activeRecipients } = useActiveEmailRecipients();
+  const isLoading = isLoadingLeads || isLoadingStatuses;
+
+  // Filters
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterAssignees, setFilterAssignees] = useState<string[]>([]);
+  const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
 
-  // Filter leads
+  // Email preview state
+  const [emailPreview, setEmailPreview] = useState<PrecallEmailPreview | null>(null);
+  const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
+  const [emailPreviewLeadId, setEmailPreviewLeadId] = useState<string | null>(null);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkMoving, setIsBulkMoving] = useState(false);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleSelectAllInColumn = useCallback((_columnId: string, leadIds: string[]) => {
+    setSelectedIds(prev => {
+      const allSelected = leadIds.every(id => prev.has(id));
+      const next = new Set(prev);
+      if (allSelected) { leadIds.forEach(id => next.delete(id)); }
+      else { leadIds.forEach(id => next.add(id)); }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => { setSelectedIds(new Set()); }, []);
+
+  // New filters
+  const [filterChannels, setFilterChannels] = useState<string[]>([]);
+  const [filterFormDisplays, setFilterFormDisplays] = useState<string[]>([]);
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
+  const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
+  const [filterRevMin, setFilterRevMin] = useState<number>(0);
+  const [filterRevMax, setFilterRevMax] = useState<number>(0);
+  const [filterEbitdaMin, setFilterEbitdaMin] = useState<number>(0);
+  const [filterEbitdaMax, setFilterEbitdaMax] = useState<number>(0);
+
+  // Column visibility
+  const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set());
+  const toggleColumnVisibility = useCallback((statusKey: string) => {
+    setHiddenColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(statusKey)) next.delete(statusKey); else next.add(statusKey);
+      return next;
+    });
+  }, []);
+  const displayedStatuses = useMemo(() =>
+    visibleStatuses.filter(s => !hiddenColumns.has(s.status_key)),
+    [visibleStatuses, hiddenColumns]
+  );
+
+  // Saved views
+  const { savedViews, saveView, deleteView } = usePipelineSavedViews();
+  const [saveViewName, setSaveViewName] = useState('');
+  const [isSavePopoverOpen, setIsSavePopoverOpen] = useState(false);
+
+  const getCurrentFilters = useCallback((): PipelineViewFilters => ({
+    searchQuery,
+    filterAssignee: filterAssignees,
+    filterChannels,
+    filterFormDisplays,
+    filterDateFrom: filterDateFrom ? filterDateFrom.toISOString() : null,
+    filterDateTo: filterDateTo ? filterDateTo.toISOString() : null,
+    filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax,
+    hiddenColumns: Array.from(hiddenColumns),
+  }), [searchQuery, filterAssignees, filterChannels, filterFormDisplays, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, hiddenColumns]);
+
+  const handleSaveView = useCallback(() => {
+    if (!saveViewName.trim()) return;
+    saveView(saveViewName.trim(), getCurrentFilters());
+    setSaveViewName('');
+    setIsSavePopoverOpen(false);
+  }, [saveViewName, saveView, getCurrentFilters]);
+
+  const handleLoadView = useCallback((filters: PipelineViewFilters) => {
+    setSearchQuery(filters.searchQuery);
+    const assignee = filters.filterAssignee;
+    if (Array.isArray(assignee)) { setFilterAssignees(assignee); }
+    else if (assignee && assignee !== 'all') { setFilterAssignees([assignee]); }
+    else { setFilterAssignees([]); }
+    setFilterChannels(filters.filterChannels);
+    setFilterFormDisplays(filters.filterFormDisplays);
+    setFilterDateFrom(filters.filterDateFrom ? new Date(filters.filterDateFrom) : undefined);
+    setFilterDateTo(filters.filterDateTo ? new Date(filters.filterDateTo) : undefined);
+    setFilterRevMin(filters.filterRevMin);
+    setFilterRevMax(filters.filterRevMax);
+    setFilterEbitdaMin(filters.filterEbitdaMin);
+    setFilterEbitdaMax(filters.filterEbitdaMax);
+    setHiddenColumns(new Set(filters.hiddenColumns || []));
+  }, []);
+
+  const filterFormIds = useMemo(() => {
+    if (filterFormDisplays.length === 0) return null;
+    return filterFormDisplays.flatMap(dn => resolveDisplayNameToIds(dn));
+  }, [filterFormDisplays, resolveDisplayNameToIds]);
+
+  const hasActiveFilters = searchQuery || filterAssignees.length > 0 || filterChannels.length > 0 || filterFormDisplays.length > 0 || filterDateFrom || filterDateTo || filterRevMin > 0 || filterRevMax > 0 || filterEbitdaMin > 0 || filterEbitdaMax > 0;
+
+  // Memoized maps
+  const adminUsersMap = useMemo(() =>
+    new Map(adminUsers.map(u => [u.user_id, u.full_name || u.email || 'Usuario'])),
+    [adminUsers]
+  );
+  const channelNameMap = useMemo(() =>
+    new Map((channels || []).map(c => [c.id, c.name])),
+    [channels]
+  );
+
+  // Filtered leads mapped to PipelineLead for shared components
   const filteredLeadsByStatus = useMemo(() => {
-    if (!searchQuery) return leadsByStatus;
+    const result: Record<string, ReturnType<typeof toBuyPipelineLead>[]> = {};
+    visibleStatuses.forEach(status => {
+      let columnLeads = leadsByStatus[status.status_key as LeadStatus] || [];
 
-    const q = searchQuery.toLowerCase();
-    const filtered: Record<string, BuyPipelineLead[]> = {};
-    for (const [status, statusLeads] of Object.entries(leadsByStatus)) {
-      filtered[status] = statusLeads.filter(l =>
-        l.company_name.toLowerCase().includes(q) ||
-        l.contact_name.toLowerCase().includes(q) ||
-        l.email.toLowerCase().includes(q)
-      );
-    }
-    return filtered;
-  }, [leadsByStatus, searchQuery]);
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        columnLeads = columnLeads.filter(l =>
+          l.company_name?.toLowerCase().includes(q) ||
+          l.contact_name?.toLowerCase().includes(q) ||
+          l.email?.toLowerCase().includes(q)
+        );
+      }
+      if (filterAssignees.length > 0) {
+        columnLeads = columnLeads.filter(l => {
+          if (!l.assigned_to) return filterAssignees.includes('unassigned');
+          return filterAssignees.includes(l.assigned_to);
+        });
+      }
+      if (filterChannels.length > 0) {
+        columnLeads = columnLeads.filter(l => l.acquisition_channel_id && filterChannels.includes(l.acquisition_channel_id));
+      }
+      if (filterFormIds) {
+        columnLeads = columnLeads.filter(l => l.lead_form && filterFormIds.includes(l.lead_form));
+      }
+      if (filterDateFrom) {
+        columnLeads = columnLeads.filter(l => new Date(l.created_at) >= filterDateFrom!);
+      }
+      if (filterDateTo) {
+        const end = new Date(filterDateTo);
+        end.setHours(23, 59, 59, 999);
+        columnLeads = columnLeads.filter(l => new Date(l.created_at) <= end);
+      }
+      if (filterRevMin > 0) columnLeads = columnLeads.filter(l => (l.revenue || 0) >= filterRevMin);
+      if (filterRevMax > 0) columnLeads = columnLeads.filter(l => (l.revenue || 0) <= filterRevMax);
+      if (filterEbitdaMin > 0) columnLeads = columnLeads.filter(l => (l.ebitda || 0) >= filterEbitdaMin);
+      if (filterEbitdaMax > 0) columnLeads = columnLeads.filter(l => (l.ebitda || 0) <= filterEbitdaMax);
 
-  const totalLeads = leads.length;
-  const filteredTotal = Object.values(filteredLeadsByStatus).reduce((sum, arr) => sum + arr.length, 0);
+      result[status.status_key] = columnLeads.map(toBuyPipelineLead);
+    });
+    return result;
+  }, [leadsByStatus, searchQuery, filterAssignees, filterChannels, filterFormIds, filterDateFrom, filterDateTo, filterRevMin, filterRevMax, filterEbitdaMin, filterEbitdaMax, visibleStatuses]);
 
+  // Handlers
   const handleDragEnd = useCallback((result: DropResult) => {
     stopAutoScroll();
-    if (!result.destination) return;
-    const { draggableId, destination } = result;
+    const { destination, source, draggableId } = result;
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
     const newStatus = destination.droppableId as LeadStatus;
     updateStatus({ leadId: draggableId, status: newStatus });
-  }, [updateStatus, stopAutoScroll]);
+    const statusLabel = visibleStatuses.find(s => s.status_key === newStatus)?.label || newStatus;
+    toast.success(`Lead movido a "${statusLabel}"`);
+  }, [updateStatus, visibleStatuses, stopAutoScroll]);
 
-  const handleViewDetails = useCallback((lead: BuyPipelineLead) => {
-    navigate(`/admin/contacts/${lead.id}`);
-  }, [navigate]);
+  const DEFAULT_SENDER = { full_name: 'Lluis Montanya', email: 'lluis@capittal.es', phone: '+34 658 799 614' };
 
-  if (isLoading || isLoadingStatuses) {
+  const handleSendPrecallEmail = useCallback(async (leadId: string, variant?: import('../utils/buildPrecallEmailPreview').EmailVariant) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+    if (lead.precall_email_sent) {
+      toast.warning('Ya se envió un email pre-llamada a este lead');
+      return;
+    }
+    let sender = { ...DEFAULT_SENDER };
+    if (lead.assigned_to) {
+      const adminUser = adminUsers.find(u => u.user_id === lead.assigned_to);
+      if (adminUser) {
+        sender = {
+          full_name: adminUser.full_name || DEFAULT_SENDER.full_name,
+          email: adminUser.email || DEFAULT_SENDER.email,
+          phone: adminUser.phone || DEFAULT_SENDER.phone,
+        };
+      }
+    }
+    const ccRecipients = (activeRecipients || []).filter(r => r.is_default_copy && !r.is_bcc && r.email !== sender.email);
+    const ccEmails = ccRecipients.map(r => r.email);
+    const ccNames = ccRecipients.map(r => r.name?.split(' ')[0] || r.name).filter(Boolean);
+
+    const preview = buildPrecallEmailPreview({
+      contactName: lead.contact_name || '',
+      companyName: lead.company_name || '',
+      senderName: sender.full_name,
+      senderEmail: sender.email,
+      senderPhone: sender.phone,
+      ccNames,
+      to: lead.email || '',
+      ccEmails,
+      variant: variant || 'valoracion-cast',
+    });
+    setEmailPreview(preview);
+    setEmailPreviewLeadId(leadId);
+    setEmailPreviewOpen(true);
+  }, [leads, adminUsers, activeRecipients]);
+
+  const handleConfirmSendEmail = useCallback(async (edited: { subject: string; htmlBody: string }) => {
+    if (!emailPreviewLeadId) return;
+    const lead = leads.find(l => l.id === emailPreviewLeadId);
+    if (!lead) return;
+    setIsSendingEmail(emailPreviewLeadId);
+    try {
+      const { error } = await supabase.functions.invoke('send-precall-email', {
+        body: {
+          leadId: lead.id,
+          contactName: lead.contact_name,
+          companyName: lead.company_name,
+          email: lead.email,
+          assignedTo: lead.assigned_to || undefined,
+          customSubject: edited.subject,
+          customHtmlBody: edited.htmlBody,
+        }
+      });
+      if (error) throw error;
+      toast.success('Email pre-llamada enviado correctamente');
+      setEmailPreviewOpen(false);
+      setEmailPreview(null);
+      setEmailPreviewLeadId(null);
+      refetch();
+    } catch (error: any) {
+      toast.error('Error al enviar el email', { description: error.message });
+    } finally {
+      setIsSendingEmail(null);
+    }
+  }, [emailPreviewLeadId, leads, refetch]);
+
+  const handleRegisterCall = useCallback((leadId: string, answered: boolean) => {
+    registerCall({ leadId, answered });
+  }, [registerCall]);
+
+  const handleAssignLead = useCallback((leadId: string, userId: string | null) => {
+    assignLead({ leadId, userId });
+  }, [assignLead]);
+
+  const handleViewDetails = useCallback((leadId: string) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (lead?.empresa_id) {
+      window.open(`https://godeal.es/empresas/${lead.empresa_id}`, '_blank');
+    } else {
+      navigate(`/admin/contacts/${leadId}`);
+    }
+  }, [navigate, leads]);
+
+  const clearFilters = useCallback(() => {
+    setSearchQuery(''); setFilterAssignees([]); setFilterChannels([]); setFilterFormDisplays([]);
+    setFilterDateFrom(undefined); setFilterDateTo(undefined);
+    setFilterRevMin(0); setFilterRevMax(0); setFilterEbitdaMin(0); setFilterEbitdaMax(0);
+  }, []);
+
+  const applyDatePreset = useCallback((preset: string) => {
+    const now = new Date();
+    switch (preset) {
+      case '7d': setFilterDateFrom(subDays(now, 7)); setFilterDateTo(now); break;
+      case '30d': setFilterDateFrom(subDays(now, 30)); setFilterDateTo(now); break;
+      case '90d': setFilterDateFrom(subDays(now, 90)); setFilterDateTo(now); break;
+      case 'this_month': setFilterDateFrom(startOfMonth(now)); setFilterDateTo(endOfMonth(now)); break;
+      case 'last_month': { const lm = subMonths(now, 1); setFilterDateFrom(startOfMonth(lm)); setFilterDateTo(endOfMonth(lm)); break; }
+    }
+  }, []);
+
+  const applyFinancialPreset = useCallback((rangeValue: string, type: 'revenue' | 'ebitda') => {
+    const range = FINANCIAL_RANGES.find(r => r.value === rangeValue);
+    if (!range) return;
+    const setMin = type === 'revenue' ? setFilterRevMin : setFilterEbitdaMin;
+    const setMax = type === 'revenue' ? setFilterRevMax : setFilterEbitdaMax;
+    setMin(range.min);
+    setMax(range.max === Infinity ? 0 : range.max);
+  }, []);
+
+  const totalLeads = leads.length;
+  const filteredTotal = useMemo(() =>
+    Object.values(filteredLeadsByStatus).reduce((sum, arr) => sum + arr.length, 0),
+    [filteredLeadsByStatus]
+  );
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -188,6 +396,86 @@ export const BuyPipelineView: React.FC = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          {/* Column visibility toggle */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", hiddenColumns.size > 0 && "border-primary text-primary")}>
+                <Columns3 className="h-4 w-4" />
+                Columnas
+                {hiddenColumns.size > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{visibleStatuses.length - hiddenColumns.size}/{visibleStatuses.length}</Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-60 p-0" align="end">
+              <div className="p-2 border-b">
+                <p className="text-xs font-medium text-muted-foreground">Mostrar/ocultar columnas</p>
+              </div>
+              <div className="max-h-72 overflow-y-auto p-1">
+                {visibleStatuses.map(status => (
+                  <label key={status.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                    <Checkbox
+                      checked={!hiddenColumns.has(status.status_key)}
+                      onCheckedChange={() => toggleColumnVisibility(status.status_key)}
+                    />
+                    <span className="mr-1.5">{status.icon}</span>
+                    <span className="text-sm flex-1">{status.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {(leadsByStatus[status.status_key as LeadStatus] || []).length}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {hiddenColumns.size > 0 && (
+                <div className="border-t p-1 space-y-1">
+                  <Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setHiddenColumns(new Set())}>
+                    Mostrar todas
+                  </Button>
+                </div>
+              )}
+              <div className="border-t p-2">
+                <div className="flex gap-1">
+                  <Input
+                    placeholder="Nombre de la vista..."
+                    value={saveViewName}
+                    onChange={e => setSaveViewName(e.target.value)}
+                    className="h-7 text-xs"
+                    onKeyDown={e => e.key === 'Enter' && handleSaveView()}
+                  />
+                  <Button size="sm" className="h-7 text-xs px-2 shrink-0" onClick={handleSaveView} disabled={!saveViewName.trim()}>
+                    <Save className="h-3 w-3 mr-1" />
+                    Guardar
+                  </Button>
+                </div>
+                {savedViews.length > 0 && (
+                  <div className="mt-2 space-y-0.5">
+                    <p className="text-xs text-muted-foreground mb-1">Vistas guardadas:</p>
+                    {savedViews.map(view => (
+                      <div key={view.id} className="flex items-center justify-between group">
+                        <button
+                          className="text-xs text-left hover:text-primary truncate flex-1 py-0.5"
+                          onClick={() => { handleLoadView(view.filters); toast.success(`Vista "${view.name}" cargada`); }}
+                        >
+                          <Star className="h-3 w-3 inline mr-1 text-muted-foreground" />
+                          {view.name}
+                          {view.filters.hiddenColumns && view.filters.hiddenColumns.length > 0 && (
+                            <span className="text-muted-foreground ml-1">({view.filters.hiddenColumns.length} ocultas)</span>
+                          )}
+                        </button>
+                        <button
+                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-opacity"
+                          onClick={() => deleteView(view.id)}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <PipelineColumnsEditor />
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
             Actualizar
@@ -195,81 +483,329 @@ export const BuyPipelineView: React.FC = () => {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="flex items-center gap-2 mb-4">
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="relative flex-1 min-w-[200px] max-w-[280px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar empresa, contacto..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9"
-          />
+          <Input placeholder="Buscar empresa, contacto..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-9" />
         </div>
+
+        {/* Assignee */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterAssignees.length > 0 && "border-primary text-primary")}>
+              <Users className="h-3.5 w-3.5" />
+              {filterAssignees.length > 0 ? `Asignado (${filterAssignees.length})` : 'Asignado'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              <label className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                <Checkbox checked={filterAssignees.includes('unassigned')} onCheckedChange={() => setFilterAssignees(prev => prev.includes('unassigned') ? prev.filter(id => id !== 'unassigned') : [...prev, 'unassigned'])} />
+                <span className="text-sm italic text-muted-foreground">Sin asignar</span>
+              </label>
+              {adminUsers.map(user => (
+                <label key={user.user_id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox checked={filterAssignees.includes(user.user_id)} onCheckedChange={() => setFilterAssignees(prev => prev.includes(user.user_id) ? prev.filter(id => id !== user.user_id) : [...prev, user.user_id])} />
+                  <span className="text-sm">{user.full_name || user.email}</span>
+                </label>
+              ))}
+            </div>
+            {filterAssignees.length > 0 && (
+              <div className="border-t p-1"><Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterAssignees([])}>Limpiar</Button></div>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* Channel */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterChannels.length > 0 && "border-primary text-primary")}>
+              <Filter className="h-3.5 w-3.5" />
+              {filterChannels.length > 0 ? `Canal (${filterChannels.length})` : 'Canal'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              {(channels || []).map(ch => (
+                <label key={ch.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox checked={filterChannels.includes(ch.id)} onCheckedChange={() => setFilterChannels(prev => prev.includes(ch.id) ? prev.filter(id => id !== ch.id) : [...prev, ch.id])} />
+                  <span className="text-sm">{ch.name}</span>
+                </label>
+              ))}
+            </div>
+            {filterChannels.length > 0 && (
+              <div className="border-t p-1"><Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterChannels([])}>Limpiar</Button></div>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* Form */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", filterFormDisplays.length > 0 && "border-primary text-primary")}>
+              <Filter className="h-3.5 w-3.5" />
+              {filterFormDisplays.length > 0 ? `Formulario (${filterFormDisplays.length})` : 'Formulario'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-0" align="start">
+            <div className="max-h-60 overflow-y-auto p-1">
+              {displayNameGroups.map(g => (
+                <label key={g.displayName} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                  <Checkbox checked={filterFormDisplays.includes(g.displayName)} onCheckedChange={() => setFilterFormDisplays(prev => prev.includes(g.displayName) ? prev.filter(n => n !== g.displayName) : [...prev, g.displayName])} />
+                  <span className="text-sm">{g.displayName}</span>
+                </label>
+              ))}
+            </div>
+            {filterFormDisplays.length > 0 && (
+              <div className="border-t p-1"><Button variant="ghost" size="sm" className="w-full h-7 text-xs" onClick={() => setFilterFormDisplays([])}>Limpiar</Button></div>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* Date */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", (filterDateFrom || filterDateTo) && "border-primary text-primary")}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              {filterDateFrom && filterDateTo ? `${format(filterDateFrom, 'dd/MM', { locale: es })} - ${format(filterDateTo, 'dd/MM', { locale: es })}` : 'Fecha'}
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-3" align="start">
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {[
+                { label: '7 días', value: '7d' },
+                { label: '30 días', value: '30d' },
+                { label: '90 días', value: '90d' },
+                { label: 'Este mes', value: 'this_month' },
+                { label: 'Mes anterior', value: 'last_month' },
+              ].map(p => (
+                <Button key={p.value} variant="outline" size="sm" className="h-7 text-xs" onClick={() => applyDatePreset(p.value)}>{p.label}</Button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Desde</p>
+                <Calendar mode="single" selected={filterDateFrom} onSelect={setFilterDateFrom} className="p-2 pointer-events-auto" locale={es} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Hasta</p>
+                <Calendar mode="single" selected={filterDateTo} onSelect={setFilterDateTo} className="p-2 pointer-events-auto" locale={es} />
+              </div>
+            </div>
+            {(filterDateFrom || filterDateTo) && (
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => { setFilterDateFrom(undefined); setFilterDateTo(undefined); }}>Limpiar fecha</Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* Revenue */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", (filterRevMin > 0 || filterRevMax > 0) && "border-primary text-primary")}>
+              <TrendingUp className="h-3.5 w-3.5" />
+              Facturación
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="start">
+            <p className="text-xs font-medium mb-2">Rangos rápidos</p>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {FINANCIAL_RANGES.map(r => (
+                <Button key={r.value} variant="outline" size="sm" className="h-7 text-xs" onClick={() => applyFinancialPreset(r.value, 'revenue')}>{r.label}</Button>
+              ))}
+            </div>
+            <p className="text-xs font-medium mb-2">Personalizado</p>
+            <div className="flex gap-2 items-center">
+              <CurrencyInput value={filterRevMin} onChange={setFilterRevMin} placeholder="Mín" className="h-8 text-xs" />
+              <span className="text-xs text-muted-foreground">-</span>
+              <CurrencyInput value={filterRevMax} onChange={setFilterRevMax} placeholder="Máx" className="h-8 text-xs" />
+            </div>
+            {(filterRevMin > 0 || filterRevMax > 0) && (
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => { setFilterRevMin(0); setFilterRevMax(0); }}>Limpiar</Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* EBITDA */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("h-9 gap-1.5", (filterEbitdaMin > 0 || filterEbitdaMax > 0) && "border-primary text-primary")}>
+              <BarChart3 className="h-3.5 w-3.5" />
+              EBITDA
+              <ChevronDown className="h-3 w-3 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64 p-3" align="start">
+            <p className="text-xs font-medium mb-2">Rangos rápidos</p>
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {FINANCIAL_RANGES.map(r => (
+                <Button key={r.value} variant="outline" size="sm" className="h-7 text-xs" onClick={() => applyFinancialPreset(r.value, 'ebitda')}>{r.label}</Button>
+              ))}
+            </div>
+            <p className="text-xs font-medium mb-2">Personalizado</p>
+            <div className="flex gap-2 items-center">
+              <CurrencyInput value={filterEbitdaMin} onChange={setFilterEbitdaMin} placeholder="Mín" className="h-8 text-xs" />
+              <span className="text-xs text-muted-foreground">-</span>
+              <CurrencyInput value={filterEbitdaMax} onChange={setFilterEbitdaMax} placeholder="Máx" className="h-8 text-xs" />
+            </div>
+            {(filterEbitdaMin > 0 || filterEbitdaMax > 0) && (
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-xs" onClick={() => { setFilterEbitdaMin(0); setFilterEbitdaMax(0); }}>Limpiar</Button>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" className="h-9 gap-1" onClick={clearFilters}>
+            <X className="h-3.5 w-3.5" />
+            Limpiar
+          </Button>
+        )}
+
+        {hasActiveFilters && (
+          <Popover open={isSavePopoverOpen} onOpenChange={setIsSavePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                <Save className="h-3.5 w-3.5" />
+                Guardar vista
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-3" align="start">
+              <p className="text-xs font-medium mb-2">Nombre de la vista</p>
+              <div className="flex gap-2">
+                <Input value={saveViewName} onChange={e => setSaveViewName(e.target.value)} placeholder="Ej: Leads calificados Q1" className="h-8 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveView()} />
+                <Button size="sm" className="h-8 px-3" onClick={handleSaveView} disabled={!saveViewName.trim()}>Guardar</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+
+        {savedViews.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50">
+                <Star className="h-3.5 w-3.5" />
+                Mis vistas ({savedViews.length})
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {savedViews.map(view => (
+                <DropdownMenuItem key={view.id} className="flex items-center justify-between group" onClick={() => handleLoadView(view.filters)}>
+                  <span className="text-sm truncate">{view.name}</span>
+                  <button className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-destructive/10 transition-opacity" onClick={e => { e.stopPropagation(); deleteView(view.id); }}>
+                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                  </button>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
-      {/* Kanban Board */}
-      <DragDropContext onDragStart={startAutoScroll} onDragEnd={handleDragEnd}>
-        <div ref={scrollContainerRef} className="flex gap-4 h-full overflow-x-auto pb-4">
-          {visibleStatuses.map((status) => {
-            const columnLeads = filteredLeadsByStatus[status.status_key] || [];
-            return (
-              <Card key={status.id} className="flex flex-col h-full min-w-[280px] max-w-[320px]">
-                <CardHeader className="py-3 px-4 border-b shrink-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{status.icon}</span>
-                      <h3 className="font-semibold text-sm">{status.label}</h3>
-                      <Badge variant="secondary" className="text-xs">
-                        {columnLeads.length}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
+      {/* Kanban */}
+      <div className="flex-1 overflow-hidden">
+        <DragDropContext onDragStart={startAutoScroll} onDragEnd={handleDragEnd}>
+          <div ref={scrollContainerRef} className="flex gap-4 h-full overflow-x-auto pb-4">
+            {displayedStatuses.map((status) => (
+              <PipelineColumn
+                key={status.id}
+                column={{
+                  id: status.status_key as LeadStatus,
+                  label: status.label,
+                  color: status.color,
+                  icon: status.icon,
+                }}
+                leads={filteredLeadsByStatus[status.status_key] || []}
+                adminUsersMap={adminUsersMap}
+                leadFormsMap={leadFormsMap}
+                channelsMap={channelNameMap}
+                onSendPrecallEmail={handleSendPrecallEmail}
+                onRegisterCall={handleRegisterCall}
+                onViewDetails={handleViewDetails}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                onSelectAllInColumn={handleSelectAllInColumn}
+                adminUsers={adminUsers}
+                onAssignLead={handleAssignLead}
+              />
+            ))}
+          </div>
+        </DragDropContext>
+      </div>
 
-                <Droppable droppableId={status.status_key}>
-                  {(provided, snapshot) => (
-                    <CardContent
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={`flex-1 p-2 overflow-y-auto transition-colors ${snapshot.isDraggingOver ? 'bg-primary/5' : ''}`}
-                      style={{ maxHeight: 'calc(100vh - 280px)' }}
+      {/* Floating Bulk Action Bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="flex items-center gap-3 bg-background border rounded-lg shadow-lg px-4 py-2.5">
+              <Badge variant="default" className="text-sm">
+                ✓ {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+              </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" disabled={isBulkMoving} className="gap-1.5">
+                    Mover a
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="max-h-64 overflow-y-auto">
+                  {visibleStatuses.map(status => (
+                    <DropdownMenuItem
+                      key={status.id}
+                      onClick={async () => {
+                        setIsBulkMoving(true);
+                        const ids = Array.from(selectedIds);
+                        const results = await Promise.allSettled(
+                          ids.map(leadId => updateStatusAsync({ leadId, status: status.status_key as LeadStatus }))
+                        );
+                        const succeeded = results.filter(r => r.status === 'fulfilled').length;
+                        const failed = results.filter(r => r.status === 'rejected').length;
+                        if (failed === 0) {
+                          toast.success(`${succeeded} lead${succeeded !== 1 ? 's' : ''} movido${succeeded !== 1 ? 's' : ''} a "${status.label}"`);
+                        } else {
+                          toast.warning(`${succeeded} movidos, ${failed} fallidos`);
+                        }
+                        clearSelection();
+                        setIsBulkMoving(false);
+                      }}
                     >
-                      <div className="space-y-2 pr-1">
-                        {columnLeads.map((lead, index) => (
-                          <Draggable key={lead.id} draggableId={lead.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <BuyPipelineCard
-                                  lead={lead}
-                                  channelName={lead.acquisition_channel_id ? channelsMap.get(lead.acquisition_channel_id) : undefined}
-                                  leadFormName={lead.lead_form ? leadFormsMap.get(lead.lead_form) : undefined}
-                                  onViewDetails={() => handleViewDetails(lead)}
-                                  isDragging={snapshot.isDragging}
-                                />
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                        {columnLeads.length === 0 && (
-                          <div className="text-center py-8 text-muted-foreground text-sm">
-                            Sin leads
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  )}
-                </Droppable>
-              </Card>
-            );
-          })}
-        </div>
-      </DragDropContext>
+                      <span className="mr-2">{status.icon}</span>
+                      {status.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="ghost" size="sm" onClick={clearSelection} className="gap-1">
+                <X className="h-3.5 w-3.5" />
+                Limpiar
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Email Preview Dialog */}
+      <PrecallEmailPreviewDialog
+        open={emailPreviewOpen}
+        onOpenChange={(open) => {
+          setEmailPreviewOpen(open);
+          if (!open) { setEmailPreview(null); setEmailPreviewLeadId(null); }
+        }}
+        preview={emailPreview}
+        onConfirmSend={handleConfirmSendEmail}
+        isSending={!!isSendingEmail}
+      />
     </div>
   );
 };
