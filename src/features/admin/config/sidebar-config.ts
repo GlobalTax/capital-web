@@ -443,6 +443,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "NOTICIAS M&A",
+    icon: Newspaper,
     description: "Gestión de noticias automatizadas",
     items: [
       { 
