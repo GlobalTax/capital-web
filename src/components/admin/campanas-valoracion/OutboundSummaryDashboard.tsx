@@ -368,6 +368,9 @@ export function OutboundSummaryDashboard() {
         ))}
       </div>
 
+      {/* Follow-Up Alerts */}
+      <FollowUpAlertsPanel />
+
       {/* Pipeline */}
       <OutboundPipelineSection
         enabledCampaignIds={allCampaigns.filter(c => !disabledCampaigns.has(c.id)).map(c => c.id)}
