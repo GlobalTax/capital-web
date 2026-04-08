@@ -1,9 +1,26 @@
 /**
- * Builds the pre-call email preview HTML with 4 variants:
- * valoracion-cast, venta-cast, valoracion-cat, venta-cat
+ * Builds the pre-call email preview HTML with 6 variants:
+ * valoracion-cast, venta-cast, valoracion-cat, venta-cat, compra-cast, compra-cat
  */
 
-export type EmailVariant = 'valoracion-cast' | 'venta-cast' | 'valoracion-cat' | 'venta-cat';
+export type EmailVariant = 'valoracion-cast' | 'venta-cast' | 'valoracion-cat' | 'venta-cat' | 'compra-cast' | 'compra-cat';
+
+export interface EmailVariantOption {
+  variant: EmailVariant;
+  label: string;
+}
+
+export const SELL_PIPELINE_VARIANTS: EmailVariantOption[] = [
+  { variant: 'valoracion-cast', label: 'Valoración - Castellano' },
+  { variant: 'venta-cast', label: 'Venta - Castellano' },
+  { variant: 'valoracion-cat', label: 'Valoració - Català' },
+  { variant: 'venta-cat', label: 'Venda - Català' },
+];
+
+export const BUY_PIPELINE_VARIANTS: EmailVariantOption[] = [
+  { variant: 'compra-cast', label: 'Compra - Castellano' },
+  { variant: 'compra-cat', label: 'Compra - Català' },
+];
 
 interface PrecallEmailPreviewParams {
   contactName: string;
