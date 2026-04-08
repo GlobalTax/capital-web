@@ -1,5 +1,6 @@
 // ============= ADMIN SIDEBAR CONFIGURATION =============
 // Configuración centralizada para la navegación del admin
+// 8 secciones consolidadas
 
 import { 
   LayoutDashboard, 
@@ -14,17 +15,14 @@ import {
   Zap,
   MessageSquare,
   Sparkles,
-  Activity,
   Eye,
   Palette,
-  Play,
   ClipboardList,
   Tags,
   Image,
   Calculator,
   Megaphone,
   Briefcase,
-  FolderOpen,
   Store,
   Mail,
   Kanban,
@@ -40,15 +38,7 @@ import {
   Landmark,
   RefreshCw,
   Calendar,
-  Bot,
-  Flame,
-  BrainCircuit,
-  PenTool,
-  Database,
-  GraduationCap,
-  Radar,
-  LineChart,
-  BookOpen,
+  FolderOpen,
   Send,
   Cog
 } from 'lucide-react';
@@ -71,589 +61,127 @@ export interface SidebarSection {
 }
 
 export const sidebarSections: SidebarSection[] = [
+  // ─── 1. DASHBOARD ───
   {
     title: "DASHBOARD",
     icon: LayoutDashboard,
     description: "Panel principal",
     items: [
-      { 
-        title: "Vista General", 
-        url: "/admin", 
-        icon: LayoutDashboard,
-        description: "Dashboard principal"
-      },
-      { 
-        title: "Calendario Editorial", 
-        url: "/admin/content-calendar", 
-        icon: Calendar,
-        description: "Calendario de contenido editorial"
-      },
-      { 
-        title: "Valoraciones & Recovery", 
-        url: "/admin/valuation-analytics", 
-        icon: Activity,
-        description: "Analytics de valoraciones"
-      },
-      { 
-        title: "Search Analytics", 
-        url: "/admin/search-analytics", 
-        icon: Search,
-        description: "Análisis de búsquedas"
-      },
+      { title: "Vista General", url: "/admin", icon: LayoutDashboard, description: "Dashboard principal" },
+      { title: "Calendario Editorial", url: "/admin/content-calendar", icon: Calendar, description: "Calendario de contenido editorial" },
+      { title: "Search Analytics", url: "/admin/search-analytics", icon: Search, description: "Análisis de búsquedas" },
     ]
   },
+
+  // ─── 2. CRM & LEADS ───
   {
-    title: "LEADS",
-    icon: Flame,
-    description: "Centro de gestión de leads",
+    title: "CRM & LEADS",
+    icon: Target,
+    description: "Gestión comercial",
     items: [
-      { 
-        title: "Gestión de Leads", 
-        url: "/admin/contacts", 
-        icon: Target,
-        
-        description: "Todos los leads del embudo"
-      },
-      { 
-        title: "Pipeline Ventas",
-        url: "/admin/leads-pipeline", 
-        icon: Kanban,
-        description: "Tablero Kanban de leads de venta"
-      },
-      { 
-        title: "Pipeline Compras",
-        url: "/admin/buy-pipeline", 
-        icon: ShoppingCart,
-        description: "Tablero Kanban de leads de compra"
-      },
+      { title: "Leads (Todos)", url: "/admin/contacts", icon: Target, description: "Vista completa de todos los leads" },
+      { title: "Pipeline Ventas", url: "/admin/leads-pipeline", icon: Kanban, description: "Tablero Kanban de leads de venta" },
+      { title: "Pipeline Compras", url: "/admin/buy-pipeline", icon: ShoppingCart, description: "Tablero Kanban de leads de compra" },
+      { title: "Contactos Compra", url: "/admin/buyer-contacts", icon: ShoppingCart, description: "Contactos campaña compras" },
+      { title: "Reservas Llamadas", url: "/admin/bookings", icon: CalendarDays, description: "Gestión de reservas de llamadas" },
+      { title: "Entrada Manual Leads", url: "/admin/calculadora-manual", icon: UserPlus, description: "Introducir leads de Meta/externos" },
+      { title: "Listas de Empresas", url: "/admin/listas-contacto", icon: ClipboardList, description: "Gestiona y depura listas de empresas" },
+      { title: "Gestión NDAs", url: "/admin/ndas", icon: Shield, description: "NDAs, mandatos y seguimiento" },
     ]
   },
+
+  // ─── 3. DIRECTORIOS ───
   {
-    title: "IA & AGENTES",
-    icon: BrainCircuit,
-    description: "Inteligencia artificial",
-    items: [
-      { 
-        title: "Agentes IA", 
-        url: "/admin/ai-agents", 
-        icon: Bot,
-        badge: "AI",
-        description: "Gestión de agentes inteligentes"
-      },
-      { 
-        title: "Content Studio", 
-        url: "/admin/content-studio", 
-        icon: Sparkles, 
-        badge: "AI",
-        description: "Creación de contenido con IA"
-      },
-    ]
-  },
-  {
-    title: "CREAR CONTENIDO",
-    icon: PenTool,
-    description: "Herramientas de creación",
-    items: [
-      { 
-        title: "Calendario Editorial", 
-        url: "/admin/content-calendar", 
-        icon: Calendar,
-        description: "Planificación editorial"
-      },
-      { 
-        title: "Content Studio", 
-        url: "/admin/content-studio", 
-        icon: Sparkles, 
-        badge: "AI",
-        description: "Creación con IA",
-        visible: false
-      },
-      { 
-        title: "Recursos",
-        url: "/admin/lead-magnets", 
-        icon: Zap,
-        description: "Recursos descargables"
-      },
-      {
-        title: "Calculadora Asesores",
-        url: "/lp/calculadora-asesores", 
-        icon: Calculator,
-        description: "Herramienta de valoración para asesores"
-      },
-      { 
-        title: "Landing Pages", 
-        url: "/admin/landing-pages-unified", 
-        icon: LayoutDashboard,
-        description: "Todas las landing pages"
-      },
-      { 
-        title: "Blog & Contenido", 
-        url: "/admin/blog-v2", 
-        icon: FileText,
-        description: "Posts y artículos"
-      },
-      { 
-        title: "Casos de Éxito", 
-        url: "/admin/case-studies", 
-        icon: Award,
-        description: "Casos de clientes"
-      },
-    ]
-  },
-  {
-    title: "MÚLTIPLOS",
-    icon: TrendingUp,
-    description: "Valoración y múltiplos sectoriales",
-    items: [
-      { 
-        title: "Múltiplos", 
-        url: "/admin/multiples", 
-        icon: TrendingUp,
-        description: "Datos de valoración"
-      },
-      { 
-        title: "Múltiplos Asesores", 
-        url: "/admin/advisor-multiples", 
-        icon: Calculator,
-        description: "Múltiplos para calculadora de asesores"
-      },
-      { 
-        title: "Intel PE Sectorial", 
-        url: "/admin/sector-intelligence", 
-        icon: BarChart3,
-        description: "Base de datos PE por subsector (Excel)"
-      },
-    ]
-  },
-  {
-    title: "GESTIONAR DATOS",
-    icon: Database,
-    description: "Información corporativa",
-    items: [
-      { 
-        title: "Sectores", 
-        url: "/admin/sectors", 
-        icon: Tags,
-        description: "Gestión de sectores empresariales"
-      },
-      { 
-        title: "Sector Dossiers", 
-        url: "/admin/sector-dossiers", 
-        icon: FolderOpen,
-        badge: "AI",
-        description: "Análisis competitivo por sector con IA"
-      },
-      { 
-        title: "Market Reports", 
-        url: "/admin/market-reports", 
-        icon: FileText,
-        description: "Gestión de informes de mercado",
-        visible: false
-      },
-      { 
-        title: "Rel. Oportunidades", 
-        url: "/admin/oportunidades", 
-        icon: Briefcase,
-        description: "Mandatos visibles en ROD"
-      },
-      { 
-        title: "Equipo", 
-        url: "/admin/team", 
-        icon: Users,
-        description: "Perfiles del equipo"
-      },
-      { 
-        title: "Testimonios", 
-        url: "/admin/testimonials", 
-        icon: MessageSquare,
-        description: "Reseñas de clientes"
-      },
-      { 
-        title: "Test. Colaboradores", 
-        url: "/admin/collaborator-testimonials", 
-        icon: MessageSquare,
-        description: "Testimonios de la página de colaboradores"
-      },
-      { 
-        title: "LP Venta Empresas", 
-        url: "/admin/venta-empresas-content", 
-        icon: Store,
-        description: "Contenido landing venta empresas"
-      },
-      { 
-        title: "Logos Carousel", 
-        url: "/admin/carousel-logos", 
-        icon: Image,
-        description: "Gestión de logos del carrusel"
-      },
-      { 
-        title: "Banners", 
-        url: "/admin/banners", 
-        icon: Megaphone,
-        description: "Gestión de banners del sitio"
-      },
-      { 
-        title: "Hero Slides", 
-        url: "/admin/hero-slides", 
-        icon: Image,
-        description: "Imágenes y textos del hero principal"
-      },
-      { 
-        title: "Áreas de Práctica", 
-        url: "/admin/practice-areas", 
-        icon: Palette,
-        description: "Tarjetas de servicios de la home"
-      },
-      { 
-        title: "La Firma", 
-        url: "/admin/la-firma", 
-        icon: Building2,
-        description: "Foto y contenido de la sección La Firma"
-      },
-    ]
-  },
-  {
-    title: "EMPLEO",
-    icon: GraduationCap,
-    description: "Gestión de ofertas de trabajo",
-    items: [
-      { 
-        title: "Ofertas de Trabajo",
-        url: "/admin/jobs", 
-        icon: Briefcase,
-        description: "Gestionar job posts"
-      },
-      { 
-        title: "Aplicaciones",
-        url: "/admin/job-applications", 
-        icon: Users,
-        description: "Revisar candidatos"
-      },
-      { 
-        title: "Categorías",
-        url: "/admin/job-categories", 
-        icon: Tags,
-        description: "Gestionar categorías"
-      },
-    ]
-  },
-  {
-    title: "WEB INTELLIGENCE",
-    icon: Globe,
-    description: "Empresas visitantes de la web",
-    items: [
-      { 
-        title: "Apollo Visitors", 
-        url: "/admin/apollo-visitors", 
-        icon: Eye,
-        description: "Importar visitantes desde Apollo"
-      },
-      { 
-        title: "Dealsuite Sync", 
-        url: "/admin/dealsuite", 
-        icon: RefreshCw,
-        description: "Sincronizar deals desde Dealsuite"
-      },
-    ]
-  },
-  {
-    title: "ANALIZAR LEADS",
-    icon: LineChart,
-    description: "Gestión de prospectos",
-    items: [
-      { 
-        title: "Entrada Manual Leads",
-        url: "/admin/calculadora-manual", 
-        icon: UserPlus,
-        description: "Introducir leads de Meta/externos"
-      },
-      { 
-        title: "Valoraciones Pro", 
-        url: "/admin/valoraciones-pro", 
-        icon: Calculator,
-        description: "Sistema de valoración profesional"
-      },
-      { 
-        title: "Campañas Outbound",
-        url: "/admin/campanas-valoracion", 
-        icon: Megaphone,
-        description: "Campañas masivas de valoración por sector"
-      },
-      { 
-        title: "Listas de Empresas",
-        url: "/admin/listas-contacto", 
-        icon: ClipboardList,
-        description: "Gestiona y depura listas de empresas"
-      },
-      { 
-        title: "Pipeline Ventas",
-        url: "/admin/leads-pipeline", 
-        icon: Kanban,
-        description: "Tablero Kanban de leads de venta"
-      },
-      { 
-        title: "Pipeline Compras",
-        url: "/admin/buy-pipeline", 
-        icon: ShoppingCart,
-        description: "Tablero Kanban de leads de compra"
-      },
-      { 
-        title: "Reservas Llamadas",
-        url: "/admin/bookings", 
-        icon: CalendarDays,
-        description: "Gestión de reservas de llamadas"
-      },
-      { 
-        title: "Leads (Todos)",
-        url: "/admin/contacts", 
-        icon: Target,
-        description: "Vista completa de todos los leads"
-      },
-      { 
-        title: "Contactos Compra",
-        url: "/admin/buyer-contacts", 
-        icon: ShoppingCart,
-        description: "Contactos campaña compras"
-      },
-      { 
-        title: "Directorio",
-        url: "/admin/empresas", 
-        icon: Building2,
-        description: "Base de datos de empresas"
-      },
-      { 
-        title: "Gestión NDAs",
-        url: "/admin/ndas", 
-        icon: Shield,
-        description: "NDAs, mandatos y seguimiento"
-      },
-    ]
-  },
-  {
-    title: "NOTICIAS M&A",
-    icon: Newspaper,
-    description: "Gestión de noticias automatizadas",
-    items: [
-      { 
-        title: "Noticias M&A",
-        url: "/admin/noticias", 
-        icon: Newspaper,
-        description: "Moderar y publicar noticias"
-      },
-    ]
-  },
-  {
-    title: "CAPITAL RIESGO",
-    icon: TrendingUp,
-    description: "CRM de fondos PE/VC",
-    items: [
-      { 
-        title: "Apollo Import", 
-        url: "/admin/cr-apollo-import", 
-        icon: Users,
-        description: "Importar personas desde Apollo"
-      },
-      { 
-        title: "Directorio CR", 
-        url: "/admin/cr-directory", 
-        icon: Briefcase,
-        description: "Fondos y personas PE/VC"
-      },
-      { 
-        title: "Portfolio CR", 
-        url: "/admin/cr-portfolio-list", 
-        icon: Building2,
-        description: "Empresas en cartera de fondos PE/VC"
-      },
-      { 
-        title: "Inteligencia CR", 
-        url: "/admin/fund-intelligence?type=cr", 
-        icon: Eye,
-        badge: "AI",
-        description: "Scraping y noticias de fondos PE/VC"
-      },
-    ]
-  },
-  {
-    title: "SEARCH FUNDS",
-    icon: Search,
-    description: "Gestión y matching de Search Funds",
-    items: [
-      { 
-        title: "Apollo Import", 
-        url: "/admin/sf-apollo-import", 
-        icon: Users,
-        description: "Importar personas desde Apollo"
-      },
-      { 
-        title: "Radar SF", 
-        url: "/admin/sf-radar", 
-        icon: Target,
-        badge: "AI",
-        description: "Búsqueda automática de searchers"
-      },
-      { 
-        title: "Directorio SF", 
-        url: "/admin/sf-directory", 
-        icon: Building2,
-        description: "Directorio de Search Funds"
-      },
-      { 
-        title: "Operaciones SF",
-        url: "/admin/sf-acquisitions", 
-        icon: Briefcase,
-        description: "Listado de adquisiciones de Search Funds"
-      },
-      { 
-        title: "Backers", 
-        url: "/admin/sf-backers", 
-        icon: Users,
-        description: "Gestión de backers e inversores"
-      },
-      { 
-        title: "Matching Inbox", 
-        url: "/admin/sf-matches", 
-        icon: Target,
-        description: "Matches pendientes de revisar"
-      },
-      { 
-        title: "Inteligencia SF", 
-        url: "/admin/fund-intelligence?type=sf", 
-        icon: Eye,
-        badge: "AI",
-        description: "Scraping y noticias de Search Funds"
-      },
-    ]
-  },
-  {
-    title: "CORPORATIVOS",
-    icon: Landmark,
-    description: "Compradores estratégicos",
-    items: [
-      { 
-        title: "Directorio Corporativos", 
-        url: "/admin/corporate-buyers", 
-        icon: Landmark,
-        description: "Compradores corporativos y estratégicos"
-      },
-    ]
-  },
-  {
-    title: "BOUTIQUES M&A",
+    title: "DIRECTORIOS",
     icon: Building2,
-    description: "Directorio de competencia",
+    description: "Bases de datos de empresas y fondos",
     items: [
-      { 
-        title: "Apollo Import", 
-        url: "/admin/mna-apollo-import", 
-        icon: Users,
-        description: "Importar boutiques desde Apollo"
-      },
-      { 
-        title: "Directorio Boutiques", 
-        url: "/admin/mna-directory", 
-        icon: Building2,
-        description: "Competidores y asesores M&A"
-      },
+      { title: "Directorio Empresas", url: "/admin/empresas", icon: Building2, description: "Base de datos de empresas" },
+      { title: "Directorio Corporativos", url: "/admin/corporate-buyers", icon: Landmark, description: "Compradores corporativos y estratégicos" },
+      { title: "Capital Riesgo (CR)", url: "/admin/cr-directory", icon: TrendingUp, description: "Fondos y personas PE/VC" },
+      { title: "Search Funds (SF)", url: "/admin/sf-directory", icon: Search, description: "Directorio de Search Funds" },
+      { title: "Boutiques M&A", url: "/admin/mna-directory", icon: Building2, description: "Competidores y asesores M&A" },
+      { title: "Rel. Oportunidades", url: "/admin/oportunidades", icon: Briefcase, description: "Mandatos visibles en ROD" },
     ]
   },
+
+  // ─── 4. CONTENIDO & BLOG ───
   {
-    title: "RECURSOS",
-    icon: BookOpen,
-    description: "Gestión de recursos y herramientas",
+    title: "CONTENIDO & BLOG",
+    icon: FileText,
+    description: "CMS y generación de contenido",
     items: [
-      { 
-        title: "Recursos (Biblioteca)",
-        url: "/admin/lead-magnets", 
-        icon: Zap,
-        description: "Gestión de recursos descargables"
-      },
-      { 
-        title: "Test Exit-Ready",
-        url: "/admin/recursos/exit-ready", 
-        icon: ClipboardList,
-        description: "Tests de preparación para venta"
-      },
-      { 
-        title: "Biblioteca de Fotos",
-        url: "/admin/photo-library", 
-        icon: Image,
-        description: "Gestiona y organiza fotos"
-      },
+      { title: "Content Studio", url: "/admin/content-studio", icon: Sparkles, badge: "AI", description: "Creación de contenido con IA" },
+      { title: "Blog & Contenido", url: "/admin/blog-v2", icon: FileText, description: "Posts y artículos" },
+      { title: "Casos de Éxito", url: "/admin/case-studies", icon: Award, description: "Casos de clientes" },
+      { title: "Noticias M&A", url: "/admin/noticias", icon: Newspaper, description: "Moderar y publicar noticias" },
+      { title: "Landing Pages", url: "/admin/landing-pages-unified", icon: LayoutDashboard, description: "Todas las landing pages" },
+      { title: "Recursos & Lead Magnets", url: "/admin/lead-magnets", icon: Zap, description: "Recursos descargables" },
     ]
   },
+
+  // ─── 5. MÚLTIPLOS & DATOS ───
   {
-    title: "MARKETING",
+    title: "MÚLTIPLOS & DATOS",
+    icon: TrendingUp,
+    description: "Valoración y datos sectoriales",
+    items: [
+      { title: "Múltiplos", url: "/admin/multiples", icon: TrendingUp, description: "Datos de valoración" },
+      { title: "Múltiplos Asesores", url: "/admin/advisor-multiples", icon: Calculator, description: "Múltiplos para calculadora de asesores" },
+      { title: "Intel PE Sectorial", url: "/admin/sector-intelligence", icon: BarChart3, description: "Base de datos PE por subsector (Excel)" },
+      { title: "Sectores", url: "/admin/sectors", icon: Tags, description: "Gestión de sectores empresariales" },
+      { title: "Sector Dossiers", url: "/admin/sector-dossiers", icon: FolderOpen, badge: "AI", description: "Análisis competitivo por sector con IA" },
+    ]
+  },
+
+  // ─── 6. MARKETING & OUTBOUND ───
+  {
+    title: "MARKETING & OUTBOUND",
     icon: Send,
-    description: "Comunicación con leads",
+    description: "Campañas y comunicación",
     items: [
-      { 
-        title: "Costes Campañas", 
-        url: "/admin/campaign-costs", 
-        icon: TrendingUp,
-        description: "Análisis CAC Meta Ads y Google Ads"
-      },
-      { 
-        title: "Newsletter Semanal", 
-        url: "/admin/newsletter", 
-        icon: Mail,
-        description: "Envío de newsletters a suscriptores"
-      },
-      { 
-        title: "Importar Brevo", 
-        url: "/admin/brevo-import", 
-        icon: Users,
-        description: "Importar contactos desde Brevo"
-      },
+      { title: "Campañas Outbound", url: "/admin/campanas-valoracion", icon: Megaphone, description: "Campañas masivas de valoración por sector" },
+      { title: "Costes Campañas", url: "/admin/campaign-costs", icon: TrendingUp, description: "Análisis CAC Meta Ads y Google Ads" },
+      { title: "Newsletter Semanal", url: "/admin/newsletter", icon: Mail, description: "Envío de newsletters a suscriptores" },
+      { title: "Importar Brevo", url: "/admin/brevo-import", icon: Users, description: "Importar contactos desde Brevo" },
+      { title: "Valoraciones Pro", url: "/admin/valoraciones-pro", icon: Calculator, description: "Sistema de valoración profesional" },
+      { title: "Apollo Visitors", url: "/admin/apollo-visitors", icon: Eye, description: "Importar visitantes desde Apollo" },
+      { title: "Dealsuite Sync", url: "/admin/dealsuite", icon: RefreshCw, description: "Sincronizar deals desde Dealsuite" },
     ]
   },
+
+  // ─── 7. GESTIONAR WEB ───
+  {
+    title: "GESTIONAR WEB",
+    icon: Globe,
+    description: "Contenido visual del sitio web",
+    items: [
+      { title: "Equipo", url: "/admin/team", icon: Users, description: "Perfiles del equipo" },
+      { title: "Testimonios", url: "/admin/testimonials", icon: MessageSquare, description: "Reseñas de clientes" },
+      { title: "Test. Colaboradores", url: "/admin/collaborator-testimonials", icon: MessageSquare, description: "Testimonios de colaboradores" },
+      { title: "LP Venta Empresas", url: "/admin/venta-empresas-content", icon: Store, description: "Contenido landing venta empresas" },
+      { title: "Logos Carousel", url: "/admin/carousel-logos", icon: Image, description: "Gestión de logos del carrusel" },
+      { title: "Banners", url: "/admin/banners", icon: Megaphone, description: "Gestión de banners del sitio" },
+      { title: "Hero Slides", url: "/admin/hero-slides", icon: Image, description: "Imágenes y textos del hero principal" },
+      { title: "Áreas de Práctica", url: "/admin/practice-areas", icon: Palette, description: "Tarjetas de servicios de la home" },
+      { title: "La Firma", url: "/admin/la-firma", icon: Building2, description: "Foto y contenido de la sección La Firma" },
+      { title: "Biblioteca de Fotos", url: "/admin/photo-library", icon: Image, description: "Gestiona y organiza fotos" },
+    ]
+  },
+
+  // ─── 8. CONFIGURACIÓN ───
   {
     title: "CONFIGURACIÓN",
     icon: Cog,
     description: "Configuración del sistema",
     items: [
-      { 
-        title: "Notificaciones", 
-        url: "/admin/notifications", 
-        icon: Bell,
-        description: "Centro de notificaciones"
-      },
-      { 
-        title: "Usuarios Admin", 
-        url: "/admin/admin-users", 
-        icon: Users,
-        description: "Gestión de administradores"
-      },
-      { 
-        title: "Workflow Fase 0", 
-        url: "/admin/configuracion/workflow-templates", 
-        icon: Settings,
-        description: "Configurar tareas del workflow de leads"
-      },
-      { 
-        title: "Destinatarios Email", 
-        url: "/admin/configuracion/destinatarios-email", 
-        icon: Target,
-        description: "Gestión de destinatarios de emails"
-      },
-      { 
-        title: "Firma de Email", 
-        url: "/admin/configuracion/firma-email", 
-        icon: Mail,
-        description: "Configura tu firma personal para emails outbound"
-      },
-      { 
-        title: "Ajustes", 
-        url: "/admin/settings", 
-        icon: Settings,
-        description: "Configuración general"
-      },
-      { 
-        title: "Navegación Sidebar", 
-        url: "/admin/settings/sidebar", 
-        icon: PanelLeft,
-        description: "Configurar secciones e items del menú lateral"
-      },
+      { title: "Notificaciones", url: "/admin/notifications", icon: Bell, description: "Centro de notificaciones" },
+      { title: "Usuarios Admin", url: "/admin/admin-users", icon: Users, description: "Gestión de administradores" },
+      { title: "Workflow Fase 0", url: "/admin/configuracion/workflow-templates", icon: Settings, description: "Configurar tareas del workflow de leads" },
+      { title: "Destinatarios Email", url: "/admin/configuracion/destinatarios-email", icon: Target, description: "Gestión de destinatarios de emails" },
+      { title: "Firma de Email", url: "/admin/configuracion/firma-email", icon: Mail, description: "Configura tu firma personal para emails outbound" },
+      { title: "Ajustes", url: "/admin/settings", icon: Settings, description: "Configuración general" },
+      { title: "Navegación Sidebar", url: "/admin/settings/sidebar", icon: PanelLeft, description: "Configurar secciones e items del menú lateral" },
     ]
-  }
+  },
 ];
