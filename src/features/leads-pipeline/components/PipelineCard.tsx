@@ -12,15 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Phone, 
-  Building2, 
-  DollarSign,
   Clock,
   User,
   MoreHorizontal,
   MapPin,
-  Users,
-  
-  BarChart3,
+  Mail,
+  MailCheck,
   UserCheck,
   X as XIcon
 } from 'lucide-react';
