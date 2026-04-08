@@ -1,37 +1,19 @@
 
 
-## Plan: Emails al configurar Alertas de Comprador
+## Plan: Simplificar dropdown y mostrar estado email pre-llamada en la tarjeta
 
-### Contexto
-Cuando alguien guarda sus preferencias de alerta (modal `BuyerPreferencesModal` → `useBuyerPreferences` → tabla `buyer_preferences`), actualmente no se envía ningún email. El usuario quiere:
-1. **Email interno al equipo Capittal** con los datos del suscriptor y sus preferencias
-2. **Email de confirmación al suscriptor** con resumen de sus alertas y opción de modificarlas
+### Cambios en `PipelineCard.tsx`
 
-### Solución: Edge Function `send-buyer-alert-notification`
+**1. Simplificar el dropdown (3 puntos)**
+- Eliminar "Ver detalle", "Llamada completada" y "No contestó" del menú
+- Mantener solo la opción "Enviar email pre-llamada" (deshabilitada si ya se envió)
 
-Seguir el patrón existente del proyecto (Resend directo, `email_recipients_config` para destinatarios internos).
+**2. Indicador visual en la tarjeta**
+- Añadir un icono/badge visible directamente en la tarjeta (sin necesidad de abrir el menú) que muestre el estado del email pre-llamada:
+  - **Pendiente de enviar**: Icono de email con color naranja/ámbar y texto "Email pendiente"
+  - **Enviado**: Icono de check con color verde y texto "Email enviado"
+- Se ubicará debajo de los call attempts o antes del footer, como una línea compacta
 
-### Cambios
-
-**1. Crear Edge Function `send-buyer-alert-notification`** (nuevo archivo)
-- Usa Resend (como el resto de funciones del proyecto)
-- Recibe los datos de preferencias del suscriptor
-- Envía **2 emails**:
-  - **Email interno**: A destinatarios de `email_recipients_config` (CC/BCC según flag). Asunto: "Nueva Alerta de Comprador: [nombre]". Contenido: perfil completo (nombre, email, teléfono, empresa, sectores, ubicaciones, rango valoración, frecuencia)
-  - **Email al suscriptor**: Desde `samuel@capittal.es`. Asunto: "Tus alertas de oportunidades en Capittal". Contenido: resumen de las preferencias configuradas + enlace a `/oportunidades` para modificarlas en el futuro + mensaje de bienvenida profesional con branding Capittal (Plus Jakarta Sans)
-
-**2. Modificar `useBuyerPreferences.tsx`**
-- Tras el upsert exitoso en `buyer_preferences`, invocar `supabase.functions.invoke('send-buyer-alert-notification', { body: { preferencias } })`
-- No bloquear la UX: el email se envía en background (fire-and-forget con log de error)
-
-### Detalles del email al suscriptor
-- Resumen visual de preferencias: sectores, ubicaciones, rango de valoración, frecuencia
-- CTA: "Modificar mis preferencias" → enlace a `https://webcapittal.lovable.app/oportunidades`
-- Footer con datos de contacto de Capittal (+34 695 717 490)
-- Estilo corporativo (Plus Jakarta Sans, colores slate)
-
-### Resultado
-- El equipo recibe notificación inmediata de cada nuevo suscriptor de alertas
-- El suscriptor recibe confirmación con resumen y enlace para gestionar sus alertas
-- Sin cambios en la UX del modal (solo se añade el envío silencioso tras guardar)
+**3. Hacer clic en la tarjeta sigue abriendo "Ver detalle"**
+- El click en la tarjeta ya llama a `onViewDetails()`, así que no se pierde esa funcionalidad
 
