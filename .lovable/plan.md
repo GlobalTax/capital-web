@@ -1,75 +1,72 @@
 
 
-## Plan: Desglose detallado de envíos y follow-up por empresa
+## Análisis: Relación entre Lista ROD y Directorio de Contactos
 
-### Problema actual
-El panel de follow-up mira la **última fecha de envío global** de la campaña. Pero los emails se envían en días distintos (anti-spam), así que una empresa que recibió el mail el día 13 ya lleva 26 días sin follow-up, mientras que otra que lo recibió el día 20 solo lleva 19 días. El aviso actual no distingue esto.
+### Estado actual
 
-### Solución
-
-**1. Nuevo componente `FollowUpDetailedPanel` (reemplaza el actual `FollowUpAlertsPanel`)**
-
-Panel expandible en el Resumen General con dos niveles de información:
-
-- **Nivel 1 (resumen por campaña)**: Card por campaña pendiente mostrando:
-  - Nombre de campaña + sector
-  - Días de envío (ej. "13, 16, 17, 18, 19, 20 Mar") como badges
-  - Total empresas pendientes de follow-up vs total sin respuesta
-  - Botón expandir para ver detalle
-
-- **Nivel 2 (detalle por empresa, expandible)**: Tabla dentro de cada card con:
-  - Nombre empresa
-  - Fecha en que recibió el email inicial
-  - Días transcurridos desde su envío
-  - Último follow-up enviado (si hay)
-  - Días desde último contacto (max entre email inicial y follow-up)
-  - Estado de seguimiento
-  - Indicador visual: rojo si supera el umbral, amarillo si está cerca
-
-**2. Lógica de cálculo por empresa**
+La tabla `rod_list_members` es **completamente independiente** del directorio de contactos (`contactos`) y de `buyer_contacts`. No existe ninguna FK, trigger, ni sincronización entre ellas.
 
 ```text
-Para cada empresa en una campaña con followup_reminder_days configurado:
-  1. Buscar fecha de envío inicial (campaign_emails.sent_at para esa company)
-  2. Buscar último follow-up enviado (campaign_followup_sends.sent_at para esa company)
-  3. last_contact = MAX(email_inicial, ultimo_followup)
-  4. days_since = HOY - last_contact
-  5. Si days_since >= followup_reminder_days Y seguimiento_estado = 'sin_respuesta' → pendiente
+┌──────────────────┐     ┌──────────────┐     ┌─────────────────┐
+│ rod_list_members │     │  contactos   │     │ buyer_contacts  │
+│                  │     │              │     │                 │
+│ full_name        │  ✗  │ nombre       │  ✗  │ full_name       │
+│ email            │────▶│ email        │◀────│ email           │
+│ company          │  NO │ empresa_id   │  NO │ company         │
+│ phone            │ FK  │ telefono     │ FK  │ phone           │
+│ sector           │     │ cargo        │     │ position        │
+│ language         │     │              │     │                 │
+└──────────────────┘     └──────────────┘     └─────────────────┘
+        ▲
+        │ Puntos de entrada (sin sincronización):
+        ├─ Alta manual (RODListsTab)
+        ├─ Import CSV/Excel (RODListsTab)
+        ├─ AddToRODDialog (desde SF, CR, Empresas)
+        ├─ generate-rod-document (auto-upsert al descargar)
+        └─ Edición inline (RODListsTab)
 ```
 
-**3. Estructura de la UI**
+### Problemas identificados
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ 🔔 Follow-up pendiente (3 campañas, 47 empresas)           │
-├─────────────────────────────────────────────────────────────┤
-│ ▼ Outbound TICC 13/03  · Sector: TICC  · FU: 7 días       │
-│   Envíos: [13 Mar: 10] [16 Mar: 20] [17 Mar: 25] ...      │
-│   23 empresas pendientes de follow-up                       │
-│ ┌──────────────────────────────────────────────────────────┐│
-│ │ Empresa         │ Enviado  │ Último FU │ Días │ Estado  ││
-│ │ Acme Corp       │ 13 Mar   │ —         │ 26d  │ 🔴      ││
-│ │ Beta SL         │ 16 Mar   │ 24 Mar    │ 15d  │ 🔴      ││
-│ │ Gamma SA        │ 20 Mar   │ —         │ 19d  │ 🟡      ││
-│ └──────────────────────────────────────────────────────────┘│
-│                                                             │
-│ ► Outbound Seguridad 11/03  · 12 empresas pendientes       │
-│ ► Outbound Seguridad - Anual Report  · 8 empresas pend.    │
-└─────────────────────────────────────────────────────────────┘
-```
+1. **Sin vínculo con `contactos`**: Al añadir un miembro a la lista ROD, no se crea ni se vincula un registro en `contactos`. Si el contacto no existe en el CRM, queda invisible para mandatos, directorios y el resto del sistema.
 
-**4. Sin cambios de base de datos**
-Todo se calcula con datos existentes en `campaign_emails`, `campaign_followup_sends` y `valuation_campaign_companies`. No se necesitan nuevas tablas ni columnas.
+2. **Sin deduplicación cruzada**: Se puede añadir alguien a `rod_list_members` que ya existe en `contactos` (por email), generando datos duplicados y desconectados.
 
-### Archivos a modificar
-- **`FollowUpAlertsPanel.tsx`**: Reescribir completamente con la nueva lógica por empresa y UI expandible
-- **`OutboundSummaryDashboard.tsx`**: Ajuste menor si cambia la interfaz del componente (props)
+3. **Ediciones no sincronizadas**: Si editas el nombre o email inline en la lista ROD, el cambio NO se refleja en `contactos` ni en `buyer_contacts`.
 
-### Datos a consultar (en el queryFn del componente)
-1. Campañas con `followup_reminder_days` configurado
-2. `campaign_emails` con `campaign_id`, `company_id`, `sent_at` (status = 'sent')
-3. `campaign_followup_sends` con `campaign_id`, `company_id`, `sent_at`
-4. `valuation_campaign_companies` con `campaign_id`, `id`, `client_company`, `seguimiento_estado`
+4. **Sin trazabilidad**: No hay forma de saber, desde el perfil de un contacto en el CRM, si ese contacto está en alguna lista ROD.
 
-Se cruzan los datos en el cliente para calcular los días por empresa individual.
+### Plan propuesto
+
+#### 1. Añadir columna `contacto_id` a `rod_list_members`
+- Migración SQL: `ALTER TABLE rod_list_members ADD COLUMN contacto_id UUID REFERENCES contactos(id) ON DELETE SET NULL`
+- Permite vincular opcionalmente cada miembro ROD a su ficha en el CRM.
+
+#### 2. Trigger de auto-vinculación/creación en INSERT/UPDATE
+- Función SQL `sync_rod_member_to_contactos()` que al insertar o actualizar un `rod_list_member`:
+  - **Busca por email** en `contactos`. Si existe, asigna el `contacto_id` automáticamente.
+  - **Si no existe**, crea un nuevo registro en `contactos` con los datos disponibles (nombre, email, teléfono, empresa) y el `source = 'rod_list'`, y vincula el ID.
+  - Evita duplicados gracias al matching por email.
+
+#### 3. Poblar `contacto_id` para registros existentes
+- Migración de datos: UPDATE masivo que vincule los ~257+ miembros actuales con sus contactos existentes por email, y cree los que falten.
+
+#### 4. Sincronización bidireccional de ediciones inline
+- Actualizar `EditableCell` en `RODListsTab.tsx`: cuando se edite un campo (nombre, email, teléfono), si el miembro tiene `contacto_id`, también actualizar el registro correspondiente en `contactos`.
+- Alternativa más limpia: el trigger SQL lo haga automáticamente en UPDATE.
+
+#### 5. Indicador visual de vinculación
+- En la tabla ROD, mostrar un icono sutil (enlace) cuando el miembro tiene `contacto_id`, con click para navegar al perfil del contacto en el directorio.
+
+### Resumen de archivos a modificar
+
+| Archivo | Cambio |
+|---|---|
+| Nueva migración SQL | Columna `contacto_id`, trigger `sync_rod_member_to_contactos`, poblado de datos |
+| `src/components/admin/rod/RODListsTab.tsx` | Mostrar indicador de vinculación, sync ediciones |
+| `src/components/admin/shared/AddToRODDialog.tsx` | Sin cambios (el trigger maneja la vinculación) |
+
+### Alcance de seguridad
+- La FK usa `ON DELETE SET NULL` para no bloquear eliminaciones de contactos.
+- El trigger usa `SECURITY DEFINER` para poder escribir en `contactos` desde cualquier contexto autenticado.
 
