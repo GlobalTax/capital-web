@@ -49,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[send-precall-email] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
 
     const payload: SendPrecallEmailRequest = await req.json();
-    const { leadId, contactName, companyName, email, assignedTo } = payload;
+    const { leadId, contactName, companyName, email, assignedTo, customSubject, customHtmlBody } = payload;
 
     console.log(`[send-precall-email] Processing lead: ${leadId}, email: ${email}, assignedTo: ${assignedTo}`);
 
