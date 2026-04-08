@@ -93,7 +93,7 @@ export const sidebarSections: SidebarSection[] = [
 
   // ─── 3. DIRECTORIOS ───
   {
-    title: "DIRECTORIOS",
+    title: "INVERSORES",
     icon: Building2,
     description: "Bases de datos de empresas y fondos",
     items: [
