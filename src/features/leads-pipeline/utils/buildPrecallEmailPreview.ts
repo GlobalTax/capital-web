@@ -63,7 +63,7 @@ function buildBody(params: {
         <p style="margin:0 0 8px;">${closing}</p>
         <p style="margin:0 0 4px; font-weight:600; color:#1f2937;">${senderName}</p>
         <p style="margin:0 0 4px; font-size:14px; color:#6b7280;">Fusiones y Adquisiciones · Capittal</p>
-        <p style="margin:0; font-size:13px; color:#9ca3af;">📞 ${senderPhone} · 📧 ${senderEmail}</p>
+        <p style="margin:0; font-size:13px; color:#9ca3af;">${senderPhone} · ${senderEmail}</p>
       </div>
     </div>
   `;
@@ -96,7 +96,7 @@ export function buildPrecallEmailPreview(
         'Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.',
         'Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.',
       ];
-      phoneBlock = `Te dejo mi número: <strong>${senderPhone}</strong> por si prefieres llamarme tú directamente.`;
+      phoneBlock = `Te dejo mi número: ${senderPhone} por si prefieres llamarme tú directamente.`;
       closing = 'Un cordial saludo,';
       break;
 
@@ -108,7 +108,7 @@ export function buildPrecallEmailPreview(
         'Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.',
         'Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.',
       ];
-      phoneBlock = `Te dejo mi número: <strong>${senderPhone}</strong> por si prefieres llamarme tú directamente.`;
+      phoneBlock = `Te dejo mi número: ${senderPhone} por si prefieres llamarme tú directamente.`;
       closing = 'Quedo a tu disposición para cualquier duda o comentario.<br><br>Un cordial saludo,';
       break;
 
@@ -120,7 +120,7 @@ export function buildPrecallEmailPreview(
         'Desconec si esteu valorant una possible venda, si us ha contactat algun inversor, o simplement voleu tenir una referència del valor de l\'empresa. En qualsevol cas, m\'agradaria poder parlar amb tu per entendre millor la vostra situació.',
         'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o bé em pots indicar l\'horari que millor et vagi.',
       ];
-      phoneBlock = `Et deixo el meu número: <strong>${senderPhone}</strong> per si prefereixes trucar-me directament.`;
+      phoneBlock = `Et deixo el meu número: ${senderPhone} per si prefereixes trucar-me directament.`;
       closing = 'Una cordial salutació,';
       break;
 
@@ -132,7 +132,7 @@ export function buildPrecallEmailPreview(
         'Desconec si esteu valorant una possible venda, si us ha contactat algun inversor, o simplement voleu tenir una referència del valor de l\'empresa. En qualsevol cas, m\'agradaria poder parlar amb tu per entendre millor la vostra situació.',
         'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o indicar-me l\'horari que millor et vagi.',
       ];
-      phoneBlock = `Et deixo el meu número: <strong>${senderPhone}</strong> per si prefereixes trucar-me tu directament.`;
+      phoneBlock = `Et deixo el meu número: ${senderPhone} per si prefereixes trucar-me tu directament.`;
       closing = 'Quedo a la teva disposició per a qualsevol dubte o comentari.<br><br>Una cordial salutació,';
       break;
   }
