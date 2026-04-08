@@ -157,6 +157,8 @@ export const sidebarSections: SidebarSection[] = [
       { title: "Noticias M&A", url: "/admin/noticias", icon: Newspaper, description: "Moderar y publicar noticias" },
       { title: "Landing Pages", url: "/admin/landing-pages-unified", icon: LayoutDashboard, description: "Todas las landing pages" },
       { title: "Recursos & Lead Magnets", url: "/admin/lead-magnets", icon: Zap, description: "Recursos descargables" },
+      { title: "Agentes IA", url: "/admin/ai-agents", icon: Bot, badge: "AI", description: "Gestión de agentes IA" },
+      { title: "Presentaciones", url: "/admin/presentations", icon: Presentation, description: "Presentaciones comerciales" },
     ]
   },
 
