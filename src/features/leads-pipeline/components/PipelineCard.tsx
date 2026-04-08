@@ -168,19 +168,8 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onViewDetails}>
-                Ver detalle
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onSendPrecallEmail} disabled={lead.precall_email_sent || false}>
                 {lead.precall_email_sent ? 'Email pre-llamada enviado' : 'Enviar email pre-llamada'}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onRegisterCall(true)}>
-                Llamada completada
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRegisterCall(false)}>
-                No contestó
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
