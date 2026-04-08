@@ -113,10 +113,10 @@ export function buildPrecallEmailPreview(
       break;
 
     case 'valoracion-cat':
-      saludo = contactFirstName ? `Apreciat ${contactFirstName},` : 'Apreciat/ada,';
+      saludo = contactFirstName ? `Benvolgut ${contactFirstName},` : 'Benvolgut/da,';
       intro = `Soc ${senderFirstName}, de l'equip de fusions i adquisicions de Capittal. Encantat de saludar-te.`;
       paragraphs = [
-        'Em poso en contacte amb tu atès que hem rebut la teva resposta al nostre formulari web de valoració automàtica d\'empreses i, després d\'analitzar la vostra activitat, així com la informació disponible al Registre Mercantil, ens ha semblat molt interessant conèixer més sobre el vostre projecte i situació actual.',
+        'Em poso en contacte amb tu ja que hem rebut la teva resposta al nostre formulari web de valoració automàtica d\'empreses i, després d\'analitzar la vostra activitat, així com la informació disponible al Registre Mercantil, ens ha semblat molt interessant conèixer més sobre el vostre projecte i situació actual.',
         'Desconec si esteu valorant una possible venda, si us ha contactat algun inversor, o simplement voleu tenir una referència del valor de l\'empresa. En qualsevol cas, m\'agradaria poder parlar amb tu per entendre millor la vostra situació.',
         'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o indicar-me l\'horari que millor et vagi.',
       ];
