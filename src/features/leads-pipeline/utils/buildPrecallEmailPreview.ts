@@ -125,7 +125,7 @@ export function buildPrecallEmailPreview(
       break;
 
     case 'venta-cat':
-      saludo = contactFirstName ? `Apreciat ${contactFirstName},` : 'Apreciat/ada,';
+      saludo = contactFirstName ? `Benvolgut ${contactFirstName},` : 'Benvolgut/da,';
       intro = `Encantat de saludar-te. Soc ${senderFirstName}, membre de l'equip de Capittal.`;
       paragraphs = [
         'Hem rebut recentment una sol·licitud a través del nostre formulari interessant-se pels nostres serveis d\'assessorament en compravenda d\'empreses. Després d\'analitzar la vostra activitat i la informació disponible, ens ha semblat especialment interessant la feina que realitzeu.',
