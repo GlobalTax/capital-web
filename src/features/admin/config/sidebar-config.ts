@@ -364,6 +364,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "ANALIZAR LEADS",
+    icon: LineChart,
     description: "Gestión de prospectos",
     items: [
       { 
