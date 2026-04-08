@@ -571,6 +571,7 @@ function SendList({
     setFilterEbitda({ min: null, max: null });
     setFilterValuation({ min: null, max: null });
   }, []);
+  const withoutInitialEmailCount = companies.filter(c => !emailSentMap.get(c.id)).length;
   const excluded = companies.length - visible.length;
 
   // Pending: visible + per-round seguimiento is sin_respuesta + not already sent
