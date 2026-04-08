@@ -33,6 +33,10 @@ jobs:
     needs: security-gate
     runs-on: ubuntu-latest
     environment: production
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.PRODUCTION_SUPABASE_ANON_KEY }}
+      VITE_ENVIRONMENT: production
     
     steps:
       - uses: actions/checkout@v4
@@ -40,21 +44,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       
       - name: Run full test suite
         run: npm run test --if-present
       
       - name: Build production
         run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.PRODUCTION_SUPABASE_ANON_KEY }}
-          VITE_ENVIRONMENT: production
       
       - name: Create backup point
         run: |
