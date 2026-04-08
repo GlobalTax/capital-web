@@ -93,7 +93,7 @@ export const ContactosDirectoryTable: React.FC<ContactosDirectoryTableProps> = (
         </TableHeader>
         <TableBody>
           {contactos.map((c) => (
-            <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50">
+            <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/contactos/${c.id}`)}>
               <TableCell>
                 <Checkbox
                   checked={selectedIds.has(c.id)}

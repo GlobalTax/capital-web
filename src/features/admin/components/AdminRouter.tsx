@@ -122,6 +122,7 @@ const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPa
 const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
 const LazySectorIntelligencePage = React.lazy(() => import('@/pages/admin/SectorIntelligencePage'));
 const LazyOportunidadesPage = React.lazy(() => import('@/pages/admin/OportunidadesPage'));
+const LazyContactoProfilePage = React.lazy(() => import('@/pages/admin/ContactoProfilePage'));
 
 // Presentation Engine
 const LazyPresentationsListPage = React.lazy(() => import('@/features/presentations/pages/PresentationsListPage'));
@@ -167,6 +168,7 @@ const AdminRouter = () => {
           <Route path="/buyer-contacts" element={<LazyBuyerContactsManager />} />
           <Route path="/contact-leads" element={<Navigate to="/admin/contacts" replace />} />
           <Route path="/empresas" element={<LazyEmpresasPage />} />
+          <Route path="/contactos/:id" element={<LazyContactoProfilePage />} />
           <Route path="/empresas/:id" element={<LazyEmpresaDetailPage />} />
           <Route path="/prospectos" element={<LazyProspectsPage />} />
           <Route path="/investor-leads" element={<Navigate to="/admin/oportunidades" replace />} />

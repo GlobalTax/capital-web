@@ -593,7 +593,7 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                           <div className="flex items-center gap-1.5">
                             {m.contacto_id ? (
                               <a
-                                href={`/admin/empresas?tab=contactos&contacto=${m.contacto_id}`}
+                                href={`/admin/contactos/${m.contacto_id}`}
                                 className="font-medium text-primary hover:underline cursor-pointer flex items-center gap-1"
                                 title="Ver perfil en directorio"
                               >
