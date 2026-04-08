@@ -345,6 +345,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "WEB INTELLIGENCE",
+    icon: Globe,
     description: "Empresas visitantes de la web",
     items: [
       { 
