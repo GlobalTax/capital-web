@@ -261,7 +261,7 @@ serve(async (req) => {
 
     // ===== 5b. Auto-add a rod_list_members =====
     try {
-      const rodLanguage = selectedROD.language || 'es';
+      const rodLanguage = requestData.language || selectedROD.language || 'es';
       const { error: rodListError } = await supabase
         .from('rod_list_members')
         .upsert({
@@ -269,6 +269,7 @@ serve(async (req) => {
           full_name: requestData.full_name,
           email: requestData.email,
           company: requestData.company || null,
+          phone: requestData.phone || null,
         }, { onConflict: 'language,email' });
 
       if (rodListError) {
