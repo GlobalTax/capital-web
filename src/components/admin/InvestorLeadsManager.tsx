@@ -191,6 +191,32 @@ export const InvestorLeadsManager: React.FC = () => {
     },
   });
 
+  // Delete lead (soft delete)
+  const deleteLeadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('investor_leads')
+        .update({ is_deleted: true })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['investor-leads'] });
+      toast({
+        title: 'Lead eliminado',
+        description: 'El lead se eliminó correctamente',
+      });
+    },
+    onError: () => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudo eliminar el lead',
+      });
+    },
+  });
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 font-bold';
     if (score >= 60) return 'text-blue-600 font-semibold';
