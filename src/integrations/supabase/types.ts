@@ -25877,6 +25877,17 @@ export type Database = {
           updated_at: string
         }[]
       }
+      search_empresas_contactos: {
+        Args: { p_limit?: number; p_query: string }
+        Returns: {
+          empresa_cif: string
+          empresa_id: string
+          empresa_nombre: string
+          empresa_sector: string
+          matched_via: string
+          score: number
+        }[]
+      }
       search_global: {
         Args: { p_limit?: number; p_query: string }
         Returns: {
