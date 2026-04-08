@@ -422,7 +422,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📰 NOTICIAS M&A",
+    title: "NOTICIAS M&A",
     description: "Gestión de noticias automatizadas",
     items: [
       { 
