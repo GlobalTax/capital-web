@@ -1,54 +1,75 @@
 
 
-## Plan: Panel de Avisos de Follow-Up en Resumen General
+## Plan: Desglose detallado de envíos y follow-up por empresa
 
-### Problema
-No hay visibilidad sobre qué campañas necesitan un follow-up y cuándo. Actualmente hay que entrar campaña por campaña para saber si toca enviar un recordatorio.
+### Problema actual
+El panel de follow-up mira la **última fecha de envío global** de la campaña. Pero los emails se envían en días distintos (anti-spam), así que una empresa que recibió el mail el día 13 ya lleva 26 días sin follow-up, mientras que otra que lo recibió el día 20 solo lleva 19 días. El aviso actual no distingue esto.
 
 ### Solución
 
-**1. Nueva columna en `valuation_campaigns`: `followup_reminder_days`**
-- Tipo: `integer`, nullable, default `null`
-- Indica cuántos días después del último envío (inicial o follow-up) debe aparecer el aviso
-- Si es `null`, no se genera aviso para esa campaña
-- Se configura por campaña individualmente
+**1. Nuevo componente `FollowUpDetailedPanel` (reemplaza el actual `FollowUpAlertsPanel`)**
 
-**2. UI de configuración (por campaña)**
-- En la tabla de "Desglose por Campaña" del Resumen General, añadir una columna "FU" con un icono de reloj
-- Al hacer clic, un popover permite establecer los días (ej. 5, 7, 10, 14, 21, 30 o personalizado)
-- El valor se guarda directamente en `valuation_campaigns.followup_reminder_days`
+Panel expandible en el Resumen General con dos niveles de información:
 
-**3. Panel de avisos de Follow-Up en Resumen General**
-- Nuevo componente `FollowUpAlertsPanel` colocado entre el funnel y el pipeline
-- Calcula para cada campaña habilitada:
-  - Fecha del último envío (max entre `campaign_emails.sent_at` y `campaign_followup_sends.sent_at`)
-  - Si han pasado >= `followup_reminder_days` días, la campaña aparece en el panel
-- Muestra una tarjeta/alerta por campaña pendiente con:
-  - Nombre de campaña y sector
-  - Días transcurridos desde el último envío
-  - Número de empresas sin respuesta
-  - Botón "Ir a campaña" que navega directamente a la pestaña de follow-up de esa campaña
-- Si no hay avisos pendientes, el panel se oculta o muestra "Todo al día"
-- Diseño: Card con borde naranja/amber, icono de campana, compacto
+- **Nivel 1 (resumen por campaña)**: Card por campaña pendiente mostrando:
+  - Nombre de campaña + sector
+  - Días de envío (ej. "13, 16, 17, 18, 19, 20 Mar") como badges
+  - Total empresas pendientes de follow-up vs total sin respuesta
+  - Botón expandir para ver detalle
 
-**4. Datos necesarios (query adicional)**
-- En el query existente de `OutboundSummaryDashboard`, añadir `followup_reminder_days` al select de campañas
-- Añadir una query para obtener la fecha del último envío por campaña (tanto de `campaign_emails` como de `campaign_followup_sends`)
+- **Nivel 2 (detalle por empresa, expandible)**: Tabla dentro de cada card con:
+  - Nombre empresa
+  - Fecha en que recibió el email inicial
+  - Días transcurridos desde su envío
+  - Último follow-up enviado (si hay)
+  - Días desde último contacto (max entre email inicial y follow-up)
+  - Estado de seguimiento
+  - Indicador visual: rojo si supera el umbral, amarillo si está cerca
+
+**2. Lógica de cálculo por empresa**
+
+```text
+Para cada empresa en una campaña con followup_reminder_days configurado:
+  1. Buscar fecha de envío inicial (campaign_emails.sent_at para esa company)
+  2. Buscar último follow-up enviado (campaign_followup_sends.sent_at para esa company)
+  3. last_contact = MAX(email_inicial, ultimo_followup)
+  4. days_since = HOY - last_contact
+  5. Si days_since >= followup_reminder_days Y seguimiento_estado = 'sin_respuesta' → pendiente
+```
+
+**3. Estructura de la UI**
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ 🔔 Follow-up pendiente (3 campañas, 47 empresas)           │
+├─────────────────────────────────────────────────────────────┤
+│ ▼ Outbound TICC 13/03  · Sector: TICC  · FU: 7 días       │
+│   Envíos: [13 Mar: 10] [16 Mar: 20] [17 Mar: 25] ...      │
+│   23 empresas pendientes de follow-up                       │
+│ ┌──────────────────────────────────────────────────────────┐│
+│ │ Empresa         │ Enviado  │ Último FU │ Días │ Estado  ││
+│ │ Acme Corp       │ 13 Mar   │ —         │ 26d  │ 🔴      ││
+│ │ Beta SL         │ 16 Mar   │ 24 Mar    │ 15d  │ 🔴      ││
+│ │ Gamma SA        │ 20 Mar   │ —         │ 19d  │ 🟡      ││
+│ └──────────────────────────────────────────────────────────┘│
+│                                                             │
+│ ► Outbound Seguridad 11/03  · 12 empresas pendientes       │
+│ ► Outbound Seguridad - Anual Report  · 8 empresas pend.    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**4. Sin cambios de base de datos**
+Todo se calcula con datos existentes en `campaign_emails`, `campaign_followup_sends` y `valuation_campaign_companies`. No se necesitan nuevas tablas ni columnas.
 
 ### Archivos a modificar
-- **Migración SQL**: Añadir columna `followup_reminder_days integer` a `valuation_campaigns`
-- **`OutboundSummaryDashboard.tsx`**: Ampliar query, incluir el nuevo panel, añadir columna FU en tabla
-- **Nuevo `FollowUpAlertsPanel.tsx`**: Componente del panel de avisos
-- **Nuevo `FollowUpReminderConfig.tsx`**: Popover para configurar días por campaña
+- **`FollowUpAlertsPanel.tsx`**: Reescribir completamente con la nueva lógica por empresa y UI expandible
+- **`OutboundSummaryDashboard.tsx`**: Ajuste menor si cambia la interfaz del componente (props)
 
-### Flujo de datos
-```text
-valuation_campaigns.followup_reminder_days = 7
-                    ↓
-last_send_date = MAX(campaign_emails.sent_at, campaign_followup_sends.sent_at)
-                    ↓
-days_since = NOW() - last_send_date
-                    ↓
-days_since >= 7 → Mostrar aviso en panel
-```
+### Datos a consultar (en el queryFn del componente)
+1. Campañas con `followup_reminder_days` configurado
+2. `campaign_emails` con `campaign_id`, `company_id`, `sent_at` (status = 'sent')
+3. `campaign_followup_sends` con `campaign_id`, `company_id`, `sent_at`
+4. `valuation_campaign_companies` con `campaign_id`, `id`, `client_company`, `seguimiento_estado`
+
+Se cruzan los datos en el cliente para calcular los días por empresa individual.
 
