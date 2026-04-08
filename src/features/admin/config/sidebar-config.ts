@@ -488,6 +488,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "SEARCH FUNDS",
+    icon: Search,
     description: "Gestión y matching de Search Funds",
     items: [
       { 
