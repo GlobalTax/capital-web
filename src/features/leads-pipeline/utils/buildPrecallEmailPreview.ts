@@ -63,7 +63,7 @@ function buildBody(params: {
         <p style="margin:0 0 8px;">${closing}</p>
         <p style="margin:0 0 4px; font-weight:600; color:#1f2937;">${senderName}</p>
         <p style="margin:0 0 4px; font-size:14px; color:#6b7280;">Fusiones y Adquisiciones · Capittal</p>
-        <p style="margin:0; font-size:13px; color:#9ca3af;">📞 ${senderPhone} · 📧 ${senderEmail}</p>
+        <p style="margin:0; font-size:13px; color:#9ca3af;">${senderPhone} · ${senderEmail}</p>
       </div>
     </div>
   `;
