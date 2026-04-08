@@ -310,16 +310,32 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
     crmDebounceRef.current = setTimeout(() => setDebouncedCrmSearch(val), 300);
   }, []);
 
-  const { data: crmResults } = useQuery({
+  const { data: crmResults, isFetching: crmFetching } = useQuery({
     queryKey: ['crm-contact-search', debouncedCrmSearch],
     queryFn: async () => {
-      const s = `%${debouncedCrmSearch.trim()}%`;
+      const term = debouncedCrmSearch.trim();
+      const s = `%${term}%`;
+      // Search contacts by name, email
       const { data } = await (supabase as any)
         .from('contactos')
         .select('id, nombre, apellidos, email, telefono, cargo, empresa_principal_id, empresas!contactos_empresa_principal_id_fkey(nombre)')
         .or(`nombre.ilike.${s},apellidos.ilike.${s},email.ilike.${s}`)
-        .limit(8);
-      return (data || []) as any[];
+        .limit(10);
+      
+      // Also search by company name and merge
+      const { data: byCompany } = await (supabase as any)
+        .from('contactos')
+        .select('id, nombre, apellidos, email, telefono, cargo, empresa_principal_id, empresas!contactos_empresa_principal_id_fkey(nombre)')
+        .not('empresa_principal_id', 'is', null)
+        .filter('empresas.nombre', 'ilike', s)
+        .limit(10);
+      
+      const merged = [...(data || [])];
+      const ids = new Set(merged.map((c: any) => c.id));
+      for (const c of (byCompany || [])) {
+        if (!ids.has(c.id)) merged.push(c);
+      }
+      return merged.slice(0, 10) as any[];
     },
     enabled: debouncedCrmSearch.trim().length >= 2,
   });
