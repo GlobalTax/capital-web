@@ -593,7 +593,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "⚙️ CONFIGURACIÓN",
+    title: "CONFIGURACIÓN",
     description: "Configuración del sistema",
     items: [
       { 
