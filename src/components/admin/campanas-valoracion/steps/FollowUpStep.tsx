@@ -464,6 +464,26 @@ function SendList({
     return m;
   }, [sends, sequence.id]);
 
+  // Days since last contact per company (initial email or latest FU)
+  const daysSinceContactMap = useMemo(() => {
+    if (!campaign.followup_reminder_days) return new Map<string, number>();
+    const now = new Date();
+    const map = new Map<string, number>();
+    for (const c of companies) {
+      const sentAt = emailSentMap.get(c.id);
+      if (!sentAt) continue;
+      const initialDate = new Date(sentAt);
+      // Find latest FU send for this company across all sequences
+      const fuDates = sends
+        .filter(s => s.company_id === c.id && s.status === 'sent' && s.sent_at)
+        .map(s => new Date(s.sent_at!));
+      const lastFU = fuDates.length > 0 ? fuDates.sort((a, b) => b.getTime() - a.getTime())[0] : null;
+      const lastContact = lastFU && lastFU > initialDate ? lastFU : initialDate;
+      map.set(c.id, differenceInDays(now, lastContact));
+    }
+    return map;
+  }, [companies, emailSentMap, sends, campaign.followup_reminder_days]);
+
   // Companies marked as responded in PREVIOUS rounds (sequence_number < current)
   const respondedInPreviousRounds = useMemo(() => {
     const previousSeqIds = new Set(
