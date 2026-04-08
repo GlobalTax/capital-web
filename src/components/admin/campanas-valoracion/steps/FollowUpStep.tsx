@@ -771,6 +771,12 @@ function SendList({
                   <TableHead className="text-center">Estado envío</TableHead>
                   <TableHead className="text-center">Entrega</TableHead>
                   <TableHead className="w-[100px]">Acción</TableHead>
+                  {campaign.followup_reminder_days && <TableHead className="text-center w-[70px]">
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Días</span>
+                      <FollowUpReminderConfig campaignId={campaignId} currentDays={campaign.followup_reminder_days ?? null} />
+                    </div>
+                  </TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
