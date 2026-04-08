@@ -456,6 +456,12 @@ export function OutboundSummaryDashboard() {
                     <TableCell className="text-center">
                       {c && c.no_interesado > 0 ? <span className="text-red-500 font-medium">{c.no_interesado}</span> : '0'}
                     </TableCell>
+                    <TableCell className="text-center">
+                      <FollowUpReminderConfig
+                        campaignId={raw_c.id}
+                        currentDays={raw_c.followup_reminder_days ?? null}
+                      />
+                    </TableCell>
                   </TableRow>
                 );
               })}
