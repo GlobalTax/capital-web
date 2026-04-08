@@ -140,8 +140,6 @@ export const sidebarSections: SidebarSection[] = [
     icon: Send,
     description: "Campañas y comunicación",
     items: [
-      { title: "Campañas Outbound", url: "/admin/campanas-valoracion", icon: Megaphone, description: "Campañas masivas de valoración por sector" },
-      
       { title: "Newsletter Semanal", url: "/admin/newsletter", icon: Mail, description: "Envío de newsletters a suscriptores" },
       { title: "Importar Brevo", url: "/admin/brevo-import", icon: Users, description: "Importar contactos desde Brevo" },
       { title: "Valoraciones Pro", url: "/admin/valoraciones-pro", icon: Calculator, description: "Sistema de valoración profesional" },
