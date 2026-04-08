@@ -411,6 +411,8 @@ export function OutboundSummaryDashboard() {
                 <TableHead className="text-center">Reuniones</TableHead>
                 <TableHead className="text-center">No interesados</TableHead>
                 <TableHead className="text-center w-10">FU</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
               {allCampaigns.map((raw_c) => {
                 const enabled = !disabledCampaigns.has(raw_c.id);
