@@ -596,16 +596,6 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                       {visibleColumns.has('notes') && <TableCell className="max-w-[150px]"><EditableCell value={m.notes} memberId={m.id} field="notes" language={language} /></TableCell>}
                       <TableCell className="text-xs">
                         <div className="flex items-center gap-1">
-                          {m.contacto_id && (
-                            <a
-                              href={`/admin/empresas?tab=contactos&contacto=${m.contacto_id}`}
-                              onClick={e => e.stopPropagation()}
-                              className="p-1 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                              title="Ver en directorio de contactos"
-                            >
-                              <Link2 className="h-3.5 w-3.5" />
-                            </a>
-                          )}
                           <button
                             onClick={() => { if (confirm('¿Eliminar este miembro?')) deleteMutation.mutate(m.id); }}
                             className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
