@@ -129,19 +129,6 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "CRM",
-    icon: Briefcase,
-    description: "Gestión de prospectos y oportunidades",
-    items: [
-      { 
-        title: "Gestión de Prospectos", 
-        url: "/admin/prospectos", 
-        icon: Target,
-        description: "Leads avanzados con perfil de empresa"
-      },
-    ]
-  },
-  {
     title: "IA & AGENTES",
     icon: BrainCircuit,
     description: "Inteligencia artificial",
