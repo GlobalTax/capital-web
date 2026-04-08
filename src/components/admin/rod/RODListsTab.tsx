@@ -272,6 +272,10 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', company: '', phone: '', sector: '', notes: '' });
+  const [crmSearch, setCrmSearch] = useState('');
+  const [selectedContactoId, setSelectedContactoId] = useState<string | null>(null);
+  const [showCrmResults, setShowCrmResults] = useState(false);
+  const crmSearchRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(new Set(DEFAULT_VISIBLE));
   const [columnFilters, setColumnFilters] = useState<Record<string, string | null>>({});
