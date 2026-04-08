@@ -302,7 +302,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "💼 EMPLEO",
+    title: "EMPLEO",
     description: "Gestión de ofertas de trabajo",
     items: [
       { 
