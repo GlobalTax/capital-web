@@ -129,19 +129,31 @@ export const sidebarSections: SidebarSection[] = [
     description: "Directorios de fondos e inversores",
     items: [
       { title: "Directorio Corporativos", url: "/admin/corporate-buyers", icon: Landmark, description: "Compradores corporativos y estratégicos" },
-      { title: "Capital Riesgo (CR)", url: "/admin/cr-directory", icon: TrendingUp, description: "Fondos y personas PE/VC" },
-      { title: "Apollo Import CR", url: "/admin/cr-apollo-import", icon: Upload, description: "Importar fondos CR desde Apollo" },
-      { title: "Portfolio CR", url: "/admin/cr-portfolio-list", icon: Wallet, description: "Portfolio de fondos CR" },
-      { title: "Portfolio Scraper CR", url: "/admin/cr-portfolio-scraper", icon: RefreshCw, description: "Scraper de portfolios CR" },
-      { title: "Fund Intelligence", url: "/admin/fund-intelligence", icon: BarChart3, description: "Inteligencia de fondos" },
-      { title: "Search Funds (SF)", url: "/admin/sf-directory", icon: Search, description: "Directorio de Search Funds" },
-      { title: "Apollo Import SF", url: "/admin/sf-apollo-import", icon: Upload, description: "Importar SF desde Apollo" },
-      { title: "Radar SF", url: "/admin/sf-radar", icon: Crosshair, description: "Radar de Search Funds" },
-      { title: "Adquisiciones SF", url: "/admin/sf-acquisitions", icon: ShoppingCart, description: "Adquisiciones de Search Funds" },
-      { title: "Backers SF", url: "/admin/sf-backers", icon: Users, description: "Backers de Search Funds" },
-      { title: "Matching Inbox SF", url: "/admin/sf-matches", icon: Mail, description: "Matching inbox de SF" },
-      { title: "Boutiques M&A", url: "/admin/mna-directory", icon: Building2, description: "Competidores y asesores M&A" },
-      { title: "Apollo Import M&A", url: "/admin/mna-apollo-import", icon: Upload, description: "Importar boutiques desde Apollo" },
+      { 
+        title: "Capital Riesgo (CR)", url: "/admin/cr-directory", icon: TrendingUp, description: "Fondos y personas PE/VC",
+        subItems: [
+          { title: "Portfolio CR", url: "/admin/cr-portfolio-list", icon: Wallet, description: "Portfolio de fondos CR" },
+          { title: "Portfolio Scraper", url: "/admin/cr-portfolio-scraper", icon: RefreshCw, description: "Scraper de portfolios CR" },
+          { title: "Apollo Import", url: "/admin/cr-apollo-import", icon: Upload, description: "Importar fondos CR desde Apollo" },
+          { title: "Fund Intelligence", url: "/admin/fund-intelligence", icon: BarChart3, description: "Inteligencia de fondos" },
+        ]
+      },
+      { 
+        title: "Search Funds (SF)", url: "/admin/sf-directory", icon: Search, description: "Directorio de Search Funds",
+        subItems: [
+          { title: "Radar SF", url: "/admin/sf-radar", icon: Crosshair, description: "Radar de Search Funds" },
+          { title: "Adquisiciones SF", url: "/admin/sf-acquisitions", icon: ShoppingCart, description: "Adquisiciones de Search Funds" },
+          { title: "Backers SF", url: "/admin/sf-backers", icon: Users, description: "Backers de Search Funds" },
+          { title: "Matching Inbox", url: "/admin/sf-matches", icon: Mail, description: "Matching inbox de SF" },
+          { title: "Apollo Import", url: "/admin/sf-apollo-import", icon: Upload, description: "Importar SF desde Apollo" },
+        ]
+      },
+      { 
+        title: "Boutiques M&A", url: "/admin/mna-directory", icon: Building2, description: "Competidores y asesores M&A",
+        subItems: [
+          { title: "Apollo Import", url: "/admin/mna-apollo-import", icon: Upload, description: "Importar boutiques desde Apollo" },
+        ]
+      },
       { title: "Rel. Oportunidades", url: "/admin/oportunidades", icon: Briefcase, description: "Mandatos visibles en ROD" },
     ]
   },

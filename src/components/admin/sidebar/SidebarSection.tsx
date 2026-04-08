@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from '@/components/ui/sidebar';
 import { SidebarSection as SidebarSectionType } from '@/features/admin/config/sidebar-config';
 import { SidebarMenuItem } from './SidebarMenuItem';
+import { SidebarSubGroup } from './SidebarSubGroup';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,20 +18,18 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
 }) => {
   const location = useLocation();
   
-  // Check if any item in this section is active
-  const hasActiveItem = visibleItems.some(item => 
-    location.pathname === item.url || location.pathname.startsWith(item.url + '/')
-  );
+  // Check if any item (or sub-item) in this section is active
+  const hasActiveItem = visibleItems.some(item => {
+    if (location.pathname === item.url || location.pathname.startsWith(item.url + '/')) return true;
+    if (item.subItems?.some(sub => location.pathname === sub.url || location.pathname.startsWith(sub.url + '/'))) return true;
+    return false;
+  });
   
-  // Single-item sections are always expanded (no collapsible header)
-  const isSingleItem = visibleItems.length === 1;
-  
-  // Start expanded if has active item, otherwise collapsed
+  const isSingleItem = visibleItems.length === 1 && !visibleItems[0].subItems;
   const [isExpanded, setIsExpanded] = useState(hasActiveItem || isSingleItem);
 
   if (visibleItems.length === 0) return null;
 
-  // Single-item section: render directly without collapsible wrapper
   if (isSingleItem) {
     return (
       <SidebarGroup className="px-2 py-0.5">
@@ -65,11 +64,15 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
       
       <SidebarGroupContent className={cn(
         "overflow-hidden transition-all duration-200",
-        isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+        isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
       )}>
         <SidebarMenu className="space-y-0.5 mt-0.5">
           {visibleItems.map((item) => (
-            <SidebarMenuItem key={item.title} item={item} />
+            item.subItems && item.subItems.length > 0 ? (
+              <SidebarSubGroup key={item.title} parentItem={item} />
+            ) : (
+              <SidebarMenuItem key={item.title} item={item} />
+            )
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
