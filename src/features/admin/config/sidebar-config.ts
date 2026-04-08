@@ -596,6 +596,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "MARKETING",
+    icon: Send,
     description: "Comunicación con leads",
     items: [
       { 
