@@ -1255,24 +1255,34 @@ export default function ContactListDetailPage() {
         }
         // Insert copy without notas and id
         const { id, notas, created_at, ...rest } = moveCopyCompany as any;
-        await supabase.from('outbound_list_companies' as any).insert({
+        const { error: insertErr } = await supabase.from('outbound_list_companies' as any).insert({
           ...rest,
           list_id: targetId,
           notas: null,
         } as any);
+        if (insertErr) throw insertErr;
         toast.success(isMadreList ? 'Empresa añadida a la lista' : 'Empresa copiada a la otra lista');
       } else if (moveCopyFromSublistId) {
         // Move from sublist: update the record in the source sublist
-        await supabase.from('outbound_list_companies' as any)
+        const { error: moveSubErr, count } = await supabase.from('outbound_list_companies' as any)
           .update({ list_id: targetId } as any)
           .eq('list_id', moveCopyFromSublistId)
           .eq('cif', moveCopyCompany.cif);
+        if (moveSubErr) throw moveSubErr;
+        if (count === 0) {
+          // Fallback: try by id
+          const { error: moveSubErr2 } = await supabase.from('outbound_list_companies' as any)
+            .update({ list_id: targetId } as any)
+            .eq('id', moveCopyCompany.id);
+          if (moveSubErr2) throw moveSubErr2;
+        }
         toast.success('Empresa reasignada a otra sublista');
       } else {
         // Move: update list_id, clear notas
-        await supabase.from('outbound_list_companies' as any)
+        const { error: moveErr } = await supabase.from('outbound_list_companies' as any)
           .update({ list_id: targetId, notas: null } as any)
           .eq('id', moveCopyCompany.id);
+        if (moveErr) throw moveErr;
         toast.success('Empresa movida a la otra lista');
       }
       // Auto-link target as sublista if source is lista madre

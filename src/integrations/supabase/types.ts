@@ -9969,6 +9969,7 @@ export type Database = {
           ebitda: number | null
           ebitda_margin: number | null
           empleados: number | null
+          es_internacional: boolean
           es_target: boolean | null
           estado_target: string | null
           facebook_url: string | null
@@ -10037,6 +10038,7 @@ export type Database = {
           ebitda?: number | null
           ebitda_margin?: number | null
           empleados?: number | null
+          es_internacional?: boolean
           es_target?: boolean | null
           estado_target?: string | null
           facebook_url?: string | null
@@ -10105,6 +10107,7 @@ export type Database = {
           ebitda?: number | null
           ebitda_margin?: number | null
           empleados?: number | null
+          es_internacional?: boolean
           es_target?: boolean | null
           estado_target?: string | null
           facebook_url?: string | null
