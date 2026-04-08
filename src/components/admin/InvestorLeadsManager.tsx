@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -23,7 +24,6 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Search,
   Download,
-  Filter,
   Mail,
   Phone,
   Building2,
@@ -32,7 +32,7 @@ import {
   RefreshCw,
   Trash2,
 } from 'lucide-react';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface InvestorLead {
@@ -51,15 +51,6 @@ interface InvestorLead {
   email_opened: boolean;
 }
 
-const statusColors: Record<string, string> = {
-  new: 'bg-blue-500',
-  contacted: 'bg-yellow-500',
-  qualified: 'bg-green-500',
-  interested: 'bg-purple-500',
-  not_interested: 'bg-gray-500',
-  converted: 'bg-emerald-500',
-};
-
 const investorTypeLabels: Record<string, string> = {
   individual: 'Individual',
   family_office: 'Family Office',
@@ -73,10 +64,10 @@ export const InvestorLeadsManager: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [investorTypeFilter, setInvestorTypeFilter] = useState<string>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch investor leads
   const { data: leads, isLoading, refetch } = useQuery({
     queryKey: ['investor-leads', statusFilter, investorTypeFilter, searchTerm],
     queryFn: async () => {
@@ -89,11 +80,9 @@ export const InvestorLeadsManager: React.FC = () => {
       if (statusFilter !== 'all') {
         query = query.eq('status', statusFilter);
       }
-
       if (investorTypeFilter !== 'all') {
         query = query.eq('investor_type', investorTypeFilter);
       }
-
       if (searchTerm) {
         query = query.or(
           `full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,company.ilike.%${searchTerm}%`
@@ -101,121 +90,101 @@ export const InvestorLeadsManager: React.FC = () => {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
       return data as InvestorLead[];
     },
   });
 
-  // Export to CSV
   const exportToCSV = () => {
     if (!leads || leads.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'No hay datos',
-        description: 'No hay leads para exportar',
-      });
+      toast({ variant: 'destructive', title: 'No hay datos', description: 'No hay leads para exportar' });
       return;
     }
-
-    const headers = [
-      'Fecha',
-      'Nombre',
-      'Email',
-      'Teléfono',
-      'Empresa',
-      'Tipo Inversor',
-      'Rango Inversión',
-      'Sectores Interés',
-      'Puntuación',
-      'Estado',
-      'Formato',
-      'Email Abierto',
-    ];
-
+    const headers = ['Fecha', 'Nombre', 'Email', 'Teléfono', 'Empresa', 'Tipo Inversor', 'Rango Inversión', 'Sectores Interés', 'Puntuación', 'Estado', 'Formato', 'Email Abierto'];
     const rows = leads.map(lead => [
-      new Date(lead.created_at).toLocaleDateString('es-ES'),
-      lead.full_name,
-      lead.email,
-      lead.phone || '',
-      lead.company || '',
-      investorTypeLabels[lead.investor_type || ''] || '',
-      lead.investment_range || '',
-      lead.sectors_of_interest || '',
-      lead.lead_score.toString(),
-      lead.status,
-      lead.document_format,
-      lead.email_opened ? 'Sí' : 'No',
+      new Date(lead.created_at).toLocaleDateString('es-ES'), lead.full_name, lead.email,
+      lead.phone || '', lead.company || '', investorTypeLabels[lead.investor_type || ''] || '',
+      lead.investment_range || '', lead.sectors_of_interest || '', lead.lead_score.toString(),
+      lead.status, lead.document_format, lead.email_opened ? 'Sí' : 'No',
     ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
-    ].join('\n');
-
+    const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${cell}"`).join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `investor_leads_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-
-    toast({
-      title: 'Exportación exitosa',
-      description: `${leads.length} leads exportados a CSV`,
-    });
+    toast({ title: 'Exportación exitosa', description: `${leads.length} leads exportados a CSV` });
   };
 
-  // Update lead status
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase
         .from('investor_leads')
         .update({ status, status_updated_at: new Date().toISOString() })
         .eq('id', id);
-
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['investor-leads'] });
-      toast({
-        title: 'Estado actualizado',
-        description: 'El estado del lead se actualizó correctamente',
-      });
+      toast({ title: 'Estado actualizado' });
     },
-    onError: (error) => {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudo actualizar el estado',
-      });
+    onError: () => {
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar el estado' });
     },
   });
 
-  // Delete lead (soft delete)
   const deleteLeadMutation = useMutation({
     mutationFn: async (id: string) => {
+      const { error } = await supabase.from('investor_leads').update({ is_deleted: true }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['investor-leads'] });
+      toast({ title: 'Lead eliminado' });
+    },
+    onError: () => {
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo eliminar el lead' });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
       const { error } = await supabase
         .from('investor_leads')
         .update({ is_deleted: true })
-        .eq('id', id);
-
+        .in('id', ids);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, ids) => {
       queryClient.invalidateQueries({ queryKey: ['investor-leads'] });
-      toast({
-        title: 'Lead eliminado',
-        description: 'El lead se eliminó correctamente',
-      });
+      setSelectedIds(new Set());
+      toast({ title: `${ids.length} leads eliminados` });
     },
     onError: () => {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudo eliminar el lead',
-      });
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron eliminar los leads' });
     },
   });
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked && leads) {
+      setSelectedIds(new Set(leads.map(l => l.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    const next = new Set(selectedIds);
+    if (checked) next.add(id); else next.delete(id);
+    setSelectedIds(next);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    if (window.confirm(`¿Eliminar ${selectedIds.size} lead(s) seleccionados?`)) {
+      bulkDeleteMutation.mutate(Array.from(selectedIds));
+    }
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600 font-bold';
@@ -223,6 +192,9 @@ export const InvestorLeadsManager: React.FC = () => {
     if (score >= 40) return 'text-yellow-600';
     return 'text-gray-600';
   };
+
+  const allSelected = leads && leads.length > 0 && selectedIds.size === leads.length;
+  const someSelected = selectedIds.size > 0 && !allSelected;
 
   return (
     <div className="space-y-6">
@@ -287,7 +259,7 @@ export const InvestorLeadsManager: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters + Bulk Actions */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -328,11 +300,38 @@ export const InvestorLeadsManager: React.FC = () => {
         </Select>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 bg-muted/50 border rounded-lg px-4 py-2">
+          <span className="text-sm font-medium">
+            {selectedIds.size} seleccionado{selectedIds.size > 1 ? 's' : ''}
+          </span>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={handleBulkDelete}
+            disabled={bulkDeleteMutation.isPending}
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Eliminar seleccionados
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+            Cancelar
+          </Button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                  onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                />
+              </TableHead>
               <TableHead>Puntuación</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Contacto</TableHead>
@@ -346,13 +345,19 @@ export const InvestorLeadsManager: React.FC = () => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   Cargando...
                 </TableCell>
               </TableRow>
             ) : leads && leads.length > 0 ? (
               leads.map((lead) => (
-                <TableRow key={lead.id}>
+                <TableRow key={lead.id} className={selectedIds.has(lead.id) ? 'bg-muted/30' : ''}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(lead.id)}
+                      onCheckedChange={(checked) => handleSelectOne(lead.id, !!checked)}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className={`text-lg ${getScoreColor(lead.lead_score)}`}>
                       {lead.lead_score}
@@ -418,19 +423,11 @@ export const InvestorLeadsManager: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => window.open(`mailto:${lead.email}`, '_blank')}
-                      >
+                      <Button size="sm" variant="ghost" onClick={() => window.open(`mailto:${lead.email}`, '_blank')}>
                         <Mail className="h-4 w-4" />
                       </Button>
                       {lead.phone && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => window.open(`tel:${lead.phone}`, '_blank')}
-                        >
+                        <Button size="sm" variant="ghost" onClick={() => window.open(`tel:${lead.phone}`, '_blank')}>
                           <Phone className="h-4 w-4" />
                         </Button>
                       )}
@@ -452,7 +449,7 @@ export const InvestorLeadsManager: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No se encontraron leads
                 </TableCell>
               </TableRow>
