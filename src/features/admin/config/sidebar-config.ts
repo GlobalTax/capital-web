@@ -320,6 +320,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "EMPLEO",
+    icon: GraduationCap,
     description: "Gestión de ofertas de trabajo",
     items: [
       { 
