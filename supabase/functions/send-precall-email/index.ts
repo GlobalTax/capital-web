@@ -1,10 +1,11 @@
 /**
  * Send Pre-Call Email Edge Function
  * Sends a personalized email before calling the lead
+ * Dynamic sender based on assigned user
  */
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
@@ -18,13 +19,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Default sender fallback
+const DEFAULT_SENDER = {
+  full_name: "Samuel Navarro",
+  email: "samuel@capittal.es",
+  phone: "+34 695 717 490",
+};
+
 interface SendPrecallEmailRequest {
   leadId: string;
   contactName: string;
   companyName: string;
   email: string;
-  senderName?: string;
-  senderTitle?: string;
+  assignedTo?: string; // user_id of the assigned admin user
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -40,9 +47,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[send-precall-email] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
 
     const payload: SendPrecallEmailRequest = await req.json();
-    const { leadId, contactName, companyName, email, senderName = "Samuel Navarro", senderTitle = "M&A Advisor" } = payload;
+    const { leadId, contactName, companyName, email, assignedTo } = payload;
 
-    console.log(`[send-precall-email] Processing lead: ${leadId}, email: ${email}`);
+    console.log(`[send-precall-email] Processing lead: ${leadId}, email: ${email}, assignedTo: ${assignedTo}`);
 
     if (!leadId || !email) {
       return new Response(
@@ -73,51 +80,101 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // ========== Fetch sender info from admin_users ==========
+    let sender = { ...DEFAULT_SENDER };
+    
+    if (assignedTo) {
+      const { data: adminUser, error: adminError } = await supabase
+        .from('admin_users')
+        .select('full_name, email, phone')
+        .eq('user_id', assignedTo)
+        .single();
+
+      if (!adminError && adminUser) {
+        sender = {
+          full_name: adminUser.full_name || DEFAULT_SENDER.full_name,
+          email: adminUser.email || DEFAULT_SENDER.email,
+          phone: adminUser.phone || DEFAULT_SENDER.phone,
+        };
+        console.log(`[send-precall-email] Using assigned sender: ${sender.full_name} <${sender.email}>`);
+      } else {
+        console.warn('[send-precall-email] Could not fetch assigned user, using default sender');
+      }
+    }
+
+    // ========== Fetch CC recipients from email_recipients_config ==========
+    const { data: ccRecipients } = await supabase
+      .from('email_recipients_config')
+      .select('email, name, is_bcc')
+      .eq('is_active', true)
+      .eq('is_default_copy', true)
+      .order('name');
+
+    // Separate CC and BCC, excluding the sender themselves
+    const ccEmails = (ccRecipients || [])
+      .filter(r => !r.is_bcc && r.email !== sender.email)
+      .map(r => r.email);
+    
+    const bccEmails = (ccRecipients || [])
+      .filter(r => r.is_bcc && r.email !== sender.email)
+      .map(r => r.email);
+
+    // Build the CC names list for the email body (only visible CC, not BCC)
+    const ccNames = (ccRecipients || [])
+      .filter(r => !r.is_bcc && r.email !== sender.email)
+      .map(r => r.name?.split(' ')[0] || r.name) // First name only
+      .filter(Boolean);
+
+    const ccMention = ccNames.length > 0
+      ? `Pongo en copia a mis compañeros ${ccNames.slice(0, -1).join(', ')}${ccNames.length > 1 ? ' y ' : ''}${ccNames[ccNames.length - 1]}.`
+      : '';
+
+    // Extract sender first name
+    const senderFirstName = sender.full_name.split(' ')[0];
+    const saludo = contactName ? `Apreciado ${contactName.split(' ')[0]},` : 'Apreciado/a,';
+
     const subject = `Capittal - Comentamos la valoración de ${companyName}`;
-    const saludo = contactName ? `Hola ${contactName},` : 'Hola,';
 
     const htmlEmail = `
-      <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background:#f8fafc;">
-        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:32px; color:#111827;">
-          <p style="margin:0 0 16px; font-size:16px;">${saludo}</p>
+      <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background:#ffffff;">
+        <div style="color:#111827; font-size:15px; line-height:1.7;">
+          <p style="margin:0 0 18px;">${saludo}</p>
           
-          <p style="margin:0 0 16px; line-height:1.6;">
-            Me pongo en contacto contigo porque recientemente completaste la valoración de <strong>${companyName}</strong> en nuestra calculadora.
+          <p style="margin:0 0 18px;">
+            Soy ${senderFirstName}, del equipo de fusiones y adquisiciones de Capittal. Encantado de saludarte.${ccMention ? ` ${ccMention}` : ''}
           </p>
           
-          <p style="margin:0 0 16px; line-height:1.6;">
-            Me gustaría comentar los resultados contigo y resolver cualquier duda que puedas tener sobre el informe que recibiste.
+          <p style="margin:0 0 18px;">
+            Me pongo en contacto contigo dado que hemos recibido tu respuesta a nuestro formulario web de valoración automática de empresas y, tras analizar vuestra actividad, así como la información disponible en el Registro Mercantil, nos ha parecido muy interesante conocer más acerca de vuestro proyecto y situación actual.
           </p>
           
-          <p style="margin:0 0 16px; line-height:1.6;">
-            <strong>¿Te viene bien que te llame esta tarde o mañana por la mañana?</strong> Si prefieres otro momento, respóndeme con un par de opciones de horario.
+          <p style="margin:0 0 18px;">
+            Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.
           </p>
           
-          <p style="margin:0 0 16px; line-height:1.6;">
-            La llamada sería breve (10-15 minutos) y sin ningún compromiso.
+          <p style="margin:0 0 18px;">
+            Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.
           </p>
           
-          <div style="border-top:1px solid #e5e7eb; padding-top:20px; margin-top:24px;">
-            <p style="margin:0 0 8px; font-size:16px;">Un saludo,</p>
-            <p style="margin:0 0 4px; font-weight:600; color:#1f2937;">${senderName}</p>
-            <p style="margin:0 0 20px; font-size:14px; color:#6b7280;">${senderTitle} · Capittal</p>
-          </div>
+          <p style="margin:0 0 18px;">
+            Te dejo mi número: <strong>${sender.phone}</strong> por si prefieres llamarme tú directamente.
+          </p>
           
-          <div style="background:#f3f4f6; border-radius:6px; padding:12px; margin-top:16px;">
-            <p style="margin:0; font-size:12px; color:#6b7280;">
-              📞 +34 93 123 45 67 · 📧 info@capittal.es · 🌐 capittal.es
-            </p>
-          </div>
+          <p style="margin:0 0 8px;">Un cordial saludo,</p>
+          <p style="margin:0 0 4px; font-weight:600; color:#1f2937;">${sender.full_name}</p>
+          <p style="margin:0 0 4px; font-size:14px; color:#6b7280;">Fusiones y Adquisiciones · Capittal</p>
+          <p style="margin:0; font-size:13px; color:#9ca3af;">📞 ${sender.phone} · 📧 ${sender.email}</p>
         </div>
       </div>
     `;
 
     const textEmail = `${saludo}\n\n` +
-      `Me pongo en contacto contigo porque recientemente completaste la valoración de ${companyName} en nuestra calculadora.\n\n` +
-      `Me gustaría comentar los resultados contigo y resolver cualquier duda que puedas tener sobre el informe que recibiste.\n\n` +
-      `¿Te viene bien que te llame esta tarde o mañana por la mañana? Si prefieres otro momento, respóndeme con un par de opciones de horario.\n\n` +
-      `La llamada sería breve (10-15 minutos) y sin ningún compromiso.\n\n` +
-      `Un saludo,\n${senderName}\n${senderTitle} · Capittal`;
+      `Soy ${senderFirstName}, del equipo de fusiones y adquisiciones de Capittal. Encantado de saludarte.${ccMention ? ` ${ccMention}` : ''}\n\n` +
+      `Me pongo en contacto contigo dado que hemos recibido tu respuesta a nuestro formulario web de valoración automática de empresas y, tras analizar vuestra actividad, así como la información disponible en el Registro Mercantil, nos ha parecido muy interesante conocer más acerca de vuestro proyecto y situación actual.\n\n` +
+      `Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.\n\n` +
+      `Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.\n\n` +
+      `Te dejo mi número: ${sender.phone} por si prefieres llamarme tú directamente.\n\n` +
+      `Un cordial saludo,\n${sender.full_name}\nFusiones y Adquisiciones · Capittal`;
 
     // Generate unique message ID for tracking
     const messageId = `precall_${leadId}_${Date.now()}`;
@@ -131,18 +188,31 @@ const handler = async (req: Request): Promise<Response> => {
       `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none" alt="" /></div></div>`
     );
 
-    // Send email
-    const emailResponse = await resend.emails.send({
-      from: "Capittal <samuel@capittal.es>",
+    // Build email params
+    const emailParams: any = {
+      from: `${sender.full_name} <${sender.email}>`,
       to: [email],
       subject,
       html: htmlWithTracking,
       text: textEmail,
-      reply_to: "samuel@capittal.es",
+      reply_to: sender.email,
       headers: {
-        "List-Unsubscribe": "<mailto:samuel@capittal.es?subject=unsubscribe>",
+        "List-Unsubscribe": `<mailto:${sender.email}?subject=unsubscribe>`,
       },
-    });
+    };
+
+    // Add CC and BCC if available
+    if (ccEmails.length > 0) {
+      emailParams.cc = ccEmails;
+    }
+    if (bccEmails.length > 0) {
+      emailParams.bcc = bccEmails;
+    }
+
+    console.log(`[send-precall-email] Sending from: ${sender.full_name} <${sender.email}>, CC: ${ccEmails.join(', ')}, BCC: ${bccEmails.join(', ')}`);
+
+    // Send email
+    const emailResponse = await resend.emails.send(emailParams);
 
     console.log('[send-precall-email] Email sent:', emailResponse);
 
@@ -165,11 +235,14 @@ const handler = async (req: Request): Promise<Response> => {
       lead_id: leadId,
       lead_type: 'valuation',
       activity_type: 'email_precall_sent',
-      description: `Email pre-llamada enviado a ${email}`,
+      description: `Email pre-llamada enviado a ${email} desde ${sender.email}`,
       metadata: {
         email_id: emailResponse?.data?.id,
         message_id: messageId,
         subject,
+        sender_name: sender.full_name,
+        sender_email: sender.email,
+        cc: ccEmails,
       },
     });
 
