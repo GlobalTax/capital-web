@@ -160,18 +160,20 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             <h4 className="font-medium text-sm truncate">{lead.company_name}</h4>
             <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
-                <MoreHorizontal className="h-3.5 w-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onSendPrecallEmail} disabled={lead.precall_email_sent || false}>
-                {lead.precall_email_sent ? 'Email pre-llamada enviado' : 'Enviar email pre-llamada'}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {['nuevo', 'contactando'].includes(lead.lead_status_crm || '') && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onSendPrecallEmail} disabled={lead.precall_email_sent || false}>
+                  {lead.precall_email_sent ? 'Email pre-llamada enviado' : 'Enviar email pre-llamada'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Badges */}
@@ -223,24 +225,26 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
           </div>
         )}
 
-        {/* Pre-call email status */}
-        <div className={`flex items-center gap-1.5 text-xs rounded-md px-2 py-1 ${
-          lead.precall_email_sent 
-            ? 'bg-emerald-50 text-emerald-700' 
-            : 'bg-amber-50 text-amber-700'
-        }`}>
-          {lead.precall_email_sent ? (
-            <>
-              <MailCheck className="h-3 w-3 shrink-0" />
-              <span>Email enviado</span>
-            </>
-          ) : (
-            <>
-              <Mail className="h-3 w-3 shrink-0" />
-              <span>Email pendiente</span>
-            </>
-          )}
-        </div>
+        {/* Pre-call email status - only in early stages */}
+        {['nuevo', 'contactando'].includes(lead.lead_status_crm || '') && (
+          <div className={`flex items-center gap-1.5 text-xs rounded-md px-2 py-1 ${
+            lead.precall_email_sent 
+              ? 'bg-emerald-50 text-emerald-700' 
+              : 'bg-amber-50 text-amber-700'
+          }`}>
+            {lead.precall_email_sent ? (
+              <>
+                <MailCheck className="h-3 w-3 shrink-0" />
+                <span>Email enviado</span>
+              </>
+            ) : (
+              <>
+                <Mail className="h-3 w-3 shrink-0" />
+                <span>Email pendiente</span>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
