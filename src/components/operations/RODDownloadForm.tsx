@@ -421,16 +421,6 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
               </p>
             )}
 
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="marketing_consent"
-                checked={form.watch('marketing_consent')}
-                onCheckedChange={(checked) => form.setValue('marketing_consent', checked as boolean)}
-              />
-              <label htmlFor="marketing_consent" className="text-sm leading-tight">
-                Deseo recibir información sobre nuevas oportunidades de inversión y comunicaciones de Capittal.
-              </label>
-            </div>
 
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
               Al descargar este documento, serás incluido en nuestro directorio de inversores y recibirás periódicamente nuevas oportunidades de inversión.
