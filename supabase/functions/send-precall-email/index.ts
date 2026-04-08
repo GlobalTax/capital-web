@@ -135,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
     const senderFirstName = sender.full_name.split(' ')[0];
     const saludo = contactName ? `Apreciado ${contactName.split(' ')[0]},` : 'Apreciado/a,';
 
-    const subject = `Capittal - Comentamos la valoración de ${companyName}`;
+    const subject = customSubject || `Consulta M&A | ${companyName} <> Capittal`;
 
     const htmlEmail = `
       <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background:#ffffff;">
