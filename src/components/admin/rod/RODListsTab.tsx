@@ -600,30 +600,36 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                             value={crmSearch}
                             onChange={e => handleCrmSearchChange(e.target.value)}
                             onFocus={() => crmSearch.trim().length >= 2 && setShowCrmResults(true)}
-                            onBlur={() => setTimeout(() => setShowCrmResults(false), 200)}
+                            onBlur={() => setTimeout(() => setShowCrmResults(false), 250)}
                             placeholder="Buscar por nombre, email o empresa..."
+                            autoComplete="off"
                           />
+                          {crmFetching && crmSearch.trim().length >= 2 && (
+                            <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                          )}
                         </div>
-                        {showCrmResults && crmResults && crmResults.length > 0 && (
-                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto">
-                            {crmResults.map((c: any) => (
-                              <button
-                                key={c.id}
-                                className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors border-b last:border-b-0"
-                                onMouseDown={(e) => { e.preventDefault(); selectCrmContact(c); }}
-                              >
-                                <div className="font-medium">{[c.nombre, c.apellidos].filter(Boolean).join(' ')}</div>
-                                <div className="text-muted-foreground flex gap-2">
-                                  {c.email && <span>{c.email}</span>}
-                                  {c.empresas?.nombre && <span>· {c.empresas.nombre}</span>}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                        {showCrmResults && debouncedCrmSearch.trim().length >= 2 && crmResults && crmResults.length === 0 && (
-                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md p-3 text-xs text-muted-foreground text-center">
-                            No se encontraron contactos
+                        {showCrmResults && debouncedCrmSearch.trim().length >= 2 && (
+                          <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-popover border rounded-md shadow-lg max-h-[240px] overflow-y-auto">
+                            {crmResults && crmResults.length > 0 ? (
+                              crmResults.map((c: any) => (
+                                <button
+                                  key={c.id}
+                                  className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors border-b last:border-b-0"
+                                  onMouseDown={(e) => { e.preventDefault(); selectCrmContact(c); }}
+                                >
+                                  <div className="font-medium">{[c.nombre, c.apellidos].filter(Boolean).join(' ')}</div>
+                                  <div className="text-muted-foreground flex gap-2 flex-wrap">
+                                    {c.email && <span>{c.email}</span>}
+                                    {c.empresas?.nombre && <span>· {c.empresas.nombre}</span>}
+                                    {c.cargo && <span>· {c.cargo}</span>}
+                                  </div>
+                                </button>
+                              ))
+                            ) : !crmFetching ? (
+                              <div className="p-3 text-xs text-muted-foreground text-center">
+                                No se encontraron contactos
+                              </div>
+                            ) : null}
                           </div>
                         )}
                       </>
