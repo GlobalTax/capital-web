@@ -670,7 +670,8 @@ function SendList({
       <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-sm">
         <p className="font-medium text-blue-800">
           Se enviará este follow up a <strong>{pendingCompanies.length}</strong> empresa(s) pendiente(s).
-          Se han excluido <strong>{excluded}</strong> empresa(s) que ya respondieron.
+          {excluded > 0 && <> Se han excluido <strong>{excluded}</strong> empresa(s).</>}
+          {withoutInitialEmailCount > 0 && <> ({withoutInitialEmailCount} sin envío inicial)</>}
         </p>
       </div>
 
