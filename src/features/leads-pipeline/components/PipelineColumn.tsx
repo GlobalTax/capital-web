@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PipelineCard } from './PipelineCard';
 import type { PipelineLead, PipelineColumn as ColumnType } from '../types';
+import type { EmailVariantOption } from '../utils/buildPrecallEmailPreview';
 
 interface PipelineColumnProps {
   column: ColumnType;
