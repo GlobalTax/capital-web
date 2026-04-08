@@ -3015,7 +3015,7 @@ export default function ContactListDetailPage() {
       )}
 
       {/* Company Drawer */}
-      <CompanyDrawer company={drawerCompany} onClose={() => setDrawerCompany(null)} onEdit={() => { setEditingCompany(drawerCompany); setDrawerCompany(null); }} />
+      <CompanyDrawer company={drawerCompany} onClose={() => setDrawerCompany(null)} onEdit={() => { setEditingCompany(drawerCompany); setDrawerCompany(null); }} dataScale={dataScale} />
 
       {/* Dedup Modal */}
       <Dialog open={isDedupModalOpen} onOpenChange={setIsDedupModalOpen}>
