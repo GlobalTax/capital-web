@@ -184,18 +184,11 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
                       Enviar email
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('valoracion-cast')}>
-                        Valoración - Castellano
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('venta-cast')}>
-                        Venta - Castellano
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('valoracion-cat')}>
-                        Valoració - Català
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('venta-cat')}>
-                        Venda - Català
-                      </DropdownMenuItem>
+                      {(variantOptions || SELL_PIPELINE_VARIANTS).map(opt => (
+                        <DropdownMenuItem key={opt.variant} onClick={() => onSendPrecallEmail(opt.variant)}>
+                          {opt.label}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
                 )}
