@@ -40,7 +40,17 @@ import {
   Landmark,
   RefreshCw,
   Calendar,
-  Bot
+  Bot,
+  Flame,
+  BrainCircuit,
+  PenTool,
+  Database,
+  GraduationCap,
+  Radar,
+  LineChart,
+  BookOpen,
+  Send,
+  Cog
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -55,6 +65,7 @@ export interface SidebarItem {
 
 export interface SidebarSection {
   title: string;
+  icon?: LucideIcon;
   description: string;
   items: SidebarItem[];
 }
@@ -62,6 +73,7 @@ export interface SidebarSection {
 export const sidebarSections: SidebarSection[] = [
   {
     title: "DASHBOARD",
+    icon: LayoutDashboard,
     description: "Panel principal",
     items: [
       { 
@@ -92,6 +104,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "LEADS",
+    icon: Flame,
     description: "Centro de gestión de leads",
     items: [
       { 
@@ -117,6 +130,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CRM",
+    icon: Briefcase,
     description: "Gestión de prospectos y oportunidades",
     items: [
       { 
@@ -129,6 +143,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "IA & AGENTES",
+    icon: BrainCircuit,
     description: "Inteligencia artificial",
     items: [
       { 
@@ -149,6 +164,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CREAR CONTENIDO",
+    icon: PenTool,
     description: "Herramientas de creación",
     items: [
       { 
@@ -199,6 +215,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "GESTIONAR DATOS",
+    icon: Database,
     description: "Información corporativa",
     items: [
       { 
@@ -303,6 +320,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "EMPLEO",
+    icon: GraduationCap,
     description: "Gestión de ofertas de trabajo",
     items: [
       { 
@@ -327,6 +345,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "WEB INTELLIGENCE",
+    icon: Globe,
     description: "Empresas visitantes de la web",
     items: [
       { 
@@ -345,6 +364,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "ANALIZAR LEADS",
+    icon: LineChart,
     description: "Gestión de prospectos",
     items: [
       { 
@@ -423,6 +443,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "NOTICIAS M&A",
+    icon: Newspaper,
     description: "Gestión de noticias automatizadas",
     items: [
       { 
@@ -435,6 +456,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CAPITAL RIESGO",
+    icon: TrendingUp,
     description: "CRM de fondos PE/VC",
     items: [
       { 
@@ -466,6 +488,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "SEARCH FUNDS",
+    icon: Search,
     description: "Gestión y matching de Search Funds",
     items: [
       { 
@@ -516,6 +539,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CORPORATIVOS",
+    icon: Landmark,
     description: "Compradores estratégicos",
     items: [
       { 
@@ -528,6 +552,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "BOUTIQUES M&A",
+    icon: Building2,
     description: "Directorio de competencia",
     items: [
       { 
@@ -546,6 +571,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "RECURSOS",
+    icon: BookOpen,
     description: "Gestión de recursos y herramientas",
     items: [
       { 
@@ -570,6 +596,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "MARKETING",
+    icon: Send,
     description: "Comunicación con leads",
     items: [
       { 
@@ -594,6 +621,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CONFIGURACIÓN",
+    icon: Cog,
     description: "Configuración del sistema",
     items: [
       { 
