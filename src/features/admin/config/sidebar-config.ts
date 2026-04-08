@@ -215,6 +215,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "GESTIONAR DATOS",
+    icon: Database,
     description: "Información corporativa",
     items: [
       { 
