@@ -85,8 +85,10 @@ function TemplateEditor({
     { key: 'numero_followup', label: 'Nº follow up', category: 'Follow Up' },
   ];
 
-  const eligible = companies.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
-  const excluded = companies.length - eligible.length;
+  const companiesWithInitialEmail = companies.filter(c => emailSentMap.get(c.id));
+  const eligible = companiesWithInitialEmail.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
+  const withoutInitialEmail = companies.length - companiesWithInitialEmail.length;
+  const excluded = companiesWithInitialEmail.length - eligible.length;
 
   const insertVariable = useCallback((key: string) => {
     const tag = `{{${key}}}`;
