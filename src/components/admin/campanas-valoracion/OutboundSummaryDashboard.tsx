@@ -66,6 +66,7 @@ const getDateThreshold = (preset: DatePreset): Date | null => {
 };
 
 export function OutboundSummaryDashboard() {
+  const navigate = useNavigate();
   const [disabledCampaigns, setDisabledCampaigns] = useState<Set<string>>(new Set());
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
