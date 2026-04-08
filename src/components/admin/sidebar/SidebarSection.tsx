@@ -33,6 +33,9 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[hsl(var(--linear-bg-hover))] rounded-md transition-colors group"
       >
+        {section.icon && (
+          <section.icon className="h-3.5 w-3.5 text-[hsl(var(--linear-text-tertiary))]" />
+        )}
         <SidebarGroupLabel className="text-[10px] font-medium text-[hsl(var(--linear-text-tertiary))] uppercase tracking-wider pointer-events-none m-0 p-0">
           {section.title}
         </SidebarGroupLabel>
