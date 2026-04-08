@@ -1,56 +1,54 @@
 
 
-## Plan: Restaurar todos los items eliminados del sidebar
+## Plan: Reorganizar INVERSORES con sub-grupos internos
 
-### Problema
-Durante la consolidación del sidebar se eliminaron muchos items que antes existían. El usuario quiere que **no se elimine nada**, solo se reorganice.
+### Objetivo
+Dentro de la sección INVERSORES, agrupar los items en sub-categorías visibles al abrir el desplegable. Al expandir, se verán primero los 5 directorios principales, y debajo de cada uno sus herramientas asociadas.
 
-### Items a restaurar, organizados por sección
+### Estructura propuesta
 
-#### LEADS (añadir los que faltan)
-- Reservas Llamadas → `/admin/bookings`
-- Gestión NDAs → `/admin/ndas`
-- Prospectos → `/admin/prospectos`
-- Mandatos Compra → `/admin/mandatos-compra`
-- Deals Pausados → `/admin/deals-paused`
+```text
+▼ INVERSORES
+  ── Directorio Corporativos
+  ── Capital Riesgo (CR)
+       Portfolio CR
+       Portfolio Scraper CR
+       Apollo Import CR
+       Fund Intelligence
+  ── Search Funds (SF)
+       Radar SF
+       Adquisiciones SF
+       Backers SF
+       Matching Inbox SF
+       Apollo Import SF
+  ── Boutiques M&A
+       Apollo Import M&A
+  ── Rel. Oportunidades
+```
 
-#### INVERSORES (añadir sub-items de cada directorio)
-- Apollo Import CR → `/admin/cr-apollo-import`
-- Portfolio CR → `/admin/cr-portfolio-list`
-- Portfolio Scraper CR → `/admin/cr-portfolio-scraper`
-- Fund Intelligence → `/admin/fund-intelligence`
-- Apollo Import SF → `/admin/sf-apollo-import`
-- Radar SF → `/admin/sf-radar`
-- Adquisiciones SF → `/admin/sf-acquisitions`
-- Backers SF → `/admin/sf-backers`
-- Matching Inbox SF → `/admin/sf-matches`
-- Apollo Import MNA → `/admin/mna-apollo-import`
+### Cambios técnicos
 
-#### CONTENIDO & BLOG (añadir)
-- Agentes IA → `/admin/ai-agents`
-- Presentaciones → `/admin/presentations`
+**1. Ampliar el tipo `SidebarItem` en `sidebar-config.ts`**
+- Añadir campo opcional `subItems: SidebarItem[]` para items que actúan como sub-grupo
+- Los items con `subItems` se renderizan como mini-cabeceras con sus hijos debajo, indentados
 
-#### MARKETING & OUTBOUND (añadir)
-- Costes Campañas → `/admin/campaign-costs`
+**2. Reorganizar la sección INVERSORES en `sidebar-config.ts`**
+- Directorio Corporativos → item simple (sin subItems, acceso directo)
+- Capital Riesgo (CR) → item con subItems: Portfolio, Scraper, Apollo Import, Fund Intelligence
+- Search Funds (SF) → item con subItems: Radar, Adquisiciones, Backers, Matching, Apollo Import
+- Boutiques M&A → item con subItems: Apollo Import M&A
+- Rel. Oportunidades → item simple
 
-#### GESTIONAR WEB (añadir)
-- (nada faltante)
+**3. Actualizar `SidebarSection.tsx`**
+- Detectar items con `subItems` y renderizar como mini sub-grupo con label + items indentados
+- Los items sin `subItems` se renderizan normalmente
+- Sub-items tendrán padding-left extra para jerarquía visual
 
-#### CONFIGURACIÓN (añadir)
-- Data Enrichment → `/admin/data-enrichment`
+**4. Actualizar `SidebarMenuItem.tsx`**
+- Añadir soporte para renderizar sub-grupos: el item padre es clickable (va a su URL) y debajo aparecen sus sub-items con indent
 
-#### Nueva sección: EMPLEO
-- Ofertas de Empleo → `/admin/jobs`
-- Solicitudes → `/admin/job-applications`
-- Categorías → `/admin/job-categories`
-- Plantillas → `/admin/job-templates`
-- Solicitudes Colaboradores → `/admin/collaborator-applications`
-
-### Archivo a modificar
-- `src/features/admin/config/sidebar-config.ts` — añadir todos los items faltantes a sus secciones correspondientes
-
-### Notas
-- Ninguna ruta cambia
-- Solo se añaden items al sidebar, no se elimina nada
-- Se mantienen los mismos iconos que usaban anteriormente
+### Archivos a modificar
+- `src/features/admin/config/sidebar-config.ts` — tipos + datos
+- `src/components/admin/sidebar/SidebarSection.tsx` — renderizado sub-grupos
+- `src/components/admin/sidebar/SidebarMenuItem.tsx` — soporte visual sub-items
 
