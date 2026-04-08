@@ -91,13 +91,22 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
 
-  // ─── 3. DIRECTORIOS ───
+  // ─── 3. DIRECTORIO EMPRESAS (standalone) ───
+  {
+    title: "DIRECTORIO EMPRESAS",
+    icon: Database,
+    description: "Base de datos total de empresas",
+    items: [
+      { title: "Directorio Empresas", url: "/admin/empresas", icon: Database, description: "Base de datos de empresas" },
+    ]
+  },
+
+  // ─── 4. INVERSORES ───
   {
     title: "INVERSORES",
     icon: Building2,
-    description: "Bases de datos de empresas y fondos",
+    description: "Directorios de fondos e inversores",
     items: [
-      { title: "Directorio Empresas", url: "/admin/empresas", icon: Building2, description: "Base de datos de empresas" },
       { title: "Directorio Corporativos", url: "/admin/corporate-buyers", icon: Landmark, description: "Compradores corporativos y estratégicos" },
       { title: "Capital Riesgo (CR)", url: "/admin/cr-directory", icon: TrendingUp, description: "Fondos y personas PE/VC" },
       { title: "Search Funds (SF)", url: "/admin/sf-directory", icon: Search, description: "Directorio de Search Funds" },
