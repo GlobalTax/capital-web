@@ -220,8 +220,23 @@ export const sidebarSections: SidebarSection[] = [
       { title: "Workflow Fase 0", url: "/admin/configuracion/workflow-templates", icon: Settings, description: "Configurar tareas del workflow de leads" },
       { title: "Destinatarios Email", url: "/admin/configuracion/destinatarios-email", icon: Target, description: "Gestión de destinatarios de emails" },
       { title: "Firma de Email", url: "/admin/configuracion/firma-email", icon: Mail, description: "Configura tu firma personal para emails outbound" },
+      { title: "Data Enrichment", url: "/admin/data-enrichment", icon: Wrench, description: "Enriquecimiento de datos" },
       { title: "Ajustes", url: "/admin/settings", icon: Settings, description: "Configuración general" },
       { title: "Navegación Sidebar", url: "/admin/settings/sidebar", icon: PanelLeft, description: "Configurar secciones e items del menú lateral" },
+    ]
+  },
+
+  // ─── 9. EMPLEO ───
+  {
+    title: "EMPLEO",
+    icon: BriefcaseBusiness,
+    description: "Gestión de empleo y colaboradores",
+    items: [
+      { title: "Ofertas de Empleo", url: "/admin/jobs", icon: BriefcaseBusiness, description: "Ofertas de trabajo publicadas" },
+      { title: "Solicitudes", url: "/admin/job-applications", icon: FileSpreadsheet, description: "Solicitudes recibidas" },
+      { title: "Categorías", url: "/admin/job-categories", icon: ListChecks, description: "Categorías de empleo" },
+      { title: "Plantillas", url: "/admin/job-templates", icon: LayoutTemplate, description: "Plantillas de ofertas" },
+      { title: "Solicitudes Colaboradores", url: "/admin/collaborator-applications", icon: UserCheck, description: "Solicitudes de colaboradores" },
     ]
   },
 ];
