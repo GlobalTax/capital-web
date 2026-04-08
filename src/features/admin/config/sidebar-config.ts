@@ -40,7 +40,17 @@ import {
   Landmark,
   RefreshCw,
   Calendar,
-  Bot
+  Bot,
+  Flame,
+  BrainCircuit,
+  PenTool,
+  Database,
+  GraduationCap,
+  Radar,
+  LineChart,
+  BookOpen,
+  Send,
+  Cog
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
