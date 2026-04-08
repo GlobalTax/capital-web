@@ -287,37 +287,57 @@ const OperationsList: React.FC<OperationsListProps> = ({
                 )}
               </div>
               
-              <div className="flex flex-wrap items-center gap-2 min-h-[40px] p-2 border rounded-md bg-background">
-                {selectedSectors.length === 0 && (
-                  <span className="text-sm text-muted-foreground">{t('operations.filters.allSectors')}</span>
-                )}
-                {selectedSectors.map(sectorKey => {
-                  const sectorObj = sectors.find(s => s.key === sectorKey);
-                  return (
-                    <Badge key={sectorKey} variant="secondary" className="gap-1 cursor-pointer" onClick={() => handleRemoveSector(sectorKey)}>
-                      {sectorObj?.label || sectorKey}
-                      <X className="h-3 w-3" />
-                    </Badge>
-                  );
-                })}
-                <div className="ml-auto">
-                  <Select value="__add__" onValueChange={(value) => { if (value !== '__add__') handleSectorToggle(value); }}>
-                    <SelectTrigger className="h-7 w-7 p-0 border-0 shadow-none [&>svg]:hidden">
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sectors.filter(s => !selectedSectors.includes(s.key)).map((sector) => (
-                        <SelectItem key={sector.key} value={sector.key}>
+              <Select value="__placeholder__" onValueChange={(value) => { if (value !== '__placeholder__') handleSectorToggle(value); }}>
+                <SelectTrigger className="h-10">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    {selectedSectors.length === 0 ? (
+                      <span className="text-muted-foreground">{t('operations.filters.allSectors')}</span>
+                    ) : (
+                      <div className="flex items-center gap-1 overflow-hidden">
+                        {selectedSectors.slice(0, 2).map(sectorKey => {
+                          const sectorObj = sectors.find(s => s.key === sectorKey);
+                          return (
+                            <Badge key={sectorKey} variant="secondary" className="gap-1 shrink-0 text-xs" onClick={(e) => { e.stopPropagation(); handleRemoveSector(sectorKey); }}>
+                              {sectorObj?.label || sectorKey}
+                              <X className="h-3 w-3" />
+                            </Badge>
+                          );
+                        })}
+                        {selectedSectors.length > 2 && (
+                          <Badge variant="outline" className="shrink-0 text-xs">+{selectedSectors.length - 2}</Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {selectedSectors.length > 0 && (
+                    <button
+                      onClick={() => selectedSectors.forEach(s => handleRemoveSector(s))}
+                      className="w-full text-left px-2 py-1.5 text-sm text-destructive hover:bg-accent transition-colors"
+                    >
+                      Limpiar selección
+                    </button>
+                  )}
+                  {sectors.map((sector) => {
+                    const isSelected = selectedSectors.includes(sector.key);
+                    return (
+                      <SelectItem 
+                        key={sector.key} 
+                        value={sector.key}
+                        className={isSelected ? 'bg-accent font-medium' : ''}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`h-3.5 w-3.5 rounded border shrink-0 flex items-center justify-center ${isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-muted-foreground/30'}`}>
+                            {isSelected && <span className="text-[10px]">✓</span>}
+                          </div>
                           {sector.label}
-                        </SelectItem>
-                      ))}
-                      {sectors.filter(s => !selectedSectors.includes(s.key)).length === 0 && (
-                        <div className="px-2 py-1.5 text-sm text-muted-foreground">Todos seleccionados</div>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Row 2: Deal Type, Date, Sort, Clear */}
