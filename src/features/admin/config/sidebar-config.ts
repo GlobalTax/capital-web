@@ -41,7 +41,22 @@ import {
   FolderOpen,
   Send,
   Cog,
-  Database
+  Database,
+  Phone,
+  FileCheck,
+  Crosshair,
+  PauseCircle,
+  Upload,
+  Wallet,
+  Bot,
+  Presentation,
+  DollarSign,
+  Wrench,
+  BriefcaseBusiness,
+  FileSpreadsheet,
+  ListChecks,
+  LayoutTemplate,
+  UserCheck
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -84,7 +99,11 @@ export const sidebarSections: SidebarSection[] = [
       { title: "Pipeline Ventas", url: "/admin/leads-pipeline", icon: Kanban, description: "Tablero Kanban de leads de venta" },
       { title: "Pipeline Compras", url: "/admin/buy-pipeline", icon: ShoppingCart, description: "Tablero Kanban de leads de compra" },
       { title: "Contactos Compra", url: "/admin/buyer-contacts", icon: ShoppingCart, description: "Contactos campaña compras" },
-      
+      { title: "Prospectos", url: "/admin/prospectos", icon: Crosshair, description: "Prospectos comerciales" },
+      { title: "Mandatos Compra", url: "/admin/mandatos-compra", icon: BriefcaseBusiness, description: "Mandatos de compra activos" },
+      { title: "Deals Pausados", url: "/admin/deals-paused", icon: PauseCircle, description: "Deals en pausa" },
+      { title: "Reservas Llamadas", url: "/admin/bookings", icon: Phone, description: "Reservas de llamadas" },
+      { title: "Gestión NDAs", url: "/admin/ndas", icon: FileCheck, description: "Gestión de NDAs firmados" },
       { title: "Entrada Manual Leads", url: "/admin/calculadora-manual", icon: UserPlus, description: "Introducir leads de Meta/externos" },
       { title: "Listas de Empresas", url: "/admin/listas-contacto", icon: ClipboardList, description: "Gestiona y depura listas de empresas" },
       { title: "Campañas Outbound", url: "/admin/campanas-valoracion", icon: Megaphone, description: "Campañas masivas de valoración por sector" },
@@ -110,8 +129,18 @@ export const sidebarSections: SidebarSection[] = [
     items: [
       { title: "Directorio Corporativos", url: "/admin/corporate-buyers", icon: Landmark, description: "Compradores corporativos y estratégicos" },
       { title: "Capital Riesgo (CR)", url: "/admin/cr-directory", icon: TrendingUp, description: "Fondos y personas PE/VC" },
+      { title: "Apollo Import CR", url: "/admin/cr-apollo-import", icon: Upload, description: "Importar fondos CR desde Apollo" },
+      { title: "Portfolio CR", url: "/admin/cr-portfolio-list", icon: Wallet, description: "Portfolio de fondos CR" },
+      { title: "Portfolio Scraper CR", url: "/admin/cr-portfolio-scraper", icon: RefreshCw, description: "Scraper de portfolios CR" },
+      { title: "Fund Intelligence", url: "/admin/fund-intelligence", icon: BarChart3, description: "Inteligencia de fondos" },
       { title: "Search Funds (SF)", url: "/admin/sf-directory", icon: Search, description: "Directorio de Search Funds" },
+      { title: "Apollo Import SF", url: "/admin/sf-apollo-import", icon: Upload, description: "Importar SF desde Apollo" },
+      { title: "Radar SF", url: "/admin/sf-radar", icon: Crosshair, description: "Radar de Search Funds" },
+      { title: "Adquisiciones SF", url: "/admin/sf-acquisitions", icon: ShoppingCart, description: "Adquisiciones de Search Funds" },
+      { title: "Backers SF", url: "/admin/sf-backers", icon: Users, description: "Backers de Search Funds" },
+      { title: "Matching Inbox SF", url: "/admin/sf-matches", icon: Mail, description: "Matching inbox de SF" },
       { title: "Boutiques M&A", url: "/admin/mna-directory", icon: Building2, description: "Competidores y asesores M&A" },
+      { title: "Apollo Import M&A", url: "/admin/mna-apollo-import", icon: Upload, description: "Importar boutiques desde Apollo" },
       { title: "Rel. Oportunidades", url: "/admin/oportunidades", icon: Briefcase, description: "Mandatos visibles en ROD" },
     ]
   },
@@ -128,6 +157,8 @@ export const sidebarSections: SidebarSection[] = [
       { title: "Noticias M&A", url: "/admin/noticias", icon: Newspaper, description: "Moderar y publicar noticias" },
       { title: "Landing Pages", url: "/admin/landing-pages-unified", icon: LayoutDashboard, description: "Todas las landing pages" },
       { title: "Recursos & Lead Magnets", url: "/admin/lead-magnets", icon: Zap, description: "Recursos descargables" },
+      { title: "Agentes IA", url: "/admin/ai-agents", icon: Bot, badge: "AI", description: "Gestión de agentes IA" },
+      { title: "Presentaciones", url: "/admin/presentations", icon: Presentation, description: "Presentaciones comerciales" },
     ]
   },
 
@@ -152,6 +183,7 @@ export const sidebarSections: SidebarSection[] = [
     description: "Campañas y comunicación",
     items: [
       { title: "Newsletter Semanal", url: "/admin/newsletter", icon: Mail, description: "Envío de newsletters a suscriptores" },
+      { title: "Costes Campañas", url: "/admin/campaign-costs", icon: DollarSign, description: "Costes de campañas publicitarias" },
       { title: "Importar Brevo", url: "/admin/brevo-import", icon: Users, description: "Importar contactos desde Brevo" },
       { title: "Apollo Visitors", url: "/admin/apollo-visitors", icon: Eye, description: "Importar visitantes desde Apollo" },
       { title: "Dealsuite Sync", url: "/admin/dealsuite", icon: RefreshCw, description: "Sincronizar deals desde Dealsuite" },
@@ -188,8 +220,23 @@ export const sidebarSections: SidebarSection[] = [
       { title: "Workflow Fase 0", url: "/admin/configuracion/workflow-templates", icon: Settings, description: "Configurar tareas del workflow de leads" },
       { title: "Destinatarios Email", url: "/admin/configuracion/destinatarios-email", icon: Target, description: "Gestión de destinatarios de emails" },
       { title: "Firma de Email", url: "/admin/configuracion/firma-email", icon: Mail, description: "Configura tu firma personal para emails outbound" },
+      { title: "Data Enrichment", url: "/admin/data-enrichment", icon: Wrench, description: "Enriquecimiento de datos" },
       { title: "Ajustes", url: "/admin/settings", icon: Settings, description: "Configuración general" },
       { title: "Navegación Sidebar", url: "/admin/settings/sidebar", icon: PanelLeft, description: "Configurar secciones e items del menú lateral" },
+    ]
+  },
+
+  // ─── 9. EMPLEO ───
+  {
+    title: "EMPLEO",
+    icon: BriefcaseBusiness,
+    description: "Gestión de empleo y colaboradores",
+    items: [
+      { title: "Ofertas de Empleo", url: "/admin/jobs", icon: BriefcaseBusiness, description: "Ofertas de trabajo publicadas" },
+      { title: "Solicitudes", url: "/admin/job-applications", icon: FileSpreadsheet, description: "Solicitudes recibidas" },
+      { title: "Categorías", url: "/admin/job-categories", icon: ListChecks, description: "Categorías de empleo" },
+      { title: "Plantillas", url: "/admin/job-templates", icon: LayoutTemplate, description: "Plantillas de ofertas" },
+      { title: "Solicitudes Colaboradores", url: "/admin/collaborator-applications", icon: UserCheck, description: "Solicitudes de colaboradores" },
     ]
   },
 ];
