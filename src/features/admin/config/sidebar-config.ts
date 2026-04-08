@@ -65,6 +65,7 @@ export interface SidebarItem {
 
 export interface SidebarSection {
   title: string;
+  icon?: LucideIcon;
   description: string;
   items: SidebarItem[];
 }
