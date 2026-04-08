@@ -23550,6 +23550,7 @@ export type Database = {
           email_subject_template: string | null
           financial_years: number[] | null
           followup_body_template: string | null
+          followup_reminder_days: number | null
           followup_subject_template: string | null
           id: string
           include_comparables: boolean | null
@@ -23592,6 +23593,7 @@ export type Database = {
           email_subject_template?: string | null
           financial_years?: number[] | null
           followup_body_template?: string | null
+          followup_reminder_days?: number | null
           followup_subject_template?: string | null
           id?: string
           include_comparables?: boolean | null
@@ -23634,6 +23636,7 @@ export type Database = {
           email_subject_template?: string | null
           financial_years?: number[] | null
           followup_body_template?: string | null
+          followup_reminder_days?: number | null
           followup_subject_template?: string | null
           id?: string
           include_comparables?: boolean | null
