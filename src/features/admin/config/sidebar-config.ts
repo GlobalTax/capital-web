@@ -130,6 +130,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CRM",
+    icon: Briefcase,
     description: "Gestión de prospectos y oportunidades",
     items: [
       { 
