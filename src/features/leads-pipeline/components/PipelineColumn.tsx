@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PipelineCard } from './PipelineCard';
 import type { PipelineLead, PipelineColumn as ColumnType } from '../types';
+import type { EmailVariantOption } from '../utils/buildPrecallEmailPreview';
 
 interface PipelineColumnProps {
   column: ColumnType;
@@ -24,6 +25,7 @@ interface PipelineColumnProps {
   onSelectAllInColumn: (columnId: string, leadIds: string[]) => void;
   adminUsers?: { user_id: string; full_name: string | null; email: string | null }[];
   onAssignLead?: (leadId: string, userId: string | null) => void;
+  variantOptions?: EmailVariantOption[];
 }
 
 const formatTotal = (leads: PipelineLead[]) => {
@@ -47,6 +49,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
   onSelectAllInColumn,
   adminUsers,
   onAssignLead,
+  variantOptions,
 }) => {
   const totalValue = formatTotal(leads);
   const leadIds = leads.map(l => l.id);
@@ -111,6 +114,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                         onToggleSelect={onToggleSelect}
                         adminUsers={adminUsers}
                         onAssignLead={onAssignLead}
+                        variantOptions={variantOptions}
                       />
                     </div>
                   )}

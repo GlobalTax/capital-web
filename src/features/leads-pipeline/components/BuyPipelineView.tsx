@@ -40,7 +40,7 @@ import { FINANCIAL_RANGES } from '@/components/admin/campanas-valoracion/shared/
 import { usePipelineAutoScroll } from '../hooks/usePipelineAutoScroll';
 import type { LeadStatus } from '../types';
 import { PrecallEmailPreviewDialog } from './PrecallEmailPreviewDialog';
-import { buildPrecallEmailPreview, type PrecallEmailPreview } from '../utils/buildPrecallEmailPreview';
+import { buildPrecallEmailPreview, BUY_PIPELINE_VARIANTS, type PrecallEmailPreview } from '../utils/buildPrecallEmailPreview';
 import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 
 export const BuyPipelineView: React.FC = () => {
@@ -269,7 +269,7 @@ export const BuyPipelineView: React.FC = () => {
       ccNames,
       to: lead.email || '',
       ccEmails,
-      variant: variant || 'valoracion-cast',
+      variant: variant || 'compra-cast',
     });
     setEmailPreview(preview);
     setEmailPreviewLeadId(leadId);
@@ -732,6 +732,7 @@ export const BuyPipelineView: React.FC = () => {
                 onSelectAllInColumn={handleSelectAllInColumn}
                 adminUsers={adminUsers}
                 onAssignLead={handleAssignLead}
+                variantOptions={BUY_PIPELINE_VARIANTS}
               />
             ))}
           </div>

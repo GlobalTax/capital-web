@@ -30,7 +30,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
-import type { EmailVariant } from '../utils/buildPrecallEmailPreview';
+import type { EmailVariant, EmailVariantOption } from '../utils/buildPrecallEmailPreview';
+import { SELL_PIPELINE_VARIANTS } from '../utils/buildPrecallEmailPreview';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { PipelineLead } from '../types';
@@ -54,6 +55,7 @@ interface PipelineCardProps {
   onToggleSelect?: (id: string) => void;
   adminUsers?: AdminUserSimple[];
   onAssignLead?: (leadId: string, userId: string | null) => void;
+  variantOptions?: EmailVariantOption[];
 }
 
 const getBadgeColor = (name: string, type: 'form' | 'channel'): string => {
@@ -94,6 +96,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
   onToggleSelect,
   adminUsers = [],
   onAssignLead,
+  variantOptions,
 }) => {
   // Drag detection to avoid navigating on drag
   const mouseDownPos = useRef<{x:number,y:number}|null>(null);
@@ -181,18 +184,11 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
                       Enviar email
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('valoracion-cast')}>
-                        Valoración - Castellano
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('venta-cast')}>
-                        Venta - Castellano
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('valoracion-cat')}>
-                        Valoració - Català
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onSendPrecallEmail('venta-cat')}>
-                        Venda - Català
-                      </DropdownMenuItem>
+                      {(variantOptions || SELL_PIPELINE_VARIANTS).map(opt => (
+                        <DropdownMenuItem key={opt.variant} onClick={() => onSendPrecallEmail(opt.variant)}>
+                          {opt.label}
+                        </DropdownMenuItem>
+                      ))}
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
                 )}
