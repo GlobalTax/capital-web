@@ -300,6 +300,50 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
     setColumnFilters({});
   }, []);
 
+  // CRM contact search
+  const [debouncedCrmSearch, setDebouncedCrmSearch] = useState('');
+  const crmDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleCrmSearchChange = useCallback((val: string) => {
+    setCrmSearch(val);
+    setShowCrmResults(true);
+    clearTimeout(crmDebounceRef.current);
+    crmDebounceRef.current = setTimeout(() => setDebouncedCrmSearch(val), 300);
+  }, []);
+
+  const { data: crmResults } = useQuery({
+    queryKey: ['crm-contact-search', debouncedCrmSearch],
+    queryFn: async () => {
+      const s = `%${debouncedCrmSearch.trim()}%`;
+      const { data } = await (supabase as any)
+        .from('contactos')
+        .select('id, nombre, apellidos, email, telefono, cargo, empresa_principal_id, empresas!contactos_empresa_principal_id_fkey(nombre)')
+        .or(`nombre.ilike.${s},apellidos.ilike.${s},email.ilike.${s}`)
+        .limit(8);
+      return (data || []) as any[];
+    },
+    enabled: debouncedCrmSearch.trim().length >= 2,
+  });
+
+  const selectCrmContact = useCallback((contact: any) => {
+    const fullName = [contact.nombre, contact.apellidos].filter(Boolean).join(' ');
+    setForm({
+      full_name: fullName,
+      email: contact.email || '',
+      phone: contact.telefono || '',
+      company: contact.empresas?.nombre || '',
+      sector: '',
+      notes: '',
+    });
+    setSelectedContactoId(contact.id);
+    setCrmSearch('');
+    setShowCrmResults(false);
+  }, []);
+
+  const clearCrmSelection = useCallback(() => {
+    setSelectedContactoId(null);
+    setForm({ full_name: '', email: '', company: '', phone: '', sector: '', notes: '' });
+  }, []);
+
   const { data: members, isLoading } = useQuery({
     queryKey: ['rod-list-members', language],
     queryFn: async () => {
@@ -314,7 +358,7 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
   });
 
   const addMutation = useMutation({
-    mutationFn: async (member: Partial<RODMember>) => {
+    mutationFn: async (member: Partial<RODMember> & { contacto_id?: string | null }) => {
       const { error } = await supabase.from('rod_list_members' as any).insert({
         language,
         full_name: member.full_name,
@@ -323,6 +367,7 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
         phone: member.phone || null,
         sector: member.sector || null,
         notes: member.notes || null,
+        contacto_id: member.contacto_id || null,
       });
       if (error) throw error;
     },
@@ -330,6 +375,8 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
       queryClient.invalidateQueries({ queryKey: ['rod-list-members', language] });
       toast.success('Miembro añadido');
       setForm({ full_name: '', email: '', company: '', phone: '', sector: '', notes: '' });
+      setSelectedContactoId(null);
+      setCrmSearch('');
       setAddOpen(false);
     },
     onError: (e: any) => {
