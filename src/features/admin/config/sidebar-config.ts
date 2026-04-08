@@ -40,7 +40,8 @@ import {
   Calendar,
   FolderOpen,
   Send,
-  Cog
+  Cog,
+  Database
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 

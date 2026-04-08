@@ -22,10 +22,24 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
     location.pathname === item.url || location.pathname.startsWith(item.url + '/')
   );
   
+  // Single-item sections are always expanded (no collapsible header)
+  const isSingleItem = visibleItems.length === 1;
+  
   // Start expanded if has active item, otherwise collapsed
-  const [isExpanded, setIsExpanded] = useState(hasActiveItem);
+  const [isExpanded, setIsExpanded] = useState(hasActiveItem || isSingleItem);
 
   if (visibleItems.length === 0) return null;
+
+  // Single-item section: render directly without collapsible wrapper
+  if (isSingleItem) {
+    return (
+      <SidebarGroup className="px-2 py-0.5">
+        <SidebarMenu className="space-y-0.5">
+          <SidebarMenuItem item={visibleItems[0]} />
+        </SidebarMenu>
+      </SidebarGroup>
+    );
+  }
 
   return (
     <SidebarGroup className="px-2 py-0.5">
