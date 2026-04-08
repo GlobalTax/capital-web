@@ -545,7 +545,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📚 RECURSOS",
+    title: "RECURSOS",
     description: "Gestión de recursos y herramientas",
     items: [
       { 
