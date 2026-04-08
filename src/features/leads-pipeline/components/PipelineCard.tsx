@@ -55,6 +55,7 @@ interface PipelineCardProps {
   onToggleSelect?: (id: string) => void;
   adminUsers?: AdminUserSimple[];
   onAssignLead?: (leadId: string, userId: string | null) => void;
+  variantOptions?: EmailVariantOption[];
 }
 
 const getBadgeColor = (name: string, type: 'form' | 'channel'): string => {
