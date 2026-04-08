@@ -456,6 +456,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CAPITAL RIESGO",
+    icon: TrendingUp,
     description: "CRM de fondos PE/VC",
     items: [
       { 
