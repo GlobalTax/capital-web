@@ -527,7 +527,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🏛️ BOUTIQUES M&A",
+    title: "BOUTIQUES M&A",
     description: "Directorio de competencia",
     items: [
       { 
