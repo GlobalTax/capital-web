@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { OutboundPipelineSection } from './OutboundPipelineSection';
 import { OutboundStagesEditor } from './OutboundStagesEditor';
+import { FollowUpAlertsPanel } from './FollowUpAlertsPanel';
+import { FollowUpReminderConfig } from './FollowUpReminderConfig';
 
 interface CampaignSummary {
   id: string;
