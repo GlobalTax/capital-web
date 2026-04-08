@@ -41,7 +41,22 @@ import {
   FolderOpen,
   Send,
   Cog,
-  Database
+  Database,
+  Phone,
+  FileCheck,
+  Crosshair,
+  PauseCircle,
+  Upload,
+  Wallet,
+  Bot,
+  Presentation,
+  DollarSign,
+  Wrench,
+  BriefcaseBusiness,
+  FileSpreadsheet,
+  ListChecks,
+  LayoutTemplate,
+  UserCheck
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
