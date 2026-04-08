@@ -141,7 +141,7 @@ export const useLeadsPipeline = () => {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_active_admin_users');
       if (error) throw error;
-      return data as { user_id: string; full_name: string; email: string }[];
+      return data as { user_id: string; full_name: string; email: string; phone: string | null }[];
     },
   });
 
