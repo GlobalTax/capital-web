@@ -86,7 +86,7 @@ export const sidebarSections: SidebarSection[] = [
       
       { title: "Entrada Manual Leads", url: "/admin/calculadora-manual", icon: UserPlus, description: "Introducir leads de Meta/externos" },
       { title: "Listas de Empresas", url: "/admin/listas-contacto", icon: ClipboardList, description: "Gestiona y depura listas de empresas" },
-      
+      { title: "Campañas Outbound", url: "/admin/campanas-valoracion", icon: Megaphone, description: "Campañas masivas de valoración por sector" },
     ]
   },
 
