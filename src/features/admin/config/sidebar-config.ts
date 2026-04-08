@@ -61,7 +61,7 @@ export interface SidebarSection {
 
 export const sidebarSections: SidebarSection[] = [
   {
-    title: "📊 DASHBOARD",
+    title: "DASHBOARD",
     description: "Panel principal",
     items: [
       { 
