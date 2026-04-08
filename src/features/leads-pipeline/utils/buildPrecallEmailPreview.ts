@@ -132,7 +132,7 @@ export function buildPrecallEmailPreview(
         'Desconec si esteu valorant una possible venda, si us ha contactat algun inversor, o simplement voleu tenir una referència del valor de l\'empresa. En qualsevol cas, m\'agradaria poder parlar amb tu per entendre millor la vostra situació.',
         'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o indicar-me l\'horari que millor et vagi.',
       ];
-      phoneBlock = `Et deixo el meu número: <strong>${senderPhone}</strong> per si prefereixes trucar-me tu directament.`;
+      phoneBlock = `Et deixo el meu número: ${senderPhone} per si prefereixes trucar-me tu directament.`;
       closing = 'Quedo a la teva disposició per a qualsevol dubte o comentari.<br><br>Una cordial salutació,';
       break;
   }
