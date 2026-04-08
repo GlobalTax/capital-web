@@ -836,6 +836,26 @@ function SendList({
                           {isSent ? 'Enviado' : !canSend ? '—' : 'Enviar'}
                         </Button>
                       </TableCell>
+                      {campaign.followup_reminder_days && (
+                        <TableCell className="text-center">
+                          {(() => {
+                            const days = daysSinceContactMap.get(c.id);
+                            if (days === undefined) return <span className="text-xs text-muted-foreground">—</span>;
+                            const threshold = campaign.followup_reminder_days!;
+                            const estado = c.seguimiento_estado || 'sin_respuesta';
+                            const isPending = days >= threshold && estado === 'sin_respuesta';
+                            const isNear = days >= threshold * 0.7 && !isPending && estado === 'sin_respuesta';
+                            return (
+                              <span className={cn(
+                                "text-[11px] font-medium",
+                                isPending ? "text-red-600" : isNear ? "text-amber-600" : "text-muted-foreground"
+                              )}>
+                                {days}d {isPending ? '🔴' : isNear ? '🟡' : ''}
+                              </span>
+                            );
+                          })()}
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })}
