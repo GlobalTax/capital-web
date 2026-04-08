@@ -23,7 +23,7 @@ const latestNews: NewsItem[] = [
 
 const serviceLinks = [
   { label: 'Venta de empresas', href: '/servicios/venta-empresas' },
-  { label: 'Valoración', href: '/servicios/valoracion' },
+  { label: 'Valoración', href: '/servicios/valoraciones' },
   { label: 'Due Diligence', href: '/servicios/due-diligence' },
   { label: 'Planificación fiscal', href: '/servicios/planificacion-fiscal' },
 ];
