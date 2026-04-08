@@ -278,7 +278,7 @@ export const LeadsPipelineView: React.FC = () => {
   }, [updateStatus, visibleStatuses, stopAutoScroll]);
 
   // Default sender fallback
-  const DEFAULT_SENDER = { full_name: 'Samuel Navarro', email: 'samuel@capittal.es', phone: '+34 695 717 490' };
+  const DEFAULT_SENDER = { full_name: 'Jan Ariza', email: 'jan@capittal.es', phone: '+34 695 717 490' };
 
   const handleSendPrecallEmail = useCallback(async (leadId: string) => {
     const lead = leads.find(l => l.id === leadId);
