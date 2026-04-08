@@ -12,15 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Phone, 
-  Building2, 
-  DollarSign,
   Clock,
   User,
   MoreHorizontal,
   MapPin,
-  Users,
-  
-  BarChart3,
+  Mail,
+  MailCheck,
   UserCheck,
   X as XIcon
 } from 'lucide-react';
@@ -28,7 +25,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
@@ -171,19 +167,8 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onViewDetails}>
-                Ver detalle
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onSendPrecallEmail} disabled={lead.precall_email_sent || false}>
                 {lead.precall_email_sent ? 'Email pre-llamada enviado' : 'Enviar email pre-llamada'}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onRegisterCall(true)}>
-                Llamada completada
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRegisterCall(false)}>
-                No contestó
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -237,6 +222,25 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             </span>
           </div>
         )}
+
+        {/* Pre-call email status */}
+        <div className={`flex items-center gap-1.5 text-xs rounded-md px-2 py-1 ${
+          lead.precall_email_sent 
+            ? 'bg-emerald-50 text-emerald-700' 
+            : 'bg-amber-50 text-amber-700'
+        }`}>
+          {lead.precall_email_sent ? (
+            <>
+              <MailCheck className="h-3 w-3 shrink-0" />
+              <span>Email enviado</span>
+            </>
+          ) : (
+            <>
+              <Mail className="h-3 w-3 shrink-0" />
+              <span>Email pendiente</span>
+            </>
+          )}
+        </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
