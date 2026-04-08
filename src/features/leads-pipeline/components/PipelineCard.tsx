@@ -160,7 +160,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             <h4 className="font-medium text-sm truncate">{lead.company_name}</h4>
             <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
           </div>
-          {['nuevo', 'contactando'].includes(lead.lead_status_crm || '') && (
+{['nuevo', 'calificado', 'contactando', 'propuesta_enviada', 'fase0_activo'].includes(lead.lead_status_crm || '') && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
