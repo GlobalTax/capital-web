@@ -219,6 +219,29 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
     return map;
   }, [companies, allSends, sequences]);
 
+  // ─── Per-company days since last contact (for FU indicator) ────────────
+  const daysSinceContactMap = useMemo(() => {
+    if (!campaign.followup_reminder_days) return new Map<string, number>();
+    const now = new Date();
+    const map = new Map<string, number>();
+    for (const c of companies) {
+      // Initial email sent date
+      const sentAt = emailSentMap.get(c.id);
+      if (!sentAt) continue;
+      const initialDate = new Date(sentAt);
+
+      // Latest follow-up sent date for this company
+      const fuSends = allSends
+        .filter(s => s.company_id === c.id && s.status === 'sent' && s.sent_at)
+        .map(s => new Date(s.sent_at!));
+      const lastFU = fuSends.length > 0 ? fuSends.sort((a, b) => b.getTime() - a.getTime())[0] : null;
+
+      const lastContact = lastFU && lastFU > initialDate ? lastFU : initialDate;
+      map.set(c.id, differenceInDays(now, lastContact));
+    }
+    return map;
+  }, [companies, emailSentMap, allSends, campaign.followup_reminder_days]);
+
   // ─── Filters ───────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
   const [filterEstado, setFilterEstado] = useState<string | null>(null);
