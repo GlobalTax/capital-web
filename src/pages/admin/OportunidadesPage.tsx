@@ -269,6 +269,10 @@ export default function OportunidadesPage() {
             <Send className="h-3.5 w-3.5 mr-1" />
             Envíos ROD
           </TabsTrigger>
+          <TabsTrigger value="investor-leads" className="text-xs">
+            <TrendingUp className="h-3.5 w-3.5 mr-1" />
+            Leads Inversores
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell">
