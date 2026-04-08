@@ -296,7 +296,7 @@ export const LeadsPipelineView: React.FC = () => {
         sender = {
           full_name: adminUser.full_name || DEFAULT_SENDER.full_name,
           email: adminUser.email || DEFAULT_SENDER.email,
-          phone: (adminUser as any).phone || DEFAULT_SENDER.phone,
+          phone: adminUser.phone || DEFAULT_SENDER.phone,
         };
       }
     }
