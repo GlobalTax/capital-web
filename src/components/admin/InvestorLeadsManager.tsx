@@ -30,6 +30,7 @@ import {
   TrendingUp,
   Calendar,
   RefreshCw,
+  Trash2,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -186,6 +187,32 @@ export const InvestorLeadsManager: React.FC = () => {
         variant: 'destructive',
         title: 'Error',
         description: 'No se pudo actualizar el estado',
+      });
+    },
+  });
+
+  // Delete lead (soft delete)
+  const deleteLeadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('investor_leads')
+        .update({ is_deleted: true })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['investor-leads'] });
+      toast({
+        title: 'Lead eliminado',
+        description: 'El lead se eliminó correctamente',
+      });
+    },
+    onError: () => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudo eliminar el lead',
       });
     },
   });
@@ -390,7 +417,7 @@ export const InvestorLeadsManager: React.FC = () => {
                     {format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es })}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -407,6 +434,18 @@ export const InvestorLeadsManager: React.FC = () => {
                           <Phone className="h-4 w-4" />
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => {
+                          if (window.confirm(`¿Eliminar el lead de ${lead.full_name}?`)) {
+                            deleteLeadMutation.mutate(lead.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
