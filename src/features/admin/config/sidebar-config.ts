@@ -201,6 +201,31 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
+    title: "MÚLTIPLOS",
+    icon: TrendingUp,
+    description: "Valoración y múltiplos sectoriales",
+    items: [
+      { 
+        title: "Múltiplos", 
+        url: "/admin/multiples", 
+        icon: TrendingUp,
+        description: "Datos de valoración"
+      },
+      { 
+        title: "Múltiplos Asesores", 
+        url: "/admin/advisor-multiples", 
+        icon: Calculator,
+        description: "Múltiplos para calculadora de asesores"
+      },
+      { 
+        title: "Intel PE Sectorial", 
+        url: "/admin/sector-intelligence", 
+        icon: BarChart3,
+        description: "Base de datos PE por subsector (Excel)"
+      },
+    ]
+  },
+  {
     title: "GESTIONAR DATOS",
     icon: Database,
     description: "Información corporativa",
@@ -219,12 +244,6 @@ export const sidebarSections: SidebarSection[] = [
         description: "Análisis competitivo por sector con IA"
       },
       { 
-        title: "Intel PE Sectorial", 
-        url: "/admin/sector-intelligence", 
-        icon: BarChart3,
-        description: "Base de datos PE por subsector (Excel)"
-      },
-      { 
         title: "Market Reports", 
         url: "/admin/market-reports", 
         icon: FileText,
@@ -236,18 +255,6 @@ export const sidebarSections: SidebarSection[] = [
         url: "/admin/oportunidades", 
         icon: Briefcase,
         description: "Mandatos visibles en ROD"
-      },
-      { 
-        title: "Múltiplos", 
-        url: "/admin/multiples", 
-        icon: TrendingUp,
-        description: "Datos de valoración"
-      },
-      { 
-        title: "Múltiplos Asesores", 
-        url: "/admin/advisor-multiples", 
-        icon: Calculator,
-        description: "Múltiplos para calculadora de asesores"
       },
       { 
         title: "Equipo", 
