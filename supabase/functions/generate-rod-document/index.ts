@@ -259,6 +259,27 @@ serve(async (req) => {
       console.error('⚠️ Error upserting buyer contact (non-critical):', buyerError);
     }
 
+    // ===== 5b. Auto-add a rod_list_members =====
+    try {
+      const rodLanguage = selectedROD.language || 'es';
+      const { error: rodListError } = await supabase
+        .from('rod_list_members')
+        .upsert({
+          language: rodLanguage,
+          full_name: requestData.full_name,
+          email: requestData.email,
+          company: requestData.company || null,
+        }, { onConflict: 'language,email' });
+
+      if (rodListError) {
+        console.error('⚠️ Error upserting rod_list_member (non-critical):', rodListError);
+      } else {
+        console.log(`✅ rod_list_members upsert OK: ${requestData.email} (${rodLanguage})`);
+      }
+    } catch (rodListErr) {
+      console.error('⚠️ rod_list_members upsert failed (non-critical):', rodListErr);
+    }
+
     // ===== 6. Enviar emails con Resend =====
     if (resendApiKey) {
       const resend = new Resend(resendApiKey);
