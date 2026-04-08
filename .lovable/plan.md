@@ -1,74 +1,30 @@
 
 
-## Plan: Auto-sincronizar Leads Inversores → Listados ROD
+## Plan: Nueva pestaña "Alertas Comprador" en Oportunidades
 
 ### Contexto
-Cuando alguien descarga la ROD, sus datos se guardan en `buyer_contacts` (visible en "Leads Inversores"). Pero actualmente NO se añaden automáticamente a `rod_list_members` (visible en "Listados ROD"). El usuario quiere que este paso sea automático.
+- **Leads Inversores** muestra quién se descargó la ROD (tabla `buyer_contacts`)
+- Falta una vista para ver quién se apuntó a recibir alertas de oportunidades (tabla `buyer_preferences`)
+- `buyer_preferences` tiene: `full_name`, `email`, `phone`, `company`, `preferred_sectors`, `preferred_locations`, `min_valuation`, `max_valuation`, `alert_frequency`, `is_active`, `created_at`
+- Actualmente hay 0 registros (aún no se han apuntado usuarios)
 
-### Datos actuales
-- `buyer_contacts` tiene 19 registros ROD (15 ES, 4 EN), con `source = 'ROD Download – LinkedIn'` y `preferred_language` = 'es'/'en'
-- `rod_list_members` tiene unique constraint en `(language, email)` — perfecto para upsert sin duplicados
+### Cambios
 
-### Solución: Trigger en base de datos
+**1. Crear componente `AlertSubscribersManager.tsx`** (~nuevo archivo)
+- Tabla con columnas: Nombre, Email, Teléfono, Empresa, Sectores, Ubicaciones, Rango valoración, Frecuencia, Activo, Fecha
+- Query a `buyer_preferences` ordenado por `created_at` desc
+- Búsqueda por nombre/email/empresa
+- Selección masiva con checkboxes + eliminación bulk
+- Botón para añadir suscriptores a Listados ROD (reutilizando `AddToRODDialog`)
+- Badge de estado activo/inactivo
+- Estado vacío informativo cuando no haya registros
 
-Crear un trigger en `buyer_contacts` que, al insertar un nuevo registro con source que contenga "ROD", automáticamente haga upsert en `rod_list_members` con el idioma correspondiente (`preferred_language`).
-
-**Migración SQL:**
-
-```sql
-CREATE OR REPLACE FUNCTION sync_buyer_contact_to_rod_list()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-BEGIN
-  -- Solo sincronizar leads que vienen de descarga ROD
-  IF NEW.source ILIKE '%ROD%' AND NEW.email IS NOT NULL THEN
-    INSERT INTO rod_list_members (language, full_name, email, company, phone, sector)
-    VALUES (
-      COALESCE(NEW.preferred_language, 'es'),
-      COALESCE(NEW.full_name, CONCAT(NEW.first_name, ' ', NEW.last_name)),
-      LOWER(TRIM(NEW.email)),
-      NEW.company,
-      NEW.phone,
-      NEW.sectors_of_interest
-    )
-    ON CONFLICT (language, email) DO UPDATE SET
-      full_name = EXCLUDED.full_name,
-      company = EXCLUDED.company,
-      phone = EXCLUDED.phone,
-      sector = EXCLUDED.sector,
-      updated_at = NOW();
-  END IF;
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER trigger_sync_buyer_to_rod_list
-AFTER INSERT ON buyer_contacts
-FOR EACH ROW
-EXECUTE FUNCTION sync_buyer_contact_to_rod_list();
-```
-
-Además, migrar los 19 registros existentes que aún no están en `rod_list_members`:
-
-```sql
-INSERT INTO rod_list_members (language, full_name, email, company, phone, sector)
-SELECT 
-  COALESCE(preferred_language, 'es'),
-  COALESCE(full_name, CONCAT(first_name, ' ', last_name)),
-  LOWER(TRIM(email)),
-  company,
-  phone,
-  sectors_of_interest
-FROM buyer_contacts
-WHERE source ILIKE '%ROD%' AND email IS NOT NULL
-ON CONFLICT (language, email) DO NOTHING;
-```
+**2. Añadir pestaña en `OportunidadesPage.tsx`**
+- Nueva pestaña "Alertas Comprador" con icono `Bell` entre "Leads Inversores" y el final
+- Lazy load del componente con Suspense
 
 ### Resultado
-- Cada nueva descarga ROD → el contacto aparece automáticamente en el listado ROD del idioma correcto (ES o EN)
-- "Leads Inversores" = quién se descargó la ROD
-- "Listados ROD" = a quién se envía la ROD (se alimenta solo)
-- Sin cambios en el frontend — todo ocurre en la base de datos
+El admin tendrá dos listados separados:
+- **Leads Inversores** = quién descargó la ROD
+- **Alertas Comprador** = quién se apuntó para recibir avisos de nuevas oportunidades
 
