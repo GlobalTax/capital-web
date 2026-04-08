@@ -122,6 +122,7 @@ const LazyBlogPreviewPage = React.lazy(() => import('@/pages/admin/BlogPreviewPa
 const LazySectorMigrationPage = React.lazy(() => import('@/pages/admin/SectorMigrationPage'));
 const LazySectorIntelligencePage = React.lazy(() => import('@/pages/admin/SectorIntelligencePage'));
 const LazyOportunidadesPage = React.lazy(() => import('@/pages/admin/OportunidadesPage'));
+const LazyContactoProfilePage = React.lazy(() => import('@/pages/admin/ContactoProfilePage'));
 
 // Presentation Engine
 const LazyPresentationsListPage = React.lazy(() => import('@/features/presentations/pages/PresentationsListPage'));
