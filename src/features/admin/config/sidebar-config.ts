@@ -198,7 +198,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🏢 GESTIONAR DATOS",
+    title: "GESTIONAR DATOS",
     description: "Información corporativa",
     items: [
       { 
