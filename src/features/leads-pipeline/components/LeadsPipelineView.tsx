@@ -322,7 +322,7 @@ export const LeadsPipelineView: React.FC = () => {
     setEmailPreviewOpen(true);
   }, [leads, adminUsers, activeRecipients]);
 
-  const handleConfirmSendEmail = useCallback(async () => {
+  const handleConfirmSendEmail = useCallback(async (edited: { subject: string; htmlBody: string }) => {
     if (!emailPreviewLeadId) return;
     const lead = leads.find(l => l.id === emailPreviewLeadId);
     if (!lead) return;
@@ -336,6 +336,8 @@ export const LeadsPipelineView: React.FC = () => {
           companyName: lead.company_name,
           email: lead.email,
           assignedTo: lead.assigned_to || undefined,
+          customSubject: edited.subject,
+          customHtmlBody: edited.htmlBody,
         }
       });
       if (error) throw error;

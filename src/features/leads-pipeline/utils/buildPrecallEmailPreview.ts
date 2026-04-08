@@ -31,7 +31,7 @@ export function buildPrecallEmailPreview(
     ? `Pongo en copia a mis compañeros ${ccNames.slice(0, -1).join(', ')}${ccNames.length > 1 ? ' y ' : ''}${ccNames[ccNames.length - 1]}.`
     : '';
 
-  const subject = `Capittal - Comentamos la valoración de ${companyName}`;
+  const subject = `Consulta M&A | ${companyName} <> Capittal`;
 
   const htmlBody = `
     <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background:#ffffff;">

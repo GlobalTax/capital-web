@@ -32,6 +32,8 @@ interface SendPrecallEmailRequest {
   companyName: string;
   email: string;
   assignedTo?: string; // user_id of the assigned admin user
+  customSubject?: string; // Optional: edited subject from preview
+  customHtmlBody?: string; // Optional: edited HTML body from preview
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -47,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[send-precall-email] Authenticated admin: ${auth.userEmail} (role: ${auth.role})`);
 
     const payload: SendPrecallEmailRequest = await req.json();
-    const { leadId, contactName, companyName, email, assignedTo } = payload;
+    const { leadId, contactName, companyName, email, assignedTo, customSubject, customHtmlBody } = payload;
 
     console.log(`[send-precall-email] Processing lead: ${leadId}, email: ${email}, assignedTo: ${assignedTo}`);
 
@@ -133,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
     const senderFirstName = sender.full_name.split(' ')[0];
     const saludo = contactName ? `Apreciado ${contactName.split(' ')[0]},` : 'Apreciado/a,';
 
-    const subject = `Capittal - Comentamos la valoración de ${companyName}`;
+    const subject = customSubject || `Consulta M&A | ${companyName} <> Capittal`;
 
     const htmlEmail = `
       <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background:#ffffff;">
@@ -182,8 +184,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Create tracking pixel URL
     const trackingPixelUrl = `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/email-open?mid=${messageId}`;
 
+    const finalHtml = customHtmlBody || htmlEmail;
+    
     // Add tracking pixel to HTML
-    const htmlWithTracking = htmlEmail.replace(
+    const htmlWithTracking = finalHtml.replace(
       '</div></div>',
       `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none" alt="" /></div></div>`
     );
