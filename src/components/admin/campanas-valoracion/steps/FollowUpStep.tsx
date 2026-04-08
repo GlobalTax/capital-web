@@ -85,8 +85,10 @@ function TemplateEditor({
     { key: 'numero_followup', label: 'Nº follow up', category: 'Follow Up' },
   ];
 
-  const eligible = companies.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
-  const excluded = companies.length - eligible.length;
+  const companiesWithInitialEmail = companies.filter(c => emailSentMap.get(c.id));
+  const eligible = companiesWithInitialEmail.filter(c => (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta');
+  const withoutInitialEmail = companies.length - companiesWithInitialEmail.length;
+  const excluded = companiesWithInitialEmail.length - eligible.length;
 
   const insertVariable = useCallback((key: string) => {
     const tag = `{{${key}}}`;
@@ -153,7 +155,8 @@ function TemplateEditor({
       <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-sm">
         <p className="font-medium text-blue-800">
           Se enviará a <strong>{eligible.length}</strong> empresa(s) (sin respuesta).
-          Se han excluido <strong>{excluded}</strong> empresa(s).
+          {excluded > 0 && <> Se han excluido <strong>{excluded}</strong> empresa(s) con respuesta.</>}
+          {withoutInitialEmail > 0 && <> Se han excluido <strong>{withoutInitialEmail}</strong> empresa(s) sin envío inicial.</>}
         </p>
       </div>
 
@@ -500,6 +503,8 @@ function SendList({
 
   // Visible in this round: not responded in previous rounds, AND (sin_respuesta globally OR has record in this round)
   const visible = companies.filter(c => {
+    // Solo mostrar empresas que ya recibieron el email inicial
+    if (!emailSentMap.get(c.id)) return false;
     if (respondedInPreviousRounds.has(c.id)) return false;
     const globalOk = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
     const hasRoundRecord = sendMap.has(c.id);
@@ -566,6 +571,7 @@ function SendList({
     setFilterEbitda({ min: null, max: null });
     setFilterValuation({ min: null, max: null });
   }, []);
+  const withoutInitialEmailCount = companies.filter(c => !emailSentMap.get(c.id)).length;
   const excluded = companies.length - visible.length;
 
   // Pending: visible + per-round seguimiento is sin_respuesta + not already sent
@@ -664,7 +670,8 @@ function SendList({
       <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-sm">
         <p className="font-medium text-blue-800">
           Se enviará este follow up a <strong>{pendingCompanies.length}</strong> empresa(s) pendiente(s).
-          Se han excluido <strong>{excluded}</strong> empresa(s) que ya respondieron.
+          {excluded > 0 && <> Se han excluido <strong>{excluded}</strong> empresa(s).</>}
+          {withoutInitialEmailCount > 0 && <> ({withoutInitialEmailCount} sin envío inicial)</>}
         </p>
       </div>
 
