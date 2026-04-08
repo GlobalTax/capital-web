@@ -1,105 +1,56 @@
 
 
-## Plan: Consolidar y simplificar el sidebar del admin
+## Plan: Restaurar todos los items eliminados del sidebar
 
-### Problema actual
-- **16 secciones** con ~75 items totales
-- Items duplicados en varias secciones (Pipeline Ventas, Content Studio, Calendario, Recursos)
-- Secciones con solo 1-2 items (Noticias M&A, Corporativos)
-- Separación confusa entre "LEADS" y "ANALIZAR LEADS"
+### Problema
+Durante la consolidación del sidebar se eliminaron muchos items que antes existían. El usuario quiere que **no se elimine nada**, solo se reorganice.
 
-### Propuesta: 8 secciones consolidadas
+### Items a restaurar, organizados por sección
 
-```text
-DASHBOARD (3)
-├── Vista General
-├── Calendario Editorial
-└── Search Analytics
+#### LEADS (añadir los que faltan)
+- Reservas Llamadas → `/admin/bookings`
+- Gestión NDAs → `/admin/ndas`
+- Prospectos → `/admin/prospectos`
+- Mandatos Compra → `/admin/mandatos-compra`
+- Deals Pausados → `/admin/deals-paused`
 
-CRM & LEADS (8)
-├── Leads (Todos)
-├── Pipeline Ventas
-├── Pipeline Compras
-├── Contactos Compra
-├── Reservas Llamadas
-├── Entrada Manual Leads
-├── Listas de Empresas
-└── Gestión NDAs
+#### INVERSORES (añadir sub-items de cada directorio)
+- Apollo Import CR → `/admin/cr-apollo-import`
+- Portfolio CR → `/admin/cr-portfolio-list`
+- Portfolio Scraper CR → `/admin/cr-portfolio-scraper`
+- Fund Intelligence → `/admin/fund-intelligence`
+- Apollo Import SF → `/admin/sf-apollo-import`
+- Radar SF → `/admin/sf-radar`
+- Adquisiciones SF → `/admin/sf-acquisitions`
+- Backers SF → `/admin/sf-backers`
+- Matching Inbox SF → `/admin/sf-matches`
+- Apollo Import MNA → `/admin/mna-apollo-import`
 
-DIRECTORIOS (6)
-├── Directorio Empresas
-├── Directorio Corporativos
-├── Capital Riesgo (CR)
-├── Search Funds (SF)
-├── Boutiques M&A
-└── Rel. Oportunidades
+#### CONTENIDO & BLOG (añadir)
+- Agentes IA → `/admin/ai-agents`
+- Presentaciones → `/admin/presentations`
 
-CONTENIDO & BLOG (6)
-├── Content Studio (AI)
-├── Blog & Contenido
-├── Casos de Éxito
-├── Noticias M&A
-├── Landing Pages
-└── Recursos & Lead Magnets
+#### MARKETING & OUTBOUND (añadir)
+- Costes Campañas → `/admin/campaign-costs`
 
-MÚLTIPLOS & DATOS (5)
-├── Múltiplos
-├── Múltiplos Asesores
-├── Intel PE Sectorial
-├── Sectores
-├── Sector Dossiers (AI)
+#### GESTIONAR WEB (añadir)
+- (nada faltante)
 
-MARKETING & OUTBOUND (5)
-├── Campañas Outbound
-├── Costes Campañas
-├── Newsletter Semanal
-├── Importar Brevo
-├── Valoraciones Pro
+#### CONFIGURACIÓN (añadir)
+- Data Enrichment → `/admin/data-enrichment`
 
-GESTIONAR WEB (8)
-├── Equipo
-├── Testimonios
-├── Test. Colaboradores
-├── LP Venta Empresas
-├── Logos Carousel
-├── Banners
-├── Hero Slides
-├── Áreas de Práctica
-├── La Firma
-├── Biblioteca de Fotos
+#### Nueva sección: EMPLEO
+- Ofertas de Empleo → `/admin/jobs`
+- Solicitudes → `/admin/job-applications`
+- Categorías → `/admin/job-categories`
+- Plantillas → `/admin/job-templates`
+- Solicitudes Colaboradores → `/admin/collaborator-applications`
 
-CONFIGURACIÓN (7)
-├── Notificaciones
-├── Usuarios Admin
-├── Workflow Fase 0
-├── Destinatarios Email
-├── Firma de Email
-├── Ajustes
-└── Navegación Sidebar
-```
-
-### Cambios clave
-- **LEADS + ANALIZAR LEADS** → fusionados en **CRM & LEADS**
-- **CAPITAL RIESGO + SEARCH FUNDS + CORPORATIVOS + BOUTIQUES** → subpáginas dentro de **DIRECTORIOS** (cada uno lleva a su directorio, los sub-items como Apollo Import, Backers, etc. se acceden desde dentro de cada directorio)
-- **CREAR CONTENIDO + NOTICIAS + RECURSOS** → fusionados en **CONTENIDO & BLOG**
-- **GESTIONAR DATOS** → dividido: datos de valoración van a MÚLTIPLOS, elementos visuales de la web van a **GESTIONAR WEB**
-- **WEB INTELLIGENCE** (Apollo Visitors, Dealsuite) → movido a MARKETING & OUTBOUND
-- **IA & AGENTES** → eliminado como sección; Agentes IA y Content Studio van a CONTENIDO
-- **EMPLEO** → eliminado del sidebar principal (se accede desde Configuración o se añade como sub-item)
-- Items duplicados eliminados
-
-### Items eliminados/reubicados
-- Valoraciones & Recovery → accesible desde Dashboard (enlace secundario)
-- Calculadora Asesores → accesible desde Múltiplos Asesores
-- Test Exit-Ready → dentro de Recursos
-- Radar SF, Backers, Matching Inbox, Inteligencia SF → accesibles desde la página de SF Directory
-- Apollo Imports (3 duplicados) → accesibles desde cada directorio respectivo
-
-### Archivos a modificar
-1. **`src/features/admin/config/sidebar-config.ts`** — reescribir la estructura de secciones
-2. **`src/components/admin/sidebar/AdminSidebar.tsx`** — verificar que los permisos siguen mapeados correctamente
+### Archivo a modificar
+- `src/features/admin/config/sidebar-config.ts` — añadir todos los items faltantes a sus secciones correspondientes
 
 ### Notas
-- Ninguna ruta cambia, solo la organización del sidebar
-- Los items con `visible: false` se eliminan definitivamente
-- Se mantienen los badges AI y URGENTE donde apliquen
+- Ninguna ruta cambia
+- Solo se añaden items al sidebar, no se elimina nada
+- Se mantienen los mismos iconos que usaban anteriormente
+
