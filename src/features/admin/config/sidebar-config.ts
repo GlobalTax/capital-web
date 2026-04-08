@@ -128,7 +128,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🤖 IA & AGENTES",
+    title: "IA & AGENTES",
     description: "Inteligencia artificial",
     items: [
       { 
