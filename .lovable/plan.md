@@ -1,36 +1,54 @@
 
 
-## Plan: Integrar Leads Inversores (ROD) en Rel. Oportunidades + Auto-add a Listados ROD
+## Plan: Panel de Avisos de Follow-Up en Resumen General
 
-### Contexto actual
-- **OportunidadesPage** tiene 5 pestanas: Sell-Side, Buy-Side, Documentos ROD, Listados ROD, Envios ROD
-- **InvestorLeadsManager** es una pagina independiente en `/admin/investor-leads` que muestra leads de la tabla `investor_leads` (personas que descargaron la ROD)
-- La Edge Function `generate-rod-document` ya inserta en `investor_leads` y `buyer_contacts`, pero NO en `rod_list_members`
+### Problema
+No hay visibilidad sobre qué campañas necesitan un follow-up y cuándo. Actualmente hay que entrar campaña por campaña para saber si toca enviar un recordatorio.
 
-### Cambios propuestos
+### Solución
 
-**1. Nueva pestana "Leads Inversores" en OportunidadesPage**
-- Anadir una 6a pestana con icono `TrendingUp` en `OportunidadesPage.tsx`
-- Cargar `InvestorLeadsManager` como lazy component dentro de esa pestana
-- Eliminar la ruta independiente `/admin/investor-leads` del router
-- Eliminar el enlace del sidebar
+**1. Nueva columna en `valuation_campaigns`: `followup_reminder_days`**
+- Tipo: `integer`, nullable, default `null`
+- Indica cuántos días después del último envío (inicial o follow-up) debe aparecer el aviso
+- Si es `null`, no se genera aviso para esa campaña
+- Se configura por campaña individualmente
 
-**2. Auto-add a rod_list_members al descargar la ROD**
-- Modificar la Edge Function `generate-rod-document` para que, tras crear el `investor_lead`, haga un upsert en `rod_list_members` con el email, nombre, empresa y el idioma del documento descargado
-- Esto asegura que todo descargador pase automaticamente al listado ROD del idioma correspondiente
+**2. UI de configuración (por campaña)**
+- En la tabla de "Desglose por Campaña" del Resumen General, añadir una columna "FU" con un icono de reloj
+- Al hacer clic, un popover permite establecer los días (ej. 5, 7, 10, 14, 21, 30 o personalizado)
+- El valor se guarda directamente en `valuation_campaigns.followup_reminder_days`
+
+**3. Panel de avisos de Follow-Up en Resumen General**
+- Nuevo componente `FollowUpAlertsPanel` colocado entre el funnel y el pipeline
+- Calcula para cada campaña habilitada:
+  - Fecha del último envío (max entre `campaign_emails.sent_at` y `campaign_followup_sends.sent_at`)
+  - Si han pasado >= `followup_reminder_days` días, la campaña aparece en el panel
+- Muestra una tarjeta/alerta por campaña pendiente con:
+  - Nombre de campaña y sector
+  - Días transcurridos desde el último envío
+  - Número de empresas sin respuesta
+  - Botón "Ir a campaña" que navega directamente a la pestaña de follow-up de esa campaña
+- Si no hay avisos pendientes, el panel se oculta o muestra "Todo al día"
+- Diseño: Card con borde naranja/amber, icono de campana, compacto
+
+**4. Datos necesarios (query adicional)**
+- En el query existente de `OutboundSummaryDashboard`, añadir `followup_reminder_days` al select de campañas
+- Añadir una query para obtener la fecha del último envío por campaña (tanto de `campaign_emails` como de `campaign_followup_sends`)
 
 ### Archivos a modificar
-- `src/pages/admin/OportunidadesPage.tsx` — anadir pestana con lazy load del InvestorLeadsManager
-- `src/features/admin/config/sidebar-config.ts` — eliminar entrada "Leads Inversores (ROD)"
-- `src/features/admin/components/AdminRouter.tsx` — eliminar ruta `/investor-leads`
-- `supabase/functions/generate-rod-document/index.ts` — anadir upsert en `rod_list_members` tras crear el lead
+- **Migración SQL**: Añadir columna `followup_reminder_days integer` a `valuation_campaigns`
+- **`OutboundSummaryDashboard.tsx`**: Ampliar query, incluir el nuevo panel, añadir columna FU en tabla
+- **Nuevo `FollowUpAlertsPanel.tsx`**: Componente del panel de avisos
+- **Nuevo `FollowUpReminderConfig.tsx`**: Popover para configurar días por campaña
 
-### Detalle tecnico del upsert automatico
-```sql
--- Dentro de generate-rod-document, tras el insert en investor_leads:
-INSERT INTO rod_list_members (language, full_name, email, company)
-VALUES ($language, $full_name, $email, $company)
-ON CONFLICT (language, email) DO NOTHING;
+### Flujo de datos
+```text
+valuation_campaigns.followup_reminder_days = 7
+                    ↓
+last_send_date = MAX(campaign_emails.sent_at, campaign_followup_sends.sent_at)
+                    ↓
+days_since = NOW() - last_send_date
+                    ↓
+days_since >= 7 → Mostrar aviso en panel
 ```
-El idioma se determina por el idioma del documento descargado (`es` o `en`).
 
