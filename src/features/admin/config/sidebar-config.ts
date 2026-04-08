@@ -434,7 +434,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "💼 CAPITAL RIESGO",
+    title: "CAPITAL RIESGO",
     description: "CRM de fondos PE/VC",
     items: [
       { 
