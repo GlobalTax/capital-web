@@ -1,6 +1,9 @@
 /**
- * Builds the pre-call email preview HTML, replicating the Edge Function template.
+ * Builds the pre-call email preview HTML with 4 variants:
+ * valoracion-cast, venta-cast, valoracion-cat, venta-cat
  */
+
+export type EmailVariant = 'valoracion-cast' | 'venta-cast' | 'valoracion-cat' | 'venta-cat';
 
 interface PrecallEmailPreviewParams {
   contactName: string;
@@ -9,6 +12,7 @@ interface PrecallEmailPreviewParams {
   senderEmail: string;
   senderPhone: string;
   ccNames: string[]; // First names of visible CC recipients
+  variant?: EmailVariant;
 }
 
 export interface PrecallEmailPreview {
@@ -19,52 +23,131 @@ export interface PrecallEmailPreview {
   ccList: string[];
 }
 
-export function buildPrecallEmailPreview(
-  params: PrecallEmailPreviewParams & { to: string; ccEmails: string[] }
-): PrecallEmailPreview {
-  const { contactName, companyName, senderName, senderEmail, senderPhone, ccNames, to, ccEmails } = params;
+function buildCcMention(ccNames: string[], lang: 'cast' | 'cat'): string {
+  if (ccNames.length === 0) return '';
+  const prefix = lang === 'cat' ? 'Poso en còpia als meus companys' : 'Pongo en copia a mis compañeros';
+  if (ccNames.length === 1) return `${prefix} ${ccNames[0]}.`;
+  const conjunction = lang === 'cat' ? ' i ' : ' y ';
+  return `${prefix} ${ccNames.slice(0, -1).join(', ')}${conjunction}${ccNames[ccNames.length - 1]}.`;
+}
 
-  const senderFirstName = senderName.split(' ')[0];
-  const saludo = contactName ? `Apreciado ${contactName.split(' ')[0]},` : 'Apreciado/a,';
+function buildBody(params: {
+  saludo: string;
+  intro: string;
+  ccMention: string;
+  paragraphs: string[];
+  phoneBlock: string;
+  closing: string;
+  senderName: string;
+  senderPhone: string;
+  senderEmail: string;
+}): string {
+  const { saludo, intro, ccMention, paragraphs, phoneBlock, closing, senderName, senderPhone, senderEmail } = params;
 
-  const ccMention = ccNames.length > 0
-    ? `Pongo en copia a mis compañeros ${ccNames.slice(0, -1).join(', ')}${ccNames.length > 1 ? ' y ' : ''}${ccNames[ccNames.length - 1]}.`
-    : '';
+  const pStyle = 'style="margin:0 0 18px;"';
+  const ccText = ccMention ? ` ${ccMention}` : '';
 
-  const subject = `Consulta M&A | ${companyName} <> Capittal`;
+  const bodyParagraphs = paragraphs.map(p => `<p ${pStyle}>${p}</p>`).join('\n        ');
 
-  const htmlBody = `
+  return `
     <div style="font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background:#ffffff;">
       <div style="color:#111827; font-size:15px; line-height:1.7;">
-        <p style="margin:0 0 18px;">${saludo}</p>
+        <p ${pStyle}>${saludo}</p>
         
-        <p style="margin:0 0 18px;">
-          Soy ${senderFirstName}, del equipo de fusiones y adquisiciones de Capittal. Encantado de saludarte.${ccMention ? ` ${ccMention}` : ''}
-        </p>
+        <p ${pStyle}>${intro}${ccText}</p>
         
-        <p style="margin:0 0 18px;">
-          Me pongo en contacto contigo dado que hemos recibido tu respuesta a nuestro formulario web de valoración automática de empresas y, tras analizar vuestra actividad, así como la información disponible en el Registro Mercantil, nos ha parecido muy interesante conocer más acerca de vuestro proyecto y situación actual.
-        </p>
+        ${bodyParagraphs}
         
-        <p style="margin:0 0 18px;">
-          Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.
-        </p>
+        <p ${pStyle}>${phoneBlock}</p>
         
-        <p style="margin:0 0 18px;">
-          Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.
-        </p>
-        
-        <p style="margin:0 0 18px;">
-          Te dejo mi número: <strong>${senderPhone}</strong> por si prefieres llamarme tú directamente.
-        </p>
-        
-        <p style="margin:0 0 8px;">Un cordial saludo,</p>
+        <p style="margin:0 0 8px;">${closing}</p>
         <p style="margin:0 0 4px; font-weight:600; color:#1f2937;">${senderName}</p>
         <p style="margin:0 0 4px; font-size:14px; color:#6b7280;">Fusiones y Adquisiciones · Capittal</p>
         <p style="margin:0; font-size:13px; color:#9ca3af;">📞 ${senderPhone} · 📧 ${senderEmail}</p>
       </div>
     </div>
   `;
+}
+
+export function buildPrecallEmailPreview(
+  params: PrecallEmailPreviewParams & { to: string; ccEmails: string[] }
+): PrecallEmailPreview {
+  const { contactName, companyName, senderName, senderEmail, senderPhone, ccNames, to, ccEmails, variant = 'valoracion-cast' } = params;
+
+  const senderFirstName = senderName.split(' ')[0];
+  const contactFirstName = contactName ? contactName.split(' ')[0] : '';
+  const lang = variant.endsWith('-cat') ? 'cat' : 'cast';
+  const ccMention = buildCcMention(ccNames, lang);
+
+  const subject = `Consulta M&A | ${companyName} <> Capittal`;
+
+  let saludo: string;
+  let intro: string;
+  let paragraphs: string[];
+  let phoneBlock: string;
+  let closing: string;
+
+  switch (variant) {
+    case 'valoracion-cast':
+      saludo = contactFirstName ? `Apreciado ${contactFirstName},` : 'Apreciado/a,';
+      intro = `Soy ${senderFirstName}, del equipo de fusiones y adquisiciones de Capittal. Encantado de saludarte.`;
+      paragraphs = [
+        'Me pongo en contacto contigo dado que hemos recibido tu respuesta a nuestro formulario web de valoración automática de empresas y, tras analizar vuestra actividad, así como la información disponible en el Registro Mercantil, nos ha parecido muy interesante conocer más acerca de vuestro proyecto y situación actual.',
+        'Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.',
+        'Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.',
+      ];
+      phoneBlock = `Te dejo mi número: <strong>${senderPhone}</strong> por si prefieres llamarme tú directamente.`;
+      closing = 'Un cordial saludo,';
+      break;
+
+    case 'venta-cast':
+      saludo = contactFirstName ? `Apreciado ${contactFirstName},` : 'Apreciado/a,';
+      intro = `Encantado de saludarte. Soy ${senderFirstName}, miembro del equipo de Capittal.`;
+      paragraphs = [
+        'Hemos recibido recientemente una solicitud a través de nuestro formulario interesándose por nuestros servicios de asesoramiento en compraventa de empresas. Tras analizar vuestra actividad y la información disponible, nos ha parecido especialmente interesante el trabajo que realizáis.',
+        'Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.',
+        'Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.',
+      ];
+      phoneBlock = `Te dejo mi número: <strong>${senderPhone}</strong> por si prefieres llamarme tú directamente.`;
+      closing = 'Quedo a tu disposición para cualquier duda o comentario.<br><br>Un cordial saludo,';
+      break;
+
+    case 'valoracion-cat':
+      saludo = contactFirstName ? `Apreciat ${contactFirstName},` : 'Apreciat/ada,';
+      intro = `Soc ${senderFirstName}, de l'equip de fusions i adquisicions de Capittal. Encantat de saludar-te.`;
+      paragraphs = [
+        'Em poso en contacte amb tu atès que hem rebut la teva resposta al nostre formulari web de valoració automàtica d\'empreses i, després d\'analitzar la vostra activitat, així com la informació disponible al Registre Mercantil, ens ha semblat molt interessant conèixer més sobre el vostre projecte i situació actual.',
+        'Desconec si esteu valorant una possible venda, si us ha contactat algun inversor, o simplement voleu tenir una referència del valor de l\'empresa. En qualsevol cas, m\'agradaria poder parlar amb tu per entendre millor la vostra situació.',
+        'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o indicar-me l\'horari que millor et vagi.',
+      ];
+      phoneBlock = `Et deixo el meu número: <strong>${senderPhone}</strong> per si prefereixes trucar-me tu directament.`;
+      closing = 'Una cordial salutació,';
+      break;
+
+    case 'venta-cat':
+      saludo = contactFirstName ? `Apreciat ${contactFirstName},` : 'Apreciat/ada,';
+      intro = `Encantat de saludar-te. Soc ${senderFirstName}, membre de l'equip de Capittal.`;
+      paragraphs = [
+        'Hem rebut recentment una sol·licitud a través del nostre formulari interessant-se pels nostres serveis d\'assessorament en compravenda d\'empreses. Després d\'analitzar la vostra activitat i la informació disponible, ens ha semblat especialment interessant la feina que realitzeu.',
+        'Desconec si esteu valorant una possible venda, si us ha contactat algun inversor, o simplement voleu tenir una referència del valor de l\'empresa. En qualsevol cas, m\'agradaria poder parlar amb tu per entendre millor la vostra situació.',
+        'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o indicar-me l\'horari que millor et vagi.',
+      ];
+      phoneBlock = `Et deixo el meu número: <strong>${senderPhone}</strong> per si prefereixes trucar-me tu directament.`;
+      closing = 'Quedo a la teva disposició per a qualsevol dubte o comentari.<br><br>Una cordial salutació,';
+      break;
+  }
+
+  const htmlBody = buildBody({
+    saludo,
+    intro,
+    ccMention,
+    paragraphs,
+    phoneBlock,
+    closing,
+    senderName,
+    senderPhone,
+    senderEmail,
+  });
 
   return {
     subject,

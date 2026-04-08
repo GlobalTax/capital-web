@@ -16,7 +16,7 @@ interface PipelineColumnProps {
   adminUsersMap: Map<string, string>;
   leadFormsMap?: Map<string, string>;
   channelsMap?: Map<string, string>;
-  onSendPrecallEmail: (leadId: string) => void;
+  onSendPrecallEmail: (leadId: string, variant: import('../utils/buildPrecallEmailPreview').EmailVariant) => void;
   onRegisterCall: (leadId: string, answered: boolean) => void;
   onViewDetails: (leadId: string) => void;
   selectedIds: Set<string>;
@@ -103,7 +103,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                         assignedUserName={lead.assigned_to ? adminUsersMap.get(lead.assigned_to) : undefined}
                         leadFormName={lead.lead_form && leadFormsMap ? leadFormsMap.get(lead.lead_form) : undefined}
                         channelName={lead.acquisition_channel_id && channelsMap ? channelsMap.get(lead.acquisition_channel_id) : undefined}
-                        onSendPrecallEmail={() => onSendPrecallEmail(lead.id)}
+                        onSendPrecallEmail={(variant) => onSendPrecallEmail(lead.id, variant)}
                         onRegisterCall={(answered) => onRegisterCall(lead.id, answered)}
                         onViewDetails={() => onViewDetails(lead.id)}
                         isDragging={snapshot.isDragging}
