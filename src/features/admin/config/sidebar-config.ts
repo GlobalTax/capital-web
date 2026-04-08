@@ -569,7 +569,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📧 MARKETING",
+    title: "MARKETING",
     description: "Comunicación con leads",
     items: [
       { 
