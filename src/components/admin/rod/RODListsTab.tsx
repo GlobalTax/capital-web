@@ -112,6 +112,7 @@ interface RODMember {
   phone: string | null;
   sector: string | null;
   notes: string | null;
+  contacto_id: string | null;
   created_at: string;
 }
 
