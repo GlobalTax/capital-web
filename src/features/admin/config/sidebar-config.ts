@@ -621,6 +621,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CONFIGURACIÓN",
+    icon: Cog,
     description: "Configuración del sistema",
     items: [
       { 
