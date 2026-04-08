@@ -143,6 +143,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "IA & AGENTES",
+    icon: BrainCircuit,
     description: "Inteligencia artificial",
     items: [
       { 
