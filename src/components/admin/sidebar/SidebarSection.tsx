@@ -31,7 +31,7 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
     <SidebarGroup className="px-2 py-0.5">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[hsl(var(--linear-bg-hover))] rounded-md transition-colors group"
+        className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[hsl(var(--linear-bg-hover))] rounded-md transition-colors group gap-2"
       >
         {section.icon && (
           <section.icon className="h-3.5 w-3.5 text-[hsl(var(--linear-text-tertiary))]" />
