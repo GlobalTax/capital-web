@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -65,6 +66,7 @@ const getDateThreshold = (preset: DatePreset): Date | null => {
 };
 
 export function OutboundSummaryDashboard() {
+  const navigate = useNavigate();
   const [disabledCampaigns, setDisabledCampaigns] = useState<Set<string>>(new Set());
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
@@ -369,7 +371,7 @@ export function OutboundSummaryDashboard() {
       </div>
 
       {/* Follow-Up Alerts */}
-      <FollowUpAlertsPanel />
+      <FollowUpAlertsPanel onNavigateToCampaign={(id) => navigate(`/admin/campanas-valoracion/${id}`)} />
 
       {/* Pipeline */}
       <OutboundPipelineSection
