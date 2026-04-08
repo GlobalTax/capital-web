@@ -269,7 +269,7 @@ export const BuyPipelineView: React.FC = () => {
       ccNames,
       to: lead.email || '',
       ccEmails,
-      variant: variant || 'valoracion-cast',
+      variant: variant || 'compra-cast',
     });
     setEmailPreview(preview);
     setEmailPreviewLeadId(leadId);
