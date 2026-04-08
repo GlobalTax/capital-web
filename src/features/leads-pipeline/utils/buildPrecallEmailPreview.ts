@@ -25,7 +25,7 @@ export interface PrecallEmailPreview {
 
 function buildCcMention(ccNames: string[], lang: 'cast' | 'cat'): string {
   if (ccNames.length === 0) return '';
-  const prefix = lang === 'cat' ? 'Poso en còpia als meus companys' : 'Pongo en copia a mis compañeros';
+  const prefix = lang === 'cat' ? 'Poso en còpia els meus companys' : 'Pongo en copia a mis compañeros';
   if (ccNames.length === 1) return `${prefix} ${ccNames[0]}.`;
   const conjunction = lang === 'cat' ? ' i ' : ' y ';
   return `${prefix} ${ccNames.slice(0, -1).join(', ')}${conjunction}${ccNames[ccNames.length - 1]}.`;
