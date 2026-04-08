@@ -61,7 +61,7 @@ export interface SidebarSection {
 
 export const sidebarSections: SidebarSection[] = [
   {
-    title: "📊 DASHBOARD",
+    title: "DASHBOARD",
     description: "Panel principal",
     items: [
       { 
@@ -91,7 +91,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🔥 LEADS",
+    title: "LEADS",
     description: "Centro de gestión de leads",
     items: [
       { 
@@ -116,7 +116,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "💼 CRM",
+    title: "CRM",
     description: "Gestión de prospectos y oportunidades",
     items: [
       { 
@@ -128,7 +128,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🤖 IA & AGENTES",
+    title: "IA & AGENTES",
     description: "Inteligencia artificial",
     items: [
       { 
@@ -148,7 +148,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "✨ CREAR CONTENIDO",
+    title: "CREAR CONTENIDO",
     description: "Herramientas de creación",
     items: [
       { 
@@ -198,7 +198,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🏢 GESTIONAR DATOS",
+    title: "GESTIONAR DATOS",
     description: "Información corporativa",
     items: [
       { 
@@ -302,7 +302,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "💼 EMPLEO",
+    title: "EMPLEO",
     description: "Gestión de ofertas de trabajo",
     items: [
       { 
@@ -326,7 +326,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🌐 WEB INTELLIGENCE",
+    title: "WEB INTELLIGENCE",
     description: "Empresas visitantes de la web",
     items: [
       { 
@@ -344,7 +344,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📈 ANALIZAR LEADS",
+    title: "ANALIZAR LEADS",
     description: "Gestión de prospectos",
     items: [
       { 
@@ -422,7 +422,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📰 NOTICIAS M&A",
+    title: "NOTICIAS M&A",
     description: "Gestión de noticias automatizadas",
     items: [
       { 
@@ -434,7 +434,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "💼 CAPITAL RIESGO",
+    title: "CAPITAL RIESGO",
     description: "CRM de fondos PE/VC",
     items: [
       { 
@@ -465,7 +465,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🔍 SEARCH FUNDS",
+    title: "SEARCH FUNDS",
     description: "Gestión y matching de Search Funds",
     items: [
       { 
@@ -515,7 +515,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🏢 CORPORATIVOS",
+    title: "CORPORATIVOS",
     description: "Compradores estratégicos",
     items: [
       { 
@@ -527,7 +527,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🏛️ BOUTIQUES M&A",
+    title: "BOUTIQUES M&A",
     description: "Directorio de competencia",
     items: [
       { 
@@ -545,7 +545,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📚 RECURSOS",
+    title: "RECURSOS",
     description: "Gestión de recursos y herramientas",
     items: [
       { 
@@ -569,7 +569,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📧 MARKETING",
+    title: "MARKETING",
     description: "Comunicación con leads",
     items: [
       { 
@@ -593,7 +593,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "⚙️ CONFIGURACIÓN",
+    title: "CONFIGURACIÓN",
     description: "Configuración del sistema",
     items: [
       { 
