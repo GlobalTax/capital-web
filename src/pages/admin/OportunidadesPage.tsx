@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 const LazyRODDocumentsManager = lazy(() => import('@/components/admin/RODDocumentsManager').then(m => ({ default: m.RODDocumentsManager })));
 const LazyRODListsTab = lazy(() => import('@/components/admin/rod/RODListsTab').then(m => ({ default: m.RODListsTab })));
 const LazyRODSendsTab = lazy(() => import('@/components/admin/rod/RODSendsTab'));
+const LazyInvestorLeadsManager = lazy(() => import('@/components/admin/InvestorLeadsManager').then(m => ({ default: m.InvestorLeadsManager })));
 
 
 interface Opportunity {
