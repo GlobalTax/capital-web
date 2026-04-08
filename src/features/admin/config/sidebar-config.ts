@@ -515,7 +515,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🏢 CORPORATIVOS",
+    title: "CORPORATIVOS",
     description: "Compradores estratégicos",
     items: [
       { 
