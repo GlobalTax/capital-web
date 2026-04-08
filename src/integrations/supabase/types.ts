@@ -722,6 +722,7 @@ export type Database = {
           last_info_access_at: string | null
           last_login: string | null
           needs_credentials: boolean | null
+          phone: string | null
           role: Database["public"]["Enums"]["admin_role"]
           skills: string[] | null
           updated_at: string | null
@@ -739,6 +740,7 @@ export type Database = {
           last_info_access_at?: string | null
           last_login?: string | null
           needs_credentials?: boolean | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["admin_role"]
           skills?: string[] | null
           updated_at?: string | null
@@ -756,6 +758,7 @@ export type Database = {
           last_info_access_at?: string | null
           last_login?: string | null
           needs_credentials?: boolean | null
+          phone?: string | null
           role?: Database["public"]["Enums"]["admin_role"]
           skills?: string[] | null
           updated_at?: string | null

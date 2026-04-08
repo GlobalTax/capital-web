@@ -284,6 +284,7 @@ export const LeadsPipelineView: React.FC = () => {
           contactName: lead.contact_name,
           companyName: lead.company_name,
           email: lead.email,
+          assignedTo: lead.assigned_to || undefined,
         }
       });
       if (error) throw error;
