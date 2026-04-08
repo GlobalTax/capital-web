@@ -344,7 +344,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "📈 ANALIZAR LEADS",
+    title: "ANALIZAR LEADS",
     description: "Gestión de prospectos",
     items: [
       { 
