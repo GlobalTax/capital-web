@@ -40,6 +40,9 @@ import { useLeadForms } from '@/hooks/useLeadForms';
 import { FINANCIAL_RANGES } from '@/components/admin/campanas-valoracion/shared/financialRangeFilters';
 import { usePipelineAutoScroll } from '../hooks/usePipelineAutoScroll';
 import type { LeadStatus } from '../types';
+import { PrecallEmailPreviewDialog } from './PrecallEmailPreviewDialog';
+import { buildPrecallEmailPreview, type PrecallEmailPreview } from '../utils/buildPrecallEmailPreview';
+import { useActiveEmailRecipients } from '@/hooks/useEmailRecipientsConfig';
 
 export const LeadsPipelineView: React.FC = () => {
   const navigate = useNavigate();
