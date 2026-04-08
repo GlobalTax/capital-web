@@ -446,7 +446,19 @@ export function CampaignSummaryStep({ campaignId, campaign }: Props) {
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-3">
-            <CardTitle className="text-base">Resumen de empresas</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">Resumen de empresas</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Aviso FU:</span>
+                <FollowUpReminderConfig
+                  campaignId={campaignId}
+                  currentDays={campaign.followup_reminder_days ?? null}
+                />
+                {campaign.followup_reminder_days && (
+                  <Badge variant="outline" className="text-[10px] h-5">{campaign.followup_reminder_days}d</Badge>
+                )}
+              </div>
+            </div>
             
             {/* Search + Filters */}
             <div className="flex flex-col sm:flex-row gap-2">
