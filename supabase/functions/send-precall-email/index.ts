@@ -32,6 +32,8 @@ interface SendPrecallEmailRequest {
   companyName: string;
   email: string;
   assignedTo?: string; // user_id of the assigned admin user
+  customSubject?: string; // Optional: edited subject from preview
+  customHtmlBody?: string; // Optional: edited HTML body from preview
 }
 
 const handler = async (req: Request): Promise<Response> => {
