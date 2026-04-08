@@ -155,7 +155,8 @@ function TemplateEditor({
       <div className="p-3 rounded-lg border bg-blue-50 border-blue-200 text-sm">
         <p className="font-medium text-blue-800">
           Se enviará a <strong>{eligible.length}</strong> empresa(s) (sin respuesta).
-          Se han excluido <strong>{excluded}</strong> empresa(s).
+          {excluded > 0 && <> Se han excluido <strong>{excluded}</strong> empresa(s) con respuesta.</>}
+          {withoutInitialEmail > 0 && <> Se han excluido <strong>{withoutInitialEmail}</strong> empresa(s) sin envío inicial.</>}
         </p>
       </div>
 
