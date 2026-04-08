@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,9 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Trash2, Upload, Loader2, Users, X } from 'lucide-react';
+import { Plus, Search, Trash2, Upload, Loader2, Users, X, Filter, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface RODMember {
   id: string;
@@ -24,17 +27,185 @@ interface RODMember {
   created_at: string;
 }
 
+type ColumnKey = 'full_name' | 'email' | 'company' | 'phone' | 'sector' | 'notes';
+
+const ALL_COLUMNS: { key: ColumnKey; label: string }[] = [
+  { key: 'full_name', label: 'Nombre' },
+  { key: 'email', label: 'Email' },
+  { key: 'company', label: 'Empresa' },
+  { key: 'phone', label: 'Teléfono' },
+  { key: 'sector', label: 'Sector' },
+  { key: 'notes', label: 'Notas' },
+];
+
+const DEFAULT_VISIBLE: Set<ColumnKey> = new Set(['full_name', 'email', 'company', 'phone', 'sector', 'notes']);
+
 const LANG_TABS = [
   { code: 'es', label: 'Castellano', flag: 'ES' },
   { code: 'en', label: 'Inglés', flag: 'EN' },
 ];
 
+// ─── Column filter component ────────────────────────────────────────────
+function ColumnFilterHeader({
+  label,
+  columnKey,
+  members,
+  activeFilter,
+  onFilterChange,
+}: {
+  label: string;
+  columnKey: ColumnKey;
+  members: RODMember[];
+  activeFilter: string | null; // null = all, '__has__' = with data, '__empty__' = without data, or specific value
+  onFilterChange: (value: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [filterSearch, setFilterSearch] = useState('');
+
+  const uniqueValues = useMemo(() => {
+    const vals = new Set<string>();
+    for (const m of members) {
+      const v = m[columnKey];
+      if (v && v.trim() && v !== '—') vals.add(v);
+    }
+    return Array.from(vals).sort((a, b) => a.localeCompare(b, 'es'));
+  }, [members, columnKey]);
+
+  const filteredValues = useMemo(() => {
+    if (!filterSearch.trim()) return uniqueValues.slice(0, 30);
+    const q = filterSearch.toLowerCase();
+    return uniqueValues.filter(v => v.toLowerCase().includes(q)).slice(0, 30);
+  }, [uniqueValues, filterSearch]);
+
+  const hasData = members.filter(m => {
+    const v = m[columnKey];
+    return v && v.trim() && v !== '—';
+  }).length;
+  const noData = members.length - hasData;
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setFilterSearch(''); }}>
+      <PopoverTrigger asChild>
+        <button className={cn(
+          "flex items-center gap-1 text-xs hover:text-foreground transition-colors",
+          activeFilter ? "text-primary font-semibold" : "text-muted-foreground"
+        )}>
+          {label}
+          <Filter className={cn("h-3 w-3", activeFilter ? "text-primary" : "text-muted-foreground/50")} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 p-2" align="start">
+        {uniqueValues.length > 8 && (
+          <Input
+            placeholder="Buscar..."
+            className="h-7 text-xs mb-2"
+            value={filterSearch}
+            onChange={e => setFilterSearch(e.target.value)}
+          />
+        )}
+        <div className="space-y-0.5 max-h-[200px] overflow-y-auto">
+          <button
+            className={cn("w-full text-left text-xs px-2 py-1 rounded hover:bg-muted", !activeFilter && "bg-muted font-medium")}
+            onClick={() => { onFilterChange(null); setOpen(false); }}
+          >
+            Todos ({members.length})
+          </button>
+          <button
+            className={cn("w-full text-left text-xs px-2 py-1 rounded hover:bg-muted", activeFilter === '__has__' && "bg-muted font-medium")}
+            onClick={() => { onFilterChange('__has__'); setOpen(false); }}
+          >
+            Con dato ({hasData})
+          </button>
+          <button
+            className={cn("w-full text-left text-xs px-2 py-1 rounded hover:bg-muted", activeFilter === '__empty__' && "bg-muted font-medium")}
+            onClick={() => { onFilterChange('__empty__'); setOpen(false); }}
+          >
+            Sin dato ({noData})
+          </button>
+          {filteredValues.length > 0 && <div className="border-t my-1" />}
+          {filteredValues.map(v => (
+            <button
+              key={v}
+              className={cn("w-full text-left text-xs px-2 py-1 rounded hover:bg-muted truncate", activeFilter === v && "bg-muted font-medium")}
+              onClick={() => { onFilterChange(v); setOpen(false); }}
+              title={v}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        {activeFilter && (
+          <Button variant="ghost" size="sm" className="w-full h-6 text-xs mt-1" onClick={() => { onFilterChange(null); setOpen(false); }}>
+            <X className="h-3 w-3 mr-1" /> Quitar filtro
+          </Button>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── Column visibility toggle ───────────────────────────────────────────
+function ColumnVisibilityToggle({
+  visibleColumns,
+  onToggle,
+}: {
+  visibleColumns: Set<ColumnKey>;
+  onToggle: (key: ColumnKey) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
+          <SlidersHorizontal className="h-3 w-3" />
+          Columnas
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-44 p-2" align="end">
+        <p className="text-[11px] font-medium text-muted-foreground mb-1.5">Columnas visibles</p>
+        {ALL_COLUMNS.map(col => (
+          <label key={col.key} className="flex items-center gap-2 px-1 py-1 text-xs cursor-pointer hover:bg-muted rounded">
+            <Checkbox
+              checked={visibleColumns.has(col.key)}
+              onCheckedChange={() => onToggle(col.key)}
+              className="h-3.5 w-3.5"
+            />
+            {col.label}
+          </label>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── Main list component ────────────────────────────────────────────────
 const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', company: '', phone: '', sector: '', notes: '' });
   const fileRef = useRef<HTMLInputElement>(null);
+  const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(new Set(DEFAULT_VISIBLE));
+  const [columnFilters, setColumnFilters] = useState<Record<string, string | null>>({});
+
+  const toggleColumn = useCallback((key: ColumnKey) => {
+    setVisibleColumns(prev => {
+      const next = new Set(prev);
+      if (next.has(key) && next.size > 1) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const setColumnFilter = useCallback((key: string, value: string | null) => {
+    setColumnFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  const hasActiveColumnFilters = Object.values(columnFilters).some(v => v !== null && v !== undefined);
+
+  const clearAllFilters = useCallback(() => {
+    setSearch('');
+    setColumnFilters({});
+  }, []);
 
   const { data: members, isLoading } = useQuery({
     queryKey: ['rod-list-members', language],
@@ -100,7 +271,6 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
         sector: r.sector || null,
         notes: r.notes || null,
       }));
-      // Batch in chunks of 50
       let imported = 0;
       for (let i = 0; i < payload.length; i += 50) {
         const chunk = payload.slice(i, i + 50);
@@ -169,100 +339,130 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
 
   const filtered = useMemo(() => {
     if (!members) return [];
-    if (!search.trim()) return members;
-    const q = search.toLowerCase();
-    return members.filter(m =>
-      m.full_name?.toLowerCase().includes(q) ||
-      m.email?.toLowerCase().includes(q) ||
-      m.company?.toLowerCase().includes(q) ||
-      m.sector?.toLowerCase().includes(q)
-    );
-  }, [members, search]);
+    let result = members;
+
+    // Text search
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(m =>
+        m.full_name?.toLowerCase().includes(q) ||
+        m.email?.toLowerCase().includes(q) ||
+        m.company?.toLowerCase().includes(q) ||
+        m.sector?.toLowerCase().includes(q)
+      );
+    }
+
+    // Column filters
+    for (const [key, filterVal] of Object.entries(columnFilters)) {
+      if (!filterVal) continue;
+      result = result.filter(m => {
+        const v = m[key as ColumnKey];
+        const hasValue = v && v.trim() && v !== '—';
+        if (filterVal === '__has__') return hasValue;
+        if (filterVal === '__empty__') return !hasValue;
+        return v === filterVal;
+      });
+    }
+
+    return result;
+  }, [members, search, columnFilters]);
 
   const total = members?.length || 0;
+  const hasAnyFilter = !!search.trim() || hasActiveColumnFilters;
 
   return (
     <div className="space-y-3">
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">
-            <Users className="h-3 w-3 mr-1" />
-            {total} miembros
-          </Badge>
+      <div className="flex flex-col gap-2">
+        {/* Search bar - prominent */}
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nombre, email, empresa o sector..."
+            className="pl-10 h-10 text-sm"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar nombre, email, empresa..."
-              className="pl-8 h-8 text-xs"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2">
-                <X className="h-3 w-3 text-muted-foreground" />
-              </button>
+
+        {/* Actions row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              <Users className="h-3 w-3 mr-1" />
+              {hasAnyFilter ? `${filtered.length} de ${total}` : `${total}`} miembros
+            </Badge>
+            {hasAnyFilter && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs px-2" onClick={clearAllFilters}>
+                <X className="h-3 w-3 mr-1" /> Limpiar filtros
+              </Button>
             )}
           </div>
-          <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
-          <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => fileRef.current?.click()} disabled={bulkImportMutation.isPending}>
-            <Upload className="h-3 w-3 mr-1" />
-            CSV
-          </Button>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="text-xs h-8">
-                <Plus className="h-3 w-3 mr-1" />
-                Añadir
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle className="text-sm">Añadir miembro al listado</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-xs">Nombre *</Label>
-                  <Input className="text-sm h-8" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nombre completo" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs">Email</Label>
-                    <Input className="text-sm h-8" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@empresa.com" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Teléfono</Label>
-                    <Input className="text-sm h-8" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+34..." />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs">Empresa</Label>
-                    <Input className="text-sm h-8" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} placeholder="Nombre empresa" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Sector</Label>
-                    <Input className="text-sm h-8" value={form.sector} onChange={e => setForm(f => ({ ...f, sector: e.target.value }))} placeholder="Sector" />
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs">Notas</Label>
-                  <Input className="text-sm h-8" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Observaciones..." />
-                </div>
-                <Button
-                  className="w-full text-xs"
-                  size="sm"
-                  disabled={!form.full_name.trim() || addMutation.isPending}
-                  onClick={() => addMutation.mutate(form)}
-                >
-                  {addMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
-                  Añadir miembro
+          <div className="flex items-center gap-2">
+            <ColumnVisibilityToggle visibleColumns={visibleColumns} onToggle={toggleColumn} />
+            <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
+            <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => fileRef.current?.click()} disabled={bulkImportMutation.isPending}>
+              <Upload className="h-3 w-3 mr-1" />
+              CSV
+            </Button>
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="text-xs h-8">
+                  <Plus className="h-3 w-3 mr-1" />
+                  Añadir
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-sm">Añadir miembro al listado</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs">Nombre *</Label>
+                    <Input className="text-sm h-8" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nombre completo" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Email</Label>
+                      <Input className="text-sm h-8" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="email@empresa.com" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Teléfono</Label>
+                      <Input className="text-sm h-8" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+34..." />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Empresa</Label>
+                      <Input className="text-sm h-8" value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} placeholder="Nombre empresa" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Sector</Label>
+                      <Input className="text-sm h-8" value={form.sector} onChange={e => setForm(f => ({ ...f, sector: e.target.value }))} placeholder="Sector" />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Notas</Label>
+                    <Input className="text-sm h-8" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Observaciones..." />
+                  </div>
+                  <Button
+                    className="w-full text-xs"
+                    size="sm"
+                    disabled={!form.full_name.trim() || addMutation.isPending}
+                    onClick={() => addMutation.mutate(form)}
+                  >
+                    {addMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                    Añadir miembro
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
 
@@ -282,24 +482,29 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Nombre</TableHead>
-                    <TableHead className="text-xs">Email</TableHead>
-                    <TableHead className="text-xs">Empresa</TableHead>
-                    <TableHead className="text-xs">Teléfono</TableHead>
-                    <TableHead className="text-xs">Sector</TableHead>
-                    <TableHead className="text-xs">Notas</TableHead>
+                    {ALL_COLUMNS.filter(c => visibleColumns.has(c.key)).map(col => (
+                      <TableHead key={col.key} className="text-xs">
+                        <ColumnFilterHeader
+                          label={col.label}
+                          columnKey={col.key}
+                          members={members || []}
+                          activeFilter={columnFilters[col.key] || null}
+                          onFilterChange={(v) => setColumnFilter(col.key, v)}
+                        />
+                      </TableHead>
+                    ))}
                     <TableHead className="text-xs w-10" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map(m => (
                     <TableRow key={m.id}>
-                      <TableCell className="text-xs font-medium">{m.full_name}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{m.email || '—'}</TableCell>
-                      <TableCell className="text-xs">{m.company || '—'}</TableCell>
-                      <TableCell className="text-xs">{m.phone || '—'}</TableCell>
-                      <TableCell className="text-xs">{m.sector || '—'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{m.notes || '—'}</TableCell>
+                      {visibleColumns.has('full_name') && <TableCell className="text-xs font-medium">{m.full_name}</TableCell>}
+                      {visibleColumns.has('email') && <TableCell className="text-xs text-muted-foreground">{m.email || '—'}</TableCell>}
+                      {visibleColumns.has('company') && <TableCell className="text-xs font-medium">{m.company || '—'}</TableCell>}
+                      {visibleColumns.has('phone') && <TableCell className="text-xs">{m.phone || '—'}</TableCell>}
+                      {visibleColumns.has('sector') && <TableCell className="text-xs">{m.sector || '—'}</TableCell>}
+                      {visibleColumns.has('notes') && <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{m.notes || '—'}</TableCell>}
                       <TableCell className="text-xs">
                         <button
                           onClick={() => { if (confirm('¿Eliminar este miembro?')) deleteMutation.mutate(m.id); }}
