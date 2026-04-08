@@ -502,6 +502,8 @@ function SendList({
 
   // Visible in this round: not responded in previous rounds, AND (sin_respuesta globally OR has record in this round)
   const visible = companies.filter(c => {
+    // Solo mostrar empresas que ya recibieron el email inicial
+    if (!emailSentMap.get(c.id)) return false;
     if (respondedInPreviousRounds.has(c.id)) return false;
     const globalOk = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
     const hasRoundRecord = sendMap.has(c.id);
