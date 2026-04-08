@@ -66,12 +66,18 @@ export const LeadsPipelineView: React.FC = () => {
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
   
   const { scrollContainerRef, startAutoScroll, stopAutoScroll } = usePipelineAutoScroll();
+  const { data: activeRecipients } = useActiveEmailRecipients();
   const isLoading = isLoadingLeads || isLoadingStatuses;
 
   // Existing filters
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAssignees, setFilterAssignees] = useState<string[]>([]);
   const [isSendingEmail, setIsSendingEmail] = useState<string | null>(null);
+
+  // Email preview state
+  const [emailPreview, setEmailPreview] = useState<PrecallEmailPreview | null>(null);
+  const [emailPreviewOpen, setEmailPreviewOpen] = useState(false);
+  const [emailPreviewLeadId, setEmailPreviewLeadId] = useState<string | null>(null);
   
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
