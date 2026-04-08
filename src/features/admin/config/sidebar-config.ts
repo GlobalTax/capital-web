@@ -571,6 +571,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "RECURSOS",
+    icon: BookOpen,
     description: "Gestión de recursos y herramientas",
     items: [
       { 
