@@ -160,7 +160,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
             <h4 className="font-medium text-sm truncate">{lead.company_name}</h4>
             <p className="text-xs text-muted-foreground truncate">{lead.contact_name}</p>
           </div>
-{['nuevo', 'calificado', 'contactando', 'propuesta_enviada', 'fase0_activo'].includes(lead.lead_status_crm || '') && (
+{['nuevo', 'calificado', 'contactando', 'valoracion_enviada', 'propuesta_enviada'].includes(lead.lead_status_crm || '') && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0">
@@ -226,7 +226,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
         )}
 
         {/* Pre-call email status - only in early stages */}
-        {['nuevo', 'calificado', 'contactando', 'propuesta_enviada', 'fase0_activo'].includes(lead.lead_status_crm || '') && (
+        {['nuevo', 'calificado', 'contactando', 'valoracion_enviada', 'propuesta_enviada'].includes(lead.lead_status_crm || '') && (
           <div className={`flex items-center gap-1.5 text-xs rounded-md px-2 py-1 ${
             lead.precall_email_sent 
               ? 'bg-emerald-50 text-emerald-700' 
