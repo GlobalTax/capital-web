@@ -552,6 +552,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "BOUTIQUES M&A",
+    icon: Building2,
     description: "Directorio de competencia",
     items: [
       { 
