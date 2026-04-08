@@ -16,7 +16,7 @@ interface PipelineColumnProps {
   adminUsersMap: Map<string, string>;
   leadFormsMap?: Map<string, string>;
   channelsMap?: Map<string, string>;
-  onSendPrecallEmail: (leadId: string) => void;
+  onSendPrecallEmail: (leadId: string, variant: import('../utils/buildPrecallEmailPreview').EmailVariant) => void;
   onRegisterCall: (leadId: string, answered: boolean) => void;
   onViewDetails: (leadId: string) => void;
   selectedIds: Set<string>;
