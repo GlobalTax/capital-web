@@ -184,8 +184,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Create tracking pixel URL
     const trackingPixelUrl = `https://fwhqtzkkvnjkazhaficj.supabase.co/functions/v1/email-open?mid=${messageId}`;
 
+    const finalHtml = customHtmlBody || htmlEmail;
+    
     // Add tracking pixel to HTML
-    const htmlWithTracking = htmlEmail.replace(
+    const htmlWithTracking = finalHtml.replace(
       '</div></div>',
       `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none" alt="" /></div></div>`
     );
