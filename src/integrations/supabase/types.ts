@@ -25528,6 +25528,7 @@ export type Database = {
         Returns: {
           email: string
           full_name: string
+          phone: string
           user_id: string
         }[]
       }
