@@ -587,12 +587,12 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                 <TableBody>
                   {filtered.map(m => (
                     <TableRow key={m.id}>
-                      {visibleColumns.has('full_name') && <TableCell className="text-xs font-medium">{m.full_name}</TableCell>}
-                      {visibleColumns.has('email') && <TableCell className="text-xs text-muted-foreground">{m.email || '—'}</TableCell>}
-                      {visibleColumns.has('company') && <TableCell className="text-xs font-medium">{m.company || '—'}</TableCell>}
-                      {visibleColumns.has('phone') && <TableCell className="text-xs">{m.phone || '—'}</TableCell>}
-                      {visibleColumns.has('sector') && <TableCell className="text-xs">{m.sector || '—'}</TableCell>}
-                      {visibleColumns.has('notes') && <TableCell className="text-xs text-muted-foreground max-w-[150px] truncate">{m.notes || '—'}</TableCell>}
+                      {visibleColumns.has('full_name') && <TableCell><EditableCell value={m.full_name} memberId={m.id} field="full_name" language={language} className="font-medium" /></TableCell>}
+                      {visibleColumns.has('email') && <TableCell><EditableCell value={m.email} memberId={m.id} field="email" language={language} /></TableCell>}
+                      {visibleColumns.has('company') && <TableCell><EditableCell value={m.company} memberId={m.id} field="company" language={language} className="font-medium" /></TableCell>}
+                      {visibleColumns.has('phone') && <TableCell><EditableCell value={m.phone} memberId={m.id} field="phone" language={language} /></TableCell>}
+                      {visibleColumns.has('sector') && <TableCell><EditableCell value={m.sector} memberId={m.id} field="sector" language={language} /></TableCell>}
+                      {visibleColumns.has('notes') && <TableCell className="max-w-[150px]"><EditableCell value={m.notes} memberId={m.id} field="notes" language={language} /></TableCell>}
                       <TableCell className="text-xs">
                         <button
                           onClick={() => { if (confirm('¿Eliminar este miembro?')) deleteMutation.mutate(m.id); }}
