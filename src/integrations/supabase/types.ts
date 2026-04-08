@@ -19817,6 +19817,7 @@ export type Database = {
       rod_list_members: {
         Row: {
           company: string | null
+          contacto_id: string | null
           created_at: string
           email: string | null
           full_name: string
@@ -19829,6 +19830,7 @@ export type Database = {
         }
         Insert: {
           company?: string | null
+          contacto_id?: string | null
           created_at?: string
           email?: string | null
           full_name: string
@@ -19841,6 +19843,7 @@ export type Database = {
         }
         Update: {
           company?: string | null
+          contacto_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string
@@ -19851,7 +19854,15 @@ export type Database = {
           sector?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "rod_list_members_contacto_id_fkey"
+            columns: ["contacto_id"]
+            isOneToOne: false
+            referencedRelation: "contactos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rod_scheduled_batches: {
         Row: {
