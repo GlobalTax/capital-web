@@ -226,7 +226,7 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
         )}
 
         {/* Pre-call email status - only in early stages */}
-        {['nuevo', 'calificado', 'contactando', 'propuesta_enviada', 'fase0_activo'].includes(lead.lead_status_crm || '') && (
+        {['nuevo', 'calificado', 'contactando', 'valoracion_enviada', 'propuesta_enviada'].includes(lead.lead_status_crm || '') && (
           <div className={`flex items-center gap-1.5 text-xs rounded-md px-2 py-1 ${
             lead.precall_email_sent 
               ? 'bg-emerald-50 text-emerald-700' 
