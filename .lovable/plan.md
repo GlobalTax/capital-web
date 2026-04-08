@@ -1,25 +1,31 @@
 
 
-## Plan: Buscador de contactos CRM en el diálogo "Añadir miembro al listado"
+## Plan: Filtrar empresas sin envío inicial en Follow Up
+
+### Problema
+La lista de Follow Up muestra todas las empresas de la campaña, incluyendo aquellas que aún no han recibido el email inicial. Esto puede provocar que se envíe un follow-up a una empresa que nunca recibió el primer correo.
 
 ### Cambio
-Añadir un campo de búsqueda en el diálogo de "Añadir miembro al listado" que consulte la tabla `contactos` del CRM en tiempo real. Al seleccionar un contacto existente, se auto-rellenan todos los campos del formulario (nombre, email, teléfono, empresa, sector) y se vincula automáticamente el `contacto_id`.
+Añadir una condición al filtro `visible` en `FollowUpStep.tsx` (línea 502) para excluir empresas que no tengan registro de envío inicial en `emailSentMap`.
 
 ### Implementación (1 archivo)
 
-**`src/components/admin/rod/RODListsTab.tsx`**
+**`src/components/admin/campanas-valoracion/steps/FollowUpStep.tsx`**
 
-1. Añadir un campo de búsqueda con debounce (300ms) al inicio del diálogo, antes del campo "Nombre".
-2. Al escribir 2+ caracteres, consultar `contactos` con `ilike` sobre `nombre`, `apellidos`, `email` y empresa vinculada. Mostrar resultados en un dropdown debajo del input.
-3. Al seleccionar un contacto del dropdown:
-   - Auto-rellenar `full_name`, `email`, `phone`, `company`, `sector` en el formulario.
-   - Guardar el `contacto_id` seleccionado en el estado del form.
-4. Permitir seguir editando manualmente (o limpiar la selección para crear uno nuevo sin vínculo CRM).
-5. En `addMutation`, pasar el `contacto_id` al insert de `rod_list_members` si se seleccionó un contacto existente.
+1. En el filtro `visible` (~línea 502), añadir como primera condición que la empresa tenga un `sent_at` en `emailSentMap` (es decir, que el email inicial haya sido enviado).
+2. Aplicar el mismo filtro en el cálculo de `eligible` del `TemplateEditor` (~línea 88), para que el contador de "empresas pendientes" y "excluidas" refleje solo las que realmente recibieron el primer mail.
+3. Actualizar el mensaje informativo de "Se enviará este follow up a X empresa(s) pendiente(s)" para que tenga en cuenta las empresas sin envío inicial, mostrando algo como "Se han excluido Y empresa(s) sin envío inicial".
 
-### UX
-- Input con icono de lupa y placeholder "Buscar en contactos del CRM..."
-- Dropdown con nombre, email y empresa de cada resultado (max 8)
-- Badge "Vinculado" visible cuando se selecciona un contacto
-- Opción de limpiar selección para volver al modo manual
+### Lógica clave
+```typescript
+// Línea 502 – añadir check de envío inicial
+const visible = companies.filter(c => {
+  // Solo mostrar empresas que ya recibieron el email inicial
+  if (!emailSentMap.get(c.id)) return false;
+  if (respondedInPreviousRounds.has(c.id)) return false;
+  const globalOk = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
+  const hasRoundRecord = sendMap.has(c.id);
+  return globalOk || hasRoundRecord;
+});
+```
 
