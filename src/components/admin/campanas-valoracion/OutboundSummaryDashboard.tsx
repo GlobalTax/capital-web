@@ -371,7 +371,7 @@ export function OutboundSummaryDashboard() {
       </div>
 
       {/* Follow-Up Alerts */}
-      <FollowUpAlertsPanel />
+      <FollowUpAlertsPanel onNavigateToCampaign={(id) => navigate(`/admin/campanas-valoracion/${id}`)} />
 
       {/* Pipeline */}
       <OutboundPipelineSection
