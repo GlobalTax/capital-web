@@ -67,6 +67,7 @@ export interface SidebarItem {
   badge?: 'URGENTE' | 'AI';
   description?: string;
   visible?: boolean;
+  subItems?: SidebarItem[];
 }
 
 export interface SidebarSection {
