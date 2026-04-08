@@ -114,6 +114,7 @@ const PipelineColumnComponent: React.FC<PipelineColumnProps> = ({
                         onToggleSelect={onToggleSelect}
                         adminUsers={adminUsers}
                         onAssignLead={onAssignLead}
+                        variantOptions={variantOptions}
                       />
                     </div>
                   )}
