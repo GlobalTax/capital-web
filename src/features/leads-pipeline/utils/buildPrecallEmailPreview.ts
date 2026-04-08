@@ -11,7 +11,7 @@ interface PrecallEmailPreviewParams {
   ccNames: string[]; // First names of visible CC recipients
 }
 
-interface PrecallEmailPreview {
+export interface PrecallEmailPreview {
   subject: string;
   htmlBody: string;
   from: string;
