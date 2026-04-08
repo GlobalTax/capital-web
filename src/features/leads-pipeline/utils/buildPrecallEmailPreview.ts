@@ -152,6 +152,30 @@ export function buildPrecallEmailPreview(
       phoneBlock = `Et deixo el meu número: ${senderPhone} per si prefereixes trucar-me tu directament.`;
       closing = 'Quedo a la teva disposició per a qualsevol dubte o comentari.<br><br>Una cordial salutació,';
       break;
+
+    case 'compra-cast':
+      saludo = contactFirstName ? `Apreciado ${contactFirstName},` : 'Apreciado/a,';
+      intro = `Soy ${senderFirstName}, del equipo de fusiones y adquisiciones de Capittal. Encantado de saludarte.`;
+      paragraphs = [
+        'Me pongo en contacto contigo porque hemos recibido tu consulta relacionada con la adquisición de empresas. Tras analizar tu perfil e intereses, nos ha parecido muy interesante poder conversar sobre las oportunidades que encajen con lo que estás buscando.',
+        'Desconozco si ya tenéis un mandato de compra en curso, si estáis explorando el mercado, o si simplemente queréis conocer las oportunidades disponibles. En cualquier caso, me gustaría hablar contigo para entender mejor vuestras necesidades y criterios de inversión.',
+        'Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.',
+      ];
+      phoneBlock = `Te dejo mi número: ${senderPhone} por si prefieres llamarme tú directamente.`;
+      closing = 'Un cordial saludo,';
+      break;
+
+    case 'compra-cat':
+      saludo = contactFirstName ? `Apreciat ${contactFirstName},` : 'Apreciat/ada,';
+      intro = `Soc ${senderFirstName}, de l'equip de fusions i adquisicions de Capittal. Encantat de saludar-te.`;
+      paragraphs = [
+        'Em poso en contacte amb tu perquè hem rebut la teva consulta relacionada amb l\'adquisició d\'empreses. Després d\'analitzar el teu perfil i interessos, ens ha semblat molt interessant poder conversar sobre les oportunitats que encaixin amb el que esteu buscant.',
+        'Desconec si ja teniu un mandat de compra en curs, si esteu explorant el mercat, o si simplement voleu conèixer les oportunitats disponibles. En qualsevol cas, m\'agradaria parlar amb tu per entendre millor les vostres necessitats i criteris d\'inversió.',
+        'Si et sembla bé, intentaré trucar-te al llarg del dia de demà. Si ho prefereixes, també podem organitzar una videotrucada o bé em pots indicar l\'horari que millor et vagi.',
+      ];
+      phoneBlock = `Et deixo el meu número: ${senderPhone} per si prefereixes trucar-me directament.`;
+      closing = 'Una cordial salutació,';
+      break;
   }
 
   const htmlBody = buildBody({
