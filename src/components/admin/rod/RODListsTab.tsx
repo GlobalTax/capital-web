@@ -562,9 +562,63 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                   <DialogTitle className="text-sm">Añadir miembro al listado</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs">Nombre *</Label>
-                    <Input className="text-sm h-8" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nombre completo" />
+                  {/* CRM Contact Search */}
+                  <div ref={crmSearchRef} className="relative">
+                    <Label className="text-xs">Buscar en contactos del CRM</Label>
+                    {selectedContactoId ? (
+                      <div className="flex items-center gap-2 mt-1 p-2 rounded-md border border-primary/30 bg-primary/5">
+                        <Badge variant="secondary" className="text-xs gap-1">
+                          <Link2 className="h-3 w-3" /> Vinculado
+                        </Badge>
+                        <span className="text-xs text-muted-foreground truncate flex-1">{form.full_name}</span>
+                        <button onClick={clearCrmSelection} className="p-0.5 rounded hover:bg-muted">
+                          <X className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="relative mt-1">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            className="text-sm h-8 pl-8"
+                            value={crmSearch}
+                            onChange={e => handleCrmSearchChange(e.target.value)}
+                            onFocus={() => crmSearch.trim().length >= 2 && setShowCrmResults(true)}
+                            onBlur={() => setTimeout(() => setShowCrmResults(false), 200)}
+                            placeholder="Buscar por nombre, email o empresa..."
+                          />
+                        </div>
+                        {showCrmResults && crmResults && crmResults.length > 0 && (
+                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto">
+                            {crmResults.map((c: any) => (
+                              <button
+                                key={c.id}
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors border-b last:border-b-0"
+                                onMouseDown={(e) => { e.preventDefault(); selectCrmContact(c); }}
+                              >
+                                <div className="font-medium">{[c.nombre, c.apellidos].filter(Boolean).join(' ')}</div>
+                                <div className="text-muted-foreground flex gap-2">
+                                  {c.email && <span>{c.email}</span>}
+                                  {c.empresas?.nombre && <span>· {c.empresas.nombre}</span>}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {showCrmResults && debouncedCrmSearch.trim().length >= 2 && crmResults && crmResults.length === 0 && (
+                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md p-3 text-xs text-muted-foreground text-center">
+                            No se encontraron contactos
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="border-t pt-3">
+                    <div>
+                      <Label className="text-xs">Nombre *</Label>
+                      <Input className="text-sm h-8" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nombre completo" />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -594,7 +648,7 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                     className="w-full text-xs"
                     size="sm"
                     disabled={!form.full_name.trim() || addMutation.isPending}
-                    onClick={() => addMutation.mutate(form)}
+                    onClick={() => addMutation.mutate({ ...form, contacto_id: selectedContactoId })}
                   >
                     {addMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
                     Añadir miembro
