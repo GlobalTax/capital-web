@@ -31,14 +31,16 @@ export const SidebarSection: React.FC<SidebarSectionProps> = ({
     <SidebarGroup className="px-2 py-0.5">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[hsl(var(--linear-bg-hover))] rounded-md transition-colors group"
+        className="w-full flex items-center justify-between px-2 py-1.5 hover:bg-[hsl(var(--linear-bg-hover))] rounded-md transition-colors group gap-2"
       >
-        {section.icon && (
-          <section.icon className="h-3.5 w-3.5 text-[hsl(var(--linear-text-tertiary))]" />
-        )}
-        <SidebarGroupLabel className="text-[10px] font-medium text-[hsl(var(--linear-text-tertiary))] uppercase tracking-wider pointer-events-none m-0 p-0">
-          {section.title}
-        </SidebarGroupLabel>
+        <div className="flex items-center gap-2">
+          {section.icon && (
+            <section.icon className="h-3.5 w-3.5 text-[hsl(var(--linear-text-tertiary))]" />
+          )}
+          <SidebarGroupLabel className="text-[10px] font-medium text-[hsl(var(--linear-text-tertiary))] uppercase tracking-wider pointer-events-none m-0 p-0">
+            {section.title}
+          </SidebarGroupLabel>
+        </div>
         <ChevronDown 
           className={cn(
             "h-3 w-3 text-[hsl(var(--linear-text-tertiary))] transition-transform duration-200",
