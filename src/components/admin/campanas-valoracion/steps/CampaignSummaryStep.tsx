@@ -9,11 +9,13 @@ import { useNavigate } from 'react-router-dom';
 import {
   Building2, Mail, TrendingUp, CheckCircle2, Percent, DollarSign,
   Calendar, MessageSquarePlus, Users, CalendarCheck, MessageCircle, Loader2,
-  Search, X, MoreVertical, MailCheck
+  Search, X, MoreVertical, MailCheck, Clock
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { RegisterManualSendDialog } from '@/components/admin/campanas-valoracion/RegisterManualSendDialog';
+import { FollowUpReminderConfig } from '@/components/admin/campanas-valoracion/FollowUpReminderConfig';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useCampaignCompanies, CampaignCompany } from '@/hooks/useCampaignCompanies';
 import { useCampaignEmails } from '@/hooks/useCampaignEmails';
 import { useFollowupSequences } from '@/hooks/useFollowupSequences';
@@ -22,6 +24,7 @@ import { formatCurrencyEUR } from '@/utils/professionalValuationCalculation';
 import { FinancialFilter, FinancialFilterValue, matchesCustomRange } from '@/components/admin/campanas-valoracion/shared/FinancialFilter';
 import { SortableHeader, SortState, toggleSort, applySortToList } from '@/components/admin/campanas-valoracion/shared/SortableHeader';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { differenceInDays } from 'date-fns';
 import { useMemo, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
