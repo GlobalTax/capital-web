@@ -94,8 +94,8 @@ function buildSubscriberHtml(prefs: any): string {
             </td></tr>
           </table>
 
-          <p style="text-align:center;">
-            <a href="https://webcapittal.lovable.app/oportunidades" style="display:inline-block;background:#0f172a;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;">Modificar mis preferencias</a>
+          <p style="color:#64748b;font-size:13px;line-height:1.5;margin:0;">
+            Si en algún momento deseas ajustar tus preferencias, no dudes en contactarnos.
           </p>
         </td></tr>
         <!-- Footer -->
