@@ -108,7 +108,7 @@ export function buildPrecallEmailPreview(
         'Desconozco si estáis valorando una posible venta, si os ha contactado algún inversor, o simplemente queréis tener una referencia del valor de la empresa. En cualquier caso, me gustaría poder hablar contigo para entender mejor vuestra situación.',
         'Si te parece bien, intentaré llamarte a lo largo del día de mañana. Si prefieres, también podemos organizar una videollamada o indicarme el horario que mejor te encaje.',
       ];
-      phoneBlock = `Te dejo mi número: <strong>${senderPhone}</strong> por si prefieres llamarme tú directamente.`;
+      phoneBlock = `Te dejo mi número: ${senderPhone} por si prefieres llamarme tú directamente.`;
       closing = 'Quedo a tu disposición para cualquier duda o comentario.<br><br>Un cordial saludo,';
       break;
 
