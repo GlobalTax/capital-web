@@ -1,42 +1,33 @@
 
 
-## Plan: Email pre-llamada personalizado según usuario asignado
+## Plan: Previsualización del email pre-llamada antes de enviar
 
 ### Objetivo
-Reemplazar el email genérico actual por uno que imite el tono personal del ejemplo proporcionado. El emisor será el usuario asignado al lead (ej: oriol@capittal.es), con el nombre del contacto personalizado y el equipo en CC.
+Añadir un paso intermedio: al hacer clic en "Enviar email pre-llamada", se abre un **modal/dialog** que muestra una vista previa del email renderizado con los datos reales del lead y del emisor. El usuario puede revisar y confirmar o cancelar.
 
 ### Cambios necesarios
 
-**1. Añadir campo `phone` a la tabla `admin_users` (migración SQL)**
-- La tabla `admin_users` no tiene teléfono. Se necesita para incluir "Te dejo mi número: +34 XXX" en el email.
-- `ALTER TABLE admin_users ADD COLUMN phone TEXT;`
-- Los usuarios podrán rellenar su teléfono desde el admin.
+**1. Nuevo componente `PrecallEmailPreviewDialog.tsx`**
+- Dialog modal (shadcn `Dialog`) que recibe los datos del lead y del usuario asignado.
+- Al abrirse, hace una llamada a una nueva Edge Function (o variante) para obtener el HTML renderizado sin enviarlo, O bien genera la preview en el frontend replicando la lógica de la plantilla.
+- **Opción elegida: generar en frontend** — es más rápido y no requiere nueva Edge Function. Se replica la misma plantilla HTML que usa la Edge Function, sustituyendo las variables con los datos del lead.
+- Muestra: emisor (from), destinatario (to), CC, asunto y cuerpo del email en un iframe/div con `dangerouslySetInnerHTML`.
+- Botones: "Cancelar" y "Enviar email".
 
-**2. Actualizar la Edge Function `send-precall-email/index.ts`**
-- **Emisor dinámico**: El `from` del email se construirá como `"Nombre <nombre@capittal.es>"` basándose en el usuario asignado al lead. Se consultará `admin_users` con el `assigned_to` del lead para obtener nombre, email y teléfono.
-- **CC del equipo**: Se consultará `email_recipients_config` (miembros activos con `is_default_copy = true`) para poner en CC a Marc, Jan, Lluis, etc.
-- **Cuerpo del email**: Se reescribirá con el tono exacto del ejemplo:
-  - Saludo: "Apreciado {nombre_contacto},"
-  - Presentación: "Soy {nombre_emisor}, del equipo de fusiones y adquisiciones de Capittal."
-  - Mención del CC: "Pongo en copia a mis compañeros {lista_nombres}."
-  - Referencia a la valoración web
-  - Propuesta de llamada/videollamada
-  - Teléfono del emisor
-  - Firma con nombre del emisor
-- **Reply-To**: será el email del usuario asignado (ej: oriol@capittal.es)
-- **Fallback**: Si el lead no tiene `assigned_to`, se usarán los datos por defecto (Samuel).
+**2. Nuevo util `buildPrecallEmailPreview.ts`**
+- Función que recibe `{ contactName, companyName, senderName, senderEmail, senderPhone, ccNames }` y devuelve `{ subject, htmlBody }`.
+- Replica exactamente la plantilla HTML de la Edge Function para garantizar fidelidad.
 
-**3. Actualizar el frontend (`LeadsPipelineView.tsx`)**
-- Pasar el `assigned_to` del lead en el body de la invocación de la Edge Function, para que la función sepa quién envía.
-- Si el lead no tiene usuario asignado, mostrar un toast de advertencia pidiendo que se asigne primero (o usar fallback).
+**3. Cambios en `LeadsPipelineView.tsx`**
+- En vez de enviar directamente al hacer clic, se abre el dialog de preview con los datos del lead.
+- Se necesita cargar los datos del emisor (admin_users) y CC (email_recipients_config) para la preview. Ya existen hooks para recipients (`useActiveEmailRecipients`). Para admin_users se usará una query inline o el hook existente de admin users.
+- Al confirmar en el dialog, se ejecuta la misma lógica de envío actual.
 
-**4. Actualizar `get_active_admin_users` o consulta directa**
-- La Edge Function usará `supabase.from('admin_users').select(...)` directamente con el `assigned_to` para obtener nombre, email y teléfono del emisor.
+**4. Cambios en `PipelineCard.tsx`**
+- El dropdown item pasa a llamar a una función de "preview" en vez de envío directo.
 
 ### Flujo resultante
-1. Lead tiene usuario asignado (ej: Oriol) → se envía desde oriol@capittal.es con su nombre, teléfono y el equipo en CC
-2. Lead sin usuario asignado → toast de aviso o fallback a samuel@capittal.es
-
-### Nota sobre Resend
-El sistema actual usa Resend para enviar. El `from` debe ser de un dominio verificado en Resend (capittal.es). Asumo que todos los emails @capittal.es están habilitados para envío. Si no, habrá que verificar el dominio completo en Resend (no solo samuel@).
+1. Click "Enviar email pre-llamada" → se abre modal con preview
+2. Modal muestra: De, Para, CC, Asunto, y cuerpo completo renderizado
+3. Usuario revisa → "Enviar" confirma y envía / "Cancelar" cierra
 
