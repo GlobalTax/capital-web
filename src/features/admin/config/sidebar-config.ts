@@ -73,7 +73,7 @@ export interface SidebarSection {
 export const sidebarSections: SidebarSection[] = [
   {
     title: "DASHBOARD",
-    description: "Panel principal",
+    icon: LayoutDashboard,
     items: [
       { 
         title: "Vista General", 
