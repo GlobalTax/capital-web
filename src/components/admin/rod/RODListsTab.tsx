@@ -272,6 +272,10 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
   const [search, setSearch] = useState('');
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState({ full_name: '', email: '', company: '', phone: '', sector: '', notes: '' });
+  const [crmSearch, setCrmSearch] = useState('');
+  const [selectedContactoId, setSelectedContactoId] = useState<string | null>(null);
+  const [showCrmResults, setShowCrmResults] = useState(false);
+  const crmSearchRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(new Set(DEFAULT_VISIBLE));
   const [columnFilters, setColumnFilters] = useState<Record<string, string | null>>({});
@@ -296,6 +300,50 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
     setColumnFilters({});
   }, []);
 
+  // CRM contact search
+  const [debouncedCrmSearch, setDebouncedCrmSearch] = useState('');
+  const crmDebounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const handleCrmSearchChange = useCallback((val: string) => {
+    setCrmSearch(val);
+    setShowCrmResults(true);
+    clearTimeout(crmDebounceRef.current);
+    crmDebounceRef.current = setTimeout(() => setDebouncedCrmSearch(val), 300);
+  }, []);
+
+  const { data: crmResults } = useQuery({
+    queryKey: ['crm-contact-search', debouncedCrmSearch],
+    queryFn: async () => {
+      const s = `%${debouncedCrmSearch.trim()}%`;
+      const { data } = await (supabase as any)
+        .from('contactos')
+        .select('id, nombre, apellidos, email, telefono, cargo, empresa_principal_id, empresas!contactos_empresa_principal_id_fkey(nombre)')
+        .or(`nombre.ilike.${s},apellidos.ilike.${s},email.ilike.${s}`)
+        .limit(8);
+      return (data || []) as any[];
+    },
+    enabled: debouncedCrmSearch.trim().length >= 2,
+  });
+
+  const selectCrmContact = useCallback((contact: any) => {
+    const fullName = [contact.nombre, contact.apellidos].filter(Boolean).join(' ');
+    setForm({
+      full_name: fullName,
+      email: contact.email || '',
+      phone: contact.telefono || '',
+      company: contact.empresas?.nombre || '',
+      sector: '',
+      notes: '',
+    });
+    setSelectedContactoId(contact.id);
+    setCrmSearch('');
+    setShowCrmResults(false);
+  }, []);
+
+  const clearCrmSelection = useCallback(() => {
+    setSelectedContactoId(null);
+    setForm({ full_name: '', email: '', company: '', phone: '', sector: '', notes: '' });
+  }, []);
+
   const { data: members, isLoading } = useQuery({
     queryKey: ['rod-list-members', language],
     queryFn: async () => {
@@ -310,7 +358,7 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
   });
 
   const addMutation = useMutation({
-    mutationFn: async (member: Partial<RODMember>) => {
+    mutationFn: async (member: Partial<RODMember> & { contacto_id?: string | null }) => {
       const { error } = await supabase.from('rod_list_members' as any).insert({
         language,
         full_name: member.full_name,
@@ -319,6 +367,7 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
         phone: member.phone || null,
         sector: member.sector || null,
         notes: member.notes || null,
+        contacto_id: member.contacto_id || null,
       });
       if (error) throw error;
     },
@@ -326,6 +375,8 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
       queryClient.invalidateQueries({ queryKey: ['rod-list-members', language] });
       toast.success('Miembro añadido');
       setForm({ full_name: '', email: '', company: '', phone: '', sector: '', notes: '' });
+      setSelectedContactoId(null);
+      setCrmSearch('');
       setAddOpen(false);
     },
     onError: (e: any) => {
@@ -511,9 +562,63 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                   <DialogTitle className="text-sm">Añadir miembro al listado</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-3">
-                  <div>
-                    <Label className="text-xs">Nombre *</Label>
-                    <Input className="text-sm h-8" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nombre completo" />
+                  {/* CRM Contact Search */}
+                  <div ref={crmSearchRef} className="relative">
+                    <Label className="text-xs">Buscar en contactos del CRM</Label>
+                    {selectedContactoId ? (
+                      <div className="flex items-center gap-2 mt-1 p-2 rounded-md border border-primary/30 bg-primary/5">
+                        <Badge variant="secondary" className="text-xs gap-1">
+                          <Link2 className="h-3 w-3" /> Vinculado
+                        </Badge>
+                        <span className="text-xs text-muted-foreground truncate flex-1">{form.full_name}</span>
+                        <button onClick={clearCrmSelection} className="p-0.5 rounded hover:bg-muted">
+                          <X className="h-3 w-3 text-muted-foreground" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="relative mt-1">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            className="text-sm h-8 pl-8"
+                            value={crmSearch}
+                            onChange={e => handleCrmSearchChange(e.target.value)}
+                            onFocus={() => crmSearch.trim().length >= 2 && setShowCrmResults(true)}
+                            onBlur={() => setTimeout(() => setShowCrmResults(false), 200)}
+                            placeholder="Buscar por nombre, email o empresa..."
+                          />
+                        </div>
+                        {showCrmResults && crmResults && crmResults.length > 0 && (
+                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto">
+                            {crmResults.map((c: any) => (
+                              <button
+                                key={c.id}
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors border-b last:border-b-0"
+                                onMouseDown={(e) => { e.preventDefault(); selectCrmContact(c); }}
+                              >
+                                <div className="font-medium">{[c.nombre, c.apellidos].filter(Boolean).join(' ')}</div>
+                                <div className="text-muted-foreground flex gap-2">
+                                  {c.email && <span>{c.email}</span>}
+                                  {c.empresas?.nombre && <span>· {c.empresas.nombre}</span>}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {showCrmResults && debouncedCrmSearch.trim().length >= 2 && crmResults && crmResults.length === 0 && (
+                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md p-3 text-xs text-muted-foreground text-center">
+                            No se encontraron contactos
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="border-t pt-3">
+                    <div>
+                      <Label className="text-xs">Nombre *</Label>
+                      <Input className="text-sm h-8" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} placeholder="Nombre completo" />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -543,7 +648,7 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                     className="w-full text-xs"
                     size="sm"
                     disabled={!form.full_name.trim() || addMutation.isPending}
-                    onClick={() => addMutation.mutate(form)}
+                    onClick={() => addMutation.mutate({ ...form, contacto_id: selectedContactoId })}
                   >
                     {addMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
                     Añadir miembro
