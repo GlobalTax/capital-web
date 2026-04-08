@@ -274,6 +274,10 @@ export default function OportunidadesPage() {
             <TrendingUp className="h-3.5 w-3.5 mr-1" />
             Leads Inversores
           </TabsTrigger>
+          <TabsTrigger value="alert-subscribers" className="text-xs">
+            <Bell className="h-3.5 w-3.5 mr-1" />
+            Alertas Comprador
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sell">
