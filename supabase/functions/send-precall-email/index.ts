@@ -21,8 +21,8 @@ const corsHeaders = {
 
 // Default sender fallback
 const DEFAULT_SENDER = {
-  full_name: "Samuel Navarro",
-  email: "samuel@capittal.es",
+  full_name: "Lluis Montanya",
+  email: "lluis@capittal.es",
   phone: "+34 695 717 490",
 };
 
