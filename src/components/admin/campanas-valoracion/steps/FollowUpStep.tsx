@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
+import { differenceInDays } from 'date-fns';
+import { FollowUpReminderConfig } from '@/components/admin/campanas-valoracion/FollowUpReminderConfig';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
