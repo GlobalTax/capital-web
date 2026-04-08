@@ -91,7 +91,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "🔥 LEADS",
+    title: "LEADS",
     description: "Centro de gestión de leads",
     items: [
       { 
