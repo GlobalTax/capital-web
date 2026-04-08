@@ -732,6 +732,7 @@ export const BuyPipelineView: React.FC = () => {
                 onSelectAllInColumn={handleSelectAllInColumn}
                 adminUsers={adminUsers}
                 onAssignLead={handleAssignLead}
+                variantOptions={BUY_PIPELINE_VARIANTS}
               />
             ))}
           </div>
