@@ -104,6 +104,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "LEADS",
+    icon: Flame,
     description: "Centro de gestión de leads",
     items: [
       { 
