@@ -14,6 +14,94 @@ import { Label } from '@/components/ui/label';
 import { Plus, Search, Trash2, Upload, Loader2, Users, X, Filter, SlidersHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Pencil, Check } from 'lucide-react';
+
+// ─── Inline editable cell ───────────────────────────────────────────────
+function EditableCell({
+  value,
+  memberId,
+  field,
+  language,
+  className,
+}: {
+  value: string | null;
+  memberId: string;
+  field: ColumnKey;
+  language: string;
+  className?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value || '');
+  const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const display = value && value.trim() && value !== '—' ? value : '—';
+  const isEmpty = display === '—';
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditValue(value || '');
+    setEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  const save = async () => {
+    const newVal = editValue.trim() || null;
+    if (newVal === (value || null)) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('rod_list_members' as any)
+        .update({ [field]: newVal })
+        .eq('id', memberId);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['rod-list-members', language] });
+    } catch {
+      toast.error('Error al guardar');
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          ref={inputRef}
+          value={editValue}
+          onChange={e => setEditValue(e.target.value)}
+          className="h-6 text-xs px-1.5 min-w-[80px]"
+          onKeyDown={e => {
+            if (e.key === 'Enter') save();
+            if (e.key === 'Escape') setEditing(false);
+          }}
+          onBlur={save}
+          disabled={saving}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={startEdit}
+      className={cn(
+        "text-left text-xs group inline-flex items-center gap-1 rounded px-1 -mx-1 py-0.5 hover:bg-muted transition-colors w-full",
+        isEmpty && "text-muted-foreground/50 italic",
+        className
+      )}
+      title="Clic para editar"
+    >
+      <span className="truncate">{display}</span>
+      <Pencil className="h-2.5 w-2.5 text-muted-foreground/30 group-hover:text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+    </button>
+  );
+}
 
 interface RODMember {
   id: string;
