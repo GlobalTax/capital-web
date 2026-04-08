@@ -1,54 +1,33 @@
 
 
-## Plan: Reorganizar INVERSORES con sub-grupos internos
+## Plan: Corregir el fallo de deploy en GitHub Actions
 
-### Objetivo
-Dentro de la sección INVERSORES, agrupar los items en sub-categorías visibles al abrir el desplegable. Al expandir, se verán primero los 5 directorios principales, y debajo de cada uno sus herramientas asociadas.
+### Problema
+El workflow `production-deploy.yml` falla con exit code 1 en el job `deploy-production`. Además hay warnings de deprecación de Node.js 20.
 
-### Estructura propuesta
+### Causas probables
 
-```text
-▼ INVERSORES
-  ── Directorio Corporativos
-  ── Capital Riesgo (CR)
-       Portfolio CR
-       Portfolio Scraper CR
-       Apollo Import CR
-       Fund Intelligence
-  ── Search Funds (SF)
-       Radar SF
-       Adquisiciones SF
-       Backers SF
-       Matching Inbox SF
-       Apollo Import SF
-  ── Boutiques M&A
-       Apollo Import M&A
-  ── Rel. Oportunidades
-```
+Sin acceso a los logs completos del CI, las causas más comunes son:
 
-### Cambios técnicos
+1. **`npm ci` falla** — el `package-lock.json` puede no estar sincronizado con `package.json` (Lovable usa `--legacy-peer-deps` pero el workflow no)
+2. **Build falla** — el script de build ejecuta `generate-sitemap.mjs` que puede necesitar conexión a Supabase, y los secrets podrían no estar configurados en GitHub
+3. **Node.js 18 vs dependencias** — algunas dependencias pueden requerir Node 20+
 
-**1. Ampliar el tipo `SidebarItem` en `sidebar-config.ts`**
-- Añadir campo opcional `subItems: SidebarItem[]` para items que actúan como sub-grupo
-- Los items con `subItems` se renderizan como mini-cabeceras con sus hijos debajo, indentados
+### Cambios propuestos
 
-**2. Reorganizar la sección INVERSORES en `sidebar-config.ts`**
-- Directorio Corporativos → item simple (sin subItems, acceso directo)
-- Capital Riesgo (CR) → item con subItems: Portfolio, Scraper, Apollo Import, Fund Intelligence
-- Search Funds (SF) → item con subItems: Radar, Adquisiciones, Backers, Matching, Apollo Import
-- Boutiques M&A → item con subItems: Apollo Import M&A
-- Rel. Oportunidades → item simple
+**Archivo: `.github/workflows/production-deploy.yml`**
 
-**3. Actualizar `SidebarSection.tsx`**
-- Detectar items con `subItems` y renderizar como mini sub-grupo con label + items indentados
-- Los items sin `subItems` se renderizan normalmente
-- Sub-items tendrán padding-left extra para jerarquía visual
+1. Subir `node-version` de `'18'` a `'20'` (consistente con el runner y las dependencias)
+2. Añadir `--legacy-peer-deps` a `npm ci` (igual que en `security-check.yml`)
+3. Mover las variables de entorno de Supabase al nivel del job para que `generate-sitemap.mjs` también las tenga disponibles
+4. Hacer lo mismo en los otros workflows (`hotfix-deploy.yml`, `security-integration.yml`)
 
-**4. Actualizar `SidebarMenuItem.tsx`**
-- Añadir soporte para renderizar sub-grupos: el item padre es clickable (va a su URL) y debajo aparecen sus sub-items con indent
+**Archivos a modificar:**
+- `.github/workflows/production-deploy.yml`
+- `.github/workflows/hotfix-deploy.yml`
+- `.github/workflows/security-integration.yml`
+- `.github/workflows/security-check.yml` (actualizar node-version a 20)
 
-### Archivos a modificar
-- `src/features/admin/config/sidebar-config.ts` — tipos + datos
-- `src/components/admin/sidebar/SidebarSection.tsx` — renderizado sub-grupos
-- `src/components/admin/sidebar/SidebarMenuItem.tsx` — soporte visual sub-items
+### Nota importante
+Si los GitHub Secrets (`PRODUCTION_SUPABASE_URL`, `PRODUCTION_SUPABASE_ANON_KEY`) no están configurados en el repositorio de GitHub, el build seguirá fallando. Esto se configura en GitHub → Settings → Secrets and variables → Actions.
 
