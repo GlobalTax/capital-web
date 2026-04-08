@@ -83,7 +83,7 @@ export const sidebarSections: SidebarSection[] = [
       { title: "Pipeline Ventas", url: "/admin/leads-pipeline", icon: Kanban, description: "Tablero Kanban de leads de venta" },
       { title: "Pipeline Compras", url: "/admin/buy-pipeline", icon: ShoppingCart, description: "Tablero Kanban de leads de compra" },
       { title: "Contactos Compra", url: "/admin/buyer-contacts", icon: ShoppingCart, description: "Contactos campaña compras" },
-      { title: "Reservas Llamadas", url: "/admin/bookings", icon: CalendarDays, description: "Gestión de reservas de llamadas" },
+      
       { title: "Entrada Manual Leads", url: "/admin/calculadora-manual", icon: UserPlus, description: "Introducir leads de Meta/externos" },
       { title: "Listas de Empresas", url: "/admin/listas-contacto", icon: ClipboardList, description: "Gestiona y depura listas de empresas" },
       { title: "Gestión NDAs", url: "/admin/ndas", icon: Shield, description: "NDAs, mandatos y seguimiento" },
