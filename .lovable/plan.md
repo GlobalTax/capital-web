@@ -1,31 +1,30 @@
 
 
-## Plan: Filtrar empresas sin envío inicial en Follow Up
+## Plan: Sincronización bidireccional Madre ↔ Sublistas
 
 ### Problema
-La lista de Follow Up muestra todas las empresas de la campaña, incluyendo aquellas que aún no han recibido el email inicial. Esto puede provocar que se envíe un follow-up a una empresa que nunca recibió el primer correo.
+1. **No existe sincronización madre → sublistas**: Cuando actualizas datos en una lista madre, los sublistas NO se actualizan.
+2. **El trigger actual (sublista → madre) usa columnas incorrectas**: Referencia `company_name`, `contact_name`, `contact_email`, etc., pero las columnas reales son `empresa`, `contacto`, `email`, `telefono`, `linkedin`, `web`. Esto significa que la sincronización sublista → madre tampoco funciona actualmente.
 
 ### Cambio
-Añadir una condición al filtro `visible` en `FollowUpStep.tsx` (línea 502) para excluir empresas que no tengan registro de envío inicial en `emailSentMap`.
+Una única migración SQL que:
 
-### Implementación (1 archivo)
+1. **Corrige el trigger existente** `sync_sublist_company_to_madre` para usar los nombres de columna correctos (`empresa`, `contacto`, `email`, `telefono`, `linkedin`, `web`, `provincia`, `cnae`, `descripcion_actividad`, `director_ejecutivo`, `facturacion`, `ebitda`, `num_trabajadores`, `consolidador_nombre`, `tipo_accionista`, `nombre_accionista`, `notas`).
 
-**`src/components/admin/campanas-valoracion/steps/FollowUpStep.tsx`**
+2. **Crea un nuevo trigger** `sync_madre_company_to_sublists` que se dispara en UPDATE sobre `outbound_list_companies`. Cuando la empresa actualizada pertenece a una lista madre (es decir, existen listas con `lista_madre_id` apuntando a esa lista), propaga los cambios a todas las sublistas, haciendo matching por CIF o nombre de empresa. Usa COALESCE para no sobreescribir datos que ya existan en la sublista con valores vacíos.
 
-1. En el filtro `visible` (~línea 502), añadir como primera condición que la empresa tenga un `sent_at` en `emailSentMap` (es decir, que el email inicial haya sido enviado).
-2. Aplicar el mismo filtro en el cálculo de `eligible` del `TemplateEditor` (~línea 88), para que el contador de "empresas pendientes" y "excluidas" refleje solo las que realmente recibieron el primer mail.
-3. Actualizar el mensaje informativo de "Se enviará este follow up a X empresa(s) pendiente(s)" para que tenga en cuenta las empresas sin envío inicial, mostrando algo como "Se han excluido Y empresa(s) sin envío inicial".
+3. **Prevención de bucles infinitos**: El trigger madre→sublistas y el trigger sublista→madre podrían dispararse mutuamente. Se añade una guarda: el trigger madre→sublistas solo actúa si la lista es madre (tiene sublistas vinculadas) y el trigger sublista→madre solo actúa si la lista tiene `lista_madre_id`. Además se usa `pg_trigger_depth() < 2` para cortar recursión.
 
-### Lógica clave
-```typescript
-// Línea 502 – añadir check de envío inicial
-const visible = companies.filter(c => {
-  // Solo mostrar empresas que ya recibieron el email inicial
-  if (!emailSentMap.get(c.id)) return false;
-  if (respondedInPreviousRounds.has(c.id)) return false;
-  const globalOk = (c.seguimiento_estado || 'sin_respuesta') === 'sin_respuesta';
-  const hasRoundRecord = sendMap.has(c.id);
-  return globalOk || hasRoundRecord;
-});
+### Lógica del nuevo trigger (madre → sublistas)
+
+```text
+ON UPDATE outbound_list_companies
+  → ¿La lista del registro es una lista madre? (¿existen listas con lista_madre_id = list_id?)
+  → Si sí: para cada sublista vinculada
+    → Buscar empresa por CIF o nombre
+    → UPDATE con COALESCE (no sobreescribir con vacíos)
 ```
+
+### Archivos afectados
+- **1 migración SQL** (sin cambios en código frontend)
 
