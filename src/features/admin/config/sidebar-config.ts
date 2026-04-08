@@ -116,7 +116,7 @@ export const sidebarSections: SidebarSection[] = [
     ]
   },
   {
-    title: "💼 CRM",
+    title: "CRM",
     description: "Gestión de prospectos y oportunidades",
     items: [
       { 
