@@ -46,7 +46,7 @@ interface PipelineCardProps {
   assignedUserName?: string;
   leadFormName?: string;
   channelName?: string;
-  onSendPrecallEmail: () => void;
+  onSendPrecallEmail: (variant: EmailVariant) => void;
   onRegisterCall: (answered: boolean) => void;
   onViewDetails: () => void;
   isDragging?: boolean;
