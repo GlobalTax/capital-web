@@ -75,7 +75,7 @@ export const sidebarSections: SidebarSection[] = [
 
   // ─── 2. CRM & LEADS ───
   {
-    title: "CRM & LEADS",
+    title: "LEADS",
     icon: Target,
     description: "Gestión comercial",
     items: [
