@@ -539,6 +539,7 @@ export const sidebarSections: SidebarSection[] = [
   },
   {
     title: "CORPORATIVOS",
+    icon: Landmark,
     description: "Compradores estratégicos",
     items: [
       { 
