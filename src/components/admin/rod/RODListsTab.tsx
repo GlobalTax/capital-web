@@ -310,16 +310,32 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
     crmDebounceRef.current = setTimeout(() => setDebouncedCrmSearch(val), 300);
   }, []);
 
-  const { data: crmResults } = useQuery({
+  const { data: crmResults, isFetching: crmFetching } = useQuery({
     queryKey: ['crm-contact-search', debouncedCrmSearch],
     queryFn: async () => {
-      const s = `%${debouncedCrmSearch.trim()}%`;
+      const term = debouncedCrmSearch.trim();
+      const s = `%${term}%`;
+      // Search contacts by name, email
       const { data } = await (supabase as any)
         .from('contactos')
         .select('id, nombre, apellidos, email, telefono, cargo, empresa_principal_id, empresas!contactos_empresa_principal_id_fkey(nombre)')
         .or(`nombre.ilike.${s},apellidos.ilike.${s},email.ilike.${s}`)
-        .limit(8);
-      return (data || []) as any[];
+        .limit(10);
+      
+      // Also search by company name and merge
+      const { data: byCompany } = await (supabase as any)
+        .from('contactos')
+        .select('id, nombre, apellidos, email, telefono, cargo, empresa_principal_id, empresas!contactos_empresa_principal_id_fkey(nombre)')
+        .not('empresa_principal_id', 'is', null)
+        .filter('empresas.nombre', 'ilike', s)
+        .limit(10);
+      
+      const merged = [...(data || [])];
+      const ids = new Set(merged.map((c: any) => c.id));
+      for (const c of (byCompany || [])) {
+        if (!ids.has(c.id)) merged.push(c);
+      }
+      return merged.slice(0, 10) as any[];
     },
     enabled: debouncedCrmSearch.trim().length >= 2,
   });
@@ -584,30 +600,36 @@ const RODMembersList: React.FC<{ language: string }> = ({ language }) => {
                             value={crmSearch}
                             onChange={e => handleCrmSearchChange(e.target.value)}
                             onFocus={() => crmSearch.trim().length >= 2 && setShowCrmResults(true)}
-                            onBlur={() => setTimeout(() => setShowCrmResults(false), 200)}
+                            onBlur={() => setTimeout(() => setShowCrmResults(false), 250)}
                             placeholder="Buscar por nombre, email o empresa..."
+                            autoComplete="off"
                           />
+                          {crmFetching && crmSearch.trim().length >= 2 && (
+                            <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                          )}
                         </div>
-                        {showCrmResults && crmResults && crmResults.length > 0 && (
-                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md max-h-[200px] overflow-y-auto">
-                            {crmResults.map((c: any) => (
-                              <button
-                                key={c.id}
-                                className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors border-b last:border-b-0"
-                                onMouseDown={(e) => { e.preventDefault(); selectCrmContact(c); }}
-                              >
-                                <div className="font-medium">{[c.nombre, c.apellidos].filter(Boolean).join(' ')}</div>
-                                <div className="text-muted-foreground flex gap-2">
-                                  {c.email && <span>{c.email}</span>}
-                                  {c.empresas?.nombre && <span>· {c.empresas.nombre}</span>}
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                        {showCrmResults && debouncedCrmSearch.trim().length >= 2 && crmResults && crmResults.length === 0 && (
-                          <div className="absolute z-50 left-0 right-0 mt-1 mx-6 bg-popover border rounded-md shadow-md p-3 text-xs text-muted-foreground text-center">
-                            No se encontraron contactos
+                        {showCrmResults && debouncedCrmSearch.trim().length >= 2 && (
+                          <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-popover border rounded-md shadow-lg max-h-[240px] overflow-y-auto">
+                            {crmResults && crmResults.length > 0 ? (
+                              crmResults.map((c: any) => (
+                                <button
+                                  key={c.id}
+                                  className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors border-b last:border-b-0"
+                                  onMouseDown={(e) => { e.preventDefault(); selectCrmContact(c); }}
+                                >
+                                  <div className="font-medium">{[c.nombre, c.apellidos].filter(Boolean).join(' ')}</div>
+                                  <div className="text-muted-foreground flex gap-2 flex-wrap">
+                                    {c.email && <span>{c.email}</span>}
+                                    {c.empresas?.nombre && <span>· {c.empresas.nombre}</span>}
+                                    {c.cargo && <span>· {c.cargo}</span>}
+                                  </div>
+                                </button>
+                              ))
+                            ) : !crmFetching ? (
+                              <div className="p-3 text-xs text-muted-foreground text-center">
+                                No se encontraron contactos
+                              </div>
+                            ) : null}
                           </div>
                         )}
                       </>
