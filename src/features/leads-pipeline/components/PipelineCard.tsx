@@ -224,6 +224,25 @@ const PipelineCardComponent: React.FC<PipelineCardProps> = ({
           </div>
         )}
 
+        {/* Pre-call email status */}
+        <div className={`flex items-center gap-1.5 text-xs rounded-md px-2 py-1 ${
+          lead.precall_email_sent 
+            ? 'bg-emerald-50 text-emerald-700' 
+            : 'bg-amber-50 text-amber-700'
+        }`}>
+          {lead.precall_email_sent ? (
+            <>
+              <MailCheck className="h-3 w-3 shrink-0" />
+              <span>Email enviado</span>
+            </>
+          ) : (
+            <>
+              <Mail className="h-3 w-3 shrink-0" />
+              <span>Email pendiente</span>
+            </>
+          )}
+        </div>
+
         {/* Footer */}
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
           <span className="flex items-center">
