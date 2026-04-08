@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { OutboundPipelineSection } from './OutboundPipelineSection';
 import { OutboundStagesEditor } from './OutboundStagesEditor';
+import { FollowUpAlertsPanel } from './FollowUpAlertsPanel';
+import { FollowUpReminderConfig } from './FollowUpReminderConfig';
 
 interface CampaignSummary {
   id: string;
@@ -37,7 +39,7 @@ interface CampaignSummary {
 }
 
 interface RawData {
-  campaigns: Array<{ id: string; name: string; sector: string | null; campaign_type: string; total_companies: number }>;
+  campaigns: Array<{ id: string; name: string; sector: string | null; campaign_type: string; total_companies: number; followup_reminder_days: number | null }>;
   emails: Array<{ campaign_id: string; status: string; delivery_status: string; email_opened: boolean; sent_at: string | null; company_id: string | null }>;
   companies: Array<{ campaign_id: string; seguimiento_estado: string | null; id: string }>;
 }
@@ -75,7 +77,7 @@ export function OutboundSummaryDashboard() {
     queryFn: async () => {
       const { data: campaigns } = await (supabase as any)
         .from('valuation_campaigns')
-        .select('id, name, sector, campaign_type, total_companies')
+        .select('id, name, sector, campaign_type, total_companies, followup_reminder_days')
         .order('created_at', { ascending: false });
 
       if (!campaigns?.length) return { campaigns: [], emails: [], companies: [] };
@@ -366,6 +368,9 @@ export function OutboundSummaryDashboard() {
         ))}
       </div>
 
+      {/* Follow-Up Alerts */}
+      <FollowUpAlertsPanel />
+
       {/* Pipeline */}
       <OutboundPipelineSection
         enabledCampaignIds={allCampaigns.filter(c => !disabledCampaigns.has(c.id)).map(c => c.id)}
@@ -405,6 +410,7 @@ export function OutboundSummaryDashboard() {
                 <TableHead className="text-center">Interesados</TableHead>
                 <TableHead className="text-center">Reuniones</TableHead>
                 <TableHead className="text-center">No interesados</TableHead>
+                <TableHead className="text-center w-10">FU</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -449,6 +455,12 @@ export function OutboundSummaryDashboard() {
                     </TableCell>
                     <TableCell className="text-center">
                       {c && c.no_interesado > 0 ? <span className="text-red-500 font-medium">{c.no_interesado}</span> : '0'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <FollowUpReminderConfig
+                        campaignId={raw_c.id}
+                        currentDays={raw_c.followup_reminder_days ?? null}
+                      />
                     </TableCell>
                   </TableRow>
                 );
