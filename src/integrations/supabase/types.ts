@@ -17435,6 +17435,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           criterios_construccion: string | null
+          data_scale: number
           descripcion_proposito: string | null
           description: string | null
           estado: string
@@ -17457,6 +17458,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           criterios_construccion?: string | null
+          data_scale?: number
           descripcion_proposito?: string | null
           description?: string | null
           estado?: string
@@ -17479,6 +17481,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           criterios_construccion?: string | null
+          data_scale?: number
           descripcion_proposito?: string | null
           description?: string | null
           estado?: string

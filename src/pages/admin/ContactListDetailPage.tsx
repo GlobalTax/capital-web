@@ -455,6 +455,9 @@ export default function ContactListDetailPage() {
   const [deleteTargetIds, setDeleteTargetIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Data scale factor: 1000 for legacy lists, 1 for lists with real euro values
+  const dataScale = (list as any)?.data_scale ?? 1000;
+
   // Search, filter & sort
   const [searchQuery, setSearchQuery] = useState('');
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
@@ -674,7 +677,7 @@ export default function ContactListDetailPage() {
         // Numeric range filter (predefined + custom)
         result = result.filter(c => {
           const raw = Number((c as any)[colKey]) || 0;
-          const val = (colKey === 'facturacion' || colKey === 'ebitda') ? raw * 1000 : raw;
+          const val = (colKey === 'facturacion' || colKey === 'ebitda') ? raw * dataScale : raw;
           const hasData = (c as any)[colKey] != null && (c as any)[colKey] !== '';
           return selectedValues.some(rangeLabel => {
             // Custom range: "custom:min-max"
@@ -730,7 +733,7 @@ export default function ContactListDetailPage() {
         }
         va = Number(va) || 0;
         vb = Number(vb) || 0;
-        if (sortField === 'facturacion' || sortField === 'ebitda') { va *= 1000; vb *= 1000; }
+        if (sortField === 'facturacion' || sortField === 'ebitda') { va *= dataScale; vb *= dataScale; }
         return sortDir === 'asc' ? va - vb : vb - va;
       });
     }
@@ -1602,9 +1605,9 @@ export default function ContactListDetailPage() {
         );
       }
       case 'facturacion':
-        return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Math.round(Number(company.facturacion) * 1000).toLocaleString('es-ES')}` : '—'}</span>;
+        return <span className="text-right text-sm tabular-nums">{company.facturacion ? `€${Math.round(Number(company.facturacion) * dataScale).toLocaleString('es-ES')}` : '—'}</span>;
       case 'ebitda':
-        return <span className="text-right text-sm tabular-nums">{company.ebitda ? `€${Math.round(Number(company.ebitda) * 1000).toLocaleString('es-ES')}` : '—'}</span>;
+        return <span className="text-right text-sm tabular-nums">{company.ebitda ? `€${Math.round(Number(company.ebitda) * dataScale).toLocaleString('es-ES')}` : '—'}</span>;
       case 'num_trabajadores':
         return <span className="text-right text-sm tabular-nums">{company.num_trabajadores ?? '—'}</span>;
       case 'consolidador':
@@ -3012,7 +3015,7 @@ export default function ContactListDetailPage() {
       )}
 
       {/* Company Drawer */}
-      <CompanyDrawer company={drawerCompany} onClose={() => setDrawerCompany(null)} onEdit={() => { setEditingCompany(drawerCompany); setDrawerCompany(null); }} />
+      <CompanyDrawer company={drawerCompany} onClose={() => setDrawerCompany(null)} onEdit={() => { setEditingCompany(drawerCompany); setDrawerCompany(null); }} dataScale={dataScale} />
 
       {/* Dedup Modal */}
       <Dialog open={isDedupModalOpen} onOpenChange={setIsDedupModalOpen}>
@@ -3504,8 +3507,8 @@ function EditCompanyDialog({ company, onClose, onSave, isSaving }: {
 }
 
 // ===== COMPANY DRAWER =====
-function CompanyDrawer({ company, onClose, onEdit }: {
-  company: ContactListCompany | null; onClose: () => void; onEdit: () => void;
+function CompanyDrawer({ company, onClose, onEdit, dataScale = 1000 }: {
+  company: ContactListCompany | null; onClose: () => void; onEdit: () => void; dataScale?: number;
 }) {
   const { data: history = [], isLoading } = useCompanyListHistory(company?.empresa);
 
@@ -3521,8 +3524,8 @@ function CompanyDrawer({ company, onClose, onEdit }: {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><span className="text-muted-foreground">CIF:</span> <span className="ml-1">{company.cif || '—'}</span></div>
                 <div><span className="text-muted-foreground">Año datos:</span> <span className="ml-1">{company.anios_datos || '—'}</span></div>
-                <div><span className="text-muted-foreground">Facturación:</span> <span className="ml-1">{company.facturacion ? `€${Math.round(Number(company.facturacion) * 1000).toLocaleString('es-ES')}` : '—'}</span></div>
-                <div><span className="text-muted-foreground">EBITDA:</span> <span className="ml-1">{company.ebitda ? `€${Math.round(Number(company.ebitda) * 1000).toLocaleString('es-ES')}` : '—'}</span></div>
+                <div><span className="text-muted-foreground">Facturación:</span> <span className="ml-1">{company.facturacion ? `€${Math.round(Number(company.facturacion) * dataScale).toLocaleString('es-ES')}` : '—'}</span></div>
+                <div><span className="text-muted-foreground">EBITDA:</span> <span className="ml-1">{company.ebitda ? `€${Math.round(Number(company.ebitda) * dataScale).toLocaleString('es-ES')}` : '—'}</span></div>
                 <div><span className="text-muted-foreground">Empleados:</span> <span className="ml-1">{company.num_trabajadores ?? '—'}</span></div>
                 <div><span className="text-muted-foreground">Director Ejecutivo:</span> <span className="ml-1">{company.director_ejecutivo || '—'}</span></div>
                 <div><span className="text-muted-foreground">Contacto:</span> <span className="ml-1">{company.contacto || '—'}</span></div>
