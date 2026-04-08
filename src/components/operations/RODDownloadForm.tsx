@@ -431,6 +431,10 @@ export const RODDownloadForm: React.FC<RODDownloadFormProps> = ({ open, onOpenCh
                 Deseo recibir información sobre nuevas oportunidades de inversión y comunicaciones de Capittal.
               </label>
             </div>
+
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+              Al descargar este documento, serás incluido en nuestro directorio de inversores y recibirás periódicamente nuevas oportunidades de inversión que se ajusten a tu perfil.
+            </p>
           </div>
 
           {/* Botón de Submit */}
