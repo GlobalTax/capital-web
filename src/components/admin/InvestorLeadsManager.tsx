@@ -417,7 +417,7 @@ export const InvestorLeadsManager: React.FC = () => {
                     {format(new Date(lead.created_at), 'dd/MM/yyyy', { locale: es })}
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -434,6 +434,18 @@ export const InvestorLeadsManager: React.FC = () => {
                           <Phone className="h-4 w-4" />
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => {
+                          if (window.confirm(`¿Eliminar el lead de ${lead.full_name}?`)) {
+                            deleteLeadMutation.mutate(lead.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
