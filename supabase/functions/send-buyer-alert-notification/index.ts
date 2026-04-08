@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
@@ -12,10 +12,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 
 function formatCurrency(val?: number): string {
   if (!val) return "No especificado";
@@ -105,7 +101,7 @@ function buildSubscriberHtml(prefs: any): string {
         <!-- Footer -->
         <tr><td style="padding:20px 32px;border-top:1px solid #e2e8f0;">
           <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.5;text-align:center;">
-            Capittal · Asesoría M&A<br/>
+            Capittal · Asesoría M&amp;A<br/>
             +34 695 717 490 · samuel@capittal.es
           </p>
         </td></tr>
@@ -143,49 +139,35 @@ serve(async (req) => {
     const restCc = ccRecipients.slice(1);
 
     // 2. Send internal email
-    const internalRes = await fetch(`${GATEWAY_URL}/emails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": RESEND_API_KEY,
-      },
-      body: JSON.stringify({
-        from: "Capittal Alertas <samuel@capittal.es>",
-        to: [mainRecipient],
-        cc: restCc.length > 0 ? restCc : undefined,
-        bcc: bccRecipients.length > 0 ? bccRecipients : undefined,
-        reply_to: "samuel@capittal.es",
-        subject: `🔔 Nueva Alerta de Comprador: ${preferences.full_name || preferences.email}`,
-        html: buildInternalHtml(preferences),
-      }),
+    const { data: internalResult, error: internalError } = await resend.emails.send({
+      from: "Capittal Alertas <samuel@capittal.es>",
+      to: [mainRecipient],
+      cc: restCc.length > 0 ? restCc : undefined,
+      bcc: bccRecipients.length > 0 ? bccRecipients : undefined,
+      reply_to: "samuel@capittal.es",
+      subject: `🔔 Nueva Alerta de Comprador: ${preferences.full_name || preferences.email}`,
+      html: buildInternalHtml(preferences),
     });
 
-    const internalResult = await internalRes.json();
-    console.log("[buyer-alert] Internal email result:", JSON.stringify(internalResult));
+    console.log("[buyer-alert] Internal email:", internalError ? `ERROR: ${internalError.message}` : `OK: ${internalResult?.id}`);
 
     // 3. Send subscriber confirmation email
-    const subscriberRes = await fetch(`${GATEWAY_URL}/emails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": RESEND_API_KEY,
-      },
-      body: JSON.stringify({
-        from: "Samuel Navarro - Capittal <samuel@capittal.es>",
-        to: [preferences.email],
-        reply_to: "samuel@capittal.es",
-        subject: "Tus alertas de oportunidades en Capittal",
-        html: buildSubscriberHtml(preferences),
-      }),
+    const { data: subscriberResult, error: subscriberError } = await resend.emails.send({
+      from: "Samuel Navarro - Capittal <samuel@capittal.es>",
+      to: [preferences.email],
+      reply_to: "samuel@capittal.es",
+      subject: "Tus alertas de oportunidades en Capittal",
+      html: buildSubscriberHtml(preferences),
     });
 
-    const subscriberResult = await subscriberRes.json();
-    console.log("[buyer-alert] Subscriber email result:", JSON.stringify(subscriberResult));
+    console.log("[buyer-alert] Subscriber email:", subscriberError ? `ERROR: ${subscriberError.message}` : `OK: ${subscriberResult?.id}`);
 
     return new Response(
-      JSON.stringify({ success: true, internal: internalResult, subscriber: subscriberResult }),
+      JSON.stringify({
+        success: true,
+        internal: internalResult || internalError,
+        subscriber: subscriberResult || subscriberError,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
