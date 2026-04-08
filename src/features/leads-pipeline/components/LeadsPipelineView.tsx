@@ -951,6 +951,21 @@ export const LeadsPipelineView: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Email Preview Dialog */}
+      <PrecallEmailPreviewDialog
+        open={emailPreviewOpen}
+        onOpenChange={(open) => {
+          setEmailPreviewOpen(open);
+          if (!open) {
+            setEmailPreview(null);
+            setEmailPreviewLeadId(null);
+          }
+        }}
+        preview={emailPreview}
+        onConfirmSend={handleConfirmSendEmail}
+        isSending={!!isSendingEmail}
+      />
     </div>
   );
 };
