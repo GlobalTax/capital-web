@@ -239,7 +239,7 @@ export const useBuyPipeline = () => {
         company_name: c.company || '',
         email: c.email || '',
         phone: c.phone || null,
-        lead_status_crm: 'nuevo' as LeadStatus,
+        lead_status_crm: (c.lead_status_crm === 'compras' || !c.lead_status_crm) ? 'nuevo' as LeadStatus : c.lead_status_crm as LeadStatus,
         investment_budget: null,
         sectors_of_interest: null,
         acquisition_type: null,
