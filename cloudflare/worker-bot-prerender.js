@@ -385,6 +385,25 @@ async function handleRequest(request, env) {
   if (env.PRERENDER_TOKEN) PRERENDER_TOKEN = env.PRERENDER_TOKEN;
 
   const url = new URL(request.url);
+
+  // ── WWW redirect → naked domain (301) ─────────────────────────────
+  if (url.hostname === 'www.capittal.es') {
+    url.hostname = 'capittal.es';
+    return Response.redirect(url.toString(), 301);
+  }
+
+  // ── Force HTTPS (301) ─────────────────────────────────────────────
+  if (url.protocol === 'http:') {
+    url.protocol = 'https:';
+    return Response.redirect(url.toString(), 301);
+  }
+
+  // ── Strip trailing slash (301) — avoids duplicate content ─────────
+  if (url.pathname.length > 1 && url.pathname.endsWith('/')) {
+    url.pathname = url.pathname.replace(/\/+$/, '');
+    return Response.redirect(url.toString(), 301);
+  }
+
   const userAgent = (request.headers.get("User-Agent") || "");
   const isBotReq = isBot(userAgent);
   const isGetLike = request.method === "GET" || request.method === "HEAD";
@@ -434,7 +453,7 @@ async function handleRequest(request, env) {
     const meta = ROUTES[p];
     const hl = HREFLANGS[p];
     return new Response(JSON.stringify({
-      worker_version: '4.0-prerender-io',
+      worker_version: '4.1-prerender-io',
       deployed: true,
       test_path: p,
       route_found: !!meta,

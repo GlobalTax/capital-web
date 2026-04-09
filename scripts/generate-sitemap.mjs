@@ -24,6 +24,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const today = new Date().toISOString().split('T')[0];
 const BASE = 'https://capittal.es';
 
+// Use today only for frequently-updated pages.
+// For stable pages, use the last known content update date to avoid
+// Google ignoring lastmod when all pages share the same date.
+function getLastmod(changefreq) {
+  if (changefreq === 'weekly') return today;
+  // Stable pages: use a fixed recent date (updated when content actually changes)
+  return '2026-03-15';
+}
+
 // ─── Multilingual page groups ───
 // Each group generates one <url> per variant, all sharing the same hreflang set.
 // Only include routes that render content (NOT redirects like /team → /equipo).
@@ -60,15 +69,14 @@ const multilingualPages = [
 // NOTE: Do NOT include pages that have noindex (they should not be in sitemap).
 //       Removed: /lp/valoracion-2026 (noindex), /lp/rod-linkedin (noindex),
 //                /recursos/noticias (noindex)
+// NOTE: Campaign landing pages (/lp/*-meta, /lp/venta-empresas*) are excluded
+// from the sitemap to prevent keyword cannibalization with main organic pages.
+// Only unique-content LPs (calculadora, suiteloop, etc.) are included.
 const singlePages = [
   { loc: '/lp/calculadora', priority: 0.95, changefreq: 'weekly' },
   { loc: '/lp/calculadora-fiscal', priority: 0.95, changefreq: 'weekly' },
   { loc: '/lp/calculadora-asesores', priority: 0.95, changefreq: 'weekly' },
-  { loc: '/lp/calculadora-meta', priority: 0.9, changefreq: 'monthly' },
-  { loc: '/lp/venta-empresas', priority: 0.9, changefreq: 'monthly' },
-  { loc: '/lp/venta-empresas-v2', priority: 0.9, changefreq: 'monthly' },
   { loc: '/lp/suiteloop', priority: 0.85, changefreq: 'monthly' },
-  { loc: '/lp/accountex', priority: 0.8, changefreq: 'monthly' },
   { loc: '/recursos/blog', priority: 0.8, changefreq: 'weekly' },
   { loc: '/recursos/case-studies', priority: 0.75, changefreq: 'monthly' },
   { loc: '/recursos/guia-vender-empresa', priority: 0.8, changefreq: 'monthly' },
@@ -124,7 +132,7 @@ function expandMultilingualPages() {
 
 function buildUrlEntry(url) {
   let entry = `  <url>\n    <loc>${BASE}${url.loc}</loc>`;
-  entry += `\n    <lastmod>${url.lastmod || today}</lastmod>`;
+  entry += `\n    <lastmod>${url.lastmod || getLastmod(url.changefreq)}</lastmod>`;
   entry += `\n    <changefreq>${url.changefreq}</changefreq>`;
   entry += `\n    <priority>${url.priority}</priority>`;
   if (url.alternates) {
