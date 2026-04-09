@@ -25,6 +25,7 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import { RefreshCw, Search, Users, Filter, CalendarIcon, TrendingUp, BarChart3, X, ChevronDown, ArrowRight, Star, Save, Trash2, Columns3, Plus, FileText, Calculator } from 'lucide-react';
+import { BuyPipelineAttachments } from './BuyPipelineAttachments';
 import { toast } from 'sonner';
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -291,6 +292,7 @@ export const BuyPipelineView: React.FC = () => {
           assignedTo: lead.assigned_to || undefined,
           customSubject: edited.subject,
           customHtmlBody: edited.htmlBody,
+          pipelineType: 'compra',
         }
       });
       if (error) throw error;
