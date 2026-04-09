@@ -147,7 +147,7 @@ export const useBuyPipeline = () => {
 
       if (err3) throw err3;
 
-      // Fetch contact_leads with lead_status_crm = 'compras'
+      // Fetch contact_leads marked as buy pipeline
       const { data: contactCompras, error: err4 } = await supabase
         .from('contact_leads')
         .select(`
@@ -157,7 +157,7 @@ export const useBuyPipeline = () => {
           email_sent, email_opened
         `)
         .eq('is_deleted', false)
-        .eq('lead_status_crm', 'compras')
+        .in('lead_status_crm', buyStatusKeys)
         .order('created_at', { ascending: false });
 
       if (err4) throw err4;
