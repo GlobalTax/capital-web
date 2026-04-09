@@ -136,6 +136,7 @@ export const ContactsPipelineView: React.FC<ContactsPipelineViewProps> = ({
                   is_system: false,
                   is_prospect_stage: false,
                   is_visible: true,
+                  pipeline_type: 'sell' as const,
                   created_at: '',
                   updated_at: '',
                 }}

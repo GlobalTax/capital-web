@@ -58,7 +58,7 @@ export const LeadsPipelineView: React.FC = () => {
     registerCall,
   } = useLeadsPipeline();
 
-  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
+  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses('sell');
   const { channels } = useAcquisitionChannels();
   const { displayNameGroups, resolveDisplayNameToIds, displayNameMap } = useLeadForms();
   
@@ -551,7 +551,7 @@ export const LeadsPipelineView: React.FC = () => {
               </div>
             </PopoverContent>
           </Popover>
-          <PipelineColumnsEditor />
+          <PipelineColumnsEditor pipelineType="sell" />
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
             Actualizar

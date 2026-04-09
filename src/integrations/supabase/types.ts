@@ -6068,6 +6068,7 @@ export type Database = {
           is_system: boolean
           is_visible: boolean | null
           label: string
+          pipeline_type: string
           position: number
           status_key: string
           updated_at: string | null
@@ -6082,6 +6083,7 @@ export type Database = {
           is_system?: boolean
           is_visible?: boolean | null
           label: string
+          pipeline_type?: string
           position?: number
           status_key: string
           updated_at?: string | null
@@ -6096,6 +6098,7 @@ export type Database = {
           is_system?: boolean
           is_visible?: boolean | null
           label?: string
+          pipeline_type?: string
           position?: number
           status_key?: string
           updated_at?: string | null

@@ -57,7 +57,7 @@ export const BuyPipelineView: React.FC = () => {
     registerCall,
   } = useBuyPipeline();
 
-  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
+  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses('buy');
   const { channels } = useAcquisitionChannels();
   const { displayNameGroups, resolveDisplayNameToIds, displayNameMap } = useLeadForms();
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);
@@ -475,7 +475,7 @@ export const BuyPipelineView: React.FC = () => {
               </div>
             </PopoverContent>
           </Popover>
-          <PipelineColumnsEditor />
+          <PipelineColumnsEditor pipelineType="buy" />
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
             Actualizar
