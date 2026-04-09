@@ -398,6 +398,8 @@ export const BuyPipelineView: React.FC = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          {/* Attachments manager */}
+          <BuyPipelineAttachments />
           {/* Column visibility toggle */}
           <Popover>
             <PopoverTrigger asChild>
