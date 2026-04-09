@@ -1,85 +1,59 @@
 
 
-## Plan: Corregir actualización parcial de duplicados en importación Excel
+## Plan: Propagar datos de lista madre a sublistas (la madre manda)
 
-### Problema identificado
+### Problema
 
-El bucle de actualización de duplicados (líneas 1084-1119 de `ContactListDetailPage.tsx`) tiene **dos problemas**:
+Hay dos cuestiones:
 
-1. **Sin delay entre llamadas**: A diferencia de la inserción (que tiene `DELAY_MS = 150` entre batches), las actualizaciones de duplicados se lanzan una tras otra sin pausa. Con muchos duplicados, Supabase aplica rate limiting (429) y las peticiones empiezan a fallar silenciosamente.
+1. **El trigger actual NO sobrescribe**: `sync_madre_company_to_sublists` usa `COALESCE(NULLIF(NEW.valor, ''), valor_existente)`, lo que solo rellena campos vacíos en la sublista. Si la sublista ya tiene un dato antiguo, no se actualiza con el nuevo de la madre.
 
-2. **CIF case-sensitive**: La actualización usa `.eq('cif', cif)` donde `cif` está normalizado a mayúsculas, pero si el CIF almacenado tiene otra capitalización, el UPDATE no matchea ninguna fila (0 rows affected) sin dar error.
+2. **Los datos ya subidos no se propagaron**: Como el trigger no sobrescribía, las ~10.215 empresas actualizadas en la madre no trasladaron su información nueva a las sublistas. Hace falta un re-sync en bloque.
 
-### Solución
+3. **Match CIF case-sensitive**: El trigger compara `cif = NEW.cif` sin normalizar mayúsculas/minúsculas.
 
-**Archivo:** `src/pages/admin/ContactListDetailPage.tsx` (líneas ~1081-1119)
+### Solución (1 migración SQL)
 
-Cambios en el bucle de actualización de duplicados:
+**Archivo:** Nueva migración SQL
 
-1. **Añadir delay entre actualizaciones** — Procesar en mini-batches de 5 con 150ms de pausa entre cada uno (mismo patrón que las inserciones).
+#### A. Actualizar el trigger `sync_madre_company_to_sublists`
 
-2. **Usar comparación case-insensitive de CIF** — Cambiar `.eq('cif', cif)` a una función SQL `ilike` o normalizar el CIF almacenado. La opción más limpia: usar `.filter('cif', 'ilike', cif)` para que el match sea insensible a mayúsculas/minúsculas.
+Cambiar la lógica para que la madre siempre sobrescriba los campos de las sublistas cuando el nuevo valor no sea vacío/nulo:
 
-3. **Verificar filas afectadas** — Usar `.select()` en el update para saber si realmente se actualizó alguna fila, y loggear las que no matchean.
+```sql
+-- Antes (solo rellena vacíos):
+empresa = COALESCE(NULLIF(NEW.empresa, ''), empresa)
 
-### Código propuesto
-
-```typescript
-// 2. Update duplicates if user opted in
-if (updateDuplicates && validationResult.duplicadas.length > 0) {
-  const UPDATABLE_FIELDS = ['tipo_accionista', 'nombre_accionista', 'notas', 'contacto', 'email', 'linkedin', 'director_ejecutivo', 'telefono', 'web', 'posicion_contacto', 'consolidador', 'cnae', 'descripcion_actividad', 'facturacion', 'ebitda', 'num_trabajadores', 'provincia', 'comunidad_autonoma'];
-  const UPDATE_DELAY_MS = 100;
-  const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
-  
-  for (let i = 0; i < validationResult.duplicadas.length; i++) {
-    const row = validationResult.duplicadas[i];
-    const cif = row.cif;
-    if (!cif) continue;
-
-    const updates: Record<string, any> = {};
-    for (const field of UPDATABLE_FIELDS) {
-      const val = row.data[field];
-      if (val != null && val !== '' && val !== undefined) {
-        updates[field] = val;
-      }
-    }
-
-    if (Object.keys(updates).length === 0) continue;
-
-    try {
-      const { data: updated, error } = await supabase
-        .from('outbound_list_companies' as any)
-        .update(updates)
-        .eq('list_id', listId)
-        .ilike('cif', cif)  // Case-insensitive match
-        .select('id');
-      
-      if (error) {
-        console.error(`[Import] Failed to update CIF ${cif}:`, error);
-        failedCount++;
-      } else if (!updated || updated.length === 0) {
-        console.warn(`[Import] No rows matched for CIF ${cif}`);
-        failedCount++;
-      } else {
-        updatedCount++;
-      }
-    } catch (err) {
-      console.error(`[Import] Error updating CIF ${cif}:`, err);
-      failedCount++;
-    }
-
-    setImportProgress({ done: rowsToInsert.length + i + 1, total: totalOperations });
-    
-    // Throttle to avoid rate limiting
-    if (i % 5 === 4) {
-      await delay(UPDATE_DELAY_MS);
-    }
-  }
-}
+-- Después (la madre manda):
+empresa = CASE WHEN NEW.empresa IS NOT NULL AND NEW.empresa <> '' 
+               THEN NEW.empresa ELSE empresa END
 ```
 
+Aplicar este patrón a todos los campos sincronizados. Además, usar `lower(trim(cif))` para el match.
+
+#### B. Re-sync en bloque de todas las listas madre existentes
+
+Ejecutar un UPDATE masivo que copie los datos actuales de cada empresa en cada lista madre hacia sus sublistas correspondientes, usando la misma lógica "la madre manda":
+
+```sql
+UPDATE outbound_list_companies sub
+SET empresa = CASE WHEN m.empresa IS NOT NULL AND m.empresa <> '' 
+                   THEN m.empresa ELSE sub.empresa END,
+    contacto = CASE WHEN m.contacto IS NOT NULL ...
+    -- todos los campos
+FROM outbound_list_companies m
+JOIN outbound_lists sl ON sl.id = sub.list_id AND sl.lista_madre_id = m.list_id
+WHERE lower(trim(sub.cif)) = lower(trim(m.cif))
+  AND m.cif IS NOT NULL AND m.cif <> '';
+```
+
+#### C. También actualizar `sync_sublist_company_to_madre` (coherencia inversa)
+
+Mantener la misma lógica: cuando se edita en una sublista, también sube a la madre sobrescribiendo.
+
 ### Resultado
-- Las actualizaciones de duplicados no se verán interrumpidas por rate limiting
-- CIFs con distinta capitalización serán encontrados correctamente  
-- Se reportarán las filas que no pudieron ser actualizadas
+
+- Todos los datos nuevos ya importados en la madre se copiarán inmediatamente a las sublistas.
+- A partir de ahora, cualquier cambio en la madre sobrescribirá automáticamente en las sublistas.
+- El match por CIF será case-insensitive.
 
