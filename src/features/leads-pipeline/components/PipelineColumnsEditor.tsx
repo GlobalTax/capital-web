@@ -28,8 +28,13 @@ import {
 import { useLeadPipelineColumns, type LeadPipelineColumn } from '../hooks/useLeadPipelineColumns';
 import { ColumnEditModal } from './ColumnEditModal';
 import { ColumnDeleteDialog } from './ColumnDeleteDialog';
+import type { PipelineType } from '@/hooks/useContactStatuses';
 
-export const PipelineColumnsEditor: React.FC = () => {
+interface PipelineColumnsEditorProps {
+  pipelineType?: PipelineType;
+}
+
+export const PipelineColumnsEditor: React.FC<PipelineColumnsEditorProps> = ({ pipelineType }) => {
   const {
     columns,
     isLoading,
@@ -37,7 +42,7 @@ export const PipelineColumnsEditor: React.FC = () => {
     toggleVisibility,
     deleteColumn,
     isDeleting,
-  } = useLeadPipelineColumns();
+  } = useLeadPipelineColumns(pipelineType);
 
   const [isOpen, setIsOpen] = useState(false);
   const [editingColumn, setEditingColumn] = useState<LeadPipelineColumn | null>(null);
