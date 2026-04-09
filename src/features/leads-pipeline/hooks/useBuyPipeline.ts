@@ -109,7 +109,8 @@ export const useBuyPipeline = () => {
         .select(`
           id, full_name, company, email, phone,
           lead_status_crm, investment_budget, sectors_of_interest,
-          acquisition_type, notes, created_at, acquisition_channel_id, lead_form
+          acquisition_type, notes, created_at, acquisition_channel_id, lead_form,
+          assigned_to, assigned_at
         `)
         .or('is_deleted.is.null,is_deleted.eq.false')
         .not('lead_status_crm', 'is', null)
@@ -123,7 +124,8 @@ export const useBuyPipeline = () => {
         .select(`
           id, full_name, company, email, phone,
           lead_status_crm, investment_range, sectors_of_interest,
-          acquisition_type, created_at, acquisition_channel_id, lead_form
+          acquisition_type, created_at, acquisition_channel_id, lead_form,
+          assigned_to, assigned_at
         `)
         .or('is_deleted.is.null,is_deleted.eq.false')
         .order('created_at', { ascending: false });
