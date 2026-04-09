@@ -130,7 +130,8 @@ export const useBuyPipeline = () => {
 
       if (err2) throw err2;
 
-      // Fetch company_valuations with lead_status_crm = 'compras'
+      // Fetch company_valuations marked as buy pipeline
+      const buyStatusKeys = ['compras', 'nuevo', 'contactado_nr', 'contacto_efectivo', 'reunion_programada', 'no_interesa', 'capital_riesgo', 'search_fund', 'corporativo'];
       const { data: valCompras, error: err3 } = await supabase
         .from('company_valuations')
         .select(`
@@ -141,7 +142,7 @@ export const useBuyPipeline = () => {
           precall_email_sent, call_attempts_count, email_sent, email_opened
         `)
         .eq('is_deleted', false)
-        .eq('lead_status_crm', 'compras')
+        .in('lead_status_crm', buyStatusKeys)
         .order('created_at', { ascending: false });
 
       if (err3) throw err3;
