@@ -334,10 +334,10 @@ export const useBuyPipeline = () => {
       const origin = getLeadOrigin(leadId);
       const table = getTableName(origin);
       
-      const payload: Record<string, any> = { assigned_to: userId };
-      if (origin === 'valuation_compras' || origin === 'contact_compras') {
-        payload.assigned_at = userId ? new Date().toISOString() : null;
-      }
+      const payload: Record<string, any> = { 
+        assigned_to: userId,
+        assigned_at: userId ? new Date().toISOString() : null,
+      };
       
       const { error } = await supabase
         .from(table as any)
