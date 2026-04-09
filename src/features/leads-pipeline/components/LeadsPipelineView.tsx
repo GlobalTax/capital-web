@@ -58,7 +58,7 @@ export const LeadsPipelineView: React.FC = () => {
     registerCall,
   } = useLeadsPipeline();
 
-  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
+  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses('sell');
   const { channels } = useAcquisitionChannels();
   const { displayNameGroups, resolveDisplayNameToIds, displayNameMap } = useLeadForms();
   

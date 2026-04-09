@@ -57,7 +57,7 @@ export const BuyPipelineView: React.FC = () => {
     registerCall,
   } = useBuyPipeline();
 
-  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses();
+  const { visibleStatuses, isLoading: isLoadingStatuses } = useContactStatuses('buy');
   const { channels } = useAcquisitionChannels();
   const { displayNameGroups, resolveDisplayNameToIds, displayNameMap } = useLeadForms();
   const leadFormsMap = useMemo(() => new Map(Object.entries(displayNameMap)), [displayNameMap]);

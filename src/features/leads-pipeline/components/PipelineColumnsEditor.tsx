@@ -231,6 +231,7 @@ export const PipelineColumnsEditor: React.FC<PipelineColumnsEditorProps> = ({ pi
         column={editingColumn}
         isOpen={!!editingColumn}
         onClose={() => setEditingColumn(null)}
+        pipelineType={pipelineType}
       />
 
       {/* Add Column Modal */}
@@ -238,6 +239,7 @@ export const PipelineColumnsEditor: React.FC<PipelineColumnsEditorProps> = ({ pi
         column={null}
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        pipelineType={pipelineType}
       />
 
       {/* Delete Confirmation Dialog */}
