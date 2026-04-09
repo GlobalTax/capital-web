@@ -1,45 +1,32 @@
 
 
-## Plan: Independizar los pipelines de Ventas y Compras
-
-### Problema
-Ambos pipelines comparten la misma tabla `contact_statuses` y el mismo componente `PipelineColumnsEditor`. Cuando intentas eliminar o editar una columna desde el pipeline de compras, la validación de borrado cuenta los 64 leads del pipeline de ventas y bloquea la acción.
-
-### Solución
-Añadir un campo `pipeline_type` a `contact_statuses` para separar las fases de cada pipeline, y hacer que todos los componentes filtren por tipo.
+## Plan: Actualizar etapas del pipeline de Compras
 
 ### Cambios
 
-**1. Migración SQL — Añadir `pipeline_type` a `contact_statuses`**
-- Nueva columna `pipeline_type TEXT NOT NULL DEFAULT 'sell'` con CHECK `('sell', 'buy')`
-- Todos los estados existentes se quedan como `'sell'`
-- Insertar un set inicial de estados para el pipeline de compras (Nuevo, Contactando, En Negociación, Ganado, Perdido — o los que el usuario prefiera; se pueden editar después)
+**1. Migración SQL — Reemplazar etapas del pipeline de compras**
 
-**2. `useContactStatuses.ts` — Aceptar filtro por `pipeline_type`**
-- Añadir parámetro opcional `pipelineType: 'sell' | 'buy'` al hook
-- Filtrar la query con `.eq('pipeline_type', pipelineType)` cuando se pase
-- En `deleteStatusMutation`: si `pipelineType === 'buy'`, comprobar solo `company_acquisition_inquiries` y `acquisition_leads`; si `'sell'`, comprobar solo `contact_leads` y `company_valuations`
+Eliminar las 5 etapas actuales (`nuevo`, `contactando`, `negociacion`, `ganado`, `perdido`) e insertar las 8 nuevas:
 
-**3. `useLeadPipelineColumns.ts` — Pasar `pipelineType` al hook interno**
-- Aceptar `pipelineType` como parámetro y pasarlo a `useContactStatuses`
+| Pos | Key | Label | Color | Icono |
+|-----|-----|-------|-------|-------|
+| 0 | `nuevo` | Nuevo | Azul (#3B82F6) | UserPlus |
+| 1 | `contactado_nr` | Contactado - NR | Amarillo (#F59E0B) | PhoneMissed |
+| 2 | `contacto_efectivo` | Contacto Efectivo | Verde (#10B981) | PhoneCall |
+| 3 | `reunion_programada` | Reunión Programada | Violeta (#8B5CF6) | Calendar |
+| 4 | `no_interesa` | No Interesa | Rojo (#EF4444) | XCircle |
+| 5 | `capital_riesgo` | Capital Riesgo | Índigo (#6366F1) | TrendingUp |
+| 6 | `search_fund` | Search Fund | Teal (#14B8A6) | Search |
+| 7 | `corporativo` | Corporativo | Slate (#475569) | Building2 |
 
-**4. `PipelineColumnsEditor.tsx` — Aceptar prop `pipelineType`**
-- Pasar `pipelineType` a `useLeadPipelineColumns`
+**2. Sin cambios de código** — Las etapas se cargan dinámicamente desde `contact_statuses`, por lo que la UI se actualizará automáticamente.
 
-**5. `LeadsPipelineView.tsx` — Pasar `pipelineType="sell"`**
-- Al usar `useContactStatuses` y `PipelineColumnsEditor`, pasar `'sell'`
+### Detalle técnico
 
-**6. `BuyPipelineView.tsx` — Pasar `pipelineType="buy"`**
-- Al usar `useContactStatuses` y `PipelineColumnsEditor`, pasar `'buy'`
+Una migración SQL que:
+1. `DELETE FROM contact_statuses WHERE pipeline_type = 'buy'`
+2. `INSERT` de las 8 nuevas etapas con `pipeline_type = 'buy'`
 
 ### Archivos afectados
-- Migración SQL (nueva)
-- `src/hooks/useContactStatuses.ts`
-- `src/features/leads-pipeline/hooks/useLeadPipelineColumns.ts`
-- `src/features/leads-pipeline/components/PipelineColumnsEditor.tsx`
-- `src/features/leads-pipeline/components/LeadsPipelineView.tsx`
-- `src/features/leads-pipeline/components/BuyPipelineView.tsx`
-
-### Resultado
-Cada pipeline tendrá sus propias columnas independientes. Editar, crear o eliminar fases en uno no afectará al otro.
+- Nueva migración SQL (único cambio)
 
