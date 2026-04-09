@@ -7,6 +7,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export type PipelineType = 'sell' | 'buy';
+
 export interface ContactStatus {
   id: string;
   status_key: string;
@@ -16,8 +18,9 @@ export interface ContactStatus {
   position: number;
   is_active: boolean;
   is_system: boolean;
-  is_prospect_stage: boolean; // Marks if leads in this status appear in Prospects
-  is_visible: boolean; // Controls visibility in pipeline views (unifies with lead_pipeline_columns)
+  is_prospect_stage: boolean;
+  is_visible: boolean;
+  pipeline_type: PipelineType;
   created_at: string;
   updated_at: string;
 }
@@ -48,23 +51,29 @@ export const STATUS_COLOR_MAP: Record<string, { bg: string; text: string }> = {
   pink: { bg: 'bg-pink-100', text: 'text-pink-700' },
 };
 
-export const useContactStatuses = () => {
+export const useContactStatuses = (pipelineType?: PipelineType) => {
   const queryClient = useQueryClient();
+  const queryKey = pipelineType ? ['contact-statuses', pipelineType] : ['contact-statuses'];
 
   // Fetch statuses from database
   const { data: statuses = [], isLoading, refetch } = useQuery({
-    queryKey: ['contact-statuses'],
+    queryKey,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('contact_statuses')
         .select('*')
         .order('position', { ascending: true });
 
+      if (pipelineType) {
+        query = query.eq('pipeline_type', pipelineType);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as ContactStatus[];
     },
-    staleTime: 1000 * 30, // 30 seconds - faster sync for status changes
-    refetchOnWindowFocus: true, // Auto-sync when user returns to tab
+    staleTime: 1000 * 30,
+    refetchOnWindowFocus: true,
   });
 
   // Get only active statuses (for selectors)
@@ -73,12 +82,17 @@ export const useContactStatuses = () => {
   // Get statuses marked as prospect stage (for Prospects module)
   const prospectStatuses = statuses.filter(s => s.is_prospect_stage && s.is_active);
 
-  // Get visible statuses (for pipeline views - unifies with lead_pipeline_columns)
+  // Get visible statuses (for pipeline views)
   const visibleStatuses = statuses.filter(s => s.is_visible);
 
   // Get status by key
   const getStatusByKey = (key: string): ContactStatus | undefined => {
     return statuses.find(s => s.status_key === key);
+  };
+
+  // Invalidate all contact-statuses queries
+  const invalidateAll = () => {
+    queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
   };
 
   // Update a single status
@@ -98,7 +112,7 @@ export const useContactStatuses = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+      invalidateAll();
       toast.success('Estado actualizado');
     },
     onError: (error) => {
@@ -109,7 +123,7 @@ export const useContactStatuses = () => {
   // Add a new status
   const addStatusMutation = useMutation({
     mutationFn: async (statusData: StatusFormData) => {
-      // Get highest position
+      // Get highest position among same pipeline_type statuses
       const maxPosition = statuses.length > 0
         ? Math.max(...statuses.map(s => s.position))
         : 0;
@@ -121,12 +135,13 @@ export const useContactStatuses = () => {
           position: maxPosition + 1,
           is_active: true,
           is_system: false,
+          pipeline_type: pipelineType || 'sell',
         });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+      invalidateAll();
       toast.success('Estado añadido');
     },
     onError: (error: any) => {
@@ -149,7 +164,7 @@ export const useContactStatuses = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+      invalidateAll();
     },
     onError: (error) => {
       toast.error('Error al cambiar estado', { description: error.message });
@@ -164,19 +179,37 @@ export const useContactStatuses = () => {
         throw new Error('No se puede eliminar un estado del sistema');
       }
 
-      // Check if any contacts are using this status
-      const { count: contactLeadsCount } = await supabase
-        .from('contact_leads')
-        .select('id', { count: 'exact', head: true })
-        .eq('lead_status_crm', status?.status_key as any);
+      // Check usage depending on pipeline type
+      const effectivePipeline = status?.pipeline_type || pipelineType || 'sell';
+      let totalUsage = 0;
 
-      const { count: valuationsCount } = await supabase
-        .from('company_valuations')
-        .select('id', { count: 'exact', head: true })
-        .eq('lead_status_crm', status?.status_key as any);
+      if (effectivePipeline === 'sell') {
+        const { count: contactLeadsCount } = await supabase
+          .from('contact_leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('lead_status_crm', status?.status_key as any);
 
-      const totalUsage = (contactLeadsCount || 0) + (valuationsCount || 0);
-      
+        const { count: valuationsCount } = await supabase
+          .from('company_valuations')
+          .select('id', { count: 'exact', head: true })
+          .eq('lead_status_crm', status?.status_key as any);
+
+        totalUsage = (contactLeadsCount || 0) + (valuationsCount || 0);
+      } else {
+        // Buy pipeline: check acquisition-related tables
+        const { count: inquiriesCount } = await supabase
+          .from('company_acquisition_inquiries')
+          .select('id', { count: 'exact', head: true })
+          .eq('lead_status_crm', status?.status_key as any);
+
+        const { count: acqLeadsCount } = await supabase
+          .from('acquisition_leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('lead_status_crm', status?.status_key as any);
+
+        totalUsage = (inquiriesCount || 0) + (acqLeadsCount || 0);
+      }
+
       if (totalUsage > 0) {
         throw new Error(`No se puede eliminar: ${totalUsage} contactos usan este estado. Desactívalo en su lugar.`);
       }
@@ -189,7 +222,7 @@ export const useContactStatuses = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+      invalidateAll();
       toast.success('Estado eliminado');
     },
     onError: (error) => {
@@ -215,14 +248,14 @@ export const useContactStatuses = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+      invalidateAll();
     },
     onError: (error) => {
       toast.error('Error al reordenar estados', { description: error.message });
     },
   });
 
-  // Toggle visibility (for pipeline views - unifies with lead_pipeline_columns)
+  // Toggle visibility
   const toggleVisibilityMutation = useMutation({
     mutationFn: async ({ id, isVisible }: { id: string; isVisible: boolean }) => {
       const { error } = await supabase
@@ -233,7 +266,7 @@ export const useContactStatuses = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contact-statuses'] });
+      invalidateAll();
     },
     onError: (error) => {
       toast.error('Error al cambiar visibilidad', { description: error.message });
