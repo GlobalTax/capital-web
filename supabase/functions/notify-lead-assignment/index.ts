@@ -50,7 +50,11 @@ Deno.serve(async (req) => {
       assigned_to_email,
       assigned_to_name,
       assigned_by_name,
+      pipeline_type,
     } = body;
+
+    const isBuy = pipeline_type === 'compra';
+    const pipelineLabel = isBuy ? '🛒 Compra' : '📋 Venta';
 
     if (!lead_id || !assigned_to_user_id) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
