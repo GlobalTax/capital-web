@@ -50,7 +50,11 @@ Deno.serve(async (req) => {
       assigned_to_email,
       assigned_to_name,
       assigned_by_name,
+      pipeline_type,
     } = body;
+
+    const isBuy = pipeline_type === 'compra';
+    const pipelineLabel = isBuy ? '🛒 Compra' : '📋 Venta';
 
     if (!lead_id || !assigned_to_user_id) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -64,7 +68,7 @@ Deno.serve(async (req) => {
       .from("admin_notifications")
       .insert({
         type: "lead_assignment",
-        title: "Te han asignado un nuevo lead",
+        title: `Te han asignado un nuevo lead${isBuy ? ' (Compra)' : ''}`,
         message: `${lead_name || "Sin nombre"} — ${company || "Sin empresa"}`,
         metadata: {
           lead_id,
@@ -89,11 +93,13 @@ Deno.serve(async (req) => {
     if (resendApiKey && assigned_to_email) {
       try {
         const resend = new Resend(resendApiKey);
-        const crmLink = `https://webcapittal.lovable.app/admin/leads-pipeline`;
+        const crmLink = isBuy
+          ? `https://webcapittal.lovable.app/admin/buy-pipeline`
+          : `https://webcapittal.lovable.app/admin/leads-pipeline`;
 
         const htmlContent = `
           <div style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-            <h2 style="color: #0f172a; margin-bottom: 16px;">📋 Nuevo lead asignado</h2>
+            <h2 style="color: #0f172a; margin-bottom: 16px;">${pipelineLabel} Nuevo lead asignado</h2>
             <p style="color: #475569; margin-bottom: 20px;">
               Hola <strong>${assigned_to_name || "equipo"}</strong>, se te ha asignado un nuevo lead${assigned_by_name ? ` por <strong>${assigned_by_name}</strong>` : ""}.
             </p>
@@ -118,7 +124,7 @@ Deno.serve(async (req) => {
           from: "Capittal <samuel@capittal.es>",
           to: [assigned_to_email],
           replyTo: "samuel@capittal.es",
-          subject: `📋 Nuevo lead asignado: ${lead_name || company || "Lead"}`,
+          subject: `${pipelineLabel} Nuevo lead asignado: ${lead_name || company || "Lead"}`,
           html: htmlContent,
         });
 

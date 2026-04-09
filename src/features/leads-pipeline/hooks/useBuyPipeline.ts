@@ -368,6 +368,7 @@ export const useBuyPipeline = () => {
               assigned_to_email: assignee?.email || null,
               assigned_to_name: assignee?.full_name || null,
               assigned_by_name: currentAdmin?.full_name || user?.email || 'Sistema',
+              pipeline_type: 'compra',
             },
           });
         } catch (err) {
